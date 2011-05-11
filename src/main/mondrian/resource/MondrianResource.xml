@@ -432,6 +432,18 @@
     <text>Not a named set</text>
 </exception>
 
+<exception id="40350" name="HierarchyHasNoLevels">
+    <text>Hierarchy ''{0}'' must have at least one level.</text>
+</exception>
+
+<exception id="40360" name="HierarchyLevelNamesNotUnique">
+    <text>Level names within hierarchy ''{0}'' are not unique; there is more than one level with name ''{1}''.</text>
+</exception>
+
+<exception id="40370" name="IllegalLeftDeepJoin">
+    <text>Left side of join must not be a join; mondrian only supports right-deep joins.</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Loader -->
 
@@ -755,6 +767,68 @@
 <exception id="7000520" name="CacheFlushCrossjoinDimensionsInCommon">
     <text>
         Cannot crossjoin cell regions which have dimensions in common. (Dimensionalities are {0}.)
+    </text>
+</exception>
+
+<!-- Segment and Segment Cache messages -->
+<exception id="7000610" name="SegmentCacheIsNotImplementingInterface">
+    <text>
+        The mondrian.rolap.SegmentCache property points to a class name which is not an
+        implementation of mondrian.spi.SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000620" name="SegmentCacheFailedToInstanciate">
+    <text>
+        An exception was encountered while creating the SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000630" name="SegmentCacheFailedToLoadSegment">
+    <text>
+        An exception was encountered while loading a segment from the SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000631" name="SegmentCacheFailedToSaveSegment">
+    <text>
+        An exception was encountered while loading a segment from the SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000632" name="SegmentCacheFailedToLookupSegment">
+    <text>
+        An exception was encountered while performing a segment lookup in the SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000633" name="SegmentCacheFailedToScanSegments">
+    <text>
+        An exception was encountered while getting a list of segment headers in the SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000650" name="SegmentCacheReadTimeout">
+    <text>
+        Timeout reached while reading segment from SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000651" name="SegmentCacheWriteTimeout">
+    <text>
+        Timeout reached while writing segment to SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000652" name="SegmentCacheLookupTimeout">
+    <text>
+        Timeout reached while performing a segment lookup in SegmentCache.
+    </text>
+</exception>
+
+<exception id="7000653" name="SegmentCacheScanTimeout">
+    <text>
+        Timeout reached while getting a list of segment headers from the SegmentCache.
     </text>
 </exception>
 

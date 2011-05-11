@@ -1305,6 +1305,7 @@ public class RolapSchemaUpgrader {
                             physInlineTable,
                             columnDef.name,
                             Dialect.Datatype.valueOf(columnDef.type),
+                            null,
                             jdbcColumn.getColumnSize()));
                 }
                 final int columnCount =

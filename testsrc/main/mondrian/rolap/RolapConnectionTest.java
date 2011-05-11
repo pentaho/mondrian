@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -295,7 +295,10 @@ public class RolapConnectionTest extends TestCase {
         final List<String> lookupCalls = new ArrayList<String>();
         // mock the JNDI naming manager to provide that datasource
         THREAD_INITIAL_CONTEXT.set(
-            new InitialContext() {
+            // Use lazy initialization. Otherwise during initialization of this
+            // initial context JNDI tries to create a default initial context
+            // and bumps into itself coming the other way.
+            new InitialContext(true) {
                 public Object lookup(String str) {
                     lookupCalls.add("Called");
                     return dataSource;

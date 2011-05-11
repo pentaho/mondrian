@@ -19,6 +19,7 @@ import mondrian.rolap.SqlStatement;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.SortedSet;
 
 /**
  * A <code>SparseSegmentDataset</code> is a means of storing segment values
@@ -36,7 +37,7 @@ import java.util.Iterator;
  * @version $Id$
  */
 class SparseSegmentDataset implements SegmentDataset {
-    private final Map<CellKey, Object> values = new HashMap<CellKey, Object>();
+    final Map<CellKey, Object> values = new HashMap<CellKey, Object>();
 
     SparseSegmentDataset(Segment segment) {
         Util.discard(segment);
@@ -89,6 +90,17 @@ class SparseSegmentDataset implements SegmentDataset {
 
     public SqlStatement.Type getType() {
         return SqlStatement.Type.OBJECT;
+    }
+
+    public SegmentBody createSegmentBody(
+            SortedSet<Comparable<?>>[] axisValueSets,
+            boolean[] nullAxisFlags)
+    {
+        return
+            new SparseSegmentBody(
+                values,
+                axisValueSets,
+                nullAxisFlags);
     }
 }
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2010 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,7 +11,7 @@ package mondrian.udf;
 
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.spi.UserDefinedFunction;
+import mondrian.spi.*;
 import mondrian.util.*;
 
 import java.util.*;
@@ -49,8 +49,7 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
 
         final Locale locale = Locale.getDefault();
         final Format format = new Format((String) formatArg, locale);
-        Date currDate = evaluator.getQueryStartTime();
-        String currDateStr = format.format(currDate);
+        String currDateStr = format.format(getDate(evaluator, arguments));
 
         // determine the match type
         MatchType matchType;
@@ -79,6 +78,13 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
                 ((Dimension) arg0).getHierarchy().getNullMember();
         }
         return resultDateMember;
+    }
+
+    /*
+     * Package private function created for proper testing.
+     */
+    Date getDate(Evaluator evaluator, Argument[] arguments) {
+        return evaluator.getQueryStartTime();
     }
 
     public String getDescription() {
@@ -116,17 +122,6 @@ public class CurrentDateMemberUdf implements UserDefinedFunction {
 
     public Syntax getSyntax() {
         return Syntax.Function;
-    }
-
-    private MatchType mapMatchStrToType(String matchStr)
-    {
-        if (matchStr.equals("EXACT")) {
-            return MatchType.EXACT;
-        } else if (matchStr.equals("BEFORE")) {
-            return MatchType.BEFORE;
-        } else {
-            return MatchType.AFTER;
-        }
     }
 }
 

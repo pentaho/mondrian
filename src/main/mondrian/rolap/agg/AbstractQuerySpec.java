@@ -3,18 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 
 package mondrian.rolap.agg;
 
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.StarColumnPredicate;
-import mondrian.rolap.StarPredicate;
+import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.Dialect;
+import mondrian.util.Pair;
 
 import java.util.*;
 
@@ -73,6 +72,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
                 : measure.getExpression().toSql();
         String exprOuter = measure.getAggregator().getExpression(exprInner);
         sqlQuery.addSelect(exprOuter, getMeasureAlias(i));
+        sqlQuery.addType(measure.getInternalType());
     }
 
     protected abstract boolean isAggregate();
@@ -84,6 +84,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         int arity = columns.length;
         if (countOnly) {
             sqlQuery.addSelect("count(*)");
+            sqlQuery.addType(SqlStatement.Type.INT);
         }
         for (int i = 0; i < arity; i++) {
             RolapStar.Column column = columns[i];
@@ -117,6 +118,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             } else {
                 alias = sqlQuery.addSelect(expr, getColumnAlias(i));
             }
+            sqlQuery.addType(column.getInternalType());
 
             if (isAggregate()) {
                 sqlQuery.addGroupBy(expr, alias);
@@ -149,7 +151,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         return false;
     }
 
-    public String generateSqlQuery() {
+    public Pair<String, List<SqlStatement.Type>> generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
 
         int k = getDistinctMeasureCount();
@@ -165,7 +167,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             addGroupingFunction(sqlQuery);
             addGroupingSets(sqlQuery);
         }
-        return sqlQuery.toString();
+        return sqlQuery.toSqlAndTypes();
     }
 
     protected void addGroupingFunction(SqlQuery sqlQuery) {
@@ -262,6 +264,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             }
             final String quotedAlias = dialect.quoteIdentifier(alias);
             outerSqlQuery.addSelectGroupBy(quotedAlias);
+            outerSqlQuery.addType(null);
         }
 
         // add predicates not associated with columns
@@ -282,8 +285,8 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             }
             outerSqlQuery.addSelect(
                 measure.getAggregator().getNonDistinctAggregator()
-                    .getExpression(
-                    dialect.quoteIdentifier(alias)));
+                    .getExpression(dialect.quoteIdentifier(alias)));
+            outerSqlQuery.addType(null);
         }
         outerSqlQuery.addFrom(innerSqlQuery, "dummyname", true);
     }

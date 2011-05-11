@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,12 +12,12 @@
 */
 package mondrian.util;
 
+import mondrian.calc.TupleList;
+import mondrian.calc.impl.ArrayTupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapCube;
-import org.olap4j.mdx.IdentifierNode;
-import org.olap4j.mdx.ParseRegion;
 
 import java.util.*;
 
@@ -29,75 +29,6 @@ import java.util.*;
  * @author jhyde
  */
 public class IdentifierParser extends org.olap4j.impl.IdentifierParser {
-
-    /**
-     * Implementation of {@link org.olap4j.impl.IdentifierParser.Builder}
-     * that collects the segments that make up the name of a member in a list.
-     * It cannot handle tuples or lists of members.
-     *
-     * <p>Copied from olap4j. TODO: make olap4j class protected, and obsolete.
-     */
-    private static class MemberBuilder implements Builder {
-        final List<IdentifierNode.NameSegment> subSegments =
-            new ArrayList<IdentifierNode.NameSegment>();
-        protected final List<IdentifierNode.Segment> segmentList =
-            new ArrayList<IdentifierNode.Segment>();
-
-        public MemberBuilder() {
-        }
-
-        public void tupleComplete() {
-            throw new UnsupportedOperationException();
-        }
-
-        public void memberComplete() {
-            flushSubSegments();
-        }
-
-        private void flushSubSegments() {
-            if (!subSegments.isEmpty()) {
-                segmentList.add(new IdentifierNode.KeySegment(subSegments));
-                subSegments.clear();
-            }
-        }
-
-        public void segmentComplete(
-            ParseRegion region,
-            String name,
-            IdentifierNode.Quoting quoting,
-            Syntax syntax)
-        {
-            final IdentifierNode.NameSegment segment =
-                new IdentifierNode.NameSegment(
-                    region, name, quoting);
-            if (syntax != Syntax.NEXT_KEY) {
-                // If we were building a previous key, write it out.
-                // E.g. [Foo].&1&2.&3&4&5.
-                flushSubSegments();
-            }
-            if (syntax == Syntax.NAME) {
-                segmentList.add(segment);
-            } else {
-                subSegments.add(segment);
-            }
-        }
-    }
-
-    /**
-     * Extension to {@link mondrian.util.IdentifierParser.MemberBuilder} that
-     *
-     */
-    private static class _MemberListBuilder extends MemberBuilder {
-        final List<List<IdentifierNode.Segment>> list =
-            new ArrayList<List<IdentifierNode.Segment>>();
-
-        public void memberComplete() {
-            super.memberComplete();
-            list.add(
-                new ArrayList<IdentifierNode.Segment>(segmentList));
-            segmentList.clear();
-        }
-    }
 
     /**
      * Implementation of Builder that resolves segment lists to members.
@@ -199,20 +130,19 @@ public class IdentifierParser extends org.olap4j.impl.IdentifierParser {
      * Implementation of Builder that builds a tuple list.
      */
     public static class TupleListBuilder extends TupleBuilder {
-        public final List<Member[]> tupleList = new ArrayList<Member[]>();
+        public final TupleList tupleList;
 
         public TupleListBuilder(
             SchemaReader schemaReader, Cube cube, List<Hierarchy> hierarchyList)
         {
             super(schemaReader, cube, hierarchyList);
+            tupleList = new ArrayTupleList(hierarchyList.size());
         }
 
         public void tupleComplete() {
             super.tupleComplete();
-            final Member[] members =
-                memberList.toArray(new Member[memberList.size()]);
-            if (!FunUtil.tupleContainsNullMember(members)) {
-                tupleList.add(members);
+            if (!FunUtil.tupleContainsNullMember(memberList)) {
+                tupleList.add(memberList);
             }
             this.memberList.clear();
         }

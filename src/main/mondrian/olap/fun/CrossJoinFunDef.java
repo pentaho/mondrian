@@ -4,19 +4,18 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2003-2010 Julian Hyde and others
+// Copyright (C) 2003-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
-import mondrian.calc.impl.AbstractTupleIterCalc;
+import mondrian.calc.impl.*;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.util.UnsupportedList;
+import mondrian.util.*;
 import mondrian.rolap.*;
 
 import java.util.*;
@@ -136,85 +135,7 @@ public class CrossJoinFunDef extends FunDefBase {
         checkIterListResultStyles(calc1);
         checkIterListResultStyles(calc2);
 
-        if (isMemberType(calc1)) {
-            // Member
-            if (isMemberType(calc2)) {
-                // Member
-                if (calc1.getResultStyle() == ResultStyle.ITERABLE) {
-                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new IterMemberIterMemberIterCalc(call, calcs);
-                    } else {
-                        return new IterMemberListMemberIterCalc(call, calcs);
-                    }
-                } else {
-                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new ListMemberIterMemberIterCalc(call, calcs);
-                    } else {
-                        return new ListMemberListMemberIterCalc(call, calcs);
-                    }
-                }
-            } else {
-                // Member[]
-                if (calc1.getResultStyle() == ResultStyle.ITERABLE) {
-                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new IterMemberIterMemberArrayIterCalc(
-                            call, calcs);
-                    } else {
-                        return new IterMemberListMemberArrayIterCalc(
-                            call, calcs);
-                    }
-                } else {
-                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new ListMemberIterMemberArrayIterCalc(
-                            call, calcs);
-                    } else {
-                        return new ListMemberListMemberArrayIterCalc(
-                            call, calcs);
-                    }
-                }
-            }
-        } else {
-            // Member[]
-            if (isMemberType(calc2)) {
-                // Member
-                if (calc1.getResultStyle() == ResultStyle.ITERABLE) {
-                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new IterMemberArrayIterMemberIterCalc(
-                            call, calcs);
-                    } else {
-                        return new IterMemberArrayListMemberIterCalc(
-                            call, calcs);
-                    }
-                } else {
-                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new ListMemberArrayIterMemberIterCalc(
-                            call, calcs);
-                    } else {
-                        return new ListMemberArrayListMemberIterCalc(
-                            call, calcs);
-                    }
-                }
-            } else {
-                // Member[]
-                if (calc1.getResultStyle() == ResultStyle.ITERABLE) {
-                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new IterMemberArrayIterMemberArrayIterCalc(
-                            call, calcs);
-                    } else {
-                        return new IterMemberArrayListMemberArrayIterCalc(
-                            call, calcs);
-                    }
-                } else {
-                    if (calc2.getResultStyle() == ResultStyle.ITERABLE) {
-                        return new ListMemberArrayIterMemberArrayIterCalc(
-                            call, calcs);
-                    } else {
-                        return new ListMemberArrayListMemberArrayIterCalc(
-                            call, calcs);
-                    }
-                }
-            }
-        }
+        return new CrossJoinIterCalc(call, calcs);
     }
 
     private Calc toIter(ExpCompiler compiler, final Exp exp) {
@@ -228,16 +149,9 @@ public class CrossJoinFunDef extends FunDefBase {
                 exp,
                 null,
                 ResultStyle.ITERABLE_LIST_MUTABLELIST);
-        } else if (type instanceof TupleType) {
-            // this always returns an IterCalc
-            return new SetFunDef.ExprTupleIterCalc(
-                new DummyExp(new SetType(type)),
-                new Exp[] {exp},
-                compiler,
-                ResultStyle.ITERABLE_LIST_MUTABLELIST);
         } else {
             // this always returns an IterCalc
-            return new SetFunDef.ExprMemberIterCalc(
+            return new SetFunDef.ExprIterCalc(
                 new DummyExp(new SetType(type)),
                 new Exp[] {exp},
                 compiler,
@@ -245,14 +159,13 @@ public class CrossJoinFunDef extends FunDefBase {
         }
     }
 
-    private abstract class BaseTupleIterCalc
-        extends AbstractTupleIterCalc
+    class CrossJoinIterCalc extends AbstractIterCalc
     {
-        protected BaseTupleIterCalc(ResolvedFunCall call, Calc[] calcs) {
+        CrossJoinIterCalc(ResolvedFunCall call, Calc[] calcs) {
             super(call, calcs);
         }
 
-        public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
+        public TupleIterable evaluateIterable(Evaluator evaluator) {
             ResolvedFunCall call = (ResolvedFunCall) exp;
             // Use a native evaluator, if more efficient.
             // TODO: Figure this out at compile time.
@@ -261,40 +174,30 @@ public class CrossJoinFunDef extends FunDefBase {
                 schemaReader.getNativeSetEvaluator(
                     call.getFunDef(), call.getArgs(), evaluator, this);
             if (nativeEvaluator != null) {
-                return (Iterable<Member[]>)
-                    nativeEvaluator.execute(
-                            ResultStyle.ITERABLE);
+                return (TupleIterable)
+                    nativeEvaluator.execute(ResultStyle.ITERABLE);
             }
 
             Calc[] calcs = getCalcs();
-            Calc calc1 = calcs[0];
-            Calc calc2 = calcs[1];
+            IterCalc calc1 = (IterCalc) calcs[0];
+            IterCalc calc2 = (IterCalc) calcs[1];
 
-            Evaluator oldEval = null;
-            assert (oldEval = evaluator.push()) != null;
-
-            Object o1 = calc1.evaluate(evaluator);
-            assert oldEval.equals(evaluator) : "calc1 changed context";
-
-            if (o1 instanceof List) {
-                List l1 = (List) o1;
-                //l1 = checkList(evaluator, l1);
+            TupleIterable o1 = calc1.evaluateIterable(evaluator);
+            if (o1 instanceof TupleList) {
+                TupleList l1 = (TupleList) o1;
                 l1 = nonEmptyOptimizeList(evaluator, l1, call);
                 if (l1.isEmpty()) {
-                    return Collections.emptyList();
+                    return TupleCollections.emptyList(getType().getArity());
                 }
                 o1 = l1;
             }
 
-            Object o2 = calc2.evaluate(evaluator);
-            assert oldEval.equals(evaluator) : "calc2 changed context";
-
-            if (o2 instanceof List) {
-                List l2 = (List) o2;
-                //l2 = checkList(evaluator, l2);
+            TupleIterable o2 = calc2.evaluateIterable(evaluator);
+            if (o2 instanceof TupleList) {
+                TupleList l2 = (TupleList) o2;
                 l2 = nonEmptyOptimizeList(evaluator, l2, call);
                 if (l2.isEmpty()) {
-                    return Collections.emptyList();
+                    return TupleCollections.emptyList(getType().getArity());
                 }
                 o2 = l2;
             }
@@ -302,298 +205,65 @@ public class CrossJoinFunDef extends FunDefBase {
             return makeIterable(o1, o2);
         }
 
-        /**
-         * Derived classes implement and create Iterable&lt;Member[]&gt;
-         * based upon the types of the parameters:
-         * List&lt;Member&gt;,
-         * List&lt;Member[]&gt;,
-         * Iterable&lt;Member&gt;, or
-         * Iterable&lt;Member[]&gt;.
-         *
-         * @param o1 List or Iterable of Member or Member[]
-         * @param o2 List or Iterable of Member or Member[]
-         * @return Iterable&lt;Member[]&gt; over contents of o1 and o2
-         */
-        protected abstract Iterable<Member[]> makeIterable(
-            Object o1, Object o2);
-
-        /**
-         * Derived classes implement depending upon the types of parameter
-         * o1 and o2.
-         *
-         * @param o1 Member or Member[]
-         * @param o2 Member or Member[]
-         * @return combining o1 and o2 into Member[]
-         */
-        protected abstract Member[] makeNext(Object o1, Object o2);
-
-        protected Iterable<Member[]> makeIterableIterable(
-            final Iterable it1,
-            final Iterable it2)
+        protected TupleIterable makeIterable(
+            final TupleIterable it1,
+            final TupleIterable it2)
         {
             // There is no knowledge about how large either it1 ore it2
             // are or how many null members they might have, so all
             // one can do is iterate across them:
             // iterate across it1 and for each member iterate across it2
 
-            return new Iterable<Member[]>() {
-                public Iterator<Member[]> iterator() {
-                    return new Iterator<Member[]>() {
-                        Iterator i1 = it1.iterator();
-                        Object o1 = null;
-                        Iterator i2 = it2.iterator();
-                        Object o2 = null;
-                        public boolean hasNext() {
-                            if (o2 != null) {
+            return new AbstractTupleIterable(it1.getArity() + it2.getArity()) {
+                public TupleCursor tupleCursor() {
+                    return new AbstractTupleCursor(getArity()) {
+                        final TupleCursor i1 = it1.tupleCursor();
+                        final int arity1 = i1.getArity();
+                        TupleCursor i2 =
+                            TupleCollections.emptyList(1).tupleCursor();
+                        final Member[] members = new Member[arity];
+
+                        public boolean forward() {
+                            if (i2.forward()) {
                                 return true;
                             }
-                            if (! hasNextO1()) {
-                                return false;
-                            }
-                            if (! hasNextO2()) {
-                                 o1 = null;
-                                // got to end of i2, get next m1
-                                if (! hasNextO1()) {
-                                    return false;
-                                }
-                                // reset i2
-                                i2 = it2.iterator();
-                                if (! hasNextO2()) {
-                                    return false;
+                            while (i1.forward()) {
+                                i2 = it2.tupleCursor();
+                                if (i2.forward()) {
+                                    return true;
                                 }
                             }
-                            return true;
-                        }
-                        public Member[] next() {
-                            try {
-                                return makeNext(o1, o2);
-                            } finally {
-                                o2 = null;
-                            }
-                        }
-                        public void remove() {
-                            throw new UnsupportedOperationException("remove");
+                            return false;
                         }
 
-                        private boolean hasNextO1() {
-                            while (o1 == null) {
-                                if (! i1.hasNext()) {
-                                    return false;
-                                }
-                                o1 = i1.next();
-                            }
-                            return true;
-                        }
-                        private boolean hasNextO2() {
-                            o2 = null;
-                            while (o2 == null) {
-                                if (! i2.hasNext()) {
-                                    return false;
-                                }
-                                o2 = i2.next();
-                            }
-                            return true;
-                        }
-                    };
-                }
-            };
-        }
-
-        protected Iterable<Member[]> makeIterableList(
-            final Iterable it1,
-            final List l2)
-        {
-            return new Iterable<Member[]>() {
-                public Iterator<Member[]> iterator() {
-                    return new Iterator<Member[]>() {
-                        Iterator i1 = it1.iterator();
-                        Object o1 = null;
-                        int index2 = 0;
-                        Object o2 = null;
-                        public boolean hasNext() {
-                            if (o2 != null) {
-                                return true;
-                            }
-                            if (! hasNextO1()) {
-                                return false;
-                            }
-                            if (! hasNextO2()) {
-                                 o1 = null;
-                                // got to end of l2, get next m1
-                                if (! hasNextO1()) {
-                                    return false;
-                                }
-                                // reset l2
-                                index2 = 0;
-                                if (! hasNextO2()) {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        }
-                        public Member[] next() {
-                            try {
-                                return makeNext(o1, o2);
-                            } finally {
-                                o2 = null;
-                            }
-                        }
-                        public void remove() {
-                            throw new UnsupportedOperationException("remove");
+                        public List<Member> current() {
+                            i1.currentToArray(members, 0);
+                            i2.currentToArray(members, arity1);
+                            return Util.flatList(members);
                         }
 
-                        private boolean hasNextO1() {
-                            while (o1 == null) {
-                                if (! i1.hasNext()) {
-                                    return false;
-                                }
-                                o1 = i1.next();
+                        @Override
+                        public Member member(int column) {
+                            if (column < arity1) {
+                                return i1.member(column);
+                            } else {
+                                return i2.member(column - arity1);
                             }
-                            return true;
-                        }
-                        private boolean hasNextO2() {
-                            o2 = null;
-                            while (o2 == null) {
-                                if (index2 == l2.size()) {
-                                    return false;
-                                }
-                                o2 = l2.get(index2++);
-                            }
-                            return true;
-                        }
-                    };
-                }
-            };
-        }
-
-        protected Iterable<Member[]> makeListIterable(
-            final List l1,
-            final Iterable it2)
-        {
-            return new Iterable<Member[]>() {
-                public Iterator<Member[]> iterator() {
-                    return new Iterator<Member[]>() {
-                        int index1 = 0;
-                        Object o1 = null;
-                        Iterator i2 = it2.iterator();
-                        Object o2 = null;
-                        public boolean hasNext() {
-                            if (o2 != null) {
-                                return true;
-                            }
-                            if (! hasNextO1()) {
-                                return false;
-                            }
-                            if (! hasNextO2()) {
-                                 o1 = null;
-                                // got to end of i2, get next o1
-                                if (! hasNextO1()) {
-                                    return false;
-                                }
-                                // reset i2
-                                i2 = it2.iterator();
-                                if (! hasNextO2()) {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        }
-                        public Member[] next() {
-                            try {
-                                return makeNext(o1, o2);
-                            } finally {
-                                o2 = null;
-                            }
-                        }
-                        public void remove() {
-                            throw new UnsupportedOperationException("remove");
                         }
 
-                        private boolean hasNextO1() {
-                            while (o1 == null) {
-                                if (index1 == l1.size()) {
-                                    return false;
-                                }
-                                o1 = l1.get(index1++);
-                            }
-                            return true;
-                        }
-                        private boolean hasNextO2() {
-                            o2 = null;
-                            while (o2 == null) {
-                                if (! i2.hasNext()) {
-                                    return false;
-                                }
-                                o2 = i2.next();
-                            }
-                            return true;
-                        }
-                    };
-                }
-            };
-        }
-
-        protected Iterable<Member[]> makeListList(
-            final List l1,
-            final List l2)
-        {
-            return new Iterable<Member[]>() {
-                public Iterator<Member[]> iterator() {
-                    return new Iterator<Member[]>() {
-                        int index1 = 0;
-                        Object o1 = null;
-                        int index2 = 0;
-                        Object o2 = null;
-                        public boolean hasNext() {
-                            if (o2 != null) {
-                                return true;
-                            }
-                            if (! hasNextO1()) {
-                                return false;
-                            }
-                            if (! hasNextO2()) {
-                                 o1 = null;
-                                // got to end of i2, get next o1
-                                if (! hasNextO1()) {
-                                    return false;
-                                }
-                                // reset i2
-                                index2 = 0;
-                                if (! hasNextO2()) {
-                                    return false;
-                                }
-                            }
-                            return true;
-                        }
-                        public Member[] next() {
-                            try {
-                                return makeNext(o1, o2);
-                            } finally {
-                                o2 = null;
-                            }
-                        }
-                        public void remove() {
-                            throw new UnsupportedOperationException("remove");
+                        @Override
+                        public void setContext(Evaluator evaluator) {
+                            i1.setContext(evaluator);
+                            i2.setContext(evaluator);
                         }
 
-                        private boolean hasNextO1() {
-                            while (o1 == null) {
-                                if (index1 == l1.size()) {
-                                    return false;
-                                }
-                                o1 = l1.get(index1++);
-                            }
-                            return true;
-                        }
-                        private boolean hasNextO2() {
-                            o2 = null;
-                            while (o2 == null) {
-                                if (index2 == l2.size()) {
-                                    return false;
-                                }
-                                o2 = l2.get(index2++);
-                            }
-                            return true;
+                        @Override
+                        public void currentToArray(
+                            Member[] members,
+                            int offset)
+                        {
+                            i1.currentToArray(members, offset);
+                            i2.currentToArray(members, offset + arity1);
                         }
                     };
                 }
@@ -601,483 +271,8 @@ public class CrossJoinFunDef extends FunDefBase {
         }
     }
 
-    ///////////////////////////////////////////////////////////////////////////
-
-    // Member Member
-    abstract class BaseMemberMemberIterCalc
-            extends BaseTupleIterCalc
-    {
-        BaseMemberMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-        protected Member[] makeNext(Object o1, Object o2) {
-            return new Member[] {(Member) o1, (Member) o2};
-        }
-    }
-
-    // Member Member[]
-    abstract class BaseMemberMemberArrayIterCalc
-        extends BaseTupleIterCalc
-    {
-        BaseMemberMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-        protected Member[] makeNext(Object o1, Object o2) {
-            Member m1 = (Member) o1;
-            Member[] ma2 = (Member[]) o2;
-            Member[] ma = new Member[ma2.length + 1];
-            ma[0] = m1;
-            System.arraycopy(ma2, 0, ma, 1, ma2.length);
-            return ma;
-        }
-    }
-
-    // Member[] Member
-    abstract class BaseMemberArrayMemberIterCalc
-        extends BaseTupleIterCalc
-    {
-        BaseMemberArrayMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-        protected Member[] makeNext(Object o1, Object o2) {
-            Member[] ma1 = (Member[]) o1;
-            Member m2 = (Member) o2;
-            Member[] ma = new Member[ma1.length + 1];
-            System.arraycopy(ma1, 0, ma, 0, ma1.length);
-            ma[ma1.length] = m2;
-            return ma;
-        }
-    }
-
-    // Member[] Member[]
-    abstract class BaseMemberArrayMemberArrayIterCalc
-        extends BaseTupleIterCalc
-    {
-        BaseMemberArrayMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-        protected Member[] makeNext(Object o1, Object o2) {
-            Member[] ma1 = (Member[]) o1;
-            Member[] ma2 = (Member[]) o2;
-            Member[] ma = new Member[ma1.length + ma2.length];
-            System.arraycopy(ma1, 0, ma, 0, ma1.length);
-            System.arraycopy(ma2, 0, ma, ma1.length, ma2.length);
-            return ma;
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-
-    // ITERABLE Member ITERABLE Member
-    class IterMemberIterMemberIterCalc
-        extends BaseMemberMemberIterCalc
-    {
-        IterMemberIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<Member> it1 = Util.castToIterable(o1);
-            Iterable<Member> it2 = Util.castToIterable(o2);
-            return makeIterableIterable(it1, it2);
-        }
-    }
-
-    // ITERABLE Member LIST Member
-    class IterMemberListMemberIterCalc
-        extends BaseMemberMemberIterCalc
-    {
-        IterMemberListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<Member> it1 = Util.castToIterable(o1);
-            List<Member> l2 = (List<Member>) o2;
-
-            if (l2 instanceof RandomAccess) {
-                // direct access faster
-                return makeIterableList(it1, l2);
-            } else {
-                // iteration faster
-                return makeIterableIterable(it1, l2);
-            }
-        }
-    }
-
-    // LIST Member ITERABLE Member
-    class ListMemberIterMemberIterCalc
-        extends BaseMemberMemberIterCalc
-    {
-        ListMemberIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            List<Member> l1 = (List<Member>) o1;
-            Iterable<Member> it2 = (Iterable<Member>) o2;
-
-            if (l1 instanceof RandomAccess) {
-                // direct access faster
-                return makeListIterable(l1, it2);
-            } else {
-                // iteration faster
-                return makeIterableIterable(l1, it2);
-            }
-        }
-    }
-
-    // LIST Member LIST Member
-    class ListMemberListMemberIterCalc
-        extends BaseMemberMemberIterCalc
-    {
-        ListMemberListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            List<Member> l1 = (List<Member>) o1;
-            List<Member> l2 = (List<Member>) o2;
-
-            if (l1 instanceof RandomAccess) {
-                // l1 direct access faster
-                if (l2 instanceof RandomAccess) {
-                    // l2 direct access faster
-                    return makeListList(l1, l2);
-                } else {
-                    // l2 iteration faster
-                    return makeListIterable(l1, l2);
-                }
-            } else {
-                // l1 iteration faster
-                if (l2 instanceof RandomAccess) {
-                    // l2 direct access faster
-                    return makeIterableList(l1, l2);
-                } else {
-                    // l2 iteration faster
-                    return makeIterableIterable(l1, l2);
-                }
-            }
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-
-    // ITERABLE Member ITERABLE Member[]
-    class IterMemberIterMemberArrayIterCalc
-        extends BaseMemberMemberArrayIterCalc
-    {
-        IterMemberIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<Member> it1 = Util.castToIterable(o1);
-            Iterable<List<Member>> it2 = Util.castToIterable(o2);
-            return makeIterableIterable(it1, it2);
-        }
-    }
-
-    // ITERABLE Member LIST Member[]
-    class IterMemberListMemberArrayIterCalc
-        extends BaseMemberMemberArrayIterCalc
-    {
-        IterMemberListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<Member> it1 = Util.castToIterable(o1);
-            List<List<Member>> l2 = (List<List<Member>>) o2;
-
-            if (l2 instanceof RandomAccess) {
-                // direct access faster
-                return makeIterableList(it1, l2);
-            } else {
-                // iteration faster
-                return makeIterableIterable(it1, l2);
-            }
-        }
-    }
-
-    // LIST Member ITERABLE Member[]
-    class ListMemberIterMemberArrayIterCalc
-        extends BaseMemberMemberArrayIterCalc
-    {
-        ListMemberIterMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            List<Member> l1 = (List<Member>) o1;
-            Iterable<List<Member>> it2 = (Iterable<List<Member>>) o2;
-
-            if (l1 instanceof RandomAccess) {
-                // direct access faster
-                return makeListIterable(l1, it2);
-            } else {
-                // iteration faster
-                return makeIterableIterable(l1, it2);
-            }
-        }
-    }
-
-    // LIST Member LIST Member[]
-    class ListMemberListMemberArrayIterCalc
-        extends BaseMemberMemberArrayIterCalc
-    {
-        ListMemberListMemberArrayIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            List<Member> l1 = (List<Member>) o1;
-            List<List<Member>> l2 = (List<List<Member>>) o2;
-
-            if (l1 instanceof RandomAccess) {
-                // l1 direct access faster
-                if (l2 instanceof RandomAccess) {
-                    // l2 direct access faster
-                    return makeListList(l1, l2);
-                } else {
-                    // l2 iteration faster
-                    return makeListIterable(l1, l2);
-                }
-            } else {
-                // l1 iteration faster
-                if (l2 instanceof RandomAccess) {
-                    // l2 direct access faster
-                    return makeIterableList(l1, l2);
-                } else {
-                    // l2 iteration faster
-                    return makeIterableIterable(l1, l2);
-                }
-            }
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-
-    // ITERABLE Member[] ITERABLE Member
-    class IterMemberArrayIterMemberIterCalc
-        extends BaseMemberArrayMemberIterCalc
-    {
-        IterMemberArrayIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<List<Member>> it1 = Util.castToIterable(o1);
-            Iterable<Member> it2 = Util.castToIterable(o2);
-            return makeIterableIterable(it1, it2);
-        }
-    }
-
-    // ITERABLE Member[] LIST Member
-    class IterMemberArrayListMemberIterCalc
-        extends BaseMemberArrayMemberIterCalc
-    {
-        IterMemberArrayListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<List<Member>> it1 = (Iterable<List<Member>>) o1;
-            List<Member> l2 = (List<Member>) o2;
-
-            if (l2 instanceof RandomAccess) {
-                // direct access faster
-                return makeIterableList(it1, l2);
-            } else {
-                // iteration faster
-                return makeIterableIterable(it1, l2);
-            }
-        }
-    }
-
-    // LIST Member[] ITERABLE Member
-    class ListMemberArrayIterMemberIterCalc
-        extends BaseMemberArrayMemberIterCalc
-    {
-        ListMemberArrayIterMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            List<List<Member>> l1 = (List<List<Member>>) o1;
-            Iterable<Member> it2 = Util.castToIterable(o2);
-
-            if (l1 instanceof RandomAccess) {
-                // direct access faster
-                return makeListIterable(l1, it2);
-            } else {
-                // iteration faster
-                return makeIterableIterable(l1, it2);
-            }
-        }
-    }
-
-    // LIST Member[] LIST Member
-    class ListMemberArrayListMemberIterCalc
-        extends BaseMemberArrayMemberIterCalc
-    {
-        ListMemberArrayListMemberIterCalc(ResolvedFunCall call, Calc[] calcs) {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            List<List<Member>> l1 = (List<List<Member>>) o1;
-            List<Member> l2 = (List<Member>) o2;
-
-            if (l1 instanceof RandomAccess) {
-                // l1 direct access faster
-                if (l2 instanceof RandomAccess) {
-                    // l2 direct access faster
-                    return makeListList(l1, l2);
-                } else {
-                    // l2 iteration faster
-                    return makeListIterable(l1, l2);
-                }
-            } else {
-                // l1 iteration faster
-                if (l2 instanceof RandomAccess) {
-                    // l2 direct access faster
-                    return makeIterableList(l1, l2);
-                } else {
-                    // l2 iteration faster
-                    return makeIterableIterable(l1, l2);
-                }
-            }
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-
-    // ITERABLE Member[] ITERABLE Member[]
-    class IterMemberArrayIterMemberArrayIterCalc
-        extends BaseMemberArrayMemberArrayIterCalc
-    {
-        IterMemberArrayIterMemberArrayIterCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<List<Member>> it1 = (Iterable<List<Member>>) o1;
-            Iterable<List<Member>> it2 = (Iterable<List<Member>>) o2;
-            return makeIterableIterable(it1, it2);
-        }
-    }
-
-    // ITERABLE Member[] LIST Member[]
-    class IterMemberArrayListMemberArrayIterCalc
-        extends BaseMemberArrayMemberArrayIterCalc
-    {
-        IterMemberArrayListMemberArrayIterCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            Iterable<List<Member>> it1 = (Iterable<List<Member>>) o1;
-            List<List<Member>> l2 = (List<List<Member>>) o2;
-
-            if (l2 instanceof RandomAccess) {
-                // direct access faster
-                return makeIterableList(it1, l2);
-            } else {
-                // iteration faster
-                return makeIterableIterable(it1, l2);
-            }
-        }
-    }
-
-    // LIST Member[] ITERABLE Member[]
-    class ListMemberArrayIterMemberArrayIterCalc
-        extends BaseMemberArrayMemberArrayIterCalc
-    {
-        ListMemberArrayIterMemberArrayIterCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            List<List<Member>> l1 = (List<List<Member>>) o1;
-            Iterable<List<Member>> it2 = (Iterable<List<Member>>) o2;
-
-            if (l1 instanceof RandomAccess) {
-                // direct access faster
-                return makeListIterable(l1, it2);
-            } else {
-                // iteration faster
-                return makeIterableIterable(l1, it2);
-            }
-        }
-    }
-
-    // LIST Member[] LIST Member[]
-    class ListMemberArrayListMemberArrayIterCalc
-        extends BaseMemberArrayMemberArrayIterCalc
-    {
-        ListMemberArrayListMemberArrayIterCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
-            super(call, calcs);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected Iterable<Member[]> makeIterable(Object o1, Object o2) {
-            List<List<Member>> l1 = (List<List<Member>>) o1;
-            List<List<Member>> l2 = (List<List<Member>>) o2;
-
-            if (l1 instanceof RandomAccess) {
-                // l1 direct access faster
-                if (l2 instanceof RandomAccess) {
-                    // l2 direct access faster
-                    return makeListList(l1, l2);
-                } else {
-                    // l2 iteration faster
-                    return makeListIterable(l1, l2);
-                }
-            } else {
-                // l1 iteration faster
-                if (l2 instanceof RandomAccess) {
-                    // l2 direct access faster
-                    return makeIterableList(l1, l2);
-                } else {
-                    // l2 iteration faster
-                    return makeIterableIterable(l1, l2);
-                }
-            }
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
     // Immutable List
-    ///////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////
 
     protected ListCalc compileCallImmutableList(
@@ -1098,28 +293,7 @@ public class CrossJoinFunDef extends FunDefBase {
         checkListResultStyles(listCalc1);
         checkListResultStyles(listCalc2);
 
-        if (isMemberType(listCalc1)) {
-            // Member
-            if (isMemberType(listCalc2)) {
-                // Member
-                return new ImmutableListMemberListMemberListCalc(call, calcs);
-            } else {
-                // Member[]
-                return new ImmutableListMemberListMemberArrayListCalc(
-                    call, calcs);
-            }
-        } else {
-            // Member[]
-            if (isMemberType(listCalc2)) {
-                // Member
-                return new ImmutableListMemberArrayListMemberListCalc(
-                    call, calcs);
-            } else {
-                // Member[]
-                return new ImmutableListMemberArrayListMemberArrayListCalc(
-                    call, calcs);
-            }
-        }
+        return new ImmutableListCalc(call, calcs);
     }
 
     /**
@@ -1143,7 +317,7 @@ public class CrossJoinFunDef extends FunDefBase {
             }
             return (ListCalc) calc;
         } else {
-            return new SetFunDef.MemberSetListCalc(
+            return new SetFunDef.SetListCalc(
                 new DummyExp(new SetType(type)),
                 new Exp[] {exp},
                 compiler,
@@ -1160,7 +334,7 @@ public class CrossJoinFunDef extends FunDefBase {
             super(call, calcs, mutable);
         }
 
-        public List<Member[]> evaluateList(Evaluator evaluator) {
+        public TupleList evaluateList(Evaluator evaluator) {
             ResolvedFunCall call = (ResolvedFunCall) exp;
             // Use a native evaluator, if more efficient.
             // TODO: Figure this out at compile time.
@@ -1169,364 +343,69 @@ public class CrossJoinFunDef extends FunDefBase {
                 schemaReader.getNativeSetEvaluator(
                     call.getFunDef(), call.getArgs(), evaluator, this);
             if (nativeEvaluator != null) {
-                return (List) nativeEvaluator.execute(
-                            ResultStyle.LIST);
+                return (TupleList) nativeEvaluator.execute(ResultStyle.LIST);
             }
 
             Calc[] calcs = getCalcs();
             ListCalc listCalc1 = (ListCalc) calcs[0];
             ListCalc listCalc2 = (ListCalc) calcs[1];
 
-            Evaluator oldEval = null;
-            assert (oldEval = evaluator.push()) != null;
+            TupleList l1 = listCalc1.evaluateList(evaluator);
+            TupleList l2 = listCalc2.evaluateList(evaluator);
 
-            List l1 = listCalc1.evaluateList(evaluator);
-            assert oldEval.equals(evaluator) : "listCalc1 changed context";
-
-            List l2 = listCalc2.evaluateList(evaluator);
-            assert oldEval.equals(evaluator) : "listCalc2 changed context";
-
-            //l1 = checkList(evaluator, l1);
             l1 = nonEmptyOptimizeList(evaluator, l1, call);
             if (l1.isEmpty()) {
-                return Collections.emptyList();
+                return TupleCollections.emptyList(
+                    l1.getArity() + l2.getArity());
             }
-            //l2 = checkList(evaluator, l2);
             l2 = nonEmptyOptimizeList(evaluator, l2, call);
             if (l2.isEmpty()) {
-                return Collections.emptyList();
+                return TupleCollections.emptyList(
+                    l1.getArity() + l2.getArity());
             }
 
             return makeList(l1, l2);
         }
 
-        protected abstract List<Member[]> makeList(List l1, List l2);
+        protected abstract TupleList makeList(TupleList l1, TupleList l2);
     }
 
-    public abstract class BaseImmutableList
-        extends UnsupportedList<Member[]>
-    {
-        protected BaseImmutableList() {
-        }
-        public abstract int size();
-        public abstract Member[] get(int index);
-
-        public Object[] toArray() {
-            int size = size();
-            Object[] result = new Object[size];
-            for (int i = 0; i < size; i++) {
-                result[i] = get(i);
-            }
-            return result;
-        }
-
-        public <T> T[] toArray(T[] a) {
-            int size = size();
-            if (a.length < size) {
-                a = (T[]) java.lang.reflect.Array.newInstance(
-                    a.getClass().getComponentType(), size);
-            }
-            for (int i = 0; i < size; i++) {
-                a[i] = (T) get(i);
-            }
-            if (a.length > size) {
-                a[size] = null;
-            }
-            return a;
-        }
-
-        public List<Member[]> toArrayList() {
-            List<Member[]> l = new ArrayList<Member[]>(size());
-            Iterator<Member[]> i = iterator();
-            while (i.hasNext()) {
-                l.add(i.next());
-            }
-            return l;
-        }
-        public ListIterator<Member[]> listIterator() {
-            return new ListItr(0);
-        }
-        public ListIterator<Member[]> listIterator(int index) {
-            return new ListItr(index);
-        }
-        public Iterator<Member[]> iterator() {
-            return new Itr();
-        }
-    }
-
-    // LIST Member LIST Member
-    class ImmutableListMemberListMemberListCalc
+    class ImmutableListCalc
         extends BaseListCalc
     {
-        ImmutableListMemberListMemberListCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
+        ImmutableListCalc(
+            ResolvedFunCall call, Calc[] calcs)
         {
             super(call, calcs, false);
         }
 
-        protected List<Member[]> makeList(final List l1, final List l2) {
-            final int size = l1.size() * l2.size();
-            // This is the mythical "local class" declaration.
-            // Observer that in the subList method, there is another
-            // such class declaration. The outer one can not be an
-            // anonymous class because
-            // the inner one must reference, have a name for, the
-            // outer one. The inner one is needed because it includes
-            // the offset into the outer one as instance variables.
-            // The outer class has no explicit instance variables
-            // though it does have the implicit List finals, l1 and l2.
-            // One can call the inner class's subList method repeatedly
-            // and each new Inner object return adds an additional
-            // "fromIndex" to the "get" method calls.
-            //
-            // All of this works because the underlying lists are
-            // immutable.
-            //
-            class Outer extends BaseImmutableList {
-                Outer() {
-                }
-                public int size() {
-                    return size;
-                }
-                public Member[] get(int index) {
-                    int i = (index / l2.size());
-                    int j = (index % l2.size());
-                    Member m1 = (Member) l1.get(i);
-                    Member m2 = (Member) l2.get(j);
-                    return new Member[] { m1, m2 };
-                }
-                public List<Member[]> subList(int fromIndex, int toIndex) {
-                    class Inner extends Outer {
-                        int fromIndex;
-                        int toIndex;
-                        Inner(int fromIndex, int toIndex) {
-                            this.fromIndex = fromIndex;
-                            this.toIndex = toIndex;
-                        }
-                        public int size() {
-                            return (this.toIndex - this.fromIndex);
-                        }
-                        public Member[] get(int index) {
-                            return Outer.this.get(index + this.fromIndex);
-                        }
+        protected TupleList makeList(final TupleList l1, final TupleList l2) {
+            final int arity = l1.getArity() + l2.getArity();
+            return new DelegatingTupleList(
+                arity,
+                new AbstractList<List<Member>>() {
+                    final List<List<List<Member>>> lists =
+                        Arrays.<List<List<Member>>>asList(
+                            l1, l2);
+                    final Member[] members = new Member[arity];
 
-                        public List<Member[]> subList(
-                            int fromIndex,
-                            int toIndex)
-                        {
-                            return new Inner(
-                                this.fromIndex + fromIndex,
-                                this.fromIndex + toIndex);
-                        }
+                    final CartesianProductList cartesianProductList =
+                        new CartesianProductList<List<Member>>(
+                            lists);
+
+                    @Override
+                    public List<Member> get(int index) {
+                        cartesianProductList.getIntoArray(index, members);
+                        return Util.flatList(members);
                     }
-                    return new Inner(fromIndex, toIndex);
-                }
-            }
-            return new Outer();
+
+                    @Override
+                    public int size() {
+                        return cartesianProductList.size();
+                    }
+                });
         }
     }
-
-    // LIST Member LIST Member[]
-    class ImmutableListMemberListMemberArrayListCalc
-        extends BaseListCalc
-    {
-        ImmutableListMemberListMemberArrayListCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
-            super(call, calcs, false);
-        }
-
-        protected List<Member[]> makeList(final List l1, final List l2) {
-            final int len2 = ((Member[])l2.get(0)).length;
-            final int size = (l1.size() * l2.size());
-            class Outer extends BaseImmutableList {
-                Outer() {
-                }
-                public int size() {
-                    return size;
-                }
-                public Member[] get(int index) {
-                    int i = (index / l2.size());
-                    int j = (index % l2.size());
-                    Member[] ma = new Member[1 + len2];
-                    Member m1 = (Member) l1.get(i);
-                    Member[] ma2 = (Member[]) l2.get(j);
-                    ma[0] = m1;
-                    System.arraycopy(ma2, 0, ma, 1, len2);
-                    return ma;
-                }
-
-                public List<Member[]> subList(int fromIndex, int toIndex) {
-                    class Inner extends Outer {
-                        int fromIndex;
-                        int toIndex;
-
-                        Inner(int fromIndex, int toIndex) {
-                            this.fromIndex = fromIndex;
-                            this.toIndex = toIndex;
-                        }
-
-                        public int size() {
-                            return (this.toIndex - this.fromIndex);
-                        }
-
-                        public Member[] get(int index) {
-                            return Outer.this.get(index + this.fromIndex);
-                        }
-
-                        public List<Member[]> subList(
-                            int fromIndex,
-                            int toIndex)
-                        {
-                            return new Inner(
-                                this.fromIndex + fromIndex,
-                                this.fromIndex + toIndex);
-                        }
-                    }
-                    return new Inner(fromIndex, toIndex);
-                }
-            }
-            return new Outer();
-        }
-    }
-
-    // LIST Member[] LIST Member
-    class ImmutableListMemberArrayListMemberListCalc
-        extends BaseListCalc
-    {
-        ImmutableListMemberArrayListMemberListCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
-            super(call, calcs, false);
-        }
-
-        protected List<Member[]> makeList(final List l1, final List l2) {
-            final int len1 = ((Member[])l1.get(0)).length;
-            final int size = (l1.size() * l2.size());
-            class Outer extends BaseImmutableList {
-                Outer() {
-                }
-                public int size() {
-                    return size;
-                }
-                public Member[] get(int index) {
-                    int i = (index / l2.size());
-                    int j = (index % l2.size());
-                    Member[] ma = new Member[len1 + 1];
-                    Member[] ma1 = (Member[]) l1.get(i);
-                    Member m2 = (Member) l2.get(j);
-                    System.arraycopy(ma1, 0, ma, 0, len1);
-                    ma[len1] = m2;
-                    return ma;
-                }
-                public List<Member[]> subList(int fromIndex, int toIndex) {
-                    class Inner extends Outer {
-                        int fromIndex;
-                        int toIndex;
-
-                        Inner(int fromIndex, int toIndex) {
-                            this.fromIndex = fromIndex;
-                            this.toIndex = toIndex;
-                        }
-
-                        public int size() {
-                            return (this.toIndex - this.fromIndex);
-                        }
-
-                        public Member[] get(int index) {
-                            return Outer.this.get(index + this.fromIndex);
-                        }
-
-                        public List<Member[]> subList(
-                            int fromIndex,
-                            int toIndex)
-                        {
-                            return new Inner(
-                                this.fromIndex + fromIndex,
-                                this.fromIndex + toIndex);
-                        }
-                    }
-                    return new Inner(fromIndex, toIndex);
-                }
-            }
-            return new Outer();
-        }
-    }
-
-    // LIST Member[] LIST Member[]
-    class ImmutableListMemberArrayListMemberArrayListCalc
-        extends BaseListCalc
-    {
-        ImmutableListMemberArrayListMemberArrayListCalc(
-            ResolvedFunCall call,
-            Calc[] calcs)
-        {
-            super(call, calcs, false);
-        }
-
-        protected List<Member[]> makeList(final List l1, final List l2) {
-            final int len1 = ((Member[])l1.get(0)).length;
-            final int len2 = ((Member[])l2.get(0)).length;
-            final int size = (l1.size() * l2.size());
-
-            class Outer extends BaseImmutableList {
-                Outer() {
-                }
-                public int size() {
-                    return size;
-                }
-                public Member[] get(int index) {
-                    int i = (index / l2.size());
-                    int j = (index % l2.size());
-                    Member[] ma = new Member[len1 + len2];
-                    Member[] ma1 = (Member[]) l1.get(i);
-                    Member[] ma2 = (Member[]) l2.get(j);
-                    System.arraycopy(ma1, 0, ma, 0, len1);
-                    System.arraycopy(ma2, 0, ma, len1, len2);
-                    return ma;
-                }
-                public List<Member[]> subList(int fromIndex, int toIndex) {
-                    class Inner extends Outer {
-                        int fromIndex;
-                        int toIndex;
-
-                        Inner(int fromIndex, int toIndex) {
-                            this.fromIndex = fromIndex;
-                            this.toIndex = toIndex;
-                        }
-
-                        public int size() {
-                            return (this.toIndex - this.fromIndex);
-                        }
-
-                        public Member[] get(int index) {
-                            return Outer.this.get(index + this.fromIndex);
-                        }
-
-                        public List<Member[]> subList(
-                            int fromIndex,
-                            int toIndex)
-                        {
-                            return new Inner(
-                                this.fromIndex + fromIndex,
-                                this.fromIndex + toIndex);
-                        }
-                    }
-                    return new Inner(fromIndex, toIndex);
-                }
-            }
-            return new Outer();
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////
-    // Mutable List
-    ///////////////////////////////////////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////
 
     protected ListCalc compileCallMutableList(
         final ResolvedFunCall call,
@@ -1548,493 +427,34 @@ public class CrossJoinFunDef extends FunDefBase {
         checkListResultStyles(listCalc1);
         checkListResultStyles(listCalc2);
 
-        if (isMemberType(listCalc1)) {
-            // Member
-            if (isMemberType(listCalc2)) {
-                // Member
-                return new MutableListMemberListMemberListCalc(call, calcs);
-            } else {
-                // Member[]
-                return new MutableListMemberListMemberArrayListCalc(
-                    call, calcs);
-            }
-        } else {
-            // Member[]
-            if (isMemberType(listCalc2)) {
-                // Member
-                return new MutableListMemberArrayListMemberListCalc(
-                    call, calcs);
-            } else {
-                // Member[]
-                return new MutableListMemberArrayListMemberArrayListCalc(
-                    call, calcs);
-            }
-        }
+        return new MutableListCalc(call, calcs);
     }
 
-    /**
-     * A BaseMutableList can be sorted, its elements rearranged, but
-     * its size can not be changed (the add or remove methods are not
-     * supported).
-     */
-    public abstract class BaseMutableList
-        extends UnsupportedList<Member[]>
+    class MutableListCalc extends BaseListCalc
     {
-        protected final List<Member> members;
-        protected BaseMutableList(List<Member> members) {
-            this.members = members;
-        }
-        public abstract int size();
-        public abstract Member[] get(int index);
-        public abstract Member[] set(int index, Member[] element);
-        public abstract Member[] remove(int index);
-        public abstract List<Member[]> subList(int fromIndex, int toIndex);
-
-        public Object[] toArray() {
-            int size = size();
-            Object[] result = new Object[size];
-            for (int i = 0; i < size; i++) {
-                result[i] = get(i);
-            }
-            return result;
-        }
-        public List<Member[]> toArrayList() {
-            List<Member[]> l = new ArrayList<Member[]>(size());
-            Iterator<Member[]> i = iterator();
-            while (i.hasNext()) {
-                l.add(i.next());
-            }
-            return l;
-        }
-        public ListIterator<Member[]> listIterator() {
-            return new LocalListItr(0);
-        }
-        public ListIterator<Member[]> listIterator(int index) {
-            return new LocalListItr(index);
-        }
-        public Iterator<Member[]> iterator() {
-            return new LocalItr();
-        }
-        private class LocalItr extends Itr {
-            public LocalItr() {
-                super();
-            }
-            public void remove() {
-                if (lastRet == -1) {
-                    throw new IllegalStateException();
-                }
-                //checkForComodification();
-
-                try {
-                    CrossJoinFunDef.BaseMutableList.this.remove(lastRet);
-                    if (lastRet < cursor) {
-                        cursor--;
-                    }
-                    lastRet = -1;
-                    //expectedModCount = modCount;
-                } catch (IndexOutOfBoundsException e) {
-                    throw new ConcurrentModificationException();
-                }
-            }
-        }
-
-        private class LocalListItr extends ListItr {
-            public LocalListItr(int index) {
-                super(index);
-            }
-
-            public void set(Member[] o) {
-                if (lastRet == -1) {
-                    throw new IllegalStateException();
-                }
-                try {
-                    CrossJoinFunDef.BaseMutableList.this.set(lastRet, o);
-                } catch (IndexOutOfBoundsException e) {
-                    throw new ConcurrentModificationException();
-                }
-            }
-        }
-    }
-
-    //LIST Member LIST Member
-    class MutableListMemberListMemberListCalc extends BaseListCalc {
-        MutableListMemberListMemberListCalc(
-            final ResolvedFunCall call, final Calc[] calcs)
+        MutableListCalc(ResolvedFunCall call, Calc[] calcs)
         {
             super(call, calcs, true);
         }
 
         @SuppressWarnings({"unchecked"})
-        protected List<Member[]> makeList(final List _l1, final List _l2) {
-            final List<Member> l1 = (List<Member>) _l1;
-            final List<Member> l2 = (List<Member>) _l2;
-            if (l1.isEmpty() || l2.isEmpty()) {
-                return Collections.emptyList();
-            }
-
-            final Iterator<Member> it1 = l1.iterator();
-            final Member first = it1.next();
-            if (first.getDimension().isHighCardinality()) {
-                return new AbstractSequentialList<Member []>() {
-                    public int size() {
-                        return l1.size() * l2.size();
-                    }
-                    public ListIterator<Member[]> listIterator(
-                        final int index)
-                    {
-                        return new ListIterator<Member []>() {
-                            private int idx = 0;
-                            private Member m1 = first;
-                            private Iterator<Member> it2 = l2.iterator();
-                            public boolean hasNext() {
-                                return it2.hasNext() || it1.hasNext();
-                            }
-                            public Member[] next() {
-                                if (!it2.hasNext()) {
-                                    it2 = l2.iterator();
-                                    m1 = it1.next();
-                                }
-                                idx++;
-                                return new Member[] {m1, it2.next()};
-                            }
-                            public int nextIndex() {
-                                return idx;
-                            }
-                            public void add(final Member[] t) {
-                                throw new UnsupportedOperationException();
-                            }
-                            public void set(final Member[] t) {
-                                throw new UnsupportedOperationException();
-                            }
-                            public boolean hasPrevious() {
-                                throw new UnsupportedOperationException();
-                            }
-                            public Member[] previous() {
-                                throw new UnsupportedOperationException();
-                            }
-                            public int previousIndex() {
-                                throw new UnsupportedOperationException();
-                            }
-                            public void remove() {
-                                throw new UnsupportedOperationException();
-                            }
-                        };
-                    }
-                };
-            }
-            final List<Member[]> members =
-                new ArrayList<Member[]>(l1.size() * l2.size());
-            for (final Member m1 : l1) {
-                for (final Member m2 : l2) {
-                    members.add(new Member[] {m1, m2});
+        protected TupleList makeList(final TupleList l1, final TupleList l2) {
+            final int arity = l1.getArity() + l2.getArity();
+            final List<Member> members =
+                new ArrayList<Member>(arity * l1.size() * l2.size());
+            for (List<Member> ma1 : l1) {
+                for (List<Member> ma2 : l2) {
+                    members.addAll(ma1);
+                    members.addAll(ma2);
                 }
             }
-            return members;
+            return new ListTupleList(arity, members);
         }
     }
 
-    // LIST Member LIST Member[]
-    class MutableListMemberListMemberArrayListCalc
-        extends BaseListCalc
-    {
-        MutableListMemberListMemberArrayListCalc(
-            ResolvedFunCall call, Calc[] calcs)
-        {
-            super(call, calcs, true);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected List<Member[]> makeList(final List _l1, final List _l2) {
-            final List<Member> l1 = (List<Member>) _l1;
-            final List<Member[]> l2 = (List<Member[]>) _l2;
-            int size1 = l1.size();
-            // len1 == 1
-            int size2 = l2.size();
-            int len2 = l2.get(0).length;
-            int totalLen = 1 + len2;
-            int arraySize = (totalLen * (size1 * size2));
-
-            List<Member> memberList = new ArrayList<Member>(arraySize);
-            for (int i = 0; i < size1; i++) {
-                Member m1 = l1.get(i);
-                for (int j = 0; j < size2; j++) {
-                    final Member[] ma2 = l2.get(j);
-                    memberList.add(m1);
-                    for (int k = 0; k < len2; k++) {
-                        final Member m2 = ma2[k];
-                        memberList.add(m2);
-                    }
-                }
-            }
-            return makeList(memberList, totalLen);
-        }
-
-        protected List<Member[]> makeList(
-            final List<Member> members,
-            final int totalLen)
-        {
-            // l1: a,b
-            // l2: {A,B,C},{D,E,F}
-            //
-            // externally looks like:
-            //  [] <- {a,A,B,C}
-            //  [] <- {a,D,E,F}
-            //  [] <- {b,A,B,C}
-            //  [] <- {b,D,E,F}
-            //
-            // but internally is:
-            // a,A,B,C,a,D,E,F,b,A,B,C,b,D,E,F
-            return new BaseMutableList(members) {
-                int size = members.size() / totalLen;
-
-                public int size() {
-                    return size;
-                }
-
-                public Member[] get(int index) {
-                    int base = totalLen * index;
-                    Member[] ma = new Member[totalLen];
-                    for (int i = 0; i < totalLen; i++) {
-                        ma[i] = members.get(base + i);
-                    }
-                    return ma;
-                }
-
-                public Member[] set(int index, Member[] element) {
-                    int base = totalLen * index;
-                    Member[] oldValue = new Member[totalLen];
-                    for (int i = 0; i < totalLen; i++) {
-                        oldValue[i] = members.set(base + i, element[i]);
-                    }
-                    return oldValue;
-                }
-
-                public Member[] remove(int index) {
-                    int base = totalLen * index;
-                    Member[] oldValue = new Member[totalLen];
-                    for (int i = 0; i < totalLen; i++) {
-                        oldValue[i] = members.remove(base);
-                    }
-                    size--;
-                    return oldValue;
-                }
-
-                public List<Member[]> subList(int fromIndex, int toIndex) {
-                    int from = totalLen * fromIndex;
-                    int to = totalLen * toIndex;
-                    List<Member> sublist = members.subList(from, to);
-                    return makeList(sublist, totalLen);
-                }
-            };
-        }
-    }
-
-    // LIST Member[] LIST Member
-    class MutableListMemberArrayListMemberListCalc
-        extends BaseListCalc
-    {
-        MutableListMemberArrayListMemberListCalc(
-            final ResolvedFunCall call,
-            final Calc[] calcs)
-        {
-            super(call, calcs, true);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected List<Member[]> makeList(final List _l1, final List _l2) {
-            final List<Member[]> l1 = (List<Member[]>) _l1;
-            final List<Member> l2 = (List<Member>) _l2;
-            int size1 = _l1.size();
-            int len1 = l1.get(0).length;
-            int size2 = l2.size();
-            // len2 == 1
-            int totalLen = 1 + len1;
-            int arraySize = (totalLen * (size1 * size2));
-
-            Member[] members = new Member[arraySize];
-            int x = 0;
-            for (int i = 0; i < size1; i++) {
-                Member[] ma1 = l1.get(i);
-                int ii = i * size2;
-                for (int j = 0; j < size2; j++) {
-                    for (int k = 0; k < len1; k++) {
-                        Member m1 = ma1[k];
-                        members[x++] = m1;
-                    }
-                    Member m2 = l2.get(j);
-                    members[x++] = m2;
-                }
-            }
-            assert x == arraySize;
-
-            // Use ArrayList, not Arrays.asList, because we want the remove()
-            // operation.
-            final List<Member> list =
-                new ArrayList<Member>(Arrays.asList(members));
-            return makeList(list, totalLen);
-        }
-
-        protected List<Member []> makeList(
-            final List<Member> members,
-            final int totalLen)
-        {
-            // l1: {A,B,C},{D,E,F}
-            // l2: a,b
-            //
-            // externally looks like:
-            //  [] <- {A,B,C,a}
-            //  [] <- {A,B,C,b}
-            //  [] <- {D,E,F,a}
-            //  [] <- {D,E,F,b}
-            //
-            // but internally is:
-            //  A,B,C,a,A,B,C,b,D,E,F,a,D,E,F,b
-            return new BaseMutableList(members) {
-                int size = members.size() / totalLen;
-
-                public int size() {
-                    return size;
-                }
-
-                public Member[] get(int index) {
-                    int base = totalLen * index;
-                    final List<Member> memberList =
-                        members.subList(base, totalLen + base);
-                    return memberList.toArray(new Member[totalLen]);
-                }
-
-                public Member[] set(int index, Member[] element) {
-                    int base = totalLen * index;
-                    Member[] oldValue = new Member[totalLen];
-                    for (int j = 0; j < totalLen; j++) {
-                        oldValue[j] = members.set(base + j, element[j]);
-                    }
-                    return oldValue;
-                }
-
-                public Member[] remove(int index) {
-                    int base = totalLen * index;
-                    Member[] oldValue = new Member[totalLen];
-                    for (int i = 0; i < totalLen; i++) {
-                        oldValue[i] = members.remove(base);
-                    }
-                    size--;
-                    return oldValue;
-                }
-
-                public List<Member[]> subList(int fromIndex, int toIndex) {
-                    int from = totalLen * fromIndex;
-                    int to = totalLen * toIndex;
-                    List<Member> sublist = members.subList(from, to);
-                    return makeList(sublist, totalLen);
-                }
-            };
-        }
-    }
-
-    // LIST Member[] LIST Member[]
-    class MutableListMemberArrayListMemberArrayListCalc
-        extends BaseListCalc
-    {
-        MutableListMemberArrayListMemberArrayListCalc(
-            ResolvedFunCall call, Calc[] calcs)
-        {
-            super(call, calcs, true);
-        }
-
-        @SuppressWarnings({"unchecked"})
-        protected List<Member[]> makeList(final List _l1, final List _l2) {
-            final List<Member[]> l1 = (List<Member[]>) _l1;
-            final List<Member[]> l2 = (List<Member[]>) _l2;
-            int size1 = l1.size();
-            int len1 = l1.get(0).length;
-            int size2 = l2.size();
-            int len2 = l2.get(0).length;
-            int totalLen = len1 + len2;
-            int arraySize = (totalLen * (size1 * size2));
-
-            final List<Member> members = new ArrayList<Member>(arraySize);
-            for (int i = 0; i < size1; i++) {
-                Member[] ma1 = l1.get(i);
-                for (int j = 0; j < size2; j++) {
-                    for (int k = 0; k < len1; k++) {
-                        Member m1 = ma1[k];
-                        members.add(m1);
-                    }
-                    Member[] ma2 = l2.get(j);
-                    for (int k = 0; k < len2; k++) {
-                        Member m2 = ma2[k];
-                        members.add(m2);
-                    }
-                }
-            }
-            return makeList(members, totalLen);
-        }
-
-        protected List<Member []> makeList(
-            final List<Member> members,
-            final int totalLen)
-        {
-            // l1: {A,B,C},{D,E,F}
-            // l2: {a,b},{c,d},{e,f}
-            //
-            // externally looks like:
-            //  [] <- {A,B,C,a,b}
-            //  [] <- {A,B,C,c,d}
-            //  [] <- {A,B,C,e,f}
-            //  [] <- {D,E,F,a,b}
-            //  [] <- {D,E,F,c,d}
-            //  [] <- {D,E,F,e,d}
-            //
-            // but internally is:
-            //  A,B,C,a,b,A,B,C,c,d,A,B,C,e,f,D,E,F,a,b,D,E,F,c,d,D,E,F,e,d
-            return new BaseMutableList(members) {
-                int size = members.size() / totalLen;
-                public int size() {
-                    return size;
-                }
-
-                public Member[] get(int index) {
-                    int base = totalLen * index;
-                    Member[] m = new Member[totalLen];
-                    for (int i = 0; i < totalLen; i++) {
-                        m[i] = members.get(base + i);
-                    }
-                    return m;
-                }
-
-                public Member[] set(int index, Member[] element) {
-                    int base = totalLen * index;
-                    Member[] oldValue = new Member[totalLen];
-                    for (int j = 0; j < totalLen; j++) {
-                        oldValue[j] = members.set(base + j, element[j]);
-                    }
-                    return oldValue;
-                }
-
-                public Member[] remove(int index) {
-                    int base = totalLen * index;
-                    Member[] oldValue = new Member[totalLen];
-                    for (int i = 0; i < totalLen; i++) {
-                        oldValue[i] = members.remove(base);
-                    }
-                    size--;
-                    return oldValue;
-                }
-
-                public List<Member[]> subList(int fromIndex, int toIndex) {
-                    int from = totalLen * fromIndex;
-                    int to = totalLen * toIndex;
-                    List<Member> sublist = members.subList(from, to);
-                    return makeList(sublist, totalLen);
-                }
-            };
-        }
-    }
-
-    protected List nonEmptyOptimizeList(
+    protected TupleList nonEmptyOptimizeList(
         Evaluator evaluator,
-        List list,
+        TupleList list,
         ResolvedFunCall call)
     {
         int opSize = MondrianProperties.instance().CrossJoinOptimizerSize.get();
@@ -2050,7 +470,7 @@ public class CrossJoinFunDef extends FunDefBase {
                 }
             }
         } catch (IndexOutOfBoundsException ioobe) {
-            return Collections.EMPTY_LIST;
+            return TupleCollections.emptyList(list.getArity());
         }
         int size = list.size();
 
@@ -2064,7 +484,7 @@ public class CrossJoinFunDef extends FunDefBase {
             size = list.size();
             // list may be empty after nonEmpty optimization
             if (size == 0) {
-                return Collections.EMPTY_LIST;
+                return TupleCollections.emptyList(list.getArity());
             }
             final int missCount2 = evaluator.getMissCount();
             final int puntMissCountListSize = 1000;
@@ -2076,86 +496,74 @@ public class CrossJoinFunDef extends FunDefBase {
                 // has been loaded.
                 // Return an empty list short circuits higher level
                 // evaluation poping one all the way to the top.
-                return Collections.EMPTY_LIST;
+                return TupleCollections.emptyList(list.getArity());
             }
         }
         return list;
     }
 
-    public static List<Member[]> crossJoin(
-        List list1,
-        List list2)
+    public static TupleList mutableCrossJoin(
+        TupleList list1,
+        TupleList list2)
     {
-        if (list1.isEmpty() || list2.isEmpty()) {
-            return Collections.emptyList();
+        return mutableCrossJoin(Arrays.asList(list1, list2));
+    }
+
+    public static TupleList mutableCrossJoin(
+        List<TupleList> lists)
+    {
+        long size = 1;
+        int arity = 0;
+        for (TupleList list : lists) {
+            size *= (long) list.size();
+            arity += list.getArity();
         }
+        if (size == 0L) {
+            return TupleCollections.emptyList(arity);
+        }
+
         // Optimize nonempty(crossjoin(a,b)) ==
         //  nonempty(crossjoin(nonempty(a),nonempty(b))
 
         // FIXME: If we're going to apply a NON EMPTY constraint later, it's
         // possible that the ultimate result will be much smaller.
 
-        long size = (long)list1.size() * (long)list2.size();
         Util.checkCJResultLimit(size);
 
         // Now we can safely cast size to an integer. It still might be very
         // large - which means we're allocating a huge array which we might
         // pare down later by applying NON EMPTY constraints - which is a
         // concern.
-        List<Member[]> result = new ArrayList<Member[]>((int) size);
+        List<Member> result = new ArrayList<Member>((int) size * arity);
 
-        boolean neitherSideIsTuple = true;
-        int arity0 = 1;
-        int arity1 = 1;
-        if (list1.get(0) instanceof Member[]) {
-            arity0 = ((Member[]) list1.get(0)).length;
-            neitherSideIsTuple = false;
-        }
-        if (list2.get(0) instanceof Member[]) {
-            arity1 = ((Member[]) list2.get(0)).length;
-            neitherSideIsTuple = false;
-        }
+        final Member[] partialArray = new Member[arity];
+        final List<Member> partial = Arrays.asList(partialArray);
+        cartesianProductRecurse(0, lists, partial, partialArray, 0, result);
+        return new ListTupleList(arity, result);
+    }
 
-        if (neitherSideIsTuple) {
-            // Simpler routine if we know neither side contains tuples.
-            for (Member o0 : (List<Member>) list1) {
-                for (Member o1 : (List<Member>) list2) {
-                    result.add(new Member[]{o0, o1});
-                }
-            }
-        } else {
-            // More complex routine if one or both sides are arrays
-            // (probably the product of nested CrossJoins).
-            Member[] row = new Member[arity0 + arity1];
-            for (int i = 0, m = list1.size(); i < m; i++) {
-                int x = 0;
-                Object o0 = list1.get(i);
-                if (o0 instanceof Member) {
-                    row[x++] = (Member) o0;
-                } else {
-                    assertTrue(o0 instanceof Member[]);
-                    final Member[] members = (Member[]) o0;
-                    for (Member member : members) {
-                        row[x++] = member;
-                    }
-                }
-                for (int j = 0, n = list2.size(); j < n; j++) {
-                    Object o1 = list2.get(j);
-                    if (o1 instanceof Member) {
-                        row[x++] = (Member) o1;
-                    } else {
-                        assertTrue(o1 instanceof Member[]);
-                        final Member[] members = (Member[]) o1;
-                        for (Member member : members) {
-                            row[x++] = member;
-                        }
-                    }
-                    result.add(row.clone());
-                    x = arity0;
-                }
+    private static void cartesianProductRecurse(
+        int i,
+        List<TupleList> lists,
+        List<Member> partial,
+        Member[] partialArray,
+        int partialSize,
+        List<Member> result)
+    {
+        final TupleList tupleList = lists.get(i);
+        final int partialSizeNext = partialSize + tupleList.getArity();
+        final int iNext = i + 1;
+        final TupleCursor cursor = tupleList.tupleCursor();
+        while (cursor.forward()) {
+            cursor.currentToArray(partialArray, partialSize);
+            if (i == lists.size() - 1) {
+                result.addAll(partial);
+            } else {
+                cartesianProductRecurse(
+                    iNext, lists, partial, partialArray, partialSizeNext,
+                    result);
             }
         }
-        return result;
     }
 
     /**
@@ -2325,11 +733,6 @@ public class CrossJoinFunDef extends FunDefBase {
      * Members (for Hierarchies that have no All Members) and evaluator
      * default Members did the element evaluate to non-null.
      *
-     *
-     * <p>This method can be applied to members or tuples. Accordingly, the
-     * type parameter {@code T} can be either {@code Member} or
-     * {@code Member[]}.
-     *
      * @param evaluator Evaluator
      *
      * @param list      List of members or tuples
@@ -2340,16 +743,18 @@ public class CrossJoinFunDef extends FunDefBase {
      * @return List of elements from the input parameter list that have
      * evaluated to non-null.
      */
-    protected <T> List<T> nonEmptyList(
+    protected TupleList nonEmptyList(
         Evaluator evaluator,
-        List<T> list,
+        TupleList list,
         ResolvedFunCall call)
     {
         if (list.isEmpty()) {
             return list;
         }
 
-        List<T> result = new ArrayList<T>((list.size() + 2) >> 1);
+        TupleList result =
+            TupleCollections.createList(
+                list.getArity(), (list.size() + 2) >> 1);
 
         // Get all of the Measures
         final Query query = evaluator.getQuery();
@@ -2397,9 +802,7 @@ public class CrossJoinFunDef extends FunDefBase {
             //
             Member[] evalMembers = evaluator.getMembers().clone();
 
-            Member[] listMembers = (list.get(0) instanceof Member[])
-                ? (Member[]) list.get(0)
-                : new Member[] { (Member) list.get(0) };
+            List<Member> listMembers = list.get(0);
 
             // Remove listMembers from evalMembers and independentSlicerMembers
             for (Member lm : listMembers) {
@@ -2416,6 +819,20 @@ public class CrossJoinFunDef extends FunDefBase {
             if (evaluator instanceof RolapEvaluator) {
                 RolapEvaluator rev = (RolapEvaluator) evaluator;
                 slicerMembers = rev.getSlicerMembers();
+            }
+            // Iterate the list of slicer members, grouping them by hierarchy
+            Map<Hierarchy, Set<Member>> mapOfSlicerMembers =
+                new HashMap<Hierarchy, Set<Member>>();
+            if (slicerMembers != null) {
+                for (Member slicerMember : slicerMembers) {
+                    Hierarchy hierarchy = slicerMember.getHierarchy();
+                    if (!mapOfSlicerMembers.containsKey(hierarchy)) {
+                        mapOfSlicerMembers.put(
+                            hierarchy,
+                            new HashSet<Member>());
+                    }
+                    mapOfSlicerMembers.get(hierarchy).add(slicerMember);
+                }
             }
 
             // Now we have the non-List-Members, but some of them may not be
@@ -2463,6 +880,17 @@ public class CrossJoinFunDef extends FunDefBase {
                 if ((isSlicerMember && !em.isCalculated())
                     || (!isSlicerMember && em.isCalculated()))
                 {
+                    // If the slicer contains multiple members from this one's
+                    // hierarchy, add them to nonAllMemberList
+                    if (isSlicerMember) {
+                        Set<Member> hierarchySlicerMembers =
+                            mapOfSlicerMembers.get(em.getHierarchy());
+                        if (hierarchySlicerMembers.size() > 1) {
+                            nonAllMemberList.add(
+                                hierarchySlicerMembers.toArray(
+                                    new Member[hierarchySlicerMembers.size()]));
+                        }
+                    }
                     continue;
                 }
 
@@ -2484,9 +912,8 @@ public class CrossJoinFunDef extends FunDefBase {
                             }
                         }
                         if (!found) {
-                            System.out
-                                .println(
-                                    "CrossJoinFunDef.nonEmptyListNEW: ERROR");
+                            System.out.println(
+                                "CrossJoinFunDef.nonEmptyListNEW: ERROR");
                         }
                     } else {
                         // The Hierarchy does NOT have an All member
@@ -2508,37 +935,24 @@ public class CrossJoinFunDef extends FunDefBase {
         //
         // Determine if there is any data.
         //
-        evaluator = evaluator.push();
-
         // Put all of the All Members into Evaluator
+        final int savepoint = evaluator.savepoint();
         evaluator.setContext(allMemberList);
 
-        // Iterate over elements of the input list (whether it contains
-        // Member[] or Member elements). If for any combination of
+        // Iterate over elements of the input list. If for any combination of
         // Measure and non-All Members evaluation is non-null, then
         // add it to the result List.
-        if (list.get(0) instanceof Member[]) {
-            for (Member[] ms : ((List<Member[]>) list)) {
-                evaluator.setContext(ms);
-                if (checkData(
-                    nonAllMembers, nonAllMembers.length - 1,
-                    measureSet, evaluator))
-                {
-                    result.add((T) ms);
-                }
-            }
-        } else {
-            for (Member m : ((List<Member>) list)) {
-                evaluator.setContext(m);
-                if (checkData(
-                    nonAllMembers, nonAllMembers.length - 1,
-                    measureSet, evaluator))
-                {
-                    result.add((T) m);
-                }
+        final TupleCursor cursor = list.tupleCursor();
+        while (cursor.forward()) {
+            cursor.setContext(evaluator);
+            if (checkData(
+                nonAllMembers, nonAllMembers.length - 1, measureSet, evaluator))
+            {
+                result.addCurrent(cursor);
             }
         }
 
+        evaluator.restore(savepoint);
         return result;
     }
 
@@ -2598,10 +1012,10 @@ public class CrossJoinFunDef extends FunDefBase {
     private static class StarCrossJoinResolver extends MultiResolver {
         public StarCrossJoinResolver() {
             super(
-                    "*",
-                    "<Set1> * <Set2>",
-                    "Returns the cross product of two sets.",
-                    new String[]{"ixxx", "ixmx", "ixxm", "ixmm"});
+                "*",
+                "<Set1> * <Set2>",
+                "Returns the cross product of two sets.",
+                new String[]{"ixxx", "ixmx", "ixxm", "ixmm"});
         }
 
         public FunDef resolve(
@@ -2623,8 +1037,6 @@ public class CrossJoinFunDef extends FunDefBase {
             return new CrossJoinFunDef(dummyFunDef);
         }
     }
-
-
 }
 
 // End CrossJoinFunDef.java

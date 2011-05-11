@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,8 +13,6 @@ import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
-
-import java.util.List;
 
 /**
  * Definition of the <code>Percentile</code> MDX function.
@@ -47,10 +45,14 @@ class PercentileFunDef extends AbstractAggregateFunDef {
             call, new Calc[] {listCalc, calc, percentCalc})
         {
             public double evaluateDouble(Evaluator evaluator) {
-                List memberList = evaluateCurrentList(listCalc, evaluator);
+                TupleList list = evaluateCurrentList(listCalc, evaluator);
                 double percent = percentCalc.evaluateDouble(evaluator) * 0.01;
-                return percentile(
-                    evaluator.push(false), memberList, calc, percent);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final double percentile =
+                    percentile(evaluator, list, calc, percent);
+                evaluator.restore(savepoint);
+                return percentile;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

@@ -417,6 +417,43 @@ public class ParameterTest extends FoodMartTestCase {
             "[Time].[1997].[Q3]");
     }
 
+    /**
+     * Non-trivial default value. Example shows how to set the parameter to
+     * the last month that someone in Bellflower, CA had a good beer. You can
+     * use it to solve the more common problem "How do I automatically set the
+     * time dimension to the latest date for which there are transactions?".
+     */
+    public void testParameterMemberDefaultValue2() {
+        assertQueryReturns(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + " [Product].Children on 1\n"
+            + "from [Sales]"
+            + "where Parameter(\n"
+            + "  \"Foo\",\n"
+            + "   [Time],\n"
+            + "   Tail(\n"
+            + "     {\n"
+            + "       [Time],\n"
+            + "       Filter(\n"
+            + "         [Time].[Month].Members,\n"
+            + "         0 < ([Customers].[USA].[CA].[Bellflower],\n"
+            + "           [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]))\n"
+            + "     },\n"
+            + "     1),\n"
+            + "   \"Description\")",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q4].[11]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 2,344\n"
+            + "Row #1: 18,278\n"
+            + "Row #2: 4,648\n");
+    }
+
     public void testParameterWithExpressionForHierarchyFails() {
         assertExprThrows(
             "Parameter(\"Foo\",[Gender].DefaultMember.Hierarchy,[Gender].[M],\"Foo\")",
@@ -527,7 +564,7 @@ public class ParameterTest extends FoodMartTestCase {
         parameters[2].setValue(member);
         TestContext.assertEqualsVerbose(
             "with member [Measures].[A string] as 'Parameter(\"S\", STRING, (\"x\" || \"y\"), \"A string parameter\")'\n"
-            + "  member [Measures].[A number] as 'Parameter(\"N\", NUMERIC, (2.0 + 3.0), \"A numeric parameter\")'\n"
+            + "  member [Measures].[A number] as 'Parameter(\"N\", NUMERIC, (2 + 3), \"A numeric parameter\")'\n"
             + "select {Parameter(\"P\", [Gender], [Gender].[M], \"Which gender?\"), Parameter(\"Q\", [Gender], [Gender].DefaultMember, \"Another gender?\")} ON COLUMNS,\n"
             + "  {[Measures].[Unit Sales]} ON ROWS\n"
             + "from [Sales]\n",

@@ -14,6 +14,7 @@ package mondrian.test;
 
 import junit.framework.*;
 
+import junit.framework.Test;
 import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.Connection;
@@ -40,6 +41,7 @@ import java.util.regex.Pattern;
 
 import org.olap4j.*;
 import org.olap4j.impl.CoordinateIterator;
+import org.olap4j.layout.TraditionalCellSetFormatter;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information
@@ -1301,6 +1303,23 @@ public class TestContext {
     }
 
     /**
+     * Converts a {@link CellSet} to text in traditional format.
+     *
+     * <p>For more exotic formats, see
+     * {@link org.olap4j.layout.CellSetFormatter}.
+     *
+     * @param cellSet Query result
+     * @return Result as text
+     */
+    public static String toString(CellSet cellSet) {
+        final StringWriter sw = new StringWriter();
+        new TraditionalCellSetFormatter().format(
+            cellSet,
+            new PrintWriter(sw));
+        return sw.toString();
+    }
+
+    /**
      * Returns a test context whose {@link #getOlap4jConnection()} method always
      * returns the same connection object, and which has an active
      * {@link org.olap4j.Scenario}, thus enabling writeback.
@@ -1350,6 +1369,38 @@ public class TestContext {
             i++;
         }
         return buf.toString();
+    }
+
+    /**
+     * Makes a copy of a suite, filtering certain tests.
+     *
+     * @param suite Test suite
+     * @param testPattern Regular expression of name of tests to include
+     * @return copy of test suite
+     */
+    public static TestSuite copySuite(
+        TestSuite suite,
+        Util.Functor1<Boolean, Test> testPattern)
+    {
+        TestSuite newSuite = new TestSuite(suite.getName());
+        //noinspection unchecked
+        for (Test test : Collections.list((Enumeration<Test>) suite.tests())) {
+            if (!testPattern.apply(test)) {
+                continue;
+            }
+            if (test instanceof TestCase) {
+                newSuite.addTest(test);
+            } else if (test instanceof TestSuite) {
+                TestSuite subSuite = copySuite((TestSuite) test, testPattern);
+                if (subSuite.countTestCases() > 0) {
+                    newSuite.addTest(subSuite);
+                }
+            } else {
+                // some other kind of test
+                newSuite.addTest(test);
+            }
+        }
+        return newSuite;
     }
 
     /**

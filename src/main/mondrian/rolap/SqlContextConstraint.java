@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2010 Julian Hyde and others
+// Copyright (C) 2006-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -110,6 +110,16 @@ public class SqlContextConstraint
             return true;
         }
 
+        // Although it is technically possible to build a native SQL predicate
+        // to represent a multi-position compound slicer (see
+        // http://jira.pentaho.com/browse/MONDRIAN-791), this trick
+        // requires that we have access to the slicer axis (so we can iterate
+        // over its positions). Alas, the evaluator does not give us access to
+        // the slicer axis, but only the members on it
+        if (SqlConstraintUtils.hasMultiPositionSlicer(context)) {
+            return false;
+        }
+
         // we can not handle calc members in slicer except calc measure
         Member[] members = context.getMembers();
         for (int i = 1; i < members.length; i++) {
@@ -157,7 +167,6 @@ public class SqlContextConstraint
         if (baseCubes.isEmpty()) {
             return false;
         }
-
         return true;
     }
 
@@ -228,12 +237,15 @@ public class SqlContextConstraint
         List<RolapMeasureGroup> measureGroupList,
         boolean strict)
     {
-        this.evaluator = evaluator;
+        this.evaluator = evaluator.push();
         this.strict = strict;
         cacheKey = new ArrayList<Object>();
         cacheKey.add(getClass());
         cacheKey.add(strict);
-        cacheKey.addAll(Arrays.asList(evaluator.getMembers()));
+        cacheKey.addAll(
+            Arrays.asList(
+                SqlConstraintUtils.removeMultiPositionSlicerMembers(
+                    evaluator.getMembers(), evaluator)));
 
         // For virtual cubes, context constraint should be evaluated in the
         // query's context, because the query might reference different base
@@ -263,9 +275,11 @@ public class SqlContextConstraint
         if (parent.isCalculated()) {
             throw Util.newInternal("cannot restrict SQL to calculated member");
         }
-        Evaluator e = evaluator.push(parent);
+        final int savepoint = evaluator.savepoint();
+        evaluator.setContext(parent);
         SqlConstraintUtils.addContextConstraint(
-            sqlQuery, starSet, aggStar, e, strict);
+            sqlQuery, starSet, aggStar, evaluator, strict);
+        evaluator.restore(savepoint);
     }
 
     /**

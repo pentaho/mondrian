@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2010 Julian Hyde
+// Copyright (C) 2008-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,8 +12,6 @@ package mondrian.calc.impl;
 import mondrian.olap.*;
 import mondrian.olap.type.SetType;
 import mondrian.calc.*;
-
-import java.util.*;
 
 /**
  * Adapter which computes a set expression and converts it to any list or
@@ -25,8 +23,7 @@ import java.util.*;
  */
 public abstract class GenericIterCalc
     extends AbstractCalc
-    implements ListCalc, MemberListCalc, TupleListCalc,
-    IterCalc, TupleIterCalc, MemberIterCalc
+    implements ListCalc, IterCalc
 {
     /**
      * Creates a GenericIterCalc without specifying child calculated
@@ -54,45 +51,26 @@ public abstract class GenericIterCalc
         return (SetType) type;
     }
 
-    public List evaluateList(Evaluator evaluator) {
+    public TupleList evaluateList(Evaluator evaluator) {
         Object o = evaluate(evaluator);
-        if (o instanceof List) {
-            return (List) o;
+        if (o instanceof TupleList) {
+            return (TupleList) o;
         } else {
             // Iterable
-            final Iterable iter = Util.castToIterable(o);
-            Iterator it = iter.iterator();
-            List<Object> list = new ArrayList<Object>();
-            while (it.hasNext()) {
-                list.add(it.next());
+            final TupleIterable iterable = (TupleIterable) o;
+            TupleList tupleList =
+                TupleCollections.createList(iterable.getArity());
+            TupleCursor cursor = iterable.tupleCursor();
+            while (cursor.forward()) {
+                tupleList.addCurrent(cursor);
             }
-            return list;
+            return tupleList;
         }
     }
 
-    @SuppressWarnings({"unchecked"})
-    public final List<Member> evaluateMemberList(Evaluator evaluator) {
-        return (List<Member>) evaluateList(evaluator);
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public final List<Member[]> evaluateTupleList(Evaluator evaluator) {
-        return (List<Member[]>) evaluateList(evaluator);
-    }
-
-    public Iterable evaluateIterable(Evaluator evaluator) {
+    public TupleIterable evaluateIterable(Evaluator evaluator) {
         Object o = evaluate(evaluator);
-        return Util.castToIterable(o);
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
-        return (Iterable<Member>) evaluateIterable(evaluator);
-    }
-
-    @SuppressWarnings({"unchecked"})
-    public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
-        return (Iterable<Member[]>) evaluateIterable(evaluator);
+        return (TupleIterable) o;
     }
 }
 

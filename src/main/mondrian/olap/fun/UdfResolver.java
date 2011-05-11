@@ -3,21 +3,20 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.impl.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.calc.*;
-import mondrian.calc.impl.GenericCalc;
-import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Resolver for user-defined functions.
@@ -217,11 +216,40 @@ public class UdfResolver implements Resolver {
             this.args = args;
         }
 
-        public List evaluateList(Evaluator evaluator) {
-            return (List) udf.execute(evaluator, args);
+        public TupleList evaluateList(Evaluator evaluator) {
+            final List list = (List) udf.execute(evaluator, args);
+
+            // If arity is 1, assume they have returned a list of members.
+            // For other arity, assume a list of member arrays.
+            if (getType().getArity() == 1) {
+                //noinspection unchecked
+                return new UnaryTupleList((List<Member>) list);
+            } else {
+                // Use an adapter to make a list of member arrays look like
+                // a list of members laid end-to-end.
+                final int arity = getType().getArity();
+                //noinspection unchecked
+                final List<Member[]> memberArrayList = (List<Member[]>) list;
+                return new ListTupleList(
+                    arity,
+                    new AbstractList<Member>() {
+                        @Override
+                        public Member get(int index) {
+                            return memberArrayList.get(index / arity)
+                                [index % arity];
+                        }
+
+                        @Override
+                        public int size() {
+                            return memberArrayList.size() * arity;
+                        }
+                    }
+                );
+            }
         }
 
-        public boolean dependsOn(Dimension dimension) {
+        @Override
+        public boolean dependsOn(Hierarchy hierarchy) {
             // Be pessimistic. This effectively disables expression caching.
             return true;
         }
@@ -247,7 +275,6 @@ public class UdfResolver implements Resolver {
          * @param listCalc Compiled expression that evaluates an MDX set to
          *     a java list
          * @param iterCalc Compiled expression that evaluates an MDX set to
-         *     a java iterable
          */
         public CalcExp(
             Calc calc,
@@ -266,7 +293,7 @@ public class UdfResolver implements Resolver {
         }
 
         public Object evaluate(Evaluator evaluator) {
-            return calc.evaluate(evaluator);
+            return adapt(calc.evaluate(evaluator));
         }
 
         public Object evaluateScalar(Evaluator evaluator) {
@@ -277,14 +304,51 @@ public class UdfResolver implements Resolver {
             if (listCalc == null) {
                 throw new RuntimeException("Expression is not a set");
             }
-            return listCalc.evaluateList(eval);
+            return adaptList(listCalc.evaluateList(eval));
         }
 
         public Iterable evaluateIterable(Evaluator eval) {
             if (iterCalc == null) {
                 throw new RuntimeException("Expression is not a set");
             }
-            return iterCalc.evaluateIterable(eval);
+            return adaptIterable(iterCalc.evaluateIterable(eval));
+        }
+
+        /**
+         * Adapts the output of {@link TupleList} and {@link TupleIterable}
+         * calculator expressions to the old style, that returned either members
+         * or arrays of members.
+         *
+         * @param o Output of calc
+         * @return Output in new format (lists and iterables over lists of
+         *    members)
+         */
+        private Object adapt(Object o) {
+            if (o instanceof TupleIterable) {
+                return adaptIterable((TupleIterable) o);
+            }
+            return o;
+        }
+
+        private List adaptList(final TupleList tupleList) {
+            // List is required to be mutable -- so make a copy.
+            if (tupleList.getArity() == 1) {
+                return new ArrayList<Member>(tupleList.slice(0));
+            } else {
+                return new ArrayList<Member[]>(
+                    TupleCollections.asMemberArrayList(tupleList));
+            }
+        }
+
+        private Iterable adaptIterable(final TupleIterable tupleIterable) {
+            if (tupleIterable instanceof TupleList) {
+                return adaptList((TupleList) tupleIterable);
+            }
+            if (tupleIterable.getArity() == 1) {
+                return tupleIterable.slice(0);
+            } else {
+                return TupleCollections.asMemberArrayIterable(tupleIterable);
+            }
         }
     }
 }

@@ -3,13 +3,15 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
 import mondrian.olap.Query;
+import mondrian.rolap.RolapConnection;
+import org.olap4j.OlapException;
 
 import java.sql.*;
 import java.util.*;
@@ -22,6 +24,8 @@ import java.util.*;
  * @since Jun 14, 2007
  */
 class FactoryJdbc3Impl implements Factory {
+    private CatalogFinder catalogFinder;
+
     public Connection newConnection(
         MondrianOlap4jDriver driver,
         String url,
@@ -59,14 +63,17 @@ class FactoryJdbc3Impl implements Factory {
     public MondrianOlap4jPreparedStatement newPreparedStatement(
         String mdx,
         MondrianOlap4jConnection olap4jConnection)
+        throws OlapException
     {
         return new MondrianOlap4jPreparedStatementJdbc3(olap4jConnection, mdx);
     }
 
     public MondrianOlap4jDatabaseMetaData newDatabaseMetaData(
-        MondrianOlap4jConnection olap4jConnection)
+        MondrianOlap4jConnection olap4jConnection,
+        RolapConnection mondrianConnection)
     {
-        return new MondrianOlap4jDatabaseMetaDataJdbc3(olap4jConnection);
+        return new MondrianOlap4jDatabaseMetaDataJdbc3(
+            olap4jConnection, mondrianConnection);
     }
 
     // Inner classes
@@ -77,6 +84,7 @@ class FactoryJdbc3Impl implements Factory {
         public MondrianOlap4jPreparedStatementJdbc3(
             MondrianOlap4jConnection olap4jConnection,
             String mdx)
+            throws OlapException
         {
             super(olap4jConnection, mdx);
         }
@@ -118,9 +126,10 @@ class FactoryJdbc3Impl implements Factory {
         extends MondrianOlap4jDatabaseMetaData
     {
         public MondrianOlap4jDatabaseMetaDataJdbc3(
-            MondrianOlap4jConnection olap4jConnection)
+            MondrianOlap4jConnection olap4jConnection,
+            RolapConnection mondrianConnection)
         {
-            super(olap4jConnection);
+            super(olap4jConnection, mondrianConnection);
         }
     }
 }

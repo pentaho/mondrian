@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -489,6 +489,129 @@ public class BasicQueryTest extends FoodMartTestCase {
         assertQueryReturns(query5, result5);
     }
 
+    public void testSample5Snowflake() {
+        propSaver.set(
+            MondrianProperties.instance().FilterChildlessSnowflakeMembers,
+            false);
+        Connection conn = null;
+        try {
+            conn = getTestContext().getFoodMartConnection(false);
+            getTestContext(conn).assertQueryReturns(
+                sampleQueries[5].query,
+                "Axis #0:\n"
+                + "{[Time].[1997]}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Store Cost]}\n"
+                + "{[Measures].[Store Sales]}\n"
+                + "{[Measures].[Store Profit Rate]}\n"
+                + "Axis #2:\n"
+                + "{[Product].[Food].[Breakfast Foods]}\n"
+                + "{[Product].[Non-Consumable].[Carousel]}\n"
+                + "{[Product].[Food].[Canned Products]}\n"
+                + "{[Product].[Food].[Baking Goods]}\n"
+                + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+                + "{[Product].[Non-Consumable].[Health and Hygiene]}\n"
+                + "{[Product].[Food].[Snack Foods]}\n"
+                + "{[Product].[Food].[Baked Goods]}\n"
+                + "{[Product].[Drink].[Beverages]}\n"
+                + "{[Product].[Food].[Frozen Foods]}\n"
+                + "{[Product].[Non-Consumable].[Periodicals]}\n"
+                + "{[Product].[Food].[Produce]}\n"
+                + "{[Product].[Food].[Seafood]}\n"
+                + "{[Product].[Food].[Deli]}\n"
+                + "{[Product].[Food].[Meat]}\n"
+                + "{[Product].[Food].[Canned Foods]}\n"
+                + "{[Product].[Non-Consumable].[Household]}\n"
+                + "{[Product].[Food].[Starchy Foods]}\n"
+                + "{[Product].[Food].[Eggs]}\n"
+                + "{[Product].[Food].[Snacks]}\n"
+                + "{[Product].[Food].[Dairy]}\n"
+                + "{[Product].[Drink].[Dairy]}\n"
+                + "{[Product].[Non-Consumable].[Checkout]}\n"
+                + "{[Product].[Drink].[Baking Goods]}\n"
+                + "{[Product].[Food].[Packaged Foods]}\n"
+                + "Row #0: 2,756.80\n"
+                + "Row #0: 6,941.46\n"
+                + "Row #0: 151.79%\n"
+                + "Row #1: 595.97\n"
+                + "Row #1: 1,500.11\n"
+                + "Row #1: 151.71%\n"
+                + "Row #2: 1,317.13\n"
+                + "Row #2: 3,314.52\n"
+                + "Row #2: 151.65%\n"
+                + "Row #3: 15,370.61\n"
+                + "Row #3: 38,670.41\n"
+                + "Row #3: 151.59%\n"
+                + "Row #4: 5,576.79\n"
+                + "Row #4: 14,029.08\n"
+                + "Row #4: 151.56%\n"
+                + "Row #5: 12,972.99\n"
+                + "Row #5: 32,571.86\n"
+                + "Row #5: 151.07%\n"
+                + "Row #6: 26,963.34\n"
+                + "Row #6: 67,609.82\n"
+                + "Row #6: 150.75%\n"
+                + "Row #7: 6,564.09\n"
+                + "Row #7: 16,455.43\n"
+                + "Row #7: 150.69%\n"
+                + "Row #8: 11,069.53\n"
+                + "Row #8: 27,748.53\n"
+                + "Row #8: 150.67%\n"
+                + "Row #9: 22,030.66\n"
+                + "Row #9: 55,207.50\n"
+                + "Row #9: 150.59%\n"
+                + "Row #10: 3,614.55\n"
+                + "Row #10: 9,056.76\n"
+                + "Row #10: 150.56%\n"
+                + "Row #11: 32,831.33\n"
+                + "Row #11: 82,248.42\n"
+                + "Row #11: 150.52%\n"
+                + "Row #12: 1,520.70\n"
+                + "Row #12: 3,809.14\n"
+                + "Row #12: 150.49%\n"
+                + "Row #13: 10,108.87\n"
+                + "Row #13: 25,318.93\n"
+                + "Row #13: 150.46%\n"
+                + "Row #14: 1,465.42\n"
+                + "Row #14: 3,669.89\n"
+                + "Row #14: 150.43%\n"
+                + "Row #15: 15,894.53\n"
+                + "Row #15: 39,774.34\n"
+                + "Row #15: 150.24%\n"
+                + "Row #16: 24,170.73\n"
+                + "Row #16: 60,469.89\n"
+                + "Row #16: 150.18%\n"
+                + "Row #17: 4,705.91\n"
+                + "Row #17: 11,756.07\n"
+                + "Row #17: 149.82%\n"
+                + "Row #18: 3,684.90\n"
+                + "Row #18: 9,200.76\n"
+                + "Row #18: 149.69%\n"
+                + "Row #19: 5,827.58\n"
+                + "Row #19: 14,550.05\n"
+                + "Row #19: 149.68%\n"
+                + "Row #20: 12,228.85\n"
+                + "Row #20: 30,508.85\n"
+                + "Row #20: 149.48%\n"
+                + "Row #21: 2,830.92\n"
+                + "Row #21: 7,058.60\n"
+                + "Row #21: 149.34%\n"
+                + "Row #22: 1,525.04\n"
+                + "Row #22: 3,767.71\n"
+                + "Row #22: 147.06%\n"
+                + "Row #23: \n"
+                + "Row #23: \n"
+                + "Row #23: \n"
+                + "Row #24: \n"
+                + "Row #24: \n"
+                + "Row #24: \n");
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+        }
+    }
+
     public void testSample6() {
         assertQueryReturns(query6, result6);
     }
@@ -510,8 +633,8 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testGoodComments() {
         assertQueryReturns(
-                "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]/* trailing comment*/",
-                EmptyResult);
+            "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]/* trailing comment*/",
+            EmptyResult);
 
         String[] comments = {
             "-- a basic comment\n",
@@ -538,26 +661,15 @@ public class BasicQueryTest extends FoodMartTestCase {
             + " * also, -- another style comment is happy\n"
             + " */\n",
 
-            "/* a simple /* nested */ comment */",
 
-            "/*\n" + " * a multiline /* nested */ comment\n" + "*/",
+            "/* a simple /* nested comment, only needs to be closed once */",
 
-            "/*\n"
+            "/*\n" + " * a multiline /* nested comment\n" + "*/",
+
+            "/**\n"
             + " * a multiline\n"
             + " * /* multiline\n"
             + " *  * nested comment\n"
-            + " *  */\n"
-            + "*/",
-
-            "/*\n"
-            + " * a multiline\n"
-            + " * /* multiline\n"
-            + " * /* deeply\n"
-            + " * /* really /* deeply */\n"
-            + " *  * nested comment\n"
-            + " *  */\n"
-            + " *  */\n"
-            + " *  */\n"
             + "*/",
 
             "-- single-line comment containing /* multiline */ comment\n",
@@ -654,30 +766,6 @@ public class BasicQueryTest extends FoodMartTestCase {
             EmptyResult);
 
         assertQueryReturns(
-            "/* a simple /* nested */ comment */\n"
-            + "/*\n"
-            + " * a multiline /* nested */ comment\n"
-            + "*/\n"
-            + "/*\n"
-            + " * a multiline\n"
-            + " * /* multiline\n"
-            + " *  * nested comment\n"
-            + " *  */\n"
-            + "*/\n"
-            + "/*\n"
-            + " * a multiline\n"
-            + " * /* multiline\n"
-            + " * /* deeply\n"
-            + " * /* really /* deeply */\n"
-            + " *  * nested comment\n"
-            + " *  */\n"
-            + " *  */\n"
-            + " *  */\n"
-            + "*/\n"
-            + "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
-            EmptyResult);
-
-        assertQueryReturns(
             "-- an entire select statement commented out\n"
             + "-- SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales];\n"
             + "/*SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales];*/\n"
@@ -757,16 +845,16 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "WHERE {[/***an illegal comment****/Marital Status].[S]}",
             "Failed to parse query");
 
-        // Nested comments must be closed.
+        // Nested comments only need to be closed once.
         assertQueryThrows(
-            "/* a simple /* nested * comment */\n"
+            "/* a simple /* nested */ comment */\n"
             + "SELECT {} ON ROWS, {} ON COLUMNS FROM [Sales]",
             "Failed to parse query");
 
-        // We do NOT support \r as a line-end delimiter. (Too bad, Mac users.)
-        assertQueryThrows(
+        // We support \r as a line-end delimiter.
+        assertQueryReturns(
             "SELECT {} ON COLUMNS -- comment terminated by CR only\r, {} ON ROWS FROM [Sales]",
-            "Failed to parse query");
+            EmptyResult);
     }
 
     /**
@@ -1030,13 +1118,50 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #0: 266,773\n");
     }
 
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-814">MONDRIAN-814,
+     * "MDX with specific where clause doesn't work" </a>. This test case
+     * was as close as I could get to the original test case on the foodmart
+     * data set, but it did not reproduce the bug.
+     */
+    public void testCompoundSlicerNonEmpty() {
+        // With MONDRIAN-814, cell totals would be about a factor of 4 smaller,
+        // and the number of rows returned would be the same (1220) if 21, 22
+        // and 23 were removed from the slicer.
+        final String mdx =
+            "select non empty [Measures].[Sales Count] on 0,\n"
+            + " non empty hierarchize(\n"
+            + "  Crossjoin(\n"
+            + "    Union(\n"
+            + "     [Gender].CurrentMember,\n"
+            + "     [Gender].Children),\n"
+            + "    Union(\n"
+            + "     [Product].CurrentMember,\n"
+            + "     [Product].[Brand Name].Members))) on 1\n"
+            + "from [Sales]\n"
+            + "where { " + timeWeekly + ".[1997].[20]"
+            + "      , " + timeWeekly + ".[1997].[21]"
+            + "      , " + timeWeekly + ".[1997].[22]"
+            + "      , " + timeWeekly + ".[1997].[23]"
+            + " }";
+        if (false) {
+            // Output too large to check in.
+            assertQueryReturns(mdx, "xxxx");
+        }
+        Result result = getTestContext().executeQuery(mdx);
+        assertEquals(1477, result.getAxes()[1].getPositions().size());
+        assertEquals(
+            "5,896", result.getCell(new int[] {0, 0}).getFormattedValue());
+    }
+
     public void testEmptyTupleSlicerFails() {
         assertQueryThrows(
             "select [Measures].[Unit Sales] on 0,\n"
             + "[Product].Children on 1\n"
             + "from [Warehouse and Sales]\n"
             + "where ()",
-            "Syntax error at line 4, column 10, token ')'");
+            "Syntax error at line 4, column 8, token ')'");
     }
 
     /**
@@ -1051,7 +1176,11 @@ public class BasicQueryTest extends FoodMartTestCase {
             + " {[Product].members} on rows\n"
             + "from Sales");
         final int rowCount = result.getAxes()[1].getPositions().size();
-        assertEquals(FunctionTest.FILTER_SNOWFLAKE ? 2256 : 2266, rowCount);
+        assertEquals(
+            MondrianProperties.instance().FilterChildlessSnowflakeMembers.get()
+                ? 2256
+                : 2266,
+            rowCount);
         assertEquals(
             "152",
             result.getCell(
@@ -2532,16 +2661,16 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testFormatOfNulls() {
         assertQueryReturns(
-            "with member [Measures].[Foo] as '([Measures].[Store Sales])',\n"
+            "with member [Measures]._Foo as '([Measures].[Store Sales])',\n"
             + " format_string = '$#,##0.00;($#,##0.00);ZERO;NULL;Nil'\n"
             + "select\n"
-            + " {[Measures].[Foo]} on columns,\n"
+            + " {[Measures].[_Foo]} on columns,\n"
             + " {[Customers].[Country].members} on rows\n"
             + "from Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Measures].[Foo]}\n"
+            + "{[Measures].[_Foo]}\n"
             + "Axis #2:\n"
             + "{[Customers].[Canada]}\n"
             + "{[Customers].[Mexico]}\n"
@@ -2808,10 +2937,13 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * Bug 645744 happens when getting the children of a member crosses a table
-     * boundary. The symptom
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-8">MONDRIAN-8,
+     * "Problem getting children in hierarchy based on join."</a>.
+     * It happens when getting the children of a member crosses a table
+     * boundary.
      */
-    public void testBug645744() {
+    public void testBugMondrian8() {
         // minimal test case
         assertQueryReturns(
             "select {[Measures].[Unit Sales]} ON columns,\n"
@@ -3494,9 +3626,9 @@ public class BasicQueryTest extends FoodMartTestCase {
         // reduced to a single level.
         TestContext.assertEqualsVerbose(
             "with member [Measures].[Rendite] as '(([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost])', "
-            + "format_string = IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100.0) > Parameter(\"UpperLimit\", NUMERIC, 151.0, \"Obere Grenze\")), "
+            + "format_string = IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100) > Parameter(\"UpperLimit\", NUMERIC, 151, \"Obere Grenze\")), "
             + "\"|#.00%|arrow='up'\", "
-            + "IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100.0) < Parameter(\"LowerLimit\", NUMERIC, 150.0, \"Untere Grenze\")), "
+            + "IIf((((([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]) * 100) < Parameter(\"LowerLimit\", NUMERIC, 150, \"Untere Grenze\")), "
             + "\"|#.00%|arrow='down'\", \"|#.00%|arrow='right'\"))\n"
             + "select {[Measures].Members} ON COLUMNS\n"
             + "from [Sales]\n",
@@ -3516,9 +3648,9 @@ public class BasicQueryTest extends FoodMartTestCase {
         // consistent with the fact that property values are expressions,
         // not enclosed in single-quotes.
         TestContext.assertEqualsVerbose(
-            "with member [Measures].[Foo] as '1.0', "
+            "with member [Measures].[Foo] as '1', "
             + "format_string = \"##0.00\", "
-            + "funny = IIf((1.0 = 1.0), \"x\"\"y\", \"foo\")\n"
+            + "funny = IIf((1 = 1), \"x\"\"y\", \"foo\")\n"
             + "select {[Measures].[Foo]} ON COLUMNS\n"
             + "from [Sales]\n",
             s);
@@ -6079,6 +6211,43 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * Test format string values. Previously, a bug meant that string values
+     * were printed as is, never passed through the format string.
+     */
+    public void testFormatStringAppliedToStringValue() {
+        // "23" as an integer value
+        assertQueryReturns(
+            "with member [Measures].[Test] as '23', FORMAT_STRING = '|<|arrow=\"up\"'\n"
+            + "select [Measures].[Test] on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Test]}\n"
+            + "Row #0: |23|arrow=up\n");
+        // "23" as a string value: converted to lower case
+        assertQueryReturns(
+            "with member [Measures].[Test] as '\"23\"', FORMAT_STRING = '|<|arrow=\"up\"'\n"
+            + "select [Measures].[Test] on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Test]}\n"
+            + "Row #0: |23|arrow=up\n");
+        // string value "Foo Bar" -- converted to lower case
+        assertQueryReturns(
+            "with member [Measures].[Test] as '\"Foo \" || \"Bar\"', FORMAT_STRING = '|<|arrow=\"up\"'\n"
+            + "select [Measures].[Test] on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Test]}\n"
+            + "Row #0: |foo bar|arrow=up\n");
+    }
+
+    /**
      * This tests a fix for bug #1603653
      */
     public void testAvgCastProblem() {
@@ -7041,8 +7210,10 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables].[Tell Tale].[Tell Tale Tomatos], "
-            + "[Warehouse].[USA].[WA].[Seattle].[Quality Warehousing and Trucking], "
+            + "{[Product].[Food].[Produce].[Vegetables].[Fresh Vegetables]"
+            + ".[Tell Tale].[Tell Tale Tomatos], "
+            + "[Warehouse].[USA].[WA].[Seattle].[Quality Warehousing and "
+            + "Trucking], "
             + "[Store].[USA].[WA].[Seattle].[Store 15], "
             + "[Time].[Weekly].[1997].[24].[3]}\n"
             + "Axis #2:\n"

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,32 +16,33 @@ package mondrian.test;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
 import java.util.Enumeration;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
+import junit.framework.*;
 
-import mondrian.olap.fun.*;
-import mondrian.olap.fun.vba.VbaTest;
+import mondrian.calc.impl.ConstantCalcTest;
 import mondrian.olap.*;
+import mondrian.olap.fun.*;
+import mondrian.olap.fun.vba.*;
 import mondrian.olap.type.TypeTest;
 import mondrian.rolap.*;
+import mondrian.rolap.agg.AggregationOnDistinctCountMeasuresTest;
+import mondrian.rolap.agg.SegmentCacheTest;
+import mondrian.rolap.agg.SegmentLoaderTest;
+import mondrian.rolap.aggmatcher.*;
+import mondrian.rolap.sql.SelectNotInGroupByTest;
 import mondrian.rolap.sql.SqlQueryTest;
+import mondrian.test.build.CodeComplianceTest;
+import mondrian.test.clearview.*;
 import mondrian.test.comp.ResultComparatorTest;
 import mondrian.udf.*;
 import mondrian.util.*;
 import mondrian.xmla.*;
 import mondrian.xmla.impl.DynamicDatasourceXmlaServletTest;
 import mondrian.xmla.test.XmlaTest;
-import mondrian.test.clearview.*;
-import mondrian.test.build.CodeComplianceTest;
-import mondrian.calc.impl.ConstantCalcTest;
-import mondrian.rolap.agg.AggregationOnDistinctCountMeasuresTest;
-import mondrian.rolap.aggmatcher.MultipleColsInTupleAggTest;
 
 import org.apache.log4j.Logger;
 
@@ -61,6 +62,8 @@ public class Main extends TestSuite {
      */
     private static Map<TestSuite, String> testSuiteInfo =
         new HashMap<TestSuite, String>();
+
+    private static final boolean RUN_OPTIONAL_TESTS = false;
 
     /**
      * Entry point to run test suite from the command line.
@@ -185,6 +188,26 @@ public class Main extends TestSuite {
                 addTest(suite, (Test) o, clazz.getName() + method.getName());
             }
         } else {
+            if (RUN_OPTIONAL_TESTS) {
+                addTest(suite, SegmentLoaderTest.class); // 2f, 1e as of 13571
+                addTest(suite, AggGenTest.class); // passes
+                addTest(suite, DefaultRuleTest.class); // passes
+                addTest(suite, SelectNotInGroupByTest.class);
+                addTest(suite, CVConcurrentMdxTest.class);
+                addTest(suite, CacheHitTest.class);
+                addTest(suite, ConcurrentMdxTest.class);
+                addTest(suite, MemHungryTest.class, "suite");
+                addTest(suite, MultiDimTest.class, "suite");
+                addTest(suite, MultiDimVCTest.class, "suite");
+                addTest(suite, MultiLevelTest.class, "suite");
+                addTest(suite, MultiLevelVCTest.class, "suite");
+                addTest(suite, PartialCacheTest.class, "suite");
+                addTest(suite, PartialCacheVCTest.class, "suite");
+                addTest(suite, QueryAllTest.class, "suite");
+                addTest(suite, QueryAllVCTest.class, "suite");
+                addTest(suite, Base64Test.class);
+                return suite;
+            }
             addTest(suite, RolapConnectionTest.class);
             addTest(suite, FilteredIterableTest.class);
             addTest(suite, HighDimensionsTest.class);
@@ -197,6 +220,7 @@ public class Main extends TestSuite {
             addTest(suite, DrillThroughTest.class);
             addTest(suite, ScenarioTest.class);
             addTest(suite, BasicQueryTest.class);
+            addTest(suite, SegmentCacheTest.class);
             addTest(suite, CVBasicTest.class, "suite");
             addTest(suite, GrandTotalTest.class, "suite");
             addTest(suite, HangerDimensionTest.class, "suite");
@@ -211,11 +235,14 @@ public class Main extends TestSuite {
             addTest(suite, CacheControlTest.class);
             addTest(suite, MemberCacheControlTest.class);
             addTest(suite, FunctionTest.class);
+            addTest(suite, CurrentDateMemberUdfTest.class);
             addTest(suite, PartialSortTest.class);
             addTest(suite, VbaTest.class);
+            addTest(suite, ExcelTest.class);
             addTest(suite, HierarchyBugTest.class);
             addTest(suite, ScheduleTest.class);
             addTest(suite, UtilTestCase.class);
+            addTest(suite, Olap4jTest.class);
             addTest(suite, SortTest.class);
             if (isRunOnce()) {
                 addTest(suite, TestAggregationManager.class);
@@ -227,6 +254,8 @@ public class Main extends TestSuite {
             addTest(suite, CustomizedParserTest.class);
             addTest(suite, SolveOrderScopeIsolationTest.class);
             addTest(suite, ParentChildHierarchyTest.class);
+            addTest(suite, Olap4jTckTest.class, "suite");
+            addTest(suite, MondrianServerTest.class);
             addTest(suite, XmlaBasicTest.class);
             addTest(suite, XmlaErrorTest.class);
             addTest(suite, XmlaExcel2000Test.class);
@@ -265,7 +294,6 @@ public class Main extends TestSuite {
             addTest(suite, PrimeFinderTest.class);
             addTest(suite, CellKeyTest.class);
             addTest(suite, RolapAxisTest.class);
-            addTest(suite, MemberHelperTest.class);
             addTest(suite, CrossJoinTest.class);
             if (Bug.BugMondrian503Fixed) {
                 addTest(suite, RolapResultTest.class);
@@ -282,6 +310,7 @@ public class Main extends TestSuite {
                 suite,
                 IgnoreMeasureForNonJoiningDimensionInAggregationTest.class);
             addTest(suite, SetFunDefTest.class);
+            addTest(suite, VisualTotalsTest.class);
             addTest(suite, AggregationOnDistinctCountMeasuresTest.class);
             addTest(suite, BitKeyTest.class);
             addTest(suite, TypeTest.class);
@@ -359,7 +388,7 @@ public class Main extends TestSuite {
         throws Exception
     {
         TestSuite newSuite = new TestSuite(suite.getName());
-        Enumeration tests = suite.tests();
+        Enumeration<?> tests = suite.tests();
         while (tests.hasMoreElements()) {
             Test test = (Test) tests.nextElement();
             if (test instanceof TestCase) {

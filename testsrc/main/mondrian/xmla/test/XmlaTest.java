@@ -9,6 +9,7 @@
 */
 package mondrian.xmla.test;
 
+import mondrian.server.StringRepositoryContentFinder;
 import mondrian.xmla.*;
 import mondrian.xmla.Enumeration;
 import mondrian.xmla.impl.DefaultXmlaRequest;
@@ -133,13 +134,16 @@ public class XmlaTest extends TestCase {
 
     private static Element executeRequest(Element requestElem) {
         ByteArrayOutputStream resBuf = new ByteArrayOutputStream();
-
+        MondrianServer server =
+            MondrianServer.createWithRepository(
+                new StringRepositoryContentFinder(
+                    context.getDataSourcesString()),
+                XmlaTestContext.CATALOG_LOCATOR);
         XmlaHandler handler =
             new XmlaHandler(
-                context.dataSources(),
-                XmlaTestContext.CATALOG_LOCATOR,
+                (XmlaHandler.ConnectionFactory) server,
                 "xmla");
-        XmlaRequest request = new DefaultXmlaRequest(requestElem);
+        XmlaRequest request = new DefaultXmlaRequest(requestElem, null);
         XmlaResponse response =
             new DefaultXmlaResponse(
                 resBuf, "UTF-8", Enumeration.ResponseMimeType.SOAP);
@@ -190,12 +194,20 @@ public class XmlaTest extends TestCase {
      */
     public static class OtherTest extends TestCase {
         public void testEncodeElementName() {
-            assertEquals("Foo", XmlaUtil.encodeElementName("Foo"));
-            assertEquals(
-                "Foo_x0020_Bar", XmlaUtil.encodeElementName("Foo Bar"));
+            final XmlaUtil.ElementNameEncoder encoder =
+                XmlaUtil.ElementNameEncoder.INSTANCE;
+
+            assertEquals("Foo", encoder.encode("Foo"));
+            assertEquals("Foo_x0020_Bar", encoder.encode("Foo Bar"));
+
             if (false) // FIXME:
             assertEquals(
-                "Foo_x00xx_Bar", XmlaUtil.encodeElementName("Foo_Bar"));
+                "Foo_x00xx_Bar", encoder.encode("Foo_Bar"));
+
+            // Caching: decode same string, get same string back
+            final String s1 = encoder.encode("Abc def");
+            final String s2 = encoder.encode("Abc def");
+            assertSame(s1, s2);
         }
 
         /**

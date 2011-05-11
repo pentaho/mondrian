@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde and others
+// Copyright (C) 2009-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -672,12 +672,10 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             "select from [Sales]\n"
             + "where [Measures].[Avg Unit Sales]\n"
             + "   * {[Customers].[USA].[OR], [Customers].[USA].[CA]}",
-            Bug.BugMondrian675Fixed
-            ? "what?"
-            : "Axis #0:\n"
+            "Axis #0:\n"
             + "{[Measures].[Avg Unit Sales], [Customers].[USA].[OR]}\n"
             + "{[Measures].[Avg Unit Sales], [Customers].[USA].[CA]}\n"
-            + "#ERR: mondrian.olap.fun.MondrianEvaluationException: Don't know how to rollup aggregator 'avg'");
+            + "6.189");
 
         // roll up using a named set
         testContext.assertQueryReturns(
@@ -690,6 +688,168 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             : "Axis #0:\n"
             + "{[Measures].[Avg Unit Sales], [Customers].[OR and CA]}\n"
             + "#ERR: mondrian.olap.fun.MondrianEvaluationException: Don't know how to rollup aggregator 'avg'");
+    }
+
+    /**
+     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-899">
+     * Bug MONDRIAN-899,
+     * "Order() function does not work properly together with WHERE clause"</a>.
+     */
+    public void testBugMondrian899() {
+        final String expected =
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1].[2]}\n"
+            + "{[Time].[1997].[Q1].[3]}\n"
+            + "{[Time].[1997].[Q2].[4]}\n"
+            + "{[Time].[1997].[Q2].[5]}\n"
+            + "{[Time].[1997].[Q2].[6]}\n"
+            + "{[Time].[1997].[Q3].[7]}\n"
+            + "{[Time].[1997].[Q3].[8]}\n"
+            + "{[Time].[1997].[Q3].[9]}\n"
+            + "{[Time].[1997].[Q4].[10]}\n"
+            + "{[Time].[1997].[Q4].[11]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Wildon Cameron]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Emily Barela]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Dauna Barton]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Mona Vigil]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Linda Combs]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Eric Winters]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Jack Zucconi]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Luann Crawford]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Suzanne Davis]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Lucy Flowers]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Donna Weisinger]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Stanley Marks]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[James Short]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Curtis Pollard]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Dawn Laner]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Patricia Towns]}\n"
+            + "{[Customers].[USA].[WA].[Puyallup].[William Wade]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Lorriene Weathers]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Grace McLaughlin]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Edna Woodson]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Harry Torphy]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Anne Allard]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Bonnie Staley]}\n"
+            + "{[Customers].[USA].[WA].[Olympia].[Patricia Gervasi]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Shirley Gottbehuet]}\n"
+            + "{[Customers].[USA].[WA].[Puyallup].[Jeremy Styers]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Beth Ohnheiser]}\n"
+            + "{[Customers].[USA].[WA].[Bremerton].[Harold Powers]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Daniel Thompson]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Fran McEvilly]}\n"
+            + "Row #0: 327\n"
+            + "Row #1: 323\n"
+            + "Row #2: 319\n"
+            + "Row #3: 308\n"
+            + "Row #4: 305\n"
+            + "Row #5: 296\n"
+            + "Row #6: 296\n"
+            + "Row #7: 295\n"
+            + "Row #8: 291\n"
+            + "Row #9: 289\n"
+            + "Row #10: 285\n"
+            + "Row #11: 284\n"
+            + "Row #12: 281\n"
+            + "Row #13: 279\n"
+            + "Row #14: 279\n"
+            + "Row #15: 278\n"
+            + "Row #16: 277\n"
+            + "Row #17: 271\n"
+            + "Row #18: 268\n"
+            + "Row #19: 266\n"
+            + "Row #20: 265\n"
+            + "Row #21: 264\n"
+            + "Row #22: 260\n"
+            + "Row #23: 251\n"
+            + "Row #24: 250\n"
+            + "Row #25: 249\n"
+            + "Row #26: 249\n"
+            + "Row #27: 248\n"
+            + "Row #28: 247\n"
+            + "Row #29: 247\n";
+        assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  Subset(Order([Customers].[Name].Members, [Measures].[Unit Sales], BDESC), 10.0, 30.0) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[1997].[Q1].[2] : [Time].[1997].[Q4].[11])",
+            expected);
+
+        // Equivalent query.
+        assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  Tail(\n"
+            + "    TopCount([Customers].[Name].Members, 40, [Measures].[Unit Sales]),\n"
+            + "    30) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[1997].[Q1].[2] : [Time].[1997].[Q4].[11])",
+            expected);
+    }
+
+    // similar to MONDRIAN-899 testcase
+    public void testTopCount() {
+        assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  TopCount([Customers].[USA].[WA].[Spokane].Children, 10, [Measures].[Unit Sales]) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[1997].[Q1].[2] : [Time].[1997].[Q1].[3])",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1].[2]}\n"
+            + "{[Time].[1997].[Q1].[3]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Grace McLaughlin]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[George Todero]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Matt Bellah]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Mary Francis Benigar]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Lucy Flowers]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[David Hassard]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Dauna Barton]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Dora Sims]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Joann Mramor]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Mike Madrid]}\n"
+            + "Row #0: 131\n"
+            + "Row #1: 129\n"
+            + "Row #2: 113\n"
+            + "Row #3: 103\n"
+            + "Row #4: 95\n"
+            + "Row #5: 94\n"
+            + "Row #6: 92\n"
+            + "Row #7: 85\n"
+            + "Row #8: 79\n"
+            + "Row #9: 79\n");
+    }
+
+    /**
+     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-900">
+     * Bug MONDRIAN-900,
+     * "Filter() function works incorrectly together with WHERE clause"</a>.
+     */
+    public void testBugMondrian900() {
+        assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS,\n"
+            + "  Tail(Filter([Customers].[Name].Members, ([Measures].[Unit Sales] IS EMPTY)), 3) ON ROWS \n"
+            + "from [Sales]\n"
+            + "where ([Time].[1997].[Q1].[2] : [Time].[1997].[Q4].[10])",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1].[2]}\n"
+            + "{[Time].[1997].[Q1].[3]}\n"
+            + "{[Time].[1997].[Q2].[4]}\n"
+            + "{[Time].[1997].[Q2].[5]}\n"
+            + "{[Time].[1997].[Q2].[6]}\n"
+            + "{[Time].[1997].[Q3].[7]}\n"
+            + "{[Time].[1997].[Q3].[8]}\n"
+            + "{[Time].[1997].[Q3].[9]}\n"
+            + "{[Time].[1997].[Q4].[10]}\n"
+            + "Axis #1:\n"
+            + "Axis #2:\n"
+            + "{[Customers].[USA].[WA].[Walla Walla].[Melanie Snow]}\n"
+            + "{[Customers].[USA].[WA].[Walla Walla].[Ramon Williams]}\n"
+            + "{[Customers].[USA].[WA].[Yakima].[Louis Gomez]}\n");
     }
 }
 

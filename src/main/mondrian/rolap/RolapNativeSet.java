@@ -1,15 +1,17 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
 import mondrian.calc.*;
+import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.aggmatcher.AggStar;
@@ -28,7 +30,7 @@ import java.util.*;
  * Supports crossjoin, member.children, level.members and member.descendants -
  * all in non empty mode, i.e. there is a join to the fact table.<p/>
  *
- * TODO: the order of the result is different from the order of the
+ * <p>TODO: the order of the result is different from the order of the
  * enumeration. Should sort.
  *
  * @author av
@@ -39,21 +41,21 @@ public abstract class RolapNativeSet extends RolapNative {
     protected static final Logger LOGGER =
         Logger.getLogger(RolapNativeSet.class);
 
-    private SmartCache<Object, List<List<RolapMember>>> cache =
-        new SoftSmartCache<Object, List<List<RolapMember>>>();
+    private SmartCache<Object, TupleList> cache =
+        new SoftSmartCache<Object, TupleList>();
 
     /**
-     * Returns whether certain member types(e.g. calculated members) should
+     * Returns whether certain member types (e.g. calculated members) should
      * disable native SQL evaluation for expressions containing them.
      *
-     * <p>
-     * If true, expressions containing calculated members will be evaluated by
-     * the interpreter, instead of using SQL.
+     * <p>If true, expressions containing calculated members will be evaluated
+     * by the interpreter, instead of using SQL.
      *
-     * If false, calc members will be ignored and the computation will be done
-     * in SQL, returning more members than requested.  This is ok, if
+     * <p>If false, calc members will be ignored and the computation will be
+     * done in SQL, returning more members than requested.  This is ok, if
      * the superflous members are filtered out in java code afterwards.
-     * </p>
+     *
+     * @return whether certain member types should disable native SQL evaluation
      */
     protected abstract boolean restrictMemberTypes();
 
@@ -193,26 +195,36 @@ public abstract class RolapNativeSet extends RolapNative {
                 Collections.singletonList(desiredResultStyle));
         }
 
-        protected List executeList(final SqlTupleReader tr) {
+        protected TupleList executeList(final SqlTupleReader tr) {
             tr.setMaxRows(maxRows);
             for (CrossJoinArg arg : args) {
                 addLevel(tr, arg);
             }
 
-            // lookup the result in cache; we can't return the cached
+            // Look up the result in cache; we can't return the cached
             // result if the tuple reader contains a target with calculated
             // members because the cached result does not include those
             // members; so we still need to cross join the cached result
-            // with those enumerated members
-            Object key = tr.getCacheKey();
-            List<List<RolapMember>> result = cache.get(key);
+            // with those enumerated members.
+            //
+            // The key needs to include the arguments (projection) as well as
+            // the constraint, because it's possible (see bug MONDRIAN-902)
+            // that independent axes have identical constraints but different
+            // args (i.e. projections). REVIEW: In this case, should we use the
+            // same cached result and project different columns?
+            List<Object> key = new ArrayList<Object>();
+            key.add(tr.getCacheKey());
+            key.addAll(Arrays.asList(args));
+
+            TupleList result = cache.get(key);
             boolean hasEnumTargets = (tr.getEnumTargetCount() > 0);
             if (result != null && !hasEnumTargets) {
                 if (listener != null) {
                     TupleEvent e = new TupleEvent(this, tr);
                     listener.foundInCache(e);
                 }
-                return copy(result);
+                return new DelegatingTupleList(
+                    args.length, Util.<List<Member>>cast(result));
             }
 
             // execute sql and store the result
@@ -223,37 +235,34 @@ public abstract class RolapNativeSet extends RolapNative {
 
             // if we don't have a cached result in the case where we have
             // enumerated targets, then retrieve and cache that partial result
-            List<List<RolapMember>> partialResult = result;
-            result = null;
+            TupleList partialResult = result;
             List<List<RolapMember>> newPartialResult = null;
             if (hasEnumTargets && partialResult == null) {
                 newPartialResult = new ArrayList<List<RolapMember>>();
             }
             DataSource dataSource = schemaReader.getDataSource();
             if (args.length == 1) {
-                result = (List) tr.readMembers(
-                    dataSource, partialResult, newPartialResult);
+                result =
+                    tr.readMembers(
+                        dataSource, partialResult, newPartialResult);
             } else {
-                result = (List) tr.readTuples(
-                    dataSource, partialResult, newPartialResult);
+                result =
+                    tr.readTuples(
+                        dataSource, partialResult, newPartialResult);
             }
 
             if (hasEnumTargets) {
                 if (newPartialResult != null) {
-                    cache.put(key, newPartialResult);
+                    cache.put(
+                        key,
+                        new DelegatingTupleList(
+                            args.length,
+                            Util.<List<Member>>cast(newPartialResult)));
                 }
             } else {
                 cache.put(key, result);
             }
-            return copy(result);
-        }
-
-        /**
-         * returns a copy of the result because its modified
-         */
-        private <T> List<T> copy(List<T> list) {
-//            return new ArrayList<T>(list);
-            return list;
+            return result;
         }
 
         private void addLevel(TupleReader tr, CrossJoinArg arg) {
@@ -325,37 +334,39 @@ public abstract class RolapNativeSet extends RolapNative {
     }
 
     /**
-     * Override current members in position by default members in
+     * Overrides current members in position by default members in
      * hierarchies which are involved in this filter/topcount.
      * Stores the RolapStoredMeasure into the context because that is needed to
      * generate a cell request to constraint the sql.
      *
-     * The current context may contain a calculated measure, this measure
+     * <p>The current context may contain a calculated measure, this measure
      * was translated into an sql condition (filter/topcount). The measure
      * is not used to constrain the result but only to access the star.
      *
+     * @param evaluator Evaluation context to modify
+     * @param cargs Cross join arguments
+     * @param storedMeasure Stored measure
+     *
      * @see RolapAggregationManager#makeRequest(RolapEvaluator)
      */
-    protected RolapEvaluator overrideContext(
+    protected void overrideContext(
         RolapEvaluator evaluator,
         CrossJoinArg[] cargs,
         RolapStoredMeasure storedMeasure)
     {
         SchemaReader schemaReader = evaluator.getSchemaReader();
-        RolapEvaluator newEvaluator = evaluator.push();
         for (CrossJoinArg carg : cargs) {
             RolapLevel level = carg.getLevel();
             if (level != null) {
                 Hierarchy hierarchy = level.getHierarchy();
                 Member defaultMember =
                     schemaReader.getHierarchyDefaultMember(hierarchy);
-                newEvaluator.setContext(defaultMember);
+                evaluator.setContext(defaultMember);
             }
         }
         if (storedMeasure != null) {
-            newEvaluator.setContext(storedMeasure);
+            evaluator.setContext(storedMeasure);
         }
-        return newEvaluator;
     }
 
 

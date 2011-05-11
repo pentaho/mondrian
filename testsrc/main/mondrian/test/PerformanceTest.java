@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2010 Julian Hyde
+// Copyright (C) 2009-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,9 +25,10 @@ import java.util.*;
  */
 public class PerformanceTest extends FoodMartTestCase {
     /**
-     * Certain tests are enabled only if logging is enabled.
+     * Certain tests are enabled only if logging is enabled at debug level or
+     * higher.
      */
-    private static final Logger LOGGER =
+    public static final Logger LOGGER =
         Logger.getLogger(PerformanceTest.class);
 
     public PerformanceTest(String name) {
@@ -41,15 +42,32 @@ public class PerformanceTest extends FoodMartTestCase {
      */
     public void testBugMondrian550() {
         final TestContext testContext = getBugMondrian550Schema();
+        final Statistician statistician =
+            new Statistician("testBugMondrian550");
+        for (int i = 0; i < 10; i++) {
+            checkBugMondrian550(testContext, statistician);
+        }
+        statistician.printDurations();
+    }
 
+    private void checkBugMondrian550(
+        TestContext testContext,
+        Statistician statistician)
+    {
+        long start = System.currentTimeMillis();
         // On my Latitude D630:
         // Takes 137 seconds before bug fixed.
         // Takes 13 seconds after bug fixed.
+        // jdk1.6 marmalade 3.2 14036  17,899 12,889 ms
+        // jdk1.6 marmalade main 14036 15,845 15,180 ms
+        // jdk1.6 marmalade main 14037   TODO ms
+        // jdk1.6 marmalade main 14052 14,284 ms first, 1419 +- 12 ms
         final Result result = testContext.executeQuery(
             "select NON EMPTY {[Store Name sans All].Members} ON COLUMNS,\n"
             + "  NON EMPTY Hierarchize(Union({[ACC].[All]}, [ACC].[All].Children)) ON ROWS\n"
             + "from [Sales]\n"
             + "where ([Time].[1997].[Q4], [Measures].[EXP2])");
+        statistician.record(start);
         assertEquals(13, result.getAxes()[0].getPositions().size());
         assertEquals(3262, result.getAxes()[1].getPositions().size());
     }
@@ -59,39 +77,35 @@ public class PerformanceTest extends FoodMartTestCase {
      */
     public void testBugMondrian550Tuple() {
         final TestContext testContext = getBugMondrian550Schema();
+        final Statistician statistician =
+            new Statistician("testBugMondrian550Tuple");
+        int n = LOGGER.isDebugEnabled() ? 10 : 2;
+        for (int i = 0; i < n; i++) {
+            checkBugMondrian550Tuple(testContext, statistician);
+        }
+        statistician.printDurations();
+    }
 
+    private void checkBugMondrian550Tuple(
+        TestContext testContext, Statistician statistician)
+    {
+        long start = System.currentTimeMillis();
         // On my Latitude D630:
         // Takes 252 seconds before bug fixed.
         // Takes 45 seconds after bug fixed.
+        // jdk1.6 marmalade 3.2 14036  14,799 14,986 ms
+        // jdk1.6 marmalade main 14036 20,839 20,331 ms
+        // jdk1.6 marmalade main 14037   TODO ms
+        // jdk1.6 marmalade main 14052 9664 +- 49
         final Result result2 = testContext.executeQuery(
             "select NON EMPTY {[Store Name sans All].Members} ON COLUMNS,\n"
             + "  NON EMPTY Hierarchize(Union({[ACC].[All]}, [ACC].[All].Children))\n"
             + "   * [Gender].Children ON ROWS\n"
             + "from [Sales]\n"
             + "where ([Time].[1997].[Q4], [Measures].[EXP2])");
+        statistician.record(start);
         assertEquals(13, result2.getAxes()[0].getPositions().size());
         assertEquals(3263, result2.getAxes()[1].getPositions().size());
-    }
-
-
-    /**
-     * Test case for
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-641">
-     * Bug MONDRIAN-641</a>, "Large NON EMPTY result performs poorly with
-     * ResultStyle.ITERABLE".  Runs in ~10 seconds with ResultStyle.LIST,
-     * 99+ seconds with ITERABLE (on DELL Latitude D630).
-     */
-    public void testBug641() {
-        if (Bug.BugMondrian641Fixed) {
-            long start = System.currentTimeMillis();
-            Result result = executeQuery(
-                    "select  non empty  {  crossjoin( customers.[city].members, "
-                    + "crossjoin( [store type].[store type].members,  "
-                    + "product.[product name].members)) }"
-                    + " on 0 from sales");
-            printDuration("Bug ", start);
-            assertEquals(51148, result.getAxes()[0].getPositions().size());
-        }
     }
 
     private TestContext getBugMondrian550Schema() {
@@ -114,16 +128,88 @@ public class PerformanceTest extends FoodMartTestCase {
     }
 
     /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-641">
+     * Bug MONDRIAN-641</a>, "Large NON EMPTY result performs poorly with
+     * ResultStyle.ITERABLE".  Runs in ~10 seconds with ResultStyle.LIST,
+     * 99+ seconds with ITERABLE (on DELL Latitude D630).
+     */
+    public void testMondrianBug641() {
+        if (!Bug.BugMondrian641Fixed) {
+            return;
+        }
+        long start = System.currentTimeMillis();
+        Result result =
+            executeQuery(
+                "select  non empty  {  crossjoin( customers.[city].members, "
+                + "crossjoin( [store type].[store type].members,  "
+                + "product.[product name].members)) }"
+                + " on 0 from sales");
+        // jdk1.6 marmalade main 14036 287,940 518,349 ms
+        printDuration("testBugMondrian641", start);
+        assertEquals(51148, result.getAxes()[0].getPositions().size());
+    }
+
+    /**
      * Tests performance when an MDX query contains a very large explicit set.
      */
     public void testVeryLargeExplicitSet() {
-        // All numbers in the following are on mackerel (a Dell D630 laptop
-        // running Vista and JDK 1.6 against Access).
-        Result result;
         final TestContext testContext = getTestContext();
-        long t0 = System.currentTimeMillis();
+        final Statistician[] statisticians = {
+            // jdk1.6 mackerel access main old    5,000 ms
+            // jdk1.6 marmalade 3.2 14036   4,376 4,055 ms
+            // jdk1.6 marmalade main 14036  4,471 3,589 ms
+            // jdk1.6 marmalade main 14037  4,400 ms
+            // jdk1.6 marmalade main 14052  5,280 ms
+            new Statistician("testVeryLargeExplicitSet: Execute axis"),
+
+            // Execute:
+            // first:
+            // jdk1.6 mackerel access old  75,000 ms
+            // jdk1.6 marmalade main 14036 19,262 18,493 ms
+            // jdk1.6 marmalade main 14037 19,000 ms
+            // jdk1.6 marmalade 3.2 14036  18,710 19,077 ms
+            // jdk1.6 marmalade main 14052 21,739 ms
+            //
+            // second:
+            // jdk1.6 mackerel access old   65,000 ms
+            // jdk1.6 marmalade main 14036     526 429 ms
+            // jdk1.6 marmalade main 14037     800 400 ms
+            // jdk1.6 marmalade 3.2 14036      313 406 ms
+            // jdk1.6 marmalade main 14052     577 ms
+            new Statistician("testVeryLargeExplicitSet: Execute"),
+
+            // Param query:
+            // first:
+            // unknown revision mackerel  2,424 ms
+            // jdk1.6 marmalade 3.2 14036    34 115 72 ms
+            // jdk1.6 marmalade main 14036   66 107 ms
+            // jdk1.6 marmalade main 14037  117 ms
+            // jdk1.6 marmalade main 14052   47 ms
+            //
+            // second:
+            // unknown revision mackerel    51 ms
+            // jdk1.6 marmalade 3.2 14036   18 102 ms
+            // jdk1.6 marmalade main 14036  86 105 95 ms
+            // jdk1.6 marmalade main 14037 106 ms
+            // jdk1.6 marmalade main 14052  21 ms
+            new Statistician("testVeryLargeExplicitSet: Param query"),
+        };
+        for (int i = 0; i < 10; i++) {
+            checkVeryLargeExplicitSet(statisticians, testContext);
+        }
+        for (Statistician statistician : statisticians) {
+            statistician.printDurations();
+        }
+    }
+
+    private void checkVeryLargeExplicitSet(
+        Statistician[] statisticians, TestContext testContext)
+    {
+        Result result;
+        long start = System.currentTimeMillis();
         final Axis axis = testContext.executeAxis("Customers.Members");
-        printDuration("Execute axis", t0); // 5s on mackerel
+        statisticians[0].record(start);
         final List<Position> positionList = axis.getPositions();
         assertEquals(10407, positionList.size());
 
@@ -154,16 +240,10 @@ public class PerformanceTest extends FoodMartTestCase {
                 + "        [Measures].[Store Sales]} on 0,\n"
                 + "  [Selected Customers] on 1\n"
                 + "FROM [Sales]";
-            t0 = System.currentTimeMillis();
+            start = System.currentTimeMillis();
             result = testContext.executeQuery(mdx);
-            printDuration("First execute", t0); // 75s on mackerel
-            assertEquals(
-                memberList.size(),
-                result.getAxes()[1].getPositions().size());
 
-            t0 = System.currentTimeMillis();
-            result = testContext.executeQuery(mdx);
-            printDuration("Second execute", t0); // 65s on mackerel
+            statisticians[1].record(start);
             assertEquals(
                 memberList.size(),
                 result.getAxes()[1].getPositions().size());
@@ -180,12 +260,10 @@ public class PerformanceTest extends FoodMartTestCase {
                 + "  [Selected Customers] on 1\n"
                 + "FROM [Sales]");
         query.setParameter("Foo", memberList);
-        t0 = System.currentTimeMillis();
+        start = System.currentTimeMillis();
         result = testContext.getConnection().execute(query);
-        printDuration("Param query, 1st execute", t0); // 2424ms on mackerel
-        t0 = System.currentTimeMillis();
-        result = testContext.getConnection().execute(query);
-        printDuration("Param query, 2nd execute", t0); // 51ms on mackerel
+
+        statisticians[2].record(start);
         assertEquals(
             memberList.size(),
             result.getAxes()[1].getPositions().size());
@@ -199,29 +277,44 @@ public class PerformanceTest extends FoodMartTestCase {
      * FunUtil.count()"</a>.
      */
     public void testBugMondrian639() {
-        // On my mac mini:
-        // takes 233 seconds before bug fixed
-        // takes 4.5 seconds after bug fixed
+        // unknown revision before fix mac-mini 233,000 ms
+        // unknown revision after fix mac-mini    4,500 ms
+        // jdk1.6 marmalade 3.2 14036             1,821 1,702 ms
+        // jdk1.6 marmalade main 14036            2,185 3,208 1,431 ms
+        // jdk1.6 marmalade main 14037            1,801 ms
+        // jdk1.6 marmalade main 14052              396 +- 28 ms
+        final Statistician statistician =
+            new Statistician("testBugMondrian639");
+        for (int i = 0; i < 20; i++) {
+            checkBugMondrian639(statistician);
+        }
+        statistician.printDurations();
+    }
+
+    private void checkBugMondrian639(Statistician statistician) {
         long start = System.currentTimeMillis();
         Result result = executeQuery(
             "WITH SET [cjoin] AS "
-            + "crossjoin(customers.members, [store type].[store type].members) "
+            + "crossjoin(customers.members, "
+            + TestContext.hierarchyName("store type", "store type")
+            + ".[store type].members) "
             + "MEMBER [Measures].[total_available_count] "
             + "AS Format(COUNT([cjoin]), \"#####\") "
             + "SELECT"
             + "{[cjoin]} ON COLUMNS, "
             + "{[Measures].[total_available_count]} ON ROWS "
             + "FROM sales");
-        printDuration("Bug 639 (count() iterations)", start);
+
+        statistician.record(start);
         assertEquals(62442, result.getAxes()[0].getPositions().size());
         assertEquals(1, result.getAxes()[1].getPositions().size());
     }
 
-    /***
-     * Tests performance of a larger schema with a large number of result cells
-     * Runs in 186 seconds without nonAllPositions array in RolapEvaluator
-     * Runs in 14 seconds when RolapEvaluator.getProperty uses getNonAllMembers
-     * The performance boost gets more significant as the schema size grows
+    /**
+     * Tests performance of a larger schema with a large number of result cells.
+     * Runs in 186 seconds without nonAllPositions array in RolapEvaluator.
+     * Runs in 14 seconds when RolapEvaluator.getProperty uses getNonAllMembers.
+     * The performance boost gets more significant as the schema size grows.
      */
     public void testBigResultsWithBigSchemaPerforms() {
         if (!LOGGER.isDebugEnabled()) {
@@ -245,7 +338,12 @@ public class PerformanceTest extends FoodMartTestCase {
             + " on 1 from sales";
         long start = System.currentTimeMillis();
         testContext.executeQuery(mdx);
-        printDuration("getProperty taking a long time", start);
+
+        // jdk1.6 marmalade 3.2 14036  23,588 23,426 ms
+        // jdk1.6 marmalade main 14036 26,430 27,045 25,497 ms
+        // jdk1.6 marmalade main 14037 26,893 ms
+        // jdk1.6 marmalade main 14052 29,870 ms
+        printDuration("testBigResultsWithBigSchemaPerforms", start);
     }
 
     private String extraGenders(final int numGenders) {
@@ -275,6 +373,10 @@ public class PerformanceTest extends FoodMartTestCase {
      * <li>mondrian-3.2 13489 marmalade oracle jdk1.6 565 561 579 596 avg 575
      * <li>mondrian-3.2 13490 marmalade oracle jdk1.6 607 611 581 605 avg 601
      * <li>mondrian-3.2 xxxxx marmalade oracle jdk1.6 562 583 541 522 avg 552
+     * <li>mondrian-3.2 14036 marmalade oracle jdk1.6 451 433
+     * <li>mondrian     14036 marmalade oracle jdk1.6 598 552
+     * <li>mondrian     14037 marmalade oracle jdk1.6 626 596
+     * <li>mondrian     14052 marmalade oracle jdk1.6 454
      * </ul>
      */
     public void testInMemoryCalc() {
@@ -345,10 +447,97 @@ public class PerformanceTest extends FoodMartTestCase {
         printDuration("in-memory calc", start);
     }
 
-    private void printDuration(String desc, long t0) {
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-843">
+     * Bug MONDRIAN-843, where Filter is inefficient.</a>
+     */
+    public void testBugMondrian843() {
+        // On my core i7 laptop:
+        // takes 2.5 seconds before bug fixed
+        // takes 0.4 seconds after bug fixed
+        // jdk1.6 marmalade 3.2 14036     826 ms
+        // jdk1.6 marmalade main 14036  4,427 3,894 ms
+        // jdk1.6 marmalade main 14037   TODO ms
+        // jdk1.6 marmalade main 14052    800 ms
+        long start = System.currentTimeMillis();
+        executeQuery(
+            "WITH SET [filtered] AS "
+            + "FILTER({customers.members, customers.members, customers.members, customers.members, customers.members}, [Measures].[Unit Sales] > 100) "
+            + "SELECT"
+            + "{[Measures].[Unit Sales]} ON COLUMNS, "
+            + "{[filtered]} ON ROWS "
+            + "FROM sales");
+        printDuration("testBugMondrian843", start);
+    }
+
+    private static long printDuration(String desc, long t0) {
         final long t1 = System.currentTimeMillis();
         final long duration = t1 - t0;
         LOGGER.debug(desc + " took " + duration + " millis");
+        return duration;
+    }
+
+    /**
+     * Collects statistics for a test that is run multiple times.
+     */
+    static class Statistician {
+        private final String desc;
+        private final List<Long> durations = new ArrayList<Long>();
+
+        public Statistician(String desc) {
+            super();
+            this.desc = desc;
+        }
+
+        private void record(long start) {
+            durations.add(
+                printDuration(
+                    desc + " iteration #" + (durations.size() + 1),
+                    start));
+        }
+
+        private void printDurations() {
+            if (!LOGGER.isDebugEnabled()) {
+                return;
+            }
+
+            List<Long> coreDurations = durations;
+            String durationsString = durations.toString(); // save before sort
+
+            // Ignore the first 3 readings. (JIT compilation takes a while to
+            // kick in.)
+            if (coreDurations.size() > 3) {
+                coreDurations = durations.subList(3, durations.size());
+            }
+            Collections.sort(coreDurations);
+            // Further ignore the max and min.
+            List<Long> coreCoreDurations = coreDurations;
+            if (coreDurations.size() > 4) {
+                coreCoreDurations =
+                    coreDurations.subList(1, coreDurations.size() - 1);
+            }
+            long sum = 0;
+            int count = coreCoreDurations.size();
+            for (long duration : coreCoreDurations) {
+                sum += duration;
+            }
+            final double avg = ((double) sum) / count;
+            double y = 0;
+            for (long duration : coreCoreDurations) {
+                double x = duration - avg;
+                y += x * x;
+            }
+            final double stddev = Math.sqrt(y / count);
+            LOGGER.debug(
+                desc + ": "
+                + durations.get(0) + " first; "
+                + avg + " +- "
+                + stddev + "; "
+                + coreDurations.get(0) + " min; "
+                + coreDurations.get(coreDurations.size() - 1) + " max; "
+                + durationsString + " millis");
+        }
     }
 }
 

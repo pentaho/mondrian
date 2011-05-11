@@ -3,14 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.*;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
@@ -82,8 +82,9 @@ public class VisualTotalsFunDef extends FunDefBase {
             this.stringCalc = stringCalc;
         }
 
-        public List evaluateList(Evaluator evaluator) {
-            final List<Member> list = listCalc.evaluateList(evaluator);
+        public TupleList evaluateList(Evaluator evaluator) {
+            final List<Member> list =
+                listCalc.evaluateList(evaluator).slice(0);
             final List<Member> resultList = new ArrayList<Member>(list);
             final int memberCount = list.size();
             for (int i = memberCount - 1; i >= 0; --i) {
@@ -99,7 +100,7 @@ public class VisualTotalsFunDef extends FunDefBase {
                     }
                 }
             }
-            return resultList;
+            return new UnaryTupleList(resultList);
         }
 
         private VisualTotalMember createMember(
@@ -198,7 +199,7 @@ public class VisualTotalsFunDef extends FunDefBase {
      */
     public static class VisualTotalMember extends RolapMemberBase {
         private final Member member;
-        private final Exp exp;
+        private Exp exp;
 
         VisualTotalMember(
             Member member,
@@ -247,22 +248,42 @@ public class VisualTotalsFunDef extends FunDefBase {
             return exp;
         }
 
+        public void setExpression(Exp exp) {
+            this.exp = exp;
+        }
+
+        public void setExpression(
+            Evaluator evaluator,
+            List<Member> childMembers)
+        {
+            final Exp exp = makeExpr(childMembers);
+            final Validator validator = evaluator.getQuery().createValidator();
+            final Exp validatedExp = exp.accept(validator);
+            setExpression(validatedExp);
+        }
+
+        private Exp makeExpr(final List childMemberList) {
+            Exp[] memberExprs = new Exp[childMemberList.size()];
+            for (int i = 0; i < childMemberList.size(); i++) {
+                final Member childMember = (Member) childMemberList.get(i);
+                memberExprs[i] = new MemberExpr(childMember);
+            }
+            return new UnresolvedFunCall(
+                    "Aggregate",
+                    new Exp[] {
+                        new UnresolvedFunCall(
+                                "{}",
+                                Syntax.Braces,
+                                memberExprs)
+                    });
+        }
+
         public int getOrdinal() {
             return member.getOrdinal();
         }
 
         public Member getDataMember() {
             return member;
-        }
-
-        public OlapElement lookupChild(SchemaReader schemaReader, String s) {
-            throw new UnsupportedOperationException();
-        }
-
-        public OlapElement lookupChild(
-            SchemaReader schemaReader, String s, MatchType matchType)
-        {
-            throw new UnsupportedOperationException();
         }
 
         public String getQualifiedName() {
@@ -275,6 +296,9 @@ public class VisualTotalsFunDef extends FunDefBase {
 
         public Object getPropertyValue(String propertyName, boolean matchCase) {
             Property property = Property.lookup(propertyName, matchCase);
+            if (property == null) {
+                return null;
+            }
             switch (property.ordinal) {
             case Property.CHILDREN_CARDINALITY_ORDINAL:
                 return member.getPropertyValue(propertyName, matchCase);

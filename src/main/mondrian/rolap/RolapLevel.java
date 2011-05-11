@@ -4,17 +4,18 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
+
 import mondrian.olap.*;
 
 import org.apache.log4j.Logger;
+import org.olap4j.impl.UnmodifiableArrayMap;
 
 import java.util.*;
 
@@ -90,7 +91,6 @@ public class RolapLevel extends LevelBase {
 
         assert annotationMap != null;
         assert hideMemberCondition != null;
-
     }
 
     public org.olap4j.metadata.Level.Type getLevelType() {
@@ -131,6 +131,10 @@ public class RolapLevel extends LevelBase {
         return hideMemberCondition;
     }
 
+    public final boolean isUnique() {
+        return true; // REVIEW:
+    }
+
     /**
      * Returns whether this level is parent-child.
      */
@@ -151,7 +155,6 @@ public class RolapLevel extends LevelBase {
     }
 
     // helper for constructor
-
     void initLevel(
         RolapSchemaLoader schemaLoader,
         boolean closure)

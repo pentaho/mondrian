@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -128,6 +128,12 @@ public class RolapStar {
      * Number of columns (column and columnName).
      */
     private int columnCount;
+
+    /**
+     * Keeps track of the columns across all tables. Should have
+     * a number of elements equal to columnCount.
+     */
+    private final List<Column> columnList = new ArrayList<Column>();
 
     private final Dialect sqlQueryDialect;
 
@@ -733,6 +739,25 @@ public class RolapStar {
         }
     }
 
+    /**
+     * Adds a column to the star's list of all columns across all tables.
+     *
+     * @param c the column to add
+     */
+    private void addColumn(Column c) {
+        columnList.add(c.getBitPosition(), c);
+    }
+
+    /**
+     * Look up the column at the given bit position.
+     *
+     * @param bitPos bit position to look up
+     * @return column at the given position
+     */
+    public Column getColumn(int bitPos) {
+        return columnList.get(bitPos);
+    }
+
     public RolapSchema getSchema() {
         return schema;
     }
@@ -868,6 +893,7 @@ public class RolapStar {
         private final Table table;
         private final RolapSchema.PhysExpr expression;
         private final Dialect.Datatype datatype;
+        private final SqlStatement.Type internalType;
         private final String name;
 
         /**
@@ -875,7 +901,6 @@ public class RolapStar {
          * is the coloumn associated with next highest Level.
          */
         private final Column parentColumn;
-
         /**
          * This is used during both aggregate table recognition and aggregate
          * table generation. For multiple dimension usages, multiple shared
@@ -896,10 +921,14 @@ public class RolapStar {
          */
         private final Column nameColumn;
 
+
         /** this has a unique value per star */
         private final int bitPosition;
-
-        private int cardinality = -1;
+        /**
+         * The estimated cardinality of the column.
+         * {@link Integer#MIN_VALUE} means unknown.
+         */
+        private int approxCardinality = Integer.MIN_VALUE;
 
         private Column(
             String name,
@@ -907,7 +936,9 @@ public class RolapStar {
             RolapSchema.PhysExpr expression,
             Dialect.Datatype datatype)
         {
-            this(name, table, expression, datatype, null, null, null);
+            this(
+                name, table, expression, datatype, null, null,
+                null, null, Integer.MIN_VALUE, table.star.nextColumnCount());
         }
 
         private Column(
@@ -915,9 +946,12 @@ public class RolapStar {
             Table table,
             RolapSchema.PhysExpr expression,
             Dialect.Datatype datatype,
+            SqlStatement.Type internalType,
             Column nameColumn,
             Column parentColumn,
-            String usagePrefix)
+            String usagePrefix,
+            int approxCardinality,
+            int bitPosition)
         {
             assert table != null;
             assert name != null;
@@ -930,28 +964,15 @@ public class RolapStar {
             this.table = table;
             this.expression = expression;
             this.datatype = datatype;
-            this.bitPosition = table.star.nextColumnCount();
+            this.internalType = internalType;
+            this.bitPosition = bitPosition;
             this.nameColumn = nameColumn;
             this.parentColumn = parentColumn;
             this.usagePrefix = usagePrefix;
-        }
-
-        /**
-         * Fake column.
-         *
-         * @param datatype Datatype
-         */
-        protected Column(Dialect.Datatype datatype)
-        {
-            assert datatype != null;
-            this.table = null;
-            this.expression = null;
-            this.datatype = datatype;
-            this.name = null;
-            this.parentColumn = null;
-            this.nameColumn = null;
-            this.usagePrefix = null;
-            this.bitPosition = 0;
+            this.approxCardinality = approxCardinality;
+            if (table != null) {
+                table.star.addColumn(this);
+            }
         }
 
         public boolean equals(Object obj) {
@@ -1023,7 +1044,7 @@ public class RolapStar {
          * @return the column cardinality.
          */
         public int getCardinality() {
-            if (cardinality == -1) {
+            if (approxCardinality == Integer.MIN_VALUE) {
                 RolapStar star = getStar();
                 RolapSchema schema = star.getSchema();
                 Integer card =
@@ -1032,18 +1053,18 @@ public class RolapStar {
                         expression);
 
                 if (card != null) {
-                    cardinality = card;
+                    approxCardinality = card;
                 } else {
                     // If not cached, issue SQL to get the cardinality for
                     // this column.
-                    cardinality = getCardinality(star.getDataSource());
+                    approxCardinality = getCardinality(star.getDataSource());
                     schema.putCachedRelationExprCardinality(
                         table.getRelation(),
                         expression,
-                        cardinality);
+                        approxCardinality);
                 }
             }
-            return cardinality;
+            return approxCardinality;
         }
 
         private int getCardinality(DataSource dataSource) {
@@ -1176,6 +1197,10 @@ public class RolapStar {
                     }
                 }
             }
+        }
+
+        public SqlStatement.Type getInternalType() {
+            return internalType;
         }
     }
 
@@ -1335,28 +1360,30 @@ public class RolapStar {
         public List<Column> lookupColumns(String columnName) {
             List<Column> list = new ArrayList<Column>();
             for (Column column : getColumns()) {
-                final RolapSchema.PhysExpr expr = column.getExpression();
-                if (expr instanceof RolapSchema.PhysRealColumn) {
-                    RolapSchema.PhysRealColumn columnExpr =
-                        (RolapSchema.PhysRealColumn) expr;
-                    if (columnExpr.name.equals(columnName)) {
-                        list.add(column);
-                    }
+                if (matches(columnName, column)) {
+                    list.add(column);
                 }
             }
             return list;
         }
 
+        private boolean matches(String columnName, Column column) {
+            final RolapSchema.PhysExpr expr = column.getExpression();
+            if (expr instanceof RolapSchema.PhysRealColumn) {
+                RolapSchema.PhysRealColumn columnExpr =
+                    (RolapSchema.PhysRealColumn) expr;
+                return columnExpr.name.equals(columnName);
+            } else if (expr instanceof RolapSchema.PhysCalcColumn) {
+                RolapSchema.PhysCalcColumn columnExpr =
+                    (RolapSchema.PhysCalcColumn) expr;
+                return columnExpr.toSql().equals(columnName);
+            }
+            return false;
+        }
+
         public Column lookupColumn(String columnName) {
             for (Column column : getColumns()) {
-                final RolapSchema.PhysExpr expr = column.getExpression();
-                if (expr instanceof RolapSchema.PhysRealColumn) {
-                    RolapSchema.PhysRealColumn columnExpr =
-                        (RolapSchema.PhysRealColumn) column.getExpression();
-                    if (columnExpr.name.equals(columnName)) {
-                        return column;
-                    }
-                } else if (column.getName().equals(columnName)) {
+                if (matches(columnName, column)) {
                     return column;
                 }
             }
@@ -1399,12 +1426,15 @@ public class RolapStar {
                         expr.getDatatype() == null
                             ? Dialect.Datatype.Numeric
                             : expr.getDatatype(),
+                        null,
                         // TODO: obsolete nameColumn
                         null,
                         // TODO: obsolete parentColumn
                         null,
                         // TODO: pass in usagePrefix (from DimensionUsage)
-                        null);
+                        null,
+                        -1,
+                        star.nextColumnCount());
                 addColumn(column);
                 return column;
             }

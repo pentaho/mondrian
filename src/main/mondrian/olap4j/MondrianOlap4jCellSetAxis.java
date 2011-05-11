@@ -3,15 +3,19 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
-import mondrian.olap.AxisOrdinal;
+import mondrian.calc.TupleList;
+import mondrian.olap.*;
+import mondrian.rolap.RolapAxis;
 import org.olap4j.*;
-import org.olap4j.metadata.*;
+import org.olap4j.Axis;
+import org.olap4j.Position;
+import org.olap4j.metadata.Member;
 
 import java.util.*;
 
@@ -26,7 +30,7 @@ import java.util.*;
 class MondrianOlap4jCellSetAxis implements CellSetAxis {
     private final MondrianOlap4jCellSet olap4jCellSet;
     private final mondrian.olap.QueryAxis queryAxis;
-    private final mondrian.olap.Axis axis;
+    private final RolapAxis axis;
 
     /**
      * Creates a MondrianOlap4jCellSetAxis.
@@ -38,7 +42,7 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
     MondrianOlap4jCellSetAxis(
         MondrianOlap4jCellSet olap4jCellSet,
         mondrian.olap.QueryAxis queryAxis,
-        mondrian.olap.Axis axis)
+        RolapAxis axis)
     {
         assert olap4jCellSet != null;
         assert queryAxis != null;
@@ -68,52 +72,15 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
     }
 
     public List<Position> getPositions() {
-        if (queryAxis.getAxisOrdinal().isFilter()) {
-            final List<Hierarchy> hierarchyList =
-                getAxisMetaData().getHierarchies();
-            final Member[] members = new Member[hierarchyList.size()];
-            final MondrianOlap4jConnection olap4jConnection =
-                olap4jCellSet.olap4jStatement.olap4jConnection;
-            for (mondrian.olap.Member member : axis.getPositions().get(0)) {
-                final MondrianOlap4jHierarchy hierarchy =
-                    olap4jConnection.toOlap4j(
-                        member.getHierarchy());
-                members[hierarchyList.indexOf(hierarchy)] =
-                    olap4jConnection.toOlap4j(
-                        member);
+        return new AbstractList<Position>() {
+            public Position get(final int index) {
+                return new MondrianOlap4jPosition(axis.getTupleList(), index);
             }
-            int k = -1;
-            for (Hierarchy hierarchy : hierarchyList) {
-                ++k;
-                if (members[k] == null) {
-                    members[k] =
-                        ((MondrianOlap4jHierarchy) hierarchy)
-                            .getDefaultMember();
-                }
+
+            public int size() {
+                return axis.getTupleList().size();
             }
-            final Position position = new Position() {
-                public List<Member> getMembers() {
-                    return Arrays.asList(members);
-                }
-
-                public int getOrdinal() {
-                    return 0;
-                }
-            };
-            return Collections.singletonList(position);
-        } else {
-            return new AbstractList<Position>() {
-                public Position get(final int index) {
-                    final mondrian.olap.Position mondrianPosition =
-                        axis.getPositions().get(index);
-                    return new MondrianOlap4jPosition(mondrianPosition, index);
-                }
-
-                public int size() {
-                    return axis.getPositions().size();
-                }
-            };
-        }
+        };
     }
 
     public int getPositionCount() {
@@ -125,34 +92,34 @@ class MondrianOlap4jCellSetAxis implements CellSetAxis {
     }
 
     private class MondrianOlap4jPosition implements Position {
-        private final mondrian.olap.Position mondrianPosition;
+        private final TupleList tupleList;
         private final int index;
 
         /**
          * Creates a MondrianOlap4jPosition.
          *
-         * @param mondrianPosition Mondrian position
-         * @param index Index
+         * @param tupleList Tuple list
+         * @param index Index of tuple
          */
         public MondrianOlap4jPosition(
-            mondrian.olap.Position mondrianPosition,
+            TupleList tupleList,
             int index)
         {
-            this.mondrianPosition = mondrianPosition;
+            this.tupleList = tupleList;
             this.index = index;
         }
 
         public List<Member> getMembers() {
             return new AbstractList<Member>() {
-                public Member get(int index) {
+                public Member get(int slice) {
                     final mondrian.olap.Member mondrianMember =
-                        mondrianPosition.get(index);
+                        tupleList.get(slice, index);
                     return olap4jCellSet.olap4jStatement.olap4jConnection
                         .toOlap4j(mondrianMember);
                 }
 
                 public int size() {
-                    return mondrianPosition.size();
+                    return tupleList.getArity();
                 }
             };
         }

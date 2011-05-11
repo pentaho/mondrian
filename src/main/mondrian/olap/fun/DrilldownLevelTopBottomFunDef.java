@@ -1,18 +1,18 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.impl.*;
 import mondrian.olap.*;
 import mondrian.olap.type.ScalarType;
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
-import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
 
 import java.util.*;
@@ -87,7 +87,7 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
             call,
             new Calc[] {listCalc, integerCalc, orderCalc})
         {
-            public List evaluateList(Evaluator evaluator) {
+            public TupleList evaluateList(Evaluator evaluator) {
                 // Use a native evaluator, if more efficient.
                 // TODO: Figure this out at compile time.
                 SchemaReader schemaReader = evaluator.getSchemaReader();
@@ -95,10 +95,11 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
                     schemaReader.getNativeSetEvaluator(
                         call.getFunDef(), call.getArgs(), evaluator, this);
                 if (nativeEvaluator != null) {
-                    return (List) nativeEvaluator.execute(ResultStyle.LIST);
+                    return
+                        (TupleList) nativeEvaluator.execute(ResultStyle.LIST);
                 }
 
-                List<Member> list = listCalc.evaluateList(evaluator);
+                TupleList list = listCalc.evaluateList(evaluator);
                 int n = integerCalc.evaluateInteger(evaluator);
                 if (n == FunUtil.IntegerNull || n <= 0) {
                     return list;
@@ -110,7 +111,8 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
                     level = levelCalc.evaluateLevel(evaluator);
                 }
                 List<Member> result = new ArrayList<Member>();
-                for (Member member : list) {
+                assert list.getArity() == 1;
+                for (Member member : list.slice(0)) {
                     result.add(member);
                     if (level != null && member.getLevel() != level) {
                         if (level.getDimension() != member.getDimension()) {
@@ -126,20 +128,23 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
                     }
                     List<Member> children =
                         schemaReader.getMemberChildren(member);
+                    final int savepoint = evaluator.savepoint();
+                    evaluator.setNonEmpty(false);
                     final List<Member> sortedChildren =
                         sortMembers(
-                            evaluator.push(false),
+                            evaluator,
                             children,
                             children,
                             orderCalc,
                             top,
                             true);
+                    evaluator.restore(savepoint);
                     int x = Math.min(n, sortedChildren.size());
                     for (int i = 0; i < x; i++) {
                         result.add(sortedChildren.get(i));
                     }
                 }
-                return result;
+                return new UnaryTupleList(result);
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

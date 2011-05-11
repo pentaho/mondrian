@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,8 +13,6 @@ import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractIntegerCalc;
 import mondrian.mdx.ResolvedFunCall;
-
-import java.util.List;
 
 /**
  * Definition of the <code>Count</code> MDX function.
@@ -50,18 +48,22 @@ class CountFunDef extends AbstractAggregateFunDef {
         return new AbstractIntegerCalc(
                 call, new Calc[] {calc}) {
             public int evaluateInteger(Evaluator evaluator) {
-                evaluator = evaluator.push(false);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final int count;
                 if (calc instanceof IterCalc) {
                     IterCalc iterCalc = (IterCalc) calc;
-                    Iterable iterable =
+                    TupleIterable iterable =
                         evaluateCurrentIterable(iterCalc, evaluator);
-                    return count(evaluator, iterable, includeEmpty);
+                    count = count(evaluator, iterable, includeEmpty);
                 } else {
                     // must be ListCalc
                     ListCalc listCalc = (ListCalc) calc;
-                    List memberList = evaluateCurrentList(listCalc, evaluator);
-                    return count(evaluator, memberList, includeEmpty);
+                    TupleList list = evaluateCurrentList(listCalc, evaluator);
+                    count = count(evaluator, list, includeEmpty);
                 }
+                evaluator.restore(savepoint);
+                return count;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

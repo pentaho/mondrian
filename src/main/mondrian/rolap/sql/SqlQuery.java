@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,13 +13,13 @@
 
 package mondrian.rolap.sql;
 
+import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
-import mondrian.rolap.RolapUtil;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapSchema;
+import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
+import mondrian.util.Pair;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -82,7 +82,7 @@ public class SqlQuery {
     private boolean distinct;
 
     private final ClauseList select;
-    private final ClauseList from;
+    private final FromClauseList from;
     private final ClauseList where;
     private final ClauseList groupBy;
     private final ClauseList having;
@@ -90,6 +90,8 @@ public class SqlQuery {
     private final List<ClauseList> groupingSet;
     private final ClauseList groupingFunction;
 
+    private final List<SqlStatement.Type> types =
+        new ArrayList<SqlStatement.Type>();
 
     /** Controls whether table optimization hints are used */
     private boolean allowHints;
@@ -122,7 +124,7 @@ public class SqlQuery {
 
         // both select and from allow duplications
         this.select = new ClauseList(true);
-        this.from = new ClauseList(true);
+        this.from = new FromClauseList(true);
 
         this.groupingFunction = new ClauseList(false);
         this.where = new ClauseList(false);
@@ -196,6 +198,7 @@ public class SqlQuery {
         final boolean failIfExists)
     {
         assert alias != null;
+        assert alias.length() > 0;
 
         if (fromAliases.contains(alias)) {
             if (failIfExists) {
@@ -211,17 +214,13 @@ public class SqlQuery {
         buf.append('(');
         buf.append(query);
         buf.append(')');
-        if (alias != null) {
-            Util.assertTrue(alias.length() > 0);
-
-            if (dialect.allowsAs()) {
-                buf.append(" as ");
-            } else {
-                buf.append(' ');
-            }
-            dialect.quoteIdentifier(alias, buf);
-            fromAliases.add(alias);
+        if (dialect.allowsAs()) {
+            buf.append(" as ");
+        } else {
+            buf.append(' ');
         }
+        dialect.quoteIdentifier(alias, buf);
+        fromAliases.add(alias);
 
         from.add(buf.toString());
         return true;
@@ -340,23 +339,14 @@ public class SqlQuery {
             /*
         } else if (relation instanceof MondrianDef.Join) {
             final MondrianDef.Join join = (MondrianDef.Join) relation;
-            final String leftAlias = join.getLeftAlias();
-            final String rightAlias = join.getRightAlias();
-
-            boolean addLeft = addFrom(join.left, leftAlias, failIfExists);
-            boolean addRight = addFrom(join.right, rightAlias, failIfExists);
-
-            boolean added = addLeft || addRight;
-            if (added) {
-                buf.setLength(0);
-
-                dialect.quoteIdentifier(buf, leftAlias, join.leftKey);
-                buf.append(" = ");
-                dialect.quoteIdentifier(buf, rightAlias, join.rightKey);
-
-                addWhere(buf.toString());
-            }
-            return added;
+            return addJoin(
+                join.left,
+                join.getLeftAlias(),
+                join.leftKey,
+                join.right,
+                join.getRightAlias(),
+                join.rightKey,
+                failIfExists);
 */
         } else {
             Util.deprecated("remove above commented section", false);
@@ -513,7 +503,7 @@ public class SqlQuery {
                 buf,
                 distinct ? "select distinct " : "select ", ", ");
             buf.append(getGroupingFunction(""));
-            from.toBuffer(buf, " from ", ", ");
+            from.toBuffer(buf, fromAliases);
             where.toBuffer(buf, " where ", " and ");
             if (hasGroupingSet()) {
                 StringWriter stringWriter = new StringWriter();
@@ -614,6 +604,122 @@ public class SqlQuery {
 
     public void addGroupingFunction(String columnExpr) {
         groupingFunction.add(columnExpr);
+
+        // A grouping function will end up in the select clause implicitly. It
+        // needs a corresponding type.
+        types.add(null);
+    }
+
+    public void addType(SqlStatement.Type type) {
+        types.add(type);
+    }
+
+    public String toSql() {
+        return toString();
+    }
+
+    public Pair<String, List<SqlStatement.Type>> toSqlAndTypes() {
+        assert types.size() == select.size() + groupingFunction.size()
+            : types.size() + " types, "
+              + (select.size() + groupingFunction.size())
+              + " select items in query " + this;
+        return Pair.of(toString(), types);
+    }
+
+    private static class JoinOnClause {
+        private final String condition;
+        private final String left;
+        private final String right;
+
+        JoinOnClause(String condition, String left, String right) {
+            this.condition = condition;
+            this.left = left;
+            this.right = right;
+        }
+    }
+
+    static class FromClauseList extends ClauseList {
+        private final List<JoinOnClause> joinOnClauses =
+            new ArrayList<JoinOnClause>();
+
+        FromClauseList(boolean allowsDups) {
+            super(allowsDups);
+        }
+
+        public void addOn(
+            String leftAlias,
+            String leftKey,
+            String rightAlias,
+            String rightKey,
+            String condition)
+        {
+            if (leftAlias == null && rightAlias == null) {
+                // do nothing
+            } else if (leftAlias == null) {
+                // left is the form of 'Table'.'column'
+                leftAlias = rightAlias;
+            } else if (rightAlias == null) {
+                // Only left contains table name, Table.Column = abc
+                // store the same name for right tables
+                rightAlias = leftAlias;
+            }
+            joinOnClauses.add(
+                new JoinOnClause(condition, leftAlias, rightAlias));
+        }
+
+        public void toBuffer(StringBuilder buf, List<String> fromAliases) {
+            int n = 0;
+            for (int i = 0; i < size(); i++) {
+                final String s = get(i);
+                final String alias = fromAliases.get(i);
+                if (n++ == 0) {
+                    buf.append(" from ");
+                    buf.append(s);
+                } else {
+                    // Add "JOIN t ON (a = b ,...)" to the FROM clause. If there
+                    // is no JOIN clause matching this alias (or no JOIN clauses
+                    // at all), append just ", t".
+                    appendJoin(fromAliases.subList(0, i), s, alias, buf);
+                }
+            }
+        }
+
+        void appendJoin(
+            final List<String> addedTables,
+            final String from,
+            final String alias,
+            final StringBuilder buf)
+        {
+            int n = 0;
+            // first check when the current table is on the left side
+            for (JoinOnClause joinOnClause : joinOnClauses) {
+                // the first table was added before join, it has to be handled
+                // specially: Table.column = expression
+                if ((addedTables.size() == 1
+                     && addedTables.get(0).equals(joinOnClause.left)
+                     && joinOnClause.left.equals(joinOnClause.right))
+                    || (alias.equals(joinOnClause.left)
+                        && addedTables.contains(joinOnClause.right))
+                    || (alias.equals(joinOnClause.right)
+                        && addedTables.contains(joinOnClause.left)))
+                {
+                    if (n++ == 0) {
+                        buf.append(" join ").append(from).append(" on ");
+                    } else {
+                        buf.append(" and ");
+                    }
+                    buf.append(joinOnClause.condition);
+                }
+            }
+            if (n == 0) {
+                // No "JOIN ... ON" clause matching this alias (or maybe no
+                // JOIN ... ON clauses at all, if this is a database that
+                // doesn't support ANSI-join syntax). Append an old-style FROM
+                // item separated by a comma.
+                buf.append(joinOnClauses.isEmpty() ? ", " : " cross join ")
+                    .append(from);
+            }
+        }
     }
 
     public static String getBestName(Dialect dialect) {
@@ -621,12 +727,11 @@ public class SqlQuery {
     }
 
     static class ClauseList extends ArrayList<String> {
-        private final boolean allowDups;
+        protected final boolean allowDups;
 
         ClauseList(final boolean allowDups) {
             this.allowDups = allowDups;
         }
-
 
         /**
          * Adds an element to this ClauseList if either duplicates are allowed
@@ -648,11 +753,10 @@ public class SqlQuery {
             final String first,
             final String sep)
         {
-            boolean firstTime = true;
+            int n = 0;
             for (String s : this) {
-                if (firstTime) {
+                if (n++ == 0) {
                     buf.append(first);
-                    firstTime = false;
                 } else {
                     buf.append(sep);
                 }
@@ -680,14 +784,13 @@ public class SqlQuery {
             final String last)
         {
             String subprefix = prefix + "    ";
-            boolean firstTime = true;
+            int n = 0;
             for (String s : this) {
-                if (firstTime) {
+                if (n++ == 0) {
                     if (generateFormattedSql) {
                         pw.print(prefix);
                     }
                     pw.print(first);
-                    firstTime = false;
                 } else {
                     pw.print(sep);
                 }
@@ -701,7 +804,7 @@ public class SqlQuery {
                 }
             }
             pw.print(last);
-            if (!firstTime && generateFormattedSql) {
+            if (n > 0 && generateFormattedSql) {
                 pw.println();
             }
         }
@@ -732,6 +835,28 @@ public class SqlQuery {
                 throw Util.newError("View has no 'generic' variant");
             }
             return genericCode;
+        }
+    }
+
+    private static class RelInfo {
+        final MondrianDef.Relation relation;
+        final String leftKey;
+        final String leftAlias;
+        final String rightKey;
+        final String rightAlias;
+
+        public RelInfo(
+            MondrianDef.Relation relation,
+            String leftKey,
+            String leftAlias,
+            String rightKey,
+            String rightAlias)
+        {
+            this.relation = relation;
+            this.leftKey = leftKey;
+            this.leftAlias = leftAlias;
+            this.rightKey = rightKey;
+            this.rightAlias = rightAlias;
         }
     }
 }

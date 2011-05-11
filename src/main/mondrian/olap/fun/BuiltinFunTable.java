@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -611,7 +611,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         final Calc valueFunCall)
                     {
                         Member member =
-                            evaluator.getParent().getContext(hierarchy);
+                            evaluator.getPreviousContext(hierarchy);
                         List<Member> members = new ArrayList<Member>();
                         evaluator.getSchemaReader()
                             .getParentChildContributingChildren(
@@ -634,8 +634,13 @@ public class BuiltinFunTable extends FunTableImpl {
                                 "Don't know how to rollup aggregator '"
                                 + aggregator + "'");
                         }
-                        return rollup.aggregate(
-                            evaluator.push(), members, valueFunCall);
+                        final int savepoint = evaluator.savepoint();
+                        final Object o = rollup.aggregate(
+                            evaluator,
+                            new UnaryTupleList(members),
+                            valueFunCall);
+                        evaluator.restore(savepoint);
+                        return o;
                     }
                 };
             }
@@ -660,7 +665,7 @@ public class BuiltinFunTable extends FunTableImpl {
                         compiler.compileList(call.getArg(0));
                 return new AbstractIntegerCalc(call, new Calc[] {listCalc}) {
                     public int evaluateInteger(Evaluator evaluator) {
-                        List list = listCalc.evaluateList(evaluator);
+                        TupleList list = listCalc.evaluateList(evaluator);
                         return count(evaluator, list, true);
                     }
                 };
@@ -738,9 +743,10 @@ public class BuiltinFunTable extends FunTableImpl {
                 return new GenericCalc(call) {
                     public Object evaluate(Evaluator evaluator) {
                         Member member = memberCalc.evaluateMember(evaluator);
-                        Member old = evaluator.setContext(member);
+                        final int savepoint = evaluator.savepoint();
+                        evaluator.setContext(member);
                         Object value = evaluator.evaluateCurrent();
-                        evaluator.setContext(old);
+                        evaluator.restore(savepoint);
                         return value;
                     }
 
@@ -783,14 +789,13 @@ public class BuiltinFunTable extends FunTableImpl {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
                 final MemberCalc memberCalc =
-                        compiler.compileMember(call.getArg(0));
-                return new AbstractMemberListCalc(call, new Calc[] {memberCalc})
+                    compiler.compileMember(call.getArg(0));
+                return new AbstractListCalc(call, new Calc[] {memberCalc})
                 {
-                    public List<Member> evaluateMemberList(
-                        Evaluator evaluator)
-                    {
+                    public TupleList evaluateList(Evaluator evaluator) {
                         Member member = memberCalc.evaluateMember(evaluator);
-                        return ascendants(evaluator.getSchemaReader(), member);
+                        return new UnaryTupleList(
+                            ascendants(evaluator.getSchemaReader(), member));
                     }
                 };
             }
@@ -824,16 +829,15 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final MemberCalc memberCalc =
                     compiler.compileMember(call.getArg(0));
-                return new AbstractMemberListCalc(
+                return new AbstractListCalc(
                     call, new Calc[] {memberCalc}, false)
                 {
-                    public List<Member> evaluateMemberList(
-                        Evaluator evaluator)
-                    {
+                    public TupleList evaluateList(Evaluator evaluator) {
                         // Return the list of children. The list is immutable,
                         // hence 'false' above.
                         Member member = memberCalc.evaluateMember(evaluator);
-                        return getNonEmptyMemberChildren(evaluator, member);
+                        return new UnaryTupleList(
+                            getNonEmptyMemberChildren(evaluator, member));
                     }
                 };
             }
@@ -936,10 +940,10 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final HierarchyCalc hierarchyCalc =
                         compiler.compileHierarchy(call.getArg(0));
-                return new AbstractMemberListCalc(
+                return new AbstractListCalc(
                     call, new Calc[] {hierarchyCalc})
                 {
-                    public List<Member> evaluateMemberList(Evaluator evaluator)
+                    public TupleList evaluateList(Evaluator evaluator)
                     {
                         Hierarchy hierarchy =
                             hierarchyCalc.evaluateHierarchy(evaluator);
@@ -960,10 +964,10 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final HierarchyCalc hierarchyCalc =
                         compiler.compileHierarchy(call.getArg(0));
-                return new AbstractMemberListCalc(
+                return new AbstractListCalc(
                     call, new Calc[] {hierarchyCalc})
                 {
-                    public List<Member> evaluateMemberList(Evaluator evaluator)
+                    public TupleList evaluateList(Evaluator evaluator)
                     {
                         Hierarchy hierarchy =
                             hierarchyCalc.evaluateHierarchy(evaluator);
@@ -987,9 +991,9 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final LevelCalc levelCalc =
                         compiler.compileLevel(call.getArg(0));
-                return new AbstractMemberListCalc(call, new Calc[] {levelCalc})
+                return new AbstractListCalc(call, new Calc[] {levelCalc})
                 {
-                    public List<Member> evaluateMemberList(Evaluator evaluator)
+                    public TupleList evaluateList(Evaluator evaluator)
                     {
                         Level level = levelCalc.evaluateLevel(evaluator);
                         return levelMembers(level, evaluator, true);
@@ -1013,15 +1017,13 @@ public class BuiltinFunTable extends FunTableImpl {
         {
             public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler)
             {
-                final MemberListCalc listCalc =
-                    (MemberListCalc) compiler.compileList(call.getArg(0));
-                return new AbstractMemberListCalc(call, new Calc[] {listCalc}) {
-                    public List<Member> evaluateMemberList(Evaluator evaluator)
+                final ListCalc listCalc =
+                    compiler.compileList(call.getArg(0));
+                return new AbstractListCalc(call, new Calc[] {listCalc}) {
+                    public TupleList evaluateList(Evaluator evaluator)
                     {
-                        List<Member> list =
-                            listCalc.evaluateMemberList(evaluator);
-                        list = removeCalculatedMembers(list);
-                        return list;
+                        TupleList list = listCalc.evaluateList(evaluator);
+                        return removeCalculatedMembers(list);
                     }
                 };
             }
@@ -1038,13 +1040,14 @@ public class BuiltinFunTable extends FunTableImpl {
             {
                 final MemberCalc memberCalc =
                         compiler.compileMember(call.getArg(0));
-                return new AbstractMemberListCalc(call, new Calc[] {memberCalc})
+                return new AbstractListCalc(call, new Calc[] {memberCalc})
                 {
-                    public List<Member> evaluateMemberList(Evaluator evaluator)
+                    public TupleList evaluateList(Evaluator evaluator)
                     {
                         final Member member =
                             memberCalc.evaluateMember(evaluator);
-                        return memberSiblings(member, evaluator);
+                        return new UnaryTupleList(
+                            memberSiblings(member, evaluator));
                     }
                 };
             }

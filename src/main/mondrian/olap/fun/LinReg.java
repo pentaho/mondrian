@@ -3,17 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
-
 package mondrian.olap.fun;
 
 import mondrian.olap.*;
-import mondrian.olap.type.TupleType;
-import mondrian.olap.type.SetType;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.calc.impl.ValueCalc;
@@ -163,10 +159,7 @@ public abstract class LinReg extends FunDefBase {
             call.getArgCount() > 2
             ? compiler.compileDouble(call.getArg(2))
             : new ValueCalc(call);
-        final boolean isTuples =
-                ((SetType) listCalc.getType()).getElementType() instanceof
-                TupleType;
-        return new LinRegCalc(call, listCalc, yCalc, xCalc, isTuples, regType);
+        return new LinRegCalc(call, listCalc, yCalc, xCalc, regType);
     }
 
     /////////////////////////////////////////////////////////////////////////
@@ -217,7 +210,7 @@ public abstract class LinReg extends FunDefBase {
         /**
          * strength of the correlation
          *
-         * @param rSquared
+         * @param rSquared Strength of the correlation
          */
         public void setRSquared(double rSquared) {
             this.rSquared = rSquared;
@@ -281,11 +274,8 @@ public abstract class LinReg extends FunDefBase {
                 call.getArgCount() > 3
                 ? compiler.compileDouble(call.getArg(3))
                 : new ValueCalc(call);
-            final boolean isTuples =
-                    ((SetType) listCalc.getType()).getElementType() instanceof
-                    TupleType;
             return new PointCalc(
-                call, xPointCalc, listCalc, yCalc, xCalc, isTuples);
+                call, xPointCalc, listCalc, yCalc, xCalc);
         }
     }
 
@@ -294,28 +284,24 @@ public abstract class LinReg extends FunDefBase {
         private final ListCalc listCalc;
         private final DoubleCalc yCalc;
         private final DoubleCalc xCalc;
-        private final boolean tuples;
 
         public PointCalc(
             ResolvedFunCall call,
             DoubleCalc xPointCalc,
             ListCalc listCalc,
             DoubleCalc yCalc,
-            DoubleCalc xCalc,
-            boolean tuples)
+            DoubleCalc xCalc)
         {
             super(call, new Calc[]{xPointCalc, listCalc, yCalc, xCalc});
             this.xPointCalc = xPointCalc;
             this.listCalc = listCalc;
             this.yCalc = yCalc;
             this.xCalc = xCalc;
-            this.tuples = tuples;
         }
 
         public double evaluateDouble(Evaluator evaluator) {
             double xPoint = xPointCalc.evaluateDouble(evaluator);
-            Value value =
-                    process(evaluator, listCalc, yCalc, xCalc, tuples);
+            Value value = process(evaluator, listCalc, yCalc, xCalc);
             if (value == null) {
                 return FunUtil.DoubleNull;
             }
@@ -388,15 +374,18 @@ public abstract class LinReg extends FunDefBase {
         Evaluator evaluator,
         ListCalc listCalc,
         DoubleCalc yCalc,
-        DoubleCalc xCalc,
-        boolean isTuples)
+        DoubleCalc xCalc)
     {
-        List members = listCalc.evaluateList(evaluator.push(false));
+        final int savepoint = evaluator.savepoint();
+        evaluator.setNonEmpty(false);
+        TupleList members = listCalc.evaluateList(evaluator);
 
-        evaluator = evaluator.push();
+        evaluator.restore(savepoint);
 
-        SetWrapper[] sws = evaluateSet(
-                evaluator, members, new DoubleCalc[] {yCalc, xCalc}, isTuples);
+        SetWrapper[] sws =
+            evaluateSet(
+                evaluator, members, new DoubleCalc[] {yCalc, xCalc});
+        evaluator.restore(savepoint);
         SetWrapper swY = sws[0];
         SetWrapper swX = sws[1];
 
@@ -588,7 +577,6 @@ public abstract class LinReg extends FunDefBase {
         private final ListCalc listCalc;
         private final DoubleCalc yCalc;
         private final DoubleCalc xCalc;
-        private final boolean tuples;
         private final int regType;
 
         public LinRegCalc(
@@ -596,20 +584,17 @@ public abstract class LinReg extends FunDefBase {
             ListCalc listCalc,
             DoubleCalc yCalc,
             DoubleCalc xCalc,
-            boolean tuples,
             int regType)
         {
             super(call, new Calc[]{listCalc, yCalc, xCalc});
             this.listCalc = listCalc;
             this.yCalc = yCalc;
             this.xCalc = xCalc;
-            this.tuples = tuples;
             this.regType = regType;
         }
 
         public double evaluateDouble(Evaluator evaluator) {
-            Value value =
-                    process(evaluator, listCalc, yCalc, xCalc, tuples);
+            Value value = process(evaluator, listCalc, yCalc, xCalc);
             if (value == null) {
                 return FunUtil.DoubleNull;
             }

@@ -3,14 +3,12 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +41,7 @@ class DistinctFunDef extends FunDefBase {
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
         final ListCalc listCalc =
-                compiler.compileList(call.getArg(0));
+            compiler.compileList(call.getArg(0));
         return new CalcImpl(call, listCalc);
     }
 
@@ -55,45 +53,12 @@ class DistinctFunDef extends FunDefBase {
             this.listCalc = listCalc;
         }
 
-        public List evaluateList(Evaluator evaluator) {
-            List list = listCalc.evaluateList(evaluator);
-            return distinct(list);
-        }
-
-        static List<Object> distinct(List list) {
-            Set<MemberHelper> set = new HashSet<MemberHelper>(list.size());
-            List<Object> result = new ArrayList<Object>();
-
-            for (Object element : list) {
-                MemberHelper lookupObj = new MemberHelper(element);
-
-                if (set.add(lookupObj)) {
-                    result.add(element);
-                }
-            }
-            return result;
-        }
-
-        public List<Member> evaluateMemberList(Evaluator evaluator) {
-            List<Member> list =
-                ((MemberListCalc) listCalc).evaluateMemberList(evaluator);
-            Set<Member> set = new HashSet<Member>(list.size());
-            List<Member> result = new ArrayList<Member>();
-            for (Member element : list) {
-                if (set.add(element)) {
-                    result.add(element);
-                }
-            }
-            return result;
-        }
-
-        public List<Member[]> evaluateTupleList(Evaluator evaluator) {
-            List<Member[]> list =
-                ((TupleListCalc) listCalc).evaluateTupleList(evaluator);
+        public TupleList evaluateList(Evaluator evaluator) {
+            TupleList list = listCalc.evaluateList(evaluator);
             Set<List<Member>> set = new HashSet<List<Member>>(list.size());
-            List<Member[]> result = new ArrayList<Member[]>();
-            for (Member[] element : list) {
-                if (set.add(Arrays.asList(element))) {
+            TupleList result = list.cloneList(list.size());
+            for (List<Member> element : list) {
+                if (set.add(element)) {
                     result.add(element);
                 }
             }

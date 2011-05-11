@@ -3,18 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
 import mondrian.calc.Calc;
+import mondrian.calc.TupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.spi.Dialect;
-
-import java.util.List;
 
 /**
  * Describes an aggregation operator, such as "sum" or "count".
@@ -31,7 +30,8 @@ public abstract class RolapAggregator
 
     public static final RolapAggregator Sum =
         new RolapAggregator("sum", index++, false) {
-            public Object aggregate(Evaluator evaluator, List members, Calc exp)
+            public Object aggregate(
+                Evaluator evaluator, TupleList members, Calc exp)
             {
                 return FunUtil.sum(evaluator, members, exp);
             }
@@ -43,7 +43,8 @@ public abstract class RolapAggregator
                 return Sum;
             }
 
-            public Object aggregate(Evaluator evaluator, List members, Calc exp)
+            public Object aggregate(
+                Evaluator evaluator, TupleList members, Calc exp)
             {
                 return FunUtil.count(evaluator, members, false);
             }
@@ -57,7 +58,8 @@ public abstract class RolapAggregator
 
     public static final RolapAggregator Min =
         new RolapAggregator("min", index++, false) {
-            public Object aggregate(Evaluator evaluator, List members, Calc exp)
+            public Object aggregate(
+                Evaluator evaluator, TupleList members, Calc exp)
             {
                 return FunUtil.min(evaluator, members, exp);
             }
@@ -65,7 +67,8 @@ public abstract class RolapAggregator
 
     public static final RolapAggregator Max =
         new RolapAggregator("max", index++, false) {
-            public Object aggregate(Evaluator evaluator, List members, Calc exp)
+            public Object aggregate(
+                Evaluator evaluator, TupleList members, Calc exp)
             {
                 return FunUtil.max(evaluator, members, exp);
             }
@@ -77,7 +80,8 @@ public abstract class RolapAggregator
                 return null;
             }
 
-            public Object aggregate(Evaluator evaluator, List members, Calc exp)
+            public Object aggregate(
+                Evaluator evaluator, TupleList members, Calc exp)
             {
                 return FunUtil.avg(evaluator, members, exp);
             }
@@ -95,7 +99,8 @@ public abstract class RolapAggregator
                 return Count;
             }
 
-            public Object aggregate(Evaluator evaluator, List members, Calc exp)
+            public Object aggregate(
+                Evaluator evaluator, TupleList members, Calc exp)
             {
                 throw new UnsupportedOperationException();
             }
@@ -135,7 +140,9 @@ public abstract class RolapAggregator
             this.factCountExpr = factCountExpr;
         }
 
-        public Object aggregate(Evaluator evaluator, List members, Calc exp) {
+        public Object aggregate(
+            Evaluator evaluator, TupleList members, Calc exp)
+        {
             throw new UnsupportedOperationException();
         }
     }

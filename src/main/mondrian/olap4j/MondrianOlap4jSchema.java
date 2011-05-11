@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -20,7 +20,6 @@ import java.util.Locale;
 import java.util.Collection;
 import java.util.Collections;
 
-import mondrian.olap.*;
 import mondrian.olap.Hierarchy;
 
 /**
@@ -33,16 +32,28 @@ import mondrian.olap.Hierarchy;
  */
 class MondrianOlap4jSchema implements Schema, Named {
     final MondrianOlap4jCatalog olap4jCatalog;
-    private final mondrian.olap.Schema schema;
-    final SchemaReader schemaReader;
+    final String schemaName;
+    final mondrian.olap.Schema schema;
 
+    /**
+     * Creates a MondrianOlap4jSchema.
+     *
+     * <p>The name of the schema is not necessarily the same as
+     * schema.getName(). If schema was loaded in a datasources.xml file, the
+     * name it was given there (in the &lt;Catalog&gt; element) trumps the name
+     * in the catalog.xml file.
+     *
+     * @param olap4jCatalog Catalog containing schema
+     * @param schemaName Name of schema
+     * @param schema Mondrian schema
+     */
     MondrianOlap4jSchema(
         MondrianOlap4jCatalog olap4jCatalog,
-        SchemaReader schemaReader,
+        String schemaName,
         mondrian.olap.Schema schema)
     {
         this.olap4jCatalog = olap4jCatalog;
-        this.schemaReader = schemaReader;
+        this.schemaName = schemaName;
         this.schema = schema;
     }
 
@@ -77,7 +88,7 @@ class MondrianOlap4jSchema implements Schema, Named {
     }
 
     public String getName() {
-        return schema.getName();
+        return schemaName;
     }
 }
 

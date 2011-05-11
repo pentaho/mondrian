@@ -9,6 +9,8 @@
 */
 package mondrian.test;
 
+import java.sql.SQLException;
+
 import mondrian.olap.*;
 
 /**
@@ -635,7 +637,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         assertQueryThrows(
             "select [Time].Members\n"
             + "from [Warehouse and Sales]",
-            "Syntax error at line 2, column 2, token 'FROM'");
+            "Syntax error at line 2, column 1, token 'from'");
     }
 
     public void testNamingDimensionAttr() {
@@ -1418,6 +1420,67 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             "select crossjoin([Products].DefaultMember, [Gender].Members) on 0\n"
             + "from [Warehouse and Sales]",
             "xx");
+    }
+
+    /**
+     * Tests the ambiguity between a level and a member of the same name,
+     * both in SSAS compatible mode and in regular mode.
+     * @throws SQLException If the test fails.
+     */
+    public void testCanHaveMemberWithSameNameAsLevel() throws SQLException {
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+             "<Dimension name=\"SameName\" foreignKey=\"customer_id\">\n"
+             + " <Hierarchy hasAll=\"true\" primaryKey=\"id\">\n"
+             + " <InlineTable alias=\"sn\">\n"
+             + " <ColumnDefs>\n"
+             + " <ColumnDef name=\"id\" type=\"Numeric\" />\n"
+             + " <ColumnDef name=\"desc\" type=\"String\" />\n"
+             + " </ColumnDefs>\n"
+             + " <Rows>\n"
+             + " <Row>\n"
+             + " <Value column=\"id\">1</Value>\n"
+             + " <Value column=\"desc\">SameName</Value>\n"
+             + " </Row>\n"
+             + " </Rows>\n"
+             + " </InlineTable>\n"
+             + " <Level name=\"SameName\" column=\"desc\" uniqueMembers=\"true\" />\n"
+             + " </Hierarchy>\n"
+             + "</Dimension>");
+
+        org.olap4j.metadata.Member member = testContext.getOlap4jConnection()
+            .getOlapSchema().getCubes().get("Sales").getDimensions()
+            .get("SameName").getHierarchies().get("SameName").getLevels()
+            .get("SameName").getMembers().get(0);
+        assertEquals(
+            "[SameName].[SameName].[SameName]",
+            member.getUniqueName());
+
+        testContext.assertQueryThrows(
+            "select {"
+            + (MondrianProperties.instance().SsasCompatibleNaming.get()
+                ? "[SameName].[SameName].[SameName]"
+                : "[SameName].[SameName]")
+            + "} on 0 from Sales",
+            "Mondrian Error:No function matches signature '{<Level>}'");
+
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            testContext.assertQueryReturns(
+                "select {[SameName].[SameName].[SameName].[SameName]} on 0 from Sales",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[SameName].[SameName].[SameName]}\n"
+                + "Row #0: \n");
+        } else {
+            testContext.assertQueryReturns(
+                "select {[SameName].[SameName].[SameName]} on 0 from Sales",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[SameName].[SameName].[SameName]}\n"
+                + "Row #0: \n");
+        }
     }
 
     /**

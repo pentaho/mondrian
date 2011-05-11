@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2002 Kana Software, Inc.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,7 +14,6 @@ import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.type.*;
 
 import java.util.*;
 
@@ -44,21 +43,20 @@ class ExistsFunDef extends FunDefBase
         final ListCalc listCalc2 = compiler.compileList(call.getArg(1));
 
         return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
-            public List evaluateList(Evaluator evaluator) {
-                List left = listCalc1.evaluateList(evaluator);
-                if (left == null || left.isEmpty()) {
-                    return Collections.EMPTY_LIST;
+            public TupleList evaluateList(Evaluator evaluator) {
+                TupleList leftTuples = listCalc1.evaluateList(evaluator);
+                if (leftTuples.isEmpty()) {
+                    return TupleCollections.emptyList(leftTuples.getArity());
                 }
-                List right = listCalc2.evaluateList(evaluator);
-                if (right == null || right.isEmpty()) {
-                    return Collections.EMPTY_LIST;
+                TupleList rightTuples = listCalc2.evaluateList(evaluator);
+                if (rightTuples.isEmpty()) {
+                    return TupleCollections.emptyList(leftTuples.getArity());
                 }
-                List result = new ArrayList();
+                TupleList result =
+                    TupleCollections.createList(leftTuples.getArity());
 
-                Object leftHead = left.get(0);
-                Object rightHead = right.get(0);
-                List<Dimension> leftDims = getDimensions(leftHead);
-                List<Dimension> rightDims = getDimensions(rightHead);
+                List<Dimension> leftDims = getDimensions(leftTuples.get(0));
+                List<Dimension> rightDims = getDimensions(rightTuples.get(0));
 
                 // map dimensions of right object to those in left object
                 // return empty list if not all of right dims can be mapped
@@ -69,48 +67,28 @@ class ExistsFunDef extends FunDefBase
                     if (leftDims.contains(d)) {
                         idxmap[i] = leftDims.indexOf(d);
                     } else {
-                        return Collections.EMPTY_LIST;
+                        return TupleCollections.emptyList(
+                           leftTuples.getArity());
                     }
                 }
 
-                for (Object  leftObject : left) {
-                    if (leftObject instanceof Object[]) {
-                        // leftObject is a tuple
-                        boolean exist = true;
-                        for (Object rightObject : right) {
-                            for (int i = 0; i < rightSize; i++) {
-                                Object [] leftObjs = (Object []) leftObject;
-                                Member leftMem = (Member) leftObjs[idxmap[i]];
-                                Member rightMem;
-                                if (! (rightObject instanceof Object [])) {
-                                    rightMem = (Member) rightObject;
-                                } else {
-                                    Object [] rightObjs =
-                                        (Object []) rightObject;
-                                    rightMem = (Member) (rightObjs[i]);
-                                }
-                                if (!isOnSameHierarchyChain(leftMem, rightMem))
-                                {
-                                    exist = false;
-                                    break;
-                                }
-                            }
-                            if (exist) {
-                                result.add(leftObject);
-                                break;
+                leftLoop:
+                for (List<Member> leftTuple : leftTuples) {
+                    rightLoop:
+                    for (List<Member> rightTuple : rightTuples) {
+                        for (int i = 0; i < rightSize; i++) {
+                            Member leftMem = leftTuple.get(idxmap[i]);
+                            Member rightMem = rightTuple.get(i);
+                            if (!isOnSameHierarchyChain(leftMem, rightMem)) {
+                                // Right tuple does not match left tuple. Try
+                                // next right tuple.
+                                continue rightLoop;
                             }
                         }
-                    } else {
-                        // leftObject is a member
-                        for (Object rightObject : right) {
-                            if (isOnSameHierarchyChain(
-                                (Member) leftObject,
-                                (Member) rightObject))
-                            {
-                                result.add(leftObject);
-                                break;
-                            }
-                        }
+                        // Left tuple matches one of the right tuples. Add it
+                        // to the result.
+                        result.add(leftTuple);
+                        continue leftLoop;
                     }
                 }
                 return result;
@@ -124,16 +102,11 @@ class ExistsFunDef extends FunDefBase
             (FunUtil.isAncestorOf(mB, mA, false));
     }
 
-    private static List<Dimension> getDimensions(Object obj)
+    private static List<Dimension> getDimensions(List<Member> members)
     {
         List<Dimension> dimensions = new ArrayList<Dimension>();
-
-        if (obj instanceof Object []) {
-            for (Object dim : (Object []) obj) {
-                dimensions.add(((Member) dim).getDimension());
-            }
-        } else {
-            dimensions.add(((Member) obj).getDimension());
+        for (Member member : members) {
+            dimensions.add(member.getDimension());
         }
         return dimensions;
     }

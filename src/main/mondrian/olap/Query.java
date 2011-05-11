@@ -31,6 +31,7 @@ import org.olap4j.impl.IdentifierParser;
 
 import org.apache.commons.collections.collection.CompositeCollection;
 import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.mdx.IdentifierSegment;
 
 /**
  * <code>Query</code> is an MDX query.
@@ -895,9 +896,9 @@ public class Query extends QueryPart {
                 }
             }
             if (value instanceof List
-                && Util.canCast((List) value, IdentifierNode.Segment.class))
+                && Util.canCast((List) value, IdentifierSegment.class))
             {
-                final List<IdentifierNode.Segment> olap4jSegmentList =
+                final List<IdentifierSegment> olap4jSegmentList =
                     Util.cast((List) value);
                 final List<Id.Segment> segmentList =
                     Util.convert(olap4jSegmentList);

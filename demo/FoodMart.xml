@@ -175,6 +175,9 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
       <Level name="City" column="city" uniqueMembers="false"/>
       <Level name="Name" column="customer_id" type="Numeric" uniqueMembers="true">
         <NameExpression>
+          <SQL dialect="hive">
+`customer`.`fullname`
+          </SQL>
           <SQL dialect="hsqldb">
 "fname" || ' ' || "lname"
           </SQL>

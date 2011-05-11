@@ -3,19 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.calc.impl;
 
+import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.TupleFunDef;
 import mondrian.olap.type.TupleType;
 import mondrian.olap.type.Type;
-import mondrian.calc.TupleCalc;
-import mondrian.calc.Calc;
-import mondrian.calc.DummyExp;
 
 /**
  * Expression which evaluates a tuple expression,
@@ -34,16 +32,20 @@ import mondrian.calc.DummyExp;
  */
 public class TupleValueCalc extends GenericCalc {
     private final TupleCalc tupleCalc;
+    private final boolean nullCheck;
 
     /**
      * Creates a TupleValueCalc.
      *
      * @param exp Expression
      * @param tupleCalc Compiled expression to evaluate the tuple
+     * @param nullCheck Whether to check for null values due to non-joining
+     *     dimensions in a virtual cube
      */
-    public TupleValueCalc(Exp exp, TupleCalc tupleCalc) {
+    public TupleValueCalc(Exp exp, TupleCalc tupleCalc, boolean nullCheck) {
         super(exp);
         this.tupleCalc = tupleCalc;
+        this.nullCheck = nullCheck;
     }
 
     public Object evaluate(Evaluator evaluator) {
@@ -52,18 +54,16 @@ public class TupleValueCalc extends GenericCalc {
             return null;
         }
 
-        final boolean needToReturnNull =
-            evaluator.needToReturnNullForUnrelatedDimension(members);
-        if (needToReturnNull) {
+        if (nullCheck
+            && evaluator.needToReturnNullForUnrelatedDimension(members))
+        {
             return null;
         }
 
-        Member [] savedMembers = new Member[members.length];
-        for (int i = 0; i < members.length; i++) {
-            savedMembers[i] = evaluator.setContext(members[i]);
-        }
+        final int savepoint = evaluator.savepoint();
+        evaluator.setContext(members);
         Object result = evaluator.evaluateCurrent();
-        evaluator.setContext(savedMembers);
+        evaluator.restore(savepoint);
         return result;
     }
 
@@ -102,7 +102,7 @@ public class TupleValueCalc extends GenericCalc {
      * This is useful when evaluating calculated members:<blockquote><code>
      *
      * <pre>WITH MEMBER [Measures].[Sales last quarter]
-     *   AS ' ([Measures].[Unit Sales], [Time].PreviousMember '</pre>
+     *   AS ' ([Measures].[Unit Sales], [Time].PreviousMember) '</pre>
      *
      * </code></blockquote>
      *
@@ -111,8 +111,10 @@ public class TupleValueCalc extends GenericCalc {
     public Calc optimize() {
         if (tupleCalc instanceof TupleFunDef.CalcImpl) {
             TupleFunDef.CalcImpl calc = (TupleFunDef.CalcImpl) tupleCalc;
-            return new MemberValueCalc(
-                    new DummyExp(type), calc.getMemberCalcs());
+            return MemberValueCalc.create(
+                new DummyExp(type),
+                calc.getMemberCalcs(),
+                nullCheck);
         }
         return this;
     }

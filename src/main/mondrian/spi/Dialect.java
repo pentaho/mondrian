@@ -2,14 +2,11 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde
+// Copyright (C) 2008-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.spi;
-
-import mondrian.olap.MondrianDef;
-import mondrian.util.Pair;
 
 import java.util.List;
 import java.util.Map;
@@ -462,7 +459,7 @@ public interface Dialect {
 
     /**
      * Returns whether this Dialect allows the GROUPING SETS construct in
-     * the GROUP BY clause. Currently Oracle, DB2 and Teradata.
+     * the GROUP BY clause. Currently Greenplum, IBM DB2, Oracle, and Teradata.
      *
      * @return Whether this Dialect allows GROUPING SETS clause
      */
@@ -701,6 +698,14 @@ public interface Dialect {
     boolean allowsSelectNotInGroupBy();
 
     /**
+     * Returns whether this dialect supports "ANSI-style JOIN syntax",
+     * {@code FROM leftTable JOIN rightTable ON conditon}.
+     *
+     * @return Whether this dialect supports FROM-JOIN-ON syntax.
+     */
+    boolean allowsJoinOn();
+
+    /**
      * Converts a SQL type code and type name to a dialect data type.
      *
      * <p>The type code is as returned from
@@ -739,6 +744,7 @@ public interface Dialect {
         DB2,
         FIREBIRD,
         GREENPLUM,
+        HIVE,
         HSQLDB,
         INFORMIX,
         INFOBRIGHT,

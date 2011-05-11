@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -54,7 +54,12 @@ public class RolapUtil {
     /**
      * Special value represents a null key.
      */
-    public static final Comparable sqlNullValue = new Comparable() {
+    public static final Comparable<?> sqlNullValue = new RolapUtilComparable();
+
+    private final static class RolapUtilComparable
+            implements Comparable, Serializable
+    {
+        private static final long serialVersionUID = -2595758291465179116L;
         public boolean equals(Object o) {
             return o == this;
         }
@@ -64,11 +69,10 @@ public class RolapUtil {
         public String toString() {
             return "#null";
         }
-
         public int compareTo(Object o) {
             return o == this ? 0 : -1;
         }
-    };
+    }
 
     /**
      * Runtime NullMemberRepresentation property change not taken into
@@ -187,7 +191,7 @@ public class RolapUtil {
         String message)
     {
         return executeQuery(
-            dataSource, sql, 0, 0, component, message, -1, -1);
+            dataSource, sql, null, 0, 0, component, message, -1, -1);
     }
 
     /**
@@ -200,8 +204,12 @@ public class RolapUtil {
      * <p>If it succeeds, the caller must call the {@link SqlStatement#close}
      * method of the returned {@link SqlStatement}.
      *
+     *
      * @param dataSource DataSource
      * @param sql SQL string
+     * @param types Suggested types of columns, or null;
+     *     if present, must have one element for each SQL column;
+     *     each not-null entry overrides deduced JDBC type of the column
      * @param maxRowCount Maximum number of rows to retrieve, <= 0 if unlimited
      * @param firstRowOrdinal Ordinal of row to skip to (1-based), or 0 to
      *   start from beginning
@@ -216,6 +224,7 @@ public class RolapUtil {
     public static SqlStatement executeQuery(
         DataSource dataSource,
         String sql,
+        List<SqlStatement.Type> types,
         int maxRowCount,
         int firstRowOrdinal,
         String component,
@@ -225,7 +234,7 @@ public class RolapUtil {
     {
         SqlStatement stmt =
             new SqlStatement(
-                dataSource, sql, maxRowCount, firstRowOrdinal, component,
+                dataSource, sql, types, maxRowCount, firstRowOrdinal, component,
                 message, resultSetType, resultSetConcurrency);
         stmt.execute();
         return stmt;
@@ -435,6 +444,13 @@ public class RolapUtil {
                 columnTypes,
                 valueList));
         return view;
+    }
+
+    public static RolapMember strip(RolapMember member) {
+        if (member instanceof RolapCubeMember) {
+            return ((RolapCubeMember) member).getRolapMember();
+        }
+        return member;
     }
 
     public static RolapSchema.PhysView convertInlineTableToRelation(

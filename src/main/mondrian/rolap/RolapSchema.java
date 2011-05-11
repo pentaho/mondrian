@@ -136,6 +136,14 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     private final Map<String, Annotation> annotationMap;
 
     /**
+     * Unique schema instance id that will be used
+     * to inform clients when the schema has changed.
+     *
+     * <p>Expect a different ID for each Mondrian instance node.
+     */
+    private final String id;
+
+    /**
      * Number of errors (messages logged via {@link #error}) encountered during
      * validation. If there are any errors, the schema is not viable for
      * queries. Fatal errors (logged via {@link #fatal}) will already have
@@ -165,12 +173,14 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         String name,
         Map<String, Annotation> annotationMap)
     {
+        this.id = Util.generateUuidString();
         this.key = key;
         this.md5Bytes = md5Bytes;
         // the order of the next two lines is important
         this.defaultRole = createDefaultRole();
+        final MondrianServer internalServer = MondrianServer.forId(null);
         this.internalConnection =
-            new RolapConnection(connectInfo, this, dataSource);
+            new RolapConnection(internalServer, connectInfo, this, dataSource);
 
         this.mapSharedHierarchyNameToHierarchy =
             new HashMap<String, RolapHierarchy>();
@@ -237,6 +247,14 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
 
     public String getName() {
         return name;
+    }
+
+    /**
+     * Returns this schema instance unique ID.
+     * @return A string representing the schema ID.
+     */
+    public String getId() {
+        return this.id;
     }
 
     public Map<String, Annotation> getAnnotationMap() {
@@ -1586,7 +1604,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                     columnsByName.put(
                         columnName,
                         new RolapSchema.PhysRealColumn(
-                            this, columnName, datatype, columnSize));
+                            this, columnName, datatype,
+                            null, columnSize));
                 }
                 final int rowCount = 1; // TODO:
                 int rowByteCount = 0;
@@ -1776,6 +1795,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                             this,
                             jdbcColumn.getName(),
                             jdbcColumn.getDatatype(),
+                            null,
                             jdbcColumn.getColumnSize());
                     columnsByName.put(
                         jdbcColumn.getName(),
@@ -2004,15 +2024,22 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         Dialect.Datatype datatype;
         protected final int columnSize;
         private final int ordinal;
+        private SqlStatement.Type internalType; // may be null
 
         public PhysColumn(
-            PhysRelation relation, String name, int columnSize)
+            PhysRelation relation,
+            String name,
+            int columnSize,
+            Dialect.Datatype datatype,
+            SqlStatement.Type internalType)
         {
             assert relation != null;
             assert name != null;
             this.name = name;
             this.relation = relation;
             this.columnSize = columnSize;
+            this.datatype = datatype;
+            this.internalType = internalType;
             this.ordinal = relation.getSchema().columnCount++;
         }
 
@@ -2026,6 +2053,10 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
 
         public Dialect.Datatype getDatatype() {
             return datatype;
+        }
+
+        public SqlStatement.Type getInternalType() {
+            return internalType;
         }
 
         public void addToFrom(
@@ -2061,6 +2092,10 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         public final int ordinal() {
             return ordinal;
         }
+
+        public void setInternalType(SqlStatement.Type internalType) {
+            this.internalType = internalType;
+        }
     }
 
     public static final class PhysRealColumn extends PhysColumn {
@@ -2070,11 +2105,11 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             PhysRelation relation,
             String name,
             Dialect.Datatype datatype,
+            SqlStatement.Type internalType,
             int columnSize)
         {
-            super(relation, name, columnSize);
+            super(relation, name, columnSize, datatype, internalType);
             this.sql = deriveSql();
-            setDatatype(datatype);
         }
 
         protected String deriveSql() {
@@ -2112,9 +2147,11 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         PhysCalcColumn(
             PhysRelation table,
             String name,
-            List<RolapSchema.PhysExpr> list)
+            Dialect.Datatype datatype,
+            SqlStatement.Type internalType,
+            List<PhysExpr> list)
         {
-            super(table, name, 4);
+            super(table, name, 4, datatype, internalType);
             this.list = list;
             compute();
         }
@@ -2213,7 +2250,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             String name,
             ElementDef xml)
         {
-            super(relation, name, 0);
+            super(relation, name, 0, null, null);
             assert tableName != null;
             assert name != null;
             this.tableName = tableName;

@@ -31,6 +31,7 @@ import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
 import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.impl.UnmodifiableArrayMap;
 import org.olap4j.metadata.*;
 
 import javax.sql.DataSource;
@@ -607,6 +608,8 @@ public class RolapSchemaLoader {
                 new RolapSchema.PhysCalcColumn(
                     physTable,
                     column.name,
+                    toType(column.type),
+                    toInternalType(column.internalType),
                     list);
             final MondrianDef.SQL sql;
             if (calcColumnDef.expression
@@ -658,11 +661,19 @@ public class RolapSchemaLoader {
                 physCalcColumn);
         } else {
             // Check that column exists; throw if not.
-            Util.discard(
+            RolapSchema.PhysColumn physColumn =
                 physTable.getColumn(
                     column.name,
-                    true));
+                    true);
+            physColumn.setDatatype(
+                toType(column.type));
+            physColumn.setInternalType(
+                toInternalType(column.internalType));
         }
+    }
+
+    private Dialect.Datatype toType(String type) {
+        return Dialect.Datatype.Numeric; // TODO:
     }
 
     /**
@@ -1734,6 +1745,19 @@ public class RolapSchemaLoader {
             hierarchy.init1(
                 this,
                 null);
+            if (xmlHierarchy.getLevels().size() == 0) {
+                throw MondrianResource.instance().HierarchyHasNoLevels.ex(
+                    hierarchy.getUniqueName());
+            }
+            Set<String> levelNameSet = new HashSet<String>();
+            for (MondrianDef.Level xmlLevel : xmlHierarchy.getLevels()) {
+                String name = first(xmlLevel.name, xmlLevel.attribute);
+                if (!levelNameSet.add(name)) {
+                    throw MondrianResource.instance()
+                        .HierarchyLevelNamesNotUnique.ex(
+                            hierarchy.getUniqueName(), name);
+                }
+            }
             for (MondrianDef.Level xmlLevel : xmlHierarchy.getLevels()) {
                 hierarchy.levelList.add(
                     createLevel(
@@ -2024,8 +2048,9 @@ public class RolapSchemaLoader {
                 Constructor<MemberFormatter> ctor = clazz.getConstructor();
                 memberFormatter = ctor.newInstance();
             } catch (Exception e) {
+                String name = first(xmlLevel.name, xmlLevel.attribute);
                 throw MondrianResource.instance().MemberFormatterLoadFailed.ex(
-                    xmlLevel.formatter, xmlLevel.name, e);
+                    xmlLevel.formatter, name, e);
             }
         } else {
             memberFormatter = null;
@@ -2752,7 +2777,7 @@ public class RolapSchemaLoader {
         final Formula formula = queryExp.formulas[i];
         calculatedMemberList.add(formula);
 
-        Member member = formula.getMdxMember();
+        final RolapMember member = (RolapMember) formula.getMdxMember();
         Boolean visible = xmlCalcMember.visible;
         if (visible == null) {
             visible = Boolean.TRUE;
@@ -2773,17 +2798,11 @@ public class RolapSchemaLoader {
                 Property.DESCRIPTION.name, xmlCalcMember.description);
         }
 
-        // Remove RolapCubeMember wrapper.
-        final Member member1;
-        if (member instanceof RolapCubeMember) {
-            member1 = ((RolapCubeMember) member).getRolapMember();
-        } else {
-            member1 = member;
-        }
+        RolapMember member1 = RolapUtil.strip(member);
         ((RolapCalculatedMember) member1).setAnnotationMap(
             createAnnotationMap(xmlCalcMember.getAnnotations()));
 
-        memberList.add((RolapMember) member);
+        memberList.add(member);
     }
 
     private void preCalcMember(
@@ -3039,6 +3058,26 @@ public class RolapSchemaLoader {
         return tableNames.size() == 1 ? tableNames.iterator().next() : null;
     }
 
+    private static final Map<String, SqlStatement.Type> VALUES =
+        UnmodifiableArrayMap.of(
+            "int", SqlStatement.Type.INT,
+            "double", SqlStatement.Type.DOUBLE,
+            "Object", SqlStatement.Type.OBJECT,
+            "String", SqlStatement.Type.STRING,
+            "long", SqlStatement.Type.LONG);
+
+    private static SqlStatement.Type toInternalType(String internalTypeName) {
+        SqlStatement.Type type = VALUES.get(internalTypeName);
+        if (type == null && internalTypeName != null) {
+            throw Util.newError(
+                "Invalid value '" + internalTypeName
+                + "' for attribute 'internalType' of element 'Level'. "
+                + "Valid values are: "
+                + VALUES.keySet());
+        }
+        return type;
+    }
+
     /**
      * Handler for errors that arise while loading a schema.
      */
@@ -3211,6 +3250,7 @@ public class RolapSchemaLoader {
                                 physInlineTable,
                                 columnDef.name,
                                 Dialect.Datatype.valueOf(columnDef.type),
+                                null,
                                 4));
                     }
                     final int columnCount =
@@ -3384,6 +3424,8 @@ public class RolapSchemaLoader {
                     return new RolapSchema.PhysCalcColumn(
                         relationSet.iterator().next(),
                         "$" + (nextId++),
+                        null,
+                        null,
                         list);
                 }
             }
@@ -3530,6 +3572,8 @@ public class RolapSchemaLoader {
                 new RolapSchema.PhysCalcColumn(
                     relation,
                     "dummy$" + (nextId++),
+                    null,
+                    null,
                     Collections.<RolapSchema.PhysExpr>singletonList(
                         new RolapSchema.PhysTextExpr("0")));
         }

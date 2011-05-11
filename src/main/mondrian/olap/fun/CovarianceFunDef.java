@@ -3,21 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.*;
 import mondrian.olap.*;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ListCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
-
-import java.util.List;
 
 /**
  * Definition of the <code>Covariance</code> and
@@ -63,9 +59,18 @@ class CovarianceFunDef extends FunDefBase {
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc1, calc2})
         {
             public double evaluateDouble(Evaluator evaluator) {
-                List memberList = listCalc.evaluateList(evaluator);
-                return (Double) covariance(
-                    evaluator.push(false), memberList, calc1, calc2, biased);
+                TupleList memberList = listCalc.evaluateList(evaluator);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final double covariance =
+                    (Double) covariance(
+                        evaluator,
+                        memberList,
+                        calc1,
+                        calc2,
+                        biased);
+                evaluator.restore(savepoint);
+                return covariance;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

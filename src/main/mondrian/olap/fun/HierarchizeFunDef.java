@@ -3,22 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractMemberListCalc;
-import mondrian.calc.impl.AbstractTupleListCalc;
+import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Evaluator;
 import mondrian.olap.FunDef;
-import mondrian.olap.Member;
-import mondrian.olap.type.SetType;
-
-import java.util.List;
 
 /**
  * Definition of the <code>Hierarchize</code> MDX function.
@@ -46,28 +41,12 @@ class HierarchizeFunDef extends FunDefBase {
             compiler.compileList(call.getArg(0), true);
         String order = getLiteralArg(call, 1, "PRE", prePost);
         final boolean post = order.equals("POST");
-        final int arity = ((SetType) listCalc.getType()).getArity();
-        if (arity == 1) {
-            final MemberListCalc memberListCalc = (MemberListCalc) listCalc;
-            return new AbstractMemberListCalc(call, new Calc[] {listCalc}) {
-                public List<Member> evaluateMemberList(Evaluator evaluator) {
-                    List<Member> list =
-                        memberListCalc.evaluateMemberList(evaluator);
-                    hierarchizeMemberList(list, post);
-                    return list;
-                }
-            };
-        } else {
-            final TupleListCalc tupleListCalc = (TupleListCalc) listCalc;
-            return new AbstractTupleListCalc(call, new Calc[] {listCalc}) {
-                public List<Member[]> evaluateTupleList(Evaluator evaluator) {
-                    List<Member[]> list =
-                        tupleListCalc.evaluateTupleList(evaluator);
-                    hierarchizeTupleList(list, post, arity);
-                    return list;
-                }
-            };
-        }
+        return new AbstractListCalc(call, new Calc[] {listCalc}) {
+            public TupleList evaluateList(Evaluator evaluator) {
+                TupleList list = listCalc.evaluateList(evaluator);
+                return hierarchizeTupleList(list, post);
+            }
+        };
     }
 }
 

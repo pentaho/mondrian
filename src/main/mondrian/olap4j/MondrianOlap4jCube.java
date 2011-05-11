@@ -3,12 +3,18 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
+import mondrian.olap.Id;
+import mondrian.olap.Role;
+import mondrian.olap.SchemaReader;
+import mondrian.olap.Util;
+
+import org.olap4j.mdx.IdentifierSegment;
 import org.olap4j.metadata.*;
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
@@ -24,7 +30,7 @@ import java.util.*;
  * @since May 24, 2007
  */
 class MondrianOlap4jCube implements Cube, Named {
-    private final mondrian.olap.Cube cube;
+    final mondrian.olap.Cube cube;
     final MondrianOlap4jSchema olap4jSchema;
 
     MondrianOlap4jCube(
@@ -84,7 +90,13 @@ class MondrianOlap4jCube implements Cube, Named {
             (MondrianOlap4jLevel)
                 getDimensions().get("Measures").getDefaultHierarchy()
                     .getLevels().get(0);
-        return Olap4jUtil.cast(measuresLevel.getMembers());
+        try {
+            return Olap4jUtil.cast(measuresLevel.getMembers());
+        } catch (OlapException e) {
+            // OlapException not possible, since measures are stored in memory.
+            // Demote from checked to unchecked exception.
+            throw new RuntimeException(e);
+        }
     }
 
     public NamedList<NamedSet> getSets() {
@@ -110,42 +122,73 @@ class MondrianOlap4jCube implements Cube, Named {
         return cube.getUniqueName();
     }
 
-    public String getCaption(Locale locale) {
+    public String getCaption() {
         // todo: i81n
         return cube.getCaption();
     }
 
-    public String getDescription(Locale locale) {
+    public String getDescription() {
         // todo: i81n
         return cube.getDescription();
     }
 
-    public MondrianOlap4jMember lookupMember(String... nameParts) {
+    public boolean isVisible() {
+        return true;
+    }
+
+    public MondrianOlap4jMember lookupMember(
+        List<IdentifierSegment> nameParts)
+        throws OlapException
+    {
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
-        final mondrian.olap.SchemaReader schemaReader =
-            cube.getSchemaReader(olap4jConnection.connection.getRole());
+        final Role role = olap4jConnection.getMondrianConnection().getRole();
+        final SchemaReader schemaReader = cube.getSchemaReader(role);
+        return lookupMember(schemaReader, nameParts);
+    }
 
+    private MondrianOlap4jMember lookupMember(
+        SchemaReader schemaReader,
+        List<IdentifierSegment> nameParts)
+    {
         final List<mondrian.olap.Id.Segment> segmentList =
             new ArrayList<mondrian.olap.Id.Segment>();
-        for (String namePart : nameParts) {
-            segmentList.add(
-                new mondrian.olap.Id.Segment(
-                    namePart, mondrian.olap.Id.Quoting.QUOTED));
+        for (IdentifierSegment namePart : nameParts) {
+            segmentList.add(fromOlap4j(namePart));
         }
         final mondrian.olap.Member member =
             schemaReader.getMemberByUniqueName(segmentList, false);
         if (member == null) {
             return null;
         }
-        return olap4jConnection.toOlap4j(member);
+
+        return olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
+            .olap4jConnection.toOlap4j(member);
+    }
+
+    private Id.Segment fromOlap4j(IdentifierSegment segment) {
+        switch (segment.getQuoting()) {
+        case KEY:
+            return new Id.Segment(segment.getName(), Id.Quoting.KEY);
+        case QUOTED:
+            return new Id.Segment(segment.getName(), Id.Quoting.QUOTED);
+        case UNQUOTED:
+            return new Id.Segment(segment.getName(), Id.Quoting.UNQUOTED);
+        default:
+            throw Util.unexpected(segment.getQuoting());
+        }
     }
 
     public List<Member> lookupMembers(
         Set<Member.TreeOp> treeOps,
-        String... nameParts) throws OlapException
+        List<IdentifierSegment> nameParts) throws OlapException
     {
-        final MondrianOlap4jMember member = lookupMember(nameParts);
+        final MondrianOlap4jConnection olap4jConnection =
+            olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
+        final Role role = olap4jConnection.getMondrianConnection().getRole();
+        final SchemaReader schemaReader = cube.getSchemaReader(role);
+        final MondrianOlap4jMember member =
+            lookupMember(schemaReader, nameParts);
         if (member == null) {
             return Collections.emptyList();
         }
@@ -158,7 +201,7 @@ class MondrianOlap4jCube implements Cube, Named {
             for (MondrianOlap4jMember m = member.getParentMember();
                 m != null;
                 m = m.getParentMember())
-                {
+            {
                 list.add(0, m);
             }
         } else if (treeOps.contains(Member.TreeOp.PARENT)) {
@@ -176,10 +219,14 @@ class MondrianOlap4jCube implements Cube, Named {
             final MondrianOlap4jMember parentMember = member.getParentMember();
             NamedList<MondrianOlap4jMember> siblingMembers;
             if (parentMember != null) {
-                siblingMembers = parentMember.getChildMembers();
+                siblingMembers =
+                    olap4jConnection.toOlap4j(
+                        schemaReader.getMemberChildren(parentMember.member));
             } else {
                 siblingMembers =
-                    Olap4jUtil.cast(member.getHierarchy().getRootMembers());
+                    olap4jConnection.toOlap4j(
+                        schemaReader.getHierarchyRootMembers(
+                            member.member.getHierarchy()));
             }
             List<MondrianOlap4jMember> targetList = list;
             for (MondrianOlap4jMember siblingMember : siblingMembers) {
@@ -200,14 +247,9 @@ class MondrianOlap4jCube implements Cube, Named {
 
         // Add descendants and/or children.
         if (treeOps.contains(Member.TreeOp.DESCENDANTS)) {
-            for (MondrianOlap4jMember childMember : member.getChildMembers()) {
-                list.add(childMember);
-                addDescendants(list, childMember);
-            }
+            addDescendants(list, schemaReader, olap4jConnection, member, true);
         } else if (treeOps.contains(Member.TreeOp.CHILDREN)) {
-            for (MondrianOlap4jMember childMember : member.getChildMembers()) {
-                list.add(childMember);
-            }
+            addDescendants(list, schemaReader, olap4jConnection, member, false);
         }
         // Lastly, add siblings which occur after the member itself. They
         // occur after all of the descendants in the hierarchical ordering.
@@ -217,14 +259,27 @@ class MondrianOlap4jCube implements Cube, Named {
         return Olap4jUtil.cast(list);
     }
 
-    private static void addDescendants(
+    private void addDescendants(
         List<MondrianOlap4jMember> list,
-        MondrianOlap4jMember member)
+        SchemaReader schemaReader,
+        MondrianOlap4jConnection olap4jConnection,
+        MondrianOlap4jMember member,
+        boolean recurse)
     {
-        for (MondrianOlap4jMember childMember : member.getChildMembers()) {
+        for (mondrian.olap.Member m
+            : schemaReader.getMemberChildren(member.member))
+        {
+            MondrianOlap4jMember childMember = olap4jConnection.toOlap4j(m);
             list.add(childMember);
-            addDescendants(list, childMember);
+            if (recurse) {
+                addDescendants(
+                    list, schemaReader, olap4jConnection, childMember, recurse);
+            }
         }
+    }
+
+    public boolean isDrillThroughEnabled() {
+        return true;
     }
 }
 

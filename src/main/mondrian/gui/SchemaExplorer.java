@@ -24,6 +24,7 @@ import javax.swing.table.*;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.PlainDocument;
 import javax.swing.tree.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -1069,7 +1070,7 @@ public class SchemaExplorer
         //========================================================
         // popup menu
         //========================================================
-        jPopupMenu = new JPopupMenu();
+        jPopupMenu = new CustomJPopupMenu();
 
         //========================================================
         // tree mouse listener
@@ -1346,9 +1347,18 @@ public class SchemaExplorer
      * @param evt
      */
     protected void addMeasure(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -1403,9 +1413,18 @@ public class SchemaExplorer
     }
 
     protected void addAggPattern(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -1469,9 +1488,18 @@ public class SchemaExplorer
     }
 
     protected void addAggName(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -1530,9 +1558,18 @@ public class SchemaExplorer
     }
 
     protected void addAggExclude(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -1608,9 +1645,18 @@ public class SchemaExplorer
     }
 
     protected void addAggIgnoreColumn(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -1663,9 +1709,18 @@ public class SchemaExplorer
     }
 
     protected void addAggForeignKey(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -1716,9 +1771,18 @@ public class SchemaExplorer
     }
 
     protected void addAggMeasure(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -1767,9 +1831,18 @@ public class SchemaExplorer
     }
 
     protected void addAggLevel(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -1817,9 +1890,18 @@ public class SchemaExplorer
     }
 
     protected void addAggFactCount(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -1868,9 +1950,18 @@ public class SchemaExplorer
     }
 
     protected void addVirtualCubeMeasure(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -1928,8 +2019,17 @@ public class SchemaExplorer
     }
 
     protected void addCalculatedMember(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2049,7 +2149,17 @@ public class SchemaExplorer
 
     protected void delete(EventObject evt) {
         // delete the selected schema object
-        TreePath tpath = tree.getSelectionPath();
+        TreePath tpath = null;
+        Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
         if (tpath == null) {
             JOptionPane.showMessageDialog(
                 this,
@@ -2235,8 +2345,17 @@ public class SchemaExplorer
      * @param evt
      */
     protected void addDimension(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2331,8 +2450,17 @@ public class SchemaExplorer
 
 
     protected void addVirtualCubeDimension(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
         int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
@@ -2425,9 +2553,18 @@ public class SchemaExplorer
     }
 
     protected void addNamedSet(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -2514,9 +2651,18 @@ public class SchemaExplorer
     }
 
     protected void addDimensionUsage(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -2571,9 +2717,18 @@ public class SchemaExplorer
     }
 
     protected void addSchemaGrant(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -2624,9 +2779,18 @@ public class SchemaExplorer
     }
 
     protected void addCubeGrant(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -2679,9 +2843,18 @@ public class SchemaExplorer
     }
 
     protected void addDimensionGrant(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -2735,9 +2908,18 @@ public class SchemaExplorer
     }
 
     protected void addHierarchyGrant(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -2792,9 +2974,18 @@ public class SchemaExplorer
     }
 
     protected void addMemberGrant(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -2846,7 +3037,16 @@ public class SchemaExplorer
     }
 
     protected void addAnnotations(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
+        TreePath tpath = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
         Object path = tree.getSelectionPath().getLastPathComponent();
         // Verify that the node selected in the tree is something that supports
         // annotations.
@@ -2886,7 +3086,16 @@ public class SchemaExplorer
     }
 
     protected void addAnnotation(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
+        TreePath tpath = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
         Object path = tree.getSelectionPath().getLastPathComponent();
         if (!(path instanceof MondrianGuiDef.Annotations)) {
             JOptionPane.showMessageDialog(
@@ -2922,9 +3131,18 @@ public class SchemaExplorer
      * @param evt
      */
     protected void addLevel(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -2979,9 +3197,18 @@ public class SchemaExplorer
     }
 
     protected void addSQL(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -3047,9 +3274,18 @@ public class SchemaExplorer
 
 
     protected void addKeyExp(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -3091,9 +3327,18 @@ public class SchemaExplorer
     }
 
     protected void addNameExp(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -3135,9 +3380,18 @@ public class SchemaExplorer
     }
 
     protected void addOrdinalExp(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -3179,9 +3433,18 @@ public class SchemaExplorer
     }
 
     protected void addParentExp(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -3223,9 +3486,18 @@ public class SchemaExplorer
     }
 
     protected void addMeasureExp(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -3269,9 +3541,18 @@ public class SchemaExplorer
     }
 
     protected void addFormula(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -3366,9 +3647,18 @@ public class SchemaExplorer
     protected void addRelation(
         ActionEvent evt, MondrianGuiDef.RelationOrJoin relation)
     {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+                && ((Component)evt.getSource()).getParent()
+                instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -3425,9 +3715,18 @@ public class SchemaExplorer
     }
 
     protected void addHierarchy(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -3489,9 +3788,18 @@ public class SchemaExplorer
      * @param evt
      */
     protected void addProperty(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -3550,9 +3858,18 @@ public class SchemaExplorer
      * @param evt
      */
     protected void addCalculatedMemberProperty(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -3667,9 +3984,18 @@ public class SchemaExplorer
      * @param evt
      */
     protected void addClosure(ActionEvent evt) {
-        TreePath tpath = tree.getSelectionPath();
-        int parentIndex = -1;
+        TreePath tpath = null;
         Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
         if (tpath != null) {
             for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
                 parentIndex--)
@@ -4285,6 +4611,7 @@ public class SchemaExplorer
                 int y = e.getY();
                 TreePath path = tree.getPathForLocation(x, y);
                 if (path != null) {
+                    jPopupMenu.setPath(path);
                     jPopupMenu.removeAll();
                     Object pathSelected = path.getLastPathComponent();
                     if (pathSelected instanceof MondrianGuiDef.Schema) {
@@ -4889,7 +5216,16 @@ public class SchemaExplorer
     private JToggleButton editModeButton;
     private JButton copyButton;
     private JToolBar jToolBar1;
-    private JPopupMenu jPopupMenu;
+    private CustomJPopupMenu jPopupMenu;
+    private class CustomJPopupMenu extends JPopupMenu {
+        private TreePath path;
+        void setPath(TreePath path) {
+            this.path = path;
+        }
+        public TreePath getPath() {
+            return path;
+        }
+    }
 
     private JSeparator jSeparator1;
     private JSeparator jSeparator2;

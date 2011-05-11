@@ -1,9 +1,10 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -50,26 +51,24 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
     }
 
     private static boolean isArgSizeSupported(
-            RolapEvaluator evaluator,
-            int argSize)
-        {
-            boolean argSizeNotSupported = false;
+        RolapEvaluator evaluator,
+        int argSize)
+    {
+        boolean argSizeNotSupported = false;
 
-            // Note: arg size 0 is accepted as valid CJ argument
-            // This is used to push down the "1 = 0" predicate
-            // into the emerging CJ so that the entire CJ can
-            // be natively evaluated.
+        // Note: arg size 0 is accepted as valid CJ argument
+        // This is used to push down the "1 = 0" predicate
+        // into the emerging CJ so that the entire CJ can
+        // be natively evaluated.
 
-            // First check that the member list will not result in a predicate
-            // longer than the underlying DB could support.
-            if (!evaluator.getDialect().supportsUnlimitedValueList()
-                && argSize > MondrianProperties.instance().MaxConstraints.get())
-            {
-                argSizeNotSupported = true;
-            }
-
-            return !argSizeNotSupported;
+        // First check that the member list will not result in a predicate
+        // longer than the underlying DB could support.
+        if (argSize > MondrianProperties.instance().MaxConstraints.get()) {
+            argSizeNotSupported = true;
         }
+
+        return !argSizeNotSupported;
+    }
 
 
     /**
@@ -117,47 +116,43 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
             hasNonCalcMembers = true;
         }
         boolean hasAllMember = false;
-        try {
-            for (RolapMember m : args) {
-                if (m.isNull()) {
-                    // we're going to filter out null members anyway;
-                    // don't choke on the fact that their level
-                    // doesn't match that of others
-                    nullLevel = m.getLevel();
-                    continue;
-                }
+        for (RolapMember m : args) {
+            if (m.isNull()) {
+                // we're going to filter out null members anyway;
+                // don't choke on the fact that their level
+                // doesn't match that of others
+                nullLevel = m.getLevel();
+                continue;
+            }
 
-                // If "All" member, native evaluation is not possible
-                // because "All" member does not have a corresponding
-                // relational representation.
-                //
-                // "All" member is ignored during SQL generation.
-                // The complete MDX query can be evaluated natively only
-                // if there is non all member on at least one level;
-                // otherwise the generated SQL is an empty string.
-                // See SqlTupleReader.addLevelMemberSql()
-                //
-                if (m.isAll()) {
-                    hasAllMember = true;
-                }
+            // If "All" member, native evaluation is not possible
+            // because "All" member does not have a corresponding
+            // relational representation.
+            //
+            // "All" member is ignored during SQL generation.
+            // The complete MDX query can be evaluated natively only
+            // if there is non all member on at least one level;
+            // otherwise the generated SQL is an empty string.
+            // See SqlTupleReader.addLevelMemberSql()
+            //
+            if (m.isAll()) {
+                hasAllMember = true;
+            }
 
-                if (m.isCalculated() && !m.isParentChildLeaf()) {
-                    if (restrictMemberTypes) {
-                        return null;
-                    }
-                    hasCalcMembers = true;
-                } else {
-                    hasNonCalcMembers = true;
-                }
-                if (level == null) {
-                    level = m.getLevel();
-                } else if (!level.equals(m.getLevel())) {
-                    // Members should be on the same level.
+            if (m.isCalculated() && !m.isParentChildLeaf()) {
+                if (restrictMemberTypes) {
                     return null;
                 }
+                hasCalcMembers = true;
+            } else {
+                hasNonCalcMembers = true;
             }
-        } catch (ClassCastException cce) {
-            return null;
+            if (level == null) {
+                level = m.getLevel();
+            } else if (!level.equals(m.getLevel())) {
+                // Members should be on the same level.
+                return null;
+            }
         }
         if (level == null) {
             // all members were null; use an arbitrary one of the
@@ -263,6 +258,9 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
         if (restrictMemberTypes) {
             c += 1;
         }
+        if (exclude) {
+            c += 7;
+        }
         return c;
     }
 
@@ -272,6 +270,9 @@ public class MemberListCrossJoinArg implements CrossJoinArg {
         }
         MemberListCrossJoinArg that = (MemberListCrossJoinArg) obj;
         if (this.restrictMemberTypes != that.restrictMemberTypes) {
+            return false;
+        }
+        if (this.exclude != that.exclude) {
             return false;
         }
         for (int i = 0; i < members.size(); i++) {

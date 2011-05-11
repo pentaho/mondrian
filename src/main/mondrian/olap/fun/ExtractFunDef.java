@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,8 +11,7 @@ package mondrian.olap.fun;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
-import mondrian.mdx.ResolvedFunCall;
-import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 
@@ -22,8 +21,8 @@ import java.util.*;
  * Definition of the <code>Extract</code> MDX function.
  *
  * <p>Syntax:
- * <blockquote><code>Extract(&lt;Set&gt;, &lt;Dimension&gt;[,
- * &lt;Dimension&gt;...])</code></blockquote>
+ * <blockquote><code>Extract(&lt;Set&gt;, &lt;Hierarchy&gt;[,
+ * &lt;Hierarchy&gt;...])</code></blockquote>
  *
  * @author jhyde
  * @version $Id$
@@ -32,8 +31,8 @@ import java.util.*;
 class ExtractFunDef extends FunDefBase {
     static final ResolverBase Resolver = new ResolverBase(
         "Extract",
-        "Extract(<Set>, <Dimension>[, <Dimension>...])",
-        "Returns a set of tuples from extracted dimension elements. The opposite of Crossjoin.",
+        "Extract(<Set>, <Hierarchy>[, <Hierarchy>...])",
+        "Returns a set of tuples from extracted hierarchy elements. The opposite of Crossjoin.",
         Syntax.Function)
     {
         public FunDef resolve(
@@ -49,7 +48,7 @@ class ExtractFunDef extends FunDefBase {
             }
             for (int i = 1; i < args.length; ++i) {
                 if (!validator.canConvert(
-                    0, args[i], Category.Dimension, conversions))
+                    0, args[i], Category.Hierarchy, conversions))
                 {
                     return null;
                 }
@@ -57,23 +56,23 @@ class ExtractFunDef extends FunDefBase {
 
             // Find the dimensionality of the set expression.
 
-            // Form a list of ordinals of the dimensions being extracted.
+            // Form a list of ordinals of the hierarchies being extracted.
             // For example, in
             //   Extract(X.Members * Y.Members * Z.Members, Z, X)
-            // the dimension ordinals are X=0, Y=1, Z=2, and the extracted
+            // the hierarchy ordinals are X=0, Y=1, Z=2, and the extracted
             // ordinals are {2, 0}.
             //
-            // Each dimension extracted must exist in the LHS,
-            // and no dimension may be extracted more than once.
+            // Each hierarchy extracted must exist in the LHS,
+            // and no hierarchy may be extracted more than once.
             List<Integer> extractedOrdinals = new ArrayList<Integer>();
-            final List<Dimension> extractedDimensions =
-                new ArrayList<Dimension>();
-            findExtractedDimensions(
-                args, extractedDimensions, extractedOrdinals);
+            final List<Hierarchy> extractedHierarchies =
+                new ArrayList<Hierarchy>();
+            findExtractedHierarchies(
+                args, extractedHierarchies, extractedOrdinals);
             int[] parameterTypes = new int[args.length];
             parameterTypes[0] = Category.Set;
             Arrays.fill(
-                parameterTypes, 1, parameterTypes.length, Category.Dimension);
+                parameterTypes, 1, parameterTypes.length, Category.Hierarchy);
             return new ExtractFunDef(this, Category.Set, parameterTypes);
         }
     };
@@ -85,19 +84,20 @@ class ExtractFunDef extends FunDefBase {
     }
 
     public Type getResultType(Validator validator, Exp[] args) {
-        final List<Dimension> extractedDimensions =
-            new ArrayList<Dimension>();
+        final List<Hierarchy> extractedHierarchies =
+            new ArrayList<Hierarchy>();
         final List<Integer> extractedOrdinals = new ArrayList<Integer>();
-        findExtractedDimensions(args, extractedDimensions, extractedOrdinals);
-        if (extractedDimensions.size() == 1) {
+        findExtractedHierarchies(args, extractedHierarchies, extractedOrdinals);
+        if (extractedHierarchies.size() == 1) {
             return new SetType(
-                new MemberType(extractedDimensions.get(0), null, null, null));
+                MemberType.forHierarchy(
+                    extractedHierarchies.get(0)));
         } else {
             List<Type> typeList = new ArrayList<Type>();
-            for (Dimension extractedDimension : extractedDimensions) {
+            for (Hierarchy extractedHierarchy : extractedHierarchies) {
                 typeList.add(
-                    new MemberType(
-                        extractedDimension, null, null, null));
+                    MemberType.forHierarchy(
+                        extractedHierarchy));
             }
             return new SetType(
                 new TupleType(
@@ -105,56 +105,54 @@ class ExtractFunDef extends FunDefBase {
         }
     }
 
-    private static void findExtractedDimensions(
+    private static void findExtractedHierarchies(
         Exp[] args,
-        List<Dimension> extractedDimensions,
+        List<Hierarchy> extractedHierarchies,
         List<Integer> extractedOrdinals)
     {
         SetType type = (SetType) args[0].getType();
-        final List<Dimension> dimensions = new ArrayList<Dimension>();
+        final List<Hierarchy> hierarchies;
         if (type.getElementType() instanceof TupleType) {
-            for (Type elementType
-                : ((TupleType) type.getElementType()).elementTypes)
-            {
-                Dimension dimension = elementType.getDimension();
-                if (dimension == null) {
-                    throw new RuntimeException(
-                        "dimension of argument not known");
-                }
-                dimensions.add(dimension);
-            }
+            hierarchies = ((TupleType) type.getElementType()).getHierarchies();
         } else {
-            Dimension dimension = type.getDimension();
-            if (dimension == null) {
-                throw new RuntimeException("dimension of argument not known");
+            hierarchies = Collections.singletonList(type.getHierarchy());
+        }
+        for (Hierarchy hierarchy : hierarchies) {
+            if (hierarchy == null) {
+                throw new RuntimeException(
+                    "hierarchy of argument not known");
             }
-            dimensions.add(dimension);
         }
 
         for (int i = 1; i < args.length; i++) {
             Exp arg = args[i];
-            if (arg instanceof DimensionExpr) {
+            Hierarchy extractedHierarchy = null;
+            if (arg instanceof HierarchyExpr) {
+                HierarchyExpr hierarchyExpr = (HierarchyExpr) arg;
+                extractedHierarchy = hierarchyExpr.getHierarchy();
+            } else if (arg instanceof DimensionExpr) {
                 DimensionExpr dimensionExpr = (DimensionExpr) arg;
-                final Dimension extractedDimension =
-                    dimensionExpr.getDimension();
-                int ordinal = dimensions.indexOf(extractedDimension);
-                if (ordinal == -1) {
-                    throw new RuntimeException(
-                        "dimension "
-                        + extractedDimension.getUniqueName()
-                        + " is not a dimension of the expression " + args[0]);
-                }
-                if (extractedOrdinals.indexOf(ordinal) >= 0) {
-                    throw new RuntimeException(
-                        "dimension "
-                        + extractedDimension.getUniqueName()
-                        + " is extracted more than once");
-                }
-                extractedOrdinals.add(ordinal);
-                extractedDimensions.add(extractedDimension);
-            } else {
-                throw new RuntimeException("not a constant dimension: " + arg);
+                extractedHierarchy =
+                    dimensionExpr.getDimension().getHierarchy();
             }
+            if (extractedHierarchy == null) {
+                throw new RuntimeException("not a constant hierarchy: " + arg);
+            }
+            int ordinal = hierarchies.indexOf(extractedHierarchy);
+            if (ordinal == -1) {
+                throw new RuntimeException(
+                    "hierarchy "
+                    + extractedHierarchy.getUniqueName()
+                    + " is not a hierarchy of the expression " + args[0]);
+            }
+            if (extractedOrdinals.indexOf(ordinal) >= 0) {
+                throw new RuntimeException(
+                    "hierarchy "
+                    + extractedHierarchy.getUniqueName()
+                    + " is extracted more than once");
+            }
+            extractedOrdinals.add(ordinal);
+            extractedHierarchies.add(extractedHierarchy);
         }
     }
 
@@ -167,64 +165,38 @@ class ExtractFunDef extends FunDefBase {
     }
 
     public Calc compileCall(ResolvedFunCall call, ExpCompiler compiler) {
-        List<Dimension> extractedDimensionList = new ArrayList<Dimension>();
+        List<Hierarchy> extractedHierarchyList = new ArrayList<Hierarchy>();
         List<Integer> extractedOrdinalList = new ArrayList<Integer>();
-        findExtractedDimensions(
+        findExtractedHierarchies(
             call.getArgs(),
-            extractedDimensionList,
+            extractedHierarchyList,
             extractedOrdinalList);
         Util.assertTrue(
-            extractedOrdinalList.size() == extractedDimensionList.size());
+            extractedOrdinalList.size() == extractedHierarchyList.size());
         Exp arg = call.getArg(0);
-        final ListCalc listCalc = (ListCalc) compiler.compileList(arg, false);
-        int inArity = ((SetType) arg.getType()).getArity();
+        final ListCalc listCalc = compiler.compileList(arg, false);
+        int inArity = arg.getType().getArity();
         final int outArity = extractedOrdinalList.size();
         if (inArity == 1) {
-            // LHS is a set of members, RHS is the same dimension. Extract boils
+            // LHS is a set of members, RHS is the same hierarchy. Extract boils
             // down to eliminating duplicate members.
             Util.assertTrue(outArity == 1);
             return new DistinctFunDef.CalcImpl(call, listCalc);
         }
-        final TupleListCalc tupleListCalc = (TupleListCalc) listCalc;
         final int[] extractedOrdinals = toIntArray(extractedOrdinalList);
-        if (outArity == 1) {
-            return new AbstractListCalc(call, new Calc[] {listCalc}) {
-                public List evaluateList(Evaluator evaluator) {
-                    List<Member> result = new ArrayList<Member>();
-                    List<Member[]> list =
-                        tupleListCalc.evaluateTupleList(evaluator);
-                    Set<Member> emittedMembers = new HashSet<Member>();
-                    for (Member[] members : list) {
-                        Member outMember = members[extractedOrdinals[0]];
-                        if (emittedMembers.add(outMember)) {
-                            result.add(outMember);
-                        }
+        return new AbstractListCalc(call, new Calc[]{listCalc}) {
+            public TupleList evaluateList(Evaluator evaluator) {
+                TupleList result = TupleCollections.createList(outArity);
+                TupleList list = listCalc.evaluateList(evaluator);
+                Set<List<Member>> emittedTuples = new HashSet<List<Member>>();
+                for (List<Member> members : list.project(extractedOrdinals)) {
+                    if (emittedTuples.add(members)) {
+                        result.add(members);
                     }
-                    return result;
                 }
-            };
-        } else {
-            return new AbstractListCalc(call, new Calc[] {listCalc}) {
-                public List evaluateList(Evaluator evaluator) {
-                    List<Member[]> result = new ArrayList<Member[]>();
-                    List<Member[]> list =
-                        tupleListCalc.evaluateTupleList(evaluator);
-                    Set<List<Member>> emittedTuples =
-                        new HashSet<List<Member>>();
-                    for (Member[] members : list) {
-                        Member[] outMembers = new Member[outArity];
-                        for (int i = 0; i < outMembers.length; i++) {
-                            outMembers[i] = members[extractedOrdinals[i]];
-                        }
-                        final List<Member> outTuple = Arrays.asList(outMembers);
-                        if (emittedTuples.add(outTuple)) {
-                            result.add(outMembers);
-                        }
-                    }
-                    return result;
-                }
-            };
-        }
+                return result;
+            }
+        };
     }
 }
 

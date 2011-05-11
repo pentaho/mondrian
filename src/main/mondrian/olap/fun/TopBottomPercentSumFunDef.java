@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -113,43 +113,27 @@ class TopBottomPercentSumFunDef extends FunDefBase {
             this.calc = calc;
         }
 
-        public List evaluateList(Evaluator evaluator) {
-            List list = listCalc.evaluateList(evaluator);
+        public TupleList evaluateList(Evaluator evaluator) {
+            TupleList list = listCalc.evaluateList(evaluator);
             double target = doubleCalc.evaluateDouble(evaluator);
             if (list.isEmpty()) {
                 return list;
             }
-            Map mapMemberToValue;
-            Object first = list.get(0);
-            boolean isMember = true;
-            if (first instanceof Member) {
-                List<Member> memberList = (List<Member>) list;
-                mapMemberToValue =
-                    evaluateMembers(evaluator, calc, memberList, null, false);
-                sortMembers(
-                    evaluator.push(false),
-                    memberList,
-                    memberList,
-                    calc,
-                    top,
-                    true);
-            } else {
-                isMember = false;
-                List<Member[]> tupleList = (List<Member[]>) list;
-                mapMemberToValue =
-                    evaluateTuples(evaluator, calc, tupleList);
-                int arity = ((Member[]) first).length;
-                sortTuples(
-                    evaluator.push(false),
-                    tupleList,
-                    tupleList,
-                    calc,
-                    top,
-                    true,
-                    arity);
-            }
+            Map<List<Member>, Object> mapMemberToValue =
+                evaluateTuples(evaluator, calc, list);
+            final int savepoint = evaluator.savepoint();
+            evaluator.setNonEmpty(false);
+            list = sortTuples(
+                evaluator,
+                list,
+                list,
+                calc,
+                top,
+                true,
+                getType().getArity());
+            evaluator.restore(savepoint);
             if (percent) {
-                toPercent(list, mapMemberToValue, isMember);
+                toPercent(list, mapMemberToValue);
             }
             double runningTotal = 0;
             int memberCount = list.size();
@@ -159,10 +143,7 @@ class TopBottomPercentSumFunDef extends FunDefBase {
                     list = list.subList(0, i);
                     break;
                 }
-                final Object key =
-                    isMember
-                        ? list.get(i)
-                        : Util.flatList((Member []) list.get(i));
+                final List<Member> key = list.get(i);
                 final Object o = mapMemberToValue.get(key);
                 if (o == Util.nullValue) {
                     nullCount++;

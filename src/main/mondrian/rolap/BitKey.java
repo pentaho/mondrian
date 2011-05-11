@@ -13,6 +13,7 @@
 
 package mondrian.rolap;
 
+import java.io.Serializable;
 import java.util.BitSet;
 import java.util.Iterator;
 
@@ -38,7 +39,9 @@ import java.util.Iterator;
  * @author Richard M. Emberson
  * @version $Id$
  */
-public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
+public interface BitKey
+        extends Serializable, Comparable<BitKey>, Iterable<Integer>
+{
     /**
      * The BitKey with no bits set.
      */
@@ -88,6 +91,13 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
      * @param bitKey Bit key
      */
     BitKey or(BitKey bitKey);
+
+    /**
+     * XOr the parameter <code>BitKey</code> with <code>this</code>.
+     *
+     * @param bitKey Bit key
+     */
+    BitKey orNot(BitKey bitKey);
 
     /**
      * Returns the boolean AND of this bitkey and the given bitkey.
@@ -176,17 +186,33 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
          * @param size Number of bits in key
          */
         public static BitKey makeBitKey(int size) {
+            return makeBitKey(size, false);
+        }
+
+        /**
+         * Creates a {@link BitKey} with a capacity for a given number of bits.
+         * @param size Number of bits in key
+         * @param init The default value of all bits.
+         */
+        public static BitKey makeBitKey(int size, boolean init) {
             if (size < 0) {
                 String msg = "Negative size \"" + size + "\" not allowed";
                 throw new IllegalArgumentException(msg);
             }
+            final BitKey bk;
             if (size < 64) {
-                return new BitKey.Small();
+                bk = new BitKey.Small();
             } else if (size < 128) {
-                return new BitKey.Mid128();
+                bk = new BitKey.Mid128();
             } else {
-                return new BitKey.Big(size);
+                bk = new BitKey.Big(size);
             }
+            if (init) {
+                for (int i = 0; i < size; i++) {
+                    bk.set(i, init);
+                }
+            }
+            return bk;
         }
 
         /**
@@ -208,7 +234,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
      * Abstract implementation of {@link BitKey}.
      */
     abstract class AbstractBitKey implements BitKey {
-
+        private static final long serialVersionUID = -2942302671676103450L;
         // chunk is a long, which has 64 bits
         protected static final int ChunkBitCount = 6;
         protected static final int Mask = 63;
@@ -412,6 +438,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
      * Implementation of {@link BitKey} for bit counts less than 64.
      */
     public class Small extends AbstractBitKey {
+        private static final long serialVersionUID = -7891880560056571197L;
         private long bits;
 
         /**
@@ -458,6 +485,10 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             this.bits |= bits;
         }
 
+        private void orNot(long bits) {
+            this.bits ^= bits;
+        }
+
         private void and(long bits) {
             this.bits &= bits;
         }
@@ -479,6 +510,29 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                 final BitKey.Big other = (BitKey.Big) bitKey;
                 final BitKey.Big bk = (BitKey.Big) other.copy();
                 bk.or(this.bits);
+                return bk;
+            }
+
+            throw createException(bitKey);
+        }
+
+        public BitKey orNot(BitKey bitKey) {
+            if (bitKey instanceof BitKey.Small) {
+                final BitKey.Small other = (BitKey.Small) bitKey;
+                final BitKey.Small bk = (BitKey.Small) copy();
+                bk.orNot(other.bits);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Mid128) {
+                final BitKey.Mid128 other = (BitKey.Mid128) bitKey;
+                final BitKey.Mid128 bk = (BitKey.Mid128) other.copy();
+                bk.orNot(this.bits, 0);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Big) {
+                final BitKey.Big other = (BitKey.Big) bitKey;
+                final BitKey.Big bk = (BitKey.Big) other.copy();
+                bk.orNot(this.bits);
                 return bk;
             }
 
@@ -750,6 +804,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
      * Implementation of {@link BitKey} good for sizes less than 128.
      */
     public class Mid128 extends AbstractBitKey {
+        private static final long serialVersionUID = -8409143207943258659L;
         private long bits0;
         private long bits1;
 
@@ -808,6 +863,11 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             this.bits1 |= bits1;
         }
 
+        private void orNot(long bits0, long bits1) {
+            this.bits0 ^= bits0;
+            this.bits1 ^= bits1;
+        }
+
         private void and(long bits0, long bits1) {
             this.bits0 &= bits0;
             this.bits1 &= bits1;
@@ -830,6 +890,29 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                 final BitKey.Big other = (BitKey.Big) bitKey;
                 final BitKey.Big bk = (BitKey.Big) other.copy();
                 bk.or(this.bits0, this.bits1);
+                return bk;
+            }
+
+            throw createException(bitKey);
+        }
+
+        public BitKey orNot(BitKey bitKey) {
+            if (bitKey instanceof BitKey.Small) {
+                final BitKey.Small other = (BitKey.Small) bitKey;
+                final BitKey.Mid128 bk = (BitKey.Mid128) copy();
+                bk.orNot(other.bits, 0);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Mid128) {
+                final BitKey.Mid128 other = (BitKey.Mid128) bitKey;
+                final BitKey.Mid128 bk = (BitKey.Mid128) copy();
+                bk.orNot(other.bits0, other.bits1);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Big) {
+                final BitKey.Big other = (BitKey.Big) bitKey;
+                final BitKey.Big bk = (BitKey.Big) other.copy();
+                bk.orNot(this.bits0, this.bits1);
                 return bk;
             }
 
@@ -1159,7 +1242,7 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
      * {@link java.util.BitSet}, but does not require dynamic resizing.
      */
     public class Big extends AbstractBitKey {
-
+        private static final long serialVersionUID = -3715282769845236295L;
         private long[] bits;
 
         private Big(int size) {
@@ -1229,6 +1312,21 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
             }
         }
 
+        private void orNot(long bits0) {
+            this.bits[0] ^= bits0;
+        }
+
+        private void orNot(long bits0, long bits1) {
+            this.bits[0] ^= bits0;
+            this.bits[1] ^= bits1;
+        }
+
+        private void orNot(long[] bits) {
+            for (int i = 0; i < bits.length; i++) {
+                this.bits[i] ^= bits[i];
+            }
+        }
+
         private void and(long[] bits) {
             int length = Math.min(bits.length, this.bits.length);
             for (int i = 0; i < length; i++) {
@@ -1261,6 +1359,35 @@ public interface BitKey extends Comparable<BitKey>, Iterable<Integer> {
                 } else {
                     final BitKey.Big bk = (BitKey.Big) copy();
                     bk.or(other.bits);
+                    return bk;
+                }
+            }
+
+            throw createException(bitKey);
+        }
+
+        public BitKey orNot(BitKey bitKey) {
+            if (bitKey instanceof BitKey.Small) {
+                final BitKey.Small other = (BitKey.Small) bitKey;
+                final BitKey.Big bk = (BitKey.Big) copy();
+                bk.orNot(other.bits);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Mid128) {
+                final BitKey.Mid128 other = (BitKey.Mid128) bitKey;
+                final BitKey.Big bk = (BitKey.Big) copy();
+                bk.orNot(other.bits0, other.bits1);
+                return bk;
+
+            } else if (bitKey instanceof BitKey.Big) {
+                final BitKey.Big other = (BitKey.Big) bitKey;
+                if (other.size() > size()) {
+                    final BitKey.Big bk = (BitKey.Big) other.copy();
+                    bk.orNot(bits);
+                    return bk;
+                } else {
+                    final BitKey.Big bk = (BitKey.Big) copy();
+                    bk.orNot(other.bits);
                     return bk;
                 }
             }

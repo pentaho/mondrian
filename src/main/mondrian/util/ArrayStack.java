@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde
+// Copyright (C) 2009-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,6 +25,22 @@ import java.util.EmptyStackException;
  * @author jhyde
  */
 public class ArrayStack<E> extends ArrayList<E> {
+    /**
+     * Default constructor.
+     */
+    public ArrayStack() {
+        super();
+    }
+
+    /**
+     * Copy Constructor
+     * @param toCopy Instance of {@link ArrayStack} to copy.
+     */
+    public ArrayStack(ArrayStack<E> toCopy) {
+        super();
+        this.addAll(toCopy);
+    }
+
     /**
      * Analogous to {@link java.util.Stack#push}.
      */

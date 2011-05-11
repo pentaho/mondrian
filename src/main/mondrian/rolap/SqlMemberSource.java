@@ -4,15 +4,15 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 21 December, 2001
 */
-
 package mondrian.rolap;
 
+import mondrian.calc.TupleList;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.sql.*;
@@ -20,13 +20,14 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.Dialect;
-import mondrian.util.ObjectFactory;
 import mondrian.util.CreationException;
+import mondrian.util.ObjectFactory;
 
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.*;
 
+import mondrian.util.Pair;
 import org.eigenbase.util.property.StringProperty;
 
 /**
@@ -244,10 +245,11 @@ class SqlMemberSource
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
             new SqlTupleReader.ColumnLayoutBuilder();
         String sql = makeKeysSql(dataSource, layoutBuilder);
+        List<SqlStatement.Type> types = layoutBuilder.types;
         SqlStatement stmt =
             RolapUtil.executeQuery(
-                dataSource, sql, "SqlMemberSource.getMembers",
-                "while building member cache");
+                dataSource, sql, types, 0, 0, "SqlMemberSource.getMembers",
+                "while building member cache", -1, -1);
         final SqlTupleReader.ColumnLayout columnLayout =
             layoutBuilder.toLayout();
         try {
@@ -422,7 +424,7 @@ class SqlMemberSource
                 }
             }
         }
-        return sqlQuery.toString();
+        return sqlQuery.toSql();
     }
 
     // implement MemberReader
@@ -461,10 +463,11 @@ class SqlMemberSource
                 ? new HighCardSqlTupleReader(constraint)
                 : new SqlTupleReader(constraint);
         tupleReader.addLevelMembers(level, this, null);
-        final List<RolapMember[]> tupleList =
+        final TupleList tupleList =
             tupleReader.readTuples(dataSource, null, null);
 
-        return new ProjectionList(tupleList, 0);
+        assert tupleList.getArity() == 1;
+        return Util.cast(tupleList.slice(0));
     }
 
     public MemberCache getMemberCache() {
@@ -554,6 +557,7 @@ class SqlMemberSource
             if (ordinal < 0) {
                 column.addToFrom(sqlQuery, null, null);
                 final String alias = sqlQuery.addSelectGroupBy(sql);
+                sqlQuery.addType(column.getInternalType());
                 ordinal = layoutBuilder.register(sql, alias);
             }
             layoutBuilder.currentLevelLayout.keyOrdinalList.add(ordinal);
@@ -620,6 +624,7 @@ class SqlMemberSource
             int ordinal = layoutBuilder.lookup(orderBy);
             if (ordinal < 0) {
                 final String alias = sqlQuery.addSelectGroupBy(orderBy);
+                sqlQuery.addType(null);
                 ordinal = layoutBuilder.register(orderBy, alias);
             }
             sqlQuery.addOrderBy(orderBy, true, false, true);
@@ -643,11 +648,14 @@ class SqlMemberSource
                 } else {
                     alias = sqlQuery.addSelect(s);
                 }
+                sqlQuery.addType(null);
                 ordinal = layoutBuilder.register(s, alias);
             }
             layoutBuilder.currentLevelLayout.propertyOrdinalList.add(ordinal);
         }
-        return sqlQuery.toString();
+        Pair<String,List<SqlStatement.Type>> pair = sqlQuery.toSqlAndTypes();
+        layoutBuilder.types.addAll(pair.right);
+        return pair.left;
     }
 
     // TODO: move method somewhere better
@@ -864,14 +872,14 @@ class SqlMemberSource
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
-        String sql;
+        final String sql;
         boolean parentChild;
         final RolapLevel parentLevel = parentMember.getLevel();
         RolapLevel childLevel;
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
             new SqlTupleReader.ColumnLayoutBuilder();
         if (parentLevel.isParentChild()) {
-            sql = makeChildMemberSqlPC(parentMember);
+            sql = makeChildMemberSqlPC(parentMember, layoutBuilder);
             parentChild = true;
             childLevel = parentLevel;
         } else {
@@ -882,26 +890,25 @@ class SqlMemberSource
             }
             parentChild = childLevel.isParentChild();
             if (parentChild) {
-                sql = makeChildMemberSql_PCRoot(parentMember);
+                sql = makeChildMemberSql_PCRoot(parentMember, layoutBuilder);
             } else {
                 sql = makeChildMemberSql(
                     parentMember, dataSource, constraint, layoutBuilder);
             }
         }
+        final List<SqlStatement.Type> types = layoutBuilder.types;
         SqlStatement stmt =
             RolapUtil.executeQuery(
-                dataSource, sql, "SqlMemberSource.getMemberChildren",
-                "while building member cache");
+                dataSource, sql, types, 0, 0,
+                "SqlMemberSource.getMemberChildren",
+                "while building member cache", -1, -1);
         try {
             int limit = MondrianProperties.instance().ResultLimit.get();
             boolean checkCacheStatus = true;
 
             final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             ResultSet resultSet = stmt.getResultSet();
-            RolapMember parentMember2 =
-                parentMember instanceof RolapCubeMember
-                    ? ((RolapCubeMember) parentMember).getRolapMember()
-                    : parentMember;
+            RolapMember parentMember2 = RolapUtil.strip(parentMember);
             final SqlTupleReader.ColumnLayout fullLayout =
                 layoutBuilder.toLayout();
             final SqlTupleReader.LevelColumnLayout layout =
@@ -965,8 +972,14 @@ class SqlMemberSource
         SqlTupleReader.LevelColumnLayout layout)
         throws SQLException
     {
+        final RolapLevel rolapChildLevel;
+        if (childLevel instanceof RolapCubeLevel) {
+            rolapChildLevel = ((RolapCubeLevel) childLevel).getRolapLevel();
+        } else {
+            rolapChildLevel = childLevel;
+        }
         RolapMemberBase member =
-            new RolapMemberBase(parentMember, childLevel, key);
+            new RolapMemberBase(parentMember, rolapChildLevel, key);
         if (layout.hasOrdinal) {
             member.setOrdinal(lastOrdinal++);
         }
@@ -979,14 +992,12 @@ class SqlMemberSource
             // and all of the children. The children and the data member belong
             // to the parent member; the data member does not have any
             // children.
-            final RolapParentChildMember parentChildMember =
+            member =
                 childLevel.hasClosedPeer()
                 ? new RolapParentChildMember(
                     parentMember, childLevel, key, member)
                 : new RolapParentChildMemberNoClosure(
                     parentMember, childLevel, key, member);
-
-            member = parentChildMember;
         }
         final List<RolapProperty>
             properties = childLevel.attribute.getProperties();
@@ -1064,9 +1075,10 @@ class SqlMemberSource
      * <p>Currently, parent-child hierarchies may have only one level (plus the
      * 'All' level).
      */
-    private String makeChildMemberSql_PCRoot(RolapMember member) {
-        final SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
-            new SqlTupleReader.ColumnLayoutBuilder();
+    private String makeChildMemberSql_PCRoot(
+        RolapMember member,
+        SqlTupleReader.ColumnLayoutBuilder layoutBuilder)
+    {
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
                 dataSource,
@@ -1111,6 +1123,7 @@ class SqlMemberSource
             key.addToFrom(sqlQuery, null, null);
             String childId = key.toSql();
             final String alias = sqlQuery.addSelectGroupBy(childId);
+            sqlQuery.addType(null);
         }
         for (RolapSchema.PhysColumn key : level.attribute.orderByList) {
             key.addToFrom(sqlQuery, null, null);
@@ -1118,6 +1131,7 @@ class SqlMemberSource
             int ordinal = layoutBuilder.lookup(orderBy);
             if (ordinal < 0) {
                 final String alias = sqlQuery.addSelectGroupBy(orderBy);
+                sqlQuery.addType(null);
                 ordinal = layoutBuilder.register(orderBy, alias);
             }
             layoutBuilder.currentLevelLayout.ordinalList.add(ordinal);
@@ -1141,9 +1155,10 @@ class SqlMemberSource
                 || !property.dependsOnLevelValue())
             {
                 sqlQuery.addGroupBy(s, alias);
+                sqlQuery.addType(null);
             }
         }
-        return sqlQuery.toString();
+        return sqlQuery.toSql();
     }
 
     /**
@@ -1159,9 +1174,10 @@ class SqlMemberSource
      *
      * <p>See also {@link SqlTupleReader#makeLevelMembersSql}.
      */
-    private String makeChildMemberSqlPC(RolapMember member) {
-        final SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
-            new SqlTupleReader.ColumnLayoutBuilder();
+    private String makeChildMemberSqlPC(
+        RolapMember member,
+        SqlTupleReader.ColumnLayoutBuilder layoutBuilder)
+    {
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
                 dataSource,
@@ -1199,6 +1215,7 @@ class SqlMemberSource
             final int ordinal = layoutBuilder.lookup(orderBy);
             if (ordinal < 0) {
                 final String alias = sqlQuery.addSelectGroupBy(orderBy);
+                sqlQuery.addType(null);
                 layoutBuilder.register(orderBy, alias);
             }
         }
@@ -1209,6 +1226,7 @@ class SqlMemberSource
             exp.addToFrom(sqlQuery, null, null);
             final String s = exp.toSql();
             String alias = sqlQuery.addSelect(s);
+            sqlQuery.addType(null);
             // Some dialects allow us to eliminate properties from the group by
             // that are functionally dependent on the level value
             if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
@@ -1217,7 +1235,7 @@ class SqlMemberSource
                 sqlQuery.addGroupBy(s, alias);
             }
         }
-        return sqlQuery.toString();
+        return sqlQuery.toSql();
     }
 
     // implement MemberReader
@@ -1405,9 +1423,8 @@ class SqlMemberSource
          * This passes the <code>ValuePoolFactory</code> class to the
          * <code>ObjectFactory</code> base class.
          */
-        @SuppressWarnings({"unchecked"})
         private ValuePoolFactoryFactory() {
-            super((Class) ValuePoolFactory.class);
+            super(ValuePoolFactory.class);
         }
 
         protected StringProperty getStringProperty() {
@@ -1421,61 +1438,6 @@ class SqlMemberSource
             throws CreationException
         {
             return new NullValuePoolFactory();
-        }
-    }
-
-    private class ProjectionList<T> extends AbstractList<T> {
-        private final List<T[]> tupleList;
-        private final int ordinal;
-
-        public ProjectionList(List<T[]> tupleList, int ordinal) {
-            this.tupleList = tupleList;
-            this.ordinal = ordinal;
-        }
-
-        public T get(final int index) {
-            return tupleList.get(index)[ordinal];
-        }
-
-        public int size() {
-            return tupleList.size();
-        }
-
-        public Object[] toArray() {
-            final List<T> l = new ArrayList<T>();
-            for (final T[] tuple : tupleList) {
-                l.add(tuple[ordinal]);
-            }
-            return l.toArray(new Object[l.size()]);
-        }
-
-        public <T> T[] toArray(T[] a) {
-            int size = size();
-            @SuppressWarnings({"unchecked"})
-            T[] r = a.length >= size
-                ? a
-                : (T[]) java.lang.reflect.Array.newInstance(
-                    a.getClass().getComponentType(), size);
-            for (int i = 0; i < size; i++) {
-                //noinspection unchecked
-                r[i] = (T) tupleList.get(i)[ordinal];
-            }
-            return r;
-        }
-
-        public Iterator<T> iterator() {
-            final Iterator<T[]> it = tupleList.iterator();
-            return new Iterator<T>() {
-                public boolean hasNext() {
-                    return it.hasNext();
-                }
-                public T next() {
-                    return it.next()[ordinal];
-                }
-                public void remove() {
-                    it.remove();
-                }
-            };
         }
     }
 }

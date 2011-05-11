@@ -15,8 +15,6 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 
-import org.apache.log4j.Logger;
-
 import java.util.*;
 
 /**
@@ -27,13 +25,13 @@ import java.util.*;
  * @since 10 August, 2001
  * @version $Id$
  */
-public interface RolapMember extends Member {
+public interface RolapMember extends Member, RolapCalculation {
     /**
      * Returns the value of this member's key, or throws if the key is
      * composite. Calls to this method should be converted to use one of the
      * other getKeyXxx methods.
      *
-     * @return
+     * @return Key value
      */
     Object getKey();
 

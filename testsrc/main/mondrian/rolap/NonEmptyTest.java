@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2010 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -52,6 +52,15 @@ public class NonEmptyTest extends BatchTestCase {
 
     public NonEmptyTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin, true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeNonEmpty, true);
     }
 
     @Override
@@ -1862,7 +1871,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "\"store\" as \"store\", \"sales_fact_1997\" as \"sales_fact_1997\", "
             + "\"product\" as \"product\", \"product_class\" as \"product_class\" "
             + "where "
-            + "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" "
+            + "\"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
+            + "and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" "
             + "and \"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" "
             + "and ((\"store\".\"store_state\" = 'OR' and \"store\".\"store_city\" in ('Portland', 'Salem'))"
             + " or (\"store\".\"store_state\" = 'CA' and \"store\".\"store_city\" = 'San Francisco')"
@@ -1879,7 +1889,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "`store` as `store`, `sales_fact_1997` as `sales_fact_1997`, "
             + "`product` as `product`, `product_class` as `product_class` "
             + "where "
-            + "`sales_fact_1997`.`store_id` = `store`.`store_id` and `product`.`product_class_id` = `product_class`.`product_class_id` "
+            + "`sales_fact_1997`.`store_id` = `store`.`store_id` "
+            + "and `product`.`product_class_id` = `product_class`.`product_class_id` "
             + "and `sales_fact_1997`.`product_id` = `product`.`product_id` "
             + "and ((`store`.`store_city`, `store`.`store_state`) in (('Portland', 'OR'), ('Salem', 'OR'), ('San Francisco', 'CA'), ('Tacoma', 'WA'))) "
             + "and (`product_class`.`product_family` = 'Food') "
@@ -1895,6 +1906,27 @@ public class NonEmptyTest extends BatchTestCase {
                     "sales_fact_1997", "agg_c_14_sales_fact_1997");
             necjSqlDerby = necjSqlDerby.replaceAll(
                     "sales_fact_1997", "agg_c_14_sales_fact_1997");
+        }
+
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
+            necjSqlMySql = necjSqlMySql.replaceAll(
+                "`product` as `product`, `product_class` as `product_class`",
+                "`product_class` as `product_class`, `product` as `product`");
+            necjSqlMySql = necjSqlMySql.replaceAll(
+                "`product`.`product_class_id` = `product_class`.`product_class_id` and "
+                + "`sales_fact_1997`.`product_id` = `product`.`product_id` and ",
+                "`sales_fact_1997`.`product_id` = `product`.`product_id` and "
+                + "`product`.`product_class_id` = `product_class`.`product_class_id` and ");
+            necjSqlDerby = necjSqlDerby.replaceAll(
+                "\"product\" as \"product\", \"product_class\" as \"product_class\"",
+                "\"product_class\" as \"product_class\", \"product\" as \"product\"");
+            necjSqlDerby = necjSqlDerby.replaceAll(
+                "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and "
+                + "\"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and ",
+                "\"sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and "
+                + "\"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and ");
         }
 
         SqlPattern[] patterns = {
@@ -1918,6 +1950,11 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMultiLevelMemberConstraintNullParent() {
         if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
             return;
         }
         String dimension =
@@ -2003,6 +2040,11 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMultiLevelMemberConstraintMixedNullNonNullParent() {
         if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
             return;
         }
         String dimension =
@@ -2092,6 +2134,11 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMultiLevelMemberConstraintWithMixedNullNonNullChild() {
         if (!isDefaultNullMemberRepresentation()) {
+            return;
+        }
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
             return;
         }
         String dimension =
@@ -2226,7 +2273,7 @@ public class NonEmptyTest extends BatchTestCase {
         ca = ((RolapCubeMember) ca).getRolapMember();
         sf = ((RolapCubeMember) sf).getRolapMember();
 
-        List list = ssmrch.mapMemberToChildren.get(
+        List<RolapMember> list = ssmrch.mapMemberToChildren.get(
             ca, scf.getMemberChildrenConstraint(null));
         assertNull("children of [CA] are not in cache", list);
         list = ssmrch.mapMemberToChildren.get(
@@ -2339,8 +2386,10 @@ public class NonEmptyTest extends BatchTestCase {
         TupleConstraint lmc = scf.getLevelMembersConstraint(null);
         assertNull(smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc));
         // make sure that NON EMPTY [Customers].[Name].Members IS in cache
-        lmc = scf.getLevelMembersConstraint(context.push(true));
-        List list = smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
+        context.setNonEmpty(true);
+        lmc = scf.getLevelMembersConstraint(context);
+        List<RolapMember> list =
+            smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
         if (MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
             assertNotNull(list);
             assertEquals(20, list.size());
@@ -2358,7 +2407,7 @@ public class NonEmptyTest extends BatchTestCase {
         assertNull(ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc));
 
         // lookup NON EMPTY children of [Burlingame] -> yes these are in cache
-        mcc = scf.getMemberChildrenConstraint(context.push(true));
+        mcc = scf.getMemberChildrenConstraint(context);
         list = smrich.mapMemberToChildren.get((RolapMember) parent, mcc);
         assertNotNull(list);
         assertTrue(list.contains(member));
@@ -2380,11 +2429,11 @@ public class NonEmptyTest extends BatchTestCase {
         clearAndHardenCache(ssmrch);
 
         Result r = executeQuery(
-                "select \n"
-                + "{[Measures].[Unit Sales]} ON columns,\n"
-                + "{[Customers].[All Customers], [Customers].[Name].Members} ON rows\n"
-                + "from [Sales]\n"
-                + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
+            "select \n"
+            + "{[Measures].[Unit Sales]} ON columns,\n"
+            + "{[Customers].[All Customers], [Customers].[Name].Members} ON rows\n"
+            + "from [Sales]\n"
+            + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
         List<Level> levels = smr.getHierarchy().getLevelList();
         Level nameLevel = levels.get(levels.size() - 1);
 
@@ -2393,13 +2442,15 @@ public class NonEmptyTest extends BatchTestCase {
 
         // make sure that [Customers].[Name].Members IS in cache
         TupleConstraint lmc = scf.getLevelMembersConstraint(null);
-        List list = smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
+        List<RolapMember> list =
+            smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc);
         if (MondrianProperties.instance().EnableRolapCubeMemberCache.get()) {
             assertNotNull(list);
             assertEquals(10281, list.size());
         }
         // make sure that NON EMPTY [Customers].[Name].Members is NOT in cache
-        lmc = scf.getLevelMembersConstraint(context.push(true));
+        context.setNonEmpty(true);
+        lmc = scf.getLevelMembersConstraint(context);
         assertNull(smrch.mapLevelToMembers.get((RolapLevel) nameLevel, lmc));
 
         // make sure that the parent/child for the context are cached
@@ -2418,7 +2469,7 @@ public class NonEmptyTest extends BatchTestCase {
         assertTrue(list.contains(member));
 
         // lookup NON EMPTY children of [Burlingame] -> not in cache
-        mcc = scf.getMemberChildrenConstraint(context.push(true));
+        mcc = scf.getMemberChildrenConstraint(context);
         list = ssmrch.mapMemberToChildren.get((RolapMember) parent, mcc);
         assertNull(list);
     }
@@ -2595,8 +2646,10 @@ public class NonEmptyTest extends BatchTestCase {
         assertNull(ssmrch.mapMemberToChildren.get(burlingame, mcc));
         // but non empty children is
         Evaluator evaluator = getEvaluator(result, new int[] {0, 0});
-        mcc = scf.getMemberChildrenConstraint(evaluator.push(true));
-        List list = ssmrch.mapMemberToChildren.get(burlingame, mcc);
+        evaluator.setNonEmpty(true);
+        mcc = scf.getMemberChildrenConstraint(evaluator);
+        List<RolapMember> list =
+            ssmrch.mapMemberToChildren.get(burlingame, mcc);
         assertNotNull(list);
         assertTrue(list.contains(peggy));
 
@@ -4045,14 +4098,25 @@ public class NonEmptyTest extends BatchTestCase {
      * EnableNativeNonEmpty=true"</a>.
      */
     public void testBugMondrian321() {
-        if (true) {
-            return; // TODO: enable
-        }
         assertQueryReturns(
-            "WITH SET [#DataSet#] AS 'Crossjoin({Descendants([Customer_2].[All Customers], 2)}, {[Product].[All Products]})' \n"
+            "WITH SET [#DataSet#] AS 'Crossjoin({Descendants([Customers].[All Customers], 2)}, {[Product].[All Products]})' \n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns, \n"
             + "Hierarchize({[#DataSet#]}) on rows FROM [Sales]",
-            "x");
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[USA].[CA], [Product].[All Products]}\n"
+            + "{[Customers].[USA].[OR], [Product].[All Products]}\n"
+            + "{[Customers].[USA].[WA], [Product].[All Products]}\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 159,167.84\n"
+            + "Row #1: 67,659\n"
+            + "Row #1: 142,277.07\n"
+            + "Row #2: 124,366\n"
+            + "Row #2: 263,793.22\n");
     }
 
     public void testNativeCrossjoinWillConstrainUsingArgsFromAllAxes() {
@@ -4504,6 +4568,62 @@ public class NonEmptyTest extends BatchTestCase {
             + "Row #3: 50,236\n");
     }
 
+    /**
+     * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-695">
+     * MONDRIAN-695, "Unexpected data set may returned when MDX slicer contains
+     * multiple dimensions"</a>.
+     */
+    public void testNonEmptyCJWithMultiPositionSlicer() {
+        final String mdx =
+            "select NON EMPTY NonEmptyCrossJoin([Measures].[Sales Count], [Store].[USA].Children) ON COLUMNS, "
+            + "       NON EMPTY CrossJoin({[Customers].[All Customers]}, {([Promotions].[Bag Stuffers] : [Promotions].[Bye Bye Baby])}) ON ROWS "
+            + "from [Sales Ragged] "
+            + "where ({[Product].[Drink]} * {[Time].[1997].[Q1], [Time].[1997].[Q2]})";
+        final String expected =
+            "Axis #0:\n"
+            + "{[Product].[Drink], [Time].[1997].[Q1]}\n"
+            + "{[Product].[Drink], [Time].[1997].[Q2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Sales Count], [Store].[USA].[CA]}\n"
+            + "{[Measures].[Sales Count], [Store].[USA].[USA].[Washington]}\n"
+            + "{[Measures].[Sales Count], [Store].[USA].[WA]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[All Customers], [Promotions].[Bag Stuffers]}\n"
+            + "{[Customers].[All Customers], [Promotions].[Best Savings]}\n"
+            + "{[Customers].[All Customers], [Promotions].[Big Promo]}\n"
+            + "{[Customers].[All Customers], [Promotions].[Big Time Savings]}\n"
+            + "{[Customers].[All Customers], [Promotions].[Bye Bye Baby]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 2\n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: 13\n"
+            + "Row #2: \n"
+            + "Row #2: \n"
+            + "Row #2: 9\n"
+            + "Row #3: \n"
+            + "Row #3: 12\n"
+            + "Row #3: \n"
+            + "Row #4: 1\n"
+            + "Row #4: 21\n"
+            + "Row #4: \n";
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeCrossJoin,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().ExpandNonNative,
+            true);
+        // Get a fresh connection; Otherwise the mondrian property setting
+        // is not refreshed for this parameter.
+        checkNative(
+            0,
+            5,
+            mdx,
+            expected,
+            true);
+    }
+
     void clearAndHardenCache(MemberCacheHelper helper) {
         helper.mapLevelToMembers.setCache(
             new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
@@ -4555,6 +4675,131 @@ public class NonEmptyTest extends BatchTestCase {
             res = ((NonEmptyResult) res).underlying;
         }
         return (RolapEvaluator) ((RolapResult) res).getEvaluator(pos);
+    }
+
+    public void testFilterChildlessSnowflakeMembers2() {
+        if (MondrianProperties.instance().FilterChildlessSnowflakeMembers.get())
+        {
+            // If FilterChildlessSnowflakeMembers is true, then
+            // [Product].[Drink].[Baking Goods].[Coffee] does not even exist!
+            return;
+        }
+        // children across a snowflake boundary
+        assertQueryReturns(
+            "select [Product].[Drink].[Baking Goods].[Dry Goods].[Coffee].Children on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n");
+    }
+
+    public void testFilterChildlessSnowflakeMembers() {
+        propSaver.set(
+            MondrianProperties.instance().FilterChildlessSnowflakeMembers,
+            false);
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                "select `product_class`.`product_family` as `c0` "
+                + "from `product_class` as `product_class` "
+                + "group by `product_class`.`product_family` "
+                + "order by ISNULL(`product_class`.`product_family`),"
+                + " `product_class`.`product_family` ASC",
+                null)
+        };
+        Connection conn = null;
+        try {
+            conn = getTestContext().getFoodMartConnection(false);
+            TestContext testContext = getTestContext(conn);
+
+            assertQuerySql(
+                testContext,
+                "select [Product].[Product Family].Members on 0\n"
+                + "from [Sales]",
+                patterns);
+
+            // note that returns an extra member,
+            // [Product].[Drink].[Baking Goods]
+            testContext.assertQueryReturns(
+                "select [Product].[Drink].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+                + "{[Product].[Drink].[Baking Goods]}\n"
+                + "{[Product].[Drink].[Beverages]}\n"
+                + "{[Product].[Drink].[Dairy]}\n"
+                + "Row #0: 6,838\n"
+                + "Row #0: \n"
+                + "Row #0: 13,573\n"
+                + "Row #0: 4,186\n");
+
+            // [Product].[Drink].[Baking Goods] has one child, but no fact data
+            testContext.assertQueryReturns(
+                "select [Product].[Drink].[Baking Goods].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Product].[Drink].[Baking Goods].[Dry Goods]}\n"
+                + "Row #0: \n");
+
+            // NON EMPTY filters out that child
+            testContext.assertQueryReturns(
+                "select non empty [Product].[Drink].[Baking Goods].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n");
+
+            // [Product].[Drink].[Baking Goods].[Dry Goods] has one child, but
+            // no fact data
+            testContext.assertQueryReturns(
+                "select [Product].[Drink].[Baking Goods].[Dry Goods].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Product].[Drink].[Baking Goods].[Dry Goods].[Coffee]}\n"
+                + "Row #0: \n");
+
+            // NON EMPTY filters out that child
+            testContext.assertQueryReturns(
+                "select non empty [Product].[Drink].[Baking Goods].[Dry Goods].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n");
+
+            // [Coffee] has no children
+            testContext.assertQueryReturns(
+                "select [Product].[Drink].[Baking Goods].[Dry Goods].[Coffee].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n");
+
+            testContext.assertQueryReturns(
+                "select [Measures].[Unit Sales] on 0,\n"
+                + " [Product].[Product Family].Members on 1\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Product].[Drink]}\n"
+                + "{[Product].[Food]}\n"
+                + "{[Product].[Non-Consumable]}\n"
+                + "Row #0: 24,597\n"
+                + "Row #1: 191,940\n"
+                + "Row #2: 50,236\n");
+        } finally {
+            if (conn != null) {
+                conn.close();
+            }
+        }
     }
 }
 

@@ -4,11 +4,9 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 2 October, 2002
 */
 package mondrian.rolap;
 
@@ -22,12 +20,11 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.sql.DataSource;
 
+import mondrian.calc.*;
+import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
-import mondrian.util.FilteredIterableList;
-import mondrian.util.MemoryMonitor;
-import mondrian.util.MemoryMonitorFactory;
-import mondrian.util.Pair;
+import mondrian.util.*;
 import mondrian.spi.*;
 import mondrian.spi.impl.JndiDataSourceResolver;
 
@@ -53,6 +50,8 @@ public class RolapConnection extends ConnectionBase {
     private static final Logger LOGGER =
         Logger.getLogger(RolapConnection.class);
 
+    private final MondrianServer server;
+
     private final Util.PropertyList connectInfo;
 
     // used for MDX logging, allows for a MDX Statement UID
@@ -75,67 +74,46 @@ public class RolapConnection extends ConnectionBase {
     /**
      * Creates a connection.
      *
+     * @param server Server instance this connection belongs to
      * @param connectInfo Connection properties; keywords are described in
      *   {@link RolapConnectionProperties}.
-     */
-    public RolapConnection(Util.PropertyList connectInfo) {
-        this(connectInfo, null, null);
-    }
-
-    /**
-     * Creates a connection.
-     *
-     * @param connectInfo Connection properties; keywords are described in
-     *   {@link RolapConnectionProperties}.
+     * @param dataSource JDBC data source
      */
     public RolapConnection(
+        MondrianServer server,
         Util.PropertyList connectInfo,
         DataSource dataSource)
     {
-        this(connectInfo, null, dataSource);
+        this(server, connectInfo, null, dataSource);
     }
 
     /**
      * Creates a RolapConnection.
      *
-     * <p>Only {@link RolapSchemaPool#get} calls this with
-     * schema != null (to
-     * create a schema's internal connection). Other uses retrieve a schema
-     * from the cache based upon the <code>Catalog</code> property.
-     *
-     * @param connectInfo Connection properties; keywords are described in
-     *   {@link RolapConnectionProperties}.
-     * @param schema Schema for the connection. Must be null unless this is to
-     *   be an internal connection.
-     * @pre connectInfo != null
-     */
-    RolapConnection(Util.PropertyList connectInfo, RolapSchema schema) {
-        this(connectInfo, schema, null);
-    }
-
-    /**
-     * Creates a RolapConnection.
-     *
-     * <p>Only {@link RolapSchemaPool#get} calls this with
+     * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with
      * schema != null (to create a schema's internal connection).
      * Other uses retrieve a schema from the cache based upon
      * the <code>Catalog</code> property.
      *
+     * @param server Server instance this connection belongs to
      * @param connectInfo Connection properties; keywords are described in
      *   {@link RolapConnectionProperties}.
      * @param schema Schema for the connection. Must be null unless this is to
      *   be an internal connection.
      * @param dataSource If not null an external DataSource to be used
      *        by Mondrian
-     * @pre connectInfo != null
      */
     RolapConnection(
+        MondrianServer server,
         Util.PropertyList connectInfo,
         RolapSchema schema,
         DataSource dataSource)
     {
         super();
+        assert server != null;
+        this.server = server;
 
+        assert connectInfo != null;
         String provider = connectInfo.get(
             RolapConnectionProperties.Provider.name(), "mondrian");
         Util.assertTrue(provider.equalsIgnoreCase("mondrian"));
@@ -181,7 +159,18 @@ public class RolapConnection extends ConnectionBase {
                 List<String> roleNames = Util.parseCommaList(roleNameList);
                 List<Role> roleList = new ArrayList<Role>();
                 for (String roleName : roleNames) {
-                    Role role1 = schema.lookupRole(roleName);
+                    final LockBox.Entry entry =
+                        server.getLockBox().get(roleName);
+                    Role role1;
+                    if (entry != null) {
+                        try {
+                            role1 = (Role) entry.getValue();
+                        } catch (ClassCastException e) {
+                            role1 = null;
+                        }
+                    } else {
+                        role1 = schema.lookupRole(roleName);
+                    }
                     if (role1 == null) {
                         throw Util.newError(
                             "Role '" + roleName + "' not found");
@@ -655,6 +644,16 @@ public class RolapConnection extends ConnectionBase {
     }
 
     /**
+     * Returns the server (mondrian instance) that this connection belongs to.
+     * Usually there is only one server instance in a given JVM.
+     *
+     * @return Server instance; never null
+     */
+    public MondrianServer getServer() {
+        return server;
+    }
+
+    /**
      * Implementation of {@link DataSource} which calls the good ol'
      * {@link java.sql.DriverManager}.
      *
@@ -785,42 +784,38 @@ public class RolapConnection extends ConnectionBase {
             int axisCount = underlying.getAxes().length;
             this.pos = new int[axisCount];
             this.slicerAxis = underlying.getSlicerAxis();
-            List<Position> positions =
-                underlying.getAxes()[axis].getPositions();
+            TupleList tupleList =
+                ((RolapAxis) underlying.getAxes()[axis]).getTupleList();
 
-            final List<Position> positionsList;
-            try {
-                if (positions.get(0).get(0).getDimension()
-                    .isHighCardinality())
-                {
-                    positionsList =
-                        new FilteredIterableList<Position>(
-                            positions,
-                            new FilteredIterableList.Filter<Position>()
-                        {
-                            public boolean accept(final Position p) {
-                                return p.get(0) != null;
+            final TupleList filteredTupleList;
+            if (!tupleList.isEmpty()
+                && tupleList.get(0).get(0).getDimension().isHighCardinality())
+            {
+                filteredTupleList =
+                    new DelegatingTupleList(
+                        tupleList.getArity(),
+                        new FilteredIterableList<List<Member>>(
+                            tupleList,
+                            new FilteredIterableList.Filter<List<Member>>() {
+                                public boolean accept(final List<Member> p) {
+                                    return p.get(0) != null;
+                                }
                             }
-                        }
-                    );
-                } else {
-                    positionsList = new ArrayList<Position>();
-                    int i = -1;
-                    for (Position position : positions) {
-                        ++i;
-                        if (! isEmpty(i, axis)) {
-                            map.put(positionsList.size(), i);
-                            positionsList.add(position);
-                        }
+                        ));
+            } else {
+                filteredTupleList =
+                    TupleCollections.createList(tupleList.getArity());
+                int i = -1;
+                TupleCursor tupleCursor = tupleList.tupleCursor();
+                while (tupleCursor.forward()) {
+                    ++i;
+                    if (! isEmpty(i, axis)) {
+                        map.put(filteredTupleList.size(), i);
+                        filteredTupleList.addCurrent(tupleCursor);
                     }
                 }
-                this.axes[axis] = new RolapAxis.PositionList(positionsList);
-            } catch (IndexOutOfBoundsException ioobe) {
-                // No elements.
-                this.axes[axis] =
-                    new RolapAxis.PositionList(
-                            new ArrayList<Position>());
             }
+            this.axes[axis] = new RolapAxis(filteredTupleList);
         }
 
         protected Logger getLogger() {

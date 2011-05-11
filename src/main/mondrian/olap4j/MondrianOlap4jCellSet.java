@@ -3,17 +3,20 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
+import mondrian.rolap.RolapAxis;
 import org.olap4j.*;
 import org.olap4j.Cell;
 import org.olap4j.Position;
+
 import mondrian.olap.*;
 import mondrian.olap.Axis;
+import mondrian.rolap.RolapCell;
 
 import java.util.*;
 import java.sql.*;
@@ -77,9 +80,11 @@ abstract class MondrianOlap4jCellSet implements CellSet {
      * <p>This method may take some time. While it is executing, a client may
      * execute {@link MondrianOlap4jStatement#cancel()}.
      */
-    void execute() {
+    void execute() throws OlapException {
         query.setQueryTimeoutMillis(olap4jStatement.timeoutSeconds * 1000);
-        result = olap4jStatement.olap4jConnection.connection.execute(query);
+        result =
+            olap4jStatement.olap4jConnection.getMondrianConnection().execute(
+                query);
 
         // initialize axes
         mondrian.olap.Axis[] axes = result.getAxes();
@@ -88,7 +93,9 @@ abstract class MondrianOlap4jCellSet implements CellSet {
         for (int i = 0; i < axes.length; i++) {
             Axis axis = axes[i];
             QueryAxis queryAxis = queryAxes[i];
-            axisList.add(new MondrianOlap4jCellSetAxis(this, queryAxis, axis));
+            axisList.add(
+                new MondrianOlap4jCellSetAxis(
+                    this, queryAxis, (RolapAxis) axis));
         }
 
         // initialize filter axis
@@ -101,7 +108,8 @@ abstract class MondrianOlap4jCellSet implements CellSet {
                     false, null, AxisOrdinal.StandardAxisOrdinal.SLICER,
                     QueryAxis.SubtotalVisibility.Undefined);
         }
-        filterAxis = new MondrianOlap4jCellSetAxis(this, queryAxis, axis);
+        filterAxis =
+            new MondrianOlap4jCellSetAxis(this, queryAxis, (RolapAxis) axis);
     }
 
     public CellSetMetaData getMetaData() {
@@ -156,9 +164,9 @@ abstract class MondrianOlap4jCellSet implements CellSet {
     }
 
     private Cell getCellInternal(int[] pos) {
-        mondrian.olap.Cell cell;
+        RolapCell cell;
         try {
-            cell = result.getCell(pos);
+            cell = (RolapCell) result.getCell(pos);
         } catch (MondrianException e) {
             if (e.getMessage().indexOf("coordinates out of range") >= 0) {
                 int[] dimensions = new int[getAxes().size()];
@@ -716,8 +724,8 @@ abstract class MondrianOlap4jCellSet implements CellSet {
         throw new UnsupportedOperationException();
     }
 
-    public Statement getStatement() throws SQLException {
-        throw new UnsupportedOperationException();
+    public OlapStatement getStatement() {
+        return olap4jStatement;
     }
 
     public Object getObject(

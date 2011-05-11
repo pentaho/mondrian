@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde
+// Copyright (C) 2009-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -109,7 +109,7 @@ public class ScenarioTest extends FoodMartTestCase {
             TestContext.checkThrowable(
                 e,
                 "Cannot write to cell: one of the coordinates "
-                + "([Measures].[Unit Sales Plus One]) is a calculcated member");
+                + "([Measures].[Unit Sales Plus One]) is a calculated member");
         }
 
         // Calc member on non-measures dimension
@@ -131,7 +131,7 @@ public class ScenarioTest extends FoodMartTestCase {
             TestContext.checkThrowable(
                 e,
                 "Cannot write to cell: one of the coordinates "
-                + "([Product].[FoodDrink]) is a calculcated member");
+                + "([Product].[FoodDrink]) is a calculated member");
         }
     }
 
@@ -367,6 +367,89 @@ public class ScenarioTest extends FoodMartTestCase {
                 + "from [Sales]\n");
         value = cellSet.getCell(Arrays.asList(0, 0)).getFormattedValue();
         assertEquals("24,597", value);
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-815">MONDRIAN-815</a>,
+     * "NPE from query if use a scenario and one of the cells is empty/null".
+     */
+    public void testBugMondrian815() throws SQLException {
+        final TestContext testContext =
+            TestContext.createSubstitutingCube(
+                "Sales",
+                "<Dimension name='Scenario' foreignKey='time_id'>\n"
+                + "  <Hierarchy primaryKey='time_id' hasAll='true'>\n"
+                + "    <InlineTable alias='foo'>\n"
+                + "      <ColumnDefs>\n"
+                + "        <ColumnDef name='foo' type='Numeric'/>\n"
+                + "      </ColumnDefs>\n"
+                + "      <Rows/>\n"
+                + "    </InlineTable>\n"
+                + "    <Level name='Scenario' column='foo'/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>",
+                "<Measure name='Atomic Cell Count' aggregator='count'/>")
+                .withScenario();
+        final OlapConnection connection = testContext.getOlap4jConnection();
+        final Scenario scenario = connection.createScenario();
+        connection.setScenario(scenario);
+        final String id = scenario.getId();
+        final String scenarioUniqueName = "[Scenario].[" + id + "]";
+        final PreparedOlapStatement pstmt = connection.prepareOlapStatement(
+            "select NON EMPTY [Gender].Members ON COLUMNS,\n"
+            + "NON EMPTY Order([Product].[All Products].[Drink].Children,\n"
+            + "[Gender].[All Gender].[F], ASC) ON ROWS\n"
+            + "from [Sales]\n"
+            + "where ([Customers].[All Customers].[USA].[CA].[San Francisco],\n"
+            + " [Time].[1997], " + scenarioUniqueName + ")");
+
+        // With bug MONDRIAN-815, got an NPE here, because cell (0, 1) has a
+        // null value.
+        final CellSet cellSet = pstmt.executeQuery();
+        TestContext.assertEqualsVerbose(
+            "Axis #0:\n"
+            + "{[Customers].[USA].[CA].[San Francisco], [Time].[1997], "
+            + scenarioUniqueName
+            + "}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink].[Beverages]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+            + "Row #0: 2\n"
+            + "Row #0: \n"
+            + "Row #0: 2\n"
+            + "Row #1: 4\n"
+            + "Row #1: 2\n"
+            + "Row #1: 2\n",
+            TestContext.toString(cellSet));
+        cellSet.getCell(Arrays.asList(0, 1))
+            .setValue(10, AllocationPolicy.EQUAL_ALLOCATION);
+        cellSet.getCell(Arrays.asList(1, 0))
+            .setValue(999, AllocationPolicy.EQUAL_ALLOCATION);
+        final CellSet cellSet2 = pstmt.executeQuery();
+        TestContext.assertEqualsVerbose(
+            "Axis #0:\n"
+            + "{[Customers].[USA].[CA].[San Francisco], [Time].[1997], "
+            + scenarioUniqueName
+            + "}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+            + "{[Product].[Drink].[Beverages]}\n"
+            + "Row #0: 10\n"
+            + "Row #0: 5\n"
+            + "Row #0: 5\n"
+            + "Row #1: 1,001\n"
+            + "Row #1: 999\n"
+            + "Row #1: 2\n",
+            TestContext.toString(cellSet2));
     }
 
     // TODO: test whether it is valid for two connections to have the same

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,8 +14,6 @@ import mondrian.calc.*;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
-
-import java.util.List;
 
 /**
  * Definition of the <code>Sum</code> MDX function.
@@ -86,21 +84,25 @@ class SumFunDef extends AbstractAggregateFunDef {
             : new ValueCalc(call);
         // we may have asked for one sort of Calc, but here's what we got.
         if (ncalc instanceof ListCalc) {
-            return genListCalc(call, ncalc, calc);
+            return genListCalc(call, (ListCalc) ncalc, calc);
         } else {
-            return genIterCalc(call, ncalc, calc);
+            return genIterCalc(call, (IterCalc) ncalc, calc);
         }
     }
 
     protected Calc genIterCalc(
-        final ResolvedFunCall call, final Calc ncalc, final Calc calc)
+        final ResolvedFunCall call,
+        final IterCalc iterCalc,
+        final Calc calc)
     {
-        return new AbstractDoubleCalc(call, new Calc[] {ncalc, calc}) {
+        return new AbstractDoubleCalc(call, new Calc[] {iterCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
-                IterCalc iterCalc = (IterCalc) ncalc;
-                Iterable iterable =
+                TupleIterable iterable =
                     evaluateCurrentIterable(iterCalc, evaluator);
-                return sumDouble(evaluator.push(), iterable, calc);
+                final int savepoint = evaluator.savepoint();
+                final double d = sumDouble(evaluator, iterable, calc);
+                evaluator.restore(savepoint);
+                return d;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {
@@ -110,13 +112,20 @@ class SumFunDef extends AbstractAggregateFunDef {
     }
 
     protected Calc genListCalc(
-        final ResolvedFunCall call, final Calc ncalc, final Calc calc)
+        final ResolvedFunCall call,
+        final ListCalc listCalc,
+        final Calc calc)
     {
-        return new AbstractDoubleCalc(call, new Calc[] {ncalc, calc}) {
+        return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
-                ListCalc listCalc = (ListCalc) ncalc;
-                List memberList = evaluateCurrentList(listCalc, evaluator);
-                return sumDouble(evaluator.push(false), memberList, calc);
+                TupleList memberList = evaluateCurrentList(listCalc, evaluator);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final double sum =
+                    sumDouble(
+                        evaluator, memberList, calc);
+                evaluator.restore(savepoint);
+                return sum;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

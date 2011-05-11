@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -73,7 +73,7 @@ import org.apache.log4j.Logger;
  * @since 21 March, 2002
  * @version $Id$
  */
-class Segment {
+public class Segment {
     private static int nextId = 0; // generator for "id"
 
     final int id; // for debug
@@ -141,9 +141,28 @@ class Segment {
      * @param aggregation The aggregation this <code>Segment</code> belongs to
      * @param measure Measure whose values this Segment contains
      * @param axes List of axes; each is a constraint plus a list of values
+     */
+    public Segment(
+        Aggregation aggregation,
+        RolapStar.Measure measure,
+        Aggregation.Axis[] axes)
+    {
+        this(
+            aggregation,
+            measure,
+            axes,
+            new ArrayList<Region>());
+    }
+
+    /**
+     * Creates a <code>Segment</code>; it's not loaded yet.
+     *
+     * @param aggregation The aggregation this <code>Segment</code> belongs to
+     * @param measure Measure whose values this Segment contains
+     * @param axes List of axes; each is a constraint plus a list of values
      * @param excludedRegions List of regions which are not in this segment.
      */
-    Segment(
+    public Segment(
         Aggregation aggregation,
         RolapStar.Measure measure,
         Aggregation.Axis[] axes,
@@ -584,6 +603,7 @@ class Segment {
         } else {
             switch (type) {
             case OBJECT:
+            case STRING:
                 return new DenseObjectSegmentDataset(this, size);
             case INT:
                 return new DenseIntSegmentDataset(this, size);

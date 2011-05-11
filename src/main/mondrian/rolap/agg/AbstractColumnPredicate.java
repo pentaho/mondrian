@@ -26,7 +26,7 @@ import java.util.ArrayList;
  */
 public abstract class AbstractColumnPredicate implements StarColumnPredicate {
     protected final RolapSchema.PhysColumn constrainedColumn;
-    private final BitKey constrainedColumnBitKey;
+    private BitKey constrainedColumnBitKey;
 
     /**
      * Creates an AbstractColumnPredicate.
@@ -37,13 +37,6 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
     {
         this.constrainedColumn = constrainedColumn;
         assert constrainedColumn != null;
-
-        // Check whether constrainedColumn are null.
-        // Example: FastBatchingCellReaderTest.testAggregateDistinctCount5().
-        constrainedColumnBitKey =
-            BitKey.Factory.makeBitKey(
-                constrainedColumn.relation.getSchema().getColumnCount());
-        constrainedColumnBitKey.set(constrainedColumn.ordinal());
     }
 
     public String toString() {
@@ -67,6 +60,12 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
     }
 
     public BitKey getConstrainedColumnBitKey() {
+        if (constrainedColumnBitKey == null) {
+            constrainedColumnBitKey =
+                BitKey.Factory.makeBitKey(
+                    constrainedColumn.relation.getSchema().getColumnCount());
+            constrainedColumnBitKey.set(constrainedColumn.ordinal());
+        }
         return constrainedColumnBitKey;
     }
 

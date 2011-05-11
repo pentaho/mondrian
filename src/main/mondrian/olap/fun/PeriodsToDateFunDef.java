@@ -3,24 +3,20 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.*;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.LevelCalc;
-import mondrian.calc.MemberCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapHierarchy;
-
-import java.util.List;
 
 /**
  * Definition of the <code>PeriodsToDate</code> MDX function.
@@ -85,7 +81,7 @@ class PeriodsToDateFunDef extends FunDefBase {
             : null;
 
         return new AbstractListCalc(call, new Calc[] {levelCalc, memberCalc}) {
-            public List evaluateList(Evaluator evaluator) {
+            public TupleList evaluateList(Evaluator evaluator) {
                 final Member member;
                 final Level level;
                 if (levelCalc == null) {
@@ -99,7 +95,8 @@ class PeriodsToDateFunDef extends FunDefBase {
                         member = memberCalc.evaluateMember(evaluator);
                     }
                 }
-                return periodsToDate(evaluator, level, member);
+                return new UnaryTupleList(
+                    periodsToDate(evaluator, level, member));
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

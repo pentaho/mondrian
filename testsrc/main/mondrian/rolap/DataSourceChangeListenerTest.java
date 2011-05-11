@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2007-2008 Bart Pappyn
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -26,9 +26,8 @@ import mondrian.spi.impl.DataSourceChangeListenerImpl;
 import mondrian.spi.impl.DataSourceChangeListenerImpl2;
 import mondrian.spi.impl.DataSourceChangeListenerImpl3;
 import mondrian.spi.impl.DataSourceChangeListenerImpl4;
+import mondrian.util.Bug;
 import mondrian.util.Pair;
-
-import org.apache.log4j.Logger;
 
 import junit.framework.TestCase;
 
@@ -40,10 +39,6 @@ import junit.framework.TestCase;
  * @version $Id$
  */
 public class DataSourceChangeListenerTest extends FoodMartTestCase {
-    private static final Logger logger =
-        Logger.getLogger(DataSourceChangeListenerTest.class);
-    final SqlConstraintFactory scf = SqlConstraintFactory.instance();
-
 
     public DataSourceChangeListenerTest() {
         super();
@@ -76,10 +71,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             cacheControl.createMeasuresRegion(salesCube);
         cacheControl.flush(measuresRegion);
 
-        boolean do_caching_orig = properties.DisableCaching.get();
-
         // turn on caching
-        properties.DisableCaching.setString("false");
+        propSaver.set(properties.DisableCaching, false);
 
         cacheControl.flushSchemaCache();
 
@@ -216,12 +209,6 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             star.setChangeListener(null);
 
             RolapUtil.threadHooks.set(null);
-
-            if (do_caching_orig) {
-                properties.DisableCaching.setString("true");
-            } else {
-                properties.DisableCaching.setString("false");
-            }
         }
     }
 
@@ -229,6 +216,9 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
      * Tests whether the flushing of the cache is thread safe.
      */
     public void testParallelDataSourceChangeListenerPlugin() {
+        if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
+            return;
+        }
         // 5 threads, 8 cycles each
         checkCacheFlushing(5, 8);
     }
@@ -462,23 +452,14 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
                 throw Util.newInternal(e, "while joining thread #" + i);
             }
         }
-        StringBuilder messages = new StringBuilder();
-        int failures = 0;
+        List<String> messages = new ArrayList<String>();
         for (Worker worker : workers) {
             for (Throwable throwable : worker.failures) {
-                String message =
-                    throwable.toString() + throwable.getMessage();
-                if (message != null) {
-                    failures++;
-                    if (messages.length() != 0) {
-                        messages.append(Util.nl);
-                    }
-                    messages.append(message);
-                }
+                messages.add(TestContext.getStackTrace(throwable));
             }
         }
-        if (failures != 0) {
-            TestCase.fail(failures + " threads failed\n" + messages);
+        if (!messages.isEmpty()) {
+            TestCase.fail(messages.size() + " threads failed\n" + messages);
         }
     }
 

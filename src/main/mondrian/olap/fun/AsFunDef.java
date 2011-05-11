@@ -3,20 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde
+// Copyright (C) 2009-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.impl.AbstractMemberIterCalc;
-import mondrian.calc.impl.AbstractTupleIterCalc;
+import mondrian.calc.*;
+import mondrian.calc.impl.AbstractIterCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.mdx.NamedSetExpr;
 import mondrian.olap.*;
-import mondrian.olap.type.SetType;
 
 import java.util.List;
 
@@ -56,27 +53,15 @@ class AsFunDef extends FunDefBase {
         // a member to a set, have been performed. Use the new expression.
         scopedNamedSet.setExp(call.getArg(0));
 
-        if (((SetType) call.getType()).getArity() == 1) {
-            return new AbstractMemberIterCalc(call, new Calc[0]) {
-                public Iterable<Member> evaluateMemberIterable(
-                    Evaluator evaluator)
-                {
-                    final Evaluator.NamedSetEvaluator namedSetEvaluator =
-                        evaluator.getNamedSetEvaluator(scopedNamedSet, false);
-                    return namedSetEvaluator.evaluateMemberIterable();
-                }
-            };
-        } else {
-            return new AbstractTupleIterCalc(call, new Calc[0]) {
-                public Iterable<Member []> evaluateTupleIterable(
-                    Evaluator evaluator)
-                {
-                    final Evaluator.NamedSetEvaluator namedSetEvaluator =
-                        evaluator.getNamedSetEvaluator(scopedNamedSet, false);
-                    return namedSetEvaluator.evaluateTupleIterable();
-                }
-            };
-        }
+        return new AbstractIterCalc(call, new Calc[0]) {
+            public TupleIterable evaluateIterable(
+                Evaluator evaluator)
+            {
+                final Evaluator.NamedSetEvaluator namedSetEvaluator =
+                    evaluator.getNamedSetEvaluator(scopedNamedSet, false);
+                return namedSetEvaluator.evaluateTupleIterable();
+            }
+        };
     }
 
     private static class ResolverImpl extends ResolverBase {

@@ -8,11 +8,12 @@
 */
 package mondrian.olap4j;
 
+import mondrian.mdx.LevelExpr;
+import mondrian.mdx.UnresolvedFunCall;
 import org.olap4j.CellSetAxisMetaData;
 import org.olap4j.Axis;
 import org.olap4j.metadata.Hierarchy;
 import org.olap4j.metadata.Property;
-import org.olap4j.metadata.Dimension;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 
@@ -52,21 +53,24 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
         // populate property list
         for (Id id : queryAxis.getDimensionProperties()) {
             final String[] names = id.toStringArray();
-            Property property = null;
+            Property olap4jProperty = null;
             if (names.length == 1) {
-                property =
+                olap4jProperty =
                     Util.lookup(
                         Property.StandardMemberProperty.class, names[0]);
             }
-            if (property == null) {
-                property =
-                    (Property)
-                    Util.lookup(
-                        cellSetMetaData.query,
-                        id.getSegments(),
-                        true);
+            if (olap4jProperty == null) {
+                final UnresolvedFunCall call =
+                    (UnresolvedFunCall)
+                        Util.lookup(
+                            cellSetMetaData.query, id.getSegments(), true);
+                olap4jProperty =
+                    new MondrianOlap4jProperty(
+                        Util.lookupProperty(
+                            ((LevelExpr) call.getArg(0)).getLevel(),
+                            call.getFunName()));
             }
-            propertyList.add(property);
+            propertyList.add(olap4jProperty);
         }
     }
 
@@ -89,27 +93,15 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
         if (exp == null) {
             return Collections.emptyList();
         }
-        Type type = exp.getType();
-        if (type instanceof SetType) {
-            type = ((SetType) type).getElementType();
+        List<Hierarchy> hierarchyList = new ArrayList<Hierarchy>();
+        for (mondrian.olap.Hierarchy hierarchy
+            : TypeUtil.getHierarchies(exp.getType()))
+        {
+            hierarchyList.add(
+                cellSetMetaData.olap4jStatement.olap4jConnection.toOlap4j(
+                    hierarchy));
         }
-        final MondrianOlap4jConnection olap4jConnection =
-            cellSetMetaData.olap4jStatement.olap4jConnection;
-        if (type instanceof TupleType) {
-            final TupleType tupleType = (TupleType) type;
-            List<Hierarchy> hierarchyList =
-                new ArrayList<Hierarchy>();
-            for (Type elementType : tupleType.elementTypes) {
-                hierarchyList.add(
-                    olap4jConnection.toOlap4j(
-                        elementType.getHierarchy()));
-            }
-            return hierarchyList;
-        } else {
-            return Collections.singletonList(
-                (Hierarchy) olap4jConnection.toOlap4j(
-                    type.getHierarchy()));
-        }
+        return hierarchyList;
     }
 
     public List<Property> getProperties() {

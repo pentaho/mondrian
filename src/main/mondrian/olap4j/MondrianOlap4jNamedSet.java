@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,8 +12,6 @@ import org.olap4j.metadata.NamedSet;
 import org.olap4j.metadata.Cube;
 import org.olap4j.mdx.ParseTreeNode;
 import org.olap4j.impl.Named;
-
-import java.util.Locale;
 
 /**
  * Implementation of {@link org.olap4j.metadata.NamedSet}
@@ -54,14 +52,18 @@ public class MondrianOlap4jNamedSet implements NamedSet, Named {
         return namedSet.getUniqueName();
     }
 
-    public String getCaption(Locale locale) {
+    public String getCaption() {
         // todo: i18n
         return namedSet.getCaption();
     }
 
-    public String getDescription(Locale locale) {
+    public String getDescription() {
         // todo: i18n
         return namedSet.getDescription();
+    }
+
+    public boolean isVisible() {
+        return true;
     }
 }
 

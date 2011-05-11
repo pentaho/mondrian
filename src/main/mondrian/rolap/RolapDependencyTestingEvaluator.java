@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -55,9 +55,10 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
      */
     private RolapDependencyTestingEvaluator(
         RolapEvaluatorRoot root,
-        RolapDependencyTestingEvaluator evaluator)
+        RolapDependencyTestingEvaluator evaluator,
+        List<List<Member>> aggregationList)
     {
-        super(root, evaluator);
+        super(root, evaluator, aggregationList);
     }
 
     public Object evaluate(
@@ -149,8 +150,8 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         return result;
     }
 
-    public RolapEvaluator _push() {
-        return new RolapDependencyTestingEvaluator(root, this);
+    public RolapEvaluator _push(List<List<Member>> aggregationList) {
+        return new RolapDependencyTestingEvaluator(root, this, aggregationList);
     }
 
     private boolean equals(Object o1, Object o2) {
@@ -357,10 +358,10 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
             return dtEval.evaluate(calc, independentHierarchies, mdxString);
         }
 
-        public List evaluateList(Evaluator evaluator) {
-            List<?> list = super.evaluateList(evaluator);
+        public TupleList evaluateList(Evaluator evaluator) {
+            TupleList list = super.evaluateList(evaluator);
             if (!mutableList) {
-                list = Collections.unmodifiableList(list);
+                list = TupleCollections.unmodifiableList(list);
             }
             return list;
         }

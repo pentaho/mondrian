@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -17,6 +17,7 @@ import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.AggStar;
 
+import mondrian.util.Pair;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -128,28 +129,40 @@ public class AggregationManager extends RolapAggregationManager {
             new DrillThroughQuerySpec(
                 request,
                 countOnly);
-        String sql = spec.generateSqlQuery();
+        Pair<String, List<SqlStatement.Type>> pair = spec.generateSqlQuery();
 
         if (getLogger().isDebugEnabled()) {
             getLogger().debug(
                 "DrillThroughSQL: "
-                + sql
+                + pair.left
                 + Util.nl);
         }
 
-        return sql;
+        return pair.left;
     }
 
     /**
      * Generates the query to retrieve the cells for a list of segments.
-     * Called by Segment.load
+     * Called by Segment.load.
+     *
+     * @return A pair consisting of a SQL statement and a list of suggested
+     *     types of columns
      */
-    public String generateSql(
+    public Pair<String, List<SqlStatement.Type>> generateSql(
         GroupingSetsList groupingSetsList,
         List<StarPredicate> compoundPredicateList)
     {
+        final RolapStar star = groupingSetsList.getStar();
         BitKey levelBitKey = groupingSetsList.getDefaultLevelBitKey();
         BitKey measureBitKey = groupingSetsList.getDefaultMeasureBitKey();
+
+        List<SqlStatement.Type> types = new ArrayList<SqlStatement.Type>();
+        for (int levelId : levelBitKey) {
+            types.add(star.getColumn(levelId).getInternalType());
+        }
+        for (int measureId : measureBitKey) {
+            types.add(star.getColumn(measureId).getInternalType());
+        }
 
         // Check if using aggregates is enabled.
         boolean hasCompoundPredicates = false;
@@ -160,8 +173,6 @@ public class AggregationManager extends RolapAggregationManager {
         if (MondrianProperties.instance().UseAggregates.get()
              && !hasCompoundPredicates)
         {
-            RolapStar star = groupingSetsList.getStar();
-
             final boolean[] rollup = {false};
             AggStar aggStar = findAgg(star, levelBitKey, measureBitKey, rollup);
 
@@ -206,15 +217,13 @@ public class AggregationManager extends RolapAggregationManager {
                         + sql);
                 }
 
-                return sql;
+                return Pair.of(sql, types);
             }
 
             // No match, fall through and use fact table.
         }
 
         if (getLogger().isDebugEnabled()) {
-            RolapStar star = groupingSetsList.getStar();
-
             getLogger().debug(
                 "NO MATCH: " + star.getFactTable().getAlias() + Util.nl
                 + "   foreign=" + levelBitKey + Util.nl
@@ -226,15 +235,14 @@ public class AggregationManager extends RolapAggregationManager {
         SegmentArrayQuerySpec spec =
             new SegmentArrayQuerySpec(groupingSetsList, compoundPredicateList);
 
-        String sql = spec.generateSqlQuery();
+        Pair<String, List<SqlStatement.Type>> pair = spec.generateSqlQuery();
 
         if (getLogger().isDebugEnabled()) {
             getLogger().debug(
-                "generateSqlQuery: sql="
-                + sql);
+                "generateSqlQuery: sql=" + pair.left);
         }
 
-        return sql;
+        return pair;
     }
 
     /**

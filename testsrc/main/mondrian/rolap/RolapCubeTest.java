@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde and others
+// Copyright (C) 2007-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -240,7 +240,7 @@ public class RolapCubeTest extends FoodMartTestCase {
             members.addAll(warehouseMembers);
 
             List<Member> storeMembers =
-                storeMembersCAAndOR(readerWarehouseAndSales);
+                storeMembersCAAndOR(readerWarehouseAndSales).slice(0);
             Dimension storeDim = storeMembers.get(0).getDimension();
             members.addAll(storeMembers);
 
@@ -265,13 +265,15 @@ public class RolapCubeTest extends FoodMartTestCase {
             RolapCube salesCube1 = (RolapCube) cubeByName(connection1, "Sales");
             SchemaReader readerSales1 =
                 salesCube1.getSchemaReader();
-            List<Member> storeMembersSales = storeMembersCAAndOR(readerSales1);
+            List<Member> storeMembersSales =
+                storeMembersCAAndOR(readerSales1).slice(0);
             Dimension storeDim1 = storeMembersSales.get(0).getDimension();
             assertEquals(storeDim1, storeDim1);
 
             RolapCube salesCube2 = (RolapCube) cubeByName(connection2, "Sales");
             SchemaReader readerSales2 = salesCube2.getSchemaReader();
-            List<Member> storeMembersSales2 = storeMembersCAAndOR(readerSales2);
+            List<Member> storeMembersSales2 =
+                storeMembersCAAndOR(readerSales2).slice(0);
             Dimension storeDim2 = storeMembersSales2.get(0).getDimension();
             assertEquals(storeDim1, storeDim2);
 
@@ -281,7 +283,7 @@ public class RolapCubeTest extends FoodMartTestCase {
             SchemaReader readerWarehouseAndSales =
                 warehouseAndSalesCube.getSchemaReader();
             List<Member> storeMembersWarehouseAndSales =
-                storeMembersCAAndOR(readerWarehouseAndSales);
+                storeMembersCAAndOR(readerWarehouseAndSales).slice(0);
             Dimension storeDim3 =
                 storeMembersWarehouseAndSales.get(0).getDimension();
             assertFalse(storeDim1.equals(storeDim3));

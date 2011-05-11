@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,13 +12,12 @@
 */
 
 package mondrian.olap;
+import mondrian.calc.impl.*;
 import mondrian.olap.type.*;
 import mondrian.mdx.MemberExpr;
 import mondrian.calc.*;
-import mondrian.calc.impl.GenericCalc;
-import mondrian.calc.impl.AbstractMemberListCalc;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Implementation of {@link Parameter}.
@@ -74,6 +73,11 @@ public class ParameterImpl
         public void setParameterValue(Object value, boolean assigned) {
             this.assigned = true;
             this.value = value;
+
+            // make sure caller called convert first
+            assert !(value instanceof List && !(value instanceof TupleList));
+            assert !(value instanceof MemberExpr);
+            assert !(value instanceof Literal);
         }
     };
 
@@ -115,18 +119,13 @@ public class ParameterImpl
             // parameter to have a value
             return null;
         } else {
-            return slot.getParameterValue();
+            final Object value = slot.getParameterValue();
+            return convertBack(value);
         }
     }
 
     public void setValue(Object value) {
-        if (value instanceof MemberExpr) {
-            slot.setParameterValue(((MemberExpr) value).getMember(), true);
-        } else if (value instanceof Literal) {
-            slot.setParameterValue(((Literal) value).getValue(), true);
-        } else {
-            slot.setParameterValue(value, true);
-        }
+        slot.setParameterValue(convert(value), true);
     }
 
     public boolean isSet() {
@@ -196,7 +195,9 @@ public class ParameterImpl
         if (this.slot != null) {
             // save previous value
             if (this.slot.isParameterSet()) {
-                slot.setParameterValue(this.slot.getParameterValue(), true);
+                slot.setParameterValue(
+                    this.slot.getParameterValue(),
+                    true);
             }
         }
         this.slot = slot;
@@ -205,6 +206,34 @@ public class ParameterImpl
         } else {
             return new ParameterCalc(slot);
         }
+    }
+
+    protected Object convert(Object value) {
+        // Convert from old-style tuple list (list of member or member[])
+        // to new-style list (TupleList).
+        if (value instanceof List && !(value instanceof TupleList)) {
+            List list = (List) value;
+            return TupleCollections.asTupleList(list);
+        }
+        if (value instanceof MemberExpr) {
+            return ((MemberExpr) value).getMember();
+        }
+        if (value instanceof Literal) {
+            return ((Literal) value).getValue();
+        }
+        return value;
+    }
+
+    public static Object convertBack(Object value) {
+        if (value instanceof TupleList) {
+            TupleList tupleList = (TupleList) value;
+            if (tupleList.getArity() == 1) {
+                return tupleList.slice(0);
+            } else {
+                return TupleCollections.asMemberArrayList(tupleList);
+            }
+        }
+        return value;
     }
 
     /**
@@ -249,7 +278,7 @@ public class ParameterImpl
      * @see ParameterCalc
      */
     private static class MemberListParameterCalc
-        extends AbstractMemberListCalc
+        extends AbstractListCalc
     {
         private final ParameterSlot slot;
 
@@ -263,9 +292,8 @@ public class ParameterImpl
             this.slot = slot;
         }
 
-        public List<Member> evaluateMemberList(Evaluator evaluator) {
-            List<Member> value =
-                (List<Member>) evaluator.getParameterValue(slot);
+        public TupleList evaluateList(Evaluator evaluator) {
+            TupleList value = (TupleList) evaluator.getParameterValue(slot);
             if (!slot.isParameterSet()) {
                 // save value if not set (setting the default value)
                 slot.setParameterValue(value, false);

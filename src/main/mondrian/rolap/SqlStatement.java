@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde and others
+// Copyright (C) 2007-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -55,6 +55,7 @@ public class SqlStatement {
     private Connection jdbcConnection;
     private ResultSet resultSet;
     private final String sql;
+    private final List<Type> types;
     private final int maxRows;
     private final int firstRowOrdinal;
     private final String component;
@@ -77,6 +78,9 @@ public class SqlStatement {
      *
      * @param dataSource Data source
      * @param sql SQL
+     * @param types Suggested types of columns, or null;
+     *     if present, must have one element for each SQL column;
+     *     each not-null entry overrides deduced JDBC type of the column
      * @param maxRows Maximum rows; <= 0 means no maximum
      * @param firstRowOrdinal Ordinal of first row to skip to; <= 0 do not skip
      * @param component Description of component/purpose of this statement
@@ -87,6 +91,7 @@ public class SqlStatement {
     SqlStatement(
         DataSource dataSource,
         String sql,
+        List<Type> types,
         int maxRows,
         int firstRowOrdinal,
         String component,
@@ -96,6 +101,7 @@ public class SqlStatement {
     {
         this.dataSource = dataSource;
         this.sql = sql;
+        this.types = types;
         this.maxRows = maxRows;
         this.firstRowOrdinal = firstRowOrdinal;
         this.component = component;
@@ -288,6 +294,24 @@ public class SqlStatement {
         return runtimeException;
     }
 
+    private static Type getDecimalType(int precision, int scale)
+    {
+        if ((scale == 0 || scale == -127)
+            && (precision <= 9 || precision == 38))
+        {
+            // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
+            // (up to 10^9 = 1B). NUMBER(38, 0) is conventionally used in
+            // Oracle for integers of unspecified precision, so let's be
+            // bold and assume that they can fit into an int.
+            //
+            // Oracle also seems to sometimes represent integers as
+            // (type=NUMERIC, precision=0, scale=-127) for reasons unknown.
+            return Type.INT;
+        } else {
+            return Type.DOUBLE;
+        }
+    }
+
     /**
      * Chooses the most appropriate type for accessing the values of a
      * column in a result set.
@@ -295,46 +319,42 @@ public class SqlStatement {
      * <p>NOTE: It is possible that this method is driver-dependent. If this is
      * the case, move it to {@link mondrian.spi.Dialect}.
      *
+     * @param suggestedType Type suggested by Level.internalType attribute
      * @param metaData Result set metadata
      * @param i Column ordinal (0-based)
      * @return Best client type
      * @throws SQLException on error
      */
-    public static Type guessType(ResultSetMetaData metaData, int i)
+    public static Type guessType(
+        Type suggestedType,
+        ResultSetMetaData metaData,
+        int i)
         throws SQLException
     {
+        if (suggestedType != null) {
+            return suggestedType;
+        }
         final int columnType = metaData.getColumnType(i + 1);
-        final int precision = metaData.getPrecision(i + 1);
-        final int scale = metaData.getScale(i + 1);
-        final String columnName = metaData.getColumnName(i + 1);
-        final String columnLabel = metaData.getColumnLabel(i + 1);
+        int precision;
+        int scale;
         switch (columnType) {
         case Types.SMALLINT:
         case Types.INTEGER:
         case Types.BOOLEAN:
             return Type.INT;
         case Types.NUMERIC:
+            precision = metaData.getPrecision(i + 1);
+            scale = metaData.getScale(i + 1);
             if (precision == 0 && scale == 0) {
                 // In Oracle, the NUMBER datatype with no precision or scale
                 // (not NUMBER(p) or NUMBER(p, s)) means floating point.
                 return Type.DOUBLE;
             }
-            // else fall through
+            return getDecimalType(precision, scale);
         case Types.DECIMAL:
-            if ((scale == 0 || scale == -127)
-                && (precision <= 9 || precision == 38))
-            {
-                // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
-                // (up to 10^9 = 1B). NUMBER(38, 0) is conventionally used in
-                // Oracle for integers of unspecified precision, so let's be
-                // bold and assume that they can fit into an int.
-                //
-                // Oracle also seems to sometimes represent integers as
-                // (type=NUMERIC, precision=0, scale=-127) for reasons unknown.
-                return Type.INT;
-            } else {
-                return Type.DOUBLE;
-            }
+            precision = metaData.getPrecision(i + 1);
+            scale = metaData.getScale(i + 1);
+            return getDecimalType(precision, scale);
         case Types.DOUBLE:
         case Types.FLOAT:
             return Type.DOUBLE;
@@ -380,24 +400,40 @@ public class SqlStatement {
                     return resultSet.getObject(columnPlusOne);
                 }
             };
+        case STRING:
+            return new Accessor() {
+                public Object get() throws SQLException {
+                    return resultSet.getString(columnPlusOne);
+                }
+            };
         case INT:
             return new Accessor() {
                 public Object get() throws SQLException {
-                    final int intVal = resultSet.getInt(columnPlusOne);
-                    if (intVal == 0 && resultSet.wasNull()) {
+                    final int val = resultSet.getInt(columnPlusOne);
+                    if (val == 0 && resultSet.wasNull()) {
                         return null;
                     }
-                    return intVal;
+                    return val;
+                }
+            };
+        case LONG:
+            return new Accessor() {
+                public Object get() throws SQLException {
+                    final long val = resultSet.getLong(columnPlusOne);
+                    if (val == 0 && resultSet.wasNull()) {
+                        return null;
+                    }
+                    return val;
                 }
             };
         case DOUBLE:
             return new Accessor() {
                 public Object get() throws SQLException {
-                    final double doubleVal = resultSet.getDouble(columnPlusOne);
-                    if (doubleVal == 0 && resultSet.wasNull()) {
+                    final double val = resultSet.getDouble(columnPlusOne);
+                    if (val == 0 && resultSet.wasNull()) {
                         return null;
                     }
-                    return doubleVal;
+                    return val;
                 }
             };
         default:
@@ -407,9 +443,13 @@ public class SqlStatement {
 
     public List<Type> guessTypes() throws SQLException {
         final ResultSetMetaData metaData = resultSet.getMetaData();
+        final int columnCount = metaData.getColumnCount();
+        assert this.types == null || this.types.size() == columnCount;
         List<Type> types = new ArrayList<Type>();
-        for (int i = 0; i < metaData.getColumnCount(); i++) {
-            types.add(guessType(metaData, i));
+        for (int i = 0; i < columnCount; i++) {
+            final Type suggestedType =
+                this.types == null ? null : this.types.get(i);
+            types.add(guessType(suggestedType, metaData, i));
         }
         return types;
     }
@@ -450,14 +490,20 @@ public class SqlStatement {
     public enum Type {
         OBJECT,
         DOUBLE,
-        INT;
+        INT,
+        LONG,
+        STRING;
 
         public Object get(ResultSet resultSet, int column) throws SQLException {
             switch (this) {
             case OBJECT:
                 return resultSet.getObject(column + 1);
+            case STRING:
+                return resultSet.getString(column + 1);
             case INT:
                 return resultSet.getInt(column + 1);
+            case LONG:
+                return resultSet.getLong(column + 1);
             case DOUBLE:
                 return resultSet.getDouble(column + 1);
             default:

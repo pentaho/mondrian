@@ -4,14 +4,14 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
+
 import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
@@ -28,10 +28,27 @@ import java.util.*;
  *
  * <p>The context contains a member (which may be the default member)
  * for every dimension in the current cube. Certain operations, such as
- * evaluating a calculated member or a tuple, change the current context. The
- * evaluator's {@link #push} method creates a clone of the current evaluator
- * so that you can revert to the original context once the operation has
- * completed.
+ * evaluating a calculated member or a tuple, change the current context.
+ *
+ * <p>There are two ways of preserving context.
+ *
+ * <p>First, the {@link #push}
+ * method creates a verbatim copy of the evaluator. Use that copy for
+ * computations, and any changes of state will be made only to the copy.
+ *
+ * <p>Second, the {@link #savepoint()} method tells the evaluator to create a
+ * checkpoint of its state, and returns an {@code int} value that can later be
+ * passed to {@link #restore(int)}.
+ *
+ * <p>The {@code savepoint} method is recommended for most purposes, because the
+ * initial checkpoint is extremely cheap. Each call that modifies state (such as
+ * {@link mondrian.olap.Evaluator#setContext(mondrian.olap.Member)}) creates, at
+ * a modest cost, an entry on an internal command stack.
+ *
+ * <p>One occasion that you would use {@code push} is when creating an
+ * iterator, and the iterator needs its own evaluator context, even if the
+ * code that created the iterator later reverts the context. In this case,
+ * the iterator's constructor should call {@code push}.
  *
  * <h3>Developers note</h3>
  *
@@ -55,7 +72,7 @@ public class RolapEvaluator implements Evaluator {
     private final RolapMember[] currentMembers;
     private final RolapEvaluator parent;
     protected CellReader cellReader;
-    private final int depth;
+    private final int ancestorCommandCount;
 
     private Member expandingMember;
     private boolean firstExpanding;
@@ -64,19 +81,21 @@ public class RolapEvaluator implements Evaluator {
     private int iterationLength;
     private boolean evalAxes;
 
-    private final RolapCalculation[] calcMembers;
-    private int calcMemberCount;
+    private final RolapCalculation[] calculations;
+    private int calculationCount;
 
     /**
      * List of lists of tuples or members, rarely used, but overrides the
      * ordinary dimensional context if set when a cell value comes to be
      * evaluated.
      */
-    protected List<List<Member[]>> aggregationLists;
+    protected final List<List<List<Member>>> aggregationLists;
 
     private final List<Member> slicerMembers;
-    private Boolean nativeEnabled;
+    private boolean nativeEnabled;
     private Member[] nonAllMembers;
+    private int commandCount;
+    private Object[] commands;
 
     /**
      * Set of expressions actively being expanded. Prevents infinite cycle of
@@ -105,31 +124,53 @@ public class RolapEvaluator implements Evaluator {
      * @param root Root context for stack of evaluators (contains information
      *   which does not change during the evaluation)
      * @param parent Parent evaluator, not null
+     * @param aggregationList List of tuples to add to aggregation context,
+     *     or null
      */
     protected RolapEvaluator(
         RolapEvaluatorRoot root,
-        RolapEvaluator parent)
+        RolapEvaluator parent,
+        List<List<Member>> aggregationList)
     {
         this.iterationLength = 1;
         this.root = root;
         assert parent != null;
         this.parent = parent;
 
-        depth = parent.depth + 1;
+        ancestorCommandCount =
+            parent.ancestorCommandCount + parent.commandCount;
         nonEmpty = parent.nonEmpty;
         nativeEnabled = parent.nativeEnabled;
         evalAxes = parent.evalAxes;
         cellReader = parent.cellReader;
         currentMembers = parent.currentMembers.clone();
-        calcMembers = parent.calcMembers.clone();
-        calcMemberCount = parent.calcMemberCount;
+        calculations = parent.calculations.clone();
+        calculationCount = parent.calculationCount;
         slicerMembers = new ArrayList<Member>(parent.slicerMembers);
+
+        commands = new Object[10];
+        commands[0] = Command.SAVEPOINT; // sentinel
+        commandCount = 1;
+
+        // Build aggregationLists, combining parent's aggregationLists (if not
+        // null) and the new aggregation list (if any).
+        List<List<List<Member>>> aggregationLists = null;
         if (parent.aggregationLists != null) {
             aggregationLists =
-                new ArrayList<List<Member[]>>(parent.aggregationLists);
-        } else {
-            aggregationLists = null;
+                new ArrayList<List<List<Member>>>(parent.aggregationLists);
         }
+        if (aggregationList != null) {
+            if (aggregationLists == null) {
+                aggregationLists = new ArrayList<List<List<Member>>>();
+            }
+            aggregationLists.add(aggregationList);
+            List<Member> tuple = aggregationList.get(0);
+            for (Member member : tuple) {
+                setContext(member.getHierarchy().getAllMember());
+            }
+        }
+        this.aggregationLists = aggregationLists;
+
         expandingMember = parent.expandingMember;
     }
 
@@ -142,7 +183,7 @@ public class RolapEvaluator implements Evaluator {
         this.iterationLength = 1;
         this.root = root;
         this.parent = null;
-        depth = 0;
+        ancestorCommandCount = 0;
         nonEmpty = false;
         nativeEnabled =
             MondrianProperties.instance().EnableNativeNonEmpty.get()
@@ -150,19 +191,22 @@ public class RolapEvaluator implements Evaluator {
         evalAxes = false;
         cellReader = null;
         currentMembers = root.defaultMembers.clone();
-        calcMembers = new RolapCalculation[currentMembers.length];
-        calcMemberCount = 0;
+        calculations = new RolapCalculation[currentMembers.length];
+        calculationCount = 0;
         slicerMembers = new ArrayList<Member>();
         aggregationLists = null;
+
+        commands = new Object[10];
+        commands[0] = Command.SAVEPOINT; // sentinel
+        commandCount = 1;
+
         for (RolapMember member : currentMembers) {
             if (member.isEvaluated()) {
-                addCalcMember(new RolapMemberCalculation(member));
+                addCalculation(member, true);
             }
         }
 
         // we expect client to set CellReader
-
-        root.init(this);
     }
 
     /**
@@ -181,24 +225,29 @@ public class RolapEvaluator implements Evaluator {
         return null;
     }
 
-    public boolean needToReturnNullForUnrelatedDimension(Member[] members) {
-        RolapCube virtualCube = getCube();
-        RolapMeasureGroup measureGroup = getMeasureGroup();
-        if (measureGroup != null) {
-            if (measureGroup.ignoreUnrelatedDimensions) {
-                return false;
-            } else if (MondrianProperties.instance()
-                .IgnoreMeasureForNonJoiningDimension.get())
-            {
-                Set<Dimension> nonJoiningDimensions =
-                    measureGroup.nonJoiningDimensions(members);
-                if (!nonJoiningDimensions.isEmpty()) {
-                    return true;
-                }
-            }
+    public boolean mightReturnNullForUnrelatedDimension() {
+        if (!MondrianProperties.instance()
+            .IgnoreMeasureForNonJoiningDimension.get())
+        {
+            return false;
         }
+        RolapCube virtualCube = getCube();
+        return virtualCube.isVirtual();
+    }
 
-        return false;
+    public boolean needToReturnNullForUnrelatedDimension(Member[] members) {
+        assert mightReturnNullForUnrelatedDimension()
+            : "Should not even call this method if nulls are impossible";
+        RolapMeasureGroup measureGroup = getMeasureGroup();
+        if (measureGroup == null) {
+            return false;
+        }
+        if (measureGroup.ignoreUnrelatedDimensions) {
+            return false;
+        }
+        Set<Dimension> nonJoiningDimensions =
+            measureGroup.nonJoiningDimensions(members);
+        return !nonJoiningDimensions.isEmpty();
     }
 
     public boolean nativeEnabled() {
@@ -217,14 +266,49 @@ public class RolapEvaluator implements Evaluator {
         }
         // For other cell values (e.g. zero), the cell is deemed empty if the
         // number of fact table rows is zero.
-        final RolapEvaluator eval2 = push(measureCube.getFactCountMeasure());
-        o = eval2.evaluateCurrent();
+        final int savepoint = savepoint();
+        setContext(measureCube.getFactCountMeasure());
+        o = evaluateCurrent();
+        restore(savepoint);
         return o == null
            || (o instanceof Number && ((Number) o).intValue() == 0);
     }
 
-    public void setNativeEnabled(final Boolean nativeEnabled) {
-        this.nativeEnabled = nativeEnabled;
+    public Member getPreviousContext(Hierarchy hierarchy) {
+        for (RolapEvaluator e = this; e != null; e = e.parent) {
+            for (int i = commandCount - 1; i > 0;) {
+                Command command = (Command) commands[i];
+                if (command == Command.SET_CONTEXT) {
+                    return (Member) commands[i - 2];
+                }
+                i -= command.width;
+            }
+        }
+        return null;
+    }
+
+    public final int savepoint() {
+        final int commandCount1 = commandCount;
+        if (commands[commandCount - 1] == Command.SAVEPOINT) {
+            // Already at a save point; no need to create another.
+            return commandCount1;
+        }
+
+        // enough room for CHECKSUM command, if asserts happen to be enabled
+        ensureCommandCapacity(commandCount + 3);
+        commands[commandCount++] = Command.SAVEPOINT;
+        //noinspection AssertWithSideEffects
+        assert !Util.DEBUG || addChecksumStateCommand();
+        return commandCount1;
+    }
+
+    public final void setNativeEnabled(boolean nativeEnabled) {
+        if (nativeEnabled != this.nativeEnabled) {
+            ensureCommandCapacity(commandCount + 2);
+            commands[commandCount++] = this.nativeEnabled;
+            commands[commandCount++] = Command.SET_NATIVE_ENABLED;
+            this.nativeEnabled = nativeEnabled;
+        }
     }
 
     protected final Logger getLogger() {
@@ -246,12 +330,17 @@ public class RolapEvaluator implements Evaluator {
         return nonAllMembers;
     }
 
-    public final List<List<Member[]>> getAggregationLists() {
+    public final List<List<List<Member>>> getAggregationLists() {
         return aggregationLists;
     }
 
     final void setCellReader(CellReader cellReader) {
-        this.cellReader = cellReader;
+        if (cellReader != this.cellReader) {
+            ensureCommandCapacity(commandCount + 2);
+            commands[commandCount++] = this.cellReader;
+            commands[commandCount++] = Command.SET_CELL_READER;
+            this.cellReader = cellReader;
+        }
     }
 
     public final RolapCube getCube() {
@@ -263,7 +352,7 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final int getDepth() {
-        return depth;
+        return 0;
     }
 
     public final RolapEvaluator getParent() {
@@ -283,74 +372,78 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final RolapEvaluator push(Member[] members) {
-        final RolapEvaluator evaluator = _push();
+        final RolapEvaluator evaluator = _push(null);
         evaluator.setContext(members);
         return evaluator;
     }
 
     public final RolapEvaluator push(Member member) {
-        final RolapEvaluator evaluator = _push();
+        final RolapEvaluator evaluator = _push(null);
         evaluator.setContext(member);
         return evaluator;
     }
 
-    public Evaluator push(boolean nonEmpty) {
-        final RolapEvaluator evaluator = _push();
+    public final Evaluator push(boolean nonEmpty) {
+        final RolapEvaluator evaluator = _push(null);
         evaluator.setNonEmpty(nonEmpty);
         return evaluator;
     }
 
-    public Evaluator push(boolean nonEmpty, boolean nativeEnabled) {
-        final RolapEvaluator evaluator = _push();
+    public final Evaluator push(boolean nonEmpty, boolean nativeEnabled) {
+        final RolapEvaluator evaluator = _push(null);
         evaluator.setNonEmpty(nonEmpty);
         evaluator.setNativeEnabled(nativeEnabled);
         return evaluator;
     }
 
     public final RolapEvaluator push() {
-        return _push();
+        return _push(null);
     }
 
-    public RolapEvaluator push(RolapCalculation calc) {
-        RolapEvaluator evaluator = push();
-        evaluator.addCalcMember(calc);
-        return evaluator;
+    private void ensureCommandCapacity(int minCapacity) {
+        if (minCapacity > commands.length) {
+            int newCapacity = commands.length * 2;
+            if (newCapacity < minCapacity) {
+                newCapacity = minCapacity;
+            }
+            commands = Util.copyOf(commands, newCapacity);
+        }
+    }
+
+    /**
+     * Adds a command to the stack that ensures that the state after restoring
+     * is the same as the current state.
+     *
+     * <p>Returns true so that can conveniently be called from 'assert'.
+     *
+     * @return true
+     */
+    private boolean addChecksumStateCommand() {
+        // assume that caller has checked that command array is large enough
+        commands[commandCount++] = checksumState();
+        commands[commandCount++] = Command.CHECKSUM;
+        return true;
     }
 
     /**
      * Creates a clone of the current validator.
+     *
+     * @param aggregationList List of tuples to add to aggregation context,
+     *     or null
      */
-    protected RolapEvaluator _push() {
+    protected RolapEvaluator _push(List<List<Member>> aggregationList) {
         getQuery().checkCancelOrTimeout();
-        return new RolapEvaluator(root, this);
+        return new RolapEvaluator(root, this, aggregationList);
     }
 
-    public final RolapEvaluator pop() {
-        return parent;
-    }
-
-    public final Evaluator pushAggregation(List<Member[]> list) {
-        RolapEvaluator newEvaluator = _push();
-        newEvaluator.addToAggregationList(list);
-        clearHierarchyFromRegularContext(list, newEvaluator);
-        return newEvaluator;
-    }
-
-    private void addToAggregationList(List<Member[]> list) {
-        if (aggregationLists == null) {
-            aggregationLists = new ArrayList<List<Member[]>>();
+    public final void restore(int savepoint) {
+        while (commandCount > savepoint) {
+            ((Command) commands[--commandCount]).execute(this);
         }
-        aggregationLists.add(list);
     }
 
-    private void clearHierarchyFromRegularContext(
-        List<Member[]> list,
-        RolapEvaluator newEvaluator)
-    {
-        Member[] tuple = list.get(0);
-        for (Member member : tuple) {
-            newEvaluator.setContext(member.getHierarchy().getAllMember());
-        }
+    public final Evaluator pushAggregation(List<List<Member>> list) {
+        return _push(list);
     }
 
     /**
@@ -391,7 +484,10 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final Member setContext(Member member) {
-        final RolapMember m = (RolapMember) member;
+        // Note: the body of this function is identical to calling
+        // 'setContext(member, true)'. We inline the logic for performance.
+
+        final RolapMemberBase m = (RolapMemberBase) member;
         final int ordinal = m.getHierarchy().getOrdinalInCube();
         final RolapMember previous = currentMembers[ordinal];
 
@@ -400,10 +496,19 @@ public class RolapEvaluator implements Evaluator {
         // 'Gender.All' the same as the true 'Gender.All' because they have the
         // same unique name, and that would be wrong.
         if (m == previous) {
-            return m;
+            return previous;
+        }
+        // We call 'exists' before 'removeCalcMember' for efficiency.
+        // 'exists' has a smaller stack to search before 'removeCalcMember'
+        // adds an 'ADD_CALCULATION' command.
+        if (!exists(ordinal)) {
+            ensureCommandCapacity(commandCount + 3);
+            commands[commandCount++] = previous;
+            commands[commandCount++] = ordinal;
+            commands[commandCount++] = Command.SET_CONTEXT;
         }
         if (previous.isEvaluated()) {
-            removeCalcMember(new RolapMemberCalculation(previous));
+            removeCalculation(previous, false);
         }
         currentMembers[ordinal] = m;
         if (previous.isAll() && !m.isAll() && isNewPosition(ordinal)) {
@@ -411,10 +516,72 @@ public class RolapEvaluator implements Evaluator {
             root.nonAllPositionCount++;
         }
         if (m.isEvaluated()) {
-            addCalcMember(new RolapMemberCalculation(m));
+            addCalculation(m, false);
         }
         nonAllMembers = null;
         return previous;
+    }
+
+    public final void setContext(Member member, boolean safe) {
+        final RolapMemberBase m = (RolapMemberBase) member;
+        final int ordinal = m.getHierarchy().getOrdinalInCube();
+        final RolapMember previous = currentMembers[ordinal];
+
+        // If the context is unchanged, save ourselves some effort. It would be
+        // a mistake to use equals here; we might treat the visual total member
+        // 'Gender.All' the same as the true 'Gender.All' because they have the
+        // same unique name, and that would be wrong.
+        if (m == previous) {
+            return;
+        }
+        if (safe) {
+            // We call 'exists' before 'removeCalcMember' for efficiency.
+            // 'exists' has a smaller stack to search before 'removeCalcMember'
+            // adds an 'ADD_CALCULATION' command.
+            if (!exists(ordinal)) {
+                ensureCommandCapacity(commandCount + 3);
+                commands[commandCount++] = previous;
+                commands[commandCount++] = ordinal;
+                commands[commandCount++] = Command.SET_CONTEXT;
+            }
+        }
+        if (previous.isEvaluated()) {
+            removeCalculation(previous, false);
+        }
+        currentMembers[ordinal] = m;
+        if (previous.isAll() && !m.isAll() && isNewPosition(ordinal)) {
+            root.nonAllPositions[root.nonAllPositionCount] = ordinal;
+            root.nonAllPositionCount++;
+        }
+        if (m.isEvaluated()) {
+            addCalculation(m, false);
+        }
+        nonAllMembers = null;
+    }
+
+    /**
+     * Returns whether a member of the hierarchy with a given ordinal has been
+     * preserved on the stack since the last savepoint.
+     *
+     * @param ordinal Hierarchy ordinal
+     * @return Whether there is a member with the given hierarchy ordinal on
+     *   the stack
+     */
+    private boolean exists(int ordinal) {
+        for (int i = commandCount - 1;;) {
+            final Command command = (Command) commands[i];
+            switch (command) {
+            case SAVEPOINT:
+                return false;
+            case SET_CONTEXT:
+                final Integer memberOrdinal = (Integer) commands[i - 1];
+                if (ordinal == memberOrdinal) {
+                    return true;
+                }
+                break;
+            }
+            i -= command.width;
+        }
     }
 
     private boolean isNewPosition(int ordinal) {
@@ -427,37 +594,35 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final void setContext(List<Member> memberList) {
-        int i = 0;
-        for (Member member : memberList) {
-            // more than one usage
-            if (member == null) {
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug(
-                        "RolapEvaluator.setContext: member == null "
-                        + " , count=" + i);
-                }
-                assert false;
-                continue;
-            }
+        for (int i = 0, n = memberList.size(); i < n; i++) {
+            Member member = memberList.get(i);
+            assert member != null : "null member in " + memberList;
             setContext(member);
         }
     }
 
-    public final void setContext(Member[] members) {
-        for (final Member member : members) {
-        // more than one usage
-            if (member == null) {
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug(
-                        "RolapEvaluator.setContext: "
-                        + "member == null, memberList: "
-                        + Arrays.asList(members));
-                }
-                assert false;
-                continue;
-            }
+    public final void setContext(List<Member> memberList, boolean safe) {
+        for (int i = 0, n = memberList.size(); i < n; i++) {
+            Member member = memberList.get(i);
+            assert member != null : "null member in " + memberList;
+            setContext(member, safe);
+        }
+    }
 
+    public final void setContext(Member[] members) {
+        for (int i = 0, length = members.length; i < length; i++) {
+            Member member = members[i];
+            assert member != null
+                : "null member in " + Arrays.toString(members);
             setContext(member);
+        }
+    }
+
+    public final void setContext(Member[] members, boolean safe) {
+        for (int i = 0, length = members.length; i < length; i++) {
+            Member member = members[i];
+            assert member != null : Arrays.asList(members);
+            setContext(member, safe);
         }
     }
 
@@ -481,7 +646,7 @@ public class RolapEvaluator implements Evaluator {
         // (b) has the highest solve order. If there are no calculated members,
         // go ahead and compute the cell.
         RolapCalculation maxSolveMember;
-        switch (calcMemberCount) {
+        switch (calculationCount) {
         case 0:
             final Object o = cellReader.get(this);
             if (o == Util.nullValue) {
@@ -490,7 +655,7 @@ public class RolapEvaluator implements Evaluator {
             return o;
 
         case 1:
-            maxSolveMember = calcMembers[0];
+            maxSolveMember = calculations[0];
             break;
 
         default:
@@ -505,9 +670,15 @@ public class RolapEvaluator implements Evaluator {
                 throw Util.unexpected(root.solveOrderMode);
             }
         }
-        final RolapEvaluator evaluator = maxSolveMember.pushSelf(this);
+        final int savepoint = savepoint();
+        maxSolveMember.setContextIn(this);
         final Calc calc = maxSolveMember.getCompiledExpression(root);
-        final Object o = calc.evaluate(evaluator);
+        final Object o;
+        try {
+            o = calc.evaluate(this);
+        } finally {
+            restore(savepoint);
+        }
         if (o == Util.nullValue) {
             return null;
         }
@@ -516,13 +687,21 @@ public class RolapEvaluator implements Evaluator {
 
     void setExpanding(Member member) {
         assert member != null;
+        ensureCommandCapacity(commandCount + 3);
+        commands[commandCount++] = this.expandingMember;
+        commands[commandCount++] = this.firstExpanding;
+        commands[commandCount++] = Command.SET_EXPANDING;
         expandingMember = member;
-        firstExpanding = true;
-        final int memberCount = currentMembers.length;
-        if (depth > memberCount) {
-            if (depth % memberCount == 0) {
-                checkRecursion(parent);
-            }
+        firstExpanding = true; // REVIEW: is firstExpanding used?
+
+        final int totalCommandCount = commandCount + ancestorCommandCount;
+        if (totalCommandCount > root.recursionCheckCommandCount) {
+            checkRecursion(this, commandCount - 4);
+
+            // Set the threshold where we will next check for infinite
+            // recursion.
+            root.recursionCheckCommandCount =
+                totalCommandCount + (root.defaultMembers.length << 4);
         }
     }
 
@@ -547,87 +726,88 @@ public class RolapEvaluator implements Evaluator {
      * @param eval Evaluator
      * @throws mondrian.olap.fun.MondrianEvaluationException if there is a loop
      */
-    private static void checkRecursion(RolapEvaluator eval) {
-        // Find the nearest ancestor which is expanding a calculated member.
-        // (The starting evaluator has just been pushed, so may not have the
-        // state it will have when recursion happens.)
-        while (true) {
-            if (eval == null) {
-                return;
-            }
-            if (eval.firstExpanding) {
-                break;
-            }
-            eval = eval.parent;
-        }
+    private static void checkRecursion(RolapEvaluator eval, int c) {
+        RolapMember[] members = eval.currentMembers.clone();
+        Member expanding = eval.expandingMember;
 
         // Find an ancestor evaluator that has identical context to this one:
         // same member context, and expanding the same calculation.
-        outer:
-        for (RolapEvaluator eval2 = eval.parent;
-             eval2 != null;
-            eval2 = eval2.parent)
-        {
-            // Ignore ancestors which are not the first level expanding a
-            // member. (They are dummy evaluators created to avoid stomping on
-            // context while iterating over a set, say.)
-            if (!eval2.firstExpanding
-                || eval2.expandingMember != eval.expandingMember)
-            {
-                continue;
-            }
-            for (int i = 0; i < eval.currentMembers.length; i++) {
-                final Member member = eval2.currentMembers[i];
-
-                // more than one usage
-                if (member == null) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(
-                            "RolapEvaluator.checkRecursion: member == null "
-                            + " , count=" + i);
+        while (true) {
+            if (c < 0) {
+                eval = eval.parent;
+                if (eval == null) {
+                    return;
+                }
+                c = eval.commandCount - 1;
+            } else {
+                Command command = (Command) eval.commands[c];
+                switch (command) {
+                case SET_CONTEXT:
+                    int memberOrdinal = (Integer) eval.commands[c - 1];
+                    RolapMember member = (RolapMember) eval.commands[c - 2];
+                    members[memberOrdinal] = member;
+                    break;
+                case SET_EXPANDING:
+                    expanding = (RolapMember) eval.commands[c - 2];
+                    if (Arrays.equals(members, eval.currentMembers)
+                        && expanding == eval.expandingMember)
+                    {
+                        throw FunUtil.newEvalException(
+                            null,
+                            "Infinite loop while evaluating calculated member '"
+                            + eval.expandingMember + "'; context stack is "
+                            + eval.getContextString());
                     }
-                    continue;
                 }
-
-                final RolapMember parentMember =
-                    eval.getContext(member.getHierarchy());
-                if (member != parentMember) {
-                    continue outer;
-                }
+                c -= command.width;
             }
-            throw FunUtil.newEvalException(
-                null,
-                "Infinite loop while evaluating calculated member '"
-                + eval.expandingMember + "'; context stack is "
-                + eval.getContextString());
         }
     }
 
     private String getContextString() {
+        RolapMember[] members = currentMembers.clone();
         final boolean skipDefaultMembers = true;
         final StringBuilder buf = new StringBuilder("{");
         int frameCount = 0;
+        boolean changedSinceLastSavepoint = false;
         for (RolapEvaluator eval = this; eval != null; eval = eval.parent) {
             if (eval.expandingMember == null) {
                 continue;
             }
-            if (frameCount++ > 0) {
-                buf.append(", ");
-            }
-            buf.append("(");
-            int memberCount = 0;
-            for (Member m : eval.currentMembers) {
-                if (skipDefaultMembers
-                    && m == m.getHierarchy().getDefaultMember())
-                {
-                    continue;
+            for (int c = eval.commandCount - 1; c > 0;) {
+                Command command = (Command) eval.commands[c];
+                switch (command) {
+                case SAVEPOINT:
+                    if (changedSinceLastSavepoint) {
+                        if (frameCount++ > 0) {
+                            buf.append(", ");
+                        }
+                        buf.append("(");
+                        int memberCount = 0;
+                        for (Member m : members) {
+                            if (skipDefaultMembers
+                                && m == m.getHierarchy().getDefaultMember())
+                            {
+                                continue;
+                            }
+                            if (memberCount++ > 0) {
+                                buf.append(", ");
+                            }
+                            buf.append(m.getUniqueName());
+                        }
+                        buf.append(")");
+                    }
+                    changedSinceLastSavepoint = false;
+                    break;
+                case SET_CONTEXT:
+                    changedSinceLastSavepoint = true;
+                    int memberOrdinal = (Integer) eval.commands[c - 1];
+                    RolapMember member = (RolapMember) eval.commands[c - 2];
+                    members[memberOrdinal] = member;
+                    break;
                 }
-                if (memberCount++ > 0) {
-                    buf.append(", ");
-                }
-                buf.append(m.getUniqueName());
+                c -= command.width;
             }
-            buf.append(")");
         }
         buf.append("}");
         return buf.toString();
@@ -703,30 +883,24 @@ public class RolapEvaluator implements Evaluator {
 
     public final String format(Object o) {
         if (o == Util.nullValue) {
-            Format format = getFormat();
-            return format.format(null);
-        } else if (o instanceof Throwable) {
-            return "#ERR: " + o.toString();
-        } else if (o instanceof String) {
-            return (String) o;
-        } else {
-            Format format = getFormat();
-            return format.format(o);
+            o = null;
         }
+        if (o instanceof Throwable) {
+            return "#ERR: " + o.toString();
+        }
+        Format format = getFormat();
+        return format.format(o);
     }
 
     public final String format(Object o, String formatString) {
         if (o == Util.nullValue) {
-            Format format = getFormat(formatString);
-            return format.format(null);
-        } else if (o instanceof Throwable) {
-            return "#ERR: " + o.toString();
-        } else if (o instanceof String) {
-            return (String) o;
-        } else {
-            Format format = getFormat(formatString);
-            return format.format(o);
+            o = null;
         }
+        if (o instanceof Throwable) {
+            return "#ERR: " + o.toString();
+        }
+        Format format = getFormat(formatString);
+        return format.format(o);
     }
 
     /**
@@ -735,32 +909,27 @@ public class RolapEvaluator implements Evaluator {
      * expression is dependent upon.
      */
     private Object getExpResultCacheKey(ExpCacheDescriptor descriptor) {
-        final List<Object> key = new ArrayList<Object>();
-        key.add(descriptor.getExp());
-
         // in NON EMPTY mode the result depends on everything, e.g.
         // "NON EMPTY [Customer].[Name].members" may return different results
         // for 1997-01 and 1997-02
+        final List<Object> key;
         if (nonEmpty) {
-            key.addAll(Arrays.asList(currentMembers));
-            return key;
-        }
-
-        final int[] hierarchyOrdinals =
-            descriptor.getDependentHierarchyOrdinals();
-        for (int i = 0; i < hierarchyOrdinals.length; i++) {
-            final int hierarchyOrdinal = hierarchyOrdinals[i];
-            final Member member = currentMembers[hierarchyOrdinal];
-
-            // more than one usage
-            if (member == null) {
-                getLogger().debug(
-                    "RolapEvaluator.getExpResultCacheKey: "
-                    + "member == null; hierarchyOrdinal=" + i);
-                continue;
+            key = new ArrayList<Object>(currentMembers.length + 1);
+            key.add(descriptor.getExp());
+            //noinspection ManualArrayToCollectionCopy
+            for (RolapMember currentMember : currentMembers) {
+                key.add(currentMember);
             }
-
-            key.add(member);
+        } else {
+            final int[] hierarchyOrdinals =
+                descriptor.getDependentHierarchyOrdinals();
+            key = new ArrayList<Object>(hierarchyOrdinals.length + 1);
+            key.add(descriptor.getExp());
+            for (final int hierarchyOrdinal : hierarchyOrdinals) {
+                final Member member = currentMembers[hierarchyOrdinal];
+                assert member != null;
+                key.add(member);
+            }
         }
         return key;
     }
@@ -812,7 +981,12 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final void setNonEmpty(boolean nonEmpty) {
-        this.nonEmpty = nonEmpty;
+        if (nonEmpty != this.nonEmpty) {
+            ensureCommandCapacity(commandCount + 2);
+            commands[commandCount++] = this.nonEmpty;
+            commands[commandCount++] = Command.SET_NON_EMPTY;
+            this.nonEmpty = nonEmpty;
+        }
     }
 
     public final RuntimeException newEvalException(Object context, String s) {
@@ -834,9 +1008,19 @@ public class RolapEvaluator implements Evaluator {
         return root.getParameterValue(slot);
     }
 
-    final void addCalcMember(RolapCalculation member) {
-        assert member != null;
-        calcMembers[calcMemberCount++] = member;
+    final void addCalculation(
+        RolapCalculation calculation,
+        boolean reversible)
+    {
+        assert calculation != null;
+        calculations[calculationCount++] = calculation;
+
+        if (reversible && !(calculation instanceof RolapMember)) {
+            // Add command to remove this calculation.
+            ensureCommandCapacity(commandCount + 2);
+            commands[commandCount++] = calculation;
+            commands[commandCount++] = Command.REMOVE_CALCULATION;
+        }
     }
 
     /**
@@ -852,9 +1036,9 @@ public class RolapEvaluator implements Evaluator {
      */
     private RolapCalculation getAbsoluteMaxSolveOrder() {
         // Find member with the highest solve order.
-        RolapCalculation maxSolveMember = calcMembers[0];
-        for (int i = 1; i < calcMemberCount; i++) {
-            RolapCalculation member = calcMembers[i];
+        RolapCalculation maxSolveMember = calculations[0];
+        for (int i = 1; i < calculationCount; i++) {
+            RolapCalculation member = calculations[i];
             if (expandsBefore(member, maxSolveMember)) {
                 maxSolveMember = member;
             }
@@ -881,11 +1065,11 @@ public class RolapEvaluator implements Evaluator {
         RolapCalculation maxSolveMember = null;
         ScopedMaxSolveOrderFinderState state =
             ScopedMaxSolveOrderFinderState.START;
-        for (int i = 0; i < calcMemberCount; i++) {
-            RolapCalculation member = calcMembers[i];
+        for (int i = 0; i < calculationCount; i++) {
+            RolapCalculation calculation = calculations[i];
             switch (state) {
             case START:
-                maxSolveMember = member;
+                maxSolveMember = calculation;
                 if (maxSolveMember.containsAggregateFunction()) {
                     state = ScopedMaxSolveOrderFinderState.AGG_SCOPE;
                 } else if (maxSolveMember.isCalculatedInQuery()) {
@@ -896,40 +1080,40 @@ public class RolapEvaluator implements Evaluator {
                 break;
 
             case AGG_SCOPE:
-                if (member.containsAggregateFunction()) {
-                    if (expandsBefore(member, maxSolveMember)) {
-                        maxSolveMember = member;
+                if (calculation.containsAggregateFunction()) {
+                    if (expandsBefore(calculation, maxSolveMember)) {
+                        maxSolveMember = calculation;
                     }
-                } else if (member.isCalculatedInQuery()) {
-                    maxSolveMember = member;
+                } else if (calculation.isCalculatedInQuery()) {
+                    maxSolveMember = calculation;
                     state = ScopedMaxSolveOrderFinderState.QUERY_SCOPE;
                 } else {
-                    maxSolveMember = member;
+                    maxSolveMember = calculation;
                     state = ScopedMaxSolveOrderFinderState.CUBE_SCOPE;
                 }
                 break;
 
             case CUBE_SCOPE:
-                if (member.containsAggregateFunction()) {
+                if (calculation.containsAggregateFunction()) {
                     continue;
                 }
 
-                if (member.isCalculatedInQuery()) {
-                    maxSolveMember = member;
+                if (calculation.isCalculatedInQuery()) {
+                    maxSolveMember = calculation;
                     state = ScopedMaxSolveOrderFinderState.QUERY_SCOPE;
-                } else if (expandsBefore(member, maxSolveMember)) {
-                    maxSolveMember = member;
+                } else if (expandsBefore(calculation, maxSolveMember)) {
+                    maxSolveMember = calculation;
                 }
                 break;
 
             case QUERY_SCOPE:
-                if (member.containsAggregateFunction()) {
+                if (calculation.containsAggregateFunction()) {
                     continue;
                 }
 
-                if (member.isCalculatedInQuery()) {
-                    if (expandsBefore(member, maxSolveMember)) {
-                        maxSolveMember = member;
+                if (calculation.isCalculatedInQuery()) {
+                    if (expandsBefore(calculation, maxSolveMember)) {
+                        maxSolveMember = calculation;
                     }
                 }
                 break;
@@ -963,24 +1147,40 @@ public class RolapEvaluator implements Evaluator {
         }
     }
 
-    void removeCalcMember(RolapCalculation previous) {
-        for (int i = 0; i < calcMemberCount; i++) {
-            final RolapCalculation calcMember = calcMembers[i];
-            if (calcMember.equals(previous)) {
+    final void removeCalculation(
+        RolapCalculation calculation,
+        boolean reversible)
+    {
+        for (int i = 0; i < calculationCount; i++) {
+            if (calculations[i] == calculation) {
                 // overwrite this member with the end member
-                --calcMemberCount;
-                calcMembers[i] = calcMembers[calcMemberCount];
-                calcMembers[calcMemberCount] = null; // to allow gc
+                --calculationCount;
+                calculations[i] = calculations[calculationCount];
+                assert calculations[i] != null;
+                calculations[calculationCount] = null; // to allow gc
+
+                if (reversible && !(calculation instanceof RolapMember)) {
+                    // Add a command to re-add the calculation.
+                    ensureCommandCapacity(commandCount + 2);
+                    commands[commandCount++] = calculation;
+                    commands[commandCount++] = Command.ADD_CALCULATION;
+                }
+                return;
             }
         }
+        throw new AssertionError(
+            "calculation " + calculation + " not on stack");
     }
 
     public final int getIterationLength() {
         return iterationLength;
     }
 
-    public final void setIterationLength(int length) {
-        iterationLength = length;
+    public final void setIterationLength(int iterationLength) {
+        ensureCommandCapacity(commandCount + 2);
+        commands[commandCount++] = this.iterationLength;
+        commands[commandCount++] = Command.SET_ITERATION_LENGTH;
+        this.iterationLength = iterationLength;
     }
 
     public final boolean isEvalAxes() {
@@ -988,11 +1188,150 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public final void setEvalAxes(boolean evalAxes) {
-        this.evalAxes = evalAxes;
+        if (evalAxes != this.evalAxes) {
+            ensureCommandCapacity(commandCount + 2);
+            commands[commandCount++] = this.evalAxes;
+            commands[commandCount++] = Command.SET_EVAL_AXES;
+            this.evalAxes = evalAxes;
+        }
+    }
+
+    private int checksumState() {
+        int h = 0;
+        h = h * 31 + Arrays.asList(currentMembers).hashCode();
+        h = h * 31 + new HashSet<RolapCalculation>(
+            Arrays.asList(calculations)
+                .subList(0, calculationCount)).hashCode();
+        h = h * 31 + slicerMembers.hashCode();
+        h = h * 31 + (expandingMember == null ? 0 : expandingMember.hashCode());
+        h = h * 31
+            + (aggregationLists == null ? 0 : aggregationLists.hashCode());
+        h = h * 31
+            + (nonEmpty ? 0x1 : 0x2)
+            + (nativeEnabled ? 0x4 : 0x8)
+            + (firstExpanding ? 0x10 : 0x20)
+            + (evalAxes ? 0x40 : 0x80);
+        if (false) {
+            // Enable this code block to debug checksum mismatches.
+            System.err.println(
+                "h=" + h + ": " + Arrays.asList(
+                    Arrays.asList(currentMembers),
+                    new HashSet<RolapCalculation>(
+                        Arrays.asList(calculations).subList(
+                            0, calculationCount)),
+                    expandingMember,
+                    aggregationLists,
+                    nonEmpty,
+                    nativeEnabled,
+                    firstExpanding,
+                    evalAxes));
+        }
+        return h;
     }
 
     public boolean shouldIgnoreUnrelatedDimensions() {
         return getMeasureGroup().ignoreUnrelatedDimensions;
+    }
+
+    private enum Command {
+        SET_CONTEXT(2) {
+            @Override
+            void execute(RolapEvaluator evaluator) {
+                final int memberOrdinal =
+                    (Integer) evaluator.commands[--evaluator.commandCount];
+                final RolapMember member =
+                    (RolapMember) evaluator.commands[--evaluator.commandCount];
+                evaluator.setContext(member, false);
+            }
+        },
+        SET_NATIVE_ENABLED(1) {
+            @Override
+            void execute(RolapEvaluator evaluator) {
+                evaluator.nativeEnabled =
+                    (Boolean) evaluator.commands[--evaluator.commandCount];
+            }
+        },
+        SET_NON_EMPTY(1) {
+            @Override
+            void execute(RolapEvaluator evaluator) {
+                evaluator.nonEmpty =
+                    (Boolean) evaluator.commands[--evaluator.commandCount];
+            }
+        },
+        SET_EVAL_AXES(1) {
+            @Override
+            void execute(RolapEvaluator evaluator) {
+                evaluator.evalAxes =
+                    (Boolean) evaluator.commands[--evaluator.commandCount];
+            }
+        },
+        SET_EXPANDING(2) {
+            @Override
+            void execute(RolapEvaluator evaluator) {
+                evaluator.firstExpanding =
+                    (Boolean) evaluator.commands[--evaluator.commandCount];
+                evaluator.expandingMember =
+                    (Member) evaluator.commands[--evaluator.commandCount];
+            }
+        },
+        SET_ITERATION_LENGTH(1) {
+            @Override
+            void execute(RolapEvaluator evaluator) {
+                evaluator.iterationLength =
+                    (Integer) evaluator.commands[--evaluator.commandCount];
+            }
+        },
+        SET_CELL_READER(1) {
+            @Override
+            void execute(RolapEvaluator evaluator) {
+                evaluator.cellReader =
+                    (CellReader) evaluator.commands[--evaluator.commandCount];
+            }
+        },
+        CHECKSUM(1) {
+            @Override
+            void execute(RolapEvaluator evaluator) {
+                final int value =
+                    (Integer) evaluator.commands[--evaluator.commandCount];
+                final int currentState = evaluator.checksumState();
+                assert value == currentState
+                    : "Current checksum " + currentState
+                      + " != previous checksum " + value;
+            }
+        },
+        ADD_CALCULATION(1) {
+            @Override
+            void execute(RolapEvaluator evaluator) {
+                final RolapCalculation calculation =
+                    (RolapCalculation)
+                        evaluator.commands[--evaluator.commandCount];
+                evaluator.calculations[evaluator.calculationCount++] =
+                    calculation;
+            }
+        },
+        REMOVE_CALCULATION(1) {
+            @Override
+            void execute(RolapEvaluator evaluator) {
+                final RolapCalculation calculation =
+                    (RolapCalculation)
+                        evaluator.commands[--evaluator.commandCount];
+                evaluator.removeCalculation(calculation, false);
+            }
+        },
+        SAVEPOINT(0) {
+            @Override
+            void execute(RolapEvaluator evaluator) {
+                // nothing to do; command is just a marker
+            }
+        };
+
+        public final int width;
+
+        Command(int argCount) {
+            this.width = argCount + 1;
+        }
+
+        abstract void execute(RolapEvaluator evaluator);
     }
 }
 

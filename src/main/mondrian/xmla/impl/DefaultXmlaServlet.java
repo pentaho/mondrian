@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -26,10 +26,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import mondrian.xmla.*;
-import mondrian.olap.Util;
-import mondrian.olap.Role;
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -43,11 +40,9 @@ import org.xml.sax.SAXException;
  *
  * @author Gang Chen
  */
-public class DefaultXmlaServlet extends XmlaServlet {
+public abstract class DefaultXmlaServlet extends XmlaServlet {
 
-    private static final Logger LOGGER =
-        Logger.getLogger(DefaultXmlaServlet.class);
-    protected static final String nl = Util.nl;
+    protected static final String nl = System.getProperty("line.separator");
 
     private DocumentBuilderFactory domFactory = null;
 
@@ -326,7 +321,7 @@ public class DefaultXmlaServlet extends XmlaServlet {
         if (callbacks.size() > 0) {
             // get only the first callback if it exists
             XmlaRequestCallback callback = callbacks.get(0);
-            return (String) callback.generateSessionId(context);
+            return callback.generateSessionId(context);
         } else {
             // what to do here, should Mondrian generate a Session Id?
             // TODO: Maybe Mondrian ought to generate all Session Ids and
@@ -390,18 +385,10 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
             ByteArrayOutputStream osBuf = new ByteArrayOutputStream();
 
-            // use context variable `role' as this request's XML/A role
+            // use context variable 'role_name' as this request's XML/A role
             String roleName = (String) context.get(CONTEXT_ROLE_NAME);
-            Role role = (Role) context.get(CONTEXT_ROLE);
 
-            XmlaRequest xmlaReq;
-            if (role != null) {
-                xmlaReq = new DefaultXmlaRequest(xmlaReqElem, role);
-            } else if (roleName != null) {
-                xmlaReq = new DefaultXmlaRequest(xmlaReqElem, roleName);
-            } else {
-                xmlaReq = new DefaultXmlaRequest(xmlaReqElem);
-            }
+            XmlaRequest xmlaReq = new DefaultXmlaRequest(xmlaReqElem, roleName);
 
             // "ResponseMimeType" may be in the context if the "Accept" HTTP
             // header was specified. But override if the SOAP request has the
@@ -572,7 +559,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
                         int writeSize = 0;
                         while ((writeSize += wch.write(buffer)) < readSize) {
-                            ;
                         }
                     } while (readSize == bufferSize);
                     rch.close();
@@ -710,7 +696,6 @@ public class DefaultXmlaServlet extends XmlaServlet {
 
         responseSoapParts[1] = osBuf.toByteArray();
     }
-
 }
 
 // End DefaultXmlaServlet.java

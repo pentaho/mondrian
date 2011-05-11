@@ -3,15 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde and others
+// Copyright (C) 2008-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
 import junit.framework.TestCase;
+import mondrian.test.PerformanceTest;
 import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.comparators.ReverseComparator;
+import org.apache.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -45,9 +47,10 @@ public class PartialSortTest extends TestCase
     }
 
     // calls partialSort() for natural ascending or descending order
+    @SuppressWarnings({"unchecked"})
     private void doPartialSort(Object[] items, boolean descending, int limit)
     {
-        Comparator comp = ComparatorUtils.naturalComparator();
+        Comparator<Object> comp = ComparatorUtils.naturalComparator();
         if (descending) {
             comp = ComparatorUtils.reversedComparator(comp);
         }
@@ -94,8 +97,10 @@ public class PartialSortTest extends TestCase
     private static <T extends Comparable> boolean isPartiallySorted(
         T [] vec, int limit, boolean descending)
     {
+        //noinspection unchecked
         return isPartiallySorted(
-            vec, limit, ComparatorUtils.naturalComparator(), descending);
+            vec, limit, (Comparator<T>) ComparatorUtils.naturalComparator(),
+            descending);
     }
 
     // same predicate generalized: uses a given Comparator
@@ -369,14 +374,6 @@ public class PartialSortTest extends TestCase
         randomIntegerTests(1000 * 1000, 10);
     }
 
-    public void longTest() {
-        int count = 128;
-        while (count-- > 0) {
-            testOnRandomIntegers();
-        }
-    }
-
-
 
     // Test stable partial sort, Test input; a vector of itens with an explicit
     // index; sort should not pernute the index.
@@ -436,11 +433,12 @@ public class PartialSortTest extends TestCase
     private Item[] doStablePartialSort(Item[] vec, boolean desc, int limit) {
         Comparator<Item> comp = Item.byKey;
         if (desc) {
+            //noinspection unchecked
             comp = new ReverseComparator(comp);
         }
         List<Item> sorted =
             FunUtil.stablePartialSort(Arrays.asList(vec), comp, limit);
-        return sorted.toArray(new Item[0]);
+        return sorted.toArray(new Item[sorted.size()]);
     }
 
     public void testPredicateIsStablySorted() {
@@ -509,8 +507,8 @@ public class PartialSortTest extends TestCase
 
     // Compares elapsed time of full sort (mergesort), partial sort, and stable
     // partial sort on the same input set.
-    private void speedTest(int length, int limit) {
-        System.out.println(
+    private void speedTest(Logger logger, int length, int limit) {
+        logger.debug(
             "sorting the max " + limit + " of " + length + " random Integers");
 
         // random input, 3 copies
@@ -525,34 +523,42 @@ public class PartialSortTest extends TestCase
         long now = System.currentTimeMillis();
         Arrays.sort(vec1);
         long dt = System.currentTimeMillis() - now;
-        System.out.println(" full mergesort took " + dt + " msecs");
+        logger.debug(" full mergesort took " + dt + " msecs");
 
         // partial sort vec2
         now = System.currentTimeMillis();
         doPartialSort(vec2, true, limit);
         dt = System.currentTimeMillis() - now;
-        System.out.println(" partial quicksort took " + dt + " msecs");
+        logger.debug(" partial quicksort took " + dt + " msecs");
 
         // stable partial sort vec3
-        Comparator comp =
+        @SuppressWarnings({"unchecked"})
+        Comparator<Integer> comp =
             new ReverseComparator(ComparatorUtils.naturalComparator());
         List<Integer> vec3List = Arrays.asList(vec3);
         now = System.currentTimeMillis();
         FunUtil.stablePartialSort(vec3List, comp, limit);
         dt = System.currentTimeMillis() - now;
-        System.out.println(" stable partial quicksort took " + dt + " msecs");
+        logger.debug(" stable partial quicksort took " + dt + " msecs");
     }
-
 
     // compare speed on different sizes of input
-    public void _testSpeed() {
-        speedTest(60, 2);               // tiny
-        speedTest(600, 12);             // small
-        speedTest(600, 200);
-        speedTest(16000, 4);            // medium
-        speedTest(16000, 160);
-        speedTest(400 * 400, 4);          // large
-        // speedTest(1600 * 1600, 4);        // very large needs bigger heap
+    public void testSpeed() {
+        if (!PerformanceTest.LOGGER.isDebugEnabled()) {
+            return;
+        }
+
+        speedTest(PerformanceTest.LOGGER, 60, 2);               // tiny
+        speedTest(PerformanceTest.LOGGER, 600, 12);             // small
+        speedTest(PerformanceTest.LOGGER, 600, 200);
+        speedTest(PerformanceTest.LOGGER, 16000, 4);            // medium
+        speedTest(PerformanceTest.LOGGER, 16000, 160);
+        speedTest(PerformanceTest.LOGGER, 1000000, 4);          // large
+        speedTest(PerformanceTest.LOGGER, 1000000, 400);          // large
+
+        // very large; needs bigger heap
+        //speedTest(PerformanceTest.LOGGER, 1600 * 1600, 4);
     }
 }
+
 // End PartialSortTest.java

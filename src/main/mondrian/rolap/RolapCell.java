@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -201,10 +201,6 @@ public class RolapCell implements Cell {
              : visitor.cube;
     }
 
-    private RolapEvaluator getEvaluator() {
-        return result.getCellEvaluator(pos);
-    }
-
     private Member[] getMembersForDrillThrough() {
         final Member[] currentMembers = result.getCellMembers(pos);
 
@@ -221,15 +217,11 @@ public class RolapCell implements Cell {
         if (!member.isCalculated()) {
             return;
         }
-        if (member instanceof RolapCubeMember) {
-            RolapCubeMember rolapCubeMember = (RolapCubeMember) member;
-            member = rolapCubeMember.getRolapMember();
-        }
+        member = RolapUtil.strip((RolapMember) member);
         // if "cm" is a calc member defined by
         // "with member cm as m" then
         // "cm" is equivalent to "m"
-        RolapCalculatedMember measure = (RolapCalculatedMember) member;
-        final Exp expr = measure.getFormula().getExpression();
+        final Exp expr = member.getExpression();
         if (expr instanceof MemberExpr) {
             members.set(
                 i,
@@ -250,7 +242,6 @@ public class RolapCell implements Cell {
                             final MemberExpr memberExpr =
                                 (MemberExpr) arg0.getArg(0);
                             members.set(i, memberExpr.getMember());
-                            return;
                         }
                     }
                 }
@@ -319,6 +310,7 @@ public class RolapCell implements Cell {
             RolapUtil.executeQuery(
                 connection.getDataSource(),
                 sql,
+                null,
                 maxRowCount,
                 firstRowOrdinal,
                 "RolapCell.drillThrough",
@@ -363,7 +355,14 @@ public class RolapCell implements Cell {
                 return getValue();
             case Property.FORMAT_STRING_ORDINAL:
                 if (ci.formatString == null) {
-                    ci.formatString = getEvaluator().getFormatString();
+                    final Evaluator evaluator = result.getRootEvaluator();
+                    final int savepoint = evaluator.savepoint();
+                    try {
+                        result.populateEvaluator(evaluator, pos);
+                        ci.formatString = evaluator.getFormatString();
+                    } finally {
+                        evaluator.restore(savepoint);
+                    }
                 }
                 return ci.formatString;
             case Property.FORMATTED_VALUE_ORDINAL:
@@ -378,7 +377,14 @@ public class RolapCell implements Cell {
                 // fall through
             }
         }
-        return getEvaluator().getProperty(propertyName, defaultValue);
+        final Evaluator evaluator = result.getRootEvaluator();
+        final int savepoint = evaluator.savepoint();
+        try {
+            result.populateEvaluator(evaluator, pos);
+            return evaluator.getProperty(propertyName, defaultValue);
+        } finally {
+            evaluator.restore(savepoint);
+        }
     }
 
     public Member getContextMember(Hierarchy hierarchy) {
@@ -407,7 +413,7 @@ public class RolapCell implements Cell {
                 throw Util.newError(
                     "Cannot write to cell: one of the coordinates ("
                     + member.getUniqueName()
-                    + ") is a calculcated member");
+                    + ") is a calculated member");
             }
         }
         if (scenario == null) {
@@ -417,13 +423,17 @@ public class RolapCell implements Cell {
             allocationArgs = new Object[0];
         }
         final Object currentValue = getValue();
-        if (!(currentValue instanceof Number)) {
+        double doubleCurrentValue;
+        if (currentValue == null) {
+            doubleCurrentValue = 0d;
+        } else if (currentValue instanceof Number) {
+            doubleCurrentValue = ((Number) currentValue).doubleValue();
+        } else {
             // Cell is not a number. Likely it is a string or a
             // MondrianEvaluationException. Do not attempt to change the value
             // in this case. (REVIEW: Is this the correct behavior?)
             return;
         }
-        double doubleCurrentValue = ((Number) currentValue).doubleValue();
         double doubleNewValue = ((Number) newValue).doubleValue();
         ((ScenarioImpl) scenario).setCellValue(
             result.getQuery().getConnection(),

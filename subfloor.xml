@@ -3,7 +3,7 @@
   == This software is subject to the terms of the Eclipse Public License v1.0
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
-  == Copyright (C) 2008-2009 Pentaho Corporation
+  == Copyright (C) 2008-2011 Pentaho Corporation
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -1480,7 +1480,7 @@ TYPICAL TARGET SEQUENCE
                   organisation="net.sourceforge.cobertura"
                   module="cobertura"
                   revision="1.9"
-                  pattern="${cobertura.build.cache.dir}/[organisation]/[module]/[revision]/[type]s/[artifact]-[revision].[ext]" />
+                  pattern="${cobertura.build.cache.dir}/[organisation]/[module]/[type]s/[artifact].[ext]" />
   </target>
 
 

@@ -790,7 +790,7 @@ Axis #2:
 {[Product].[Non-Consumable].[Household]}
 {[Product].[Non-Consumable].[Periodicals]}
 Row #0: 167,205
-Row #0: 
+Row #0: 1
 Row #1: 24,597
 Row #1: 1
 Row #2: 94,992
@@ -1411,7 +1411,6 @@ Row #6: 3
 ]]>
         </Resource>
     </TestCase>
-
 <!--
     <TestCase name="">
         <Resource name="description">

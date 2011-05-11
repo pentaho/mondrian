@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -50,7 +50,7 @@ public class TestAggregationManager extends BatchTestCase {
         FastBatchingCellReader fbcr =
                 new FastBatchingCellReader(getCube("Sales"));
         fbcr.recordCellRequest(request);
-        fbcr.loadAggregations();
+        fbcr.loadAggregations(null);
         value = aggMan.getCellFromCache(request); // after load, cell is found
         assertTrue(value instanceof Number);
         assertEquals(131558, ((Number) value).intValue());
@@ -67,7 +67,7 @@ public class TestAggregationManager extends BatchTestCase {
         Object value = aggMan.getCellFromCache(request);
         assertNull(value); // before load, the cell is not found
         fbcr.recordCellRequest(request);
-        fbcr.loadAggregations();
+        fbcr.loadAggregations(null);
         value = aggMan.getCellFromCache(request); // after load, cell is found
         assertTrue(value instanceof Number);
         assertEquals(2755, ((Number) value).intValue());
@@ -112,7 +112,7 @@ public class TestAggregationManager extends BatchTestCase {
         fbcr.recordCellRequest(request1);
         fbcr.recordCellRequest(request2);
         fbcr.recordCellRequest(request3);
-        fbcr.loadAggregations();
+        fbcr.loadAggregations(null);
 
         value = aggMan.getCellFromCache(request1); // after load, cell is found
         assertTrue(value instanceof Number);
@@ -1496,6 +1496,158 @@ public class TestAggregationManager extends BatchTestCase {
             + "Row #0: 131,558\n"
             + "Row #0: 135,215\n");
     }
+
+    /**
+     * Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-812">
+     * bug MONDRIAN-812</a>. Using a key expression for a level
+     * element would make aggregate tables fail to be used.
+     */
+    public void testLevelKeyAsSqlExpWithAgg() {
+        propSaver.set(MondrianProperties.instance().UseAggregates, true);
+        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        final String mdxQuery =
+            "select non empty{[Promotions].[All Promotions].Children} ON rows, "
+            + "non empty {[Store].[All Stores]} ON columns "
+            + "from [Sales] "
+            + "where {[Measures].[Unit Sales]}";
+        // Provoke an error in the key resolution to prove it uses it.
+        final String colName =
+            TestContext.instance().getDialect()
+                .quoteIdentifier("promotion_name");
+        TestContext testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Promotions\" foreignKey=\"promotion_id\">\n"
+            + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
+            + "    <Table name=\"promotion\"/>\n"
+            + "    <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\">\n"
+            + "      <KeyExpression><SQL>ERROR_TEST_FUNCTION_NAME("
+            + colName + ")</SQL></KeyExpression>\n"
+            + "    </Level>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>");
+        testContext.assertQueryThrows(
+            mdxQuery,
+            "ERROR_TEST_FUNCTION_NAME");
+        // Run for real this time
+        testContext = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name=\"Promotions\" foreignKey=\"promotion_id\">\n"
+            + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
+            + "    <Table name=\"promotion\"/>\n"
+            + "    <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\">\n"
+            + "      <KeyExpression><SQL>RTRIM("
+            + colName + ")</SQL></KeyExpression>\n"
+            + "    </Level>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>");
+        testContext.assertQueryReturns(
+            "select non empty{[Promotions].[All Promotions].Children} ON rows, "
+            + "non empty {[Store].[All Stores]} ON columns "
+            + "from [Sales] "
+            + "where {[Measures].[Unit Sales]}",
+            "Axis #0:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
+            + "Axis #2:\n"
+            + "{[Promotions].[Bag Stuffers]}\n"
+            + "{[Promotions].[Best Savings]}\n"
+            + "{[Promotions].[Big Promo]}\n"
+            + "{[Promotions].[Big Time Discounts]}\n"
+            + "{[Promotions].[Big Time Savings]}\n"
+            + "{[Promotions].[Bye Bye Baby]}\n"
+            + "{[Promotions].[Cash Register Lottery]}\n"
+            + "{[Promotions].[Dimes Off]}\n"
+            + "{[Promotions].[Dollar Cutters]}\n"
+            + "{[Promotions].[Dollar Days]}\n"
+            + "{[Promotions].[Double Down Sale]}\n"
+            + "{[Promotions].[Double Your Savings]}\n"
+            + "{[Promotions].[Free For All]}\n"
+            + "{[Promotions].[Go For It]}\n"
+            + "{[Promotions].[Green Light Days]}\n"
+            + "{[Promotions].[Green Light Special]}\n"
+            + "{[Promotions].[High Roller Savings]}\n"
+            + "{[Promotions].[I Cant Believe It Sale]}\n"
+            + "{[Promotions].[Money Savers]}\n"
+            + "{[Promotions].[Mystery Sale]}\n"
+            + "{[Promotions].[No Promotion]}\n"
+            + "{[Promotions].[One Day Sale]}\n"
+            + "{[Promotions].[Pick Your Savings]}\n"
+            + "{[Promotions].[Price Cutters]}\n"
+            + "{[Promotions].[Price Destroyers]}\n"
+            + "{[Promotions].[Price Savers]}\n"
+            + "{[Promotions].[Price Slashers]}\n"
+            + "{[Promotions].[Price Smashers]}\n"
+            + "{[Promotions].[Price Winners]}\n"
+            + "{[Promotions].[Sale Winners]}\n"
+            + "{[Promotions].[Sales Days]}\n"
+            + "{[Promotions].[Sales Galore]}\n"
+            + "{[Promotions].[Save-It Sale]}\n"
+            + "{[Promotions].[Saving Days]}\n"
+            + "{[Promotions].[Savings Galore]}\n"
+            + "{[Promotions].[Shelf Clearing Days]}\n"
+            + "{[Promotions].[Shelf Emptiers]}\n"
+            + "{[Promotions].[Super Duper Savers]}\n"
+            + "{[Promotions].[Super Savers]}\n"
+            + "{[Promotions].[Super Wallet Savers]}\n"
+            + "{[Promotions].[Three for One]}\n"
+            + "{[Promotions].[Tip Top Savings]}\n"
+            + "{[Promotions].[Two Day Sale]}\n"
+            + "{[Promotions].[Two for One]}\n"
+            + "{[Promotions].[Unbeatable Price Savers]}\n"
+            + "{[Promotions].[Wallet Savers]}\n"
+            + "{[Promotions].[Weekend Markdown]}\n"
+            + "{[Promotions].[You Save Days]}\n"
+            + "Row #0: 901\n"
+            + "Row #1: 2,081\n"
+            + "Row #2: 1,789\n"
+            + "Row #3: 932\n"
+            + "Row #4: 700\n"
+            + "Row #5: 921\n"
+            + "Row #6: 4,792\n"
+            + "Row #7: 1,219\n"
+            + "Row #8: 781\n"
+            + "Row #9: 1,652\n"
+            + "Row #10: 1,959\n"
+            + "Row #11: 843\n"
+            + "Row #12: 1,638\n"
+            + "Row #13: 689\n"
+            + "Row #14: 1,607\n"
+            + "Row #15: 436\n"
+            + "Row #16: 2,654\n"
+            + "Row #17: 253\n"
+            + "Row #18: 899\n"
+            + "Row #19: 1,021\n"
+            + "Row #20: 195,448\n"
+            + "Row #21: 1,973\n"
+            + "Row #22: 323\n"
+            + "Row #23: 1,624\n"
+            + "Row #24: 2,173\n"
+            + "Row #25: 4,094\n"
+            + "Row #26: 1,148\n"
+            + "Row #27: 504\n"
+            + "Row #28: 1,294\n"
+            + "Row #29: 444\n"
+            + "Row #30: 2,055\n"
+            + "Row #31: 2,572\n"
+            + "Row #32: 2,203\n"
+            + "Row #33: 1,446\n"
+            + "Row #34: 1,382\n"
+            + "Row #35: 754\n"
+            + "Row #36: 2,118\n"
+            + "Row #37: 2,628\n"
+            + "Row #38: 2,497\n"
+            + "Row #39: 1,183\n"
+            + "Row #40: 1,155\n"
+            + "Row #41: 525\n"
+            + "Row #42: 2,053\n"
+            + "Row #43: 335\n"
+            + "Row #44: 2,100\n"
+            + "Row #45: 916\n"
+            + "Row #46: 914\n"
+            + "Row #47: 3,145\n");
+    }
+
     /**
      * Tests that, if the lowest level of a hierarchy uses the same column
      * for name as for key, then mondrian does not do a join.

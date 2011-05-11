@@ -66,6 +66,8 @@ public class RolapCube extends CubeBase {
 
     private ExplicitRules.Group aggGroup;
 
+    RolapBaseCubeMeasure factCountMeasure;
+
     final List<RolapCubeHierarchy> hierarchyList =
         new ArrayList<RolapCubeHierarchy>();
 
@@ -487,6 +489,30 @@ public class RolapCube extends CubeBase {
      */
     public boolean isVirtual() {
         return Util.deprecated(false, false);
+    }
+
+    /**
+     * Returns the system measure that counts the number of fact table rows in
+     * a given cell.
+     *
+     * <p>Never null, because if there is no count measure explicitly defined,
+     * the system creates one.
+     */
+    RolapMeasure getFactCountMeasure() {
+        return factCountMeasure;
+    }
+
+    /**
+     * Returns the system measure that counts the number of atomic cells in
+     * a given cell.
+     *
+     * <p>A cell is atomic if all dimensions are at their lowest level.
+     * If the fact table has a primary key, this measure is equivalent to the
+     * {@link #getFactCountMeasure() fact count measure}.
+     */
+    RolapMeasure getAtomicCellCountMeasure() {
+        // TODO: separate measure
+        return factCountMeasure;
     }
 
     /**

@@ -54,11 +54,9 @@ abstract class DenseSegmentDataset implements SegmentDataset {
         return axisMultipliers;
     }
 
-    protected abstract int size();
-
     public final double getBytes() {
         // assume a slot, key, and value are each 4 bytes
-        return size() * 12;
+        return getSize() * 12;
     }
 
     public Iterator<Map.Entry<CellKey, Object>> iterator() {
@@ -66,23 +64,6 @@ abstract class DenseSegmentDataset implements SegmentDataset {
     }
 
     protected abstract Object getObject(int i);
-
-    // not used
-    private boolean contains(Object[] keys) {
-        return getOffset(keys) >= 0;
-    }
-
-    // not used
-    private Object get(Object[] keys) {
-        int offset = getOffset(keys);
-        return keys[offset];
-    }
-
-    // not used
-    private void put(Object[] keys, Object value) {
-        int offset = getOffset(keys);
-        keys[offset] = value;
-    }
 
     protected final int getOffset(int[] keys) {
         return CellKey.Generator.getOffset(keys, axisMultipliers);
@@ -120,6 +101,8 @@ outer:
         throw new UnsupportedOperationException();
     }
 
+    protected abstract int getSize();
+
     /**
      * Iterator over a DenseSegmentDataset.
      *
@@ -141,7 +124,7 @@ outer:
         }
 
         public boolean hasNext() {
-            return i < size() - 1;
+            return i < getSize() - 1;
         }
 
         public Map.Entry<CellKey, Object> next() {

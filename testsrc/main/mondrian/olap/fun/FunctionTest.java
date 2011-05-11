@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde and others
+// Copyright (C) 2003-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,6 +14,7 @@ import junit.framework.ComparisonFailure;
 import mondrian.olap.*;
 import mondrian.test.*;
 import mondrian.resource.MondrianResource;
+import mondrian.test.TestContext;
 import mondrian.udf.CurrentDateMemberExactUdf;
 import mondrian.udf.CurrentDateMemberUdf;
 import mondrian.udf.CurrentDateStringUdf;
@@ -576,6 +577,20 @@ public class FunctionTest extends FoodMartTestCase {
             + " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n"
             + " [Measures].[Foo])",
             desiredResult);
+
+        assertQueryReturns(
+            "WITH MEMBER [Measures].[Foo] AS 'Iif([Measures].[Bar] IS EMPTY, 1, [Measures].[Bar])'\n"
+            + "MEMBER [Measures].[Bar] AS 'CAST(\"42\" AS INTEGER)'\n"
+            + "SELECT {[Measures].[Unit Sales], [Measures].[Foo]} on columns\n"
+            + "FROM Sales\n"
+            + "WHERE ([Time].[1998].[Q4].[12])",
+            "Axis #0:\n"
+            + "{[Time].[1998].[Q4].[12]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Foo]}\n"
+            + "Row #0: \n"
+            + "Row #0: 42\n");
     }
 
     public void testIsEmptyWithAggregate() {
@@ -3075,9 +3090,13 @@ public class FunctionTest extends FoodMartTestCase {
     public void testCountExcludeEmptyNull() {
         assertQueryReturns(
             "WITH MEMBER [Measures].[Foo] AS\n"
-            + "    Iif([Time].CurrentMember.Name = 'Q2', 1, NULL)\n"
+            + "    Iif("
+            + TestContext.hierarchyName("Time", "Time")
+            + ".CurrentMember.Name = 'Q2', 1, NULL)\n"
             + "  MEMBER [Measures].[Bar] AS\n"
-            + "    Iif([Time].CurrentMember.Name = 'Q2', 1, 0)\n"
+            + "    Iif("
+            + TestContext.hierarchyName("Time", "Time")
+            + ".CurrentMember.Name = 'Q2', 1, 0)\n"
             + "  MEMBER [Time].[CountExc] AS\n"
             + "    Count([Time].[1997].Children, EXCLUDEEMPTY),\n"
             + "    SOLVE_ORDER = 2\n"
@@ -3754,7 +3773,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "    (Time.Month.Members * Gender.Members) as 'foo',\n"
             + "    (s.Current.Item(0).Parent, [Marital Status].[S]) > 50000) on 1\n"
             + "from [Sales]",
-            "Syntax error at line 3, column 47, token 'foo'");
+            "Syntax error at line 3, column 46, token ''foo''");
 
         // 'set AS numeric' is invalid
         assertQueryThrows(
@@ -3763,7 +3782,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "    (Time.Month.Members * Gender.Members) as 1234,\n"
             + "    (s.Current.Item(0).Parent, [Marital Status].[S]) > 50000) on 1\n"
             + "from [Sales]",
-            "Syntax error at line 3, column 47, token '1234.0'");
+            "Syntax error at line 3, column 46, token '1234'");
 
         // 'numeric AS identifier' is invalid
         assertQueryThrows(
@@ -3875,7 +3894,12 @@ public class FunctionTest extends FoodMartTestCase {
         // Extract applied to non-constant dimension should fail
         assertAxisThrows(
             "Extract(Crossjoin([Gender].Members, [Store].Children), [Store].Hierarchy.Dimension)",
-            "not a constant dimension: [Store].Hierarchy.Dimension");
+            "not a constant hierarchy: [Store].Hierarchy.Dimension");
+
+        // Extract applied to non-constant hierarchy should fail
+        assertAxisThrows(
+            "Extract(Crossjoin([Gender].Members, [Store].Children), [Store].Hierarchy)",
+            "not a constant hierarchy: [Store].Hierarchy");
 
         // Extract applied to set of members is OK (if silly). Duplicates are
         // removed, as always.
@@ -3885,10 +3909,10 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Gender].[All Gender]\n"
             + "[Gender].[F]");
 
-        // Extract of dimension not in set fails
+        // Extract of hierarchy not in set fails
         assertAxisThrows(
             "Extract(Crossjoin([Gender].Members, [Store].Children), [Marital Status])",
-            "dimension [Marital Status] is not a dimension of the expression Crossjoin([Gender].Members, [Store].Children)");
+            "hierarchy [Marital Status] is not a hierarchy of the expression Crossjoin([Gender].Members, [Store].Children)");
 
         // Extract applied to empty set returns empty set
         assertAxisReturns(
@@ -3914,7 +3938,7 @@ public class FunctionTest extends FoodMartTestCase {
             "[Marital Status].[M]\n"
             + "[Marital Status].[S]");
 
-        // Extract more than one dimension
+        // Extract more than one hierarchy
         assertAxisReturns(
             "Extract(\n"
             + "[Gender].Children * [Marital Status].Children * [Time].[1997].Children * [Store].[USA].Children,\n"
@@ -3928,14 +3952,14 @@ public class FunctionTest extends FoodMartTestCase {
             + "{[Time].[1997].[Q3], [Marital Status].[S]}\n"
             + "{[Time].[1997].[Q4], [Marital Status].[S]}");
 
-        // Extract duplicate dimensions fails
+        // Extract duplicate hierarchies fails
         assertAxisThrows(
             "Extract(\n"
             + "{([Gender].[M], [Marital Status].[M]),\n"
             + " ([Gender].[F], [Marital Status].[M]),\n"
             + " ([Gender].[M], [Marital Status].[S])},\n"
             + "[Gender], [Gender])",
-            "dimension [Gender] is extracted more than once");
+            "hierarchy [Gender] is extracted more than once");
     }
 
     /**
@@ -4576,7 +4600,7 @@ public class FunctionTest extends FoodMartTestCase {
     public void testDescendantsMEmptyLeavesFail() {
         assertAxisThrows(
             "Descendants([Time].[1997],)",
-            "Syntax error at line 1, column 36, token ')'");
+            "No function matches signature 'Descendants(<Member>, <Empty>)");
     }
 
     public void testDescendantsMEmptyLeavesFail2() {
@@ -4630,6 +4654,9 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testDescendantsParentChildLeaves() {
         final TestContext testContext = getTestContext().withCube("HR");
+        if (Bug.avoidSlowTestOnLucidDB(testContext.getDialect())) {
+            return;
+        }
 
         // leaves, restricted by level
         testContext.assertAxisReturns(
@@ -5363,7 +5390,7 @@ public class FunctionTest extends FoodMartTestCase {
         // constructing a tuple.
         assertExprCompilesTo(
             "([Gender].[M], [Time].[Time].Children.Item(2), [Measures].[Unit Sales])",
-            "MemberValueCalc([Gender].[M], Item(Children(CurrentMemberFixed([Time])), 2), [Measures].[Unit Sales])");
+            "MemberArrayValueCalc([Gender].[M], Item(Children(CurrentMemberFixed([Time])), 2), [Measures].[Unit Sales])");
     }
 
     /**
@@ -5709,6 +5736,46 @@ public class FunctionTest extends FoodMartTestCase {
         assertAxisThrows(
             "CASE WHEN 1 = 2 THEN 3 WHEN 4 THEN 5 ELSE 6 END",
             "No function matches signature");
+    }
+
+    /**
+     * Testcase for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-853">
+     * bug MONDRIAN-853, "When using CASE WHEN in a CalculatedMember values are
+     * not returned the way expected"</a>.
+     */
+    public void testCaseTuple() {
+        // The case in the bug, simplified. With the bug, returns a member array
+        // "[Lmondrian.olap.Member;@151b0a5". Type deduction should realize
+        // that the result is a scalar, therefore a tuple (represented by a
+        // member array) needs to be evaluated to a scalar. I think that if we
+        // get the type deduction right, the MDX exp compiler will handle the
+        // rest.
+        if (false) assertExprReturns(
+            "case 1 when 0 then 1.5\n"
+            + " else ([Gender].[M], [Measures].[Unit Sales]) end",
+            "135,215");
+
+        // "case when" variant always worked
+        assertExprReturns(
+            "case when 1=0 then 1.5\n"
+            + " else ([Gender].[M], [Measures].[Unit Sales]) end",
+            "135,215");
+
+        // case 2: cannot deduce type (tuple x) vs. (tuple y). Should be able
+        // to deduce that the result type is tuple-type<member-type<Gender>,
+        // member-type<Measures>>.
+        if (false) assertExprReturns(
+            "case when 1=0 then ([Gender].[M], [Measures].[Store Sales])\n"
+            + " else ([Gender].[M], [Measures].[Unit Sales]) end",
+            "xxx");
+
+        // case 3: mixture of member & tuple. Should be able to deduce that
+        // result type is an expression.
+        if (false) assertExprReturns(
+            "case when 1=0 then ([Measures].[Store Sales])\n"
+            + " else ([Gender].[M], [Measures].[Unit Sales]) end",
+            "xxx");
     }
 
     public void testPropertiesExpr() {
@@ -7164,11 +7231,9 @@ public class FunctionTest extends FoodMartTestCase {
     public void testOrderCalc() {
         // [Measures].[Unit Sales] is a constant member, so it is evaluated in
         // a ContextCalc.
-        // Note that a MemberListIterCalc is required because Children returns
-        // an immutable list, and Order wants an iterable.
         assertAxisCompilesTo(
             "order([Product].children, [Measures].[Unit Sales])",
-            "ContextCalc([Measures].[Unit Sales], Order(MemberListIterCalc(Children(CurrentMemberFixed([Product]))), ValueCalc, ASC))");
+            "ContextCalc([Measures].[Unit Sales], Order(Children(CurrentMemberFixed([Product])), ValueCalc, ASC))");
 
         // [Time].[1997] is constant, and is evaluated in a ContextCalc.
         // [Product].Parent is variable, and is evaluated inside the loop.
@@ -7177,14 +7242,14 @@ public class FunctionTest extends FoodMartTestCase {
             + " ([Time].[1997], [Product].CurrentMember.Parent))",
             "ContextCalc([Time].[1997], "
             + "Order("
-            + "MemberListIterCalc(Children(CurrentMemberFixed([Product]))), "
+            + "Children(CurrentMemberFixed([Product])), "
             + "MemberValueCalc(Parent(CurrentMemberFixed([Product]))), ASC))");
 
         // No ContextCalc this time. All members are non-variable.
         assertAxisCompilesTo(
             "order([Product].children, [Product].CurrentMember.Parent)",
             "Order("
-            + "MemberListIterCalc(Children(CurrentMemberFixed([Product]))), "
+            + "Children(CurrentMemberFixed([Product])), "
             + "MemberValueCalc(Parent(CurrentMemberFixed([Product]))), ASC)");
 
         // List expression is dependent on one of the constant calcs. It cannot
@@ -7198,9 +7263,9 @@ public class FunctionTest extends FoodMartTestCase {
             + "([Gender].[M], [Measures].[Store Sales]))",
             Util.Retrowoven
                 ? "ContextCalc([Measures].[Store Sales], "
-                  + "Order(MemberListIterCalc(Filter(Children("
+                  + "Order(Filter(Children("
                   + "CurrentMemberFixed([Product])), "
-                  + ">(MemberValueCalc([Measures].[Unit Sales]), 1000.0))), "
+                  + ">(MemberValueCalc([Measures].[Unit Sales]), 1000.0)), "
                   + "MemberValueCalc([Gender].[M]), ASC))"
                 : "ContextCalc([Measures].[Store Sales], "
                   + "Order(Filter(Children(CurrentMemberFixed([Product])), "
@@ -7650,6 +7715,32 @@ public class FunctionTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Customers].[USA].[CA].[Woodland Hills].[Abel Young]}\n"
             + "Row #0: 75\n");
+    }
+
+    public void testOrderDesc() {
+        // based on olap4j's OlapTest.testSortDimension
+        assertQueryReturns(
+            "SELECT\n"
+            + "{[Measures].[Store Sales]} ON COLUMNS,\n"
+            + "{Order(\n"
+            + "  {{[Product].[Drink], [Product].[Drink].Children}},\n"
+            + "  [Product].CurrentMember.Name,\n"
+            + "  DESC)} ON ROWS\n"
+            + "FROM [Sales]\n"
+            + "WHERE {[Time].[1997].[Q3].[7]}",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q3].[7]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Drink].[Dairy]}\n"
+            + "{[Product].[Drink].[Beverages]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+            + "Row #0: 4,409.58\n"
+            + "Row #1: 629.69\n"
+            + "Row #2: 2,477.02\n"
+            + "Row #3: 1,302.87\n");
     }
 
     public void testOrderMemberMemberValueExpNew() {
@@ -9328,6 +9419,10 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testRankWithExpr() {
+        // Note that [Good] and [Top Measure] have the same [Unit Sales]
+        // value (5), but [Good] ranks 1 and [Top Measure] ranks 2. Even though
+        // they are sorted descending on unit sales, they remain in their
+        // natural order (member name) because MDX sorts are stable.
         assertQueryReturns(
             "with member [Measures].[Sibling Rank] as ' Rank([Product].CurrentMember, [Product].CurrentMember.Siblings) '\n"
             + "  member [Measures].[Sales Rank] as ' Rank([Product].CurrentMember, Order([Product].Parent.Children, [Measures].[Unit Sales], DESC)) '\n"
@@ -9451,9 +9546,23 @@ public class FunctionTest extends FoodMartTestCase {
             "Rank([Gender].[All Gender].Parent,"
             + " {[Gender].Members},"
             + " [Measures].[Unit Sales])", "");
-        // Empty set. Value never appears in the set, therefore rank is null.
+        // Empty set. Value would appear after all elements in the empty set,
+        // therefore rank is 1.
+        // Note that SSAS gives error 'The first argument to the Rank function,
+        // a tuple expression, should reference the same hierachies as the
+        // second argument, a set expression'. I think that's because it can't
+        // deduce a type for '{}'. SSAS's problem, not Mondrian's. :)
         assertExprReturns(
-            "Rank([Gender].[M]," + " {}," + " [Measures].[Unit Sales])", "");
+            "Rank([Gender].[M],"
+            + " {},"
+            + " [Measures].[Unit Sales])",
+            "1");
+        // As above, but SSAS can type-check this.
+        assertExprReturns(
+            "Rank([Gender].[M],"
+            + " Filter(Gender.Members, 1 = 0),"
+            + " [Measures].[Unit Sales])",
+            "1");
         // Member is not in set
         assertExprReturns(
             "Rank([Gender].[M]," + " {[Gender].[All Gender], [Gender].[F]})",
@@ -10405,6 +10514,200 @@ Intel platforms):
     }
 
     /**
+     * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-682">
+     * bug MONDRIAN-682, "VisualTotals + Distinct-count measure gives wrong
+     * results"</a>.
+     */
+    public void testVisualTotalsDistinctCountMeasure() {
+        // distinct measure
+        assertQueryReturns(
+            "WITH SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Store].[USA].[CA]),\n"
+            + "        Descendants([Store].[USA].[CA])})))\n"
+            + "select NON EMPTY \n"
+            + "  Hierarchize(\n"
+            + "    Intersect(\n"
+            + "      {DrilldownLevel({[Store].[All Stores]})},\n"
+            + "      [XL_Row_Dim_0])) ON COLUMNS\n"
+            + "from [HR] "
+            + "where [Measures].[Number of Employees]\n",
+            "Axis #0:\n"
+            + "{[Measures].[Number of Employees]}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "Row #0: 193\n"
+            + "Row #0: 193\n");
+
+        // distinct measure
+        assertQueryReturns(
+            "WITH SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Store].[USA].[CA].[Beverly Hills]),\n"
+            + "        Descendants([Store].[USA].[CA].[Beverly Hills]),\n"
+            + "        Ascendants([Store].[USA].[CA].[Los Angeles]),\n"
+            + "        Descendants([Store].[USA].[CA].[Los Angeles])})))"
+            + "select NON EMPTY \n"
+            + "  Hierarchize(\n"
+            + "    Intersect(\n"
+            + "      {DrilldownLevel({[Store].[All Stores]})},\n"
+            + "      [XL_Row_Dim_0])) ON COLUMNS\n"
+            + "from [HR] "
+            + "where [Measures].[Number of Employees]\n",
+            "Axis #0:\n"
+            + "{[Measures].[Number of Employees]}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "Row #0: 110\n"
+            + "Row #0: 110\n");
+
+        // distinct measure on columns
+        assertQueryReturns(
+            "WITH SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Store].[USA].[CA]),\n"
+            + "        Descendants([Store].[USA].[CA])})))\n"
+            + "select {[Measures].[Count], [Measures].[Number of Employees]} on COLUMNS,"
+            + " NON EMPTY \n"
+            + "  Hierarchize(\n"
+            + "    Intersect(\n"
+            + "      {DrilldownLevel({[Store].[All Stores]})},\n"
+            + "      [XL_Row_Dim_0])) ON ROWS\n"
+            + "from [HR] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Count]}\n"
+            + "{[Measures].[Number of Employees]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "Row #0: 2,316\n"
+            + "Row #0: 193\n"
+            + "Row #1: 2,316\n"
+            + "Row #1: 193\n");
+
+        // distinct measure with tuples
+        assertQueryReturns(
+            "WITH SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Store].[USA].[CA]),\n"
+            + "        Descendants([Store].[USA].[CA])})))\n"
+            + "select NON EMPTY \n"
+            + "  Hierarchize(\n"
+            + "    Intersect(\n"
+            + "     [Marital Status].[M]\n"
+            + "     * {DrilldownLevel({[Store].[USA]})}\n"
+            + "     * [Gender].[F],\n"
+            + "     [Marital Status].[M]\n"
+            + "     * [XL_Row_Dim_0]\n"
+            + "     * [Gender].[F])) ON COLUMNS\n"
+            + "from [Sales] "
+            + "where [Measures].[Customer count]\n",
+            "Axis #0:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #1:\n"
+            + "{[Marital Status].[M], [Store].[USA], [Gender].[F]}\n"
+            + "{[Marital Status].[M], [Store].[USA].[CA], [Gender].[F]}\n"
+            + "Row #0: 654\n"
+            + "Row #0: 654\n");
+    }
+
+    /**
+     * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-761">
+     * bug MONDRIAN-761, "VisualTotalMember cannot be cast to
+     * RolapCubeMember"</a>.
+     */
+    public void testVisualTotalsClassCast() {
+        assertQueryReturns(
+            "WITH  SET [XL_Row_Dim_0] AS\n"
+            + " VisualTotals(\n"
+            + "   Distinct(\n"
+            + "     Hierarchize(\n"
+            + "       {Ascendants([Store].[USA].[WA].[Yakima]), \n"
+            + "        Descendants([Store].[USA].[WA].[Yakima]), \n"
+            + "        Ascendants([Store].[USA].[WA].[Walla Walla]), \n"
+            + "        Descendants([Store].[USA].[WA].[Walla Walla]), \n"
+            + "        Ascendants([Store].[USA].[WA].[Tacoma]), \n"
+            + "        Descendants([Store].[USA].[WA].[Tacoma]), \n"
+            + "        Ascendants([Store].[USA].[WA].[Spokane]), \n"
+            + "        Descendants([Store].[USA].[WA].[Spokane]), \n"
+            + "        Ascendants([Store].[USA].[WA].[Seattle]), \n"
+            + "        Descendants([Store].[USA].[WA].[Seattle]), \n"
+            + "        Ascendants([Store].[USA].[WA].[Bremerton]), \n"
+            + "        Descendants([Store].[USA].[WA].[Bremerton]), \n"
+            + "        Ascendants([Store].[USA].[OR]), \n"
+            + "        Descendants([Store].[USA].[OR])}))) \n"
+            + " SELECT NON EMPTY \n"
+            + " Hierarchize(\n"
+            + "   Intersect(\n"
+            + "     DrilldownMember(\n"
+            + "       {{DrilldownMember(\n"
+            + "         {{DrilldownMember(\n"
+            + "           {{DrilldownLevel(\n"
+            + "             {[Store].[All Stores]})}},\n"
+            + "           {[Store].[USA]})}},\n"
+            + "         {[Store].[USA].[WA]})}},\n"
+            + "       {[Store].[USA].[WA].[Bremerton]}),\n"
+            + "       [XL_Row_Dim_0]))\n"
+            + "DIMENSION PROPERTIES \n"
+            + "  PARENT_UNIQUE_NAME, \n"
+            + "  [Store].[Store Name].[Store Type],\n"
+            + "  [Store].[Store Name].[Store Manager],\n"
+            + "  [Store].[Store Name].[Store Sqft],\n"
+            + "  [Store].[Store Name].[Grocery Sqft],\n"
+            + "  [Store].[Store Name].[Frozen Sqft],\n"
+            + "  [Store].[Store Name].[Meat Sqft],\n"
+            + "  [Store].[Store Name].[Has coffee bar],\n"
+            + "  [Store].[Store Name].[Street address] ON COLUMNS \n"
+            + "FROM [HR]\n"
+            + "WHERE \n"
+            + "  ([Measures].[Number of Employees])\n"
+            + "CELL PROPERTIES\n"
+            + "  VALUE,\n"
+            + "  FORMAT_STRING,\n"
+            + "  LANGUAGE,\n"
+            + "  BACK_COLOR,\n"
+            + "  FORE_COLOR,\n"
+            + "  FONT_FLAGS",
+            "Axis #0:\n"
+            + "{[Measures].[Number of Employees]}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n"
+            + "{[Store].[USA].[WA].[Bremerton]}\n"
+            + "{[Store].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[USA].[WA].[Seattle]}\n"
+            + "{[Store].[USA].[WA].[Spokane]}\n"
+            + "{[Store].[USA].[WA].[Tacoma]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla]}\n"
+            + "{[Store].[USA].[WA].[Yakima]}\n"
+            + "Row #0: 419\n"
+            + "Row #0: 419\n"
+            + "Row #0: 136\n"
+            + "Row #0: 283\n"
+            + "Row #0: 62\n"
+            + "Row #0: 62\n"
+            + "Row #0: 62\n"
+            + "Row #0: 62\n"
+            + "Row #0: 74\n"
+            + "Row #0: 4\n"
+            + "Row #0: 19\n");
+    }
+
+    /**
      * <p>Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-678">
      * bug MONDRIAN-678, "VisualTotals gives UnsupportedOperationException
      * calling getOrdinal"</a>. Key difference from previous test is that there
@@ -10650,7 +10953,7 @@ Intel platforms):
         // An integer constant is not allowed as a type
         assertExprThrows(
             "Cast(1 AS 5)",
-            "Syntax error at line 1, column 11, token '5.0'");
+            "Syntax error at line 1, column 11, token '5'");
 
         assertExprReturns("Cast('tr' || 'ue' AS boolean)", "true");
     }

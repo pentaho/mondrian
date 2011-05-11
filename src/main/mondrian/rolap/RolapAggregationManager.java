@@ -4,17 +4,17 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 30 August, 2001
 */
-
 package mondrian.rolap;
 
 import mondrian.rolap.agg.*;
 import mondrian.olap.*;
+import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 
 import java.util.*;
 import java.io.PrintWriter;
@@ -96,7 +96,7 @@ public abstract class RolapAggregationManager {
         RolapEvaluator evaluator)
     {
         final Member[] currentMembers = evaluator.getNonAllMembers();
-        final List<List<Member[]>> aggregationLists =
+        final List<List<List<Member>>> aggregationLists =
             evaluator.getAggregationLists();
 
         final RolapStoredMeasure measure =
@@ -119,19 +119,18 @@ public abstract class RolapAggregationManager {
         // For each aggregationList, generate the optimal form of
         // compoundPredicate. These compoundPredicates are AND'ed together when
         // sql is generated for them.
-        for (List<Member[]> aggregationList : aggregationLists) {
+        for (List<List<Member>> aggregationList : aggregationLists) {
             BitKey compoundBitKey = BitKey.Factory.makeBitKey(starColumnCount);
             Map<BitKey, List<RolapCubeMember[]>> compoundGroupMap =
                 new LinkedHashMap<BitKey, List<RolapCubeMember[]>>();
 
-            // Go through the compound members(tuples) once and separate them
+            // Go through the compound members/tuples once and separate them
             // into groups.
-            List<RolapMember[]> rolapAggregationList =
-                new ArrayList<RolapMember[]>();
-            for (Member[] members : aggregationList) {
-                RolapMember[] rolapMembers = new RolapMember[members.length];
-                //noinspection SuspiciousSystemArraycopy
-                System.arraycopy(members, 0, rolapMembers, 0, members.length);
+            List<List<RolapMember>> rolapAggregationList =
+                new ArrayList<List<RolapMember>>();
+            for (List<Member> members : aggregationList) {
+                // REVIEW: do we need to copy?
+                List<RolapMember> rolapMembers = Util.cast(members);
                 rolapAggregationList.add(rolapMembers);
             }
 
@@ -358,15 +357,17 @@ public abstract class RolapAggregationManager {
     private static boolean makeCompoundGroup(
         int starColumnCount,
         RolapMeasureGroup measureGroup,
-        List<RolapMember[]> aggregationList,
+        List<List<RolapMember>> aggregationList,
         Map<BitKey, List<RolapCubeMember[]>> compoundGroupMap)
     {
         // The more generalized aggregation as aggregating over tuples.
         // The special case is a tuple defined by only one member.
         int unsatisfiableTupleCount = 0;
-        for (RolapMember[] aggregation : aggregationList) {
-            if (aggregation.length == 0
-                || !(aggregation[0] instanceof RolapCubeMember))
+        for (List<RolapMember> aggregation : aggregationList) {
+            boolean isTuple;
+            if (aggregation.size() == 0
+                || !(aggregation.get(0) instanceof RolapCubeMember
+                    || aggregation.get(0) instanceof VisualTotalMember))
             {
                 // not a tuple
                 ++unsatisfiableTupleCount;
@@ -374,10 +375,15 @@ public abstract class RolapAggregationManager {
             }
 
             BitKey bitKey = BitKey.Factory.makeBitKey(starColumnCount);
-            RolapCubeMember[] tuple = new RolapCubeMember[aggregation.length];
+            RolapCubeMember[] tuple = new RolapCubeMember[aggregation.size()];
             int i = 0;
             for (Member member : aggregation) {
-                tuple[i] = (RolapCubeMember)member;
+                if (member instanceof VisualTotalMember) {
+                    tuple[i] = (RolapCubeMember)
+                        ((VisualTotalMember) member).getMember();
+                } else {
+                    tuple[i] = (RolapCubeMember)member;
+                }
                 i++;
             }
 

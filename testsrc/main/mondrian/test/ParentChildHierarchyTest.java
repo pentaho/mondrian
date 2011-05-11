@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,6 +13,9 @@ package mondrian.test;
 
 import junit.framework.Assert;
 import mondrian.olap.*;
+import mondrian.util.Bug;
+
+import java.util.List;
 
 /**
  * <code>ParentChildHierarchyTest</code> tests parent-child hierarchies.
@@ -510,6 +513,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * Script from <a href="http://www.winscriptingsolutions.com/Files/09/27139/Listing_02.txt">here</a>.
      */
     public void testParentChildDescendantsLeavesTop() {
+        if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
+            return;
+        }
         assertQueryReturns(
             "with set [Leaves] as 'Descendants([Employees].[All Employees], 15, LEAVES)'\n"
             + " set [Parents] as 'Generate([Leaves], {[Employees].CurrentMember.Parent})'\n"
@@ -622,6 +628,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * dimensions (3) than the depth of the emp dimension (6).
      */
     public void testHierarchyFalseCycle() {
+        if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
+            return;
+        }
         // On the regular HR cube, this has always worked.
         assertQueryReturns(
             "SELECT {[Employees].[All Employees].Children} on columns,\n"
@@ -938,10 +947,14 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
 
     /**
      * Tests that a parent-child hierarchy is sorted correctly if the
-     * "ordinalColumn" attribute is included in its definition.
-     * Testcase for bug 1522608, "Sorting of Parent/Child Hierarchy is wrong".
+     * "ordinalColumn" attribute is included in its definition. Testcase for
+     * <a href="http://jira.pentaho.org/browse/MONDRIAN-203">MONDRIAN-203,
+     * "Sorting of Parent/Child Hierarchy is wrong"</a>.
      */
     public void testParentChildOrdinal() {
+        if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
+            return;
+        }
         TestContext testContext = TestContext.create(
             null,
             "<Cube name=\"HR-ordered\">\n"
@@ -1125,12 +1138,17 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     /**
-     * Verifies the fix for MONDRIAN-519, a class cast exception when using
-     * non-closure parent child hierarchies.
+     * Verifies the fix for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-519">MONDRIAN-519</a>,
+     * a class cast exception when using non-closure parent child hierarchies.
      */
     public void testClosureVsNoClosure() {
         // If parts of this test fail, re-apply change 13552 to the main branch.
         // I chose not to merge some of its changes. -- jhyde, 2010/6/28.
+
+        if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
+            return;
+        }
 
         String cubestart =
             "<Cube name=\"HR4C\">\n"
@@ -1169,7 +1187,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "from [HR4C]";
         expected =
             TestContext.toString(testClosureContext.executeQuery(mdx));
-        assertTrue(expected, expected.contains("Row #0: 21,252\n"));
+        assertTrue(
+            expected,
+            TestContext.unfold(expected).contains("Row #0: 21,252\n"));
         // Need to unfold because 'expect' has platform-specific line-endings,
         // yet assertQueryReturns assumes that it contains linefeeds.
         testNoClosureContext.assertQueryReturns(
@@ -1208,6 +1228,40 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "Row #8: 60\n";
         testClosureContext.assertQueryReturns(mdx, expected);
         testNoClosureContext.assertQueryReturns(mdx, expected);
+    }
+
+    public void testSchemaReaderLevelMembers()
+    {
+        final SchemaReader schemaReader =
+            TestContext.instance().getConnection().getSchemaReader();
+        int found = 0;
+        for (Cube cube : schemaReader.getCubes()) {
+            if (!cube.getName().equals("HR")) {
+                continue;
+            }
+            for (Dimension dimension : schemaReader.getCubeDimensions(cube)) {
+                for (Hierarchy hierarchy
+                    : schemaReader.getDimensionHierarchies(dimension))
+                {
+                    if (!hierarchy.getName().equals("Employees")) {
+                        continue;
+                    }
+                    ++found;
+                    final Level level = hierarchy.getLevels()[1];
+                    assertEquals("Employee Id", level.getName());
+                    final List<Member> memberList =
+                        schemaReader.getLevelMembers(level, true);
+                    assertEquals(1155, memberList.size());
+                    assertEquals(
+                        "[Employees].[Sheri Nowmer]",
+                        memberList.get(0).getUniqueName());
+                    assertEquals(
+                        "[Employees].[Sheri Nowmer].[Derrick Whelply]",
+                        memberList.get(1).getUniqueName());
+                }
+            }
+        }
+        assertEquals(1, found);
     }
 }
 

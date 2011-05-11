@@ -2,33 +2,36 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.xmla;
 
-import mondrian.calc.ResultStyle;
-import mondrian.olap.*;
-import mondrian.olap.Connection;
-import mondrian.olap.DriverManager;
-import mondrian.rolap.*;
-import mondrian.rolap.agg.CellRequest;
-import mondrian.spi.CatalogLocator;
-import mondrian.spi.Dialect;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
+import mondrian.util.CompositeList;
 import mondrian.xmla.impl.DefaultSaxWriter;
-import static mondrian.xmla.XmlaConstants.*;
 
-import static org.olap4j.metadata.XmlaConstants.*;
-
-import org.apache.log4j.Logger;
+import org.olap4j.*;
+import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.metadata.*;
+import org.olap4j.metadata.Property.StandardCellProperty;
+import org.olap4j.metadata.Property.StandardMemberProperty;
 import org.xml.sax.SAXException;
 
+import org.apache.log4j.Logger;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
 import java.util.*;
-import java.io.*;
+import java.util.Date;
+
+import static mondrian.xmla.XmlaConstants.*;
+import static org.olap4j.metadata.XmlaConstants.*;
 
 /**
  * An <code>XmlaHandler</code> responds to XML for Analysis (XML/A) requests.
@@ -40,9 +43,34 @@ import java.io.*;
 public class XmlaHandler {
     private static final Logger LOGGER = Logger.getLogger(XmlaHandler.class);
 
-    private final Map<String, DataSourcesConfig.DataSource> dataSourcesMap;
-    private final CatalogLocator catalogLocator;
+    final ConnectionFactory connectionFactory;
     private final String prefix;
+
+    public static XmlaExtra getExtra(OlapConnection connection) {
+        try {
+            final XmlaExtra extra = connection.unwrap(XmlaExtra.class);
+            if (extra != null) {
+                return extra;
+            }
+        } catch (SQLException e) {
+            // Connection cannot provide an XmlaExtra. Fall back and give a
+            // default implementation.
+        }
+        return new XmlaExtraImpl();
+    }
+
+    public OlapConnection getConnection(XmlaRequest request) {
+        final Map<String, String> properties = request.getProperties();
+        final String dataSourceInfo =
+            properties.get(PropertyDefinition.DataSourceInfo.name());
+        final String catalog =
+            properties.get(PropertyDefinition.Catalog.name());
+        String roleName = request.getRoleName();
+
+        // REVIEW: Should we pass request properties to getConnection?
+        return getConnection(
+            dataSourceInfo, catalog, roleName, new Properties());
+    }
 
     private enum SetType {
         ROW_SET,
@@ -487,47 +515,26 @@ public class XmlaHandler {
     }
 
     private static interface QueryResult {
-        public void unparse(SaxWriter res) throws SAXException;
+        void unparse(SaxWriter res) throws SAXException, OlapException;
+        void close() throws SQLException;
+        void metadata(SaxWriter writer);
     }
 
     /**
      * Creates an <code>XmlaHandler</code>.
      *
-     * @param dataSources Data sources
-     * @param catalogLocator Catalog locator
+     * <p>The connection factory may be null, as long as you override
+     * {@link #getConnection(String, String, String, Properties)}.
+     *
+     * @param connectionFactory Connection factory
      * @param prefix XML Namespace. Typical value is "xmla", but a value of
      *   "cxmla" works around an Internet Explorer 7 bug
      */
-    public XmlaHandler(
-        DataSourcesConfig.DataSources dataSources,
-        CatalogLocator catalogLocator,
-        String prefix)
+    public XmlaHandler(ConnectionFactory connectionFactory, String prefix)
     {
-        this.catalogLocator = catalogLocator;
         assert prefix != null;
+        this.connectionFactory = connectionFactory;
         this.prefix = prefix;
-        Map<String, DataSourcesConfig.DataSource> map =
-            new HashMap<String, DataSourcesConfig.DataSource>();
-        if (dataSources != null) {
-            for (DataSourcesConfig.DataSource ds : dataSources.dataSources) {
-                if (map.containsKey(ds.getDataSourceName())) {
-                    // This is not an XmlaException
-                    throw Util.newError(
-                        "duplicated data source name '"
-                        + ds.getDataSourceName() + "'");
-                }
-                // Set parent pointers.
-                for (DataSourcesConfig.Catalog catalog : ds.catalogs.catalogs) {
-                    catalog.setDataSource(ds);
-                }
-                map.put(ds.getDataSourceName(), ds);
-            }
-        }
-        dataSourcesMap = Collections.unmodifiableMap(map);
-    }
-
-    public Map<String, DataSourcesConfig.DataSource> getDataSourceEntries() {
-        return dataSourcesMap;
     }
 
     /**
@@ -628,84 +635,87 @@ public class XmlaHandler {
                 : Content.DEFAULT);
 
         // Handle execute
-        QueryResult result;
-        if (request.isDrillThrough()) {
-            result = executeDrillThroughQuery(request);
-        } else {
-            result = executeQuery(request);
-        }
-
-        SaxWriter writer = response.getWriter();
-        writer.startDocument();
-
-        writer.startElement(
-            prefix + ":ExecuteResponse",
-            "xmlns:" + prefix, NS_XMLA);
-        writer.startElement(prefix + ":return");
-        boolean rowset =
-            request.isDrillThrough()
-            || Format.Tabular.name().equals(
-                request.getProperties().get(
-                    PropertyDefinition.Format.name()));
-        writer.startElement(
-            "root",
-            "xmlns",
-            result == null
-            ? NS_XMLA_EMPTY
-            : rowset
-            ? NS_XMLA_ROWSET
-            : NS_XMLA_MDDATASET,
-            "xmlns:xsi", NS_XSI,
-            "xmlns:xsd", NS_XSD,
-            "xmlns:EX", NS_XMLA_EX);
-
-        if ((content == Content.Schema)
-            || (content == Content.SchemaData))
-        {
-            if (result != null) {
-                if (result instanceof MDDataSet_Tabular) {
-                    MDDataSet_Tabular tabResult = (MDDataSet_Tabular) result;
-                    tabResult.metadata(writer);
-                } else if (rowset) {
-                    ((TabularRowSet) result).metadata(writer);
-                } else {
-                    writer.verbatim(MD_DATA_SET_XML_SCHEMA);
-                }
-            } else {
-                if (rowset) {
-                    writer.verbatim(EMPTY_ROW_SET_XML_SCHEMA);
-                } else {
-                    writer.verbatim(EMPTY_MD_DATA_SET_XML_SCHEMA);
-                }
-            }
-        }
-
+        QueryResult result = null;
         try {
+            if (request.isDrillThrough()) {
+                result = executeDrillThroughQuery(request);
+            } else {
+                result = executeQuery(request);
+            }
+
+            SaxWriter writer = response.getWriter();
+            writer.startDocument();
+
+            writer.startElement(
+                prefix + ":ExecuteResponse",
+                "xmlns:" + prefix, NS_XMLA);
+            writer.startElement(prefix + ":return");
+            boolean rowset =
+                request.isDrillThrough()
+                || Format.Tabular.name().equals(
+                    request.getProperties().get(
+                        PropertyDefinition.Format.name()));
+            writer.startElement(
+                "root",
+                "xmlns",
+                result == null
+                    ? NS_XMLA_EMPTY
+                    : rowset
+                        ? NS_XMLA_ROWSET
+                        : NS_XMLA_MDDATASET,
+                "xmlns:xsi", NS_XSI,
+                "xmlns:xsd", NS_XSD,
+                "xmlns:EX", NS_XMLA_EX);
+
             switch (content) {
-            case Data:
+            case Schema:
             case SchemaData:
-            case DataOmitDefaultSlicer:
-            case DataIncludeDefaultSlicer:
                 if (result != null) {
-                    result.unparse(writer);
+                    result.metadata(writer);
+                } else {
+                    if (rowset) {
+                        writer.verbatim(EMPTY_ROW_SET_XML_SCHEMA);
+                    } else {
+                        writer.verbatim(EMPTY_MD_DATA_SET_XML_SCHEMA);
+                    }
                 }
                 break;
             }
-        } catch (XmlaException xex) {
-            throw xex;
-        } catch (Throwable t) {
-            throw new XmlaException(
-                SERVER_FAULT_FC,
-                HSB_EXECUTE_UNPARSE_CODE,
-                HSB_EXECUTE_UNPARSE_FAULT_FS,
-                t);
-        } finally {
-            writer.endElement(); // root
-            writer.endElement(); // return
-            writer.endElement(); // ExecuteResponse
-        }
 
-        writer.endDocument();
+            try {
+                switch (content) {
+                case Data:
+                case SchemaData:
+                case DataOmitDefaultSlicer:
+                case DataIncludeDefaultSlicer:
+                    if (result != null) {
+                        result.unparse(writer);
+                    }
+                    break;
+                }
+            } catch (XmlaException xex) {
+                throw xex;
+            } catch (Throwable t) {
+                throw new XmlaException(
+                    SERVER_FAULT_FC,
+                    HSB_EXECUTE_UNPARSE_CODE,
+                    HSB_EXECUTE_UNPARSE_FAULT_FS,
+                    t);
+            } finally {
+                writer.endElement(); // root
+                writer.endElement(); // return
+                writer.endElement(); // ExecuteResponse
+            }
+            writer.endDocument();
+        } finally {
+            if (result != null) {
+                try {
+                    result.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
+        }
     }
 
     /**
@@ -1237,59 +1247,33 @@ public class XmlaHandler {
     {
         checkFormat(request);
 
-        DataSourcesConfig.DataSource ds = getDataSource(request);
-        DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds, true);
-        String roleName = request.getRoleName();
-        Role role = request.getRole();
-
-        final Connection connection = getConnection(dsCatalog, role, roleName);
-
-        final String statement = request.getStatement();
-        final QueryPart parseTree = connection.parseStatement(statement);
-        final DrillThrough drillThrough = (DrillThrough) parseTree;
-        final Query query = drillThrough.getQuery();
-        query.setResultStyle(ResultStyle.LIST);
-        final Result result = connection.execute(query);
-        // cell [0, 0] in a 2-dimensional query, [0, 0, 0] in 3 dimensions, etc.
-        final int[] coords = new int[result.getAxes().length];
-        Cell dtCell = result.getCell(coords);
-
-        if (!dtCell.canDrillThrough()) {
-            throw new XmlaException(
-                SERVER_FAULT_FC,
-                HSB_DRILL_THROUGH_NOT_ALLOWED_CODE,
-                HSB_DRILL_THROUGH_NOT_ALLOWED_FAULT_FS,
-                Util.newError("Cannot do DrillThrough operation on the cell"));
+        final Map<String, String> properties = request.getProperties();
+        String tabFields =
+            properties.get(PropertyDefinition.TableFields.name());
+        if (tabFields != null && tabFields.length() == 0) {
+            tabFields = null;
         }
-
+        final String advancedFlag =
+            properties.get(PropertyDefinition.AdvancedFlag.name());
+        final boolean advanced = Boolean.parseBoolean(advancedFlag);
+        final boolean enableRowCount =
+            MondrianProperties.instance().EnableTotalCount.booleanValue();
+        final int[] rowCountSlot = enableRowCount ? new int[]{0} : null;
+        OlapConnection connection = null;
+        OlapStatement statement = null;
+        ResultSet resultSet = null;
         try {
-            final Map<String, String> properties = request.getProperties();
-            String tabFields =
-                properties.get(PropertyDefinition.TableFields.name());
-            if (tabFields != null && tabFields.length() == 0) {
-                tabFields = null;
-            }
-            final String advancedFlag =
-                properties.get(PropertyDefinition.AdvancedFlag.name());
-            final boolean advanced = Boolean.parseBoolean(advancedFlag);
-            if (advanced) {
-                return executeDrillThroughAdvanced(connection, result);
-            } else {
-                int count = -1;
-                if (MondrianProperties.instance().EnableTotalCount
-                    .booleanValue())
-                {
-                    count = dtCell.getDrillThroughCount();
-                }
-                SqlStatement stmt2 =
-                    ((RolapCell) dtCell).drillThroughInternal(
-                        drillThrough.getMaxRowCount(),
-                        Math.max(drillThrough.getFirstRowOrdinal(), 1),
-                        tabFields,
-                        true,
-                        LOGGER);
-                return new TabularRowSet(stmt2, count);
-            }
+            connection = getConnection(request);
+            statement = connection.createStatement();
+            resultSet =
+                getExtra(connection).executeDrillthrough(
+                    statement,
+                    request.getStatement(),
+                    advanced,
+                    tabFields,
+                    rowCountSlot);
+            int rowCount = enableRowCount ? rowCountSlot[0] : -1;
+            return new TabularRowSet(resultSet, rowCount);
         } catch (XmlaException xex) {
             throw xex;
         } catch (SQLException sqle) {
@@ -1299,100 +1283,32 @@ public class XmlaHandler {
                 HSB_DRILL_THROUGH_SQL_FAULT_FS,
                 Util.newError(sqle, "Error in drill through"));
         } catch (RuntimeException e) {
+            // NOTE: One important error is "cannot drill through on the cell"
             throw new XmlaException(
                 SERVER_FAULT_FC,
                 HSB_DRILL_THROUGH_SQL_CODE,
                 HSB_DRILL_THROUGH_SQL_FAULT_FS,
                 e);
-        }
-    }
-
-    private QueryResult executeDrillThroughAdvanced(
-        Connection connection,
-        Result result)
-        throws SQLException
-    {
-        java.sql.Connection sqlConn = null;
-        Statement stmt = null;
-        try {
-            final Axis axis = result.getAxes()[0];
-            final Position position = axis.getPositions().get(0);
-            Member[] members = position.toArray(
-                new Member[position.size()]);
-
-            final CellRequest cellRequest =
-                RolapAggregationManager.makeRequest(members);
-            List<RolapSchema.PhysRelation> relationList =
-                new ArrayList<RolapSchema.PhysRelation>();
-            final RolapStar.Table factTable =
-                cellRequest.getMeasure().getStar().getFactTable();
-            RolapSchema.PhysRelation relation = factTable.getRelation();
-            relationList.add(relation);
-
-            for (RolapStar.Table table : factTable.getChildren()) {
-                relationList.add(table.getRelation());
-            }
-            List<String> truncatedTableList = new ArrayList<String>();
-            sqlConn = connection.getDataSource().getConnection();
-            stmt = sqlConn.createStatement();
-            List<List<String>> fields = new ArrayList<List<String>>();
-
-            Map<String, List<String>> tableFieldMap =
-                new HashMap<String, List<String>>();
-            for (RolapSchema.PhysRelation relation1 : relationList) {
-                final String tableName = relation1.toString();
-                List<String> fieldNameList = new ArrayList<String>();
-                Dialect dialect =
-                    ((RolapSchema) connection.getSchema()).getDialect();
-                // FIXME: Include schema name, if specified.
-                // FIXME: Deal with relations that are not tables.
-                final StringBuilder buf = new StringBuilder();
-                buf.append("SELECT * FROM ");
-                dialect.quoteIdentifier(buf, tableName);
-                buf.append(" WHERE 1=2");
-                String sql = buf.toString();
-                ResultSet rs = stmt.executeQuery(sql);
-                ResultSetMetaData rsMeta = rs.getMetaData();
-                for (int j = 1; j <= rsMeta.getColumnCount(); j++) {
-                    // FIXME: In some JDBC drivers,
-                    // ResultSetMetaData.getColumnName(int) does strange
-                    // things with aliased columns. See MONDRIAN-654
-                    // http://jira.pentaho.com/browse/MONDRIAN-654 for
-                    // details. Therefore, we don't want to use that
-                    // method. It seems harmless here, but I'd still
-                    // like to phase out use of getColumnName. After
-                    // PhysTable is introduced (coming in mondrian-4.0)
-                    // we should be able to just use its column list.
-                    String colName = rsMeta.getColumnName(j);
-                    boolean colNameExists = false;
-                    for (List<String> prvField : fields) {
-                        if (prvField.contains(colName)) {
-                            colNameExists = true;
-                            break;
-                        }
-                    }
-                    if (!colNameExists) {
-                        fieldNameList.add(colName);
-                    }
-                }
-                fields.add(fieldNameList);
-                String truncatedTableName =
-                    tableName.substring(tableName.lastIndexOf(".") + 1);
-                truncatedTableList.add(truncatedTableName);
-                tableFieldMap.put(truncatedTableName, fieldNameList);
-            }
-            return new TabularRowSet(tableFieldMap, truncatedTableList);
         } finally {
-            if (stmt != null) {
+            if (resultSet != null) {
                 try {
-                    stmt.close();
-                } catch (SQLException ignored) {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    // ignore
                 }
             }
-            if (sqlConn != null) {
+            if (statement != null) {
                 try {
-                    sqlConn.close();
-                } catch (SQLException ignored) {
+                    statement.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    // ignore
                 }
             }
         }
@@ -1403,14 +1319,15 @@ public class XmlaHandler {
         private final String encodedName;
         private final String xsdType;
 
-        Column(String name, int type) {
+        Column(String name, int type, int scale) {
             this.name = name;
 
             // replace invalid XML element name, like " ", with "_x0020_" in
             // column headers, otherwise will generate a badly-formatted xml
             // doc.
-            this.encodedName = XmlaUtil.encodeElementName(name);
-            this.xsdType = sqlToXsdType(type);
+            this.encodedName =
+                XmlaUtil.ElementNameEncoder.INSTANCE.encode(name);
+            this.xsdType = sqlToXsdType(type, scale);
         }
     }
 
@@ -1422,49 +1339,43 @@ public class XmlaHandler {
         /**
          * Creates a TabularRowSet based upon a SQL statement result.
          *
-         * <p>Closes the SqlStatement when it is done.
+         * <p>Does not close the ResultSet, on success or failure. Client
+         * must do it.
          *
-         * @param stmt SqlStatement
+         * @param rs Result set
          * @param totalCount Total number of rows. If >= 0, writes the
          *   "totalCount" attribute into the XMLA response.
+         *
+         * @throws SQLException on error
          */
         public TabularRowSet(
-            SqlStatement stmt,
+            ResultSet rs,
             int totalCount)
+            throws SQLException
         {
             this.totalCount = totalCount;
-            ResultSet rs = stmt.getResultSet();
-            try {
-                ResultSetMetaData md = rs.getMetaData();
-                int columnCount = md.getColumnCount();
+            ResultSetMetaData md = rs.getMetaData();
+            int columnCount = md.getColumnCount();
 
-                // populate column defs
+            // populate column defs
+            for (int i = 0; i < columnCount; i++) {
+                columns.add(
+                    new Column(
+                        md.getColumnLabel(i + 1),
+                        md.getColumnType(i + 1),
+                        md.getScale(i + 1)));
+            }
+
+            // Populate data; assume that SqlStatement is already positioned
+            // on first row (or isDone() is true), and assume that the
+            // number of rows returned is limited.
+            rows = new ArrayList<Object[]>();
+            while (rs.next()) {
+                Object[] row = new Object[columnCount];
                 for (int i = 0; i < columnCount; i++) {
-                    columns.add(
-                        new Column(
-                            md.getColumnLabel(i + 1),
-                            md.getColumnType(i + 1)));
+                    row[i] = rs.getObject(i + 1);
                 }
-
-                // Populate data; assume that SqlStatement is already positioned
-                // on first row (or isDone() is true), and assume that the
-                // number of rows returned is limited.
-                rows = new ArrayList<Object[]>();
-                final List<SqlStatement.Accessor> accessors =
-                    stmt.getAccessors();
-                if (!stmt.isDone()) {
-                    do {
-                        Object[] row = new Object[columnCount];
-                        for (int i = 0; i < columnCount; i++) {
-                            row[i] = accessors.get(i).get();
-                        }
-                        rows.add(row);
-                    } while (rs.next());
-                }
-            } catch (SQLException e) {
-                throw stmt.handle(e);
-            } finally {
-                stmt.close();
+                rows.add(row);
             }
         }
 
@@ -1484,7 +1395,8 @@ public class XmlaHandler {
                     columns.add(
                         new Column(
                             tableName + "." + fieldName,
-                            Types.VARCHAR)); // don't know the real type
+                            Types.VARCHAR, // don't know the real type
+                            0));
                 }
             }
 
@@ -1494,6 +1406,10 @@ public class XmlaHandler {
                 row[k] = k;
             }
             rows.add(row);
+        }
+
+        public void close() {
+            // no resources to close
         }
 
         public void unparse(SaxWriter writer) throws SAXException {
@@ -1512,7 +1428,11 @@ public class XmlaHandler {
             for (Object[] row : rows) {
                 writer.startElement("row");
                 for (int i = 0; i < row.length; i++) {
-                    writer.startElement(columns.get(i).encodedName);
+                    writer.startElement(
+                        columns.get(i).encodedName,
+                        new Object[] {
+                            "xsi:type",
+                            columns.get(i).xsdType});
                     Object value = row[i];
                     if (value == null) {
                         writer.characters("null");
@@ -1603,17 +1523,27 @@ public class XmlaHandler {
      * @param sqlType SQL type
      * @return XSD type
      */
-    private static String sqlToXsdType(int sqlType) {
+    private static String sqlToXsdType(final int sqlType, final int scale) {
         switch (sqlType) {
         // Integer
         case Types.INTEGER:
-        case Types.BIGINT:
         case Types.SMALLINT:
         case Types.TINYINT:
-            return XSD_INTEGER;
+            return XSD_INT;
         case Types.NUMERIC:
-            return XSD_DECIMAL;
-            // Real
+        case Types.DECIMAL:
+            /*
+             * Oracle reports all numbers as NUMERIC. We check
+             * the scale of the column and pick the right XSD type.
+             */
+            if (scale == 0) {
+                return XSD_INT;
+            } else {
+                return XSD_DECIMAL;
+            }
+        case Types.BIGINT:
+            return XSD_INTEGER;
+        // Real
         case Types.DOUBLE:
         case Types.FLOAT:
             return XSD_DOUBLE;
@@ -1631,29 +1561,26 @@ public class XmlaHandler {
     private QueryResult executeQuery(XmlaRequest request)
         throws XmlaException
     {
-        final String statement = request.getStatement();
+        final String mdx = request.getStatement();
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("mdx: \"" + statement + "\"");
+            LOGGER.debug("mdx: \"" + mdx + "\"");
         }
 
-        if ((statement == null) || (statement.length() == 0)) {
+        if ((mdx == null) || (mdx.length() == 0)) {
             return null;
-        } else {
-            checkFormat(request);
+        }
+        checkFormat(request);
 
-            DataSourcesConfig.DataSource ds = getDataSource(request);
-            DataSourcesConfig.Catalog dsCatalog = getCatalog(request, ds, true);
-            String roleName = request.getRoleName();
-            Role role = request.getRole();
-
-            final Connection connection =
-                getConnection(dsCatalog, role, roleName);
-
-            final Query query;
+        OlapConnection connection = null;
+        PreparedOlapStatement statement = null;
+        CellSet cellSet = null;
+        boolean success = false;
+        try {
+            connection = getConnection(request);
+            getExtra(connection).setPreferList(connection);
             try {
-                query = connection.parseQuery(statement);
-                query.setResultStyle(ResultStyle.LIST);
+                statement = connection.prepareOlapStatement(mdx);
             } catch (XmlaException ex) {
                 throw ex;
             } catch (Exception ex) {
@@ -1663,9 +1590,27 @@ public class XmlaHandler {
                     HSB_PARSE_QUERY_FAULT_FS,
                     ex);
             }
-            final Result result;
             try {
-                result = connection.execute(query);
+                cellSet = statement.executeQuery();
+
+                final Format format = getFormat(request, null);
+                final Content content = getContent(request);
+                final Enumeration.ResponseMimeType responseMimeType =
+                    getResponseMimeType(request);
+                final MDDataSet dataSet;
+                if (format == Format.Multidimensional) {
+                    dataSet =
+                        new MDDataSet_Multidimensional(
+                            cellSet,
+                            content != Content.DataIncludeDefaultSlicer,
+                            responseMimeType
+                            == Enumeration.ResponseMimeType.JSON);
+                } else {
+                    dataSet =
+                        new MDDataSet_Tabular(cellSet);
+                }
+                success = true;
+                return dataSet;
             } catch (XmlaException ex) {
                 throw ex;
             } catch (Exception ex) {
@@ -1675,18 +1620,29 @@ public class XmlaHandler {
                     HSB_EXECUTE_QUERY_FAULT_FS,
                     ex);
             }
-
-            final Format format = getFormat(request, null);
-            final Content content = getContent(request);
-            final Enumeration.ResponseMimeType responseMimeType =
-                getResponseMimeType(request);
-            if (format == Format.Multidimensional) {
-                return new MDDataSet_Multidimensional(
-                    result,
-                    content != Content.DataIncludeDefaultSlicer,
-                    responseMimeType == Enumeration.ResponseMimeType.JSON);
-            } else {
-                return new MDDataSet_Tabular(result);
+        } finally {
+            if (!success) {
+                if (cellSet != null) {
+                    try {
+                        cellSet.close();
+                    } catch (SQLException e) {
+                        // ignore
+                    }
+                }
+                if (statement != null) {
+                    try {
+                        statement.close();
+                    } catch (SQLException e) {
+                        // ignore
+                    }
+                }
+                if (connection != null) {
+                    try {
+                        connection.close();
+                    } catch (SQLException e) {
+                        // ignore
+                    }
+                }
             }
         }
     }
@@ -1727,40 +1683,84 @@ public class XmlaHandler {
     }
 
     static abstract class MDDataSet implements QueryResult {
-        protected final Result result;
+        protected final CellSet cellSet;
 
-        protected static final String[] cellProps = new String[] {
-            "Value",
-            "FmtValue",
-            "FormatString"};
+        protected static final List<Property> cellProps =
+            Arrays.asList(
+                rename(StandardCellProperty.VALUE, "Value"),
+                rename(StandardCellProperty.FORMATTED_VALUE, "FmtValue"),
+                rename(StandardCellProperty.FORMAT_STRING, "FormatString"));
 
-        protected static final Property[] cellPropLongs = {
-            Property.VALUE,
-            Property.FORMATTED_VALUE,
-            Property.FORMAT_STRING};
+        protected static final List<StandardCellProperty> cellPropLongs =
+            Arrays.asList(
+                StandardCellProperty.VALUE,
+                StandardCellProperty.FORMATTED_VALUE,
+                StandardCellProperty.FORMAT_STRING);
 
-        protected static final String[] defaultProps = new String[] {
-            "UName",
-            "Caption",
-            "LName",
-            "LNum",
-            "DisplayInfo",
-            // Not in spec nor generated by SQL Server
-//            "Depth"
-            };
-        protected static final Map<String, String> longPropNames =
-            new HashMap<String, String>();
+        protected static final List<Property> defaultProps =
+            Arrays.asList(
+                rename(StandardMemberProperty.MEMBER_UNIQUE_NAME, "UName"),
+                rename(StandardMemberProperty.MEMBER_CAPTION, "Caption"),
+                rename(StandardMemberProperty.LEVEL_UNIQUE_NAME, "LName"),
+                rename(StandardMemberProperty.LEVEL_NUMBER, "LNum"),
+                rename(StandardMemberProperty.DISPLAY_INFO, "DisplayInfo"));
+
+        protected static final Map<String, StandardMemberProperty> longProps =
+            new HashMap<String, StandardMemberProperty>();
 
         static {
-            longPropNames.put("UName", Property.MEMBER_UNIQUE_NAME.name);
-            longPropNames.put("Caption", Property.MEMBER_CAPTION.name);
-            longPropNames.put("LName", Property.LEVEL_UNIQUE_NAME.name);
-            longPropNames.put("LNum", Property.LEVEL_NUMBER.name);
-            longPropNames.put("DisplayInfo", Property.DISPLAY_INFO.name);
+            longProps.put("UName", StandardMemberProperty.MEMBER_UNIQUE_NAME);
+            longProps.put("Caption", StandardMemberProperty.MEMBER_CAPTION);
+            longProps.put("LName", StandardMemberProperty.LEVEL_UNIQUE_NAME);
+            longProps.put("LNum", StandardMemberProperty.LEVEL_NUMBER);
+            longProps.put("DisplayInfo", StandardMemberProperty.DISPLAY_INFO);
         }
 
-        protected MDDataSet(Result result) {
-            this.result = result;
+        protected MDDataSet(CellSet cellSet) {
+            this.cellSet = cellSet;
+        }
+
+        public void close() throws SQLException {
+            cellSet.getStatement().getConnection().close();
+        }
+
+        private static Property rename(
+            final Property property,
+            final String name)
+        {
+            return new Property() {
+                public Datatype getDatatype() {
+                    return property.getDatatype();
+                }
+
+                public Set<TypeFlag> getType() {
+                    return property.getType();
+                }
+
+                public ContentType getContentType() {
+                    return property.getContentType();
+                }
+
+                public String getName() {
+                    return name;
+                }
+
+                public String getUniqueName() {
+                    return property.getUniqueName();
+                }
+
+                public String getCaption() {
+                    return property.getCaption();
+                }
+
+                public String getDescription() {
+                    return property.getDescription();
+                }
+
+                public boolean isVisible() {
+                    return property.isVisible();
+                }
+            };
         }
     }
 
@@ -1768,26 +1768,37 @@ public class XmlaHandler {
         private List<Hierarchy> slicerAxisHierarchies;
         private final boolean omitDefaultSlicerInfo;
         private final boolean json;
+        private XmlaUtil.ElementNameEncoder encoder =
+            XmlaUtil.ElementNameEncoder.INSTANCE;
+        private XmlaExtra extra;
 
         protected MDDataSet_Multidimensional(
-            Result result,
+            CellSet cellSet,
             boolean omitDefaultSlicerInfo,
             boolean json)
+            throws SQLException
         {
-            super(result);
+            super(cellSet);
             this.omitDefaultSlicerInfo = omitDefaultSlicerInfo;
             this.json = json;
+            this.extra = getExtra(cellSet.getStatement().getConnection());
         }
 
-        public void unparse(SaxWriter writer) throws SAXException {
+        public void unparse(SaxWriter writer)
+            throws SAXException, OlapException
+        {
             olapInfo(writer);
             axes(writer);
             cellData(writer);
         }
 
-        private void olapInfo(SaxWriter writer) {
+        public void metadata(SaxWriter writer) {
+            writer.verbatim(MD_DATA_SET_XML_SCHEMA);
+        }
+
+        private void olapInfo(SaxWriter writer) throws OlapException {
             // What are all of the cube's hierachies
-            Cube cube = result.getQuery().getCube();
+            Cube cube = cellSet.getMetaData().getCube();
 
             writer.startElement("OlapInfo");
             writer.startElement("CubeInfo");
@@ -1799,48 +1810,42 @@ public class XmlaHandler {
             // create AxesInfo for axes
             // -----------
             writer.startSequence("AxesInfo", "AxisInfo");
-            final Axis[] axes = result.getAxes();
-            final QueryAxis[] queryAxes = result.getQuery().getAxes();
-            //axisInfo(writer, result.getSlicerAxis(), "SlicerAxis");
+            final List<CellSetAxis> axes = cellSet.getAxes();
             List<Hierarchy> axisHierarchyList = new ArrayList<Hierarchy>();
-            for (int i = 0; i < axes.length; i++) {
+            for (int i = 0; i < axes.size(); i++) {
                 List<Hierarchy> hiers =
-                    axisInfo(writer, axes[i], queryAxes[i], "Axis" + i);
+                    axisInfo(writer, axes.get(i), "Axis" + i);
                 axisHierarchyList.addAll(hiers);
             }
             ///////////////////////////////////////////////
             // create AxesInfo for slicer axes
             //
             List<Hierarchy> hierarchies;
-            final QueryAxis slicerQueryAxis = result.getQuery().getSlicerAxis();
+            CellSetAxis slicerAxis = cellSet.getFilterAxis();
             if (omitDefaultSlicerInfo) {
-                Axis slicerAxis = result.getSlicerAxis();
-                // only add slicer axis element to response
-                // if something is on the slicer
-                if (slicerAxis.getPositions().get(0).size() > 0) {
-                    hierarchies =
-                        axisInfo(
-                            writer, slicerAxis, slicerQueryAxis, "SlicerAxis");
-                } else {
-                    hierarchies = new ArrayList<Hierarchy>();
-                }
+                hierarchies =
+                    axisInfo(
+                        writer, slicerAxis, "SlicerAxis");
             } else {
                 // The slicer axes contains the default hierarchy
                 // of each dimension not seen on another axis.
                 List<Dimension> unseenDimensionList =
-                new ArrayList<Dimension>(Arrays.asList(cube.getDimensions()));
+                    new ArrayList<Dimension>(cube.getDimensions());
                 for (Hierarchy hier1 : axisHierarchyList) {
                     unseenDimensionList.remove(hier1.getDimension());
                 }
                 hierarchies = new ArrayList<Hierarchy>();
                 for (Dimension dimension : unseenDimensionList) {
-                    hierarchies.add(dimension.getHierarchy());
+                    for (Hierarchy hierarchy : dimension.getHierarchies()) {
+                        hierarchies.add(hierarchy);
+                    }
                 }
                 writer.startElement(
                     "AxisInfo",
                     "name", "SlicerAxis");
                 writeHierarchyInfo(
-                    writer, hierarchies, getProps(slicerQueryAxis));
+                    writer, hierarchies,
+                    getProps(slicerAxis.getAxisMetaData()));
                 writer.endElement(); // AxisInfo
             }
             slicerAxisHierarchies = hierarchies;
@@ -1851,13 +1856,20 @@ public class XmlaHandler {
 
             // -----------
             writer.startElement("CellInfo");
-            cellProperty(writer, Property.VALUE, true, "Value");
-            cellProperty(writer, Property.FORMATTED_VALUE, true, "FmtValue");
-            cellProperty(writer, Property.FORMAT_STRING, true, "FormatString");
-            cellProperty(writer, Property.LANGUAGE, false, "Language");
-            cellProperty(writer, Property.BACK_COLOR, false, "BackColor");
-            cellProperty(writer, Property.FORE_COLOR, false, "ForeColor");
-            cellProperty(writer, Property.FONT_FLAGS, false, "FontFlags");
+            cellProperty(writer, StandardCellProperty.VALUE, true, "Value");
+            cellProperty(
+                writer, StandardCellProperty.FORMATTED_VALUE, true, "FmtValue");
+            cellProperty(
+                writer, StandardCellProperty.FORMAT_STRING, true,
+                "FormatString");
+            cellProperty(
+                writer, StandardCellProperty.LANGUAGE, false, "Language");
+            cellProperty(
+                writer, StandardCellProperty.BACK_COLOR, false, "BackColor");
+            cellProperty(
+                writer, StandardCellProperty.FORE_COLOR, false, "ForeColor");
+            cellProperty(
+                writer, StandardCellProperty.FONT_FLAGS, false, "FontFlags");
             writer.endElement(); // CellInfo
             // -----------
             writer.endElement(); // OlapInfo
@@ -1865,21 +1877,22 @@ public class XmlaHandler {
 
         private void cellProperty(
             SaxWriter writer,
-            Property cellProperty,
+            StandardCellProperty cellProperty,
             boolean evenEmpty,
             String elementName)
         {
-            if (shouldReturnCellProperty(cellProperty, evenEmpty)) {
+            if (extra.shouldReturnCellProperty(
+                cellSet, cellProperty, evenEmpty))
+            {
                 writer.element(
                     elementName,
-                    "name", cellProperty.name);
+                    "name", cellProperty.getName());
             }
         }
 
         private List<Hierarchy> axisInfo(
             SaxWriter writer,
-            Axis axis,
-            QueryAxis queryAxis,
+            CellSetAxis axis,
             String axisName)
         {
             writer.startElement(
@@ -1887,19 +1900,17 @@ public class XmlaHandler {
                 "name", axisName);
 
             List<Hierarchy> hierarchies;
-            Iterator<Position> it = axis.getPositions().iterator();
+            Iterator<org.olap4j.Position> it = axis.getPositions().iterator();
             if (it.hasNext()) {
-                final Position position = it.next();
+                final org.olap4j.Position position = it.next();
                 hierarchies = new ArrayList<Hierarchy>();
-                for (Member member : position) {
+                for (Member member : position.getMembers()) {
                     hierarchies.add(member.getHierarchy());
                 }
             } else {
-                hierarchies = Collections.emptyList();
-                //final QueryAxis queryAxis = this.result.getQuery().axes[i];
-                // TODO:
+                hierarchies = axis.getAxisMetaData().getHierarchies();
             }
-            String[] props = getProps(queryAxis);
+            List<Property> props = getProps(axis.getAxisMetaData());
             writeHierarchyInfo(writer, hierarchies, props);
 
             writer.endElement(); // AxisInfo
@@ -1910,86 +1921,80 @@ public class XmlaHandler {
         private void writeHierarchyInfo(
             SaxWriter writer,
             List<Hierarchy> hierarchies,
-            String[] props)
+            List<Property> props)
         {
             writer.startSequence(null, "HierarchyInfo");
             for (Hierarchy hierarchy : hierarchies) {
                 writer.startElement(
                     "HierarchyInfo",
                     "name", hierarchy.getName());
-                for (final String prop : props) {
-                    final String encodedProp = XmlaUtil.encodeElementName(prop);
-                    writer.element(
-                        encodedProp, getAttributes(encodedProp, hierarchy));
+                for (final Property prop : props) {
+                    final String encodedProp =
+                        encoder.encode(prop.getName());
+                    final Object[] attributes = getAttributes(prop, hierarchy);
+                    writer.element(encodedProp, attributes);
                 }
                 writer.endElement(); // HierarchyInfo
             }
             writer.endSequence(); // "HierarchyInfo"
         }
 
-        private Object[] getAttributes(String prop, Hierarchy hierarchy) {
-            String actualPropName = getPropertyName(prop);
+        private Object[] getAttributes(Property prop, Hierarchy hierarchy) {
+            Property longProp = longProps.get(prop.getName());
+            if (longProp == null) {
+                longProp = prop;
+            }
             List<Object> values = new ArrayList<Object>();
             values.add("name");
             values.add(
-                hierarchy.getUniqueName() + "." + Util.quoteMdxIdentifier(
-                    actualPropName));
-            if (longPropNames.get(prop) == null) {
+                hierarchy.getUniqueName()
+                + "."
+                + Util.quoteMdxIdentifier(longProp.getName()));
+            if (longProp == prop) {
                 //Adding type attribute to the optional properties
                 values.add("type");
-                values.add(getXsdType(actualPropName));
+                values.add(getXsdType(longProp));
             }
             return values.toArray();
         }
 
-        private String getXsdType(String prop) {
-            final Property property = Property.lookup(prop, false);
-            if (property != null) {
-                Property.Datatype datatype = property.getType();
-                switch (datatype) {
-                case TYPE_NUMERIC:
-                    return RowsetDefinition.Type.UnsignedInteger.columnType;
-                case TYPE_BOOLEAN:
-                    return RowsetDefinition.Type.Boolean.columnType;
-                }
+        private String getXsdType(Property property) {
+            Datatype datatype = property.getDatatype();
+            switch (datatype) {
+            case UNSIGNED_INTEGER:
+                return RowsetDefinition.Type.UnsignedInteger.columnType;
+            case BOOLEAN:
+                return RowsetDefinition.Type.Boolean.columnType;
+            default:
+                return RowsetDefinition.Type.String.columnType;
             }
-            return RowsetDefinition.Type.String.columnType;
         }
 
-        private String getPropertyName(String prop) {
-            String actualPropertyName = longPropNames.get(prop);
-            if (actualPropertyName == null) {
-                return prop;
-            }
-            return actualPropertyName;
-        }
-
-        private void axes(SaxWriter writer) {
+        private void axes(SaxWriter writer) throws OlapException {
             writer.startSequence("Axes", "Axis");
             //axis(writer, result.getSlicerAxis(), "SlicerAxis");
-            final Axis[] axes = result.getAxes();
-            final QueryAxis[] queryAxes = result.getQuery().getAxes();
-            for (int i = 0; i < axes.length; i++) {
-                final String[] props = getProps(queryAxes[i]);
-                axis(writer, axes[i], props, "Axis" + i);
+            final List<CellSetAxis> axes = cellSet.getAxes();
+            for (int i = 0; i < axes.size(); i++) {
+                final CellSetAxis axis = axes.get(i);
+                final List<Property> props = getProps(axis.getAxisMetaData());
+                axis(writer, axis, props, "Axis" + i);
             }
 
             ////////////////////////////////////////////
             // now generate SlicerAxis information
             //
             if (omitDefaultSlicerInfo) {
-                final QueryAxis slicerQueryAxis =
-                    result.getQuery().getSlicerAxis();
-                Axis slicerAxis = result.getSlicerAxis();
-                // only add slicer axis element to response
-                // if something is on the slicer
-                if (slicerAxis.getPositions().get(0).size() > 0) {
-                    axis(
-                        writer,
-                        result.getSlicerAxis(),
-                        getProps(slicerQueryAxis),
-                        "SlicerAxis");
-                }
+                CellSetAxis slicerAxis = cellSet.getFilterAxis();
+                // We always write a slicer axis. There are two 'empty' cases:
+                // zero positions (which happens when the WHERE clause evalutes
+                // to an empty set) or one position containing a tuple of zero
+                // members (which happens when there is no WHERE clause) and we
+                // need to be able to distinguish between the two.
+                axis(
+                    writer,
+                    slicerAxis,
+                    getProps(slicerAxis.getAxisMetaData()),
+                    "SlicerAxis");
             } else {
                 List<Hierarchy> hierarchies = slicerAxisHierarchies;
                 writer.startElement(
@@ -2000,21 +2005,23 @@ public class XmlaHandler {
 
                 Map<String, Integer> memberMap = new HashMap<String, Integer>();
                 Member positionMember;
-                Axis slicerAxis = result.getSlicerAxis();
-                if (slicerAxis.getPositions() != null
-                    && slicerAxis.getPositions().size() > 0)
+                CellSetAxis slicerAxis = cellSet.getFilterAxis();
+                final List<Position> slicerPositions =
+                    slicerAxis.getPositions();
+                if (slicerPositions != null
+                    && slicerPositions.size() > 0)
                 {
-                    final Position pos0 = slicerAxis.getPositions().get(0);
+                    final Position pos0 = slicerPositions.get(0);
                     int i = 0;
-                    for (Member member : pos0) {
+                    for (Member member : pos0.getMembers()) {
                         memberMap.put(member.getHierarchy().getName(), i++);
                     }
                 }
 
-                final QueryAxis slicerQueryAxis =
-                    result.getQuery().getSlicerAxis();
                 final List<Member> slicerMembers =
-                    result.getSlicerAxis().getPositions().get(0);
+                    slicerPositions.isEmpty()
+                        ? Collections.<Member>emptyList()
+                        : slicerPositions.get(0).getMembers();
                 for (Hierarchy hierarchy : hierarchies) {
                     // Find which member is on the slicer.
                     // If it's not explicitly there, use the default member.
@@ -2022,8 +2029,7 @@ public class XmlaHandler {
                     final Integer indexPosition =
                         memberMap.get(hierarchy.getName());
                     if (indexPosition != null) {
-                        positionMember =
-                            slicerAxis.getPositions().get(0).get(indexPosition);
+                        positionMember = slicerMembers.get(indexPosition);
                     } else {
                         positionMember = null;
                     }
@@ -2038,11 +2044,12 @@ public class XmlaHandler {
                         if (positionMember != null) {
                             writeMember(
                                 writer, positionMember, null,
-                                slicerAxis.getPositions().get(0), indexPosition,
-                                getProps(slicerQueryAxis));
+                                slicerPositions.get(0), indexPosition,
+                                getProps(slicerAxis.getAxisMetaData()));
                         } else {
                             slicerAxis(
-                                writer, member, getProps(slicerQueryAxis));
+                                writer, member,
+                                getProps(slicerAxis.getAxisMetaData()));
                         }
                     } else {
                         LOGGER.warn(
@@ -2062,33 +2069,20 @@ public class XmlaHandler {
             writer.endSequence(); // Axes
         }
 
-        private String[] getProps(QueryAxis queryAxis) {
+        private List<Property> getProps(CellSetAxisMetaData queryAxis) {
             if (queryAxis == null) {
                 return defaultProps;
             }
-            Id[] dimensionProperties = queryAxis.getDimensionProperties();
-            if (dimensionProperties.length == 0) {
-                return defaultProps;
-            }
-            String[] props =
-                new String[defaultProps.length + dimensionProperties.length];
-            System.arraycopy(defaultProps, 0, props, 0, defaultProps.length);
-            for (int i = 0; i < dimensionProperties.length; i++) {
-                // If a property is compound [Foo].[Bar], use only the last
-                // segment "Bar".
-                final List<Id.Segment> segmentList =
-                    dimensionProperties[i].getSegments();
-                props[defaultProps.length + i] =
-                    segmentList.get(segmentList.size() - 1).name;
-            }
-            return props;
+            return CompositeList.of(
+                defaultProps,
+                queryAxis.getProperties());
         }
 
         private void axis(
             SaxWriter writer,
-            Axis axis,
-            String[] props,
-            String axisName)
+            CellSetAxis axis,
+            List<Property> props,
+            String axisName) throws OlapException
         {
             writer.startElement(
                 "Axis",
@@ -2103,7 +2097,7 @@ public class XmlaHandler {
             while (position != null) {
                 writer.startSequence("Tuple", "Member");
                 int k = 0;
-                for (Member member : position) {
+                for (Member member : position.getMembers()) {
                     writeMember(
                         writer, member, prevPosition, nextPosition, k++, props);
                 }
@@ -2122,31 +2116,34 @@ public class XmlaHandler {
             Position prevPosition,
             Position nextPosition,
             int k,
-            String[] props)
+            List<Property> props)
+            throws OlapException
         {
             writer.startElement(
                 "Member",
                 "Hierarchy", member.getHierarchy().getName());
-            for (String prop : props) {
+            for (Property prop : props) {
                 Object value;
-                String propLong = longPropNames.get(prop);
-                if (propLong == null) {
-                    propLong = prop;
+                Property longProp = longProps.get(prop.getName());
+                if (longProp == null) {
+                    longProp = prop;
                 }
-                if (propLong.equals(Property.DISPLAY_INFO.name)) {
-                    Integer childrenCard = (Integer) member
-                      .getPropertyValue(Property.CHILDREN_CARDINALITY.name);
+                if (longProp == StandardMemberProperty.DISPLAY_INFO) {
+                    Integer childrenCard =
+                        (Integer) member.getPropertyValue(
+                            StandardMemberProperty.CHILDREN_CARDINALITY);
                     value = calculateDisplayInfo(
                         prevPosition,
                         nextPosition,
                         member, k, childrenCard);
-                } else if (propLong.equals(Property.DEPTH.name)) {
+                } else if (longProp == StandardMemberProperty.DEPTH) {
                     value = member.getDepth();
                 } else {
-                    value = member.getPropertyValue(propLong);
+                    value = member.getPropertyValue(longProp);
                 }
                 if (value != null) {
-                    writer.textElement(XmlaUtil.encodeElementName(prop), value);
+                    writer.textElement(
+                        encoder.encode(prop.getName()), value);
                 }
             }
 
@@ -2154,21 +2151,22 @@ public class XmlaHandler {
         }
 
         private void slicerAxis(
-            SaxWriter writer, Member member, String[] props)
+            SaxWriter writer, Member member, List<Property> props)
+            throws OlapException
         {
             writer.startElement(
                 "Member",
                 "Hierarchy", member.getHierarchy().getName());
-            for (String prop : props) {
+            for (Property prop : props) {
                 Object value;
-                String propLong = longPropNames.get(prop);
-                if (propLong == null) {
-                    propLong = prop;
+                Property longProp = longProps.get(prop.getName());
+                if (longProp == null) {
+                    longProp = prop;
                 }
-                if (propLong.equals(Property.DISPLAY_INFO.name)) {
+                if (longProp == StandardMemberProperty.DISPLAY_INFO) {
                     Integer childrenCard =
                         (Integer) member.getPropertyValue(
-                            Property.CHILDREN_CARDINALITY.name);
+                            StandardMemberProperty.CHILDREN_CARDINALITY);
                     // NOTE: don't know if this is correct for
                     // SlicerAxis
                     int displayInfo = 0xffff & childrenCard;
@@ -2179,36 +2177,42 @@ public class XmlaHandler {
                           member, k, childrenCard.intValue());
 */
                     value = displayInfo;
-                } else if (propLong.equals(Property.DEPTH.name)) {
+                } else if (longProp == StandardMemberProperty.DEPTH) {
                     value = member.getDepth();
                 } else {
-                    value = member.getPropertyValue(propLong);
+                    value = member.getPropertyValue(longProp);
                 }
                 if (value != null) {
-                    writer.textElement(prop, value);
+                    writer.textElement(
+                        encoder.encode(prop.getName()), value);
                 }
             }
             writer.endElement(); // Member
         }
 
         private int calculateDisplayInfo(
-            Position prevPosition, Position nextPosition,
-            Member currentMember, int memberOrdinal, int childrenCount)
+            Position prevPosition,
+            Position nextPosition,
+            Member currentMember,
+            int memberOrdinal,
+            int childrenCount)
         {
             int displayInfo = 0xffff & childrenCount;
 
             if (nextPosition != null) {
                 String currentUName = currentMember.getUniqueName();
-                Member nextMember = nextPosition.get(memberOrdinal);
-                String nextParentUName = nextMember.getParentUniqueName();
+                Member nextMember =
+                    nextPosition.getMembers().get(memberOrdinal);
+                String nextParentUName = parentUniqueName(nextMember);
                 if (currentUName.equals(nextParentUName)) {
                     displayInfo |= 0x10000;
                 }
             }
             if (prevPosition != null) {
-                String currentParentUName = currentMember.getParentUniqueName();
-                Member prevMember = prevPosition.get(memberOrdinal);
-                String prevParentUName = prevMember.getParentUniqueName();
+                String currentParentUName = parentUniqueName(currentMember);
+                Member prevMember =
+                    prevPosition.getMembers().get(memberOrdinal);
+                String prevParentUName = parentUniqueName(prevMember);
                 if (currentParentUName != null
                     && currentParentUName.equals(prevParentUName))
                 {
@@ -2218,45 +2222,53 @@ public class XmlaHandler {
             return displayInfo;
         }
 
+        private String parentUniqueName(Member member) {
+            final Member parent = member.getParentMember();
+            if (parent == null) {
+                return null;
+            }
+            return parent.getUniqueName();
+        }
+
         private void cellData(SaxWriter writer) {
             writer.startSequence("CellData", "Cell");
-            final int axisCount = result.getAxes().length;
-            int[] pos = new int[axisCount];
+            final int axisCount = cellSet.getAxes().size();
+            List<Integer> pos = new ArrayList<Integer>();
+            for (int i = 0; i < axisCount; i++) {
+                pos.add(-1);
+            }
             int[] cellOrdinal = new int[] {0};
 
-            Evaluator evaluator = RolapUtil.createEvaluator(result.getQuery());
             int axisOrdinal = axisCount - 1;
-            recurse(writer, pos, axisOrdinal, evaluator, cellOrdinal);
+            recurse(writer, pos, axisOrdinal, cellOrdinal);
 
             writer.endSequence(); // CellData
         }
 
         private void recurse(
-            SaxWriter writer, int[] pos,
-            int axisOrdinal, Evaluator evaluator, int[] cellOrdinal)
+            SaxWriter writer,
+            List<Integer> pos,
+            int axisOrdinal,
+            int[] cellOrdinal)
         {
             if (axisOrdinal < 0) {
-                emitCell(writer, pos, evaluator, cellOrdinal[0]++);
-
+                emitCell(writer, pos, cellOrdinal[0]++);
             } else {
-                Axis axis = result.getAxes()[axisOrdinal];
+                CellSetAxis axis = cellSet.getAxes().get(axisOrdinal);
                 List<Position> positions = axis.getPositions();
-                int i = 0;
-                for (Position position : positions) {
-                    pos[axisOrdinal] = i;
-                    evaluator.setContext(position);
-                    recurse(
-                        writer, pos, axisOrdinal - 1, evaluator, cellOrdinal);
-                    i++;
+                for (int i = 0, n = positions.size(); i < n; i++) {
+                    pos.set(axisOrdinal, i);
+                    recurse(writer, pos, axisOrdinal - 1, cellOrdinal);
                 }
             }
         }
 
         private void emitCell(
-            SaxWriter writer, int[] pos,
-            Evaluator evaluator, int ordinal)
+            SaxWriter writer,
+            List<Integer> pos,
+            int ordinal)
         {
-            Cell cell = result.getCell(pos);
+            Cell cell = cellSet.getCell(pos);
             if (cell.isNull() && ordinal != 0) {
                 // Ignore null cell like MS AS, except for Oth ordinal
                 return;
@@ -2265,24 +2277,26 @@ public class XmlaHandler {
             writer.startElement(
                 "Cell",
                 "CellOrdinal", ordinal);
-            for (int i = 0; i < cellProps.length; i++) {
-                Property cellPropLong = cellPropLongs[i];
-                Object value = cell.getPropertyValue(cellPropLong.name);
+            for (int i = 0; i < cellProps.size(); i++) {
+                Property cellPropLong = cellPropLongs.get(i);
+                Object value = cell.getPropertyValue(cellPropLong);
                 if (value == null) {
                     continue;
                 }
-                if (!shouldReturnCellProperty(cellPropLong, true)) {
+                if (!extra.shouldReturnCellProperty(
+                    cellSet, cellPropLong, true))
+                {
                     continue;
                 }
 
-                if (!json && cellPropLong == Property.VALUE) {
+                if (!json && cellPropLong == StandardCellProperty.VALUE) {
                     if (cell.isNull()) {
                         // Return cell without value as in case of AS2005
                         continue;
                     }
-                    final String dataType = (String)
-                        evaluator.getProperty(
-                            Property.DATATYPE.getName(), null);
+                    final String dataType =
+                        (String) cell.getPropertyValue(
+                            StandardCellProperty.DATATYPE);
                     final ValueInfo vi = new ValueInfo(dataType, value);
                     final String valueType = vi.valueType;
                     final String valueString;
@@ -2295,33 +2309,15 @@ public class XmlaHandler {
                     }
 
                     writer.startElement(
-                        cellProps[i],
+                        cellProps.get(i).getName(),
                         "xsi:type", valueType);
                     writer.characters(valueString);
                     writer.endElement();
                 } else {
-                    writer.textElement(cellProps[i], value);
+                    writer.textElement(cellProps.get(i).getName(), value);
                 }
             }
             writer.endElement(); // Cell
-        }
-
-        /**
-         * Returns whether we should return a cell property in the XMLA result.
-         *
-         * @param cellProperty Cell property definition
-         * @param evenEmpty Whether to return even if cell has no properties
-         * @return Whether to return cell property in XMLA result
-         */
-        private boolean shouldReturnCellProperty(
-            Property cellProperty,
-            boolean evenEmpty)
-        {
-            Query query = result.getQuery();
-            return
-                (evenEmpty
-                 && query.isCellPropertyEmpty())
-                || query.hasCellProperty(cellProperty.name);
         }
     }
 
@@ -2331,10 +2327,12 @@ public class XmlaHandler {
 
         protected ColumnHandler(String name) {
             this.name = name;
-            this.encodedName = XmlaUtil.encodeElementName(this.name);
+            this.encodedName =
+                XmlaUtil.ElementNameEncoder.INSTANCE.encode(name);
         }
 
-        abstract void write(SaxWriter writer, Cell cell, Member[] members);
+        abstract void write(SaxWriter writer, Cell cell, Member[] members)
+            throws OlapException;
         abstract void metadata(SaxWriter writer);
     }
 
@@ -2365,20 +2363,8 @@ public class XmlaHandler {
                 return;
             }
             Object value = cell.getValue();
-/*
-            String valueString = value.toString();
-            String valueType = deduceValueType(cell, value);
-
-            writer.startElement(encodedName,
-                "xsi:type", valueType});
-            if (value instanceof Number) {
-                valueString = XmlaUtil.normalizeNumericString(valueString);
-            }
-            writer.characters(valueString);
-            writer.endElement();
-*/
             final String dataType = (String)
-                    cell.getPropertyValue(Property.DATATYPE.getName());
+                cell.getPropertyValue(StandardCellProperty.DATATYPE);
 
             final ValueInfo vi = new ValueInfo(dataType, value);
             final String valueType = vi.valueType;
@@ -2404,16 +2390,16 @@ public class XmlaHandler {
      * in a flattened dataset.
      */
     static class MemberColumnHandler extends ColumnHandler {
-        private final String property;
+        private final Property property;
         private final Level level;
         private final int memberOrdinal;
 
         public MemberColumnHandler(
-            String property, Level level, int memberOrdinal)
+            Property property, Level level, int memberOrdinal)
         {
             super(
                 level.getUniqueName() + "."
-                + Util.quoteMdxIdentifier(property));
+                + Util.quoteMdxIdentifier(property.getName()));
             this.property = property;
             this.level = level;
             this.memberOrdinal = memberOrdinal;
@@ -2429,7 +2415,7 @@ public class XmlaHandler {
         }
 
         public void write(
-            SaxWriter writer, Cell cell, Member[] members)
+            SaxWriter writer, Cell cell, Member[] members) throws OlapException
         {
             Member member = members[memberOrdinal];
             final int depth = level.getDepth();
@@ -2455,36 +2441,37 @@ public class XmlaHandler {
     static class MDDataSet_Tabular extends MDDataSet {
         private final boolean empty;
         private final int[] pos;
+        private final List<Integer> posList;
         private final int axisCount;
         private int cellOrdinal;
 
-        private static final Id[] MemberCaptionIdArray = {
-            new Id(
-                new Id.Segment(
-                    Property.MEMBER_CAPTION.name,
-                    Id.Quoting.QUOTED))
-        };
+        private static final List<Property> MemberCaptionIdArray =
+            Collections.<Property>singletonList(
+                StandardMemberProperty.MEMBER_CAPTION);
+
         private final Member[] members;
         private final ColumnHandler[] columnHandlers;
 
-        public MDDataSet_Tabular(Result result) {
-            super(result);
-            final Axis[] axes = result.getAxes();
-            axisCount = axes.length;
+        public MDDataSet_Tabular(CellSet cellSet) {
+            super(cellSet);
+            final List<CellSetAxis> axes = cellSet.getAxes();
+            axisCount = axes.size();
             pos = new int[axisCount];
+            posList = new IntList(pos);
 
             // Count dimensions, and deduce list of levels which appear on
             // non-COLUMNS axes.
             boolean empty = false;
             int dimensionCount = 0;
-            for (int i = axes.length - 1; i > 0; i--) {
-                Axis axis = axes[i];
+            for (int i = axes.size() - 1; i > 0; i--) {
+                CellSetAxis axis = axes.get(i);
                 if (axis.getPositions().size() == 0) {
                     // If any axis is empty, the whole data set is empty.
                     empty = true;
                     continue;
                 }
-                dimensionCount += axis.getPositions().get(0).size();
+                dimensionCount +=
+                    axis.getPositions().get(0).getMembers().size();
             }
             this.empty = empty;
 
@@ -2494,15 +2481,14 @@ public class XmlaHandler {
                 new ArrayList<ColumnHandler>();
             int memberOrdinal = 0;
             if (!empty) {
-                for (int i = axes.length - 1; i > 0; i--) {
-                    final Axis axis = axes[i];
-                    final QueryAxis queryAxis = result.getQuery().getAxes()[i];
+                for (int i = axes.size() - 1; i > 0; i--) {
+                    final CellSetAxis axis = axes.get(i);
                     final int z0 = memberOrdinal; // save ordinal so can rewind
                     final List<Position> positions = axis.getPositions();
                     int jj = 0;
                     for (Position position : positions) {
                         memberOrdinal = z0; // rewind to start
-                        for (Member member : position) {
+                        for (Member member : position.getMembers()) {
                             if (jj == 0
                                 || member.getLevel().getDepth()
                                 > levels[memberOrdinal].getDepth())
@@ -2516,24 +2502,23 @@ public class XmlaHandler {
 
                     // Now we know the lowest levels on this axis, add
                     // properties.
-                    Id[] dimProps = queryAxis.getDimensionProperties();
-                    if (dimProps.length == 0) {
+                    List<Property> dimProps =
+                        axis.getAxisMetaData().getProperties();
+                    if (dimProps.size() == 0) {
                         dimProps = MemberCaptionIdArray;
                     }
                     for (int j = z0; j < memberOrdinal; j++) {
                         Level level = levels[j];
                         for (int k = 0; k <= level.getDepth(); k++) {
                             final Level level2 =
-                                    level.getHierarchy().getLevelList().get(k);
-                            if (level2.isAll()) {
+                                level.getHierarchy().getLevels().get(k);
+                            if (level2.getLevelType() == Level.Type.ALL) {
                                 continue;
                             }
-                            for (Id dimProp : dimProps) {
+                            for (Property dimProp : dimProps) {
                                 columnHandlerList.add(
                                     new MemberColumnHandler(
-                                        dimProp.toStringArray()[0],
-                                        level2,
-                                        j));
+                                        dimProp, level2, j));
                             }
                         }
                     }
@@ -2542,12 +2527,12 @@ public class XmlaHandler {
             this.members = new Member[memberOrdinal + 1];
 
             // Deduce the list of column headings.
-            if (axes.length > 0) {
-                Axis columnsAxis = axes[0];
+            if (axes.size() > 0) {
+                CellSetAxis columnsAxis = axes.get(0);
                 for (Position position : columnsAxis.getPositions()) {
                     String name = null;
                     int j = 0;
-                    for (Member member : position) {
+                    for (Member member : position.getMembers()) {
                         if (j == 0) {
                             name = member.getUniqueName();
                         } else {
@@ -2566,11 +2551,6 @@ public class XmlaHandler {
         }
 
         public void metadata(SaxWriter writer) {
-            // ADOMD wants a XSD even a void one.
-//            if (empty) {
-//                return;
-//            }
-
             writer.startElement(
                 "xsd:schema",
                 "xmlns:xsd", NS_XSD,
@@ -2625,14 +2605,18 @@ public class XmlaHandler {
             writer.endElement(); // xsd:schema
         }
 
-        public void unparse(SaxWriter writer) throws SAXException {
+        public void unparse(SaxWriter writer)
+            throws SAXException, OlapException
+        {
             if (empty) {
                 return;
             }
             cellData(writer);
         }
 
-        private void cellData(SaxWriter writer) throws SAXException {
+        private void cellData(SaxWriter writer)
+            throws SAXException, OlapException
+        {
             cellOrdinal = 0;
             iterate(writer);
         }
@@ -2643,11 +2627,13 @@ public class XmlaHandler {
          * @param writer Writer
          * @throws org.xml.sax.SAXException on error
          */
-        private void iterate(SaxWriter writer) throws SAXException {
+        private void iterate(SaxWriter writer)
+            throws SAXException, OlapException
+        {
             switch (axisCount) {
             case 0:
                 // For MDX like: SELECT FROM Sales
-                emitCell(writer, result.getCell(pos));
+                emitCell(writer, cellSet.getCell(posList));
                 return;
             default:
 //                throw new SAXException("Too many axes: " + axisCount);
@@ -2656,19 +2642,22 @@ public class XmlaHandler {
             }
         }
 
-        private void iterate(SaxWriter writer, int axis, final int xxx) {
+        private void iterate(SaxWriter writer, int axis, final int xxx)
+            throws OlapException
+        {
             final List<Position> positions =
-                result.getAxes()[axis].getPositions();
+                cellSet.getAxes().get(axis).getPositions();
             int axisLength = axis == 0 ? 1 : positions.size();
 
             for (int i = 0; i < axisLength; i++) {
                 final Position position = positions.get(i);
                 int ho = xxx;
+                final List<Member> members = position.getMembers();
                 for (int j = 0;
-                     j < position.size() && ho < members.length;
+                     j < members.size() && ho < this.members.length;
                      j++, ho++)
                 {
-                    members[ho] = position.get(j);
+                    this.members[ho] = position.getMembers().get(j);
                 }
 
                 ++cellOrdinal;
@@ -2682,10 +2671,10 @@ public class XmlaHandler {
                     pos[0] = 0; //coordenadas (0,i): columna 0
                     for (ColumnHandler columnHandler : columnHandlers) {
                         if (columnHandler instanceof MemberColumnHandler) {
-                            columnHandler.write(writer, null, members);
+                            columnHandler.write(writer, null, this.members);
                         } else if (columnHandler instanceof CellColumnHandler) {
                             columnHandler.write(
-                                writer, result.getCell(pos), null);
+                                writer, cellSet.getCell(posList), null);
                             pos[0]++;// next col.
                         }
                     }
@@ -2694,7 +2683,9 @@ public class XmlaHandler {
             }
         }
 
-        private void emitCell(SaxWriter writer, Cell cell) {
+        private void emitCell(SaxWriter writer, Cell cell)
+            throws OlapException
+        {
             ++cellOrdinal;
             Util.discard(cellOrdinal);
 
@@ -2745,17 +2736,19 @@ public class XmlaHandler {
             "xmlns:xsd", NS_XSD,
             "xmlns:EX", NS_XMLA_EX);
 
-        if ((content == Content.Schema)
-            || (content == Content.SchemaData))
-        {
+        switch (content) {
+        case Schema:
+        case SchemaData:
             rowset.rowsetDefinition.writeRowsetXmlSchema(writer);
+            break;
         }
 
         try {
-            if ((content == Content.Data)
-                || (content == Content.SchemaData))
-            {
+            switch (content) {
+            case Data:
+            case SchemaData:
                 rowset.unparse(response);
+                break;
             }
         } catch (XmlaException xex) {
             throw xex;
@@ -2777,235 +2770,355 @@ public class XmlaHandler {
 
     /**
      * Gets a Connection given a catalog (and implicitly the catalog's data
-     * source) and a user role.
+     * source) and the name of a user role.
      *
-     * @param catalog Catalog
-     * @param role User role
-     * @param roleName User role name
+     * <p>If you want to pass in a role object, and you are making the call
+     * within the same JVM (i.e. not RPC), register the role using
+     * {@link mondrian.olap.MondrianServer#getLockBox()} and pass in the moniker
+     * for the generated lock box entry. The server will retrieve the role from
+     * the moniker.
+     *
+     * @param catalog Catalog name
+     * @param schema Schema name
+     * @param role User role name
      * @return Connection
      * @throws XmlaException If error occurs
      */
-    protected Connection getConnection(
-        final DataSourcesConfig.Catalog catalog,
-        final Role role,
-        final String roleName)
+    protected OlapConnection getConnection(
+        String catalog,
+        String schema,
+        final String role)
         throws XmlaException
     {
-        DataSourcesConfig.DataSource ds = catalog.getDataSource();
+        return this.getConnection(
+            catalog, schema, role,
+            new Properties());
+    }
 
-        Util.PropertyList connectProperties =
-            Util.parseConnectString(catalog.getDataSourceInfo());
-
-        String catalogUrl = catalogLocator.locate(catalog.definition);
-
-        if (LOGGER.isDebugEnabled()) {
-            if (catalogUrl == null) {
-                LOGGER.debug("XmlaHandler.getConnection: catalogUrl is null");
-            } else {
-                LOGGER.debug(
-                    "XmlaHandler.getConnection: catalogUrl=" + catalogUrl);
-            }
-        }
-
-        connectProperties.put(
-            RolapConnectionProperties.Catalog.name(), catalogUrl);
-
-        // Checking access
-        if (!DataSourcesConfig.DataSource.AUTH_MODE_UNAUTHENTICATED
-            .equalsIgnoreCase(
-                ds.getAuthenticationMode())
-            && (role == null)
-            && (roleName == null))
-        {
+    /**
+     * Gets a Connection given a catalog (and implicitly the catalog's data
+     * source) and the name of a user role.
+     *
+     * <p>If you want to pass in a role object, and you are making the call
+     * within the same JVM (i.e. not RPC), register the role using
+     * {@link mondrian.olap.MondrianServer#getLockBox()} and pass in the moniker
+     * for the generated lock box entry. The server will retrieve the role from
+     * the moniker.
+     *
+     * @param catalog Catalog name
+     * @param schema Schema name
+     * @param role User role name
+     * @param props Properties to pass down to the native driver.
+     * @return Connection
+     * @throws XmlaException If error occurs
+     */
+    protected OlapConnection getConnection(
+        String catalog,
+        String schema,
+        final String role,
+        Properties props)
+        throws XmlaException
+    {
+        try {
+            return
+                connectionFactory.getConnection(
+                    catalog, schema, role, props);
+        } catch (SecurityException e) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_ACCESS_DENIED_CODE,
                 HSB_ACCESS_DENIED_FAULT_FS,
-                new SecurityException(
-                    "Access denied for data source needing authentication"));
-        }
-
-        // Role in request overrides role in connect string, if present.
-        if (roleName != null) {
-            connectProperties.put(
-                RolapConnectionProperties.Role.name(), roleName);
-        }
-
-        RolapConnection conn = (RolapConnection) DriverManager.getConnection(
-                connectProperties, null);
-
-        if (role != null) {
-            conn.setRole(role);
-        }
-
-        if (LOGGER.isDebugEnabled()) {
-            if (conn == null) {
-                LOGGER.debug(
-                    "XmlaHandler.getConnection: returning connection null");
-            } else {
-                LOGGER.debug(
-                    "XmlaHandler.getConnection: returning connection not null");
-            }
-        }
-        return conn;
-    }
-
-    /**
-     * Returns the DataSource associated with the request property or null if
-     * one was not specified.
-     *
-     * @param request Request
-     * @return DataSource for this request
-     * @throws XmlaException If error occurs
-     */
-    public DataSourcesConfig.DataSource getDataSource(XmlaRequest request)
-        throws XmlaException
-    {
-        Map<String, String> properties = request.getProperties();
-        final String dataSourceInfo =
-            properties.get(PropertyDefinition.DataSourceInfo.name());
-        if (!dataSourcesMap.containsKey(dataSourceInfo)) {
+                e);
+        } catch (SQLException e) {
             throw new XmlaException(
                 CLIENT_FAULT_FC,
                 HSB_CONNECTION_DATA_SOURCE_CODE,
                 HSB_CONNECTION_DATA_SOURCE_FAULT_FS,
-                Util.newError(
-                    "no data source is configured with name '"
-                    + dataSourceInfo + "'"));
+                e);
         }
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(
-                "XmlaHandler.getDataSource: dataSourceInfo="
-                + dataSourceInfo);
-        }
-
-        final DataSourcesConfig.DataSource ds =
-            dataSourcesMap.get(dataSourceInfo);
-        if (LOGGER.isDebugEnabled()) {
-            if (ds == null) {
-                // TODO: this if a failure situation
-                LOGGER.debug("XmlaHandler.getDataSource: ds is null");
-            } else {
-                LOGGER.debug(
-                    "XmlaHandler.getDataSource: ds.dataSourceInfo="
-                    + ds.getDataSourceInfo());
-            }
-        }
-        return ds;
     }
 
-    /**
-     * Get the DataSourcesConfig.Catalog with the given catalog name from the
-     * DataSource's catalogs if there is a match and otherwise return null.
-     *
-     * @param ds DataSource
-     * @param catalogName Catalog name
-     * @return DataSourcesConfig.Catalog or null
-     */
-    public DataSourcesConfig.Catalog getCatalog(
-        DataSourcesConfig.DataSource ds,
-        String catalogName)
-    {
-        DataSourcesConfig.Catalog[] catalogs = ds.catalogs.catalogs;
-        if (catalogName == null) {
-            // if there is no catalog name - its optional and there is
-            // only one, then return it.
-            if (catalogs.length == 1) {
-                return catalogs[0];
-            }
-        } else {
-            for (DataSourcesConfig.Catalog dsCatalog : catalogs) {
-                if (catalogName.equals(dsCatalog.name)) {
-                    return dsCatalog;
-                }
-            }
-        }
-        return null;
-    }
+    private static class IntList extends AbstractList<Integer> {
+        private final int[] ints;
 
-    /**
-     * Get array of DataSourcesConfig.Catalog returning only one entry if the
-     * catalog was specified as a property in the request or all catalogs
-     * associated with the Datasource if there was no catalog property.
-     *
-     * @param request Request
-     * @param ds DataSource
-     * @return Array of DataSourcesConfig.Catalog
-     */
-    public DataSourcesConfig.Catalog[] getCatalogs(
-        XmlaRequest request,
-        DataSourcesConfig.DataSource ds)
-    {
-        Map<String, String> properties = request.getProperties();
-        final String catalogName =
-            properties.get(PropertyDefinition.Catalog.name());
-        if (catalogName != null) {
-            DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
-            return new DataSourcesConfig.Catalog[] { dsCatalog };
-        } else {
-            // no catalog specified in Properties so return them all
-            return ds.catalogs.catalogs;
+        IntList(int[] ints) {
+            this.ints = ints;
+        }
+
+        public Integer get(int index) {
+            return ints[index];
+        }
+
+        public int size() {
+            return ints.length;
         }
     }
 
     /**
-     * Returns the DataSourcesConfig.Catalog associated with the
-     * catalog name that is part of the request properties or
-     * null if there is no catalog with that name.
+     * Extra support for XMLA server. If a connection provides this interface,
+     * the XMLA server will call methods in this interface instead of relying
+     * on the core olap4j interface.
      *
-     * @param request Request
-     * @param ds DataSource
-     * @param required Whether to throw an error if catalog name is not
-     * specified
-     *
-     * @return DataSourcesConfig Catalog or null
-     * @throws XmlaException If error occurs
+     * <p>The {@link mondrian.xmla.XmlaHandler.XmlaExtraImpl} class provides
+     * a default implementation that uses the olap4j interface exclusively.
      */
-    public DataSourcesConfig.Catalog getCatalog(
-        XmlaRequest request,
-        DataSourcesConfig.DataSource ds,
-        boolean required)
-        throws XmlaException
-    {
-        Map<String, String> properties = request.getProperties();
-        final String catalogName =
-            properties.get(PropertyDefinition.Catalog.name());
-        DataSourcesConfig.Catalog dsCatalog = getCatalog(ds, catalogName);
-        if (dsCatalog == null) {
-            if (catalogName == null) {
-                if (required) {
-                    throw new XmlaException(
-                        CLIENT_FAULT_FC,
-                        HSB_CONNECTION_DATA_SOURCE_CODE,
-                        HSB_CONNECTION_DATA_SOURCE_FAULT_FS,
-                        Util.newError("catalog not specified"));
-                }
-                return null;
+    public interface XmlaExtra {
+
+        ResultSet executeDrillthrough(
+            OlapStatement olapStatement,
+            String mdx,
+            boolean advanced,
+            String tabFields,
+            int[] rowCountSlot) throws SQLException;
+
+        void setPreferList(OlapConnection connection);
+
+        Date getSchemaLoadDate(Schema schema);
+
+        int getLevelCardinality(Level level) throws OlapException;
+
+        void getSchemaFunctionList(
+            List<FunctionDefinition> funDefs,
+            Schema schema,
+            Util.Functor1<Boolean, String> functionFilter);
+
+        int getHierarchyCardinality(Hierarchy hierarchy) throws OlapException;
+
+        int getHierarchyStructure(Hierarchy hierarchy);
+
+        boolean isHierarchyParentChild(Hierarchy hierarchy);
+
+        int getMeasureAggregator(Member member);
+
+        void checkMemberOrdinal(Member member) throws OlapException;
+
+        /**
+         * Returns whether we should return a cell property in the XMLA result.
+         *
+         * @param cellSet Cell set
+         * @param cellProperty Cell property definition
+         * @param evenEmpty Whether to return even if cell has no properties
+         * @return Whether to return cell property in XMLA result
+         */
+        boolean shouldReturnCellProperty(
+            CellSet cellSet,
+            Property cellProperty,
+            boolean evenEmpty);
+
+        /**
+         * Returns a list of names of roles in the given schema to which the
+         * current user belongs.
+         *
+         * @param schema Schema
+         * @return List of roles
+         */
+        List<String> getSchemaRoleNames(Schema schema);
+
+        String getCubeType(Cube cube);
+
+        boolean isLevelUnique(Level level);
+
+        /**
+         * Returns the defined properties of a level. (Not including system
+         * properties that every level has.)
+         *
+         * @param level Level
+         * @return Defined properties
+         */
+        List<Property> getLevelProperties(Level level);
+
+        boolean isPropertyInternal(Property property);
+
+        /**
+         * Returns a list of the data sources in this server. One element
+         * per data source, each element a map whose keys are the XMLA fields
+         * describing a data source: "DataSourceName", "DataSourceDescription",
+         * "URL", etc. Unrecognized fields are ignored.
+         *
+         * @param connection Connection
+         * @return List of data source definitions
+         * @throws OlapException
+         */
+        List<Map<String, Object>> getDataSources(OlapConnection connection)
+            throws OlapException;
+
+        class FunctionDefinition {
+            public final String functionName;
+            public final String description;
+            public final String parameterList;
+            public final int returnType;
+            public final int origin;
+            public final String interfaceName;
+            public final String caption;
+
+            public FunctionDefinition(
+                String functionName,
+                String description,
+                String parameterList,
+                int returnType,
+                int origin,
+                String interfaceName,
+                String caption)
+            {
+                this.functionName = functionName;
+                this.description = description;
+                this.parameterList = parameterList;
+                this.returnType = returnType;
+                this.origin = origin;
+                this.interfaceName = interfaceName;
+                this.caption = caption;
             }
-            throw new XmlaException(
-                CLIENT_FAULT_FC,
-                HSB_CONNECTION_DATA_SOURCE_CODE,
-                HSB_CONNECTION_DATA_SOURCE_FAULT_FS,
-                Util.newError("no catalog named '" + catalogName + "'"));
         }
-        return dsCatalog;
     }
 
-    public static void main(String[] args) {
-        for (RowsetDefinition def : RowsetDefinition.values()) {
-            System.out.print("    " + def.name() + "(");
-            int k = 0;
-            for (RowsetDefinition.Column column : def.columnDefinitions) {
-                if (k++ == 0) {
-                    System.out.println();
-                } else {
-                    System.out.println(",");
-                }
-                System.out.print(
-                    "        new MetadataColumn(\"" + column.name + "\")");
-            }
-            System.out.println("),");
+    /**
+     * Default implementation of {@link mondrian.xmla.XmlaHandler.XmlaExtra}.
+     * Connections based on mondrian's olap4j driver can do better.
+     */
+    private static class XmlaExtraImpl implements XmlaExtra {
+        public ResultSet executeDrillthrough(
+            OlapStatement olapStatement,
+            String mdx,
+            boolean advanced,
+            String tabFields,
+            int[] rowCountSlot) throws SQLException
+        {
+            return olapStatement.executeQuery(mdx);
         }
+
+        public void setPreferList(OlapConnection connection) {
+            // ignore
+        }
+
+        public Date getSchemaLoadDate(Schema schema) {
+            return new Date();
+        }
+
+        public int getLevelCardinality(Level level) {
+            return level.getCardinality();
+        }
+
+        public void getSchemaFunctionList(
+            List<FunctionDefinition> funDefs,
+            Schema schema,
+            Util.Functor1<Boolean, String> functionFilter)
+        {
+            // no function definitions
+        }
+
+        public int getHierarchyCardinality(Hierarchy hierarchy) {
+            int cardinality = 0;
+            for (Level level : hierarchy.getLevels()) {
+                cardinality += level.getCardinality();
+            }
+            return cardinality;
+        }
+
+        public int getHierarchyStructure(Hierarchy hierarchy) {
+            return 0;
+        }
+
+        public boolean isHierarchyParentChild(Hierarchy hierarchy) {
+            return false;
+        }
+
+        public int getMeasureAggregator(Member member) {
+            return RowsetDefinition.MdschemaMeasuresRowset
+                .MDMEASURE_AGGR_UNKNOWN;
+        }
+
+        public void checkMemberOrdinal(Member member) {
+            // nothing to do
+        }
+
+        public boolean shouldReturnCellProperty(
+            CellSet cellSet, Property cellProperty, boolean evenEmpty)
+        {
+            return true;
+        }
+
+        public List<String> getSchemaRoleNames(Schema schema) {
+            return Collections.emptyList();
+        }
+
+        public String getCubeType(Cube cube) {
+            return RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_CUBE;
+        }
+
+        public boolean isLevelUnique(Level level) {
+            return false;
+        }
+
+        public List<Property> getLevelProperties(Level level) {
+            return level.getProperties();
+        }
+
+        public boolean isPropertyInternal(Property property) {
+            return
+                property instanceof Property.StandardMemberProperty
+                && ((Property.StandardMemberProperty) property).isInternal()
+                || property instanceof Property.StandardCellProperty
+                && ((Property.StandardCellProperty) property).isInternal();
+        }
+
+        public List<Map<String, Object>> getDataSources(
+            OlapConnection connection) throws OlapException
+        {
+            Database olapDb = connection.getOlapDatabase();
+            final String modes = createCsv(olapDb.getAuthenticationModes());
+            final String providerTypes = createCsv(olapDb.getProviderTypes());
+            return Collections.singletonList(
+                Olap4jUtil.mapOf(
+                    "DataSourceName", (Object) olapDb.getName(),
+                    "DataSourceDescription", olapDb.getDescription(),
+                    "URL", olapDb.getURL(),
+                    "DataSourceInfo", olapDb.getDataSourceInfo(),
+                    "ProviderName", olapDb.getProviderName(),
+                    "ProviderType", providerTypes,
+                    "AuthenticationMode", modes));
+        }
+    }
+
+    private static String createCsv(Iterable<? extends Object> iterable) {
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (Object o : iterable) {
+            if (!first) {
+                sb.append(',');
+            }
+            sb.append(o);
+            first = false;
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Creates an olap4j connection for responding to XMLA requests.
+     *
+     * <p>A typical implementation will probably just use a
+     * {@link javax.sql.DataSource} or a connect string, but it is important
+     * that the connection is assigned to the correct catalog, schema and role
+     * consistent with the client's XMLA context.
+     */
+    public interface ConnectionFactory {
+        /**
+         * Creates a connection.
+         *
+         * <p>The implementation passes the properties to the underlying driver.
+         *
+         * @param catalog The name of the catalog to use.
+         * @param schema The name of the schema to use.
+         * @param roleName The name of the role to use, or NULL.
+         * @param props Properties to be passed to the underlying native driver.
+         * @return An OlapConnection object.
+         * @throws SQLException on error
+         */
+        OlapConnection getConnection(
+            String catalog,
+            String schema,
+            String roleName,
+            Properties props)
+            throws SQLException;
     }
 }
 

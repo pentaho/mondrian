@@ -4,13 +4,15 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 22 December, 2002
 */
 package mondrian.olap;
+
+import mondrian.xmla.impl.DynamicDatasourceXmlaServlet;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.*;
@@ -238,7 +240,7 @@ public class MondrianProperties extends TriggerableProperties {
 
         // copy in all system properties which start with "mondrian."
         int count = 0;
-        for (Enumeration keys = System.getProperties().keys();
+        for (Enumeration<?> keys = System.getProperties().keys();
              keys.hasMoreElements();)
         {
             String key = (String) keys.nextElement();
@@ -425,6 +427,68 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final StringProperty TestJdbcPassword =
         new StringProperty(
             this, "mondrian.test.jdbcPassword", null);
+
+    /**
+     * Property which defines which SegmentCache implementation to use.
+     * Specify the value as a fully qualified class name, such as
+     * <code>org.example.SegmentCacheImpl</code> where SegmentCacheImpl
+     * is an implementation of {@link mondrian.spi.SegmentCache}.
+     */
+    public transient final StringProperty SegmentCache =
+        new StringProperty(
+            this, "mondrian.rolap.SegmentCache", null);
+
+    /**
+     * Property which defines the timeout for
+     * {@link mondrian.spi.SegmentCache#get(mondrian.rolap.agg.SegmentHeader)}
+     * in milliseconds. Defaults to 5000.
+     *
+     * <p>This is an internal control property. The timeout value
+     * won't be passed to the underlying
+     * {@link mondrian.spi.SegmentCache} SPI.
+     */
+    public transient final IntegerProperty SegmentCacheReadTimeout =
+        new IntegerProperty(
+            this, "mondrian.rolap.SegmentCacheReadTimeout", 5000);
+
+    /**
+     * Property which defines the timeout for
+     * {@link mondrian.spi.SegmentCache#put(mondrian.rolap.agg.SegmentHeader, mondrian.rolap.agg.SegmentBody)}
+     * in milliseconds. Defaults to 5000.
+     *
+     * <p>This is an internal control property. The timeout value
+     * won't be passed to the underlying
+     * {@link mondrian.spi.SegmentCache} SPI.
+     */
+    public transient final IntegerProperty SegmentCacheWriteTimeout =
+        new IntegerProperty(
+            this, "mondrian.rolap.SegmentCacheWriteTimeout", 5000);
+
+    /**
+     * Property which defines the timeout for
+     * {@link mondrian.spi.SegmentCache#contains(mondrian.rolap.agg.SegmentHeader)}
+     * in milliseconds. Defaults to 5000.
+     *
+     * <p>This is an internal control property. The timeout value
+     * won't be passed to the underlying
+     * {@link mondrian.spi.SegmentCache} SPI.
+     */
+    public transient final IntegerProperty SegmentCacheLookupTimeout =
+        new IntegerProperty(
+            this, "mondrian.rolap.SegmentCacheLookupTimeout", 5000);
+
+    /**
+     * Property which defines the timeout for
+     * {@link mondrian.spi.SegmentCache#getSegmentHeaders()}
+     * in milliseconds. Defaults to 5000.
+     *
+     * <p>This is an internal control property. The timeout value
+     * won't be passed to the underlying
+     * {@link mondrian.spi.SegmentCache} SPI.
+     */
+    public transient final IntegerProperty SegmentCacheScanTimeout =
+        new IntegerProperty(
+            this, "mondrian.rolap.SegmentCacheScanTimeout", 5000);
 
     /**
      * Property that, with {@link #SparseSegmentDensityThreshold}, determines
@@ -1228,6 +1292,36 @@ public class MondrianProperties extends TriggerableProperties {
     public transient final BooleanProperty SsasCompatibleNaming =
         new BooleanProperty(
             this, "mondrian.olap.SsasCompatibleNaming", false);
+
+    /**
+     * Interval, in milliseconds, at which to refresh the
+     * list of XML/A catalogs. This is usually known as the
+     * datasources.xml file. See also
+     * {@link DynamicDatasourceXmlaServlet}.
+     */
+    public transient final IntegerProperty XmlaSchemaRefreshInterval =
+        new IntegerProperty(
+            this, "mondrian.xmla.SchemaRefreshInterval", 3000);
+
+    /**
+     * Property that defines
+     * whether to generate joins to filter out members in a snowflake
+     * dimension that do not have any children.
+     *
+     * <p>If true (the default), some queries to query members of high
+     * levels snowflake dimensions will be more expensive. If false, and if
+     * there are rows in an outer snowflake table that are not referenced by
+     * a row in an inner snowflake table, then some queries will return members
+     * that have no children.
+     *
+     * <p>Our recommendation, for best performance, is to remove rows outer
+     * snowflake tables are not referenced by any row in an inner snowflake
+     * table, during your ETL process, and to set this property to
+     * {@code false}.
+     */
+    public transient final BooleanProperty FilterChildlessSnowflakeMembers =
+        new BooleanProperty(
+            this, "mondrian.rolap.FilterChildlessSnowflakeMembers", true);
 }
 
 // End MondrianProperties.java

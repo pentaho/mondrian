@@ -3,14 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
-import mondrian.olap.type.SetType;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
@@ -56,12 +56,12 @@ class DrilldownLevelFunDef extends FunDefBase {
             call.getArgCount() > 2
                 ? compiler.compileInteger(call.getArg(2))
                 : null;
-        final int arity = ((SetType) listCalc.getType()).getArity();
+        final int arity = listCalc.getType().getArity();
         if (indexCalc == null) {
             return new AbstractListCalc(call, new Calc[] {listCalc, levelCalc})
             {
-                public List evaluateList(Evaluator evaluator) {
-                    List<Member> list = listCalc.evaluateList(evaluator);
+                public TupleList evaluateList(Evaluator evaluator) {
+                    TupleList list = listCalc.evaluateList(evaluator);
                     if (list.size() == 0) {
                         return list;
                     }
@@ -70,54 +70,34 @@ class DrilldownLevelFunDef extends FunDefBase {
                         Level level = levelCalc.evaluateLevel(evaluator);
                         searchDepth = level.getDepth();
                     }
-                    return drill(searchDepth, list, evaluator);
-                }
-            };
-        } else if (arity == 1) {
-            return new AbstractListCalc(call, new Calc[] {listCalc, indexCalc})
-            {
-                public List evaluateList(Evaluator evaluator) {
-                    List<Member> list = listCalc.evaluateList(evaluator);
-                    if (list.size() == 0) {
-                        return list;
-                    }
-                    final int index = indexCalc.evaluateInteger(evaluator);
-                    List<Member> result = new ArrayList<Member>();
-                    final SchemaReader schemaReader =
-                        evaluator.getSchemaReader();
-                    for (Member member : list) {
-                        result.add(member);
-                        if (index == 0) {
-                            final List<Member> children =
-                                schemaReader.getMemberChildren(member);
-                            result.addAll(children);
-                        }
-                    }
-                    return result;
+                    return new UnaryTupleList(
+                        drill(searchDepth, list.slice(0), evaluator));
                 }
             };
         } else {
             return new AbstractListCalc(call, new Calc[] {listCalc, indexCalc})
             {
-                public List evaluateList(Evaluator evaluator) {
-                    List<Member[]> list = listCalc.evaluateList(evaluator);
-                    if (list.size() == 0) {
+                public TupleList evaluateList(Evaluator evaluator) {
+                    TupleList list = listCalc.evaluateList(evaluator);
+                    if (list.isEmpty()) {
                         return list;
                     }
                     final int index = indexCalc.evaluateInteger(evaluator);
-                    List<Member[]> result = new ArrayList<Member[]>();
+                    if (index < 0 || index >= arity) {
+                        return list;
+                    }
+                    TupleList result = TupleCollections.createList(arity);
                     final SchemaReader schemaReader =
                         evaluator.getSchemaReader();
-                    for (Member[] tuple : list) {
+                    final Member[] tupleClone = new Member[arity];
+                    for (List<Member> tuple : list) {
                         result.add(tuple);
-                        if (index >= 0 && index < tuple.length) {
-                            final List<Member> children =
-                                schemaReader.getMemberChildren(tuple[index]);
-                            for (Member child : children) {
-                                final Member[] tupleClone = tuple.clone();
-                                tupleClone[index] = child;
-                                result.add(tupleClone);
-                            }
+                        final List<Member> children =
+                            schemaReader.getMemberChildren(tuple.get(index));
+                        for (Member child : children) {
+                            tuple.toArray(tupleClone);
+                            tupleClone[index] = child;
+                            result.addTuple(tupleClone);
                         }
                     }
                     return result;

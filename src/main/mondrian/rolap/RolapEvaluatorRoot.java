@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2010 Julian Hyde and others
+// Copyright (C) 2008-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -28,12 +28,13 @@ import java.util.*;
  */
 class RolapEvaluatorRoot {
     final Map<Object, Object> expResultCache = new HashMap<Object, Object>();
-    final Map<Object, Object> tmpExpResultCache = new HashMap<Object, Object>();
+    final Map<Object, Object> tmpExpResultCache =
+        new HashMap<Object, Object>();
     final RolapCube cube;
     final RolapConnection connection;
     final SchemaReader schemaReader;
-    final Map<List<Object>, Calc> compiledExps =
-        new HashMap<List<Object>, Calc>();
+    final Map<CompiledExpKey, Calc> compiledExps =
+        new HashMap<CompiledExpKey, Calc>();
     final Query query;
     private final Date queryStartTime;
     final Dialect currentDialect;
@@ -54,6 +55,11 @@ class RolapEvaluatorRoot {
             MondrianProperties.SolveOrderModeEnum.ABSOLUTE);
 
     final Set<Exp> activeNativeExpansions = new HashSet<Exp>();
+
+    /**
+     * The size of the command stack at which we will next check for recursion.
+     */
+    int recursionCheckCommandCount;
 
     /**
      * Creates a RolapEvaluatorRoot.
@@ -91,6 +97,8 @@ class RolapEvaluatorRoot {
         this.defaultMembers = list.toArray(new RolapMember[list.size()]);
         this.currentDialect =
             DialectManager.createDialect(schemaReader.getDataSource(), null);
+
+        this.recursionCheckCommandCount = (defaultMembers.length << 4);
     }
 
     /**
@@ -110,13 +118,59 @@ class RolapEvaluatorRoot {
         boolean scalar,
         ResultStyle resultStyle)
     {
-        List<Object> key = Arrays.asList(exp, scalar, resultStyle);
+        CompiledExpKey key = new CompiledExpKey(exp, scalar, resultStyle);
         Calc calc = compiledExps.get(key);
         if (calc == null) {
             calc = query.compileExpression(exp, scalar, resultStyle);
             compiledExps.put(key, calc);
         }
         return calc;
+    }
+
+    /**
+     * Just a simple key of Exp/scalar/resultStyle, used for keeping
+     * compiled expressions.  Previous to the introduction of this
+     * class, the key was a list constructed as Arrays.asList(exp, scalar,
+     * resultStyle) and having poorer performance on equals, hashCode,
+     * and construction.
+     */
+    private static class CompiledExpKey {
+        private final Exp exp;
+        private final boolean scalar;
+        private final ResultStyle resultStyle;
+        private int hashCode = Integer.MIN_VALUE;
+        private CompiledExpKey(
+                Exp exp,
+                boolean scalar,
+                ResultStyle resultStyle)
+        {
+            this.exp = exp;
+            this.scalar = scalar;
+            this.resultStyle = resultStyle;
+        }
+        public boolean equals(Object other) {
+            if (this == other) {
+                return true;
+            }
+            if (!(other instanceof CompiledExpKey)) {
+                return false;
+            }
+            CompiledExpKey otherKey = (CompiledExpKey)other;
+            return (this.scalar == otherKey.scalar
+                    && this.resultStyle == otherKey.resultStyle
+                    && this.exp.equals(otherKey.exp));
+        }
+        public int hashCode() {
+            if (hashCode != Integer.MIN_VALUE) {
+                return hashCode;
+            } else {
+                int hash = 0;
+                hash = Util.hash(hash, scalar);
+                hash = Util.hash(hash, resultStyle);
+                this.hashCode = Util.hash(hash, exp);
+            }
+            return this.hashCode;
+        }
     }
 
     /**
@@ -133,12 +187,6 @@ class RolapEvaluatorRoot {
         boolean create)
     {
         throw new UnsupportedOperationException();
-    }
-
-    /**
-     * First evaluator calls this method on construction.
-     */
-    protected void init(Evaluator evaluator) {
     }
 
     /**

@@ -3,17 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ListCalc;
-import mondrian.calc.impl.GenericCalc;
-import mondrian.calc.impl.ValueCalc;
+import mondrian.calc.*;
+import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.rolap.*;
@@ -66,7 +63,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         }
 
         public Object evaluate(Evaluator evaluator) {
-            List list = evaluateCurrentList(listCalc, evaluator);
+            TupleList list = evaluateCurrentList(listCalc, evaluator);
             return aggregate(calc, evaluator, list);
         }
 
@@ -77,13 +74,13 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          *
          * @param calc Compiled expression to evaluate a scalar
          * @param evaluator Evaluation context
-         * @param list List of members or tuples
+         * @param tupleList List of members or tuples
          * @return Aggregated result
          */
         public static Object aggregate(
             Calc calc,
             Evaluator evaluator,
-            List list)
+            TupleList tupleList)
         {
             Aggregator aggregator =
                 (Aggregator) evaluator.getProperty(
@@ -100,12 +97,18 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     "Don't know how to rollup aggregator '" + aggregator + "'");
             }
             if (aggregator != RolapAggregator.DistinctCount) {
-                return rollup.aggregate(evaluator.push(false), list, calc);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final Object o =
+                    rollup.aggregate(
+                        evaluator, tupleList, calc);
+                evaluator.restore(savepoint);
+                return o;
             }
 
             // All that follows is logic for distinct count. It's not like the
             // other aggregators.
-            if (list.size() == 0) {
+            if (tupleList.size() == 0) {
                 return DoubleNull;
             }
 
@@ -119,12 +122,6 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             //  (Gender.[All Gender], [Product].[All Products])
             //
             // Similar optimization can also be done for list of members.
-            List<Member[]> tupleList;
-            if (list.get(0) instanceof Member) {
-                tupleList = makeTupleList((List<Member>)list);
-            } else {
-                tupleList =  (List<Member[]>) list;
-            }
 
             if (evaluator instanceof RolapEvaluator
                 && ((RolapEvaluator) evaluator).getDialect()
@@ -152,9 +149,9 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             return evaluator2.evaluateCurrent();
         }
 
-        public static List<Member[]> optimizeTupleList(
+        public static TupleList optimizeTupleList(
             Evaluator evaluator,
-            List<Member[]> tupleList)
+            TupleList tupleList)
         {
             // FIXME: We remove overlapping tuple entries only to pass
             // AggregationOnDistinctCountMeasuresTest
@@ -180,9 +177,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          * set of other tuples in the set exists then the child tuples can be
          * ignored.
          *
-         * <p>
-         * E.g.
-         * List consists of:
+         * <p>For example. A list consisting of:
          *  (Gender.[All Gender], [Product].[All Products]),
          *  (Gender.[F], [Product].[Drink]),
          *  (Gender.[M], [Product].[Food])
@@ -191,21 +186,25 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          *
          * @param list List of tuples
          */
-        public static List<Member[]> removeOverlappingTupleEntries(
-            List<Member[]> list)
+        public static TupleList removeOverlappingTupleEntries(
+            TupleList list)
         {
-            List<Member[]> trimmedList = new ArrayList<Member[]>();
-            for (Member[] tuple1 : list) {
+            TupleList trimmedList = list.cloneList(list.size());
+            Member[] tuple1 = new Member[list.getArity()];
+            Member[] tuple2 = new Member[list.getArity()];
+            final TupleCursor cursor1 = list.tupleCursor();
+            while (cursor1.forward()) {
+                cursor1.currentToArray(tuple1, 0);
                 if (trimmedList.isEmpty()) {
-                    trimmedList.add(tuple1);
+                    trimmedList.addTuple(tuple1);
                 } else {
                     boolean ignore = false;
-                    final Iterator<Member[]> iterator = trimmedList.iterator();
-                    while (iterator.hasNext()) {
-                        Member[] tuple2 = iterator.next();
+                    final TupleIterator iterator = trimmedList.tupleIterator();
+                    while (iterator.forward()) {
+                        iterator.currentToArray(tuple2, 0);
                         if (isSuperSet(tuple1, tuple2)) {
                             iterator.remove();
-                        } else if (isSuperSet(tuple2,  tuple1)
+                        } else if (isSuperSet(tuple2, tuple1)
                             || isEqual(tuple1, tuple2))
                         {
                             ignore = true;
@@ -213,7 +212,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                         }
                     }
                     if (!ignore) {
-                        trimmedList.add(tuple1);
+                        trimmedList.addTuple(tuple1);
                     }
                 }
             }
@@ -243,19 +242,6 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 }
             }
             return parentLevelCount > 0;
-        }
-
-        /**
-         * Forms a list tuples from a list of members
-         * @param list of members
-         * @return list of tuples
-         */
-        public static List<Member[]> makeTupleList(List<Member> list) {
-            List<Member[]> tupleList = new ArrayList<Member[]>(list.size());
-            for (Member member : list) {
-                tupleList.add(new Member[] {member});
-            }
-            return tupleList;
         }
 
         private static void checkIfAggregationSizeIsTooLarge(List list) {
@@ -299,19 +285,20 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          *  (Gender.[All Gender], [Store].[USA])
          *  (Gender.[All Gender], [Store].[CANADA])
          *
+         *
          * @param tuples Tuples
          * @param reader Schema reader
          * @param measureGroup Cube
          * @return xxxx
          */
-        public static List<Member[]> optimizeChildren(
-            List<Member[]> tuples,
+        public static TupleList optimizeChildren(
+            TupleList tuples,
             SchemaReader reader,
             RolapMeasureGroup measureGroup)
         {
             Map<Member, Integer>[] membersOccurencesInTuple =
                 membersVersusOccurencesInTuple(tuples);
-            int tupleLength = tuples.get(0).length;
+            int tupleLength = tuples.getArity();
 
             //noinspection unchecked
             Set<Member>[] sets = new Set[tupleLength];
@@ -331,15 +318,6 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 }
             }
             if (optimized) {
-                if (sets.length == 1) {
-                    Set<Member> set = sets[0];
-                    List<Member[]> tupleList =
-                        new ArrayList<Member[]>(set.size());
-                    for (Member member : set) {
-                        tupleList.add(new Member[] {member});
-                    }
-                    return tupleList;
-                }
                 return crossProd(sets);
             }
             return tuples;
@@ -349,21 +327,21 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
          * Finds member occurrences in tuple and generates a map of Members
          * versus their occurrences in tuples.
          *
-         * @param tuples List of tuples
+         * @param tupleList List of tuples
          * @return Map of the number of occurrences of each member in a tuple
          */
         public static Map<Member, Integer>[] membersVersusOccurencesInTuple(
-            List<Member[]> tuples)
+            TupleList tupleList)
         {
-            int tupleLength = tuples.get(0).length;
+            int tupleLength = tupleList.getArity();
             //noinspection unchecked
             Map<Member, Integer>[] counters = new Map[tupleLength];
             for (int i = 0; i < counters.length; i++) {
                 counters[i] = new LinkedHashMap<Member, Integer>();
             }
-            for (Member[] tuple : tuples) {
-                for (int i = 0; i < tuple.length; i++) {
-                    Member member = tuple[i];
+            for (List<Member> tuple : tupleList) {
+                for (int i = 0; i < tuple.size(); i++) {
+                    Member member = tuple.get(i);
                     Map<Member, Integer> map = counters[i];
                     if (map.containsKey(member)) {
                         Integer count = map.get(member);
@@ -468,18 +446,17 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 || !parentMember.isAll();
         }
 
-        private static List<Member[]> crossProd(Set<Member>[] sets) {
-            List<Member> firstList = new ArrayList<Member>(sets[0]);
-            List<Member> secondList = new ArrayList<Member>(sets[1]);
-            List<Member[]> tupleList =
-                CrossJoinFunDef.crossJoin(firstList, secondList);
-            for (int i = 2; i < sets.length; i++) {
-                Set<Member> set = sets[i];
-                tupleList =
-                    CrossJoinFunDef.crossJoin(
-                        tupleList, new ArrayList<Member>(set));
+        private static TupleList crossProd(Set<Member>[] sets) {
+            final List<TupleList> tupleLists = new ArrayList<TupleList>();
+            for (Set<Member> set : sets) {
+                tupleLists.add(
+                    new UnaryTupleList(
+                        new ArrayList<Member>(set)));
             }
-            return tupleList;
+            if (tupleLists.size() == 1) {
+                return tupleLists.get(0);
+            }
+            return CrossJoinFunDef.mutableCrossJoin(tupleLists);
         }
 
         private static boolean dimensionJoinsToBaseCube(

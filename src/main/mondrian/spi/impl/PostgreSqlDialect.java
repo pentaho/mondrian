@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde
+// Copyright (C) 2008-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -80,11 +80,10 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
         DatabaseMetaData databaseMetaData)
     {
         Statement statement = null;
+        ResultSet resultSet = null;
         try {
             statement = databaseMetaData.getConnection().createStatement();
-            final ResultSet resultSet =
-                statement.executeQuery("select version()");
-
+            resultSet = statement.executeQuery("select version()");
             if (resultSet.next()) {
                 String version = resultSet.getString(1);
                 LOGGER.info("Version=" + version);
@@ -102,6 +101,13 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
                 e,
                 "while running query to detect Greenplum database");
         } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    // ignore
+                }
+            }
             if (statement != null) {
                 try {
                     statement.close();

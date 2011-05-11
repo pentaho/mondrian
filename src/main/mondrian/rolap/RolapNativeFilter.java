@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -169,7 +169,8 @@ public class RolapNativeFilter extends RolapNativeSet {
 
         LOGGER.debug("using native filter");
 
-        evaluator = overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
+        final int savepoint = evaluator.savepoint();
+        overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
 
         // Now construct the TupleConstraint that contains both the CJ
         // dimensions and the additional filter on them.
@@ -186,6 +187,7 @@ public class RolapNativeFilter extends RolapNativeSet {
         TupleConstraint constraint =
             new FilterConstraint(
                 combinedArgs, evaluator, measureGroupList, filterExpr);
+        evaluator.restore(savepoint);
         return new SetEvaluator(cjArgs, schemaReader, constraint);
     }
 }

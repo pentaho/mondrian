@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,8 +14,6 @@ import mondrian.olap.Util;
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
 import org.olap4j.metadata.*;
-
-import java.util.Locale;
 
 /**
  * Implementation of {@link org.olap4j.metadata.Dimension}
@@ -51,7 +49,11 @@ class MondrianOlap4jDimension implements Dimension, Named {
             new NamedListImpl<MondrianOlap4jHierarchy>();
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
-        for (mondrian.olap.Hierarchy hierarchy : dimension.getHierarchyList()) {
+        final mondrian.olap.SchemaReader schemaReader =
+            olap4jConnection.getMondrianConnection2().getSchemaReader();
+        for (mondrian.olap.Hierarchy hierarchy
+            : schemaReader.getDimensionHierarchies(dimension))
+        {
             list.add(olap4jConnection.toOlap4j(hierarchy));
         }
         return Olap4jUtil.cast(list);
@@ -83,14 +85,18 @@ class MondrianOlap4jDimension implements Dimension, Named {
         return dimension.getUniqueName();
     }
 
-    public String getCaption(Locale locale) {
-        // TODO: locale caption
+    public String getCaption() {
+        // TODO: localize caption
         return dimension.getCaption();
     }
 
-    public String getDescription(Locale locale) {
-        // TODO: locale description
+    public String getDescription() {
+        // TODO: localize description
         return dimension.getDescription();
+    }
+
+    public boolean isVisible() {
+        return true;
     }
 }
 

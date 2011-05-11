@@ -762,7 +762,7 @@ public class Aggregation {
          */
         private Comparable<?>[] keys;
 
-        private final int bitPosition;
+        private final RolapStar.Column column;
 
         private static final Integer ZERO = Integer.valueOf(0);
         private static final Integer ONE = Integer.valueOf(1);
@@ -807,7 +807,7 @@ public class Aggregation {
                            || keys[i - 1].compareTo(keys[i]) < 0;
                 }
             }
-            bitPosition = column.getBitPosition();
+            this.column = column;
         }
 
         StarColumnPredicate getPredicate() {
@@ -864,7 +864,7 @@ public class Aggregation {
             if (ordinal == null) {
                 return -1;
             }
-            return ordinal.intValue();
+            return ordinal;
         }
 
         /**
@@ -1024,7 +1024,7 @@ public class Aggregation {
         private int findAxis(Axis[] axes, int bitPosition) {
             for (int i = 0; i < axes.length; i++) {
                 Axis axis = axes[i];
-                if (axis.bitPosition == bitPosition) {
+                if (axis.column.getBitPosition() == bitPosition) {
                     return i;
                 }
             }

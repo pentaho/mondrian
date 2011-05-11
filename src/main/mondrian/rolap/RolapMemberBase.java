@@ -4,14 +4,17 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 
 package mondrian.rolap;
 
+import mondrian.calc.Calc;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.VisualTotalsFunDef;
 import mondrian.util.*;
 import org.apache.commons.collections.map.Flat3Map;
@@ -37,7 +40,7 @@ public class RolapMemberBase
      * value of that expression for this member as retrieved via JDBC;
      * otherwise null.
      */
-    private Comparable orderKey;
+    private Comparable<?> orderKey;
     private Boolean isParentChildLeaf;
     private static final Logger LOGGER = Logger.getLogger(RolapMember.class);
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
@@ -78,6 +81,8 @@ public class RolapMemberBase
      * an immutable empty set.
      */
     private Map<String, Object> mapPropertyNameToValue;
+
+    private Boolean containsAggregateFunction = null;
 
     /**
      * Creates a RolapMemberBase.
@@ -124,8 +129,14 @@ public class RolapMemberBase
         }
     }
 
+    protected RolapMemberBase() {
+        super();
+        this.key = null;
+    }
+
     RolapMemberBase(RolapMember parentMember, RolapLevel level, Object value) {
         this(parentMember, level, value, null, MemberType.REGULAR);
+        assert !(level instanceof RolapCubeLevel);
     }
 
     protected Logger getLogger() {
@@ -199,8 +210,11 @@ public class RolapMemberBase
         {
             final RolapHierarchy hierarchy = getHierarchy();
             final Dimension dimension = hierarchy.getDimension();
-            if (/* dimension.getHierarchies().length == 1
-                && */ hierarchy.getName().equals(dimension.getName()))
+            final RolapLevel level = getLevel();
+            if (dimension.getDimensionType() != null
+                && (dimension.getDimensionType().equals(
+                    DimensionType.MeasuresDimension)
+                && hierarchy.getName().equals(dimension.getName())))
             {
                 // Kludge to ensure that calc members are called
                 // [Measures].[Foo] not [Measures].[Measures].[Foo]. We can
@@ -208,7 +222,16 @@ public class RolapMemberBase
                 // member unique names.
                 this.uniqueName = Util.makeFqName(dimension, name);
             } else {
-                this.uniqueName = Util.makeFqName(hierarchy, name);
+                if (name.equals(level.getName())) {
+                    this.uniqueName =
+                        Util.makeFqName(
+                            Util.makeFqName(
+                                hierarchy.getUniqueName(),
+                                level.getName()),
+                            name);
+                } else {
+                    this.uniqueName = Util.makeFqName(hierarchy, name);
+                }
             }
         } else {
             this.uniqueName = Util.makeFqName(parentMember, name);
@@ -268,7 +291,7 @@ public class RolapMemberBase
         mapPropertyNameToValue.put(name, value);
     }
 
-    public final Object getPropertyValue(String propertyName) {
+    public Object getPropertyValue(String propertyName) {
         return getPropertyValue(propertyName, true);
     }
 
@@ -431,7 +454,7 @@ public class RolapMemberBase
         return ordinal;
     }
 
-    public Comparable getOrderKey() {
+    public Comparable<?> getOrderKey() {
         return orderKey;
     }
 
@@ -441,7 +464,7 @@ public class RolapMemberBase
         }
     }
 
-    void setOrderKey(Comparable orderKey) {
+    void setOrderKey(Comparable<?> orderKey) {
         this.orderKey = orderKey;
     }
 
@@ -675,9 +698,8 @@ public class RolapMemberBase
         SchemaReader schemaReader,
         Member seedMember)
     {
-        if (seedMember instanceof RolapCubeMember) {
-            seedMember = ((RolapCubeMember) seedMember).getRolapMember();
-        }
+        seedMember = RolapUtil.strip((RolapMember) seedMember);
+
         /*
          * The following are times for executing different set ordinals
          * algorithms for both the FoodMart Sales cube/Store dimension
@@ -995,6 +1017,56 @@ public class RolapMemberBase
         {
             return new DefaultPropertyValueMapFactory();
         }
+    }
+
+    public boolean containsAggregateFunction() {
+        // searching for agg functions is expensive, so cache result
+        if (containsAggregateFunction == null) {
+            containsAggregateFunction =
+                foundAggregateFunction(getExpression());
+        }
+        return containsAggregateFunction;
+    }
+
+    /**
+     * Returns whether an expression contains a call to an aggregate
+     * function such as "Aggregate" or "Sum".
+     *
+     * @param exp Expression
+     * @return Whether expression contains a call to an aggregate function.
+     */
+    private static boolean foundAggregateFunction(Exp exp) {
+        if (exp instanceof ResolvedFunCall) {
+            ResolvedFunCall resolvedFunCall = (ResolvedFunCall) exp;
+            if (resolvedFunCall.getFunDef() instanceof AggregateFunDef) {
+                return true;
+            } else {
+                for (Exp argExp : resolvedFunCall.getArgs()) {
+                    if (foundAggregateFunction(argExp)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public Calc getCompiledExpression(RolapEvaluatorRoot root) {
+        return root.getCompiled(getExpression(), true, null);
+    }
+
+    public int getHierarchyOrdinal() {
+        return getHierarchy().getOrdinalInCube();
+    }
+
+    public void setContextIn(RolapEvaluator evaluator) {
+        final RolapMember defaultMember =
+            evaluator.root.defaultMembers[getHierarchyOrdinal()];
+
+        // This method does not need to call RolapEvaluator.removeCalcMember.
+        // That happens implicitly in setContext.
+        evaluator.setContext(defaultMember);
+        evaluator.setExpanding(this);
     }
 }
 

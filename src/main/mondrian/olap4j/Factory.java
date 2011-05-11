@@ -3,13 +3,15 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
 import mondrian.olap.Query;
+import mondrian.rolap.RolapConnection;
+import org.olap4j.OlapException;
 
 import java.util.Properties;
 import java.util.List;
@@ -67,6 +69,7 @@ interface Factory {
      * Creates a cell set.
      *
      * @param olap4jStatement Statement
+     * @param query Mondrian query
      * @return Cell set
      */
     MondrianOlap4jCellSet newCellSet(
@@ -79,18 +82,23 @@ interface Factory {
      * @param mdx MDX query text
      * @param olap4jConnection Connection
      * @return Prepared statement
+     * @throws org.olap4j.OlapException on database error
      */
     MondrianOlap4jPreparedStatement newPreparedStatement(
-        String mdx, MondrianOlap4jConnection olap4jConnection);
+        String mdx,
+        MondrianOlap4jConnection olap4jConnection)
+        throws OlapException;
 
     /**
      * Creates a metadata object.
      *
      * @param olap4jConnection Connection
+     * @param mondrianConnection Mondrian connection
      * @return Metadata object
      */
     MondrianOlap4jDatabaseMetaData newDatabaseMetaData(
-        MondrianOlap4jConnection olap4jConnection);
+        MondrianOlap4jConnection olap4jConnection,
+        RolapConnection mondrianConnection);
 }
 
 // End Factory.java

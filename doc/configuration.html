@@ -4,7 +4,7 @@
   == This software is subject to the terms of the Eclipse Public License v1.0
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
-  == Copyright (C) 2006-2009 Julian Hyde
+  == Copyright (C) 2006-2011 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -987,6 +987,29 @@ href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported
           only raised for the NonEmptyCrossJoin function.</td>
     </tr>
     <tr>
+      <td style="vertical-align: top;"><code>
+      <a href="api/mondrian/olap/MondrianProperties.html#FilterChildlessSnowflakeMembers">mondrian.rolap.FilterChildlessSnowflakeMembers</a></code></td>
+      <td style="vertical-align: top;">boolean</td>
+      <td style="vertical-align: top;">false<br>
+      </td>
+      <td>
+        <p>Defines
+        whether to generate joins to filter out members in a snowflake
+        dimension that do not have any children.</p>
+
+        <p>If true (the default), some queries to query members of high
+        levels snowflake dimensions will be more expensive. If false, and if
+        there are rows in an outer snowflake table that are not referenced by
+        a row in an inner snowflake table, then some queries will return members
+        that have no children.</p>
+
+        <p>Our recommendation, for best performance, is to remove rows outer
+        snowflake tables are not referenced by any row in an inner snowflake
+        table, during your ETL process, and to set this property to
+        <code>false</code>.
+      </td>
+    </tr>
+    <tr>
       <td><code>
       <a href="api/mondrian/olap/MondrianProperties.html#GenerateFormattedSql">
       mondrian.rolap.generate.formatted.sql</a></code></td>
@@ -1029,8 +1052,8 @@ href="api/mondrian/olap/MondrianProperties.html#AlertNativeEvaluationUnsupported
           be combined using <code>group by grouping sets</code>. Even if this
           property is set to true, grouping sets will be used only on supported
           Databases.
-          <p>Currently grouping sets will be used only against Oracle, DB2 and
-          Teradata.</p>
+          <p>Currently grouping sets will be used only against
+              Greenplum, IBM DB2, Oracle and Teradata.</p>
       </td>
   </tr>
     <tr>
@@ -1585,10 +1608,10 @@ readable.</p>
 
 <hr noshade size="1"/>
 <p>
-    Author: Julian Hyde; last modified December, 2009.<br/>
+    Author: Julian Hyde; last modified April, 2011.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/configuration.html?ac=22">log</a>)<br/>
-    Copyright (C) 2006-2009 Julian Hyde
+    Copyright (C) 2006-2011 Julian Hyde
 </p>
 
 <br />

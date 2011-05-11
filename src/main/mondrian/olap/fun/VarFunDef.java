@@ -3,21 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.*;
 import mondrian.olap.*;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ListCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.mdx.ResolvedFunCall;
-
-import java.util.List;
 
 /**
  * Definition of the <code>Var</code> MDX builtin function
@@ -54,9 +50,14 @@ class VarFunDef extends AbstractAggregateFunDef {
             : new ValueCalc(call);
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
-                List memberList = evaluateCurrentList(listCalc, evaluator);
-                return (Double) var(
-                    evaluator.push(false), memberList, calc, false);
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                TupleList list = evaluateCurrentList(listCalc, evaluator);
+                final double var =
+                    (Double) var(
+                        evaluator, list, calc, false);
+                evaluator.restore(savepoint);
+                return var;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

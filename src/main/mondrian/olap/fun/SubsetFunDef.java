@@ -3,23 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.*;
 import mondrian.olap.FunDef;
 import mondrian.olap.Evaluator;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ListCalc;
-import mondrian.calc.IntegerCalc;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
-
-import java.util.List;
-import java.util.Collections;
 
 /**
  * Definition of the <code>Subset</code> MDX function.
@@ -52,16 +46,14 @@ class SubsetFunDef extends FunDefBase {
         return new AbstractListCalc(
             call, new Calc[] {listCalc, startCalc, countCalc})
         {
-            public List evaluateList(Evaluator evaluator) {
-                evaluator = evaluator.push(false);
-                final List list =
-                        listCalc.evaluateList(evaluator);
-                final int start =
-                        startCalc.evaluateInteger(evaluator);
+            public TupleList evaluateList(Evaluator evaluator) {
+                final int savepoint = evaluator.savepoint();
+                evaluator.setNonEmpty(false);
+                final TupleList list = listCalc.evaluateList(evaluator);
+                final int start = startCalc.evaluateInteger(evaluator);
                 int end;
                 if (countCalc != null) {
-                    final int count =
-                        countCalc.evaluateInteger(evaluator);
+                    final int count = countCalc.evaluateInteger(evaluator);
                     end = start + count;
                 } else {
                     end = list.size();
@@ -69,17 +61,17 @@ class SubsetFunDef extends FunDefBase {
                 if (end > list.size()) {
                     end = list.size();
                 }
+                evaluator.restore(savepoint);
                 if (start >= end || start < 0) {
-                    return Collections.EMPTY_LIST;
+                    return TupleCollections.emptyList(list.getArity());
+                }
+                if (start == 0 && end == list.size()) {
+                    return list;
                 }
                 assert 0 <= start;
                 assert start < end;
                 assert end <= list.size();
-                if (start == 0 && end == list.size()) {
-                    return list;
-                } else {
-                    return list.subList(start, end);
-                }
+                return list.subList(start, end);
             }
         };
     }

@@ -13,6 +13,7 @@
 
 package mondrian.rolap;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -36,7 +37,7 @@ import java.util.Arrays;
  * @since 10 August, 2001
  * @version $Id$
  */
-public interface CellKey {
+public interface CellKey extends Serializable {
     /**
      * Returns the number of axes.
      *
@@ -180,6 +181,7 @@ public interface CellKey {
     }
 
     public class Zero implements CellKey {
+        private static final long serialVersionUID = 6063541581473797367L;
         private static final int[] EMPTY_INT_ARRAY = new int[0];
         public static final Zero INSTANCE = new Zero();
 
@@ -198,7 +200,6 @@ public interface CellKey {
             return 0;
         }
 
-        @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass"})
         public boolean equals(Object o) {
             return o == this;
         }
@@ -231,6 +232,7 @@ public interface CellKey {
     }
 
     public class One implements CellKey {
+        private static final long serialVersionUID = 2160238882970820960L;
         private int ordinal0;
 
         /**
@@ -304,6 +306,7 @@ public interface CellKey {
     }
 
     public class Two implements CellKey {
+        private static final long serialVersionUID = 1901188836648369359L;
         private int ordinal0;
         private int ordinal1;
 
@@ -388,6 +391,7 @@ public interface CellKey {
     }
 
     class Three implements CellKey {
+        private static final long serialVersionUID = -2645858781233421151L;
         private int ordinal0;
         private int ordinal1;
         private int ordinal2;
@@ -485,6 +489,7 @@ public interface CellKey {
     }
 
     public class Many implements CellKey {
+        private static final long serialVersionUID = 3438398157192694834L;
         private final int[] ordinals;
 
         /**

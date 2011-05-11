@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde and others
+// Copyright (C) 2007-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,6 +11,8 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.calc.TupleList;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.CrossJoinFunDef;
@@ -20,10 +22,7 @@ import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 import mondrian.spi.Dialect;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <code>AggregationOnDistinctCountMeasureTest</code> tests the
@@ -913,16 +912,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         props.EnableGroupingSets.set(originalGroupingSetsPropertyValue);
     }
 
-    public void testShouldConvertListOfMembersToTuples() {
-        List <Member[]> tuples = tupleList(
-            genderMembersIncludingAll(true, salesCubeSchemaReader, salesCube));
-        assertEquals(3, tuples.size());
-        assertEquals(
-            allMember("Gender", salesCube).getUniqueName(),
-            tuples.get(0)[0].getUniqueName());
-    }
-
-
     public void testOptimizeChildren() {
         String query =
             "with member gender.x as "
@@ -1103,12 +1092,11 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testOptimizeChildrenForTuplesWithLength1() {
-        List<Member[]> memberList =
-            AggregateFunDef.AggregateCalc.makeTupleList(
-                productMembersPotScrubbersPotsAndPans(
-                    salesCubeSchemaReader));
+        TupleList memberList =
+            productMembersPotScrubbersPotsAndPans(
+                salesCubeSchemaReader);
 
-        List tuples = optimizeChildren(memberList);
+        TupleList tuples = optimizeChildren(memberList);
         assertTrue(
             tuppleListContains(
                 tuples,
@@ -1147,16 +1135,15 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testOptimizeChildrenForTuplesWithLength3() {
-        List<Member[]> memberList =
-            CrossJoinFunDef.crossJoin(
+        TupleList memberList =
+            CrossJoinFunDef.mutableCrossJoin(
                 genderMembersIncludingAll(
                     false, salesCubeSchemaReader, salesCube),
                 productMembersPotScrubbersPotsAndPans(salesCubeSchemaReader));
         memberList =
-            CrossJoinFunDef.crossJoin(
-                memberList,
-                storeMembersCAAndOR(salesCubeSchemaReader));
-        List tuples = optimizeChildren(memberList);
+            CrossJoinFunDef.mutableCrossJoin(
+                memberList, storeMembersCAAndOR(salesCubeSchemaReader));
+        TupleList tuples = optimizeChildren(memberList);
         assertFalse(
             tuppleListContains(
                 tuples,
@@ -1174,12 +1161,12 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testOptimizeChildrenWhenTuplesAreFormedWithDifferentLevels() {
-        List<Member[]> memberList =
-            CrossJoinFunDef.crossJoin(
+        TupleList memberList =
+            CrossJoinFunDef.mutableCrossJoin(
                 genderMembersIncludingAll(
                     false, salesCubeSchemaReader, salesCube),
                 productMembersPotScrubbersPotsAndPans(salesCubeSchemaReader));
-        List tuples = optimizeChildren(memberList);
+        TupleList tuples = optimizeChildren(memberList);
         assertEquals(4, tuples.size());
 
         assertFalse(
@@ -1211,8 +1198,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testWhetherCJOfChildren() {
-        List<Member[]> memberList =
-            CrossJoinFunDef.crossJoin(
+        TupleList memberList =
+            CrossJoinFunDef.mutableCrossJoin(
                 genderMembersIncludingAll(
                     false, salesCubeSchemaReader, salesCube),
                 storeMembersUsaAndCanada(
@@ -1234,14 +1221,14 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         memberList.add(maleChildMember);
         memberList.add(maleChildMember);
         memberList.add(femaleChildMember);
-        List<Member[]> tuples = tupleList(memberList);
+        TupleList tuples = new UnaryTupleList(memberList);
         tuples = optimizeChildren(tuples);
         assertEquals(3, tuples.size());
     }
 
     public void testMemberCountIsSameForAllMembersInTuple() {
-        List <Member[]> memberList =
-            CrossJoinFunDef.crossJoin(
+        TupleList memberList =
+            CrossJoinFunDef.mutableCrossJoin(
                 genderMembersIncludingAll(
                     false, salesCubeSchemaReader, salesCube),
                 storeMembersUsaAndCanada(
@@ -1272,14 +1259,16 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 Id.Segment.toList("Store", "All Stores", "Mexico"),
                 salesCubeSchemaReader);
 
-        List<Member[]> memberList = new ArrayList<Member[]>();
-        memberList.add(new Member[]{maleChild});
+        TupleList memberList =
+            new UnaryTupleList(
+                Collections.singletonList(maleChild));
 
-        memberList = CrossJoinFunDef.crossJoin(
+        memberList = CrossJoinFunDef.mutableCrossJoin(
             memberList,
-            storeMembersUsaAndCanada(false, salesCubeSchemaReader, salesCube));
+            storeMembersUsaAndCanada(
+                false, salesCubeSchemaReader, salesCube));
 
-        memberList.add(new Member[]{femaleChild, mexicoMember});
+        memberList.addTuple(femaleChild, mexicoMember);
 
         Map<Member, Integer>[] memberCounterMap =
             AggregateFunDef.AggregateCalc.membersVersusOccurencesInTuple(
@@ -1346,28 +1335,24 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     private boolean tuppleListContains(
-        List tuples,
+        TupleList tuples,
         Member memberByUniqueName)
     {
-        if (tuples.get(0) instanceof Member) {
-            return tuples.contains(memberByUniqueName);
+        if (tuples.getArity() == 1) {
+            return tuples.contains(
+                Collections.singletonList(memberByUniqueName));
         }
-        for (Object o : tuples) {
-            Member[] members = (Member[]) o;
-            if (Arrays.asList(members).contains(memberByUniqueName)) {
+        for (List<Member> tuple : tuples) {
+            if (tuple.contains(memberByUniqueName)) {
                 return true;
             }
         }
         return false;
     }
 
-    private List<Member[]> optimizeChildren(List<Member[]> memberList) {
+    private TupleList optimizeChildren(TupleList memberList) {
         return AggregateFunDef.AggregateCalc.optimizeChildren(
             memberList, schemaReader, salesCube.getMeasureGroups().get(0));
-    }
-
-    private List<Member[]> tupleList(List<Member> members) {
-        return AggregateFunDef.AggregateCalc.makeTupleList(members);
     }
 }
 

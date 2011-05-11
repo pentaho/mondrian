@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -126,19 +126,13 @@ public class AbstractExpCompiler implements ExpCompiler {
             }
             final Calc calc = compile(exp);
             if (substitutions > 0) {
-                if (calc == null) {
+                final IterCalc iterCalc = (IterCalc) calc;
+                if (iterCalc == null) {
                     this.resultStyles =
                         Collections.singletonList(ResultStyle.ITERABLE);
                     return compile(exp);
-                } else if (calc instanceof IterCalc) {
-                    return calc;
                 } else {
-                    assert calc instanceof ListCalc;
-                    if (((SetType) calc.getType()).getArity() == 1) {
-                        return toIter((MemberListCalc) calc);
-                    } else {
-                        return toIter((TupleListCalc) calc);
-                    }
+                    return iterCalc;
                 }
             }
             return calc;
@@ -302,25 +296,11 @@ public class AbstractExpCompiler implements ExpCompiler {
         // 'calc instanceof IterCalc' because some generic calcs implement both
         // ListCalc and IterCalc.
         if (!(calc instanceof ListCalc)) {
-            if (((SetType) calc.getType()).getArity() == 1) {
-                return toList((MemberIterCalc) calc);
-            } else {
-                return toList((TupleIterCalc) calc);
-            }
+            return toList((IterCalc) calc);
         } else {
             // A set can only be implemented as a list or an iterable.
             throw Util.newInternal("Cannot convert calc to list: " + calc);
         }
-    }
-
-    /**
-     * Converts an iterable over members to a list of members.
-     *
-     * @param calc Calc
-     * @return List calculation.
-     */
-    public MemberListCalc toList(MemberIterCalc calc) {
-        return new IterableMemberListCalc(calc);
     }
 
     /**
@@ -329,45 +309,18 @@ public class AbstractExpCompiler implements ExpCompiler {
      * @param calc Calc
      * @return List calculation.
      */
-    public TupleListCalc toList(TupleIterCalc calc) {
-        return new IterableTupleListCalc(calc);
+    public ListCalc toList(IterCalc calc) {
+        return new IterableListCalc(calc);
     }
 
     public IterCalc compileIter(Exp exp) {
-        Calc calc = compileAs(exp, null, ResultStyle.ITERABLE_ONLY);
+        IterCalc calc =
+            (IterCalc) compileAs(exp, null, ResultStyle.ITERABLE_ONLY);
         if (calc == null) {
-            calc = compileAs(exp, null, ResultStyle.ANY_ONLY);
+            calc = (IterCalc) compileAs(exp, null, ResultStyle.ANY_ONLY);
             assert calc != null;
         }
-        if (calc instanceof IterCalc) {
-            return (IterCalc) calc;
-        } else {
-            if (((SetType) calc.getType()).getArity() == 1) {
-                return toIter((MemberListCalc) calc);
-            } else {
-                return toIter((TupleListCalc) calc);
-            }
-        }
-    }
-
-    /**
-     * Converts a list of members to an iterable over members.
-     *
-     * @param memberListCalc Calc
-     * @return Iterable calculation
-     */
-    public MemberIterCalc toIter(final MemberListCalc memberListCalc) {
-        return new MemberListIterCalc(memberListCalc);
-    }
-
-    /**
-     * Converts a list of tuples to an iterable over tuples.
-     *
-     * @param tupleListCalc Calc
-     * @return Iterable calculation
-     */
-    public TupleIterCalc toIter(final TupleListCalc tupleListCalc) {
-        return new TupleListIterCalc(tupleListCalc);
+        return calc;
     }
 
     public BooleanCalc compileBoolean(Exp exp) {
@@ -401,14 +354,26 @@ public class AbstractExpCompiler implements ExpCompiler {
     }
 
     public DoubleCalc compileDouble(Exp exp) {
-        final DoubleCalc calc = (DoubleCalc) compileScalar(exp, false);
+        final Calc calc = compileScalar(exp, false);
         if (calc instanceof ConstantCalc
             && !(calc.evaluate(null) instanceof Double))
         {
             return ConstantCalc.constantDouble(
-                calc.evaluateDouble(null));
+                ((ConstantCalc) calc).evaluateDouble(null));
         }
-        return calc;
+        if (calc instanceof DoubleCalc) {
+            return (DoubleCalc) calc;
+        }
+        if (calc instanceof IntegerCalc) {
+            final IntegerCalc integerCalc = (IntegerCalc) calc;
+            return new AbstractDoubleCalc(exp, new Calc[] {integerCalc}) {
+                public double evaluateDouble(Evaluator evaluator) {
+                    final int result = integerCalc.evaluateInteger(evaluator);
+                    return (double) result;
+                }
+            };
+        }
+        throw Util.newInternal("cannot cast " + exp);
     }
 
     public TupleCalc compileTuple(Exp exp) {
@@ -431,7 +396,9 @@ public class AbstractExpCompiler implements ExpCompiler {
             TupleCalc tupleCalc = compileTuple(exp);
             final TupleValueCalc scalarCalc =
                 new TupleValueCalc(
-                new DummyExp(tupleType.getValueType()), tupleCalc);
+                    new DummyExp(tupleType.getValueType()),
+                    tupleCalc,
+                    getEvaluator().mightReturnNullForUnrelatedDimension());
             return scalarCalc.optimize();
         } else if (type instanceof ScalarType) {
             if (specific) {
@@ -459,9 +426,10 @@ public class AbstractExpCompiler implements ExpCompiler {
 
     private Calc memberToScalar(MemberCalc memberCalc) {
         MemberType memberType = (MemberType) memberCalc.getType();
-        return new MemberValueCalc(
+        return MemberValueCalc.create(
             new DummyExp(memberType.getValueType()),
-            new MemberCalc[] {memberCalc});
+            new MemberCalc[] {memberCalc},
+            getEvaluator().mightReturnNullForUnrelatedDimension());
     }
 
     public ParameterSlot registerParameter(Parameter parameter) {
@@ -556,6 +524,11 @@ public class AbstractExpCompiler implements ExpCompiler {
         public void setParameterValue(Object value, boolean assigned) {
             this.value = value;
             this.assigned = assigned;
+
+            // make sure caller called convert first
+            assert !(value instanceof List && !(value instanceof TupleList));
+            assert !(value instanceof MemberExpr);
+            assert !(value instanceof Literal);
         }
 
         public Object getParameterValue() {
@@ -577,42 +550,6 @@ public class AbstractExpCompiler implements ExpCompiler {
 
         public Object getCachedDefaultValue() {
             return cachedDefaultValue;
-        }
-    }
-
-    /**
-     * Adapter that converts a member list calc into a member iter calc.
-     */
-    private static class MemberListIterCalc extends AbstractMemberIterCalc {
-        private final MemberListCalc memberListCalc;
-
-        public MemberListIterCalc(MemberListCalc memberListCalc) {
-            super(
-                new DummyExp(memberListCalc.getType()),
-                new Calc[]{memberListCalc});
-            this.memberListCalc = memberListCalc;
-        }
-
-        public Iterable<Member> evaluateMemberIterable(Evaluator evaluator) {
-            return memberListCalc.evaluateMemberList(evaluator);
-        }
-    }
-
-    /**
-     * Adapter that converts a tuple list calc into a tuple iter calc.
-     */
-    private static class TupleListIterCalc extends AbstractTupleIterCalc {
-        private final TupleListCalc tupleListCalc;
-
-        public TupleListIterCalc(TupleListCalc tupleListCalc) {
-            super(
-                new DummyExp(tupleListCalc.getType()),
-                new Calc[]{tupleListCalc});
-            this.tupleListCalc = tupleListCalc;
-        }
-
-        public Iterable<Member[]> evaluateTupleIterable(Evaluator evaluator) {
-            return tupleListCalc.evaluateTupleList(evaluator);
         }
     }
 

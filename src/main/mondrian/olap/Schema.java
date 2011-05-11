@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2010 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -26,6 +26,11 @@ public interface Schema extends Annotated {
      * @post return.length() > 0
      */
     String getName();
+
+    /**
+     * Returns the uniquely generated id of this schema.
+     */
+    String getId();
 
     /**
      * Finds a cube called <code>cube</code> in this schema; if no cube

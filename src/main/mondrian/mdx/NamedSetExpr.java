@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,10 +11,8 @@ package mondrian.mdx;
 
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
-import mondrian.olap.type.SetType;
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractTupleIterCalc;
-import mondrian.calc.impl.AbstractMemberIterCalc;
+import mondrian.calc.impl.AbstractIterCalc;
 
 import java.util.List;
 
@@ -90,46 +88,24 @@ public class NamedSetExpr extends ExpBase implements Exp {
             return null;
         }
 
-        if (((SetType) getType()).getArity() != 1) {
-            return new AbstractTupleIterCalc(
-                this,
-                new Calc[]{/* todo: compile namedSet.getExp() */})
+        return new AbstractIterCalc(
+            this,
+            new Calc[]{/* todo: compile namedSet.getExp() */})
+        {
+            public TupleIterable evaluateIterable(
+                Evaluator evaluator)
             {
-                public Iterable<Member[]> evaluateTupleIterable(
-                    Evaluator evaluator)
-                {
-                    final Evaluator.NamedSetEvaluator eval = getEval(evaluator);
-                    return eval.evaluateTupleIterable();
-                }
+                final Evaluator.NamedSetEvaluator eval = getEval(evaluator);
+                return eval.evaluateTupleIterable();
+            }
 
-                public boolean dependsOn(Hierarchy hierarchy) {
-                    // Given that a named set is never re-evaluated within the
-                    // scope of a query, effectively it's independent of all
-                    // dimensions.
-                    return false;
-                }
-            };
-        } else {
-            return new AbstractMemberIterCalc(
-                 this,
-                new Calc[]{/* todo: compile namedSet.getExp() */})
-            {
-                public Iterable<Member> evaluateMemberIterable(
-                    Evaluator evaluator)
-                {
-                     final Evaluator.NamedSetEvaluator eval =
-                         getEval(evaluator);
-                    return eval.evaluateMemberIterable();
-                }
-
-                public boolean dependsOn(Hierarchy hierarchy) {
-                    // Given that a named set is never re-evaluated within the
-                    // scope of a query, effectively it's independent of all
-                    // dimensions.
-                    return false;
-                }
-            };
-        }
+            public boolean dependsOn(Hierarchy hierarchy) {
+                // Given that a named set is never re-evaluated within the
+                // scope of a query, effectively it's independent of all
+                // dimensions.
+                return false;
+            }
+        };
     }
 
     public Evaluator.NamedSetEvaluator getEval(Evaluator evaluator) {

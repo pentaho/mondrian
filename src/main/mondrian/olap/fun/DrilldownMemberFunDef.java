@@ -3,21 +3,18 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde
+// Copyright (C) 2004-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.impl.AbstractListCalc;
 import mondrian.olap.*;
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Definition of the <code>DrilldownMember</code> MDX function.
@@ -46,100 +43,74 @@ class DrilldownMemberFunDef extends FunDefBase {
         final String literalArg = getLiteralArg(call, 2, "", reservedWords);
         final boolean recursive = literalArg.equals("RECURSIVE");
 
-        return new AbstractListCalc(call, new Calc[] {listCalc1, listCalc2}) {
-            public List evaluateList(Evaluator evaluator) {
-                final List<?> list1 = listCalc1.evaluateList(evaluator);
-                final List<Member> list2 = listCalc2.evaluateList(evaluator);
+        return new AbstractListCalc(
+            call,
+            new Calc[] {listCalc1, listCalc2})
+        {
+            public TupleList evaluateList(Evaluator evaluator) {
+                final TupleList list1 = listCalc1.evaluateList(evaluator);
+                final TupleList list2 = listCalc2.evaluateList(evaluator);
                 return drilldownMember(list1, list2, evaluator);
             }
 
             /**
              * Drills down an element.
              *
-             * <p>Algorithm: If object is present in a_hsSet1 then adds to
+             * <p>Algorithm: If object is present in {@code memberSet} adds to
              * result children of the object. If flag {@code recursive} is set
              * then this method is called recursively for the children.
              *
-             * @param element Element of a set, can be either {@link Member} or
-             *   {@link Member}[]
+             * @param evaluator Evaluator
+             * @param tuple Tuple (may have arity 1)
+             * @param memberSet Set of members
+             * @param resultList Result
              */
             protected void drillDownObj(
                 Evaluator evaluator,
-                Object element,
-                Set memberSet,
-                List<Object> resultList)
+                Member[] tuple,
+                Set<Member> memberSet,
+                TupleList resultList)
             {
-                if (null == element) {
-                    return;
-                }
-
-                Member m = null;
-                Member[] tuple;
-                int k = -1;
-                if (element instanceof Member) {
-                    m = (Member) element;
-                    if (!memberSet.contains(m)) {
-                        return;
-                    }
-                    tuple = null;
-                } else {
-                    Util.assertTrue(element instanceof Member[]);
-                    tuple = (Member[]) element;
-                    m = null;
-                    for (Member member : tuple) {
-                        ++k;
-                        if (memberSet.contains(member)) {
-                            m = member;
-                            break;
+                for (int k = 0; k < tuple.length; k++) {
+                    Member member = tuple[k];
+                    if (memberSet.contains(member)) {
+                        List<Member> children =
+                            evaluator.getSchemaReader().getMemberChildren(
+                                member);
+                        final Member[] tuple2 = tuple.clone();
+                        for (Member childMember : children) {
+                            tuple2[k] = childMember;
+                            resultList.addTuple(tuple2);
+                            if (recursive) {
+                                drillDownObj(
+                                    evaluator, tuple2, memberSet, resultList);
+                            }
                         }
-                    }
-                    if (m == null) {
-                        //not found
-                        return;
-                    }
-                }
-
-                List<Member> children =
-                    evaluator.getSchemaReader().getMemberChildren(m);
-                for (Member member : children) {
-                    Object objNew;
-                    if (tuple == null) {
-                        objNew = member;
-                    } else {
-                        Member[] members = tuple.clone();
-                        members[k] = member;
-                        objNew = members;
-                    }
-
-                    resultList.add(objNew);
-                    if (recursive) {
-                        drillDownObj(evaluator, objNew, memberSet, resultList);
+                        break;
                     }
                 }
             }
 
-            private List drilldownMember(
-                List<?> v0,
-                List<Member> v1,
+            private TupleList drilldownMember(
+                TupleList v0,
+                TupleList v1,
                 Evaluator evaluator)
             {
-                if (null == v0
-                    || v0.isEmpty()
-                    || null == v1
-                    || v1.isEmpty())
-                {
+                assert v1.getArity() == 1;
+                if (v0.isEmpty() || v1.isEmpty()) {
                     return v0;
                 }
 
-                Set<Member> set1 = new HashSet<Member>();
-                set1.addAll(v1);
+                Set<Member> set1 = new HashSet<Member>(v1.slice(0));
 
-                List<Object> result = new ArrayList<Object>();
+                TupleList result = TupleCollections.createList(v0.getArity());
                 int i = 0, n = v0.size();
+                final Member[] members = new Member[v0.getArity()];
                 while (i < n) {
-                    Object o = v0.get(i++);
+                    List<Member> o = v0.get(i++);
+                    o.toArray(members);
                     result.add(o);
-                    drillDownObj(evaluator, o, set1, result);
+                    drillDownObj(evaluator, members, set1, result);
                 }
                 return result;
             }
