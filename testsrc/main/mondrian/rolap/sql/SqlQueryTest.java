@@ -3,10 +3,10 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2010 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
- */
+*/
 package mondrian.rolap.sql;
 
 import mondrian.olap.MondrianProperties;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
- * <p>Test for <code>SqlQuery</code></p>
+ * Test for <code>SqlQuery</code>.
  *
  * @author Thiyagu
  * @version $Id$
@@ -61,8 +61,8 @@ public class SqlQueryTest extends BatchTestCase {
         for (boolean b : new boolean[]{false, true}) {
             Dialect dialect = getTestContext().getDialect();
             SqlQuery sqlQuery = new SqlQuery(dialect, b);
-            sqlQuery.addSelect("c1");
-            sqlQuery.addSelect("c2");
+            sqlQuery.addSelect("c1", null);
+            sqlQuery.addSelect("c2", null);
             sqlQuery.addGroupingFunction("gf0");
             sqlQuery.addFromTable("s", "t1", "t1alias", null, null, true);
             sqlQuery.addWhere("a=b");
@@ -135,8 +135,8 @@ public class SqlQueryTest extends BatchTestCase {
             Dialect dialect = getTestContext().getDialect();
             SqlQuery sqlQuery = new SqlQuery(dialect, formatted);
             sqlQuery.setAllowHints(true);
-            sqlQuery.addSelect("c1");
-            sqlQuery.addSelect("c2");
+            sqlQuery.addSelect("c1", null);
+            sqlQuery.addSelect("c2", null);
             sqlQuery.addGroupingFunction("gf0");
             sqlQuery.addFromTable("s", "t1", "t1alias", null, hints, true);
             sqlQuery.addWhere("a=b");
@@ -379,8 +379,8 @@ public class SqlQueryTest extends BatchTestCase {
         final Dialect dialect = getTestContext().getDialect();
         for (boolean b : new boolean[]{false, true}) {
             SqlQuery sqlQuery = new SqlQuery(getTestContext().getDialect(), b);
-            sqlQuery.addSelect("c1");
-            sqlQuery.addSelect("c2");
+            sqlQuery.addSelect("c1", null);
+            sqlQuery.addSelect("c2", null);
             sqlQuery.addFromTable("s", "t1", "t1alias", null, null, true);
             sqlQuery.addWhere("a=b");
             sqlQuery.addGroupingFunction("g1");
@@ -427,10 +427,10 @@ public class SqlQueryTest extends BatchTestCase {
         final Dialect dialect = getTestContext().getDialect();
         for (boolean b : new boolean[]{false, true}) {
             SqlQuery sqlQuery = new SqlQuery(dialect, b);
-            sqlQuery.addSelect("c0");
-            sqlQuery.addSelect("c1");
-            sqlQuery.addSelect("c2");
-            sqlQuery.addSelect("m1", "m1");
+            sqlQuery.addSelect("c0", null);
+            sqlQuery.addSelect("c1", null);
+            sqlQuery.addSelect("c2", null);
+            sqlQuery.addSelect("m1", null, "m1");
             sqlQuery.addFromTable("s", "t1", "t1alias", null, null, true);
             sqlQuery.addWhere("a=b");
             sqlQuery.addGroupingFunction("c0");
@@ -667,4 +667,3 @@ public class SqlQueryTest extends BatchTestCase {
 }
 
 // End SqlQueryTest.java
-

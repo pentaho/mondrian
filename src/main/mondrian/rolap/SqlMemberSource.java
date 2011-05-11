@@ -180,7 +180,7 @@ class SqlMemberSource
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         if (levelDepth == levels.length) {
             // "select count(*) from schema.customer"
-            sqlQuery.addSelect("count(*)");
+            sqlQuery.addSelect("count(*)", null);
             hierarchy.addToFrom(sqlQuery, level.getKeyExp());
             return sqlQuery.toString();
         }
@@ -244,10 +244,11 @@ class SqlMemberSource
                 ++columnCount;
             }
             if (mustCount[0]) {
-                sqlQuery.addSelect(columnList);
+                sqlQuery.addSelect(columnList, null);
                 sqlQuery.addOrderBy(columnList, true, false, true);
             } else {
-                sqlQuery.addSelect("count(DISTINCT " + columnList + ")");
+                sqlQuery.addSelect(
+                    "count(DISTINCT " + columnList + ")", null);
             }
             return sqlQuery.toString();
 
@@ -258,8 +259,9 @@ class SqlMemberSource
                 if (level2.isAll()) {
                     continue;
                 }
-                hierarchy.addToFrom(sqlQuery, level2.getKeyExp());
-                sqlQuery.addSelect(level2.getKeyExp().getExpression(sqlQuery));
+                MondrianDef.Expression keyExp = level2.getKeyExp();
+                hierarchy.addToFrom(sqlQuery, keyExp);
+                sqlQuery.addSelect(keyExp.getExpression(sqlQuery), null);
                 if (level2.isUnique()) {
                     break; // no further qualification needed
                 }
@@ -269,7 +271,7 @@ class SqlMemberSource
                     dataSource,
                     "while generating query to count members in level "
                     + level);
-            outerQuery.addSelect("count(*)");
+            outerQuery.addSelect("count(*)", null);
             // Note: the "init" is for Postgres, which requires
             // FROM-queries to have an alias
             boolean failIfExists = true;
@@ -421,13 +423,13 @@ RME is this right
             MondrianDef.Expression exp = level.getKeyExp();
             hierarchy.addToFrom(sqlQuery, exp);
             String expString = exp.getExpression(sqlQuery);
-            sqlQuery.addSelectGroupBy(expString);
+            sqlQuery.addSelectGroupBy(expString, null);
             exp = level.getOrdinalExp();
             hierarchy.addToFrom(sqlQuery, exp);
             expString = exp.getExpression(sqlQuery);
             sqlQuery.addOrderBy(expString, true, false, true);
             if (!exp.equals(level.getKeyExp())) {
-                sqlQuery.addSelect(expString);
+                sqlQuery.addSelect(expString, null);
             }
 
             RolapProperty[] properties = level.getProperties();
@@ -435,7 +437,7 @@ RME is this right
                 exp = property.getExp();
                 hierarchy.addToFrom(sqlQuery, exp);
                 expString = exp.getExpression(sqlQuery);
-                String alias = sqlQuery.addSelect(expString);
+                String alias = sqlQuery.addSelect(expString, null);
                 // Some dialects allow us to eliminate properties from the
                 // group by that are functionally dependent on the level value
                 if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
@@ -559,8 +561,7 @@ RME is this right
             int bitPos = starColumn.getBitPosition();
             AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
             String q = aggColumn.generateExprString(sqlQuery);
-            sqlQuery.addSelectGroupBy(q);
-            sqlQuery.addType(starColumn.getInternalType());
+            sqlQuery.addSelectGroupBy(q, starColumn.getInternalType());
             sqlQuery.addOrderBy(q, true, false, true);
             aggColumn.getTable().addToFrom(sqlQuery, false, true);
             return sqlQuery.toSqlAndTypes();
@@ -568,8 +569,7 @@ RME is this right
 
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String q = level.getKeyExp().getExpression(sqlQuery);
-        sqlQuery.addSelectGroupBy(q);
-        sqlQuery.addType(level.getInternalType());
+        sqlQuery.addSelectGroupBy(q, level.getInternalType());
 
         // in non empty mode the level table must be joined to the fact
         // table
@@ -611,8 +611,7 @@ RME is this right
                 hierarchy.addToFrom(sqlQuery, captionExp);
             }
             String captionSql = captionExp.getExpression(sqlQuery);
-            sqlQuery.addSelectGroupBy(captionSql);
-            sqlQuery.addType(null);
+            sqlQuery.addSelectGroupBy(captionSql, null);
         }
         if (!levelCollapsed) {
             hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
@@ -620,8 +619,7 @@ RME is this right
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(q)) {
-            sqlQuery.addSelectGroupBy(orderBy);
-            sqlQuery.addType(null);
+            sqlQuery.addSelectGroupBy(orderBy, null);
         }
 
         RolapProperty[] properties = level.getProperties();
@@ -631,8 +629,7 @@ RME is this right
                 hierarchy.addToFrom(sqlQuery, exp);
             }
             final String s = exp.getExpression(sqlQuery);
-            String alias = sqlQuery.addSelect(s);
-            sqlQuery.addType(null);
+            String alias = sqlQuery.addSelect(s, null, null);
             // Some dialects allow us to eliminate properties from the
             // group by that are functionally dependent on the level value
             if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
@@ -1112,14 +1109,12 @@ RME is this right
         sqlQuery.addWhere(condition.toString());
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String childId = level.getKeyExp().getExpression(sqlQuery);
-        sqlQuery.addSelectGroupBy(childId);
-        sqlQuery.addType(null);
+        sqlQuery.addSelectGroupBy(childId, null);
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(childId)) {
-            sqlQuery.addSelectGroupBy(orderBy);
-            sqlQuery.addType(null);
+            sqlQuery.addSelectGroupBy(orderBy, null);
         }
 
         RolapProperty[] properties = level.getProperties();
@@ -1127,14 +1122,13 @@ RME is this right
             final MondrianDef.Expression exp = property.getExp();
             hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
-            String alias = sqlQuery.addSelect(s);
+            String alias = sqlQuery.addSelect(s, null);
             // Some dialects allow us to eliminate properties from the group by
             // that are functionally dependent on the level value
             if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()
                 || !property.dependsOnLevelValue())
             {
                 sqlQuery.addGroupBy(s, alias);
-                sqlQuery.addType(null);
             }
         }
         return sqlQuery.toSqlAndTypes();
@@ -1177,14 +1171,12 @@ RME is this right
 
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String childId = level.getKeyExp().getExpression(sqlQuery);
-        sqlQuery.addSelectGroupBy(childId);
-        sqlQuery.addType(null);
+        sqlQuery.addSelectGroupBy(childId, null);
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy, true, false, true);
         if (!orderBy.equals(childId)) {
-            sqlQuery.addSelectGroupBy(orderBy);
-            sqlQuery.addType(null);
+            sqlQuery.addSelectGroupBy(orderBy, null);
         }
 
         RolapProperty[] properties = level.getProperties();
@@ -1192,8 +1184,7 @@ RME is this right
             final MondrianDef.Expression exp = property.getExp();
             hierarchy.addToFrom(sqlQuery, exp);
             final String s = exp.getExpression(sqlQuery);
-            String alias = sqlQuery.addSelect(s);
-            sqlQuery.addType(null);
+            String alias = sqlQuery.addSelect(s, null);
             // Some dialects allow us to eliminate properties from the group by
             // that are functionally dependent on the level value
             if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()

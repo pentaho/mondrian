@@ -3,11 +3,10 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -25,9 +24,9 @@ import java.sql.*;
 import java.util.*;
 
 /**
- * This is an aggregate table version of a RolapStar for a fact table.
- * <p>
- * There is the following class structure:
+ * Aggregate table version of a RolapStar for a fact table.
+ *
+ * <p>There is the following class structure:
  * <pre>
  * AggStar
  *   Table
@@ -37,9 +36,10 @@ import java.util.*;
  *   FactTable extends Table
  *     Measure extends Table.Column
  *   DimTable extends Table
- * <pre>
- * Each inner class is non-static meaning that instances have implied references
- * to the enclosing object.
+ * </pre>
+ *
+ * <p>Each inner class is non-static meaning that instances have implied
+ * references to the enclosing object.
  *
  * @author Richard M. Emberson
  * @version $Id$
@@ -1295,7 +1295,7 @@ public class AggStar {
 
         private void makeNumberOfRows() {
             SqlQuery query = getSqlQuery();
-            query.addSelect("count(*)");
+            query.addSelect("count(*)", null);
             query.addFrom(getRelation(), getName(), false);
             DataSource dataSource = getAggStar().getStar().getDataSource();
             SqlStatement stmt =

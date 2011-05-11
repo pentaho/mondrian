@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -145,7 +145,7 @@ class AggQuerySpec {
         } else {
             expr = column.generateExprString(query);
         }
-        query.addSelect(expr, alias);
+        query.addSelect(expr, null, alias);
     }
 
     protected void generateSql(final SqlQuery sqlQuery) {
@@ -174,10 +174,10 @@ class AggQuerySpec {
             switch (sqlQuery.getDialect().getDatabaseProduct()) {
             case DB2_AS400:
             case DB2_OLD_AS400:
-                alias = sqlQuery.addSelect(expr, null);
+                alias = sqlQuery.addSelect(expr, null, null);
                 break;
             default:
-                alias = sqlQuery.addSelect(expr, getColumnAlias(i));
+                alias = sqlQuery.addSelect(expr, null, getColumnAlias(i));
                 break;
             }
 

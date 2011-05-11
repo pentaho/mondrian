@@ -72,8 +72,10 @@ public abstract class AbstractQuerySpec implements QuerySpec {
                 ? "*"
                 : measure.generateExprString(sqlQuery);
         String exprOuter = measure.getAggregator().getExpression(exprInner);
-        sqlQuery.addSelect(exprOuter, getMeasureAlias(i));
-        sqlQuery.addType(measure.getInternalType());
+        sqlQuery.addSelect(
+            exprOuter,
+            measure.getInternalType(),
+            getMeasureAlias(i));
     }
 
     protected abstract boolean isAggregate();
@@ -84,8 +86,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         RolapStar.Column[] columns = getColumns();
         int arity = columns.length;
         if (countOnly) {
-            sqlQuery.addSelect("count(*)");
-            sqlQuery.addType(SqlStatement.Type.INT);
+            sqlQuery.addSelect("count(*)", SqlStatement.Type.INT);
         }
         for (int i = 0; i < arity; i++) {
             RolapStar.Column column = columns[i];
@@ -119,11 +120,13 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             final Dialect.DatabaseProduct databaseProduct =
                 dialect.getDatabaseProduct();
             if (databaseProduct == Dialect.DatabaseProduct.DB2_AS400) {
-                alias = sqlQuery.addSelect(expr, null);
+                alias =
+                    sqlQuery.addSelect(expr, column.getInternalType(), null);
             } else {
-                alias = sqlQuery.addSelect(expr, getColumnAlias(i));
+                alias =
+                    sqlQuery.addSelect(
+                        expr, column.getInternalType(), getColumnAlias(i));
             }
-            sqlQuery.addType(column.getInternalType());
 
             if (isAggregate()) {
                 sqlQuery.addGroupBy(expr, alias);
@@ -267,13 +270,12 @@ public abstract class AbstractQuerySpec implements QuerySpec {
                 continue;
             }
             final String alias = "d" + i;
-            innerSqlQuery.addSelect(expr, alias);
+            innerSqlQuery.addSelect(expr, null, alias);
             if (databaseProduct == Dialect.DatabaseProduct.GREENPLUM) {
                 innerSqlQuery.addGroupBy(expr, alias);
             }
             final String quotedAlias = dialect.quoteIdentifier(alias);
-            outerSqlQuery.addSelectGroupBy(quotedAlias);
-            outerSqlQuery.addType(null);
+            outerSqlQuery.addSelectGroupBy(quotedAlias, null);
         }
 
         // add predicates not associated with columns
@@ -288,14 +290,14 @@ public abstract class AbstractQuerySpec implements QuerySpec {
 
             String alias = getMeasureAlias(i);
             String expr = measure.generateExprString(outerSqlQuery);
-            innerSqlQuery.addSelect(expr, alias);
+            innerSqlQuery.addSelect(expr, null, alias);
             if (databaseProduct == Dialect.DatabaseProduct.GREENPLUM) {
                 innerSqlQuery.addGroupBy(expr, alias);
             }
             outerSqlQuery.addSelect(
                 measure.getAggregator().getNonDistinctAggregator()
-                    .getExpression(dialect.quoteIdentifier(alias)));
-            outerSqlQuery.addType(null);
+                    .getExpression(dialect.quoteIdentifier(alias)),
+                null);
         }
         outerSqlQuery.addFrom(innerSqlQuery, "dummyname", true);
     }

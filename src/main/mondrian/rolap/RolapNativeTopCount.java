@@ -75,8 +75,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
                 if (dialect.requiresOrderByAlias()) {
                     String alias = sqlQuery.nextColumnAlias();
                     alias = dialect.quoteIdentifier(alias);
-                    sqlQuery.addSelect(orderBySql, alias);
-                    sqlQuery.addType(null);
+                    sqlQuery.addSelect(orderBySql, null, alias);
                     sqlQuery.addOrderBy(alias, ascending, true, nullable);
                 } else {
                     sqlQuery.addOrderBy(orderBySql, ascending, true, nullable);
