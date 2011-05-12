@@ -128,6 +128,7 @@ ${java.dir}/mondrian/parser/SimpleCharStream.java,
 ${java.dir}/mondrian/parser/Token.java,
 ${java.dir}/mondrian/parser/TokenMgrError.java,
 ${java.dir}/mondrian/olap/MondrianDef.java,
+${java.dir}/mondrian/olap/MondrianProperties.java,
 ${java.dir}/mondrian/gui/MondrianGuiDef.java,
 ${java.dir}/mondrian/resource/MondrianResource*.java,
 ${java.dir}/mondrian/xmla/DataSourcesConfig*.java,
@@ -144,6 +145,8 @@ ${lib.dir}/web.xml,
 ${lib.dir}/index.jsp,
 ${lib.dir}/*.dtd,
 VERSION.txt,
+${doc.dir}/properties.html,
+mondrian.properties.template,
 demo/FoodMartCreateData.sql,
 demo/access/MondrianFoodMart.mdb"/>
 
@@ -452,6 +455,7 @@ version,
 prepare,
 parser,
 generate.resources,
+generate.properties,
 def,
 compile.java"/>
 
@@ -464,6 +468,7 @@ compile.java"/>
         destdir="${classes.dir}"
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
+        includeantruntime="false"
         source="1.5">
       <include name="mondrian/olap/MondrianException.java" />
       <include name="mondrian/olap/ResultLimitExceededException.java" />
@@ -484,6 +489,25 @@ compile.java"/>
 
   </target>
 
+  <target name="generate.properties">
+    <!-- Generate MondrianProperties.java,
+         mondrian.properties.template, property.html. -->
+    <javac
+        srcdir="${java.dir}"
+        destdir="${classes.dir}"
+        debug="${project.build.debug}"
+        classpathref="project.build.classpath"
+        includeantruntime="false"
+        source="1.5">
+      <include name="mondrian/util/PropertyUtil.java" />
+    </javac>
+
+    <java classpathref="project.build.classpath"
+        classname="mondrian.util.PropertyUtil"
+        fork="no"/>
+  </target>
+
+
   <condition property="jdk16.present">
     <equals arg1="${ant.java.version}" arg2="1.6"/>
   </condition>
@@ -500,6 +524,7 @@ compile.java"/>
         destdir="${classes.dir}"
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
+        includeantruntime="false"
         source="1.5">
       <include name="mondrian/**/*.java"/>
       <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java" if="jdk16.present"/>
@@ -950,6 +975,7 @@ ivy.xml,
 ivysettings.xml,
 log4j.properties,
 mondrian.properties,
+mondrian.properties.template,
 LICENSE.html,
 README.txt,
 VERSION.txt,

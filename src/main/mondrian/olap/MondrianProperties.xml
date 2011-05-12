@@ -59,6 +59,7 @@ Should prime with {@link #ResultLimit mondrian.result.limit}.
     <PropertyDefinition>
         <Name>TestName</Name>
         <Path>mondrian.test.Name</Path>
+        <Category>Testing</Category>
         <Description>
 <p>String property that determines which tests are run.</p>
 
@@ -74,18 +75,17 @@ in its entirety will be run.</p>
     <PropertyDefinition>
         <Name>TestClass</Name>
         <Path>mondrian.test.Class</Path>
+        <Category>Testing</Category>
         <Description>
 <p>String property that determines which test class to run.</p>
 
-<p>This is the name of the class which either implements
-{@code junit.framework.Test} or has a method
+<p>This is the name of the class. It must either implement
+{@code junit.framework.Test} or have a method
 {@code public [static] junit.framework.Test suite()}.</p>
 
 <p>Example:</p>
 
-<blockquote><code>
-mondrian.test.Class=mondrian.test.FoodMartTestCase
-</code></blockquote>
+<blockquote><code>mondrian.test.Class=mondrian.test.FoodMartTestCase</code></blockquote>
 
 @see #TestName
         </Description>
@@ -94,6 +94,7 @@ mondrian.test.Class=mondrian.test.FoodMartTestCase
     <PropertyDefinition>
         <Name>TestConnectString</Name>
         <Path>mondrian.test.connectString</Path>
+        <Category>Testing</Category>
         <Description>
 <p>Property containing the connect string which regresssion tests should
 use to connect to the database.</p>
@@ -116,10 +117,129 @@ functionality enabled.
     <PropertyDefinition>
         <Name>FoodmartJdbcURL</Name>
         <Path>mondrian.foodmart.jdbcURL</Path>
+        <Category>Testing</Category>
         <Description>
-Property containing the JDBC URL of the FoodMart database.
+<p>Property containing the JDBC URL of the FoodMart database.
 The default value is to connect to an ODBC data source called
-"MondrianFoodMart".
+"MondrianFoodMart".</p>
+
+<p>To run the test suite, first load the FoodMart data set into the
+database of your choice. Then set the driver.classpath,
+mondrian.foodmart.jdbcURL and mondrian.jdbcDrivers properties, by
+uncommenting and modifying one of the sections below.
+Put the JDBC driver jar into mondrian/testlib.</p>
+
+<p>Here are example property settings for various databases.</p>
+
+<h3>Derby: needs user and password</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:derby:demo/derby/foodmart<br/>
+mondrian.foodmart.jdbcUser=sa<br/>
+mondrian.foodmart.jdbcPassword=sa<br/>
+mondrian.jdbcDrivers=org.apache.derby.jdbc.EmbeddedDriver<br/>
+driver.classpath=testlib/derby.jar</code></blockquote>
+
+<h3>FireBirdSQL</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:firebirdsql:localhost/3050:/mondrian/foodmart.gdb<br/>
+mondrian.jdbcDrivers=org.firebirdsql.jdbc.FBDriver<br/>
+driver.classpath=/jdbc/fb/firebirdsql-full.jar</code></blockquote>
+
+<h3>Greenplum (similar to Postgres)</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:postgresql://localhost/foodmart?user=gpadmin&amp;password=xxxx<br/>
+mondrian.foodmart.jdbcUser=foodmart<br/>
+mondrian.foodmart.jdbcPassword=foodmart<br/>
+mondrian.jdbcDrivers=org.postgresql.Driver<br/>
+driver.classpath=lib/postgresql-8.2-504.jdbc3.jar</code></blockquote>
+
+<h3>LucidDB (see <a href="http://docs.eigenbase.org/LucidDbOlap">instructions</a>)</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:luciddb:http://localhost<br/>
+mondrian.foodmart.jdbcUser=foodmart<br/>
+mondrian.jdbcDrivers=org.luciddb.jdbc.LucidDbClientDriver<br/>
+driver.classpath=/path/to/luciddb/plugin/LucidDbClient.jar</code></blockquote>
+
+<h3>Oracle (needs user and password)</h3>
+<blockquote><code>
+oracle.home=G:/oracle/product/10.1.0/Db_1<br/>
+mondrian.foodmart.jdbcURL.oracle=jdbc:oracle:thin:@//<i>host</i>:<i>port</i>/<i>service_name</i><br/>
+mondrian.foodmart.jdbcURL=jdbc:oracle:thin:foodmart/foodmart@//stilton:1521/orcl<br/>
+mondrian.foodmart.jdbcURL=jdbc:oracle:oci8:foodmart/foodmart@orcl<br/>
+mondrian.foodmart.jdbcUser=FOODMART<br/>
+mondrian.foodmart.jdbcPassword=oracle<br/>
+mondrian.jdbcDrivers=oracle.jdbc.OracleDriver<br/>
+driver.classpath=/home/jhyde/open/mondrian/lib/ojdbc14.jar</code></blockquote>
+
+<h3>ODBC (Microsoft Access)</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:odbc:MondrianFoodMart<br/>
+mondrian.jdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver<br/>
+driver.classpath=</code></blockquote>
+
+<h3> Hypersonic</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:hsqldb:demo/hsql/FoodMart<br/>
+mondrian.jdbcDrivers=org.hsqldb.jdbcDriver<br/>
+driver.classpath=xx</code></blockquote>
+
+<h3> MySQL: can have user and password set in JDBC URL</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:mysql://localhost/foodmart?user=foodmart&amp;password=foodmart<br/>
+mondrian.foodmart.jdbcURL=jdbc:mysql://localhost/foodmart<br/>
+mondrian.foodmart.jdbcUser=foodmart<br/>
+mondrian.foodmart.jdbcPassword=foodmart<br/>
+mondrian.jdbcDrivers=com.mysql.jdbc.Driver<br/>
+driver.classpath=D:/mysql-connector-3.1.12</code></blockquote>
+
+<h3>Infobright</h3>
+<p>As MySQL. (Infobright uses a MySQL driver, version 5.1 and later.)</p>
+
+<h3>Ingres</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:ingres://192.168.200.129:II7/MondrianFoodMart;LOOP=on;AUTO=multi;UID=ingres;PWD=sergni<br/>
+mondrian.jdbcDrivers=com.ingres.jdbc.IngresDriver<br/>
+driver.classpath=c:/ingres2006/ingres/lib/iijdbc.jar</code></blockquote>
+
+<h3>Postgres: needs user and password</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:postgresql://localhost/FM3<br/>
+mondrian.foodmart.jdbcUser=postgres<br/>
+mondrian.foodmart.jdbcPassword=pgAdmin<br/>
+mondrian.jdbcDrivers=org.postgresql.Driver</code></blockquote>
+
+<h3>Neoview</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:hpt4jdbc://localhost:18650/:schema=PENTAHO;serverDataSource=PENTAHO_DataSource<br/>
+mondrian.foodmart.jdbcUser=<i>user</i><br/>
+mondrian.foodmart.jdbcPassword<i>password</i><br/>
+mondrian.jdbcDrivers=com.hp.t4jdbc.HPT4Driver<br/>
+driver.classpath=/some/path/hpt4jdbc.jar</code></blockquote>
+
+<h3>Netezza: mimics Postgres</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:netezza://127.0.1.10/foodmart<br/>
+mondrian.foodmart.jdbcUser=<i>user</i><br/>
+mondrian.foodmart.jdbcPassword<i>password</i><br/>
+mondrian.jdbcDrivers=org.netezza.Driver<br/>
+driver.classpath=/some/path/nzjdbc.jar</code></blockquote>
+
+<h3>Sybase</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:jtds:sybase://xxx.xxx.xxx.xxx:<i>port</i>/<i>dbName</i><br/>
+mondrian.foodmart.jdbcUser=<i>user</i><br/>
+mondrian.foodmart.jdbcPassword<i>password</i><br/>
+mondrian.jdbcDrivers=net.sourceforge.jtds.jdbc.Driver<br/>
+driver.classpath=/some/path/jtds-1.2.jar</code></blockquote>
+
+<h3>Teradata</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:teradata://DatabaseServerName/DATABASE=FoodMart<br/>
+mondrian.foodmart.jdbcUser=<i>user</i><br/>
+mondrian.foodmart.jdbcPassword<i>password</i><br/>
+mondrian.jdbcDrivers=com.ncr.teradata.TeraDriver<br/>
+driver.classpath=/some/path/terajdbc/classes/terajdbc4.jar</code></blockquote>
+
         </Description>
         <Type>String</Type>
         <Default>jdbc:odbc:MondrianFoodMart</Default>
@@ -136,6 +256,7 @@ It does not default.
     <PropertyDefinition>
         <Name>TestJdbcUser</Name>
         <Path>mondrian.test.jdbcUser</Path>
+        <Category>Testing</Category>
         <Description>
 Property containing the JDBC user of a test database.
 The default value is null, to cope with DBMSs that don't need this.
@@ -145,6 +266,7 @@ The default value is null, to cope with DBMSs that don't need this.
     <PropertyDefinition>
         <Name>TestJdbcPassword</Name>
         <Path>mondrian.test.jdbcPassword</Path>
+        <Category>Testing</Category>
         <Description>
 Property containing the JDBC password of a test database.
 The default value is null, to cope with DBMSs that don't need this.
@@ -272,6 +394,7 @@ storing collections of cell values in memory.
     <PropertyDefinition>
         <Name>QueryFilePattern</Name>
         <Path>mondrian.test.QueryFilePattern</Path>
+        <Category>Testing</Category>
         <Description>
 Property that defines
 a pattern for which test XML files to run.  Pattern has to
@@ -289,6 +412,7 @@ mondrian.test.QueryFilePattern=queryTest_fec[A-Za-z0-9_]*.xml
     <PropertyDefinition>
         <Name>QueryFileDirectory</Name>
         <Path>mondrian.test.QueryFileDirectory</Path>
+        <Category>Testing</Category>
         <Description>
 Property defining
 where the test XML files are.
@@ -298,6 +422,7 @@ where the test XML files are.
     <PropertyDefinition>
         <Name>Iterations</Name>
         <Path>mondrian.test.Iterations</Path>
+        <Category>Testing</Category>
         <Description>
 Not documented.
         </Description>
@@ -307,6 +432,7 @@ Not documented.
     <PropertyDefinition>
         <Name>VUsers</Name>
         <Path>mondrian.test.VUsers</Path>
+        <Category>Testing</Category>
         <Description>
 Not documented.
         </Description>
@@ -316,6 +442,7 @@ Not documented.
     <PropertyDefinition>
         <Name>TimeLimit</Name>
         <Path>mondrian.test.TimeLimit</Path>
+        <Category>Testing</Category>
         <Description>
 Property that returns the time limit for the test run in seconds.
 If the test is running after that time, it is terminated.
@@ -326,6 +453,7 @@ If the test is running after that time, it is terminated.
     <PropertyDefinition>
         <Name>Warmup</Name>
         <Path>mondrian.test.Warmup</Path>
+        <Category>Testing</Category>
         <Description>
 Property that indicates whether this is a "warmup test".
         </Description>
@@ -335,6 +463,7 @@ Property that indicates whether this is a "warmup test".
     <PropertyDefinition>
         <Name>CatalogURL</Name>
         <Path>mondrian.catalogURL</Path>
+        <Category>Testing</Category>
         <Description>
 Property that contains the URL of the catalog to be used by
 {@link mondrian.tui.CmdRunner} and XML/A Test.
@@ -345,8 +474,11 @@ Property that contains the URL of the catalog to be used by
         <Name>EnableCacheHitCounters</Name>
         <Path>mondrian.rolap.agg.enableCacheHitCounters</Path>
         <Description>
-Property that controls
-whether aggregation cache hit / miss counters will be enabled.
+<p>Property that controls whether aggregation cache hit / miss
+counters will be enabled.</p>
+
+<p>Note that this will affect performance due to existence of sync
+blocks.</p>
         </Description>
         <Type>boolean</Type>
         <Default>false</Default>
@@ -354,6 +486,7 @@ whether aggregation cache hit / miss counters will be enabled.
     <PropertyDefinition>
         <Name>WarnIfNoPatternForDialect</Name>
         <Path>mondrian.test.WarnIfNoPatternForDialect</Path>
+        <Category>Testing</Category>
         <Description>
 <p>Property that controls if warning messages should be printed if a sql
 comparison tests do not contain expected sqls for the specified
@@ -385,6 +518,7 @@ found for the current dialect.</p>
     <PropertyDefinition>
         <Name>UseAggregates</Name>
         <Path>mondrian.rolap.aggregates.Use</Path>
+        <Category>Aggregate tables</Category>
         <Description>
 <p>Boolean property that controls whether Mondrian uses aggregate
 tables.</p>
@@ -403,6 +537,7 @@ property is set to true.</p>
     <PropertyDefinition>
         <Name>ReadAggregates</Name>
         <Path>mondrian.rolap.aggregates.Read</Path>
+        <Category>Aggregate tables</Category>
         <Description>
 <p>Boolean property that determines whether Mondrian should read
 aggregate tables.</p>
@@ -417,6 +552,7 @@ found will not be used.</p>
     <PropertyDefinition>
         <Name>ChooseAggregateByVolume</Name>
         <Path>mondrian.rolap.aggregates.ChooseByVolume</Path>
+        <Category>Aggregate tables</Category>
         <Description>
 <p>Boolean property that controls whether aggregate tables
 are ordered by their volume or row count.</p>
@@ -431,6 +567,7 @@ uses the aggregate table with the fewest rows.</p>
     <PropertyDefinition>
         <Name>AggregateRules</Name>
         <Path>mondrian.rolap.aggregates.rules</Path>
+        <Category>Aggregate tables</Category>
         <Description>
 <p>String property containing the name of the file which defines the
 rules for recognizing an aggregate table. Can be either a resource in
@@ -447,6 +584,7 @@ mondrian.rolap.aggmatcher package in Mondrian.jar.</p>
     <PropertyDefinition>
         <Name>AggregateRuleTag</Name>
         <Path>mondrian.rolap.aggregates.rule.tag</Path>
+        <Category>Aggregate tables</Category>
         <Description>
 <p>String property that is the AggRule element's tag value.</p>
 
@@ -458,6 +596,7 @@ mondrian.rolap.aggmatcher package in Mondrian.jar.</p>
     <PropertyDefinition>
         <Name>GenerateAggregateSql</Name>
         <Path>mondrian.rolap.aggregates.generateSql</Path>
+        <Category>Aggregate tables</Category>
         <Description>
 <p>Boolean property that controls whether to print the SQL code
 generated for aggregate tables.</p>
@@ -473,6 +612,7 @@ generation sql.</p>
     <PropertyDefinition>
         <Name>DisableCaching</Name>
         <Path>mondrian.rolap.star.disableCaching</Path>
+        <Category>Caching</Category>
         <Description>
 Boolean property that controls whether a RolapStar's
 aggregate data cache is cleared after each query.
@@ -500,10 +640,12 @@ is, reload), when a given property changes via, say,
     <PropertyDefinition>
         <Name>GenerateFormattedSql</Name>
         <Path>mondrian.rolap.generate.formatted.sql</Path>
+        <Category>SQL generation</Category>
         <Description>
-Boolean property that controls pretty-print mode.
-If set to true, the all SqlQuery SQL strings
-will be generated in pretty-print mode, formatted for ease of reading.
+<p>Boolean property that controls pretty-print mode.</p>
+
+<p>If true, the all SqlQuery SQL strings will be generated in
+pretty-print mode, formatted for ease of reading.</p>
         </Description>
         <Type>boolean</Type>
         <Default>false</Default>
@@ -521,9 +663,11 @@ NON EMPTY option set. The default is false.
     <PropertyDefinition>
         <Name>ExpandNonNative</Name>
         <Path>mondrian.native.ExpandNonNative</Path>
+        <Category>SQL generation</Category>
         <Description>
-When looking for native evaluation of an expression, expand non native
-subexpressions into MemberLists.
+If this property is true, when looking for native evaluation of an
+expression, Mondrian will expand non-native sub-expressions into
+lists of members.
         </Description>
         <Type>boolean</Type>
         <Default>false</Default>
@@ -542,6 +686,7 @@ expression.  The default is false (only database ORDER BY is used).
     <PropertyDefinition>
         <Name>EnableExpCache</Name>
         <Path>mondrian.expCache.enable</Path>
+        <Category>Caching</Category>
         <Description>
 Boolean property that controls whether to use a cache for frequently
 evaluated expressions. With the cache disabled, an expression like
@@ -555,6 +700,7 @@ many redundant sorts. The default is true.
     <PropertyDefinition>
         <Name>TestExpDependencies</Name>
         <Path>mondrian.test.ExpDependencies</Path>
+        <Category>Testing</Category>
         <Description>
 <p>Integer property that controls whether to test operators'
 dependencies, and how much time to spend doing it.</p>
@@ -572,6 +718,7 @@ dimensions which the expression claims to be independent of.</p>
     <PropertyDefinition>
         <Name>TestSeed</Name>
         <Path>mondrian.test.random.seed</Path>
+        <Category>Testing</Category>
         <Description>
 <p>Seed for random number generator used by some of the tests.</p>
 
@@ -613,6 +760,7 @@ for more details.</p>
     <PropertyDefinition>
         <Name>EnableNativeCrossJoin</Name>
         <Path>mondrian.native.crossjoin.enable</Path>
+        <Category>SQL generation</Category>
         <Description>
 If enabled some NON EMPTY CrossJoin will be computed in SQL.
         </Description>
@@ -622,6 +770,7 @@ If enabled some NON EMPTY CrossJoin will be computed in SQL.
     <PropertyDefinition>
         <Name>EnableNativeTopCount</Name>
         <Path>mondrian.native.topcount.enable</Path>
+        <Category>SQL generation</Category>
         <Description>
 If enabled some TopCount will be computed in SQL.
         </Description>
@@ -631,6 +780,7 @@ If enabled some TopCount will be computed in SQL.
     <PropertyDefinition>
         <Name>EnableNativeFilter</Name>
         <Path>mondrian.native.filter.enable</Path>
+        <Category>SQL generation</Category>
         <Description>
 If enabled some Filter() will be computed in SQL.
         </Description>
@@ -640,6 +790,7 @@ If enabled some Filter() will be computed in SQL.
     <PropertyDefinition>
         <Name>EnableNativeNonEmpty</Name>
         <Path>mondrian.native.nonempty.enable</Path>
+        <Category>SQL generation</Category>
         <Description>
 <p>If enabled some NON EMPTY set operations like member.children,
 level.members and member descendants will be computed in SQL.</p>
@@ -650,6 +801,7 @@ level.members and member descendants will be computed in SQL.</p>
     <PropertyDefinition>
         <Name>AlertNativeEvaluationUnsupported</Name>
         <Path>mondrian.native.unsupported.alert</Path>
+        <Category>SQL generation</Category>
         <Description>
 <p>Alerting action to take in case native evaluation of a function is
 enabled but not supported for that function's usage in a particular
@@ -672,6 +824,7 @@ unrecognized action is specified)</li>
     <PropertyDefinition>
         <Name>EnableTotalCount</Name>
         <Path>mondrian.xmla.drillthroughTotalCount.enable</Path>
+        <Category>XML/A</Category>
         <Description>
 If enabled, first row in the result of an XML/A drill-through request
 will be filled with the total count of rows in underlying database.
@@ -693,6 +846,7 @@ false.
     <PropertyDefinition>
         <Name>MaxRows</Name>
         <Path>mondrian.xmla.drillthroughMaxRows</Path>
+        <Category>XML/A</Category>
         <Description>
 Property that defines
 limit on the number of rows returned by XML/A drill through request.
@@ -703,6 +857,7 @@ limit on the number of rows returned by XML/A drill through request.
     <PropertyDefinition>
         <Name>MaxConstraints</Name>
         <Path>mondrian.rolap.maxConstraints</Path>
+        <Category>SQL generation</Category>
         <Description>
 <p>Max number of constraints in a single 'IN' SQL clause.</p>
 
@@ -723,8 +878,16 @@ number of expressions in a list is 1000".</p>
     <PropertyDefinition>
         <Name>OptimizePredicates</Name>
         <Path>mondrian.rolap.aggregates.optimizePredicates</Path>
+        <Category>Aggregate tables</Category>
         <Description>
-Boolean property that determines whether Mondrian optimizes predicates.
+<p>Boolean property that determines whether Mondrian optimizes predicates.</p>
+
+<p>If true, Mondrian may retrieve a little more data than specified in
+MDX query and cache it for future use.  For example, if you ask for
+data on 48 states of the United States for 3 quarters of 2011,
+Mondrian will round out to all 50 states and all 4 quarters.  If
+false, Mondrian still optimizes queries that involve all members of a
+dimension.</p>
         </Description>
         <Type>boolean</Type>
         <Default>true</Default>
@@ -745,6 +908,7 @@ very complex calculated member), Mondrian will throw an error.</p>
     <PropertyDefinition>
         <Name>JdbcFactoryClass</Name>
         <Path>mondrian.rolap.aggregates.jdbcFactoryClass</Path>
+        <Category>Aggregate tables</Category>
         <Description>
 <p>Property that defines the JdbcSchema factory class which
 determines the list of tables and columns of a specific datasource.</p>
@@ -756,12 +920,16 @@ determines the list of tables and columns of a specific datasource.</p>
     <PropertyDefinition>
         <Name>DataSourceResolverClass</Name>
         <Path>mondrian.spi.dataSourceResolverClass</Path>
+        <Category>Factories</Category>
         <Description>
-Property that defines
+<p>Property that defines
 the name of the plugin class that resolves data source names to
 {@link javax.sql.DataSource} objects. The class must implement the
 {@link mondrian.spi.DataSourceResolver} interface. If not specified,
-the default implementation uses JNDI to perform resolution.
+the default implementation uses JNDI to perform resolution.</p>
+
+<p>Example:</p>
+<blockquote><code>mondrian.spi.dataSourceResolverClass=mondrian.spi.impl.JndiDataSourceResolver</code></blockquote>
         </Description>
         <Type>String</Type>
     </PropertyDefinition>
@@ -769,9 +937,8 @@ the default implementation uses JNDI to perform resolution.
         <Name>QueryTimeout</Name>
         <Path>mondrian.rolap.queryTimeout</Path>
         <Description>
-Property that defines
-the timeout value (in seconds) for queries; 0, the default, indicates no
-timeout.
+<p>Property that defines the timeout value (in seconds) for queries. A
+value of 0 (the default), indicates no timeout.</p>
         </Description>
         <Type>int</Type>
         <Default>0</Default>
@@ -780,9 +947,9 @@ timeout.
         <Name>IgnoreInvalidMembers</Name>
         <Path>mondrian.rolap.ignoreInvalidMembers</Path>
         <Description>
-Property that defines
-whether non-existent member errors should be ignored during schema
-load.
+<p>Property that defines whether non-existent member errors should be
+ignored during schema load. If so, the non-existent member is treated
+as a null member.</p>
         </Description>
         <Type>boolean</Type>
         <Default>false</Default>
@@ -791,9 +958,9 @@ load.
         <Name>IgnoreInvalidMembersDuringQuery</Name>
         <Path>mondrian.rolap.ignoreInvalidMembersDuringQuery</Path>
         <Description>
-Property that defines
-whether non-existent member errors should be ignored during query
-validation.
+<p>Property that defines whether non-existent member errors should be
+ignored during query validation. If so, the non-existent member is
+treated as a null member.</p>
         </Description>
         <Type>boolean</Type>
         <Default>false</Default>
@@ -814,8 +981,9 @@ result output.</p>
         <Name>IterationLimit</Name>
         <Path>mondrian.rolap.iterationLimit</Path>
         <Description>
-<p>Property that defines the iteration limit when computing an
-aggregate; 0 indicates unlimited.</p>
+<p>Integer property indicating the maximum number of iterations
+allowed when iterating over members to compute aggregates.  A value of
+0 (the default) indicates no limit.</p>
         </Description>
         <Type>int</Type>
         <Default>0</Default>
@@ -823,10 +991,11 @@ aggregate; 0 indicates unlimited.</p>
     <PropertyDefinition>
         <Name>MemoryMonitor</Name>
         <Path>mondrian.util.memoryMonitor.enable</Path>
+        <Category>Memory monitoring</Category>
         <Description>
-<p>Property that defines
-whether the <code>MemoryMonitor</code> should be enabled. By
-default for Java5 and above it is not enabled.</p>
+<p>Property that defines whether the <code>MemoryMonitor</code> should
+be enabled. By default it is disabled; memory monitor is not available
+before Java version 1.5.</p>
         </Description>
         <Type>boolean</Type>
         <Default>false</Default>
@@ -834,9 +1003,12 @@ default for Java5 and above it is not enabled.</p>
     <PropertyDefinition>
         <Name>MemoryMonitorThreshold</Name>
         <Path>mondrian.util.memoryMonitor.percentage.threshold</Path>
+        <Category>Memory monitoring</Category>
         <Description>
-<p>Property that defines
-the default <code>MemoryMonitor</code> percentage threshold.</p>
+<p>Property that defines the default <code>MemoryMonitor</code>
+percentage threshold. If enabled, when Java's memory monitor detects
+that post-garbage collection is above this value, notifications are
+generated.</p>
         </Description>
         <Type>int</Type>
         <Default>90</Default>
@@ -844,6 +1016,7 @@ the default <code>MemoryMonitor</code> percentage threshold.</p>
     <PropertyDefinition>
         <Name>MemoryMonitorClass</Name>
         <Path>mondrian.util.MemoryMonitor.class</Path>
+        <Category>Factories</Category>
         <Description>
 <p>Property that defines
 the name of the class used as a memory monitor.</p>
@@ -857,6 +1030,7 @@ to create the implementation.</p>
     <PropertyDefinition>
         <Name>ExpCompilerClass</Name>
         <Path>mondrian.calc.ExpCompiler.class</Path>
+        <Category>Factories</Category>
         <Description>
 <p>Property that defines
 the name of the class used to compile scalar expressions.</p>
@@ -864,12 +1038,19 @@ the name of the class used to compile scalar expressions.</p>
 <p>If the value is
 non-null, it is used by the <code>ExpCompiler.Factory</code>
 to create the implementation.</p>
+
+<p>To test that for all test MDX queries that all functions can
+handle requests for ITERABLE, LIST and MUTABLE_LIST evalutation
+results, use the following:</p>
+
+<blockquote><code>mondrian.calc.ExpCompiler.class=mondrian.olap.fun.ResultStyleCompiler</code></blockquote>
         </Description>
         <Type>String</Type>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>PropertyValueMapFactoryClass</Name>
         <Path>mondrian.rolap.RolapMember.PropertyValueMapFactory.class</Path>
+        <Category>Factories</Category>
         <Description>
 <p>Property that defines the name of the factory class used
 to create maps of member properties to their respective values.</p>
@@ -885,6 +1066,7 @@ will be used.</p>
     <PropertyDefinition>
         <Name>SqlMemberSourceValuePoolFactoryClass</Name>
         <Path>mondrian.rolap.SqlMemberSource.ValuePoolFactory.class</Path>
+        <Category>Factories</Category>
         <Description>
 <p>Property that defines the name of the class used in SqlMemberSource
 to pool common values.</p>
@@ -923,11 +1105,13 @@ will never be applied.</p>
 <p>Property that defines
 the behavior of division if the denominator evaluates to zero.</p>
 
-<p>If a division has a non-null numerator and a null denominator,
-it evaluates to "Infinity", which conforms to MSAS behavior. However,
-the old semantics of evaluating this to NULL (non MSAS-conforming), is
-useful in some applications. This property controls whether the
-result should be NULL if the denominator is Null.</p>
+<p>If false (the default), if a division has a non-null numerator and
+a null denominator, it evaluates to "Infinity", which conforms to MSAS
+behavior.</p>
+
+<p>If true, the result is null if the denominator is null. Setting to
+true enables the old semantics of evaluating this to null; this does
+not conform to MSAS, but is useful in some applications.</p>
         </Description>
         <Type>boolean</Type>
         <Default>false</Default>
@@ -935,6 +1119,7 @@ result should be NULL if the denominator is Null.</p>
     <PropertyDefinition>
         <Name>EnableGroupingSets</Name>
         <Path>mondrian.rolap.groupingsets.enable</Path>
+        <Category>SQL generation</Category>
         <Description>
 <p>Property that defines
 whether to generate SQL queries using the <code>GROUPING SETS</code>
@@ -965,17 +1150,16 @@ IgnoreUnrelatedDimensions attribute set to false.</p>
 Warehouse Sales gets eliminated and is ignored in the aggregate
 value.</p>
 
-<blockquote>
-<p>                                    [Store Sales] + [Warehouse Sales]
-SUM({Product.members * Gender.members})    7,913,333.82</p>
-</blockquote>
+<blockquote><code>                                    [Store Sales] + [Warehouse Sales]
+SUM({Product.members * Gender.members})    7,913,333.82</code></blockquote>
+
 <p>With mondrian.olap.agg.IgnoreMeasureForNonJoiningDimension=false
 Warehouse Sales with Gender All level member contributes to the aggregate
 value.</p>
-<blockquote>
-<p>                                     [Store Sales] + [Warehouse Sales]
-SUM({Product.members * Gender.members})    9,290,730.03</p>
-</blockquote>
+
+<blockquote><code>                                     [Store Sales] + [Warehouse Sales]
+SUM({Product.members * Gender.members})    9,290,730.03</code></blockquote>
+
 <p>On a report where Gender M, F and All members exist a user will see a
 large aggregated value compared to the aggregated value that can be
 arrived at by suming up values against Gender M and F. This can be
@@ -996,24 +1180,24 @@ members) need to be prefixed with dimension name in MDX query.</p>
 will error out. The same queries will work when this property
 is set to false.</p>
 
-<blockquote>select {[M]} on 0 from sales<br/>
+<blockquote><code>select {[M]} on 0 from sales<br/>
 select {[USA]} on 0 from sales<br/>
-select {[USA].[CA].[Santa Monica]}  on 0 from sales</blockquote>
+select {[USA].[CA].[Santa Monica]}  on 0 from sales</code></blockquote>
 
 <p>When the property is set to true, any query where elements are
 prefixed with dimension name as below will work</p>
 
-<blockquote>select {[Gender].[F]} on 0 from sales<br/>
-select {[Customers].[Santa Monica]} on 0 from sales</blockquote>
+<blockquote><code>select {[Gender].[F]} on 0 from sales<br/>
+select {[Customers].[Santa Monica]} on 0 from sales</code></blockquote>
 
 <p>Please note that this property does not govern the behaviour
 wherein</p>
 
-<blockquote>[Gender].[M]</blockquote>
+<blockquote><code>[Gender].[M]</code></blockquote>
 
 <p>is resolved into a fully qualified</p>
 
-<blockquote>[Gender].[M]</blockquote>
+<blockquote><code>[Gender].[M]</code></blockquote>
 
 <p> In a scenario where the schema is very large and dimensions have
 large number of members a MDX query that has a invalid member in it will
@@ -1029,6 +1213,7 @@ desirable.</p>
     <PropertyDefinition>
         <Name>EnableRolapCubeMemberCache</Name>
         <Path>mondrian.rolap.EnableRolapCubeMemberCache</Path>
+        <Category>Caching</Category>
         <Description>
 <p>Property that determines whether to cache RolapCubeMember objects,
 each of which associates a member of a shared hierarchy with a
@@ -1062,7 +1247,15 @@ Property that controls the behavior of
         <Name>NativizeMinThreshold</Name>
         <Path>mondrian.native.NativizeMinThreshold</Path>
         <Description>
-Not documented.
+<p>Property that controls minimum expected cardinality required in
+order for NativizeSet to natively evaluate a query.</p>
+
+<p>If the expected cardinality falls below this level the query is
+executed non-natively.</p>
+
+<p>It is possible for the actual cardinality to fall below this
+threshold even though the expected cardinality falls above this
+threshold.  In this case the query will be natively evaluated.</p>
         </Description>
         <Type>int</Type>
         <Default>100000</Default>
@@ -1071,7 +1264,11 @@ Not documented.
         <Name>NativizeMaxResults</Name>
         <Path>mondrian.native.NativizeMaxResults</Path>
         <Description>
-Not documented.
+<p>Property that controls the maximum number of results contained in a
+NativizeSet result set.</p>
+
+<p>If the number of tuples contained in the result set exceeds this
+value Mondrian throws a LimitExceededDuringCrossjoin error.</p>
         </Description>
         <Type>int</Type>
         <Default>150000</Default>
@@ -1094,8 +1291,16 @@ whether to enable new naming behavior.</p>
         <Path>mondrian.xmla.SchemaRefreshInterval</Path>
         <Description>
 <p>Interval, in milliseconds, at which to refresh the
-list of XML/A catalogs. This is usually known as the
-datasources.xml file. See also
+list of XML/A catalogs. (Usually known as the
+datasources.xml file.)</p>
+
+<p>It is not an active process; no threads will be created. It only
+serves as a rate limiter. The refresh process is triggered by requests
+to the doPost() servlet method.</p>
+
+<p>Default value is 3000 milliseconds (3 seconds).</p>
+
+<p>See also
 {@link mondrian.xmla.impl.DynamicDatasourceXmlaServlet}.</p>
         </Description>
         <Type>int</Type>
@@ -1104,6 +1309,7 @@ datasources.xml file. See also
     <PropertyDefinition>
         <Name>FilterChildlessSnowflakeMembers</Name>
         <Path>mondrian.rolap.FilterChildlessSnowflakeMembers</Path>
+        <Category>SQL generation</Category>
         <Description>
 <p>Property that defines
 whether to generate joins to filter out members in a snowflake
@@ -1123,4 +1329,44 @@ table, during your ETL process, and to set this property to
         <Type>boolean</Type>
         <Default>true</Default>
     </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>WebappDeploy</Name>
+        <Path>mondrian.webapp.deploy</Path>
+        <Description>
+<p>Where mondrian.war will be deployed to. (Used by mondrian's build.xml ant file only.)</p>
+
+<p>Example: <code>mondrian.webapp.deploy=C:/jboss-4.0.2/server/default/deploy</code></p>
+        </Description>
+        <Core>false</Core>
+        <Type>String</Type>
+    </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>WebappConnectString</Name>
+        <Path>mondrian.webapp.connectString</Path>
+        <Description>
+<p>Connect string for the webapp. (Used by the webapp only.)</p>
+
+<p>To achieve access control, append say <code>;Role='California
+manager'</code> to the connect string.</p>
+        </Description>
+        <Core>false</Core>
+        <Type>String</Type>
+        <Default>Provider=mondrian;Jdbc=jdbc:odbc:MondrianFoodMart;Catalog=/WEB-INF/queries/FoodMart.xml;JdbcDrivers=sun.jdbc.odbc.JdbcOdbcDriver</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>Log4jConfiguration</Name>
+        <Path>log4j.configuration</Path>
+        <Description>
+<p>Set mondrian logging information if not provided by containing application.</p>
+
+<p>Examples:</p>
+
+<blockquote><code>
+log4j.configuration=file://full/path/log4j.xml<br/>
+log4j.configuration=file:log4j.properties</code></blockquote>
+        </Description>
+        <Core>false</Core>
+        <Type>String</Type>
+    </PropertyDefinition>
+    
 </PropertyDefinitions>
