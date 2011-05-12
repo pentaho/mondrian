@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2010 Julian Hyde
+// Copyright (C) 2008-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -11,9 +11,10 @@
 package mondrian.test;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.SolveOrderMode;
 import mondrian.olap.Util;
-import static mondrian.olap.MondrianProperties.SolveOrderModeEnum;
-import static mondrian.olap.MondrianProperties.SolveOrderModeEnum.*;
+
+import static mondrian.olap.SolveOrderMode.*;
 
 /**
  * <code>SolveOrderScopeIsolationTest</code> Test conformance to SSAS2005 solve
@@ -36,7 +37,7 @@ import static mondrian.olap.MondrianProperties.SolveOrderModeEnum.*;
  * @since Apr 04, 2008
  */
 public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
-    SolveOrderModeEnum defaultSolveOrderMode;
+    SolveOrderMode defaultSolveOrderMode;
 
     public void setUp() throws Exception {
         super.setUp();
@@ -79,14 +80,14 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
         + "  <CalculatedMemberProperty name=\"SOLVE_ORDER\" value=\"20\"/>\n"
         + "</CalculatedMember>";
 
-    private MondrianProperties.SolveOrderModeEnum getSolveOrderMode()
+    private SolveOrderMode getSolveOrderMode()
     {
         return Util.lookup(
-            SolveOrderModeEnum.class,
+            SolveOrderMode.class,
             MondrianProperties.instance().SolveOrderMode.get().toUpperCase());
     }
 
-    final void setSolveOrderMode(MondrianProperties.SolveOrderModeEnum mode) {
+    final void setSolveOrderMode(SolveOrderMode mode) {
         MondrianProperties.instance().SolveOrderMode.set(mode.toString());
     }
 
@@ -96,7 +97,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
 
     public void testAllSolveOrderModesHandled()
     {
-        for (SolveOrderModeEnum mode : SolveOrderModeEnum.values()) {
+        for (SolveOrderMode mode : SolveOrderMode.values()) {
             switch (mode) {
             case ABSOLUTE:
             case SCOPED:
@@ -128,7 +129,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{gender.override,gender.maleMinusFemale} on 1\n"
             + "from sales";
 
-        setSolveOrderMode(MondrianProperties.SolveOrderModeEnum.ABSOLUTE);
+        setSolveOrderMode(SolveOrderMode.ABSOLUTE);
         assertQueryReturns(
             mdx,
             "Axis #0:\n"
@@ -158,7 +159,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
             + "{gender.override,gender.maleMinusFemale} on 1\n"
             + "from sales";
 
-        setSolveOrderMode(MondrianProperties.SolveOrderModeEnum.SCOPED);
+        setSolveOrderMode(SolveOrderMode.SCOPED);
         assertQueryReturns(
             mdx,
             "Axis #0:\n"

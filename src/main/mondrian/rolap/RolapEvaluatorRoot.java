@@ -48,11 +48,11 @@ class RolapEvaluatorRoot {
     final int[] nonAllPositions;
     int nonAllPositionCount;
 
-    final MondrianProperties.SolveOrderModeEnum solveOrderMode =
+    final SolveOrderMode solveOrderMode =
         Util.lookup(
-            MondrianProperties.SolveOrderModeEnum.class,
+            SolveOrderMode.class,
             MondrianProperties.instance().SolveOrderMode.get().toUpperCase(),
-            MondrianProperties.SolveOrderModeEnum.ABSOLUTE);
+            SolveOrderMode.ABSOLUTE);
 
     final Set<Exp> activeNativeExpansions = new HashSet<Exp>();
 
