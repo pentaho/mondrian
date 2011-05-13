@@ -3,7 +3,7 @@
 # This software is subject to the terms of the Eclipse Public License v1.0
 # Agreement, available at the following URL:
 # http://www.eclipse.org/legal/epl-v10.html.
-# Copyright (C) 2005-2009 Julian Hyde
+# Copyright (C) 2005-2011 Julian Hyde
 # All Rights Reserved.
 # You must accept the terms of that agreement to use this software.
 #
@@ -59,6 +59,16 @@ doHtml() {
 {if (x == 1) print;}
         ' >"$DSTFILE";;
   esac
+  n=$(awk '/doc2web include/ {print FNR; exit}' $DSTFILE)
+  if [ "$n" ]; then
+    mv $DSTFILE /tmp/$$
+    (
+        head --lines=$(expr $n - 1) /tmp/$$
+        cat properties.html
+        tail --lines=+$(expr $n + 1) /tmp/$$
+        rm /tmp/$$
+    ) > $DSTFILE
+  fi
 }
 
 doImg() {

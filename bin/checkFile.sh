@@ -59,6 +59,7 @@ doCheck() {
     */mondrian/xmla/DataSourcesConfig.java| \
     */mondrian/rolap/aggmatcher/DefaultDef.java| \
     */mondrian/resource/MondrianResource*.java| \
+    */mondrian/olap/MondrianProperties.java| \
     */mondrian/olap/Parser.java| \
     */mondrian/olap/ParserSym.java| \
     */mondrian/parser/ParseException.java| \
