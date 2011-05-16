@@ -268,6 +268,54 @@ public final class SegmentCacheWorker {
     }
 
     /**
+     * Removes a segment from the cache. Returns true or false
+     * if the operation succeeds.
+     *
+     * <p>To adjust timeout values, set the
+     * {@link MondrianProperties#SegmentCacheWriteTimeout} property.
+     *
+     * @param header A header to search for in the segment cache.
+     * @param body The segment body to cache.
+     */
+    public static void remove(SegmentHeader header) {
+        initCache();
+        final SegmentCache cache = getSegmentCache();
+        if (cache != null) {
+            try {
+                final boolean result =
+                    cache.remove(header)
+                        .get(
+                            MondrianProperties.instance()
+                                .SegmentCacheWriteTimeout.get(),
+                            TimeUnit.MILLISECONDS);
+                if (!result) {
+                    LOGGER.error(
+                        MondrianResource.instance()
+                            .SegmentCacheFailedToDeleteSegment
+                            .baseMessage);
+                    throw MondrianResource.instance()
+                        .SegmentCacheFailedToDeleteSegment.ex();
+                }
+            } catch (TimeoutException e) {
+                LOGGER.error(
+                    MondrianResource.instance()
+                        .SegmentCacheReadTimeout.baseMessage,
+                    e);
+                throw MondrianResource.instance()
+                    .SegmentCacheReadTimeout.ex(e);
+            } catch (Throwable t) {
+                LOGGER.error(
+                    MondrianResource.instance()
+                        .SegmentCacheFailedToDeleteSegment
+                        .baseMessage,
+                    t);
+                throw MondrianResource.instance()
+                    .SegmentCacheFailedToDeleteSegment.ex(t);
+            }
+        }
+    }
+
+    /**
      * Returns a list of segments present in the cache.
      *
      * <p>If no cache is configured or there is an error while
