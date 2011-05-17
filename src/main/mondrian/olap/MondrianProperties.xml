@@ -579,7 +579,7 @@ mondrian.rolap.aggmatcher package in Mondrian.jar.</p>
 <p>Normally, this property is not set by a user.</p>
         </Description>
         <Type>String</Type>
-        <Default>/DefaultRules.xml</Default>
+        <Default>DefaultRules.xml</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>AggregateRuleTag</Name>
