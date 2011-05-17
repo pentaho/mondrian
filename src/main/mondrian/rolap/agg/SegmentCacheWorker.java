@@ -274,8 +274,7 @@ public final class SegmentCacheWorker {
      * <p>To adjust timeout values, set the
      * {@link MondrianProperties#SegmentCacheWriteTimeout} property.
      *
-     * @param header A header to search for in the segment cache.
-     * @param body The segment body to cache.
+     * @param header A header to remove in the segment cache.
      */
     public static void remove(SegmentHeader header) {
         initCache();
