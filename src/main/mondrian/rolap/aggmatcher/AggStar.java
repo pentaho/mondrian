@@ -1420,7 +1420,7 @@ public class AggStar {
      */
     public void print(final PrintWriter pw, final String prefix) {
         pw.print(prefix);
-        pw.println("AggStar:");
+        pw.println("AggStar:" + getFactTable().getName());
         String subprefix = prefix + "  ";
 
         pw.print(subprefix);
@@ -1438,6 +1438,13 @@ public class AggStar {
         pw.print(subprefix);
         pw.print("has foreign key=");
         pw.println(aggTable.hasChildren());
+
+        for (AggStar.Table.Column column
+                : getFactTable().getColumns())
+        {
+            pw.print("    ");
+            pw.println(column);
+        }
 
         aggTable.print(pw, subprefix);
     }
