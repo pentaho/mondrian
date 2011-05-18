@@ -104,7 +104,8 @@ public class Enumeration {
                 "application/soap+xml", SOAP,
                 "application/xml", SOAP,
                 "text/xml", SOAP,
-                "application/json", JSON);
+                "application/json", JSON,
+                "*/*", SOAP);
 
         private final String mimeType;
 
