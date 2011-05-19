@@ -7178,6 +7178,66 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Gender].[M]}\n"
             + "Row #0: 135,215\n");
     }
+
+    public void testCaptionColumnUsedWithOrdinalColumn() throws Exception {
+        final TestContext context =
+            TestContext.createSubstitutingCube(
+                "HR",
+                "  <Dimension name=\"FooBarDimension\" foreignKey=\"employee_id\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"position_id\">\n"
+                + "      <Table name=\"position\"/>\n"
+                + "      <Level name=\"FooBarLevel\" uniqueMembers=\"true\"\n"
+                + "          column=\"position_id\""
+                + "          captionColumn=\"position_title\""
+                + "          ordinalColumn=\"management_role\""
+                + "          />\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n",
+                null,
+                null,
+                null);
+        context.assertQueryReturns(
+            "select {[FooBarDimension].[FooBarLevel].Members} on columns from [HR]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[FooBarDimension].[9]}\n"
+            + "{[FooBarDimension].[8]}\n"
+            + "{[FooBarDimension].[6]}\n"
+            + "{[FooBarDimension].[7]}\n"
+            + "{[FooBarDimension].[1]}\n"
+            + "{[FooBarDimension].[2]}\n"
+            + "{[FooBarDimension].[5]}\n"
+            + "{[FooBarDimension].[4]}\n"
+            + "{[FooBarDimension].[3]}\n"
+            + "{[FooBarDimension].[14]}\n"
+            + "{[FooBarDimension].[19]}\n"
+            + "{[FooBarDimension].[15]}\n"
+            + "{[FooBarDimension].[17]}\n"
+            + "{[FooBarDimension].[16]}\n"
+            + "{[FooBarDimension].[12]}\n"
+            + "{[FooBarDimension].[11]}\n"
+            + "{[FooBarDimension].[13]}\n"
+            + "{[FooBarDimension].[18]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: $270.00\n"
+            + "Row #0: $162.00\n"
+            + "Row #0: $864.00\n"
+            + "Row #0: $432.00\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n");
+    }
 }
 
 // End BasicQueryTest.java
