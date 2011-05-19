@@ -992,17 +992,17 @@ public class SqlTupleReader implements TupleReader {
                 sqlQuery.addGroupBy(keySql, alias);
             }
 
-            if (!ordinalSql.equals(keySql)) {
-                alias = sqlQuery.addSelect(ordinalSql);
-                if (needsGroupBy) {
-                    sqlQuery.addGroupBy(ordinalSql, alias);
-                }
-            }
-
             if (captionSql != null) {
                 alias = sqlQuery.addSelect(captionSql);
                 if (needsGroupBy) {
                     sqlQuery.addGroupBy(captionSql, alias);
+                }
+            }
+
+            if (!ordinalSql.equals(keySql)) {
+                alias = sqlQuery.addSelect(ordinalSql);
+                if (needsGroupBy) {
+                    sqlQuery.addGroupBy(ordinalSql, alias);
                 }
             }
 
