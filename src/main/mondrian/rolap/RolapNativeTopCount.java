@@ -68,7 +68,9 @@ public class RolapNativeTopCount extends RolapNativeSet {
             AggStar aggStar)
         {
             if (orderByExpr != null) {
-                RolapNativeSql sql = new RolapNativeSql(sqlQuery, aggStar);
+                RolapNativeSql sql =
+                    new RolapNativeSql(
+                        sqlQuery, aggStar, getEvaluator(), null);
                 String orderBySql = sql.generateTopCountOrderBy(orderByExpr);
                 Dialect dialect = sqlQuery.getDialect();
                 boolean nullable = deduceNullability(orderByExpr);
@@ -175,7 +177,9 @@ public class RolapNativeTopCount extends RolapNativeSet {
         // or not it can be created. The top count
         // could change to use an aggregate table later in evaulation
         SqlQuery sqlQuery = SqlQuery.newQuery(ds, "NativeTopCount");
-        RolapNativeSql sql = new RolapNativeSql(sqlQuery, null);
+        RolapNativeSql sql =
+            new RolapNativeSql(
+                sqlQuery, null, evaluator, null);
         Exp orderByExpr = null;
         if (args.length == 3) {
             orderByExpr = args[2];

@@ -62,6 +62,19 @@ public class OracleDialect extends JdbcDialectImpl {
     public boolean allowsJoinOn() {
         return false;
     }
+
+    @Override
+    public boolean allowsRegularExpressionInWhereClause() {
+        return true;
+    }
+
+    @Override
+    public String generateRegularExpression(
+            String source,
+            String javaRegExp)
+    {
+        return "REGEXP_LIKE(" + source + ", '" + javaRegExp + "')";
+    }
 }
 
 // End OracleDialect.java

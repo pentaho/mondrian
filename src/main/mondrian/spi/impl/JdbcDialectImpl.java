@@ -840,6 +840,17 @@ public class JdbcDialectImpl implements Dialect {
         return maxColumnNameLength;
     }
 
+    public boolean allowsRegularExpressionInWhereClause() {
+        return false;
+    }
+
+    public String generateRegularExpression(
+        String source,
+        String javaRegExp)
+    {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Converts a product name and version (per the JDBC driver) into a product
      * enumeration.

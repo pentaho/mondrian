@@ -705,6 +705,10 @@ public interface Dialect {
      */
     boolean allowsJoinOn();
 
+    boolean allowsRegularExpressionInWhereClause();
+
+    String generateRegularExpression(String source, String javaRegExp);
+
     /**
      * Enumeration of common database types.
      *

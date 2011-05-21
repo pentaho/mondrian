@@ -13,9 +13,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mondrian.olap.*;
+import mondrian.olap.type.MemberType;
+import mondrian.olap.type.StringType;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.mdx.DimensionExpr;
 import mondrian.mdx.MemberExpr;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.spi.Dialect;
 
 /**
@@ -35,7 +39,9 @@ public class RolapNativeSql {
     CompositeSqlCompiler booleanCompiler;
 
     RolapStoredMeasure storedMeasure;
-    AggStar aggStar;
+    final AggStar aggStar;
+    final Evaluator evaluator;
+    final RolapLevel rolapLevel;
 
     /**
      * We remember one of the measures so we can generate
@@ -184,6 +190,111 @@ public class RolapNativeSql {
 
         public String toString() {
             return "StoredMeasureSqlCompiler";
+        }
+    }
+
+    /**
+     * Compiles a MATCHES MDX operator into SQL regular
+     * expression match.
+     */
+    class MatchingSqlCompiler extends FunCallSqlCompilerBase {
+
+        protected MatchingSqlCompiler()
+        {
+            super(Category.Logical, "MATCHES", 2);
+        }
+
+        @Override
+        public String compile(Exp exp) {
+            if (!match(exp)) {
+                return null;
+            }
+            if (!MondrianProperties.instance()
+                .EnableNativeRegexpFilter.get())
+            {
+                return null;
+            }
+            if (!dialect.allowsRegularExpressionInWhereClause()
+                || !(exp instanceof ResolvedFunCall)
+                || evaluator == null)
+            {
+                return null;
+            }
+
+            final Exp arg0 = ((ResolvedFunCall)exp).getArg(0);
+            final Exp arg1 = ((ResolvedFunCall)exp).getArg(1);
+
+            // Must finish by ".Caption" or ".Name"
+            if (!(arg0 instanceof ResolvedFunCall)
+                || ((ResolvedFunCall)arg0).getArgCount() != 1
+                || !(arg0.getType() instanceof StringType)
+                || (!((ResolvedFunCall)arg0).getFunName().equals("Name")
+                    && !((ResolvedFunCall)arg0)
+                            .getFunName().equals("Caption")))
+            {
+                return null;
+            }
+
+            final boolean useCaption;
+            if (((ResolvedFunCall)arg0).getFunName().equals("Name")) {
+                useCaption = false;
+            } else {
+                useCaption = true;
+            }
+
+            // Must be ".CurrentMember"
+            final Exp currMemberExpr = ((ResolvedFunCall)arg0).getArg(0);
+            if (!(currMemberExpr instanceof ResolvedFunCall)
+                || ((ResolvedFunCall)currMemberExpr).getArgCount() != 1
+                || !(currMemberExpr.getType() instanceof MemberType)
+                || !((ResolvedFunCall)currMemberExpr)
+                        .getFunName().equals("CurrentMember"))
+            {
+                return null;
+            }
+
+            // Must be a dimension
+            RolapCubeDimension dimension;
+            final Exp dimExpr = ((ResolvedFunCall)currMemberExpr).getArg(0);
+            if (!(dimExpr instanceof DimensionExpr)) {
+                return null;
+            } else {
+                dimension =
+                    (RolapCubeDimension) evaluator.getCachedResult(
+                        new ExpCacheDescriptor(dimExpr, evaluator));
+            }
+
+            // TODO Add support for aggregate tables when using
+            // matching native filter.
+
+            if (rolapLevel != null
+                && dimension.equals(rolapLevel.getDimension()))
+            {
+                // We can't use the evaluator because the filter is filtering
+                // a set which is uses same dimension as the predicate.
+                // We must use, in order of priority,
+                //  caption requested: caption->name->key
+                //  name requested: name->key
+                return
+                dialect.generateRegularExpression(
+                    useCaption
+                        ? rolapLevel.captionExp == null
+                            ? rolapLevel.nameExp == null
+                                ? rolapLevel.keyExp.getExpression(sqlQuery)
+                                : rolapLevel.nameExp.getExpression(sqlQuery)
+                            : rolapLevel.captionExp.getExpression(sqlQuery)
+                        : rolapLevel.nameExp == null
+                            ? rolapLevel.keyExp.getExpression(sqlQuery)
+                            : rolapLevel.nameExp.getExpression(sqlQuery),
+                    String.valueOf(
+                        evaluator.getCachedResult(
+                            new ExpCacheDescriptor(arg1, evaluator))));
+            } else {
+                return null;
+            }
+        }
+        public String toString() {
+            return "MatchingSqlCompiler";
         }
     }
 
@@ -435,11 +546,18 @@ public class RolapNativeSql {
     /**
      * Creates a RolapNativeSql.
      *
-     * @param sqlQuery the query which is needed for different SQL dialects - it
-     * is not modified
+     * @param sqlQuery the query which is needed for different SQL dialects -
+     * it is not modified
      */
-    RolapNativeSql(SqlQuery sqlQuery, AggStar aggStar) {
+    public RolapNativeSql(
+        SqlQuery sqlQuery,
+        AggStar aggStar,
+        Evaluator evaluator,
+        RolapLevel rolapLevel)
+    {
         this.sqlQuery = sqlQuery;
+        this.rolapLevel = rolapLevel;
+        this.evaluator = evaluator;
         this.dialect = sqlQuery.getDialect();
         this.aggStar = aggStar;
 
@@ -497,6 +615,8 @@ public class RolapNativeSql {
         booleanCompiler.add(
             new UnaryOpSqlCompiler(
                 Category.Logical, "not", "NOT", booleanCompiler));
+        booleanCompiler.add(
+            new MatchingSqlCompiler());
         booleanCompiler.add(
             new ParenthesisSqlCompiler(Category.Logical, booleanCompiler));
         booleanCompiler.add(
