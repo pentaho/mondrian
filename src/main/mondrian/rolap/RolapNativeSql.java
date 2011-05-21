@@ -204,7 +204,6 @@ public class RolapNativeSql {
             super(Category.Logical, "MATCHES", 2);
         }
 
-        @Override
         public String compile(Exp exp) {
             if (!match(exp)) {
                 return null;
