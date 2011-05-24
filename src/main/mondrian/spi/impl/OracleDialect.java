@@ -57,6 +57,25 @@ public class OracleDialect extends JdbcDialectImpl {
     public String generateOrderByNullsLast(String expr, boolean ascending) {
         return generateOrderByNullsLastAnsi(expr, ascending);
     }
+
+    @Override
+    public boolean allowsRegularExpressionInWhereClause() {
+        return true;
+    }
+
+    @Override
+    public String generateRegularExpression(
+        String source,
+        String javaRegExp)
+    {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("REGEXP_LIKE(");
+        sb.append(source);
+        sb.append(", ");
+        quoteStringLiteral(sb, javaRegExp);
+        sb.append(")");
+        return sb.toString();
+    }
 }
 
 // End OracleDialect.java

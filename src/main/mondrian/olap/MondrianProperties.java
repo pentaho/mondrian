@@ -794,6 +794,19 @@ public class MondrianProperties extends TriggerableProperties {
             this, "mondrian.native.nonempty.enable", true);
 
     /**
+     * <p>If this property is true, when evaluating a filter which using a
+     * regular expression, Mondrian will try to nativize the operation.
+     * It must be implemented in the database dialect used, and only a
+     * subset of Filter expressions are supported.</p>
+     * <p>An example of a supported filter expression is:</p>
+     * <p>Filter([Dimension].[Level].Members, [Dimension].CurrentMember.Caption
+     * Matches ("(^i).*Foo.*")</p>
+     */
+    public transient final BooleanProperty EnableNativeRegexpFilter =
+        new BooleanProperty(
+            this, "mondrian.native.EnableNativeRegexpFilter", false);
+
+    /**
      * Alerting action to take in case native evaluation of a function is
      * enabled but not supported for that function's usage in a particular
      * query.  (No alert is ever raised in cases where native evaluation would

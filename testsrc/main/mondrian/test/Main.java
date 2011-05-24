@@ -207,6 +207,7 @@ public class Main extends TestSuite {
                 addTest(suite, Base64Test.class);
                 return suite;
             }
+            addTest(suite, NativeFilterMatchingTest.class);
             addTest(suite, RolapConnectionTest.class);
             addTest(suite, FilteredIterableTest.class);
             addTest(suite, HighDimensionsTest.class);
