@@ -74,14 +74,6 @@ public class GreenplumDialect extends PostgreSqlDialect {
             return false;
         }
     }
-
-    public String generateRegularExpression(String source, String javaRegExp) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append(source);
-        sb.append(" ~ ");
-        quoteStringLiteral(sb, javaRegExp);
-        return sb.toString();
-    }
 }
 
 // End GreenplumDialect.java
