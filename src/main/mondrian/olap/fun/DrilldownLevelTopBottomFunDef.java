@@ -37,25 +37,29 @@ import java.util.*;
 class DrilldownLevelTopBottomFunDef extends FunDefBase {
     final boolean top;
 
-    static final MultiResolver DrilldownLevelTopResolver = new MultiResolver(
+    static final MultiResolver DrilldownLevelTopResolver =
+        new MultiResolver(
             "DrilldownLevelTop",
             "DrilldownLevelTop(Set_Expression, Count [, [Level_Expression][, Numeric_Expression]])",
             "Drills down the topmost members of a set, at a specified level, to one level below.",
-            new String[] {"fxxn", "fxxnl", "fxxnln", "fxxnen"}) {
-        protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-            return new DrilldownLevelTopBottomFunDef(dummyFunDef, true);
-        }
-    };
+            new String[] {"fxxn", "fxxnl", "fxxnln", "fxxnen"})
+        {
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                return new DrilldownLevelTopBottomFunDef(dummyFunDef, true);
+            }
+        };
 
-    static final MultiResolver DrilldownLevelBottomResolver = new MultiResolver(
+    static final MultiResolver DrilldownLevelBottomResolver =
+        new MultiResolver(
             "DrilldownLevelBottom",
             "DrilldownLevelBottom(Set_Expression, Count [, [Level_Expression][, Numeric_Expression]])",
             "Drills down the bottommost members of a set, at a specified level, to one level below.",
-            new String[] {"fxxn", "fxxnl", "fxxnln", "fxxnen"}) {
-        protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
-            return new DrilldownLevelTopBottomFunDef(dummyFunDef, false);
-        }
-    };
+            new String[] {"fxxn", "fxxnl", "fxxnln", "fxxnen"})
+        {
+            protected FunDef createFunDef(Exp[] args, FunDef dummyFunDef) {
+                return new DrilldownLevelTopBottomFunDef(dummyFunDef, false);
+            }
+        };
 
     public DrilldownLevelTopBottomFunDef(
         FunDef dummyFunDef,

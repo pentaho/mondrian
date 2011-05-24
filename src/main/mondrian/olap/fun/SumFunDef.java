@@ -23,7 +23,8 @@ import mondrian.mdx.ResolvedFunCall;
  * @since Mar 23, 2006
  */
 class SumFunDef extends AbstractAggregateFunDef {
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
             "Sum",
             "Sum(<Set>[, <Numeric Expression>])",
             "Returns the sum of a numeric expression evaluated over a set.",

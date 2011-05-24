@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -72,6 +72,7 @@ public abstract class AbstractRecorder implements MessageRecorder {
     protected AbstractRecorder() {
         this(DEFAULT_MSG_LIMIT);
     }
+
     protected AbstractRecorder(final int errorMsgLimit) {
         this.errorMsgLimit = errorMsgLimit;
         this.contexts = new ArrayList<String>();
@@ -101,18 +102,23 @@ public abstract class AbstractRecorder implements MessageRecorder {
     public boolean hasInformation() {
         return (infoMsgCount > 0);
     }
+
     public boolean hasWarnings() {
         return (warningMsgCount > 0);
     }
+
     public boolean hasErrors() {
         return (errorMsgCount > 0);
     }
+
     public int getInfoCount() {
         return infoMsgCount;
     }
+
     public int getWarningCount() {
         return warningMsgCount;
     }
+
     public int getErrorCount() {
         return errorMsgCount;
     }
@@ -191,6 +197,7 @@ public abstract class AbstractRecorder implements MessageRecorder {
     public void reportWarning(final String msg) {
         reportWarning(msg, null);
     }
+
     public void reportWarning(final String msg, final Object info) {
         warningMsgCount++;
         recordMessage(msg, info, MsgType.WARN);
@@ -199,6 +206,7 @@ public abstract class AbstractRecorder implements MessageRecorder {
     public void reportInfo(final String msg) {
         reportInfo(msg, null);
     }
+
     public void reportInfo(final String msg, final Object info) {
         infoMsgCount++;
         recordMessage(msg, info, MsgType.INFO);
@@ -214,9 +222,9 @@ public abstract class AbstractRecorder implements MessageRecorder {
      * @param msgType one of the message type enum values
      */
     protected abstract void recordMessage(
-            String msg,
-            Object info,
-            MsgType msgType);
+        String msg,
+        Object info,
+        MsgType msgType);
 }
 
 // End AbstractRecorder.java

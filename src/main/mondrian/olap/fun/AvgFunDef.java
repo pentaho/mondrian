@@ -24,7 +24,7 @@ import mondrian.mdx.ResolvedFunCall;
  */
 class AvgFunDef extends AbstractAggregateFunDef {
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
-            "Avg",
+        "Avg",
             "Avg(<Set>[, <Numeric Expression>])",
             "Returns the average value of a numeric expression evaluated over a set.",
             new String[]{"fnx", "fnxn"},

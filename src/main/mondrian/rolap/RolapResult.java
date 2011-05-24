@@ -413,7 +413,7 @@ public class RolapResult extends ResultBase {
                                         m.getExpression().accept(visitor);
                                         Dimension dimension = visitor.dimension;
                                         if (removeDimension(
-                                            dimension, nonAllMembers))
+                                                dimension, nonAllMembers))
                                         {
                                             redo = true;
                                         }
@@ -708,7 +708,7 @@ public class RolapResult extends ResultBase {
     public Cell getCell(int[] pos) {
         if (pos.length != point.size()) {
             throw Util.newError(
-                    "coordinates should have dimension " + point.size());
+                "coordinates should have dimension " + point.size());
         }
 
         for (int i = 0; i < pos.length; i++) {

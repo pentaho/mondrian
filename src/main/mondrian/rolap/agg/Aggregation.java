@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -469,7 +469,7 @@ public class Aggregation {
 
                 RolapStar.Column column = columns[i];
                 if (!cacheRegion.getConstrainedColumnsBitKey().get(
-                    column.getBitPosition()))
+                        column.getBitPosition()))
                 {
                     axisKeepBitSet.set(0, keyCount);
                     continue;
@@ -548,7 +548,7 @@ public class Aggregation {
                 RolapStar.Column column = columns[i];
                 final int bitPosition = column.getBitPosition();
                 if (!cacheRegion.getConstrainedColumnsBitKey().get(
-                    bitPosition))
+                        bitPosition))
                 {
                     continue;
                 }

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -83,10 +83,10 @@ class CaseTestFunDef extends FunDefBase {
     private static class ResolverImpl extends ResolverBase {
         public ResolverImpl() {
             super(
-                    "_CaseTest",
-                    "Case When <Logical Expression> Then <Expression> [...] [Else <Expression>] End",
-                    "Evaluates various conditions, and returns the corresponding expression for the first which evaluates to true.",
-                    Syntax.Case);
+                "_CaseTest",
+                "Case When <Logical Expression> Then <Expression> [...] [Else <Expression>] End",
+                "Evaluates various conditions, and returns the corresponding expression for the first which evaluates to true.",
+                Syntax.Case);
         }
 
         public FunDef resolve(
@@ -103,19 +103,19 @@ class CaseTestFunDef extends FunDefBase {
             int returnType = args[1].getCategory();
             for (int i = 0; i < clauseCount; i++) {
                 if (!validator.canConvert(
-                    j, args[j++], Category.Logical, conversions))
+                        j, args[j++], Category.Logical, conversions))
                 {
                     mismatchingArgs++;
                 }
                 if (!validator.canConvert(
-                    j, args[j++], returnType, conversions))
+                        j, args[j++], returnType, conversions))
                 {
                     mismatchingArgs++;
                 }
             }
             if (j < args.length) {
                 if (!validator.canConvert(
-                    j, args[j++], returnType, conversions))
+                        j, args[j++], returnType, conversions))
                 {
                     mismatchingArgs++;
                 }

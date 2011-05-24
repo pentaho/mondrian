@@ -182,7 +182,7 @@ public class Segment {
      * Sets the data, and notifies any threads which are blocked in
      * {@link #waitUntilLoaded}.
      */
-     void setData(
+    void setData(
         SegmentDataset data,
         RolapAggregationManager.PinSet pinnedSegments)
     {
@@ -718,7 +718,7 @@ public class Segment {
             if (obj instanceof Region) {
                 Region that = (Region) obj;
                 return Arrays.equals(
-                        this.predicates, that.predicates)
+                    this.predicates, that.predicates)
                     && Arrays.equals(
                         this.multiColumnPredicates,
                         that.multiColumnPredicates);

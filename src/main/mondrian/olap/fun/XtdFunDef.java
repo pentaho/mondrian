@@ -34,28 +34,32 @@ import mondrian.rolap.RolapHierarchy;
 class XtdFunDef extends FunDefBase {
     private final org.olap4j.metadata.Level.Type levelType;
 
-    static final ResolverImpl MtdResolver = new ResolverImpl(
+    static final ResolverImpl MtdResolver =
+        new ResolverImpl(
             "Mtd",
             "Mtd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Month.",
             new String[]{"fx", "fxm"},
             org.olap4j.metadata.Level.Type.TIME_MONTHS);
 
-    static final ResolverImpl QtdResolver = new ResolverImpl(
+    static final ResolverImpl QtdResolver =
+        new ResolverImpl(
             "Qtd",
             "Qtd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Quarter.",
             new String[]{"fx", "fxm"},
             org.olap4j.metadata.Level.Type.TIME_QUARTERS);
 
-    static final ResolverImpl WtdResolver = new ResolverImpl(
+    static final ResolverImpl WtdResolver =
+        new ResolverImpl(
             "Wtd",
             "Wtd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Week.",
             new String[]{"fx", "fxm"},
             org.olap4j.metadata.Level.Type.TIME_WEEKS);
 
-    static final ResolverImpl YtdResolver = new ResolverImpl(
+    static final ResolverImpl YtdResolver =
+        new ResolverImpl(
             "Ytd",
             "Ytd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Year.",

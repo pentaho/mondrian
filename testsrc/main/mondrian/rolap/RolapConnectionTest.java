@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2010 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -101,7 +101,7 @@ public class RolapConnectionTest extends TestCase {
             fail("Expected exception");
         } catch (SQLException e) {
             if (e.getClass().getName().equals(
-                "org.apache.commons.dbcp.DbcpException"))
+                    "org.apache.commons.dbcp.DbcpException"))
             {
                 // This is expected. (We use string-comparison so that the
                 // compiler doesn't warn about using a deprecated class.)

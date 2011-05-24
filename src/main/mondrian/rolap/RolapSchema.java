@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -359,8 +359,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                 message, describe(node), xmlLocation, Severity.WARNING, cause);
         if (internalConnection != null
             && "true".equals(
-            internalConnection.getProperty(
-                RolapConnectionProperties.Ignore.name())))
+                internalConnection.getProperty(
+                    RolapConnectionProperties.Ignore.name())))
         {
             warningList.add(ex);
         } else {
@@ -523,8 +523,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
      */
     protected void addCube(final RolapCube cube) {
         mapNameToCube.put(
-                Util.normalizeName(cube.getName()),
-                cube);
+            Util.normalizeName(cube.getName()),
+            cube);
     }
 
     protected void addNamedSet(String name, NamedSet namedSet) {
@@ -574,7 +574,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
 
     public Parameter[] getParameters() {
         return parameterList.toArray(
-                new Parameter[parameterList.size()]);
+            new Parameter[parameterList.size()]);
     }
 
     /**

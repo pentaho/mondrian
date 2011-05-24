@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -371,8 +371,8 @@ public class AccessControlTest extends FoodMartTestCase {
         // assert: members above top level do not exist
         final TestContext testContext = getRestrictedTestContext();
         testContext.assertAxisThrows(
-                "[Customers].[Canada].children",
-                "MDX object '[Customers].[Canada]' not found in cube 'Sales'");
+            "[Customers].[Canada].children",
+            "MDX object '[Customers].[Canada]' not found in cube 'Sales'");
     }
 
     public void testGrantHierarchy8() {
@@ -519,7 +519,7 @@ public class AccessControlTest extends FoodMartTestCase {
         Cube salesCube = schema.lookupCube("Sales", fail);
         final SchemaReader schemaReader = salesCube.getSchemaReader(null);
         Hierarchy storeHierarchy = salesCube.lookupHierarchy(
-                new Id.Segment("Store", Id.Quoting.UNQUOTED), false);
+            new Id.Segment("Store", Id.Quoting.UNQUOTED), false);
         role.grant(schema, Access.ALL_DIMENSIONS);
         role.grant(salesCube, Access.ALL);
         Level nationLevel =
@@ -1703,34 +1703,34 @@ public class AccessControlTest extends FoodMartTestCase {
 
         checkQuery(testContext, firstBrokenMdx);
         testContext.assertQueryReturns(
-                firstBrokenMdx,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Store].[USA]}\n"
-                + "Row #0: 49,085\n");
+            firstBrokenMdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA]}\n"
+            + "Row #0: 49,085\n");
 
         final String secondBrokenMdx =
             "select [Measures].[Unit Sales] ON COLUMNS, "
             + "Descendants([Store],[Store].[Store Name]) ON ROWS from [Sales]";
         checkQuery(testContext, secondBrokenMdx);
         testContext.assertQueryReturns(
-                secondBrokenMdx,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Store].[USA].[CA].[Alameda].[HQ]}\n"
-                + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
-                + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
-                + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
-                + "Row #0: \n"
-                + "Row #1: 21,333\n"
-                + "Row #2: 25,635\n"
-                + "Row #3: 2,117\n");
+            secondBrokenMdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA].[CA].[Alameda].[HQ]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "Row #0: \n"
+            + "Row #1: 21,333\n"
+            + "Row #2: 25,635\n"
+            + "Row #3: 2,117\n");
     }
 
     /**

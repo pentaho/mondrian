@@ -104,10 +104,10 @@ public class VisualTotalsFunDef extends FunDefBase {
         }
 
         private VisualTotalMember createMember(
-                Member member,
-                int i,
-                final List<Member> list,
-                Evaluator evaluator)
+            Member member,
+            int i,
+            final List<Member> list,
+            Evaluator evaluator)
         {
             final String name;
             if (stringCalc != null) {
@@ -177,13 +177,13 @@ public class VisualTotalsFunDef extends FunDefBase {
                 memberExprs[i] = new MemberExpr(childMember);
             }
             return new UnresolvedFunCall(
-                    "Aggregate",
-                    new Exp[] {
-                        new UnresolvedFunCall(
-                                "{}",
-                                Syntax.Braces,
-                                memberExprs)
-                    });
+                "Aggregate",
+                new Exp[] {
+                    new UnresolvedFunCall(
+                        "{}",
+                        Syntax.Braces,
+                        memberExprs)
+                });
         }
     }
 
@@ -269,13 +269,13 @@ public class VisualTotalsFunDef extends FunDefBase {
                 memberExprs[i] = new MemberExpr(childMember);
             }
             return new UnresolvedFunCall(
-                    "Aggregate",
-                    new Exp[] {
-                        new UnresolvedFunCall(
-                                "{}",
-                                Syntax.Braces,
-                                memberExprs)
-                    });
+                "Aggregate",
+                new Exp[] {
+                    new UnresolvedFunCall(
+                        "{}",
+                        Syntax.Braces,
+                        memberExprs)
+                });
         }
 
         public int getOrdinal() {

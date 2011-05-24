@@ -24,10 +24,11 @@ class SparseSegmentBody extends AbstractSegmentBody {
     private static final long serialVersionUID = -6684830985364895836L;
     final CellKey[] keys;
     final Object[] data;
+
     SparseSegmentBody(
-            Map<CellKey, Object> dataToSave,
-            SortedSet<Comparable<?>>[] axisValueSets,
-            boolean[] nullAxisFlags)
+        Map<CellKey, Object> dataToSave,
+        SortedSet<Comparable<?>>[] axisValueSets,
+        boolean[] nullAxisFlags)
     {
         super(axisValueSets, nullAxisFlags);
 

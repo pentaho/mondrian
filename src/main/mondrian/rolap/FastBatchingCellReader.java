@@ -706,7 +706,7 @@ public class FastBatchingCellReader implements CellReader {
         private boolean constraintsMatch(Batch other) {
             if (areBothDistinctCountBatches(other)) {
                 if (getConstrainedColumnsBitKey().equals(
-                    other.getConstrainedColumnsBitKey()))
+                        other.getConstrainedColumnsBitKey()))
                 {
                     return hasSameCompoundPredicate(other)
                         && haveSameValues(other);

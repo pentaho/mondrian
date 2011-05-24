@@ -159,10 +159,10 @@ public class MemberType implements Type {
             return (MemberType) type;
         } else {
             return new MemberType(
-                    type.getDimension(),
-                    type.getHierarchy(),
-                    type.getLevel(),
-                    null);
+                type.getDimension(),
+                type.getHierarchy(),
+                type.getLevel(),
+                null);
         }
     }
 

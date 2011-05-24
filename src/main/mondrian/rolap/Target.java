@@ -143,8 +143,8 @@ public class Target extends TargetBase {
                     this.moreRows = sqlTupleReader.readNextTuple();
                     if (limit > 0 && !asList && getList().size() > limit) {
                         System.out.println(
-                                "Target: 199, Ouch! Toooo big array..."
-                                + this.hashCode());
+                            "Target: 199, Ouch! Toooo big array..."
+                            + hashCode());
                         new Throwable().printStackTrace();
                     }
                 }

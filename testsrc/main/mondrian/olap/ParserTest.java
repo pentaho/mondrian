@@ -305,18 +305,18 @@ public class ParserTest extends FoodMartTestCase {
 
     public void testDimensionProperties() {
         assertParseQuery(
-                "select {[foo]} properties p1,   p2 on columns from [cube]",
-                "select {[foo]} DIMENSION PROPERTIES p1, p2 ON COLUMNS\n"
-                + "from [cube]\n");
+            "select {[foo]} properties p1,   p2 on columns from [cube]",
+            "select {[foo]} DIMENSION PROPERTIES p1, p2 ON COLUMNS\n"
+            + "from [cube]\n");
     }
 
     public void testCellProperties() {
         assertParseQuery(
-                "select {[foo]} on columns "
-                + "from [cube] CELL PROPERTIES FORMATTED_VALUE",
-                "select {[foo]} ON COLUMNS\n"
-                + "from [cube]\n"
-                + "[FORMATTED_VALUE]");
+            "select {[foo]} on columns "
+            + "from [cube] CELL PROPERTIES FORMATTED_VALUE",
+            "select {[foo]} ON COLUMNS\n"
+            + "from [cube]\n"
+            + "[FORMATTED_VALUE]");
     }
 
     public void testIsEmpty() {

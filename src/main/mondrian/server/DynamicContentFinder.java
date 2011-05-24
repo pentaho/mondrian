@@ -123,13 +123,16 @@ public class DynamicContentFinder
                 this.lastDataSourcesConfigString);
     }
 
-    private Map<String, Pair<DataSourcesConfig.DataSource,
-            DataSourcesConfig.Catalog>> createCatalogMap(
+    private Map<
+        String,
+        Pair<DataSourcesConfig.DataSource, DataSourcesConfig.Catalog>>
+    createCatalogMap(
         DataSourcesConfig.DataSources newDataSources)
     {
-        Map<String,
-            Pair<DataSourcesConfig.DataSource,
-                DataSourcesConfig.Catalog>> newDatasourceCatalogNames =
+        Map<
+            String,
+            Pair<DataSourcesConfig.DataSource, DataSourcesConfig.Catalog>>
+            newDatasourceCatalogNames =
                 new HashMap<String,
                     Pair<DataSourcesConfig.DataSource,
                         DataSourcesConfig.Catalog>>();
@@ -172,7 +175,7 @@ public class DynamicContentFinder
                         newDatasourceCatalogs.get(oldCatalog.name);
                 if (pair == null
                     || !areCatalogsEqual(
-                    oldDataSource, oldCatalog, pair.left, pair.right))
+                        oldDataSource, oldCatalog, pair.left, pair.right))
                 {
                     flushCatalog(oldCatalog.name);
                 }

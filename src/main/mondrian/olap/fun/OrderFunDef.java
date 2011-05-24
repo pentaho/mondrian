@@ -376,10 +376,10 @@ class OrderFunDef extends FunDefBase {
 
         private ResolverImpl() {
             super(
-                    "Order",
-                    "Order(<Set> {, <Key Specification>}...)",
-                    "Arranges members of a set, optionally preserving or breaking the hierarchy.",
-                    Syntax.Function);
+                "Order",
+                "Order(<Set> {, <Key Specification>}...)",
+                "Arranges members of a set, optionally preserving or breaking the hierarchy.",
+                Syntax.Function);
             this.reservedWords = Flag.getNames();
         }
 
@@ -402,7 +402,7 @@ class OrderFunDef extends FunDefBase {
             int i = 1;
             while (i < args.length) {
                 if (!validator.canConvert(
-                    i, args[i], Category.Value, conversions))
+                        i, args[i], Category.Value, conversions))
                 {
                     return null;
                 } else {
@@ -414,7 +414,7 @@ class OrderFunDef extends FunDefBase {
                     //done, will default last arg to ASC
                 } else {
                     if (!validator.canConvert(
-                        i, args[i], Category.Symbol, conversions))
+                            i, args[i], Category.Symbol, conversions))
                     {
                         // continue, will default sort flag for prev arg to ASC
                     } else {

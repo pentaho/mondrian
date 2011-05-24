@@ -30,30 +30,30 @@ import mondrian.test.I18nTest;
 public class FormatTest extends TestCase {
 
     private final Format.FormatLocale localeFra = Format.createLocale(
-            '.', // thousandSeparator = ',' in en
-            ',', // decimalPlaceholder = '.' in en
-            "-", // dateSeparator = "/" in en
-            "#", // timeSeparator = ":" in en
-            "FF", // currencySymbol = "$" in en
-//            "#.##0-00FF", // currencyFormat = "$#,##0.##" in en
-            "#,##0.00FF", // currencyFormat = "$#,##0.##" in en
-            new String[] {
-                "", "Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"},
-            new String[] {
-                "", "Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi",
-                "Vendredi", "Samedi"},
-            new String[] {
-                "Jan", "Fev", "Mar", "Avr", "Mai", "Jui", "Jui", "Aou",
-                "Sep", "Oct", "Nov", "Dec", ""},
-            new String[] {
-                "Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin",
-                "Juillet", "Aout", "Septembre", "Octobre", "Novembre",
-                "Decembre", ""},
-            Locale.FRENCH);
+        '.', // thousandSeparator = ',' in en
+        ',', // decimalPlaceholder = '.' in en
+        "-", // dateSeparator = "/" in en
+        "#", // timeSeparator = ":" in en
+        "FF", // currencySymbol = "$" in en
+//      "#.##0-00FF", // currencyFormat = "$#,##0.##" in en
+        "#,##0.00FF", // currencyFormat = "$#,##0.##" in en
+        new String[] {
+            "", "Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"},
+        new String[] {
+            "", "Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi",
+            "Vendredi", "Samedi"},
+        new String[] {
+            "Jan", "Fev", "Mar", "Avr", "Mai", "Jui", "Jui", "Aou",
+            "Sep", "Oct", "Nov", "Dec", ""},
+        new String[] {
+            "Janvier", "Fevrier", "Mars", "Avril", "Mai", "Juin",
+            "Juillet", "Aout", "Septembre", "Octobre", "Novembre",
+            "Decembre", ""},
+        Locale.FRENCH);
 
     /** Locale gleaned from Java's German locale. */
     private final Format.FormatLocale localeDe = Format.createLocale(
-            Locale.GERMANY);
+        Locale.GERMANY);
 
     final Number d = new BigDecimal("3141592.653589793");
 
@@ -820,10 +820,10 @@ public class FormatTest extends TestCase {
         // the system default locale to resolve the currency
         // symbol it must use.
         checkFormat(
-             Format.createLocale(Locale.JAPANESE),
-             123456,
-             "Currency",
-             "$ 123,456.00");
+            Format.createLocale(Locale.JAPANESE),
+            123456,
+            "Currency",
+            "$ 123,456.00");
 
         // international currency symbol
         checkFormat(

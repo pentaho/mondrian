@@ -148,7 +148,7 @@ public class BuiltinFunTable extends FunTableImpl {
 
                 if (n >= levels.size() || n < 0) {
                     throw newEvalException(
-                            this, "Index '" + n + "' out of bounds");
+                        this, "Index '" + n + "' out of bounds");
                 }
                 return levels.get(0);
             }
@@ -755,7 +755,7 @@ public class BuiltinFunTable extends FunTableImpl {
                             return true;
                         }
                         if (memberCalc.getType().usesHierarchy(
-                            hierarchy, true))
+                                hierarchy, true))
                         {
                             return false;
                         }
@@ -856,7 +856,8 @@ public class BuiltinFunTable extends FunTableImpl {
             DrilldownLevelTopBottomFunDef.DrilldownLevelBottomResolver);
         builder.define(DrilldownMemberFunDef.Resolver);
 
-        if (false) builder.define(
+        if (false)
+        builder.define(
             new FunDefBase(
                 "DrilldownMemberBottom",
                 "DrilldownMemberBottom(<Set1>, <Set2>, <Count>[, [<Numeric Expression>][, RECURSIVE]])",
@@ -869,7 +870,8 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        if (false) builder.define(
+        if (false)
+        builder.define(
             new FunDefBase(
                 "DrilldownMemberTop",
                 "DrilldownMemberTop(<Set1>, <Set2>, <Count>[, [<Numeric Expression>][, RECURSIVE]])",
@@ -882,7 +884,8 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        if (false) builder.define(
+        if (false)
+        builder.define(
             new FunDefBase(
                 "DrillupLevel",
                 "DrillupLevel(<Set>[, <Level>])",
@@ -895,7 +898,8 @@ public class BuiltinFunTable extends FunTableImpl {
             }
         });
 
-        if (false) builder.define(
+        if (false)
+        builder.define(
             new FunDefBase(
                 "DrillupMember",
                 "DrillupMember(<Set1>, <Set2>)",
@@ -1347,7 +1351,8 @@ public class BuiltinFunTable extends FunTableImpl {
         // TUPLE FUNCTIONS
 
         // <Set>.Current
-        if (false) builder.define(
+        if (false)
+        builder.define(
             new FunDefBase(
                 "Current",
                 "Returns the current tuple from a set during an iteration.",

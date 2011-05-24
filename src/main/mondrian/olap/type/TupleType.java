@@ -166,7 +166,7 @@ public class TupleType implements Type {
         final List<Type> elementTypes = new ArrayList<Type>();
         for (int i = 0; i < this.elementTypes.length; i++) {
             Type commonType = this.elementTypes[i].computeCommonType(
-                    that.elementTypes[i], conversionCount);
+                that.elementTypes[i], conversionCount);
             elementTypes.add(commonType);
             if (commonType == null) {
                 return null;

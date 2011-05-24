@@ -48,7 +48,7 @@ class ExtractFunDef extends FunDefBase {
             }
             for (int i = 1; i < args.length; ++i) {
                 if (!validator.canConvert(
-                    0, args[i], Category.Hierarchy, conversions))
+                        0, args[i], Category.Hierarchy, conversions))
                 {
                     return null;
                 }

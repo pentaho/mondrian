@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -82,15 +82,15 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
             + "from [Fact]";
 
         getCubeTestContext().assertQueryReturns(
-                mdx,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Total]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Cat One].[Prod Cat One],"
-                + " [Store].[All Stores]}\n"
-                + "Row #0: 15\n");
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Total]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Cat One].[Prod Cat One],"
+            + " [Store].[All Stores]}\n"
+            + "Row #0: 15\n");
     }
 
     public void testChildSelection() throws Exception {
@@ -101,16 +101,16 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
         String mdx = "select {[Measures].[Total]} on columns, "
             + "non empty [Product].[Cat One].Children on rows from [Fact]";
         getCubeTestContext().assertQueryReturns(
-                mdx,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Total]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Cat One].[Prod Cat Two]}\n"
-                + "{[Product].[Cat One].[Prod Cat One]}\n"
-                + "Row #0: 18\n"
-                + "Row #1: 15\n");
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Total]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Cat One].[Prod Cat Two]}\n"
+            + "{[Product].[Cat One].[Prod Cat One]}\n"
+            + "Row #0: 18\n"
+            + "Row #1: 15\n");
     }
 
     protected String getCubeDescription() {

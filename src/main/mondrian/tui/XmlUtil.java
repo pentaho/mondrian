@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1051,7 +1051,7 @@ public class XmlUtil {
 
         TransformerFactory tfactory = getTransformerFactory();
         Templates stylesheet = tfactory.newTemplates(
-                            new DOMSource(xslDOM, xslFileName));
+            new DOMSource(xslDOM, xslFileName));
         Transformer transformer = stylesheet.newTransformer();
         if (namevalueParameters != null) {
             for (int i = 0; i < namevalueParameters.length; i++) {

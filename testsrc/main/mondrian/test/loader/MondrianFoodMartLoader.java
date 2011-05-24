@@ -165,11 +165,11 @@ public class MondrianFoodMartLoader {
 
         // Add a console appender for error messages.
         final ConsoleAppender consoleAppender =
-                new ConsoleAppender(
-                        // Formats the message on its own line,
-                        // omits timestamp, priority etc.
-                        new PatternLayout("%m%n"),
-                        "System.out");
+            new ConsoleAppender(
+                // Formats the message on its own line,
+                // omits timestamp, priority etc.
+                new PatternLayout("%m%n"),
+                "System.out");
         consoleAppender.setThreshold(Level.ERROR);
         LOGGER.addAppender(consoleAppender);
 
@@ -624,7 +624,7 @@ public class MondrianFoodMartLoader {
                             j++)
                         {
                             if (columns[j].name.equalsIgnoreCase(
-                                splitColumnNames[i]))
+                                    splitColumnNames[i]))
                             {
                                 thisColumn = columns[j];
                             }

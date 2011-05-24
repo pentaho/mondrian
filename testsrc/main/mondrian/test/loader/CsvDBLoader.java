@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde
+// Copyright (C) 2004-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -309,7 +309,7 @@ public class CsvDBLoader extends DBLoader {
                     int index = value0.indexOf(ACTION_BEFORE_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index + ACTION_BEFORE_TAG.length());
+                            index + ACTION_BEFORE_TAG.length());
                         if (s.length() == 0) {
                             throw new IOException(
                                 "CSV File parse Error: "
@@ -342,7 +342,7 @@ public class CsvDBLoader extends DBLoader {
                     index = value0.indexOf(ACTION_AFTER_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index + ACTION_AFTER_TAG.length());
+                            index + ACTION_AFTER_TAG.length());
                         if (s.length() == 0) {
                             throw new IOException(
                                 "CSV File parse Error: "
@@ -386,7 +386,7 @@ public class CsvDBLoader extends DBLoader {
                     index = value0.indexOf(TABLE_NAME_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index + TABLE_NAME_TAG.length());
+                            index + TABLE_NAME_TAG.length());
                         if (s.length() == 0) {
                             throw new IOException(
                                 "CSV File parse Error: "
@@ -408,7 +408,7 @@ public class CsvDBLoader extends DBLoader {
                     index = value0.indexOf(COLUMN_NAMES_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index + COLUMN_NAMES_TAG.length());
+                            index + COLUMN_NAMES_TAG.length());
                         if (s.length() == 0) {
                             throw new IOException(
                                 "CSV File parse Error: "
@@ -428,7 +428,7 @@ public class CsvDBLoader extends DBLoader {
                     index = value0.indexOf(COLUMN_TYPES_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index + COLUMN_TYPES_TAG.length());
+                            index + COLUMN_TYPES_TAG.length());
                         if (s.length() == 0) {
                             throw new IOException(
                                 "CSV File parse Error: "
@@ -462,7 +462,7 @@ public class CsvDBLoader extends DBLoader {
                     index = value0.indexOf(FILE_NAME_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index + FILE_NAME_TAG.length());
+                            index + FILE_NAME_TAG.length());
                         if (s.length() == 0) {
                             throw new IOException(
                                 "CSV File parse Error: "
@@ -481,7 +481,7 @@ public class CsvDBLoader extends DBLoader {
                     index = value0.indexOf(NOS_OF_ROWS_TAG);
                     if (index != -1) {
                         String s = value0.substring(
-                                index + NOS_OF_ROWS_TAG.length());
+                            index + NOS_OF_ROWS_TAG.length());
                         if (s.length() == 0) {
                             throw new IOException(
                                 "CSV File parse Error: "
@@ -532,7 +532,7 @@ public class CsvDBLoader extends DBLoader {
                     if (fileName != null) {
 //System.out.println("CsvLoader.loadTables: fileName="+fileName);
                         RowStream rowStream = new CsvLoaderRowStream(
-                                new CsvLoader(fileName));
+                            new CsvLoader(fileName));
                         controller.setRowStream(rowStream);
                         csvloader.nextSet();
                         csvloader.putBack(values);

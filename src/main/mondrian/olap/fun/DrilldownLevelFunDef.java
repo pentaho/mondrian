@@ -32,7 +32,8 @@ import java.util.*;
  * @since Mar 23, 2006
  */
 class DrilldownLevelFunDef extends FunDefBase {
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
             "DrilldownLevel",
             "DrilldownLevel(<Set>[, <Level>]) or DrilldownLevel(<Set>, , <Index>)",
             "Drills down the members of a set, at a specified level, to one level below. Alternatively, drills down on a specified dimension in the set.",

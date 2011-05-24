@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2011 Julian Hyde and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
@@ -973,9 +973,11 @@ public class JdbcMetaData {
                         if (t.schemaName != null && !duplicate) {
                             sb.append(t.schemaName).append(LEVEL_SEPARATOR);
                         }
-                        sb.append(t.name).append(LEVEL_SEPARATOR)
-                            .append(c.getKey()).append(" - ").append(
-                            c.getValue().displayType());
+                        sb.append(t.name)
+                            .append(LEVEL_SEPARATOR)
+                            .append(c.getKey())
+                            .append(" - ")
+                            .append(c.getValue().displayType());
 
                         f.add(sb.toString());
                     }

@@ -25,7 +25,8 @@ import java.util.*;
  * @since Mar 23, 2006
  */
 class ExceptFunDef extends FunDefBase {
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
             "Except",
             "Except(<Set1>, <Set2>[, ALL])",
             "Finds the difference between two sets, optionally retaining duplicates.",

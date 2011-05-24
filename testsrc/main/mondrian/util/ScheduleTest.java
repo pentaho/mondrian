@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -166,9 +166,9 @@ public class ScheduleTest extends TestCase {
     public void testDaily() {
         int period = 1;
         Schedule schedule = Schedule.createDaily(
-                toDate(2002, 04, 20, "Sat", 8, 27),
-                toDate(2002, 06, 03, "Mon", 8, 27),
-                gmtTz, time0827, period);
+            toDate(2002, 04, 20, "Sat", 8, 27),
+            toDate(2002, 06, 03, "Mon", 8, 27),
+            gmtTz, time0827, period);
         Date d;
         d = schedule.nextOccurrence(null, false);
         assertEquals(2002, 4, 20, "Sat", 8, 27, d);
@@ -187,8 +187,8 @@ public class ScheduleTest extends TestCase {
     public void testDailyNoUpperLimit() {
         int period = 1;
         Schedule schedule = Schedule.createDaily(
-                toDate(2002, 4, 20, "Sat", 8, 27), null, gmtTz, time0827,
-                period);
+            toDate(2002, 4, 20, "Sat", 8, 27), null, gmtTz, time0827,
+            period);
         Date d = schedule.nextOccurrence(null, false);
         assertEquals(2002, 4, 20, "Sat", 8, 27, d);
         d = schedule.nextOccurrence(toDate(2002, 06, 03, "Mon", 16, 00), false);
@@ -198,9 +198,9 @@ public class ScheduleTest extends TestCase {
     public void testDailyPeriodic() {
         int period = 10;
         Schedule schedule = Schedule.createDaily(
-                toDate(2002, 4, 20, "Sat", 8, 27),
-                toDate(2002, 06, 03, "Mon", 8, 27),
-                gmtTz, time0827, period);
+            toDate(2002, 4, 20, "Sat", 8, 27),
+            toDate(2002, 06, 03, "Mon", 8, 27),
+            gmtTz, time0827, period);
         Date d = schedule.nextOccurrence(null, false);
         assertEquals(2002, 4, 20, "Sat", 8, 27, d);
         d = schedule.nextOccurrence(toDate(2002, 4, 20, "Sat", 8, 27), true);
@@ -235,9 +235,9 @@ public class ScheduleTest extends TestCase {
             (1 << Calendar.THURSDAY);
         int period = 1;
         Schedule schedule = Schedule.createWeekly(
-                toDate(2002, 4, 20, "Sat", 8, 27),
-                toDate(2002, 06, 05, "Wed", 12, 00),
-                gmtTz, time0827, period, thuesday);
+            toDate(2002, 4, 20, "Sat", 8, 27),
+            toDate(2002, 06, 05, "Wed", 12, 00),
+            gmtTz, time0827, period, thuesday);
         Date d;
         d = schedule.nextOccurrence(null, false);
         assertEquals(2002, 04, 23, "Tue", 8, 27, d);
@@ -321,9 +321,9 @@ public class ScheduleTest extends TestCase {
         int daysOfWeek = (1 << Calendar.THURSDAY);
         int weeksOfMonth = (1 << Schedule.LAST_WEEK_OF_MONTH);
         Schedule schedule = Schedule.createMonthlyByWeek(
-                toDate(2002, 3, 07, "Thu", 14, 00),
-                toDate(2004, 4, 19, "Mon", 12, 00),
-                jstTz, time0827, period, daysOfWeek, weeksOfMonth);
+            toDate(2002, 3, 07, "Thu", 14, 00),
+            toDate(2004, 4, 19, "Mon", 12, 00),
+            jstTz, time0827, period, daysOfWeek, weeksOfMonth);
         Date d;
         d = schedule.nextOccurrence(null, true);
         // 1st occurrence is
@@ -376,8 +376,8 @@ public class ScheduleTest extends TestCase {
         int period = 1;
         TimeZone tz = pstTz;
         Schedule schedule = Schedule.createDaily(
-                toDate(2002, 04, 03, "Wed", 8, 27, tz), null,
-                tz, time0233, period);
+            toDate(2002, 04, 03, "Wed", 8, 27, tz), null,
+            tz, time0233, period);
         Date d;
         d = schedule.nextOccurrence(null, false);
         // 1st occurrence is

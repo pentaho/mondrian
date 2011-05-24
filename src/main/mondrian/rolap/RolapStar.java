@@ -557,7 +557,7 @@ public class RolapStar {
 
                     if (localAggregationKey.equals(aggregationKey)) {
                         if (localAggregation.getCreationTimestamp().after(
-                            aggregation.getCreationTimestamp()))
+                                aggregation.getCreationTimestamp()))
                         {
                             it.remove();
                         } else {

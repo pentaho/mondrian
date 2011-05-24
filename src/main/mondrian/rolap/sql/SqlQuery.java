@@ -202,7 +202,7 @@ public class SqlQuery {
         if (fromAliases.contains(alias)) {
             if (failIfExists) {
                 throw Util.newInternal(
-                        "query already contains alias '" + alias + "'");
+                    "query already contains alias '" + alias + "'");
             } else {
                 return false;
             }

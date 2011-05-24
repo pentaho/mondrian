@@ -919,7 +919,7 @@ public class CrossJoinFunDef extends FunDefBase {
                         // The Hierarchy does NOT have an All member
                         Member[] rootMembers =
                             rootMemberList.toArray(
-                                    new Member[rootMemberList.size()]);
+                                new Member[rootMemberList.size()]);
                         nonAllMemberList.add(rootMembers);
                     }
                 }
@@ -946,7 +946,10 @@ public class CrossJoinFunDef extends FunDefBase {
         while (cursor.forward()) {
             cursor.setContext(evaluator);
             if (checkData(
-                nonAllMembers, nonAllMembers.length - 1, measureSet, evaluator))
+                    nonAllMembers,
+                    nonAllMembers.length - 1,
+                    measureSet,
+                    evaluator))
             {
                 result.addCurrent(cursor);
             }

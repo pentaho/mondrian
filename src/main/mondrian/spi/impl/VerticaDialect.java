@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde
+// Copyright (C) 2009-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -40,9 +40,9 @@ public class VerticaDialect extends JdbcDialectImpl {
 
     @Override
     public String generateOrderItem(
-            String expr,
-            boolean nullable,
-            boolean ascending)
+        String expr,
+        boolean nullable,
+        boolean ascending)
     {
         if (ascending) {
             return expr + " ASC";

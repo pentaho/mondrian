@@ -388,7 +388,7 @@ System.out.println(buf.toString());
             }
 
             if (!aggStar.select(
-                levelBitKey, combinedLevelBitKey, measureBitKey))
+                    levelBitKey, combinedLevelBitKey, measureBitKey))
             {
                 continue;
             }

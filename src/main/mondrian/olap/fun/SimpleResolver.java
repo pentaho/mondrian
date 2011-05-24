@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -65,7 +65,7 @@ class SimpleResolver implements Resolver {
         }
         for (int i = 0; i < args.length; i++) {
             if (!validator.canConvert(
-                i, args[i], parameterTypes[i], conversions))
+                    i, args[i], parameterTypes[i], conversions))
             {
                 return null;
             }

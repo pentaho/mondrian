@@ -299,7 +299,7 @@ public class RolapCell implements Cell {
         final Schema schema = connection.getSchema();
         Dialect dialect = ((RolapSchema) schema).getDialect();
         if (!dialect.supportsResultSetConcurrency(
-            resultSetType, resultSetConcurrency)
+                resultSetType, resultSetConcurrency)
             || firstRowOrdinal <= 1)
         {
             // downgrade to non-scroll cursor, since we can

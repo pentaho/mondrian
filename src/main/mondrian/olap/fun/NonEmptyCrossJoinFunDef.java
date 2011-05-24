@@ -28,7 +28,7 @@ import mondrian.rolap.RolapEvaluator;
  */
 public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
-            "NonEmptyCrossJoin",
+        "NonEmptyCrossJoin",
             "NonEmptyCrossJoin(<Set1>, <Set2>)",
             "Returns the cross product of two sets, excluding empty tuples and tuples without associated fact table data.",
             new String[]{"fxxx"},
@@ -64,7 +64,7 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
                     : ((RolapEvaluator) evaluator).getSlicerMembers())
                 {
                     if (getType().getElementType().usesHierarchy(
-                        member.getHierarchy(), true))
+                            member.getHierarchy(), true))
                     {
                         evaluator.setContext(
                             member.getHierarchy().getAllMember());

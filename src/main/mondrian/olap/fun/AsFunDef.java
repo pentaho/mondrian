@@ -76,7 +76,7 @@ class AsFunDef extends FunDefBase {
         {
             final Exp exp = args[0];
             if (!validator.canConvert(
-                0, args[0], Category.Set, conversions))
+                    0, args[0], Category.Set, conversions))
             {
                 return null;
             }

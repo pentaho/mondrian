@@ -234,4 +234,3 @@ public class RolapNativeTopCount extends RolapNativeSet {
 }
 
 // End RolapNativeTopCount.java
-

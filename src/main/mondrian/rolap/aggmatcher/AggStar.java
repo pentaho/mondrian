@@ -1115,8 +1115,8 @@ public class AggStar extends RolapStar {
         private void loadForeignKey(final JdbcSchema.Table.Column.Usage usage) {
             if (usage.rTable != null) {
                 DimTable child = convertTable(
-                        usage.rTable,
-                        usage.rightJoinConditionColumnName);
+                    usage.rTable,
+                    usage.rightJoinConditionColumnName);
                 addTable(child);
             } else {
                 // it a column thats not a measure or foreign key - it must be

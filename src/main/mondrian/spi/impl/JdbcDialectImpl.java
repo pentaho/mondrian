@@ -200,7 +200,7 @@ public class JdbcDialectImpl implements Dialect {
             for (int concurrency : CONCURRENCY_VALUES) {
                 try {
                     if (databaseMetaData.supportsResultSetConcurrency(
-                        type, concurrency))
+                            type, concurrency))
                     {
                         String driverName =
                             databaseMetaData.getDriverName();

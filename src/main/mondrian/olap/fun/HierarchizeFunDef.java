@@ -24,7 +24,8 @@ import mondrian.olap.FunDef;
  */
 class HierarchizeFunDef extends FunDefBase {
     static final String[] prePost = {"PRE", "POST"};
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
             "Hierarchize",
             "Hierarchize(<Set>[, POST])",
             "Orders the members of a set in a hierarchy.",

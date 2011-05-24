@@ -35,25 +35,29 @@ class TopBottomPercentSumFunDef extends FunDefBase {
      */
     final boolean percent;
 
-    static final ResolverImpl TopPercentResolver = new ResolverImpl(
+    static final ResolverImpl TopPercentResolver =
+        new ResolverImpl(
             "TopPercent",
             "TopPercent(<Set>, <Percentage>, <Numeric Expression>)",
             "Sorts a set and returns the top N elements whose cumulative total is at least a specified percentage.",
             new String[]{"fxxnn"}, true, true);
 
-    static final ResolverImpl BottomPercentResolver = new ResolverImpl(
+    static final ResolverImpl BottomPercentResolver =
+        new ResolverImpl(
             "BottomPercent",
             "BottomPercent(<Set>, <Percentage>, <Numeric Expression>)",
             "Sorts a set and returns the bottom N elements whose cumulative total is at least a specified percentage.",
             new String[]{"fxxnn"}, false, true);
 
-    static final ResolverImpl TopSumResolver = new ResolverImpl(
+    static final ResolverImpl TopSumResolver =
+        new ResolverImpl(
             "TopSum",
             "TopSum(<Set>, <Value>, <Numeric Expression>)",
             "Sorts a set and returns the top N elements whose cumulative total is at least a specified value.",
             new String[]{"fxxnn"}, true, false);
 
-    static final ResolverImpl BottomSumResolver = new ResolverImpl(
+    static final ResolverImpl BottomSumResolver =
+        new ResolverImpl(
             "BottomSum",
             "BottomSum(<Set>, <Value>, <Numeric Expression>)",
             "Sorts a set and returns the bottom N elements whose cumulative total is at least a specified value.",

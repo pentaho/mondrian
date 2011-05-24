@@ -1755,24 +1755,28 @@ public class NonEmptyTest extends BatchTestCase {
         }
 
         LimitedQuery c = new LimitedQuery(
-                8, 5, "select {[Measures].[Unit Sales]} ON COLUMNS, "
-                + "NON EMPTY Crossjoin("
-                + "  {[Product].[All Products].[Food], [Product].[All Products].[Drink].[Dairy]}, "
-                + "  [Customers].[All Customers].[USA].[WA].Children) ON ROWS "
-                + "from [Sales] "
-                + "where ([Promotions].[All Promotions].[Bag Stuffers])");
+            8,
+            5,
+            "select {[Measures].[Unit Sales]} ON COLUMNS, "
+            + "NON EMPTY Crossjoin("
+            + "  {[Product].[All Products].[Food], [Product].[All Products].[Drink].[Dairy]}, "
+            + "  [Customers].[All Customers].[USA].[WA].Children) ON ROWS "
+            + "from [Sales] "
+            + "where ([Promotions].[All Promotions].[Bag Stuffers])");
         c.run();
     }
 
     public void testCjDescendantsMembers() {
         checkNative(
-                67, 67, "select {[Measures].[Store Sales]} on columns,"
-                + " NON EMPTY Crossjoin("
-                + "   Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name]),"
-                + "     [Product].[Product Name].Members) ON rows "
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+            67,
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+            + " NON EMPTY Crossjoin("
+            + "   Descendants([Customers].[All Customers].[USA].[CA], [Customers].[Name]),"
+            + "     [Product].[Product Name].Members) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     public void testCjMembersDescendants() {
@@ -1804,32 +1808,38 @@ public class NonEmptyTest extends BatchTestCase {
 
     public void testCjChildrenMembers() {
         checkNative(
-                67, 67, "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY Crossjoin([Customers].[All Customers].[USA].[CA].children,"
-                + "    [Product].[Product Name].Members) ON rows "
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+            67,
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+            + "  NON EMPTY Crossjoin([Customers].[All Customers].[USA].[CA].children,"
+            + "    [Product].[Product Name].Members) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     public void testCjMembersChildren() {
         checkNative(
-                67, 67, "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY Crossjoin([Product].[Product Name].Members,"
-                + "    [Customers].[All Customers].[USA].[CA].children) ON rows "
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+            67,
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+            + "  NON EMPTY Crossjoin([Product].[Product Name].Members,"
+            + "    [Customers].[All Customers].[USA].[CA].children) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     public void testCjMembersMembers() {
         checkNative(
-                67, 67, "select {[Measures].[Store Sales]} on columns,"
-                + "  NON EMPTY Crossjoin([Customers].[Name].Members,"
-                + "    [Product].[Product Name].Members) ON rows "
-                + " from [Sales] where ("
-                + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
-                + "  [Time].[1997].[Q1].[1])");
+            67,
+            67,
+            "select {[Measures].[Store Sales]} on columns,"
+            + "  NON EMPTY Crossjoin([Customers].[Name].Members,"
+            + "    [Product].[Product Name].Members) ON rows "
+            + " from [Sales] where ("
+            + "  [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14],"
+            + "  [Time].[1997].[Q1].[1])");
     }
 
     public void testCjChildrenChildren() {
@@ -1903,9 +1913,9 @@ public class NonEmptyTest extends BatchTestCase {
         {
             // slightly different sql expected, uses agg table now for join
             necjSqlMySql = necjSqlMySql.replaceAll(
-                    "sales_fact_1997", "agg_c_14_sales_fact_1997");
+                "sales_fact_1997", "agg_c_14_sales_fact_1997");
             necjSqlDerby = necjSqlDerby.replaceAll(
-                    "sales_fact_1997", "agg_c_14_sales_fact_1997");
+                "sales_fact_1997", "agg_c_14_sales_fact_1997");
         }
 
         if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
@@ -2294,7 +2304,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testLookupMember() {
         // ok if no exception occurs
         executeQuery(
-                "SELECT DESCENDANTS([Time].[1997], [Month]) ON COLUMNS FROM [Sales]");
+            "SELECT DESCENDANTS([Time].[1997], [Month]) ON COLUMNS FROM [Sales]");
     }
 
 
@@ -2324,7 +2334,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testLookupMember2() {
         // ok if no exception occurs
         executeQuery(
-                "select {[Store].[USA].[Washington]} on columns from [Sales Ragged]");
+            "select {[Store].[USA].[Washington]} on columns from [Sales Ragged]");
     }
 
     /**
@@ -2334,13 +2344,13 @@ public class NonEmptyTest extends BatchTestCase {
     public void testCalcMemberWithNonEmptyCrossJoin() {
         getConnection().getCacheControl(null).flushSchemaCache();
         Result result = executeQuery(
-                "with member [Measures].[CustomerCount] as \n"
-                + "'Count(CrossJoin({[Product].[All Products]}, [Customers].[Name].Members))'\n"
-                + "select \n"
-                + "NON EMPTY{[Measures].[CustomerCount]} ON columns,\n"
-                + "NON EMPTY{[Product].[All Products]} ON rows\n"
-                + "from [Sales]\n"
-                + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
+            "with member [Measures].[CustomerCount] as \n"
+            + "'Count(CrossJoin({[Product].[All Products]}, [Customers].[Name].Members))'\n"
+            + "select \n"
+            + "NON EMPTY{[Measures].[CustomerCount]} ON columns,\n"
+            + "NON EMPTY{[Product].[All Products]} ON rows\n"
+            + "from [Sales]\n"
+            + "where ([Store].[All Stores].[USA].[CA].[San Francisco].[Store 14], [Time].[1997].[Q1].[1])");
         Cell c = result.getCell(new int[] {0, 0});
         // we expect 10281 customers, although there are only 20 non-empty ones
         // @see #testLevelMembers
@@ -2513,9 +2523,11 @@ public class NonEmptyTest extends BatchTestCase {
      */
     public void testMemberChildrenOfAllMember() {
         LimitedQuery c = new LimitedQuery(
-                50, 14, "select {[Measures].[Unit Sales]} ON columns,\n"
-                + "NON EMPTY [Promotions].[All Promotions].Children ON rows from [Sales]\n"
-                + "where ([Time].[1997].[Q1].[1])");
+            50,
+            14,
+            "select {[Measures].[Unit Sales]} ON columns,\n"
+            + "NON EMPTY [Promotions].[All Promotions].Children ON rows from [Sales]\n"
+            + "where ([Time].[1997].[Q1].[1])");
         c.run();
     }
 

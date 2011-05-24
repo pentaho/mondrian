@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde and others
+// Copyright (C) 2008-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -23,7 +23,8 @@ import mondrian.olap.FunDef;
  */
 class UnorderFunDef extends FunDefBase {
 
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
             "Unorder",
             "Unorder(<Set>)",
             "Removes any enforced ordering from a specified set.",

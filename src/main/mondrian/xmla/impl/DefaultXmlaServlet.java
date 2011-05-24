@@ -628,7 +628,7 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
             code = UNKNOWN_ERROR_CODE;
             faultString = UNKNOWN_ERROR_FAULT_FS;
             faultCode = XmlaException.formatFaultCode(
-                            SERVER_FAULT_FC, code);
+                SERVER_FAULT_FC, code);
             detail = XmlaException.formatDetail(t.getMessage());
         }
 

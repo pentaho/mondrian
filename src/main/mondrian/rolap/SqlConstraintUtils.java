@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2010 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
  */
@@ -151,8 +151,8 @@ public class SqlConstraintUtils {
     }
 
     protected static Member[] removeMultiPositionSlicerMembers(
-            Member[] members,
-            Evaluator evaluator)
+        Member[] members,
+        Evaluator evaluator)
     {
         List<Member> slicerMembers = null;
         if (evaluator instanceof RolapEvaluator) {
@@ -1287,4 +1287,3 @@ public class SqlConstraintUtils {
 }
 
 // End SqlConstraintUtils.java
-

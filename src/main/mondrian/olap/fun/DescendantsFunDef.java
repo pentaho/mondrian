@@ -179,7 +179,7 @@ class DescendantsFunDef extends FunDefBase {
                         ? levelCalc.evaluateLevel(evaluator)
                         : member.getLevel();
                     descendantsByLevel(
-                            schemaReader, member, level, result,
+                        schemaReader, member, level, result,
                         flag2.before, flag2.self,
                         flag2.after, flag2.leaves, context);
                     hierarchizeMemberList(result, false);
