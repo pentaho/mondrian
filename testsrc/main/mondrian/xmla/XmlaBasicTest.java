@@ -927,7 +927,7 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         expectedDoc = (responseDoc != null)
             ? XmlaSupport.transformSoapXmla(
                 responseDoc,
-            new String[][] {{"content", content.name()}}, ns)
+                new String[][] {{"content", content.name()}}, ns)
             : null;
         doTests(
             requestText, props,

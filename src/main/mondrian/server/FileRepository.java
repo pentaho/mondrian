@@ -236,20 +236,16 @@ public class FileRepository implements Repository {
         RolapConnection connection,
         String databaseName)
     {
-        return
-            new ArrayList<String>(
-                getServerInfo()
-                        .datasourceMap.get(databaseName)
-                            .catalogMap.keySet());
+        return new ArrayList<String>(
+            getServerInfo().datasourceMap.get(databaseName)
+                .catalogMap.keySet());
     }
 
     public List<String> getDatabaseNames(
         RolapConnection connection)
     {
-        return
-            new ArrayList<String>(
-                getServerInfo()
-                        .datasourceMap.keySet());
+        return new ArrayList<String>(
+            getServerInfo().datasourceMap.keySet());
     }
 
     public Map<String, RolapSchema> getRolapSchemas(
@@ -277,6 +273,7 @@ public class FileRepository implements Repository {
         private final Map<String, Object> properties;
         private Map<String, CatalogInfo> catalogMap =
             new HashMap<String, CatalogInfo>();
+
         DatasourceInfo(String name, Map<String, Object> properties) {
             this.name = name;
             this.properties = properties;

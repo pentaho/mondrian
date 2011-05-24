@@ -83,14 +83,14 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
 
         getCubeTestContext().assertQueryReturns(
             mdx,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Total]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Cat One].[Prod Cat One],"
-                + " [Store].[All Stores]}\n"
-                + "Row #0: 15\n");
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Total]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Cat One].[Prod Cat One],"
+            + " [Store].[All Stores]}\n"
+            + "Row #0: 15\n");
     }
 
     public void testChildSelection() throws Exception {
@@ -102,15 +102,15 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
             + "non empty [Product].[Cat One].Children on rows from [Fact]";
         getCubeTestContext().assertQueryReturns(
             mdx,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Total]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Cat One].[Prod Cat Two]}\n"
-                + "{[Product].[Cat One].[Prod Cat One]}\n"
-                + "Row #0: 18\n"
-                + "Row #1: 15\n");
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Total]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Cat One].[Prod Cat Two]}\n"
+            + "{[Product].[Cat One].[Prod Cat One]}\n"
+            + "Row #0: 18\n"
+            + "Row #1: 15\n");
     }
 
     protected String getCubeDescription() {

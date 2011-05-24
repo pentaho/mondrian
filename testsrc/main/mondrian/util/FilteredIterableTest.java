@@ -9,15 +9,10 @@
 */
 package mondrian.util;
 
-import mondrian.calc.ResultStyle;
-import mondrian.olap.*;
-import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
-import mondrian.test.TestContext;
-import mondrian.test.DiffRepository;
 
-import java.util.*;
-import java.lang.ref.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Unit-test for FilteredIterable
@@ -40,8 +35,10 @@ public class FilteredIterableTest extends FoodMartTestCase {
             base.add(i);
         }
 
-        final List<Integer> empty = new FilteredIterableList<Integer>(
-            base, new FilteredIterableList.Filter<Integer>() {
+        final List<Integer> empty =
+            new FilteredIterableList<Integer>(
+                base,
+                new FilteredIterableList.Filter<Integer>() {
                     public boolean accept(final Integer i) {
                         return false;
                     }
@@ -58,8 +55,10 @@ public class FilteredIterableTest extends FoodMartTestCase {
             base.add(i);
         }
 
-        final List<Integer> empty = new FilteredIterableList<Integer>(
-            base, new FilteredIterableList.Filter<Integer>() {
+        final List<Integer> empty =
+            new FilteredIterableList<Integer>(
+                base,
+                new FilteredIterableList.Filter<Integer>() {
                     public boolean accept(final Integer i) {
                         return i < 2;
                     }
@@ -75,8 +74,10 @@ public class FilteredIterableTest extends FoodMartTestCase {
             base.add(i);
         }
 
-        final List<Integer> identical = new FilteredIterableList<Integer>(
-            base, new FilteredIterableList.Filter<Integer>() {
+        final List<Integer> identical =
+            new FilteredIterableList<Integer>(
+                base,
+                new FilteredIterableList.Filter<Integer>() {
                     public boolean accept(final Integer i) {
                         return true;
                     }
@@ -89,8 +90,6 @@ public class FilteredIterableTest extends FoodMartTestCase {
             k++;
         }
     }
-
-
 }
 
 // End FilteredIterableTest.java

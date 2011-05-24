@@ -952,8 +952,9 @@ public class XmlaHandler {
                         "type", "PropType",
                         "minOccurs", 0,
                         "maxOccurs", "unbounded");
-                    if (false) writer.element(
-                            "xsd:element",
+                    if (false)
+                    writer.element(
+                        "xsd:element",
                         "name", "PARENT_MEMBER_NAME",
                         "type", "PropType",
                         "minOccurs", 0,

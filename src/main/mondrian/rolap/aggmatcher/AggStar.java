@@ -1125,7 +1125,7 @@ public class AggStar {
             if (usage.rTable != null) {
                 DimTable child = convertTable(
                     usage.rTable,
-                        usage.rightJoinConditionColumnName);
+                    usage.rightJoinConditionColumnName);
                 addTable(child);
             } else {
                 // it a column thats not a measure or foreign key - it must be
@@ -1190,8 +1190,9 @@ public class AggStar {
 
             int bitPosition = usage.rMeasure.getBitPosition();
 
-            Measure aggMeasure = new Measure(
-                symbolicName,
+            Measure aggMeasure =
+                new Measure(
+                    symbolicName,
                     expression,
                     datatype,
                     bitPosition,
@@ -1222,8 +1223,9 @@ public class AggStar {
             Dialect.Datatype datatype = usage.getColumn().getDatatype();
             int bitPosition = -1;
 
-            Column aggColumn = new Column(
-                symbolicName,
+            Column aggColumn =
+                new Column(
+                    symbolicName,
                     expression,
                     datatype,
                     bitPosition);
@@ -1241,8 +1243,9 @@ public class AggStar {
             MondrianDef.Expression expression =
                 new MondrianDef.Column(getName(), usage.levelColumnName);
             int bitPosition = usage.rColumn.getBitPosition();
-            Level level = new Level(
-                name,
+            Level level =
+                new Level(
+                    name,
                     expression,
                     bitPosition,
                     usage.rColumn);

@@ -187,14 +187,14 @@ public class CmdRunner {
     public static boolean isProperty(String propertyName) {
         final Property property = PropertyInfo.lookupProperty(
             MondrianProperties.instance(),
-                propertyName);
+            propertyName);
         return property != null;
     }
 
     public static boolean setProperty(String name, String value) {
         final Property property = PropertyInfo.lookupProperty(
             MondrianProperties.instance(),
-                name);
+            name);
         String oldValue = property.getString();
         if (! Util.equals(oldValue, value)) {
             property.setString(value);
@@ -257,7 +257,7 @@ public class CmdRunner {
          */
         public static Property lookupProperty(
             MondrianProperties properties,
-                String propertyName)
+            String propertyName)
         {
             final Class<? extends Object> clazz = properties.getClass();
             final Field field;

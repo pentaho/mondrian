@@ -150,7 +150,7 @@ public class SqlConstraintUtils {
 
     protected static Member[] removeMultiPositionSlicerMembers(
         Member[] members,
-            Evaluator evaluator)
+        Evaluator evaluator)
     {
         List<Member> slicerMembers = null;
         if (evaluator instanceof RolapEvaluator) {

@@ -123,13 +123,16 @@ public class DynamicContentFinder
                 this.lastDataSourcesConfigString);
     }
 
-    private Map<String, Pair<DataSourcesConfig.DataSource,
-            DataSourcesConfig.Catalog>> createCatalogMap(
-                DataSourcesConfig.DataSources newDataSources)
+    private Map<
+        String,
+        Pair<DataSourcesConfig.DataSource, DataSourcesConfig.Catalog>>
+    createCatalogMap(
+        DataSourcesConfig.DataSources newDataSources)
     {
-        Map<String,
-            Pair<DataSourcesConfig.DataSource,
-                DataSourcesConfig.Catalog>> newDatasourceCatalogNames =
+        Map<
+            String,
+            Pair<DataSourcesConfig.DataSource, DataSourcesConfig.Catalog>>
+            newDatasourceCatalogNames =
                 new HashMap<String,
                     Pair<DataSourcesConfig.DataSource,
                         DataSourcesConfig.Catalog>>();

@@ -636,8 +636,8 @@ public class RolapCube extends CubeBase {
             for (Formula calculatedMember : calculatedMemberListCopy) {
                 if (findOriginalMembers(
                         calculatedMember,
-                    origCalcMeasureList,
-                    calculatedMemberList))
+                        origCalcMeasureList,
+                        calculatedMemberList))
                 {
                     continue;
                 }

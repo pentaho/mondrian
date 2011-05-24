@@ -32,29 +32,33 @@ import mondrian.rolap.RolapHierarchy;
 class XtdFunDef extends FunDefBase {
     private final LevelType levelType;
 
-    static final ResolverImpl MtdResolver = new ResolverImpl(
-        "Mtd",
+    static final ResolverImpl MtdResolver =
+        new ResolverImpl(
+            "Mtd",
             "Mtd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Month.",
             new String[]{"fx", "fxm"},
             LevelType.TimeMonths);
 
-    static final ResolverImpl QtdResolver = new ResolverImpl(
-        "Qtd",
+    static final ResolverImpl QtdResolver =
+        new ResolverImpl(
+            "Qtd",
             "Qtd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Quarter.",
             new String[]{"fx", "fxm"},
             LevelType.TimeQuarters);
 
-    static final ResolverImpl WtdResolver = new ResolverImpl(
-        "Wtd",
+    static final ResolverImpl WtdResolver =
+        new ResolverImpl(
+            "Wtd",
             "Wtd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Week.",
             new String[]{"fx", "fxm"},
             LevelType.TimeWeeks);
 
-    static final ResolverImpl YtdResolver = new ResolverImpl(
-        "Ytd",
+    static final ResolverImpl YtdResolver =
+        new ResolverImpl(
+            "Ytd",
             "Ytd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Year.",
             new String[]{"fx", "fxm"},

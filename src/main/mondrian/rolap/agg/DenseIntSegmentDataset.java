@@ -107,7 +107,7 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
 
     public SegmentBody createSegmentBody(
         SortedSet<Comparable<?>>[] axisValueSets,
-            boolean[] nullAxisFlags)
+        boolean[] nullAxisFlags)
     {
         return
             new DenseIntSegmentBody(

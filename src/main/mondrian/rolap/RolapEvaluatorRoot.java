@@ -149,15 +149,17 @@ class RolapEvaluatorRoot {
         private final boolean scalar;
         private final ResultStyle resultStyle;
         private int hashCode = Integer.MIN_VALUE;
+
         private CompiledExpKey(
             Exp exp,
-                boolean scalar,
-                ResultStyle resultStyle)
+            boolean scalar,
+            ResultStyle resultStyle)
         {
             this.exp = exp;
             this.scalar = scalar;
             this.resultStyle = resultStyle;
         }
+
         public boolean equals(Object other) {
             if (this == other) {
                 return true;
@@ -166,10 +168,11 @@ class RolapEvaluatorRoot {
                 return false;
             }
             CompiledExpKey otherKey = (CompiledExpKey)other;
-            return (this.scalar == otherKey.scalar
-                    && this.resultStyle == otherKey.resultStyle
-                    && this.exp.equals(otherKey.exp));
+            return this.scalar == otherKey.scalar
+                   && this.resultStyle == otherKey.resultStyle
+                   && this.exp.equals(otherKey.exp);
         }
+
         public int hashCode() {
             if (hashCode != Integer.MIN_VALUE) {
                 return hashCode;

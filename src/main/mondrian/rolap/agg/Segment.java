@@ -182,8 +182,8 @@ public class Segment {
      * Sets the data, and notifies any threads which are blocked in
      * {@link #waitUntilLoaded}.
      */
-     void setData(
-         SegmentDataset data,
+    void setData(
+        SegmentDataset data,
         RolapAggregationManager.PinSet pinnedSegments)
     {
         stateLock.writeLock().lock(); // need exclusive write access to state

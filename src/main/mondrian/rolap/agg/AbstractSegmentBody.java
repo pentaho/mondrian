@@ -13,43 +13,32 @@ import java.util.SortedSet;
 
 /**
  * Abstract implementation of a SegmentBody.
+ *
  * @author LBoudreau
  * @version $Id$
  */
 abstract class AbstractSegmentBody implements SegmentBody {
     private static final long serialVersionUID = -7094121704771005640L;
+
     private final SortedSet<Comparable<?>>[] axisValueSets;
     private final boolean[] nullAxisFlags;
+
     public AbstractSegmentBody(
         SortedSet<Comparable<?>>[] axisValueSets,
-            boolean[] nullAxisFlags)
+        boolean[] nullAxisFlags)
     {
         super();
-
-        this.axisValueSets =
-            new SortedSet[axisValueSets.length];
-
-        System.arraycopy(
-            axisValueSets,
-            0,
-            this.axisValueSets,
-            0,
-            axisValueSets.length);
-
-        this.nullAxisFlags = new boolean[nullAxisFlags.length];
-
-        System.arraycopy(
-            nullAxisFlags,
-            0,
-            this.nullAxisFlags,
-            0,
-            nullAxisFlags.length);
+        this.axisValueSets = axisValueSets.clone();
+        this.nullAxisFlags = nullAxisFlags.clone();
     }
+
     public SortedSet<Comparable<?>>[] getAxisValueSets() {
         return axisValueSets;
     }
+
     public boolean[] getNullAxisFlags() {
         return nullAxisFlags;
     }
 }
+
 // End AbstractSegmentBody.java

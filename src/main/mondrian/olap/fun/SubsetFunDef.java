@@ -23,8 +23,9 @@ import mondrian.mdx.ResolvedFunCall;
  * @since Mar 23, 2006
  */
 class SubsetFunDef extends FunDefBase {
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
-        "Subset",
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
+            "Subset",
             "Subset(<Set>, <Start>[, <Count>])",
             "Returns a subset of elements from a set.",
             new String[] {"fxxn", "fxxnn"},

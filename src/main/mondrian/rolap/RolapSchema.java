@@ -828,7 +828,7 @@ public class RolapSchema implements Schema {
                 throw MondrianResource.instance()
                     .ConnectStringMandatoryProperties.ex(
                         RolapConnectionProperties.Catalog.name(),
-                    RolapConnectionProperties.CatalogContent.name());
+                        RolapConnectionProperties.CatalogContent.name());
             }
 
             // If CatalogContent is specified in the connect string, ignore
@@ -1241,7 +1241,7 @@ public class RolapSchema implements Schema {
     protected void addCube(final RolapCube cube) {
         mapNameToCube.put(
             Util.normalizeName(cube.getName()),
-                cube);
+            cube);
     }
 
     public boolean removeCube(final String cubeName) {

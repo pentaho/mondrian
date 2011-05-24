@@ -182,9 +182,9 @@ abstract class Recognizer {
                     } else {
                         String msg = mres.NonNumericFactCountColumn.str(
                             aggTable.getName(),
-                                dbFactTable.getName(),
-                                aggColumn.getName(),
-                                aggColumn.getTypeName());
+                            dbFactTable.getName(),
+                            aggColumn.getName(),
+                            aggColumn.getTypeName());
                         msgRecorder.reportError(msg);
 
                         returnValue = false;
@@ -399,9 +399,9 @@ abstract class Recognizer {
                 if (matchCount > 1) {
                     String msg = mres.TooManyMatchingForeignKeyColumns.str(
                         aggTable.getName(),
-                            dbFactTable.getName(),
-                            matchCount,
-                            factUsage.getColumn().getName());
+                        dbFactTable.getName(),
+                        matchCount,
+                        factUsage.getColumn().getName());
                     msgRecorder.reportError(msg);
 
                     returnValue = false;

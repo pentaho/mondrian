@@ -25,8 +25,9 @@ import mondrian.mdx.ResolvedFunCall;
  * @since Mar 23, 2006
  */
 class IsFunDef extends FunDefBase {
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
-        "IS",
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
+            "IS",
             "<Expression> IS <Expression>",
             "Returns whether two objects are the same",
             new String[] {"ibmm", "ibll", "ibhh", "ibdd", "ibtt"},

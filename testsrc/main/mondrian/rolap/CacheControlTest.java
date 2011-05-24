@@ -585,7 +585,7 @@ public class CacheControlTest extends FoodMartTestCase {
             cacheControl.createMeasuresRegion(salesCube);
         return cacheControl.createCrossjoinRegion(
             regionTimeApril,
-                measuresRegion);
+            measuresRegion);
     }
 
     /**
@@ -617,7 +617,7 @@ public class CacheControlTest extends FoodMartTestCase {
             cacheControl.createMeasuresRegion(salesCube);
         return cacheControl.createCrossjoinRegion(
             region1997,
-                measuresRegion);
+            measuresRegion);
     }
 
     /**

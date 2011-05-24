@@ -121,8 +121,8 @@ public class Schedule {
         Calendar calendar = ScheduleUtil.createCalendar(date);
         Time timeOfDay = ScheduleUtil.createTime(
             calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE),
-                calendar.get(Calendar.SECOND));
+            calendar.get(Calendar.MINUTE),
+            calendar.get(Calendar.SECOND));
         calendar.add(Calendar.SECOND, 1);
         Date datePlusDelta = calendar.getTime();
         return createDaily(date, datePlusDelta, tz, timeOfDay, 1);
@@ -486,7 +486,7 @@ class WeeklyDateSchedule implements DateSchedule {
         this.daysOfWeekBitmap = daysOfWeekBitmap;
         ScheduleUtil.assertTrue(
             (daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap) != 0,
-                "weekly schedule must have at least one day set");
+            "weekly schedule must have at least one day set");
         ScheduleUtil.assertTrue(
             (daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap)
             == daysOfWeekBitmap,

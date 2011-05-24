@@ -1342,22 +1342,22 @@ public class TestAggregationManager extends BatchTestCase {
 
         testContext.assertQueryReturns(
             query,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Food].[Deli].[Meat], [Gender].[M]}\n"
-                + "Row #0: 4,705\n");
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Deli].[Meat], [Gender].[M]}\n"
+            + "Row #0: 4,705\n");
 
         Result result = testContext.executeQuery(query);
         // this verifies that the caption for meat is deli
         assertEquals(
             "Meat",
-                result.getAxes()[1].getPositions().get(0).get(0).getName());
+            result.getAxes()[1].getPositions().get(0).get(0).getName());
         assertEquals(
             "Deli",
-                result.getAxes()[1].getPositions().get(0).get(0).getCaption());
+            result.getAxes()[1].getPositions().get(0).get(0).getCaption());
 
         // Test children
         query =
@@ -1367,15 +1367,15 @@ public class TestAggregationManager extends BatchTestCase {
 
         testContext.assertQueryReturns(
             query,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[Food].[Deli].[Meat]}\n"
-                + "{[Product].[Food].[Deli].[Side Dishes]}\n"
-                + "Row #0: 4,728\n"
-                + "Row #1: 1,262\n");
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Food].[Deli].[Meat]}\n"
+            + "{[Product].[Food].[Deli].[Side Dishes]}\n"
+            + "Row #0: 4,728\n"
+            + "Row #1: 1,262\n");
     }
 
     public void testAggregatingTuples() {

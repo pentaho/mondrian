@@ -92,30 +92,30 @@ public class SegmentLoader {
                     getDistinctValueWorkspace(arity);
                 stmt = createExecuteSql(
                     groupingSetsList,
-                        compoundPredicateList);
+                    compoundPredicateList);
 
                 boolean[] axisContainsNull = new boolean[arity];
 
                 RowList rows =
                     processData(
                         stmt,
-                            axisContainsNull,
-                            axisValueSets,
-                            groupingSetsList);
+                        axisContainsNull,
+                        axisValueSets,
+                        groupingSetsList);
 
                 boolean sparse =
                     setAxisDataAndDecideSparseUse(
                         axisValueSets,
-                            axisContainsNull,
-                            groupingSetsList,
-                            rows);
+                        axisContainsNull,
+                        groupingSetsList,
+                        rows);
 
                 final Map<BitKey, GroupingSetsList.Cohort> groupingDataSetsMap =
                     createDataSetsForGroupingSets(
                         groupingSetsList,
-                            sparse,
-                            rows.getTypes().subList(
-                                arity, rows.getTypes().size()));
+                        sparse,
+                        rows.getTypes().subList(
+                            arity, rows.getTypes().size()));
 
                 loadDataToDataSets(
                     groupingSetsList, rows, groupingDataSetsMap);
@@ -125,8 +125,8 @@ public class SegmentLoader {
 
                 cacheSegmentData(
                     groupingSets,
-                        axisValueSets,
-                        axisContainsNull);
+                    axisValueSets,
+                    axisContainsNull);
             } catch (SQLException e) {
                 throw stmt.handle(e);
             } finally {
@@ -151,7 +151,7 @@ public class SegmentLoader {
      */
     private boolean loadSegmentsFromCache(
         List<GroupingSet> groupingSets,
-            RolapAggregationManager.PinSet pinnedSegments)
+        RolapAggregationManager.PinSet pinnedSegments)
     {
         for (GroupingSet groupingSet : groupingSets) {
             final List<Segment> segmentsToRemove =
@@ -194,25 +194,24 @@ public class SegmentLoader {
     /**
      * Caches segments to the external {@link mondrian.spi.SegmentCache}, if
      * configured.
-     * @param groupingSets
-     * @param axisValueSets
-     * @param nullAxisFlags
+     *
+     * @param groupingSets Grouping sets
+     * @param axisValueSets Axis value sets
+     * @param nullAxisFlags Null axis flags
      */
     void cacheSegmentData(
         List<GroupingSet> groupingSets,
-            SortedSet<Comparable<?>>[] axisValueSets,
-            boolean[] nullAxisFlags)
+        SortedSet<Comparable<?>>[] axisValueSets,
+        boolean[] nullAxisFlags)
     {
         for (final GroupingSet groupingSet : groupingSets) {
             for (Segment segment : groupingSet.getSegments()) {
                 final SegmentHeader sh =
                     SegmentHeader.forSegment(segment);
                 final SegmentBody sb =
-                    segment
-                        .getData()
-                            .createSegmentBody(
-                                axisValueSets,
-                                nullAxisFlags);
+                    segment.getData().createSegmentBody(
+                        axisValueSets,
+                        nullAxisFlags);
                 SegmentCacheWorker.put(sh, sb);
             }
         }
@@ -470,7 +469,7 @@ public class SegmentLoader {
             stmt == null
                 ? Collections.nCopies(
                     rawRows.getMetaData().getColumnCount(),
-                SqlStatement.Type.OBJECT)
+                    SqlStatement.Type.OBJECT)
                 : stmt.guessTypes();
         int arity = axisValueSets.length;
         final int groupingColumnStartIndex = arity + measureCount;
@@ -539,9 +538,10 @@ public class SegmentLoader {
                     if (longValue == 0 && rawRows.wasNull()) {
                         if (!groupingSetsList.useGroupingSets()
                             || !isAggregateNull(
-                                rawRows, groupingColumnStartIndex,
-                            groupingSetsList,
-                            axisIndex))
+                                rawRows,
+                                groupingColumnStartIndex,
+                                groupingSetsList,
+                                axisIndex))
                         {
                             axisContainsNull[axisIndex] = true;
                         }

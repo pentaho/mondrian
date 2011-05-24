@@ -425,11 +425,11 @@ public abstract class ObjectFactory<V> {
                 final Constructor constructor =
                     genericClass.getConstructor(parameterTypes);
                 InvocationHandler handler = (InvocationHandler)
-                        constructor.newInstance(parameterValues);
+                    constructor.newInstance(parameterValues);
                 return (V) Proxy.newProxyInstance(
                     loader,
-                            new Class[] { this.interfaceClass },
-                            handler);
+                    new Class[] { this.interfaceClass },
+                    handler);
             } else {
                 final Class<? extends V> specificClass =
                     asSubclass(this.interfaceClass, genericClass);

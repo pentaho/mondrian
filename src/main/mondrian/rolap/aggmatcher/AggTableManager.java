@@ -293,7 +293,7 @@ public class AggTableManager {
                                 getLogger().warn(
                                     mres.AggTableZeroSize.str(
                                         aggStar.getFactTable().getName(),
-                                    factTableName));
+                                        factTableName));
                             }
                         }
                         // Note: if the dbTable name matches but the columnsOK

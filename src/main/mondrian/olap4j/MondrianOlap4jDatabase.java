@@ -21,12 +21,13 @@ import org.olap4j.metadata.Database;
 import org.olap4j.metadata.NamedList;
 
 /**
- * XMLA implementation of a database metadata object.
+ * Implementation of {@link org.olap4j.metadata.Database}
+ * for the Mondrian OLAP engine.
+ *
  * @version $Id$
  * @author LBoudreau
  */
 class MondrianOlap4jDatabase implements Database, Named {
-
     private final NamedList<MondrianOlap4jCatalog> catalogs;
     private final MondrianOlap4jConnection olap4jConnection;
     private final String name;
@@ -37,16 +38,29 @@ class MondrianOlap4jDatabase implements Database, Named {
     private final List<ProviderType> providerType;
     private final List<AuthenticationMode> authenticationMode;
 
-    public MondrianOlap4jDatabase(
+    /**
+     * Creates a MondrianOlap4jDatabase.
+     *
+     * @param olap4jConnection Connection
+     * @param catalogs List of catalogs
+     * @param name Name of database
+     * @param description Description of database
+     * @param providerName Provider name
+     * @param url URL of provider
+     * @param dataSourceInfo Data source info
+     * @param providerType List of provider types supported by this database
+     * @param authenticationMode Authentication modes
+     */
+    MondrianOlap4jDatabase(
         MondrianOlap4jConnection olap4jConnection,
-            NamedList<MondrianOlap4jCatalog> catalogs,
-            String name,
-            String description,
-            String providerName,
-            String url,
-            String dataSourceInfo,
-            List<ProviderType> providerType,
-            List<AuthenticationMode> authenticationMode)
+        NamedList<MondrianOlap4jCatalog> catalogs,
+        String name,
+        String description,
+        String providerName,
+        String url,
+        String dataSourceInfo,
+        List<ProviderType> providerType,
+        List<AuthenticationMode> authenticationMode)
     {
         this.olap4jConnection = olap4jConnection;
         this.name = name;
@@ -63,7 +77,7 @@ class MondrianOlap4jDatabase implements Database, Named {
     }
 
     public List<AuthenticationMode> getAuthenticationModes()
-            throws OlapException
+        throws OlapException
     {
         return authenticationMode;
     }
@@ -100,4 +114,5 @@ class MondrianOlap4jDatabase implements Database, Named {
         return this.dataSourceInfo;
     }
 }
+
 // End MondrianOlap4jDatabase.java

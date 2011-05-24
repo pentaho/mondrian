@@ -140,7 +140,7 @@ public class Target extends TargetBase {
                     if (limit > 0 && !asList && getList().size() > limit) {
                         System.out.println(
                             "Target: 199, Ouch! Toooo big array..."
-                                + this.hashCode());
+                            + hashCode());
                         new Throwable().printStackTrace();
                     }
                 }

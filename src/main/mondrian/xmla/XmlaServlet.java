@@ -85,7 +85,9 @@ public abstract class XmlaServlet
      * Initializes servlet and XML/A handler.
      *
      */
-    public void init(ServletConfig servletConfig) throws ServletException {
+    public void init(ServletConfig servletConfig)
+        throws ServletException
+    {
         super.init(servletConfig);
 
         // init: charEncoding
@@ -180,8 +182,8 @@ public abstract class XmlaServlet
                 for (XmlaRequestCallback callback : getCallbacks()) {
                     if (!callback.processHttpHeader(
                             request,
-                        response,
-                        context))
+                            response,
+                            context))
                     {
                         return;
                     }
@@ -386,25 +388,28 @@ public abstract class XmlaServlet
      */
     protected abstract void unmarshallSoapMessage(
         HttpServletRequest request,
-            Element[] requestSoapParts) throws XmlaException;
+        Element[] requestSoapParts)
+        throws XmlaException;
 
     /**
      * Implement to handle application specified SOAP header.
      */
     protected abstract void handleSoapHeader(
         HttpServletResponse response,
-            Element[] requestSoapParts,
-            byte[][] responseSoapParts,
-            Map<String, Object> context) throws XmlaException;
+        Element[] requestSoapParts,
+        byte[][] responseSoapParts,
+        Map<String, Object> context)
+        throws XmlaException;
 
     /**
      * Implement to handle XML/A request.
      */
     protected abstract void handleSoapBody(
         HttpServletResponse response,
-            Element[] requestSoapParts,
-            byte[][] responseSoapParts,
-            Map<String, Object> context) throws XmlaException;
+        Element[] requestSoapParts,
+        byte[][] responseSoapParts,
+        Map<String, Object> context)
+        throws XmlaException;
 
     /**
      * Implement to provide application specified SOAP marshalling algorithm.
@@ -412,16 +417,17 @@ public abstract class XmlaServlet
     protected abstract void marshallSoapMessage(
         HttpServletResponse response,
         byte[][] responseSoapParts,
-        Enumeration.ResponseMimeType responseMimeType) throws XmlaException;
+        Enumeration.ResponseMimeType responseMimeType)
+        throws XmlaException;
 
     /**
      * Implement to application specified handler of SOAP fualt.
      */
     protected abstract void handleFault(
         HttpServletResponse response,
-            byte[][] responseSoapParts,
-            Phase phase,
-            Throwable t);
+        byte[][] responseSoapParts,
+        Phase phase,
+        Throwable t);
 
     /**
      * Initialize character encoding

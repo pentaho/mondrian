@@ -165,7 +165,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
     public void testAncestorOfHaifa() {
         assertRaggedReturns(
             "Ancestor([Store].[Israel].[Haifa], [Store].[Store State])",
-                "");
+            "");
     }
 
     public void testHierarchize() {

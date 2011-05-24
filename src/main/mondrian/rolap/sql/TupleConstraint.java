@@ -37,8 +37,8 @@ public interface TupleConstraint extends SqlConstraint {
      */
     public void addConstraint(
         SqlQuery sqlQuery,
-            RolapCube baseCube,
-            AggStar aggStar);
+        RolapCube baseCube,
+        AggStar aggStar);
 
     /**
      * Will be called multiple times for every "group by" level in

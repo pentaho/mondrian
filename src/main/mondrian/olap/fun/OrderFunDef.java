@@ -377,9 +377,9 @@ class OrderFunDef extends FunDefBase {
         private ResolverImpl() {
             super(
                 "Order",
-                    "Order(<Set> {, <Key Specification>}...)",
-                    "Arranges members of a set, optionally preserving or breaking the hierarchy.",
-                    Syntax.Function);
+                "Order(<Set> {, <Key Specification>}...)",
+                "Arranges members of a set, optionally preserving or breaking the hierarchy.",
+                Syntax.Function);
             this.reservedWords = Flag.getNames();
         }
 

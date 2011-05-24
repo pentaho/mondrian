@@ -392,13 +392,13 @@ public class HierarchyUsage {
                 throw MondrianResource.instance()
                     .MustSpecifyPrimaryKeyForHierarchy.ex(
                         hierarchy.getUniqueName(),
-                    cube.getName());
+                        cube.getName());
             }
             if (foreignKey == null) {
                 throw MondrianResource.instance()
                     .MustSpecifyForeignKeyForHierarchy.ex(
                         hierarchy.getUniqueName(),
-                    cube.getName());
+                        cube.getName());
             }
         }
     }
