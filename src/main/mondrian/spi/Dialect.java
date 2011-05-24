@@ -737,8 +737,8 @@ public interface Dialect {
      * @return A dialect specific matching operation.
      */
     String generateRegularExpression(
-            String source,
-            String javaRegExp);
+        String source,
+        String javaRegExp);
 
     /**
      * Enumeration of common database types.

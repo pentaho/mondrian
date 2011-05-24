@@ -80,8 +80,8 @@ public class NativeFilterMatchingTest extends BatchTestCase {
             + "Select\n"
             + "CrossJoin([*SORTED_COL_AXIS],[*BASE_MEMBERS_Measures]) on columns\n"
             + "From [Sales]";
-        if (getTestContext().getDialect()
-            .equals(Dialect.DatabaseProduct.POSTGRESQL))
+        if (getTestContext().getDialect().getDatabaseProduct()
+            == Dialect.DatabaseProduct.POSTGRESQL)
         {
             assertQuerySqlOrNot(
                 getTestContext(),
@@ -92,8 +92,7 @@ public class NativeFilterMatchingTest extends BatchTestCase {
                 true);
             assertQueryReturns(
                 queryPgsql,
-                queryResults
-            );
+                queryResults);
         } else {
             assertQuerySqlOrNot(
                 getTestContext(),
@@ -104,10 +103,10 @@ public class NativeFilterMatchingTest extends BatchTestCase {
                 true);
             assertQueryReturns(
                 query,
-                queryResults
-            );
+                queryResults);
         }
     }
+
     public void testNegativeMatching() throws Exception {
         propSaver.set(
             MondrianProperties.instance().EnableNativeRegexpFilter,
