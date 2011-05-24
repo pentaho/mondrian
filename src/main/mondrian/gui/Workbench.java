@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
@@ -207,7 +207,7 @@ public class Workbench extends javax.swing.JFrame {
         workbenchProperties = new Properties();
         try {
             workbenchResourceBundle = ResourceBundle.getBundle(
-                    WorkbenchInfoResourceName, Locale.getDefault(),
+                WorkbenchInfoResourceName, Locale.getDefault(),
                     myClassLoader);
             File f = new File(WORKBENCH_CONFIG_FILE);
             if (f.exists()) {
@@ -752,10 +752,10 @@ public class Workbench extends javax.swing.JFrame {
         menuBar.add(viewMenu);
 
         toolsMenu.setText(getResourceConverter().getString(
-                "workbench.menu.options", "Options"));
+            "workbench.menu.options", "Options"));
         toolsMenu.setMnemonic(KeyEvent.VK_O);
         preferencesMenuItem.setText(getResourceConverter().getString(
-                "workbench.menu.connection", "Connection"));
+            "workbench.menu.connection", "Connection"));
         preferencesMenuItem.addActionListener(
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
@@ -765,8 +765,8 @@ public class Workbench extends javax.swing.JFrame {
         toolsMenu.add(preferencesMenuItem);
 
         requireSchemaCheckboxMenuItem.setText(
-                getResourceConverter().getString(
-                        "workbench.menu.requireSchema", "Require Schema"));
+            getResourceConverter().getString(
+                "workbench.menu.requireSchema", "Require Schema"));
         requireSchemaCheckboxMenuItem.setSelected(requireSchema);
         requireSchemaCheckboxMenuItem.addActionListener(
             new ActionListener() {
@@ -1219,12 +1219,12 @@ public class Workbench extends javax.swing.JFrame {
             windowMenu.add(closeAllMenuItem, -1);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(
-                    this, getResourceConverter()
-                    .getFormattedString(
+                this,
+                getResourceConverter().getFormattedString(
                     "workbench.new.JDBCExplorer.exception",
                     "Database connection not successful.\n{0}",
-                            ex.getLocalizedMessage()), getResourceConverter()
-                    .getString(
+                    ex.getLocalizedMessage()),
+                getResourceConverter().getString(
                     "workbench.new.JDBCExplorer.exception.title",
                     "Database Connection Error"),
                 JOptionPane.ERROR_MESSAGE);
@@ -1244,8 +1244,8 @@ public class Workbench extends javax.swing.JFrame {
         try {
             if (!KettleEnvironment.isInitialized()) {
                 System.setProperty(
-                        "KETTLE_PLUGIN_BASE_FOLDERS",
-                        KETTLE_PLUGIN_BASE_FOLDERS);
+                    "KETTLE_PLUGIN_BASE_FOLDERS",
+                    KETTLE_PLUGIN_BASE_FOLDERS);
                 KettleEnvironment.init();
             }
             if (dbMeta != null) {
@@ -1258,10 +1258,10 @@ public class Workbench extends javax.swing.JFrame {
             }
         } catch (KettleException e) {
             throw new RuntimeException(
-                    getResourceConverter()
-                    .getFormattedString(
-                            "workbench.new.Kettle.exception",
-                            "Kettle failed to initialize."), e);
+                getResourceConverter().getFormattedString(
+                    "workbench.new.Kettle.exception",
+                    "Kettle failed to initialize."),
+                e);
         }
         return dbMeta;
     }
@@ -1277,8 +1277,8 @@ public class Workbench extends javax.swing.JFrame {
             try {
                 XulLoader loader = new SwingXulLoader();
                 container = loader.loadXul(
-                        DatabaseConnectionDialog.DIALOG_DEFINITION_FILE,
-                        Messages.getBundle());
+                    DatabaseConnectionDialog.DIALOG_DEFINITION_FILE,
+                    Messages.getBundle());
             } catch (XulException e) {
                 throw new RuntimeException("Xul failed to initialize", e);
             }
@@ -2137,15 +2137,15 @@ public class Workbench extends javax.swing.JFrame {
         } catch (Throwable ex) {
             if (w != null) {
             JOptionPane.showMessageDialog(
-                    w,
-                    w.getResourceConverter().getFormattedString(
-                        "workbench.main.uncoverable_error",
-                        "Pentaho Schema Workbench has encountered an unrecoverable error. \n{0}",
-                        ex.getLocalizedMessage()),
-                    w.getResourceConverter().getString(
-                        "workbench.main.uncoverable_error.title",
-                        "PSW Fatal Error"),
-                    JOptionPane.ERROR_MESSAGE);
+                w,
+                w.getResourceConverter().getFormattedString(
+                    "workbench.main.uncoverable_error",
+                    "Pentaho Schema Workbench has encountered an unrecoverable error. \n{0}",
+                    ex.getLocalizedMessage()),
+                w.getResourceConverter().getString(
+                    "workbench.main.uncoverable_error.title",
+                    "PSW Fatal Error"),
+                JOptionPane.ERROR_MESSAGE);
             }
             LOGGER.error("main", ex);
         }

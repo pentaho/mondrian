@@ -153,7 +153,7 @@ public class SqlTupleReader implements TupleReader {
                             // for uniformity in hashmaps.
                             parentValue = RolapUtil.sqlNullValue;
                         } else if (parentValue.toString().equals(
-                            childLevel.getNullParentValue()))
+                                childLevel.getNullParentValue()))
                         {
                             // member is at top of hierarchy; its parent is the
                             // 'all' member
@@ -201,7 +201,7 @@ public class SqlTupleReader implements TupleReader {
 
                     // Skip over the columns consumed by makeMember
                     if (!childLevel.getOrdinalExp().equals(
-                        childLevel.getKeyExp()))
+                            childLevel.getKeyExp()))
                     {
                         ++column;
                     }
@@ -856,7 +856,7 @@ public class SqlTupleReader implements TupleReader {
                 // can ignore the "all" level
                 if (!(lvl.isAll())) {
                     if (hierarchy.getUniqueKeyLevelName().equals(
-                        lvl.getName()))
+                            lvl.getName()))
                     {
                        foundUniqueKeyLevelName = true;
                     }

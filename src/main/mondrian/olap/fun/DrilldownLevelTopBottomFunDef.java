@@ -38,7 +38,7 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
     final boolean top;
 
     static final MultiResolver DrilldownLevelTopResolver = new MultiResolver(
-            "DrilldownLevelTop",
+        "DrilldownLevelTop",
             "DrilldownLevelTop(Set_Expression, Count [, [Level_Expression][, Numeric_Expression]])",
             "Drills down the topmost members of a set, at a specified level, to one level below.",
             new String[] {"fxxn", "fxxnl", "fxxnln", "fxxnen"}) {
@@ -48,7 +48,7 @@ class DrilldownLevelTopBottomFunDef extends FunDefBase {
     };
 
     static final MultiResolver DrilldownLevelBottomResolver = new MultiResolver(
-            "DrilldownLevelBottom",
+        "DrilldownLevelBottom",
             "DrilldownLevelBottom(Set_Expression, Count [, [Level_Expression][, Numeric_Expression]])",
             "Drills down the bottommost members of a set, at a specified level, to one level below.",
             new String[] {"fxxn", "fxxnl", "fxxnln", "fxxnen"}) {

@@ -23,12 +23,13 @@ class DenseIntSegmentBody extends AbstractSegmentBody {
     final int[] data;
     private final int size;
     private final BitSet nullIndicators;
+
     DenseIntSegmentBody(
-            BitSet nullIndicators,
-            int[] dataToSave,
-            int size,
-            SortedSet<Comparable<?>>[] axisValueSets,
-            boolean[] nullAxisFlags)
+        BitSet nullIndicators,
+        int[] dataToSave,
+        int size,
+        SortedSet<Comparable<?>>[] axisValueSets,
+        boolean[] nullAxisFlags)
     {
         super(axisValueSets, nullAxisFlags);
         this.size = size;

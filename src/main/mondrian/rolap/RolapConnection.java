@@ -212,7 +212,7 @@ public class RolapConnection extends ConnectionBase {
                 }
             } catch (SQLException e) {
                 if (e.getMessage().equals(
-                    "Table/View 'BOGUSTABLE' does not exist."))
+                        "Table/View 'BOGUSTABLE' does not exist."))
                 {
                     // Ignore. This exception comes from Derby when the
                     // connection is valid. If the connection were invalid, we
@@ -474,7 +474,7 @@ public class RolapConnection extends ConnectionBase {
         Properties jdbcProperties = new Properties();
         for (Pair<String, String> entry : connectInfo) {
             if (entry.left.startsWith(
-                RolapConnectionProperties.JdbcPropertyPrefix))
+                    RolapConnectionProperties.JdbcPropertyPrefix))
             {
                 jdbcProperties.put(
                     entry.left.substring(

@@ -25,14 +25,14 @@ import mondrian.mdx.ResolvedFunCall;
  */
 class VarFunDef extends AbstractAggregateFunDef {
     static final Resolver VarResolver = new ReflectiveMultiResolver(
-            "Var",
+        "Var",
             "Var(<Set>[, <Numeric Expression>])",
             "Returns the variance of a numeric expression evaluated over a set (unbiased).",
             new String[]{"fnx", "fnxn"},
             VarFunDef.class);
 
     static final Resolver VarianceResolver = new ReflectiveMultiResolver(
-            "Variance", "Variance(<Set>[, <Numeric Expression>])",
+        "Variance", "Variance(<Set>[, <Numeric Expression>])",
             "Alias for Var.",
             new String[]{"fnx", "fnxn"},
             VarFunDef.class);

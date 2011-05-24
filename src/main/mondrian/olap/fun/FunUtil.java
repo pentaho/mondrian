@@ -910,8 +910,8 @@ public class FunUtil extends Util {
             return ((String) value0).compareTo((String) value1);
         } else if (value0 instanceof Number) {
             return FunUtil.compareValues(
-                    ((Number) value0).doubleValue(),
-                    ((Number) value1).doubleValue());
+                ((Number) value0).doubleValue(),
+                ((Number) value1).doubleValue());
         } else if (value0 instanceof OrderKey) {
             return ((OrderKey) value0).compareTo(value1);
         } else {
@@ -1088,7 +1088,7 @@ public class FunUtil extends Util {
             return Category.DateTime;
         default:
             throw newInternal(
-                    "unknown type code '" + c + "' in string '" + flags + "'");
+                "unknown type code '" + c + "' in string '" + flags + "'");
         }
     }
 
@@ -1975,9 +1975,9 @@ public class FunUtil extends Util {
      * @param args    Arguments to the function
      */
     private static void checkNativeCompatible(
-            Validator validator,
-            FunDef funDef,
-            Exp[] args)
+        Validator validator,
+        FunDef funDef,
+        Exp[] args)
     {
         // If the first argument to a function is either:
         // 1) the measures dimension or
@@ -3370,4 +3370,3 @@ public class FunUtil extends Util {
 }
 
 // End FunUtil.java
-

@@ -125,7 +125,7 @@ public class DynamicContentFinder
 
     private Map<String, Pair<DataSourcesConfig.DataSource,
             DataSourcesConfig.Catalog>> createCatalogMap(
-        DataSourcesConfig.DataSources newDataSources)
+                DataSourcesConfig.DataSources newDataSources)
     {
         Map<String,
             Pair<DataSourcesConfig.DataSource,
@@ -172,7 +172,7 @@ public class DynamicContentFinder
                         newDatasourceCatalogs.get(oldCatalog.name);
                 if (pair == null
                     || !areCatalogsEqual(
-                    oldDataSource, oldCatalog, pair.left, pair.right))
+                        oldDataSource, oldCatalog, pair.left, pair.right))
                 {
                     flushCatalog(oldCatalog.name);
                 }

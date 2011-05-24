@@ -179,7 +179,7 @@ public abstract class XmlaServlet
                 }
                 for (XmlaRequestCallback callback : getCallbacks()) {
                     if (!callback.processHttpHeader(
-                        request,
+                            request,
                         response,
                         context))
                     {
@@ -385,14 +385,14 @@ public abstract class XmlaServlet
      * Implement to provide application specified SOAP unmarshalling algorithm.
      */
     protected abstract void unmarshallSoapMessage(
-            HttpServletRequest request,
+        HttpServletRequest request,
             Element[] requestSoapParts) throws XmlaException;
 
     /**
      * Implement to handle application specified SOAP header.
      */
     protected abstract void handleSoapHeader(
-            HttpServletResponse response,
+        HttpServletResponse response,
             Element[] requestSoapParts,
             byte[][] responseSoapParts,
             Map<String, Object> context) throws XmlaException;
@@ -401,7 +401,7 @@ public abstract class XmlaServlet
      * Implement to handle XML/A request.
      */
     protected abstract void handleSoapBody(
-            HttpServletResponse response,
+        HttpServletResponse response,
             Element[] requestSoapParts,
             byte[][] responseSoapParts,
             Map<String, Object> context) throws XmlaException;
@@ -418,7 +418,7 @@ public abstract class XmlaServlet
      * Implement to application specified handler of SOAP fualt.
      */
     protected abstract void handleFault(
-            HttpServletResponse response,
+        HttpServletResponse response,
             byte[][] responseSoapParts,
             Phase phase,
             Throwable t);

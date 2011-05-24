@@ -127,7 +127,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
             return null;
         }
         if (!TopCountConstraint.isValidContext(
-            evaluator, restrictMemberTypes()))
+                evaluator, restrictMemberTypes()))
         {
             return null;
         }
@@ -217,4 +217,3 @@ public class RolapNativeTopCount extends RolapNativeSet {
 }
 
 // End RolapNativeTopCount.java
-

@@ -25,14 +25,16 @@ import mondrian.olap.FunDef;
  * @since Mar 23, 2006
  */
 class HeadTailFunDef extends FunDefBase {
-    static final Resolver TailResolver = new ReflectiveMultiResolver(
+    static final Resolver TailResolver =
+        new ReflectiveMultiResolver(
             "Tail",
             "Tail(<Set>[, <Count>])",
             "Returns a subset from the end of a set.",
             new String[] {"fxx", "fxxn"},
             HeadTailFunDef.class);
 
-    static final Resolver HeadResolver = new ReflectiveMultiResolver(
+    static final Resolver HeadResolver =
+        new ReflectiveMultiResolver(
             "Head",
             "Head(<Set>[, < Numeric Expression >])",
             "Returns the first specified number of elements in a set.",

@@ -241,7 +241,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
         boolean faking;
         boolean disabled;
         final Random random = Util.createRandom(
-                MondrianProperties.instance().TestSeed.get());
+            MondrianProperties.instance().TestSeed.get());
 
         DteRoot(RolapResult result, int expDeps) {
             super(result);

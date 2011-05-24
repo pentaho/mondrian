@@ -104,7 +104,7 @@ public class VisualTotalsFunDef extends FunDefBase {
         }
 
         private VisualTotalMember createMember(
-                Member member,
+            Member member,
                 int i,
                 final List<Member> list,
                 Evaluator evaluator)
@@ -177,10 +177,10 @@ public class VisualTotalsFunDef extends FunDefBase {
                 memberExprs[i] = new MemberExpr(childMember);
             }
             return new UnresolvedFunCall(
-                    "Aggregate",
+                "Aggregate",
                     new Exp[] {
                         new UnresolvedFunCall(
-                                "{}",
+                            "{}",
                                 Syntax.Braces,
                                 memberExprs)
                     });
@@ -269,10 +269,10 @@ public class VisualTotalsFunDef extends FunDefBase {
                 memberExprs[i] = new MemberExpr(childMember);
             }
             return new UnresolvedFunCall(
-                    "Aggregate",
+                "Aggregate",
                     new Exp[] {
                         new UnresolvedFunCall(
-                                "{}",
+                            "{}",
                                 Syntax.Braces,
                                 memberExprs)
                     });

@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -91,14 +91,14 @@ public class SqlConstraintFactory {
             return DefaultTupleConstraint.instance();
         }
         if (!SqlContextConstraint.isValidContext(
-            context, false, levels, false))
+                context, false, levels, false))
         {
             return DefaultTupleConstraint.instance();
         }
         if (context.isNonEmpty()) {
             Set<CrossJoinArg> joinArgs =
                 new CrossJoinArgFactory(false).buildConstraintFromAllAxes(
-                (RolapEvaluator) context);
+                    (RolapEvaluator) context);
             if (joinArgs.size() > 0) {
                 return new RolapNativeCrossJoin.NonEmptyCrossJoinConstraint(
                     joinArgs.toArray(

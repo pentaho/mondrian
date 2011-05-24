@@ -2,7 +2,7 @@
  // This software is subject to the terms of the Eclipse Public License v1.0
  // Agreement, available at the following URL:
  // http://www.eclipse.org/legal/epl-v10.html.
- // Copyright (C) 2007-2010 Julian Hyde
+ // Copyright (C) 2007-2011 Julian Hyde
  // All Rights Reserved.
  // You must accept the terms of that agreement to use this software.
  */
@@ -1697,11 +1697,11 @@ public class Vba {
         + "[,UseParensForNegativeNumbers [,GroupDigits]]]])")
     @Description("Returns an expression formatted as a number.")
     public static String formatNumber(
-            Object expression,
-            int numDigitsAfterDecimal /* default -1 */,
-            int includeLeadingDigit /* default usedefault */,
-            int useParensForNegativeNumbers /* default UseDefault */,
-            int groupDigits /* default UseDefault */)
+        Object expression,
+        int numDigitsAfterDecimal /* default -1 */,
+        int includeLeadingDigit /* default usedefault */,
+        int useParensForNegativeNumbers /* default UseDefault */,
+        int groupDigits /* default UseDefault */)
     {
         NumberFormat format = NumberFormat.getNumberInstance();
         if (numDigitsAfterDecimal != -1) {
@@ -1726,7 +1726,7 @@ public class Vba {
             } else {
                 DecimalFormat dformat = (DecimalFormat)format;
                 dformat.setNegativePrefix(
-                        "" + dformat.getDecimalFormatSymbols().getMinusSign());
+                    "" + dformat.getDecimalFormatSymbols().getMinusSign());
                 dformat.setNegativeSuffix("");
             }
         }
@@ -1845,9 +1845,9 @@ public class Vba {
             } else {
                 DecimalFormat dformat = (DecimalFormat)format;
                 dformat.setNegativePrefix(
-                        "" + dformat.getDecimalFormatSymbols().getMinusSign());
+                    "" + dformat.getDecimalFormatSymbols().getMinusSign());
                 dformat.setNegativeSuffix(
-                        "" + dformat.getDecimalFormatSymbols().getPercent());
+                    "" + dformat.getDecimalFormatSymbols().getPercent());
             }
         }
 
@@ -1897,7 +1897,7 @@ public class Vba {
         // todo: implement binary vs. text compare
         if (start == 0 || start < -1) {
             throw new InvalidArgumentException(
-                    "start must be -1 or a location in the string to start");
+                "start must be -1 or a location in the string to start");
         }
         if (start != -1) {
             return stringCheck.indexOf(stringMatch, start - 1) + 1;
@@ -1942,7 +1942,7 @@ public class Vba {
         // todo: implement binary vs. text compare
         if (start == 0 || start < -1) {
             throw new InvalidArgumentException(
-                    "start must be -1 or a location in the string to start");
+                "start must be -1 or a location in the string to start");
         }
         if (start != -1) {
             return stringCheck.lastIndexOf(stringMatch, start - 1) + 1;

@@ -70,8 +70,8 @@ public class OracleDialect extends JdbcDialectImpl {
 
     @Override
     public String generateRegularExpression(
-            String source,
-            String javaRegExp)
+        String source,
+        String javaRegExp)
     {
         return "REGEXP_LIKE(" + source + ", '" + javaRegExp + "')";
     }

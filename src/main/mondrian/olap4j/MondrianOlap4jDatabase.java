@@ -38,7 +38,7 @@ class MondrianOlap4jDatabase implements Database, Named {
     private final List<AuthenticationMode> authenticationMode;
 
     public MondrianOlap4jDatabase(
-            MondrianOlap4jConnection olap4jConnection,
+        MondrianOlap4jConnection olap4jConnection,
             NamedList<MondrianOlap4jCatalog> catalogs,
             String name,
             String description,

@@ -30,7 +30,7 @@ import java.io.PrintWriter;
 public class RankFunDef extends FunDefBase {
     static final boolean debug = false;
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
-            "Rank",
+        "Rank",
             "Rank(<Tuple>, <Set> [, <Calc Expression>])",
             "Returns the one-based rank of a tuple in a set.",
             new String[]{"fitx", "fitxn", "fimx", "fimxn"},
@@ -83,7 +83,7 @@ public class RankFunDef extends FunDefBase {
         final Calc listCalc;
         if (MondrianProperties.instance().EnableExpCache.get()) {
             final ExpCacheDescriptor key = new ExpCacheDescriptor(
-                    listExp, listCalc1, compiler.getEvaluator());
+                listExp, listCalc1, compiler.getEvaluator());
             listCalc = new CacheCalc(listExp, key);
         } else {
             listCalc = listCalc1;
@@ -672,4 +672,3 @@ public class RankFunDef extends FunDefBase {
 }
 
 // End RankFunDef.java
-

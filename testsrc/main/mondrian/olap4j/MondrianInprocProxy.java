@@ -67,7 +67,7 @@ public class MondrianInprocProxy
         );
 
     public byte[] get(
-            XmlaOlap4jServerInfos infos,
+        XmlaOlap4jServerInfos infos,
             String request)
     {
         try {

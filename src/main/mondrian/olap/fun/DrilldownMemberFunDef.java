@@ -25,7 +25,8 @@ import java.util.*;
  */
 class DrilldownMemberFunDef extends FunDefBase {
     static final String[] reservedWords = new String[] {"RECURSIVE"};
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
             "DrilldownMember",
             "DrilldownMember(<Set1>, <Set2>[, RECURSIVE])",
             "Drills down the members in a set that are present in a second specified set.",

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2010 Julian Hyde
+// Copyright (C) 2004-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1334,7 +1334,7 @@ public abstract class DBLoader {
                         "Bad DECIMAL column type for " + typeName);
                  }
                 DecimalFormat formatter = new DecimalFormat(
-                        decimalFormat(matcher.group(1), matcher.group(2)));
+                    decimalFormat(matcher.group(1), matcher.group(2)));
                 if (value instanceof Double) {
                     Double result = (Double) value;
                     return formatter.format(result.doubleValue());

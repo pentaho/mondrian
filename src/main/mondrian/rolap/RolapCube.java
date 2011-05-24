@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -491,7 +491,7 @@ public class RolapCube extends CubeBase {
             for (Member cubeMeasure : cubeMeasures) {
                 if (cubeMeasure.getUniqueName().equals(xmlMeasure.name)) {
                     if (cubeMeasure.getName().equalsIgnoreCase(
-                        xmlVirtualCube.defaultMeasure))
+                            xmlVirtualCube.defaultMeasure))
                     {
                         defaultMeasure = cubeMeasure;
                     }
@@ -625,7 +625,7 @@ public class RolapCube extends CubeBase {
         List<MondrianDef.CalculatedMember> xmlVirtualCubeCalculatedMemberList =
                 Arrays.asList(xmlVirtualCube.calculatedMembers);
         if (!vcHasAllCalcMembers(
-            origCalcMeasureList, xmlVirtualCubeCalculatedMemberList))
+                origCalcMeasureList, xmlVirtualCubeCalculatedMemberList))
         {
             // Remove from the calculated members array
             // those members that weren't originally defined
@@ -635,7 +635,7 @@ public class RolapCube extends CubeBase {
             calculatedMemberList.clear();
             for (Formula calculatedMember : calculatedMemberListCopy) {
                 if (findOriginalMembers(
-                    calculatedMember,
+                        calculatedMember,
                     origCalcMeasureList,
                     calculatedMemberList))
                 {
@@ -650,7 +650,7 @@ public class RolapCube extends CubeBase {
 
         for (Formula calcMember : calculatedMemberList) {
             if (calcMember.getName().equalsIgnoreCase(
-                xmlVirtualCube.defaultMeasure))
+                    xmlVirtualCube.defaultMeasure))
             {
                 this.measuresHierarchy.setDefaultMember(
                     calcMember.getMdxMember());
@@ -1011,7 +1011,7 @@ public class RolapCube extends CubeBase {
             Formula formula = calculatedMemberList.get(i);
             if (formula.getName().equals(xmlCalcMember.name)
                 && formula.getMdxMember().getDimension().getName().equals(
-                dimension.getName()))
+                    dimension.getName()))
             {
                 if (errOnDup) {
                     throw MondrianResource.instance().CalcMemberNotUnique.ex(
@@ -1038,7 +1038,7 @@ public class RolapCube extends CubeBase {
         }
 
         final String memberUniqueName = Util.makeFqName(
-                dimension.getUniqueName(), xmlCalcMember.name);
+            dimension.getUniqueName(), xmlCalcMember.name);
         final MondrianDef.CalculatedMemberProperty[] xmlProperties =
                 xmlCalcMember.memberProperties;
         List<String> propNames = new ArrayList<String>();
@@ -2429,7 +2429,7 @@ public class RolapCube extends CubeBase {
         for (int i = 0; i < getDimensions().length; i++) {
             Dimension dimension = getDimensions()[i];
             if (dimension.getName().equals(
-                hierarchy.getDimension().getName()))
+                    hierarchy.getDimension().getName()))
             {
                 for (int j = 0; j <  dimension.getHierarchies().length; j++) {
                     Hierarchy hier = dimension.getHierarchies()[j];

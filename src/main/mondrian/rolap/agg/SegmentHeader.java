@@ -156,6 +156,7 @@ public class SegmentHeader implements Serializable {
         final String columnExpression;
         final Object[] values;
         private int hashCode = Integer.MIN_VALUE;
+
         /**
          * Constructor for ConstrainedColumn.
          * @param columnExpression Name of the source table into which the
@@ -165,8 +166,8 @@ public class SegmentHeader implements Serializable {
          * or Double.
          */
         public ConstrainedColumn(
-                String columnExpression,
-                Object[] valueList)
+            String columnExpression,
+            Object[] valueList)
         {
             this.columnExpression = columnExpression;
             this.values = new Object[valueList.length];
@@ -262,7 +263,7 @@ public class SegmentHeader implements Serializable {
      * @return A Constrained column, or null.
      */
     public ConstrainedColumn getConstrainedColumn(
-            String columnExpression)
+        String columnExpression)
     {
         for (ConstrainedColumn c : constrainedColumns) {
             if (c.columnExpression.equals(columnExpression)) {

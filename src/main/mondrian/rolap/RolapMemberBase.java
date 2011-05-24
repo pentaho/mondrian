@@ -526,7 +526,7 @@ public class RolapMemberBase
                 // use a special case sensitive compare name which
                 // first compares w/o case, and if 0 compares with case
                 return Util.caseSensitiveCompareName(
-                        (String) this.key, (String) other.key);
+                    (String) this.key, (String) other.key);
             } else {
                 return Util.compareKey(this.key, other.key);
             }
@@ -562,7 +562,7 @@ public class RolapMemberBase
             final String parentName = parentMember.getName();
             final String name = getName();
             return (parentName == null ? "" : parentName).equals(
-                    name == null ? "" : name);
+                name == null ? "" : name);
         }
 
         default:

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -153,7 +153,7 @@ public class HierarchyUsage {
                 this.source = du.source;
             } else {
                 String hname = this.hierarchyName.substring(
-                        index + 1, this.hierarchyName.length());
+                    index + 1, this.hierarchyName.length());
 
                 StringBuilder buf = new StringBuilder(32);
                 buf.append(this.name);
@@ -351,7 +351,9 @@ public class HierarchyUsage {
             if (joinLevel == null) {
                 throw MondrianResource.instance()
                     .DimensionUsageHasUnknownLevel.ex(
-                    hierarchy.getUniqueName(), cube.getName(), cubeDim.level);
+                        hierarchy.getUniqueName(),
+                        cube.getName(),
+                        cubeDim.level);
             }
             this.joinTable =
                 findJoinTable(hierarchy, joinLevel.getKeyExp().getTableAlias());
@@ -389,13 +391,13 @@ public class HierarchyUsage {
             if (this.joinExp == null) {
                 throw MondrianResource.instance()
                     .MustSpecifyPrimaryKeyForHierarchy.ex(
-                    hierarchy.getUniqueName(),
+                        hierarchy.getUniqueName(),
                     cube.getName());
             }
             if (foreignKey == null) {
                 throw MondrianResource.instance()
                     .MustSpecifyForeignKeyForHierarchy.ex(
-                    hierarchy.getUniqueName(),
+                        hierarchy.getUniqueName(),
                     cube.getName());
             }
         }

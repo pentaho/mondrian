@@ -26,7 +26,8 @@ import mondrian.rolap.RolapHierarchy;
  * @since Mar 23, 2006
  */
 class PeriodsToDateFunDef extends FunDefBase {
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
             "PeriodsToDate",
             "PeriodsToDate([<Level>[, <Member>]])",
             "Returns a set of periods (members) from a specified level starting with the first period and ending with a specified member.",

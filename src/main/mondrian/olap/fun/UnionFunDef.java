@@ -28,7 +28,8 @@ import java.util.HashSet;
 class UnionFunDef extends FunDefBase {
     static final String[] ReservedWords = new String[] {"ALL", "DISTINCT"};
 
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
             "Union",
             "Union(<Set1>, <Set2>[, ALL])",
             "Returns the union of two sets, optionally retaining duplicates.",

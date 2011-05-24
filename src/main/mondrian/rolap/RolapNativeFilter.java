@@ -98,7 +98,7 @@ public class RolapNativeFilter extends RolapNativeSet {
             return null;
         }
         if (!FilterConstraint.isValidContext(
-            evaluator, restrictMemberTypes()))
+                evaluator, restrictMemberTypes()))
         {
             return null;
         }
@@ -152,7 +152,7 @@ public class RolapNativeFilter extends RolapNativeSet {
         // necessary due to the SqlConstraintsUtils.addContextConstraint()
         // method which gets called when generating the native SQL.
         if (SqlConstraintUtils.containsCalculatedMember(
-            evaluator.getNonAllMembers()))
+                evaluator.getNonAllMembers()))
         {
             return null;
         }
@@ -182,4 +182,3 @@ public class RolapNativeFilter extends RolapNativeSet {
 }
 
 // End RolapNativeFilter.java
-

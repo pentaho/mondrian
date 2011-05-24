@@ -25,7 +25,8 @@ class CountFunDef extends AbstractAggregateFunDef {
     static final String[] ReservedWords =
         new String[] {"INCLUDEEMPTY", "EXCLUDEEMPTY"};
 
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
             "Count",
             "Count(<Set>[, EXCLUDEEMPTY | INCLUDEEMPTY])",
             "Returns the number of tuples in a set, empty cells included unless the optional EXCLUDEEMPTY flag is used.",
@@ -46,7 +47,9 @@ class CountFunDef extends AbstractAggregateFunDef {
             || ((Literal) call.getArg(1)).getValue().equals(
                 "INCLUDEEMPTY");
         return new AbstractIntegerCalc(
-                call, new Calc[] {calc}) {
+            call,
+            new Calc[] {calc})
+        {
             public int evaluateInteger(Evaluator evaluator) {
                 final int savepoint = evaluator.savepoint();
                 evaluator.setNonEmpty(false);

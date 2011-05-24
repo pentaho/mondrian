@@ -39,7 +39,7 @@ public class ValidMeasureFunDef extends FunDefBase
 
     private ValidMeasureFunDef() {
         super(
-                "ValidMeasure",
+            "ValidMeasure",
                 "Returns a valid measure in a virtual cube by forcing inapplicable dimensions to their top level.",
                 "fnt");
     }

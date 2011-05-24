@@ -21,11 +21,12 @@ class DenseObjectSegmentBody extends AbstractSegmentBody {
     private static final long serialVersionUID = -3558427982849392173L;
     final Object[] data;
     private final int size;
+
     DenseObjectSegmentBody(
-            Object[] dataToSave,
-            int size,
-            SortedSet<Comparable<?>>[] axisValueSets,
-            boolean[] nullAxisFlags)
+        Object[] dataToSave,
+        int size,
+        SortedSet<Comparable<?>>[] axisValueSets,
+        boolean[] nullAxisFlags)
     {
         super(axisValueSets, nullAxisFlags);
         this.size = size;
@@ -42,4 +43,3 @@ class DenseObjectSegmentBody extends AbstractSegmentBody {
 }
 
 // End DenseObjectSegmentBody.java
-

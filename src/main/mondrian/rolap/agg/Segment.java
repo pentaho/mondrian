@@ -183,7 +183,7 @@ public class Segment {
      * {@link #waitUntilLoaded}.
      */
      void setData(
-        SegmentDataset data,
+         SegmentDataset data,
         RolapAggregationManager.PinSet pinnedSegments)
     {
         stateLock.writeLock().lock(); // need exclusive write access to state
@@ -717,7 +717,7 @@ public class Segment {
             if (obj instanceof Region) {
                 Region that = (Region) obj;
                 return Arrays.equals(
-                        this.predicates, that.predicates)
+                    this.predicates, that.predicates)
                     && Arrays.equals(
                         this.multiColumnPredicates,
                         that.multiColumnPredicates);

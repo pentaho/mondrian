@@ -34,7 +34,7 @@ import java.util.ArrayList;
  */
 class LastPeriodsFunDef extends FunDefBase {
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
-            "LastPeriods",
+        "LastPeriods",
             "LastPeriods(<Index> [, <Member>])",
             "Returns a set of members prior to and including a specified member.",
             new String[] {"fxn", "fxnm"},

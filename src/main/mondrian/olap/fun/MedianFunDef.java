@@ -24,7 +24,7 @@ import mondrian.mdx.ResolvedFunCall;
  */
 class MedianFunDef extends AbstractAggregateFunDef {
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
-            "Median",
+        "Median",
             "Median(<Set>[, <Numeric Expression>])",
             "Returns the median value of a numeric expression evaluated over a set.",
             new String[]{"fnx", "fnxn"},

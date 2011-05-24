@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -228,18 +228,18 @@ public class VbaTest extends TestCase {
         // CInt rounds to the nearest even number
         try {
             assertEquals(
-                    DateFormat.getDateInstance().parse("Jan 12, 1952"),
-                    Vba.cDate("Jan 12, 1952"));
+                DateFormat.getDateInstance().parse("Jan 12, 1952"),
+                Vba.cDate("Jan 12, 1952"));
             assertEquals(
-                    DateFormat.getDateInstance().parse("October 19, 1962"),
-                    Vba.cDate("October 19, 1962"));
+                DateFormat.getDateInstance().parse("October 19, 1962"),
+                Vba.cDate("October 19, 1962"));
             assertEquals(
-                    DateFormat.getTimeInstance().parse("4:35:47 PM"),
-                    Vba.cDate("4:35:47 PM"));
+                DateFormat.getTimeInstance().parse("4:35:47 PM"),
+                Vba.cDate("4:35:47 PM"));
             assertEquals(
-                    DateFormat.getDateTimeInstance().parse(
-                            "October 19, 1962 4:35:47 PM"),
-                    Vba.cDate("October 19, 1962 4:35:47 PM"));
+                DateFormat.getDateTimeInstance().parse(
+                    "October 19, 1962 4:35:47 PM"),
+                Vba.cDate("October 19, 1962 4:35:47 PM"));
         } catch (ParseException e) {
             e.printStackTrace();
             fail();
@@ -415,7 +415,7 @@ public class VbaTest extends TestCase {
     public void testFormatDateTime() {
         try {
             Date date = DateFormat.getDateTimeInstance().parse(
-                    "October 19, 1962 4:35:47 PM");
+                "October 19, 1962 4:35:47 PM");
             assertEquals("Oct 19, 1962 4:35:47 PM", Vba.formatDateTime(date));
             assertEquals(
                 "Oct 19, 1962 4:35:47 PM", Vba.formatDateTime(date, 0));

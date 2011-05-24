@@ -438,7 +438,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         private static boolean isEqual(Member[] tuple1, Member[] tuple2) {
             for (int i = 0; i < tuple1.length; i++) {
                 if (!tuple1[i].getUniqueName().equals(
-                    tuple2[i].getUniqueName()))
+                        tuple2[i].getUniqueName()))
                 {
                     return false;
                 }

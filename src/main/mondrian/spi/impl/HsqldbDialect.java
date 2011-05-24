@@ -26,7 +26,7 @@ public class HsqldbDialect extends JdbcDialectImpl {
 
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
-                HsqldbDialect.class,
+            HsqldbDialect.class,
             DatabaseProduct.HSQLDB);
 
     /**

@@ -179,7 +179,7 @@ public class ValidationUtils {
                 }
                 if (value instanceof MondrianGuiDef.DimensionUsage) {
                     if (isEmpty(
-                        ((MondrianGuiDef.DimensionUsage) value).source))
+                            ((MondrianGuiDef.DimensionUsage) value).source))
                     {
                         return messages.getString(
                             "schemaTreeCellRenderer.sourceMustBeSet.alert",
@@ -208,7 +208,7 @@ public class ValidationUtils {
                 }
                 if (value instanceof MondrianGuiDef.Dimension && cube != null) {
                     if (!isEmpty(
-                        ((MondrianGuiDef.Dimension) value).foreignKey))
+                            ((MondrianGuiDef.Dimension) value).foreignKey))
                     {
                         // database validity check, if database connection is
                         // successful
@@ -221,9 +221,9 @@ public class ValidationUtils {
                                     ((MondrianGuiDef.Dimension) value)
                                     .foreignKey;
                                 if (!jdbcValidator.isColExists(
-                                    factTable.schema,
-                                    factTable.name,
-                                    foreignKey))
+                                        factTable.schema,
+                                        factTable.name,
+                                        foreignKey))
                                 {
                                     return messages.getFormattedString(
                                         "schemaTreeCellRenderer.foreignKeyDoesNotExist.alert",
@@ -350,9 +350,9 @@ public class ValidationUtils {
                                 final MondrianGuiDef.Table factTable =
                                     (MondrianGuiDef.Table) cube.fact;
                                 if (!jdbcValidator.isColExists(
-                                    factTable.schema,
-                                    factTable.name,
-                                    column))
+                                        factTable.schema,
+                                        factTable.name,
+                                        column))
                                 {
                                     return messages.getFormattedString(
                                         "schemaTreeCellRenderer.degenDimensionColumnDoesNotExist.alert",
@@ -366,9 +366,9 @@ public class ValidationUtils {
                                     (MondrianGuiDef.Table)
                                     parentHierarchy.relation;
                                 if (!jdbcValidator.isColExists(
-                                    parentTable.schema,
-                                    parentTable.name,
-                                    column))
+                                        parentTable.schema,
+                                        parentTable.name,
+                                        column))
                                 {
                                     return messages.getFormattedString(
                                         "schemaTreeCellRenderer.columnInDimensionDoesNotExist.alert",
@@ -413,9 +413,9 @@ public class ValidationUtils {
                         if (jdbcValidator.isInitialized()) {
                             String column = measure.column;
                             if (jdbcValidator.isColExists(
-                                factTable.schema,
-                                factTable.name,
-                                column))
+                                    factTable.schema,
+                                    factTable.name,
+                                    column))
                             {
                                 // Check for aggregator type only if column
                                 // exists in table.
@@ -433,7 +433,7 @@ public class ValidationUtils {
                                 // Types are enumerated in java.sql.Types.
                                 int agIndex = -1;
                                 if ("sum".equals(
-                                    measure.aggregator)
+                                        measure.aggregator)
                                     || "avg".equals(
                                         measure.aggregator))
                                 {
@@ -503,7 +503,7 @@ public class ValidationUtils {
 
                 if (pkTable != null
                     && !jdbcValidator.isColExists(
-                    schema, pkTable, hierarchy.primaryKey))
+                        schema, pkTable, hierarchy.primaryKey))
                 {
                     return messages.getFormattedString(
                         "schemaTreeCellRenderer.columnInTableDoesNotExist.alert",
@@ -685,7 +685,7 @@ public class ValidationUtils {
                     && ((MondrianGuiDef.Hierarchy) child).relation != null)
                 {
                     if (isEmpty(
-                        ((MondrianGuiDef.Dimension) value).foreignKey))
+                            ((MondrianGuiDef.Dimension) value).foreignKey))
                     {
                         // check foreignkey is not blank;
                         // if relation is null, foreignkey must be specified
@@ -911,9 +911,9 @@ public class ValidationUtils {
                             // case of degenerate dimension within cube,
                             // hierarchy table not specified
                             if (!jdbcValidator.isColExists(
-                                ((MondrianGuiDef.Table) cube.fact).schema,
-                                ((MondrianGuiDef.Table) cube.fact).name,
-                                column))
+                                    ((MondrianGuiDef.Table) cube.fact).schema,
+                                    ((MondrianGuiDef.Table) cube.fact).name,
+                                    column))
                             {
                                 return messages.getFormattedString(
                                     "schemaTreeCellRenderer.degenDimensionColumnDoesNotExist.alert",
@@ -926,7 +926,9 @@ public class ValidationUtils {
                             final MondrianGuiDef.Table parentTable =
                                 (MondrianGuiDef.Table) parentHierarchy.relation;
                             if (!jdbcValidator.isColExists(
-                                parentTable.schema, parentTable.name, column))
+                                    parentTable.schema,
+                                    parentTable.name,
+                                    column))
                             {
                                 return messages.getFormattedString(
                                     "schemaTreeCellRenderer.columnInTableDoesNotExist.alert",

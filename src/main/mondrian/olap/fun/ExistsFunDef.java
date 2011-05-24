@@ -26,7 +26,8 @@ import java.util.*;
  */
 class ExistsFunDef extends FunDefBase
 {
-    static final Resolver resolver = new ReflectiveMultiResolver(
+    static final Resolver resolver =
+        new ReflectiveMultiResolver(
             "Exists",
             "Exists(<Set1>, <Set2>])",
             "Returns the the set of tuples of the first set that exist with one or more tuples of the second set.",
@@ -68,7 +69,7 @@ class ExistsFunDef extends FunDefBase
                         idxmap[i] = leftDims.indexOf(d);
                     } else {
                         return TupleCollections.emptyList(
-                           leftTuples.getArity());
+                            leftTuples.getArity());
                     }
                 }
 

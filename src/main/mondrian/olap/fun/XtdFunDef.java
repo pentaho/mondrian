@@ -33,28 +33,28 @@ class XtdFunDef extends FunDefBase {
     private final LevelType levelType;
 
     static final ResolverImpl MtdResolver = new ResolverImpl(
-            "Mtd",
+        "Mtd",
             "Mtd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Month.",
             new String[]{"fx", "fxm"},
             LevelType.TimeMonths);
 
     static final ResolverImpl QtdResolver = new ResolverImpl(
-            "Qtd",
+        "Qtd",
             "Qtd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Quarter.",
             new String[]{"fx", "fxm"},
             LevelType.TimeQuarters);
 
     static final ResolverImpl WtdResolver = new ResolverImpl(
-            "Wtd",
+        "Wtd",
             "Wtd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Week.",
             new String[]{"fx", "fxm"},
             LevelType.TimeWeeks);
 
     static final ResolverImpl YtdResolver = new ResolverImpl(
-            "Ytd",
+        "Ytd",
             "Ytd([<Member>])",
             "A shortcut function for the PeriodsToDate function that specifies the level to be Year.",
             new String[]{"fx", "fxm"},

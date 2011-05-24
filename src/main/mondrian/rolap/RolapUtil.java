@@ -267,11 +267,11 @@ public class RolapUtil {
         String alertValue = alertProperty.get();
 
         if (alertValue.equalsIgnoreCase(
-            org.apache.log4j.Level.WARN.toString()))
+                org.apache.log4j.Level.WARN.toString()))
         {
             LOGGER.warn(alertMsg);
         } else if (alertValue.equalsIgnoreCase(
-            org.apache.log4j.Level.ERROR.toString()))
+                org.apache.log4j.Level.ERROR.toString()))
         {
             LOGGER.error(alertMsg);
             throw MondrianResource.instance().NativeEvaluationUnsupported.ex(
@@ -354,7 +354,7 @@ public class RolapUtil {
                 && member instanceof RolapMember)
             {
                 if (((RolapMember) member).getKey().toString().equals(
-                    searchName.name))
+                        searchName.name))
                 {
                     return member;
                 }

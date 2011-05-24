@@ -953,7 +953,7 @@ public class XmlaHandler {
                         "minOccurs", 0,
                         "maxOccurs", "unbounded");
                     if (false) writer.element(
-                        "xsd:element",
+                            "xsd:element",
                         "name", "PARENT_MEMBER_NAME",
                         "type", "PropType",
                         "minOccurs", 0,
@@ -1882,7 +1882,7 @@ public class XmlaHandler {
             String elementName)
         {
             if (extra.shouldReturnCellProperty(
-                cellSet, cellProperty, evenEmpty))
+                    cellSet, cellProperty, evenEmpty))
             {
                 writer.element(
                     elementName,
@@ -2284,7 +2284,7 @@ public class XmlaHandler {
                     continue;
                 }
                 if (!extra.shouldReturnCellProperty(
-                    cellSet, cellPropLong, true))
+                        cellSet, cellPropLong, true))
                 {
                     continue;
                 }

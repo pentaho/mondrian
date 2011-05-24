@@ -180,8 +180,8 @@ public class Util extends XOMUtil {
      * @return An executor service preconfigured.
      */
     public static ExecutorService getExecutorService(
-            final int maxNbThreads,
-            final String name)
+        final int maxNbThreads,
+        final String name)
     {
         return Executors.newFixedThreadPool(
             maxNbThreads,

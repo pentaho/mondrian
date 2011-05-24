@@ -107,7 +107,7 @@ public class Target extends TargetBase {
 
                 // Skip over the columns consumed by makeMember
                 if (!childLevel.getOrdinalExp().equals(
-                    childLevel.getKeyExp()))
+                        childLevel.getKeyExp()))
                 {
                     ++column;
                 }
@@ -139,7 +139,7 @@ public class Target extends TargetBase {
                     this.moreRows = sqlTupleReader.readNextTuple();
                     if (limit > 0 && !asList && getList().size() > limit) {
                         System.out.println(
-                                "Target: 199, Ouch! Toooo big array..."
+                            "Target: 199, Ouch! Toooo big array..."
                                 + this.hashCode());
                         new Throwable().printStackTrace();
                     }

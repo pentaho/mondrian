@@ -28,7 +28,8 @@ import java.util.Set;
  */
 class ToggleDrillStateFunDef extends FunDefBase {
     static final String[] ReservedWords = new String[] {"RECURSIVE"};
-    static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(
+    static final ReflectiveMultiResolver Resolver =
+        new ReflectiveMultiResolver(
             "ToggleDrillState",
             "ToggleDrillState(<Set1>, <Set2>[, RECURSIVE])",
             "Toggles the drill state of members. This function is a combination of DrillupMember and DrilldownMember.",

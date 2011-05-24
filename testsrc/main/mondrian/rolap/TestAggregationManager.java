@@ -1338,10 +1338,10 @@ public class TestAggregationManager extends BatchTestCase {
             };
 
         assertQuerySqlOrNot(
-                testContext, query, patterns, false, false, false);
+            testContext, query, patterns, false, false, false);
 
         testContext.assertQueryReturns(
-                query,
+            query,
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n"
@@ -1353,10 +1353,10 @@ public class TestAggregationManager extends BatchTestCase {
         Result result = testContext.executeQuery(query);
         // this verifies that the caption for meat is deli
         assertEquals(
-                "Meat",
+            "Meat",
                 result.getAxes()[1].getPositions().get(0).get(0).getName());
         assertEquals(
-                "Deli",
+            "Deli",
                 result.getAxes()[1].getPositions().get(0).get(0).getCaption());
 
         // Test children
@@ -1366,7 +1366,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "from [Sales_Prod_Ord] ";
 
         testContext.assertQueryReturns(
-                query,
+            query,
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n"

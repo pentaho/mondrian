@@ -5598,7 +5598,7 @@ TODO: see above
                         rows);
                 }
             } else if (mask(
-                treeOp, TreeOp.CHILDREN.xmlaOrdinal()))
+                    treeOp, TreeOp.CHILDREN.xmlaOrdinal()))
             {
                 for (Member child : member.getChildMembers()) {
                     populateMember(

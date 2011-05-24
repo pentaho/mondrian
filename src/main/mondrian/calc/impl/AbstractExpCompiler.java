@@ -575,7 +575,7 @@ public class AbstractExpCompiler implements ExpCompiler {
             throw FunUtil.newEvalException(
                 MondrianResource.instance()
                     .CannotImplicitlyConvertDimensionToHierarchy.ex(
-                    dimension.getName()));
+                        dimension.getName()));
         }
     }
 }

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -186,14 +186,14 @@ public class CmdRunner {
 
     public static boolean isProperty(String propertyName) {
         final Property property = PropertyInfo.lookupProperty(
-                MondrianProperties.instance(),
+            MondrianProperties.instance(),
                 propertyName);
         return property != null;
     }
 
     public static boolean setProperty(String name, String value) {
         final Property property = PropertyInfo.lookupProperty(
-                MondrianProperties.instance(),
+            MondrianProperties.instance(),
                 name);
         String oldValue = property.getString();
         if (! Util.equals(oldValue, value)) {
@@ -256,7 +256,7 @@ public class CmdRunner {
          * Looks up the definition of a property with a given name.
          */
         public static Property lookupProperty(
-                MondrianProperties properties,
+            MondrianProperties properties,
                 String propertyName)
         {
             final Class<? extends Object> clazz = properties.getClass();
@@ -777,8 +777,8 @@ public class CmdRunner {
 
     protected void commandLoop(boolean interactive) throws IOException {
         commandLoop(
-                new BufferedReader(
-                        new InputStreamReader(System.in)),
+            new BufferedReader(
+                new InputStreamReader(System.in)),
                 interactive);
     }
 
@@ -846,7 +846,7 @@ public class CmdRunner {
                 line = readLine(in, inMdxCmd);
             } catch (IOException e) {
                 throw new RuntimeException(
-                        "Exception while reading command line", e);
+                    "Exception while reading command line", e);
             }
             if (line != null) {
                 line = line.trim();
@@ -2592,4 +2592,3 @@ public class CmdRunner {
 }
 
 // End CmdRunner.java
-

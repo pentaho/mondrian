@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -711,9 +711,9 @@ public class SchemaExplorer
         };
 
         addCalculatedMemberProperty = new AbstractAction(
-                getResourceConverter().getString(
-                    "schemaExplorer.addCalculatedMemberProperty.title",
-                    "Add Calculated Member Property"))
+            getResourceConverter().getString(
+                "schemaExplorer.addCalculatedMemberProperty.title",
+                "Add Calculated Member Property"))
         {
             public void actionPerformed(ActionEvent e) {
                 addCalculatedMemberProperty(e);
@@ -2229,8 +2229,8 @@ public class SchemaExplorer
                                 if (eq(matchDim.name, childDim.name)
                                     && eq(matchDim.caption, childDim.caption)
                                     && eq(
-                                    matchDim.foreignKey,
-                                    childDim.foreignKey))
+                                        matchDim.foreignKey,
+                                        childDim.foreignKey))
                                 {
                                     tofind = false;
                                     if (k + 1 < parentArrLen) {
@@ -3110,10 +3110,11 @@ public class SchemaExplorer
             (MondrianGuiDef.Annotations) path;
         MondrianGuiDef.Annotation annotation = new MondrianGuiDef.Annotation();
         annotation.name =
-          getNewName(getResourceConverter().getString(
-                  "schemaExplorer.newAnnotation.title",
-              "New Annotation"),
-                  annotations.array);
+            getNewName(
+                getResourceConverter().getString(
+                    "schemaExplorer.newAnnotation.title",
+                    "New Annotation"),
+                annotations.array);
 
         MondrianGuiDef.Annotation[] temp = annotations.array;
         annotations.array = new MondrianGuiDef.Annotation[temp.length + 1];

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -84,10 +84,10 @@ class CaseMatchFunDef extends FunDefBase {
     private static class ResolverImpl extends ResolverBase {
         private ResolverImpl() {
             super(
-                    "_CaseMatch",
-                    "Case <Expression> When <Expression> Then <Expression> [...] [Else <Expression>] End",
-                    "Evaluates various expressions, and returns the corresponding expression for the first which matches a particular value.",
-                    Syntax.Case);
+                "_CaseMatch",
+                "Case <Expression> When <Expression> Then <Expression> [...] [Else <Expression>] End",
+                "Evaluates various expressions, and returns the corresponding expression for the first which matches a particular value.",
+                Syntax.Case);
         }
 
         public FunDef resolve(
@@ -112,14 +112,14 @@ class CaseMatchFunDef extends FunDefBase {
                     mismatchingArgs++;
                 }
                 if (!validator.canConvert(
-                    j, args[j++], returnType, conversions))
+                        j, args[j++], returnType, conversions))
                 {
                     mismatchingArgs++;
                 }
             }
             if (j < args.length) {
                 if (!validator.canConvert(
-                    j, args[j++], returnType, conversions))
+                        j, args[j++], returnType, conversions))
                 {
                     mismatchingArgs++;
                 }

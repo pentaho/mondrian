@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -170,7 +170,7 @@ class MondrianServerImpl
     }
 
     public List<String> getCatalogNames(
-            RolapConnection connection)
+        RolapConnection connection)
     {
         return
             repository.getCatalogNames(

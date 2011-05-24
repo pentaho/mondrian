@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2009 Julian Hyde
+// Copyright (C) 2002-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -120,7 +120,7 @@ public class Schedule {
     public static Schedule createOnce(Date date, TimeZone tz) {
         Calendar calendar = ScheduleUtil.createCalendar(date);
         Time timeOfDay = ScheduleUtil.createTime(
-                calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.HOUR_OF_DAY),
                 calendar.get(Calendar.MINUTE),
                 calendar.get(Calendar.SECOND));
         calendar.add(Calendar.SECOND, 1);
@@ -451,7 +451,7 @@ class DailyDateSchedule implements DateSchedule {
         this.period = period;
         ScheduleUtil.assertTrue(period > 0, "period must be positive");
         this.beginOrdinal = ScheduleUtil.julianDay(
-                begin == null ? ScheduleUtil.epochDay : begin);
+            begin == null ? ScheduleUtil.epochDay : begin);
     }
 
     public Calendar nextOccurrence(Calendar day, boolean strict) {
@@ -482,10 +482,10 @@ class WeeklyDateSchedule implements DateSchedule {
         this.period = period;
         ScheduleUtil.assertTrue(period > 0, "period must be positive");
         this.beginOrdinal = ScheduleUtil.julianDay(
-                begin == null ? ScheduleUtil.epochDay : begin) / 7;
+            begin == null ? ScheduleUtil.epochDay : begin) / 7;
         this.daysOfWeekBitmap = daysOfWeekBitmap;
         ScheduleUtil.assertTrue(
-                (daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap) != 0,
+            (daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap) != 0,
                 "weekly schedule must have at least one day set");
         ScheduleUtil.assertTrue(
             (daysOfWeekBitmap & Schedule.allDaysOfWeekBitmap)
@@ -661,7 +661,7 @@ class MonthlyByWeekDateSchedule implements DateSchedule {
             earliest.add(Calendar.DATE, 1);
         }
         throw ScheduleUtil.newInternal(
-                "monthy-by-week date schedule is cyclic");
+            "monthy-by-week date schedule is cyclic");
     }
 
     private static int monthOrdinal(Calendar earliest) {
@@ -864,7 +864,7 @@ class ScheduleUtil {
      */
     public static Time createTime(int hour, int minutes, int second) {
         return new Time(
-                createTimeCalendar(hour, minutes, second).getTime().getTime());
+            createTimeCalendar(hour, minutes, second).getTime().getTime());
     }
     /**
      * Returns the julian day number of a given date. (Is there a better way

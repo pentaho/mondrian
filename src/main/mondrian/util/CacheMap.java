@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde and others
+// Copyright (C) 2007-2011 Julian Hyde and others
 // Copyright (C) 2007 Tasecurity Group S.L, Spain
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -66,7 +66,7 @@ public class CacheMap<S, T> implements Map<S, T> {
                     public boolean equals(Object s) {
                         if (s instanceof Map.Entry) {
                             return ((Map.Entry) s).getKey().equals(
-                                    entry.getKey())
+                                entry.getKey())
                                 && ((Map.Entry) s).getValue().equals(
                                     entry.getValue().value);
                         } else {

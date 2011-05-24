@@ -302,7 +302,7 @@ public class RolapStar {
                     nodeLookup.put(newAlias, node);
                     return rel;
                 } else if (node.isCompatible(
-                    parent, rel, foreignKey, joinKey))
+                        parent, rel, foreignKey, joinKey))
                 {
                     return node.origRel;
                 }
@@ -715,7 +715,7 @@ public class RolapStar {
 
                     if (localAggregationKey.equals(aggregationKey)) {
                         if (localAggregation.getCreationTimestamp().after(
-                            aggregation.getCreationTimestamp()))
+                                aggregation.getCreationTimestamp()))
                         {
                             it.remove();
                         } else {
@@ -2270,8 +2270,8 @@ public class RolapStar {
                 return condition;
             }
             return new Condition(
-                    visit(condition.left),
-                    visit(condition.right));
+                visit(condition.left),
+                visit(condition.right));
         }
 
         public MondrianDef.Expression visit(MondrianDef.Expression expression) {

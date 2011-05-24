@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -373,7 +373,7 @@ public class Format {
                             n = -n;
                             formats[i].format(n, buf);
                             if (buf.substring(size, size + 2).equals(
-                                "-|"))
+                                    "-|"))
                             {
                                 buf.setCharAt(size, '|');
                                 buf.setCharAt(size + 1, '-');
@@ -437,7 +437,7 @@ public class Format {
                             n = -n;
                             formats[i].format(n, buf);
                             if (buf.substring(size, size + 2).equals(
-                                "-|"))
+                                    "-|"))
                             {
                                 buf.setCharAt(size, '|');
                                 buf.setCharAt(size + 1, '-');

@@ -28,7 +28,8 @@ class IntersectFunDef extends FunDefBase
 {
     private static final String[] ReservedWords = new String[] {"ALL"};
 
-    static final Resolver resolver = new ReflectiveMultiResolver(
+    static final Resolver resolver =
+        new ReflectiveMultiResolver(
             "Intersect",
             "Intersect(<Set1>, <Set2>[, ALL])",
             "Returns the intersection of two input sets, optionally retaining duplicates.",

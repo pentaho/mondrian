@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -74,8 +74,8 @@ public class TestCalculatedMembers extends BatchTestCase {
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
             if (!msg.equals(
-                "Mondrian Error:Calculated member '[Measures].[Profit2]' "
-                + "already exists in cube 'Sales'"))
+                    "Mondrian Error:Calculated member '[Measures].[Profit2]' "
+                    + "already exists in cube 'Sales'"))
             {
                 throw e;
             }
@@ -128,9 +128,9 @@ public class TestCalculatedMembers extends BatchTestCase {
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
             if (!msg.equals(
-                "Mondrian Error:Member property must have a value or an "
-                + "expression. (Property 'FORMAT_STRING' of member 'Profit4' "
-                + "of cube 'Sales'.)"))
+                    "Mondrian Error:Member property must have a value or an "
+                    + "expression. (Property 'FORMAT_STRING' of member 'Profit4' "
+                    + "of cube 'Sales'.)"))
             {
                 throw e;
             }
@@ -148,9 +148,9 @@ public class TestCalculatedMembers extends BatchTestCase {
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
             if (!msg.equals(
-                "Mondrian Error:Member property must not have both a value and "
-                + "an expression. (Property 'FORMAT_STRING' of member "
-                + "'Profit4' of cube 'Sales'.)"))
+                    "Mondrian Error:Member property must not have both a value and "
+                    + "an expression. (Property 'FORMAT_STRING' of member "
+                    + "'Profit4' of cube 'Sales'.)"))
             {
                 throw e;
             }
@@ -168,7 +168,7 @@ public class TestCalculatedMembers extends BatchTestCase {
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
             if (!msg.equals(
-                "Mondrian Error:Named set in cube 'Sales' has bad formula"))
+                    "Mondrian Error:Named set in cube 'Sales' has bad formula"))
             {
                 throw e;
             }

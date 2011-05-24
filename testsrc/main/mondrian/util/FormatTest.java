@@ -30,7 +30,7 @@ import mondrian.test.I18nTest;
 public class FormatTest extends TestCase {
 
     private final Format.FormatLocale localeFra = Format.createLocale(
-            '.', // thousandSeparator = ',' in en
+        '.', // thousandSeparator = ',' in en
             ',', // decimalPlaceholder = '.' in en
             "-", // dateSeparator = "/" in en
             "#", // timeSeparator = ":" in en
@@ -53,7 +53,7 @@ public class FormatTest extends TestCase {
 
     /** Locale gleaned from Java's German locale. */
     private final Format.FormatLocale localeDe = Format.createLocale(
-            Locale.GERMANY);
+        Locale.GERMANY);
 
     final Number d = new BigDecimal("3141592.653589793");
 
@@ -820,7 +820,7 @@ public class FormatTest extends TestCase {
         // the system default locale to resolve the currency
         // symbol it must use.
         checkFormat(
-             Format.createLocale(Locale.JAPANESE),
+            Format.createLocale(Locale.JAPANESE),
              123456,
              "Currency",
              "$ 123,456.00");

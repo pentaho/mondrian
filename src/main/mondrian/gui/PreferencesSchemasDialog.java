@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde and others
+// Copyright (C) 2009-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -165,7 +165,7 @@ public class PreferencesSchemasDialog extends JDialog {
                     for (int j = 0; j < allSchemaNames.size(); j++) {
                         String actualSchemaName = allSchemaNames.get(j);
                         if (actualSchemaName.equalsIgnoreCase(
-                            enteredSchemaName))
+                                enteredSchemaName))
                         {
                             selectedSchemas[j] = true;
                             break;

@@ -178,7 +178,7 @@ abstract class MondrianOlap4jCellSet implements CellSet {
                         + ") fall outside CellSet bounds ("
                         + getCoordsAsString(dimensions) + ")");
             } else if (e.getMessage().indexOf(
-                "coordinates should have dimension") >= 0)
+                    "coordinates should have dimension") >= 0)
             {
                 throw new IllegalArgumentException(
                     "Cell coordinates should have dimension "

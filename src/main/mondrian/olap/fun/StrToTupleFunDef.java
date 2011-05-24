@@ -142,9 +142,9 @@ class StrToTupleFunDef extends FunDefBase {
         }
 
         public FunDef resolve(
-                Exp[] args,
-                Validator validator,
-                List<Conversion> conversions)
+            Exp[] args,
+            Validator validator,
+            List<Conversion> conversions)
         {
             if (args.length < 1) {
                 return null;

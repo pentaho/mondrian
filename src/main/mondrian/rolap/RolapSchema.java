@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -408,7 +408,7 @@ public class RolapSchema implements Schema {
             if (xmlDimension.foreignKey != null) {
                 throw MondrianResource.instance()
                     .PublicDimensionMustNotHaveForeignKey.ex(
-                    xmlDimension.name);
+                        xmlDimension.name);
             }
         }
 
@@ -510,8 +510,8 @@ public class RolapSchema implements Schema {
         final RuntimeException ex = new RuntimeException(message);
         if (internalConnection != null
             && "true".equals(
-            internalConnection.getProperty(
-                RolapConnectionProperties.Ignore.name())))
+                internalConnection.getProperty(
+                    RolapConnectionProperties.Ignore.name())))
         {
             warningList.add(ex);
         } else {
@@ -526,7 +526,7 @@ public class RolapSchema implements Schema {
             exp = getInternalConnection().parseExpression(formulaString);
         } catch (Exception e) {
             throw MondrianResource.instance().NamedSetHasBadFormula.ex(
-                    xmlNamedSet.name, e);
+                xmlNamedSet.name, e);
         }
         final Formula formula =
             new Formula(
@@ -827,7 +827,7 @@ public class RolapSchema implements Schema {
             if (catalogUrl == null && catalogStr == null) {
                 throw MondrianResource.instance()
                     .ConnectStringMandatoryProperties.ex(
-                    RolapConnectionProperties.Catalog.name(),
+                        RolapConnectionProperties.Catalog.name(),
                     RolapConnectionProperties.CatalogContent.name());
             }
 
@@ -1240,7 +1240,7 @@ public class RolapSchema implements Schema {
      */
     protected void addCube(final RolapCube cube) {
         mapNameToCube.put(
-                Util.normalizeName(cube.getName()),
+            Util.normalizeName(cube.getName()),
                 cube);
     }
 
@@ -1287,7 +1287,7 @@ public class RolapSchema implements Schema {
 
     public Parameter[] getParameters() {
         return parameterList.toArray(
-                new Parameter[parameterList.size()]);
+            new Parameter[parameterList.size()]);
     }
 
     /**
@@ -1405,7 +1405,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
 }
 */
                 if (! mapSharedHierarchyNameToHierarchy.containsKey(
-                    sharedName))
+                        sharedName))
                 {
                     mapSharedHierarchyNameToHierarchy.put(
                         sharedName, hierarchy);

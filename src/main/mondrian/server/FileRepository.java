@@ -200,7 +200,7 @@ public class FileRepository implements Repository {
             {
                 if (catalogInfo.catalogMap.containsKey(xmlCatalog.name)) {
                     throw Util.newError(
-                            "more than one DataSource object has name '"
+                        "more than one DataSource object has name '"
                             + xmlCatalog.name + "'");
                 }
                 String connectString =
@@ -212,7 +212,7 @@ public class FileRepository implements Repository {
                 final Util.PropertyList connectProperties =
                     Util.parseConnectString(connectString);
                 if (connectProperties.get(
-                    RolapConnectionProperties.Catalog.name()) == null)
+                        RolapConnectionProperties.Catalog.name()) == null)
                 {
                     connectString +=
                         ";"
@@ -238,7 +238,7 @@ public class FileRepository implements Repository {
     {
         return
             new ArrayList<String>(
-                    getServerInfo()
+                getServerInfo()
                         .datasourceMap.get(databaseName)
                             .catalogMap.keySet());
     }
@@ -248,7 +248,7 @@ public class FileRepository implements Repository {
     {
         return
             new ArrayList<String>(
-                    getServerInfo()
+                getServerInfo()
                         .datasourceMap.keySet());
     }
 

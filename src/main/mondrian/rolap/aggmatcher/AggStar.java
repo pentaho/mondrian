@@ -1124,7 +1124,7 @@ public class AggStar {
         private void loadForeignKey(final JdbcSchema.Table.Column.Usage usage) {
             if (usage.rTable != null) {
                 DimTable child = convertTable(
-                        usage.rTable,
+                    usage.rTable,
                         usage.rightJoinConditionColumnName);
                 addTable(child);
             } else {
@@ -1191,7 +1191,7 @@ public class AggStar {
             int bitPosition = usage.rMeasure.getBitPosition();
 
             Measure aggMeasure = new Measure(
-                    symbolicName,
+                symbolicName,
                     expression,
                     datatype,
                     bitPosition,
@@ -1223,7 +1223,7 @@ public class AggStar {
             int bitPosition = -1;
 
             Column aggColumn = new Column(
-                    symbolicName,
+                symbolicName,
                     expression,
                     datatype,
                     bitPosition);
@@ -1242,7 +1242,7 @@ public class AggStar {
                 new MondrianDef.Column(getName(), usage.levelColumnName);
             int bitPosition = usage.rColumn.getBitPosition();
             Level level = new Level(
-                    name,
+                name,
                     expression,
                     bitPosition,
                     usage.rColumn);

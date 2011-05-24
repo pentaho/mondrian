@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2005-2005 SAS Institute, Inc.
-// Copyright (C) 2006-2010 Julian Hyde and others
+// Copyright (C) 2006-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -557,14 +557,14 @@ public class CompatibilityTest extends FoodMartTestCase {
             "{[M]}",
             "Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
         assertAxisThrows(
-             "{M}",
-             "Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
+            "{M}",
+            "Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
         assertAxisThrows(
             "{[USA].[CA]}",
             "Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
         assertAxisThrows(
-             "{USA.CA}",
-             "Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
+            "{USA.CA}",
+            "Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
         props.NeedDimensionPrefix.set(originalNeedDimensionPrefix);
     }
 }

@@ -1278,7 +1278,7 @@ public class Query extends QueryPart {
         final Validator validator = createValidator();
         List<ResultStyle> resultStyleList;
         resultStyleList =
-             Collections.singletonList(
+            Collections.singletonList(
                 resultStyle != null ? resultStyle : this.resultStyle);
         final ExpCompiler compiler =
             createCompiler(
@@ -1627,7 +1627,7 @@ public class Query extends QueryPart {
             }
             // Then delegate to the next reader.
             OlapElement olapElement = super.lookupCompound(
-                    parent, names, failIfNotFound, category, matchType);
+                parent, names, failIfNotFound, category, matchType);
             if (olapElement instanceof Member) {
                 Member member = (Member) olapElement;
                 final Formula formula = (Formula)

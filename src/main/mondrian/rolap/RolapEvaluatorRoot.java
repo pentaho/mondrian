@@ -150,7 +150,7 @@ class RolapEvaluatorRoot {
         private final ResultStyle resultStyle;
         private int hashCode = Integer.MIN_VALUE;
         private CompiledExpKey(
-                Exp exp,
+            Exp exp,
                 boolean scalar,
                 ResultStyle resultStyle)
         {

@@ -738,12 +738,12 @@ public abstract class RolapAggregationManager {
                     (rangeRegion.getLowerBound() == null
                      ? null
                      : new MemberColumnPredicate(
-                        column, rangeRegion.getLowerBound())),
+                         column, rangeRegion.getLowerBound())),
                     rangeRegion.getUpperInclusive(),
                     (rangeRegion.getUpperBound() == null
                      ? null
                      : new MemberColumnPredicate(
-                        column, rangeRegion.getUpperBound()))),
+                         column, rangeRegion.getUpperBound()))),
                 baseCube,
                 cacheRegion);
         } else {

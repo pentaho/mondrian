@@ -583,7 +583,7 @@ RME is this right
             AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
             RolapStar.Condition condition =
                 new RolapStar.Condition(
-                        level.getKeyExp(),
+                    level.getKeyExp(),
                         aggColumn.getExpression());
             sqlQuery.addWhere(condition.toString(sqlQuery));
             hierarchy.addToFromInverse(sqlQuery, level.getKeyExp());
@@ -598,7 +598,7 @@ RME is this right
                 aggColumn = aggStar.lookupColumn(bitPos);
                 condition =
                     new RolapStar.Condition(
-                            parentLevel.getKeyExp(),
+                        parentLevel.getKeyExp(),
                             aggColumn.getExpression());
                 sqlQuery.addWhere(condition.toString(sqlQuery));
                 parentLevel = parentLevel.getParentLevel();
@@ -756,7 +756,7 @@ RME is this right
      * @return true if agg table has level or not
      */
     public static boolean isLevelCollapsed(
-            AggStar aggStar,
+        AggStar aggStar,
             RolapCubeLevel level)
     {
         boolean levelCollapsed = false;
@@ -1084,7 +1084,7 @@ RME is this right
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
         Util.assertTrue(
-                level.isUnique(), "parent-child level '"
+            level.isUnique(), "parent-child level '"
                 + level + "' must be unique");
 
         hierarchy.addToFrom(sqlQuery, level.getParentExp());
@@ -1159,7 +1159,7 @@ RME is this right
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
         Util.assertTrue(
-                level.isUnique(), "parent-child level '"
+            level.isUnique(), "parent-child level '"
                 + level + "' must be unique");
 
         hierarchy.addToFrom(sqlQuery, level.getParentExp());
