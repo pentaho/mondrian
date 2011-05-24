@@ -3433,6 +3433,44 @@ public class SchemaTest extends FoodMartTestCase {
                 e.getMessage());
         }
     }
+
+    /**
+     * Test for MONDRIAN-943 and MONDRIAN-465.
+     */
+    public void testCaptionColumnUsedWithOrdinalColumn() throws Exception {
+        final TestContext context =
+            TestContext.createSubstitutingCube(
+                "HR",
+                "  <Dimension name=\"FooBarDimension\" foreignKey=\"employee_id\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"position_id\">\n"
+                + "      <Table name=\"position\"/>\n"
+                + "      <Level name=\"FooBarLevel\" uniqueMembers=\"true\"\n"
+                + "          column=\"position_id\""
+                + "          nameColumn=\"management_role\""
+                + "          captionColumn=\"position_title\""
+                + "          ordinalColumn=\"management_role\""
+                + "          />\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n",
+                null,
+                null,
+                null);
+        context.assertQueryReturns(
+            "select {[FooBarDimension].[FooBarLevel].Members} on columns from [HR]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[FooBarDimension].[Middle Management]}\n"
+            + "{[FooBarDimension].[Senior Management]}\n"
+            + "{[FooBarDimension].[Store Full Time Staff]}\n"
+            + "{[FooBarDimension].[Store Management]}\n"
+            + "{[FooBarDimension].[Store Temp Staff]}\n"
+            + "Row #0: $270.00\n"
+            + "Row #0: $864.00\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n");
+    }
 }
 
 // End SchemaTest.java
