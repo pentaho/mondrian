@@ -705,9 +705,40 @@ public interface Dialect {
      */
     boolean allowsJoinOn();
 
+    /**
+     * Informs Mondrian if the dialect supports regular expressions
+     * when creating the 'where' or the 'having' clause.
+     * @return True if regular expressions are supported.
+     */
     boolean allowsRegularExpressionInWhereClause();
 
-    String generateRegularExpression(String source, String javaRegExp);
+    /**
+     * Must generate a String representing a regular expression match
+     * operation between a string literal and a Java regular expression.
+     * The string literal might be a column identifier or some other
+     * identifier, but the implementation must presume that it is already
+     * escaped and fit for use. The regular expression is not escaped
+     * and must be adapted to the proper dialect rules.
+     * <p>Postgres / Greenplum example:
+     * <p><code>
+     * generateRegularExpression(
+     *   "'foodmart'.'customer_name'", "(?i).*oo.*") ->
+     *   'foodmart'.'customer_name' ~ "(?i).*oo.*"
+     * </code></p>
+     * <p>Oracle example:
+     * <p><code>
+     * generateRegularExpression(
+     *   "'foodmart'.'customer_name'", ".*oo.*") ->
+     *   REGEXP_LIKE('foodmart'.'customer_name', ".*oo.*")
+     * </code></p>
+     *
+     * @param source A String identifying the column to match against.
+     * @param javaRegExp A Java regular expression to match against.
+     * @return A dialect specific matching operation.
+     */
+    String generateRegularExpression(
+            String source,
+            String javaRegExp);
 
     /**
      * Enumeration of common database types.

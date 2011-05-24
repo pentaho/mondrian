@@ -73,7 +73,13 @@ public class OracleDialect extends JdbcDialectImpl {
         String source,
         String javaRegExp)
     {
-        return "REGEXP_LIKE(" + source + ", '" + javaRegExp + "')";
+        final StringBuilder sb = new StringBuilder();
+        sb.append("REGEXP_LIKE(");
+        sb.append(source);
+        sb.append(", ");
+        quoteStringLiteral(sb, javaRegExp);
+        sb.append(")");
+        return sb.toString();
     }
 }
 
