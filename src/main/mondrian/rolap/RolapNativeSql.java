@@ -18,6 +18,8 @@ import mondrian.olap.type.StringType;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.HierarchyExpr;
+import mondrian.mdx.LevelExpr;
 import mondrian.mdx.MemberExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.spi.Dialect;
@@ -252,15 +254,25 @@ public class RolapNativeSql {
                 return null;
             }
 
-            // Must be a dimension
-            RolapCubeDimension dimension;
+            // Must be a dimension, a hierarchy or a level.
+            final RolapCubeDimension dimension;
             final Exp dimExpr = ((ResolvedFunCall)currMemberExpr).getArg(0);
-            if (!(dimExpr instanceof DimensionExpr)) {
-                return null;
-            } else {
+            if (dimExpr instanceof DimensionExpr) {
                 dimension =
                     (RolapCubeDimension) evaluator.getCachedResult(
                         new ExpCacheDescriptor(dimExpr, evaluator));
+            } else if (dimExpr instanceof HierarchyExpr) {
+                final RolapCubeHierarchy hierarchy =
+                    (RolapCubeHierarchy) evaluator.getCachedResult(
+                        new ExpCacheDescriptor(dimExpr, evaluator));
+                dimension = (RolapCubeDimension) hierarchy.getDimension();
+            } else if (dimExpr instanceof LevelExpr) {
+                final RolapCubeLevel level =
+                    (RolapCubeLevel) evaluator.getCachedResult(
+                        new ExpCacheDescriptor(dimExpr, evaluator));
+                dimension = (RolapCubeDimension) level.getDimension();
+            } else {
+                return null;
             }
 
             // TODO Add support for aggregate tables when using
