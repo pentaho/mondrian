@@ -86,6 +86,13 @@ public class Util extends XOMUtil {
         System.getProperty("java.version").startsWith("1.4");
 
     /**
+     * Whether we are running a version of Java before 1.6.
+     */
+    public static final boolean PreJdk16 =
+        PreJdk15
+        || System.getProperty("java.version").startsWith("1.5");
+
+    /**
      * What version of JDBC? Returns 4 in JDK 1.6 and higher, 3 otherwise.
      */
     public static final int JdbcVersion =
@@ -116,8 +123,10 @@ public class Util extends XOMUtil {
         String className;
         if (PreJdk15 || Retrowoven) {
             className = "mondrian.util.UtilCompatibleJdk14";
-        } else {
+        } else if (PreJdk16) {
             className = "mondrian.util.UtilCompatibleJdk15";
+        } else {
+            className = "mondrian.util.UtilCompatibleJdk16";
         }
         try {
             Class<UtilCompatible> clazz =
@@ -274,6 +283,21 @@ public class Util extends XOMUtil {
             }
             sb.append(ids.get(i).toString());
         }
+    }
+
+    /**
+     * Quotes a string literal for Java or JavaScript.
+     *
+     * @param s Unquoted literal
+     * @return Quoted string literal
+     */
+    public static String quoteJavaString(String s) {
+        return s == null
+            ? "null"
+            : "\""
+              + s.replaceAll("\\\\", "\\\\\\\\")
+                .replaceAll("\\\"", "\\\\\"")
+              + "\"";
     }
 
     /**
@@ -2859,6 +2883,38 @@ public class Util extends XOMUtil {
      */
     public static String generateUuidString() {
         return compatible.generateUuidString();
+    }
+
+    /**
+     * Compiles a script to yield a Java interface.
+     *
+     * <p>Only valid JDK 1.6 and higher; fails on JDK 1.5 and earlier.</p>
+     *
+     * @param iface Interface script should implement
+     * @param script Script code
+     * @param engineName Name of engine (e.g. "JavaScript")
+     * @param <T> Interface
+     * @return Object that implements given interface
+     */
+    public static <T> T compileScript(
+        Class<T> iface,
+        String script,
+        String engineName)
+    {
+        return compatible.compileScript(iface, script, engineName);
+    }
+
+    /**
+     * Removes a thread local from the current thread.
+     *
+     * <p>From JDK 1.5 onwards, calls {@link ThreadLocal#remove()}; before
+     * that, no-ops.</p>
+     *
+     * @param threadLocal Thread local
+     * @param <T> Type
+     */
+    public static <T> void threadLocalRemove(ThreadLocal<T> threadLocal) {
+        compatible.threadLocalRemove(threadLocal);
     }
 
     /**

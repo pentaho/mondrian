@@ -16,7 +16,9 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.VisualTotalsFunDef;
+import mondrian.spi.PropertyFormatter;
 import mondrian.util.*;
+
 import org.apache.commons.collections.map.Flat3Map;
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.StringProperty;

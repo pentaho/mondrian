@@ -20,11 +20,12 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.calc.*;
+import mondrian.spi.CellFormatter;
+import mondrian.spi.impl.Scripts;
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
 
-import java.lang.reflect.Constructor;
 import java.util.*;
 
 /**
@@ -345,15 +346,27 @@ public class RolapCube extends CubeBase {
                 aggregator, xmlMeasure.datatype,
                 RolapHierarchy.createAnnotationMap(xmlMeasure.annotations));
 
-        try {
-            CellFormatter cellFormatter =
-                getCellFormatter(xmlMeasure.formatter);
-            if (cellFormatter != null) {
+        final String cellFormatterClassName;
+        final Scripts.ScriptDefinition scriptDefinition;
+        if (xmlMeasure.cellFormatter != null) {
+            cellFormatterClassName = xmlMeasure.cellFormatter.className;
+            scriptDefinition =
+                RolapSchema.toScriptDef(xmlMeasure.cellFormatter.script);
+        } else {
+            cellFormatterClassName = xmlMeasure.formatter;
+            scriptDefinition = null;
+        }
+        if (cellFormatterClassName != null || scriptDefinition != null) {
+            try {
+                CellFormatter cellFormatter =
+                    RolapSchema.getCellFormatter(
+                        cellFormatterClassName,
+                        scriptDefinition);
                 measure.setFormatter(cellFormatter);
+            } catch (Exception e) {
+                throw MondrianResource.instance().CellFormatterLoadFailed.ex(
+                    cellFormatterClassName, measure.getUniqueName(), e);
             }
-        } catch (Exception e) {
-            throw MondrianResource.instance().CellFormatterLoadFailed.ex(
-                xmlMeasure.formatter, measure.getUniqueName(), e);
         }
 
         // Set member's caption, if present.
@@ -411,29 +424,6 @@ public class RolapCube extends CubeBase {
         this.measuresHierarchy.setMemberReader(memberReader);
         // this invalidates any cached schema reader
         this.schemaReader = null;
-    }
-
-    /**
-     * Given the name of a cell formatter class, returns a cell formatter.
-     * If class name is null, returns null.
-     *
-     * @param cellFormatterClassName Name of cell formatter class
-     * @return Cell formatter or null
-     * @throws Exception if class cannot be instantiated
-     */
-    @SuppressWarnings({"unchecked"})
-    static CellFormatter getCellFormatter(
-        String cellFormatterClassName)
-        throws Exception
-    {
-        if (Util.isEmpty(cellFormatterClassName)) {
-            return null;
-        }
-        Class<CellFormatter> clazz =
-            (Class<CellFormatter>)
-                Class.forName(cellFormatterClassName);
-        Constructor<CellFormatter> ctor = clazz.getConstructor();
-        return ctor.newInstance();
     }
 
     /**
@@ -1051,10 +1041,30 @@ public class RolapCube extends CubeBase {
 
         // Generate SQL.
         assert memberUniqueName.startsWith("[");
-        buf.append("MEMBER ").append(memberUniqueName)
-                .append(Util.nl)
-                .append("  AS ");
+        buf.append("MEMBER ")
+            .append(memberUniqueName)
+            .append(Util.nl)
+            .append("  AS ");
         Util.singleQuoteString(xmlCalcMember.getFormula(), buf);
+
+        if (xmlCalcMember.cellFormatter != null) {
+            if (xmlCalcMember.cellFormatter.className != null) {
+                propNames.add(Property.CELL_FORMATTER.name);
+                propExprs.add(
+                    Util.quoteForMdx(xmlCalcMember.cellFormatter.className));
+            }
+            if (xmlCalcMember.cellFormatter.script != null) {
+                if (xmlCalcMember.cellFormatter.script.language != null) {
+                    propNames.add(Property.CELL_FORMATTER_SCRIPT_LANGUAGE.name);
+                    propExprs.add(
+                        Util.quoteForMdx(
+                            xmlCalcMember.cellFormatter.script.language));
+                }
+                propNames.add(Property.CELL_FORMATTER_SCRIPT.name);
+                propExprs.add(
+                    Util.quoteForMdx(xmlCalcMember.cellFormatter.script.cdata));
+            }
+        }
 
         assert propNames.size() == propExprs.size();
         processFormatStringAttribute(xmlCalcMember, buf);

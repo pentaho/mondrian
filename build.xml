@@ -529,6 +529,7 @@ compile.java"/>
       <include name="mondrian/**/*.java"/>
       <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java" if="jdk16.present"/>
       <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java" if="jdk16.not.present"/>
+      <exclude name="mondrian/util/UtilCompatibleJdk16.java" if="jdk16.not.present"/>
     </javac>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>
@@ -1427,6 +1428,10 @@ diagrams and hyperlinks to source code">
          <!-- ignore: FactoryJdbc4Impl is only built in JDK1.6 -->
         <linecontains negate="true">
           <contains value="FactoryJdbc4Impl.java"/>
+        </linecontains>
+         <!-- ignore: UtilCompatibleJdk16 is only built in JDK1.6 -->
+        <linecontains negate="true">
+          <contains value="UtilCompatibleJdk16.java"/>
         </linecontains>
         <striplinebreaks />
       </filterchain>

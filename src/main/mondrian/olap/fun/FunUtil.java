@@ -71,6 +71,10 @@ public class FunUtil extends Util {
     /**
      * Creates an exception which indicates that an error has occurred while
      * executing a given function.
+     *
+     * @param funDef Function being executed
+     * @param message Explanatory message
+     * @return Exception that can be used as a cell result
      */
     public static RuntimeException newEvalException(
         FunDef funDef,
@@ -83,10 +87,30 @@ public class FunUtil extends Util {
     /**
      * Creates an exception which indicates that an error has occurred while
      * executing a given function.
+     *
+     * @param throwable Exception
+     * @return Exception that can be used as a cell result
      */
     public static RuntimeException newEvalException(Throwable throwable) {
         return new MondrianEvaluationException(
             throwable.getClass().getName() + ": " + throwable.getMessage());
+    }
+
+    /**
+     * Creates an exception which indicates that an error has occurred while
+     * executing a given function.
+     *
+     * @param message Explanatory message
+     * @param throwable Exception
+     * @return Exception that can be used as a cell result
+     */
+    public static RuntimeException newEvalException(
+        String message,
+        Throwable throwable)
+    {
+        return new MondrianEvaluationException(
+            message
+            + ": " + Util.getErrorMessage(throwable));
     }
 
     public static void checkIterListResultStyles(Calc calc) {

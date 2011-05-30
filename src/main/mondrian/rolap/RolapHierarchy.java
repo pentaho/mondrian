@@ -22,6 +22,8 @@ import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
+import mondrian.spi.CellFormatter;
+import mondrian.spi.impl.Scripts;
 import mondrian.util.UnionIterator;
 
 import org.apache.log4j.Logger;
@@ -1180,7 +1182,7 @@ public class RolapHierarchy extends HierarchyBase {
         extends RolapCalculatedMember
         implements RolapMeasure
     {
-        private CellFormatter cellFormatter;
+        private RolapResult.ValueFormatter cellFormatter;
 
         public RolapCalculatedMeasure(
             RolapMember parent, RolapLevel level, String name, Formula formula)
@@ -1192,18 +1194,43 @@ public class RolapHierarchy extends HierarchyBase {
             if (name.equals(Property.CELL_FORMATTER.getName())) {
                 String cellFormatterClass = (String) value;
                 try {
+                    CellFormatter formatter =
+                        RolapSchema.getCellFormatter(
+                            cellFormatterClass,
+                            null);
                     this.cellFormatter =
-                        RolapCube.getCellFormatter(cellFormatterClass);
+                        new RolapResult.CellFormatterValueFormatter(formatter);
                 } catch (Exception e) {
                     throw MondrianResource.instance().CellFormatterLoadFailed
                         .ex(
                             cellFormatterClass, getUniqueName(), e);
                 }
             }
+            if (name.equals(Property.CELL_FORMATTER_SCRIPT.name)) {
+                String language = (String) getPropertyValue(
+                    Property.CELL_FORMATTER_SCRIPT_LANGUAGE.name);
+                String scriptText = (String) value;
+                try {
+                    final Scripts.ScriptDefinition script =
+                        new Scripts.ScriptDefinition(
+                            scriptText,
+                            Scripts.ScriptLanguage.lookup(language));
+                    CellFormatter formatter =
+                        RolapSchema.getCellFormatter(
+                            null,
+                            script);
+                    this.cellFormatter =
+                        new RolapResult.CellFormatterValueFormatter(formatter);
+                } catch (Exception e) {
+                    throw MondrianResource.instance().CellFormatterLoadFailed
+                        .ex(
+                            scriptText, getUniqueName(), e);
+                }
+            }
             super.setProperty(name, value);
         }
 
-        public CellFormatter getFormatter() {
+        public RolapResult.ValueFormatter getFormatter() {
             return cellFormatter;
         }
     }

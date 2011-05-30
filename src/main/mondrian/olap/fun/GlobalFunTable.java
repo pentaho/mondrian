@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -51,7 +51,9 @@ public class GlobalFunTable extends FunTableImpl {
         }
 
         for (Class<UserDefinedFunction> udfClass : lookupUdfImplClasses()) {
-            defineUdf(builder, udfClass);
+            defineUdf(
+                builder,
+                new UdfResolver.ClassUdfFactory(udfClass, null));
         }
     }
 
@@ -67,20 +69,20 @@ public class GlobalFunTable extends FunTableImpl {
      * <p>If the function is not valid, throws an error.
      *
      * @param builder Builder
-     * @param udfClass Class that implements the function
+     * @param udfFactory Factory for UDF
      */
     private void defineUdf(
         Builder builder,
-        Class<UserDefinedFunction> udfClass)
+        UdfResolver.UdfFactory udfFactory)
     {
         // Instantiate class with default constructor.
-        final UserDefinedFunction udf = Util.createUdf(udfClass, null);
+        final UserDefinedFunction udf = udfFactory.create();
 
         // Validate function.
         validateFunction(udf);
 
         // Define function.
-        builder.define(new UdfResolver(udf));
+        builder.define(new UdfResolver(udfFactory));
     }
 
     /**
@@ -129,8 +131,6 @@ public class GlobalFunTable extends FunTableImpl {
                 + "': syntax is null");
         }
     }
-
-
 }
 
 // End GlobalFunTable.java

@@ -27,6 +27,7 @@ import mondrian.olap.Property;
 import mondrian.olap.NamedSet;
 import mondrian.olap.Schema;
 import mondrian.spi.Dialect;
+import mondrian.spi.PropertyFormatter;
 
 import java.io.StringWriter;
 import java.util.*;
@@ -3119,7 +3120,7 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     /**
-     * Implementation of {@link mondrian.olap.PropertyFormatter} that throws.
+     * Implementation of {@link PropertyFormatter} that throws.
      */
     public static class DummyPropertyFormatter implements PropertyFormatter {
         public DummyPropertyFormatter() {

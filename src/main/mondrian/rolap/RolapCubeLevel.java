@@ -18,6 +18,7 @@ import mondrian.rolap.agg.MemberColumnPredicate;
 import mondrian.rolap.agg.MemberTuplePredicate;
 import mondrian.rolap.agg.RangeColumnPredicate;
 import mondrian.rolap.agg.ValueColumnPredicate;
+import mondrian.spi.MemberFormatter;
 
 /**
  * RolapCubeLevel wraps a RolapLevel for a specific Cube.

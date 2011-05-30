@@ -4,17 +4,17 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 12 September, 2002
 */
-
 package mondrian.olap;
 
-import java.util.Map;
-import java.util.HashMap;
+import mondrian.spi.PropertyFormatter;
+
+import java.util.*;
 
 /**
  * <code>Property</code> is the definition of a member property.
@@ -402,13 +402,44 @@ public class Property extends EnumeratedValues.BasicValue {
      * Definition of the property which holds the
      * name of the class which formats cell values of this member.
      *
-     * <p>The class must implement the {@link CellFormatter} interface.
+     * <p>The class must implement the {@link mondrian.spi.CellFormatter}
+     * interface.
      *
      * <p>Despite its name, this is a member property.
      */
     public static final Property CELL_FORMATTER =
         new Property(
             "CELL_FORMATTER", Datatype.TYPE_STRING, CELL_FORMATTER_ORDINAL,
+            false, true, false,
+            "Name of the class which formats cell values of this member.");
+
+    public static final int CELL_FORMATTER_SCRIPT_LANGUAGE_ORDINAL = 51;
+    /**
+     * Definition of the property which holds the
+     * name of the scripting language in which a scripted cell formatter is
+     * implemented, e.g. 'JavaScript'.
+     *
+     * <p>Despite its name, this is a member property.
+     */
+    public static final Property CELL_FORMATTER_SCRIPT_LANGUAGE =
+        new Property(
+            "CELL_FORMATTER_SCRIPT_LANGUAGE", Datatype.TYPE_STRING,
+            CELL_FORMATTER_SCRIPT_LANGUAGE_ORDINAL,
+            false, true, false,
+            "Name of the scripting language in which a scripted cell formatter"
+            + "is implemented, e.g. 'JavaScript'.");
+
+    public static final int CELL_FORMATTER_SCRIPT_ORDINAL = 52;
+    /**
+     * Definition of the property which holds the
+     * script with which to format cell values of this member.
+     *
+     * <p>Despite its name, this is a member property.
+     */
+    public static final Property CELL_FORMATTER_SCRIPT =
+        new Property(
+            "CELL_FORMATTER_SCRIPT", Datatype.TYPE_STRING,
+            CELL_FORMATTER_SCRIPT_ORDINAL,
             false, true, false,
             "Name of the class which formats cell values of this member.");
 
@@ -631,9 +662,10 @@ public class Property extends EnumeratedValues.BasicValue {
     /**
      * The various property names which define a format string.
      */
-    static final String[] FORMAT_PROPERTIES = {
-        "format", "format_string", "FORMAT", FORMAT_STRING.name,
-    };
+    static final Set<String> FORMAT_PROPERTIES =
+        new HashSet<String>(
+            Arrays.asList(
+                "format", "format_string", "FORMAT", FORMAT_STRING.name));
 
     // ~ Data members ---------------------------------------------------------
 
@@ -749,6 +781,8 @@ public class Property extends EnumeratedValues.BasicValue {
                 DESCRIPTION,
                 VISIBLE,
                 CELL_FORMATTER,
+                CELL_FORMATTER_SCRIPT,
+                CELL_FORMATTER_SCRIPT_LANGUAGE,
                 BACK_COLOR,
                 CELL_EVALUATION_LIST,
                 CELL_ORDINAL,

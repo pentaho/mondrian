@@ -34,6 +34,10 @@ import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.spi.*;
 
+import mondrian.spi.CellFormatter;
+import mondrian.spi.MemberFormatter;
+import mondrian.spi.PropertyFormatter;
+import mondrian.spi.impl.Scripts;
 import org.apache.log4j.Logger;
 import org.apache.commons.vfs.*;
 
@@ -230,6 +234,104 @@ public class RolapSchema implements Schema {
         load(catalogUrl, null);
     }
 
+    /**
+     * Given the name of a cell formatter class and/or a cell formatter script,
+     * returns a cell formatter.
+     *
+     * @param className Name of cell formatter class
+     * @param script Script
+     * @return Cell formatter
+     * @throws Exception if class cannot be instantiated
+     */
+    static CellFormatter getCellFormatter(
+        String className,
+        Scripts.ScriptDefinition script)
+        throws Exception
+    {
+        if (className == null && script == null) {
+            throw Util.newError(
+                "Must specify either className attribute or Script element");
+        }
+        if (className != null && script != null) {
+            throw Util.newError(
+                "Must not specify both className attribute and Script element");
+        }
+        if (className != null) {
+            @SuppressWarnings({"unchecked"})
+            Class<CellFormatter> clazz =
+                (Class<CellFormatter>) Class.forName(className);
+            Constructor<CellFormatter> ctor = clazz.getConstructor();
+            return ctor.newInstance();
+        } else {
+            return Scripts.cellFormatter(script);
+        }
+    }
+
+    /**
+     * Given the name of a member formatter class, returns a member formatter.
+     *
+     * @param className Name of cell formatter class
+     * @param script Script
+     * @return Member formatter
+     * @throws Exception if class cannot be instantiated
+     */
+    static MemberFormatter getMemberFormatter(
+        String className,
+        Scripts.ScriptDefinition script)
+        throws Exception
+    {
+        if (className == null && script == null) {
+            throw Util.newError(
+                "Must specify either className attribute or Script element");
+        }
+        if (className != null && script != null) {
+            throw Util.newError(
+                "Must not specify both className attribute and Script element");
+        }
+        if (className != null) {
+            @SuppressWarnings({"unchecked"})
+            Class<MemberFormatter> clazz =
+                (Class<MemberFormatter>) Class.forName(className);
+            Constructor<MemberFormatter> ctor = clazz.getConstructor();
+            return ctor.newInstance();
+        } else {
+            return Scripts.memberFormatter(script);
+        }
+    }
+
+    /**
+     * Given the name of a property formatter class, returns a propert
+     * formatter.
+     *
+     * @param className Name of property formatter class
+     * @param script Script
+     * @return Property formatter
+     * @throws Exception if class cannot be instantiated
+     */
+    static PropertyFormatter createPropertyFormatter(
+        String className,
+        Scripts.ScriptDefinition script)
+        throws Exception
+    {
+        if (className == null && script == null) {
+            throw Util.newError(
+                "Must specify either className attribute or Script element");
+        }
+        if (className != null && script != null) {
+            throw Util.newError(
+                "Must not specify both className attribute and Script element");
+        }
+        if (className != null) {
+            @SuppressWarnings({"unchecked"})
+            Class<PropertyFormatter> clazz =
+                (Class<PropertyFormatter>) Class.forName(className);
+            Constructor<PropertyFormatter> ctor = clazz.getConstructor();
+            return ctor.newInstance();
+        } else {
+            return Scripts.propertyFormatter(script);
+        }
+    }
+
     protected void finalCleanUp() {
         if (aggTableManager != null) {
             aggTableManager.finalCleanUp();
@@ -391,12 +493,13 @@ public class RolapSchema implements Schema {
         // Validate user-defined functions. Must be done before we validate
         // calculated members, because calculated members will need to use the
         // function table.
-        final Map<String, UserDefinedFunction> mapNameToUdf =
-            new HashMap<String, UserDefinedFunction>();
+        final Map<String, UdfResolver.UdfFactory> mapNameToUdf =
+            new HashMap<String, UdfResolver.UdfFactory>();
         for (MondrianDef.UserDefinedFunction udf
             : xmlSchema.userDefinedFunctions)
         {
-            defineFunction(mapNameToUdf, udf.name, udf.className);
+            final Scripts.ScriptDefinition scriptDef = toScriptDef(udf.script);
+            defineFunction(mapNameToUdf, udf.name, udf.className, scriptDef);
         }
         final RolapSchemaFunctionTable funTable =
             new RolapSchemaFunctionTable(mapNameToUdf.values());
@@ -478,6 +581,19 @@ public class RolapSchema implements Schema {
                 defaultRole = (RoleImpl) role;
             }
         }
+    }
+
+    static Scripts.ScriptDefinition toScriptDef(MondrianDef.Script script) {
+        if (script == null) {
+            return null;
+        }
+        final Scripts.ScriptLanguage language =
+            Scripts.ScriptLanguage.lookup(script.language);
+        if (language == null) {
+            throw Util.newError(
+                "Invalid script language '" + script.language + "'");
+        }
+        return new Scripts.ScriptDefinition(script.cdata, language);
     }
 
     /**
@@ -1301,36 +1417,57 @@ public class RolapSchema implements Schema {
      *   (otherwise it is a user-error).
      */
     private void defineFunction(
-        Map<String, UserDefinedFunction> mapNameToUdf,
-        String name,
-        String className)
+        Map<String, UdfResolver.UdfFactory> mapNameToUdf,
+        final String name,
+        String className,
+        final Scripts.ScriptDefinition script)
     {
-        // Lookup class.
-        final Class<UserDefinedFunction> klass;
-        try {
-            klass = (Class<UserDefinedFunction>) Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            throw MondrianResource.instance().UdfClassNotFound.ex(
-                name,
-                className);
+        if (className == null && script == null) {
+            throw Util.newError(
+                "Must specify either className attribute or Script element");
         }
-        // Instantiate UDF by calling correct constructor.
-        final UserDefinedFunction udf = Util.createUdf(klass, name);
+        if (className != null && script != null) {
+            throw Util.newError(
+                "Must not specify both className attribute and Script element");
+        }
+        final UdfResolver.UdfFactory udfFactory;
+        if (className != null) {
+            // Lookup class.
+            final Class<UserDefinedFunction> klass;
+            try {
+                //noinspection unchecked
+                klass = (Class<UserDefinedFunction>) Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                throw MondrianResource.instance().UdfClassNotFound.ex(
+                    name,
+                    className);
+            }
+            // Instantiate UDF by calling correct constructor.
+            udfFactory = new UdfResolver.ClassUdfFactory(klass, name);
+        } else {
+            udfFactory = new UdfResolver.UdfFactory() {
+                public UserDefinedFunction create() {
+                    return Scripts.userDefinedFunction(script, name);
+                }
+            };
+        }
         // Validate function.
-        validateFunction(udf);
+        validateFunction(udfFactory);
         // Check for duplicate.
-        UserDefinedFunction existingUdf = mapNameToUdf.get(name);
+        UdfResolver.UdfFactory existingUdf = mapNameToUdf.get(name);
         if (existingUdf != null) {
             throw MondrianResource.instance().UdfDuplicateName.ex(name);
         }
-        mapNameToUdf.put(name, udf);
+        mapNameToUdf.put(name, udfFactory);
     }
 
     /**
      * Throws an error if a user-defined function does not adhere to the
      * API.
      */
-    private void validateFunction(final UserDefinedFunction udf) {
+    private void validateFunction(UdfResolver.UdfFactory udfFactory) {
+        final UserDefinedFunction udf = udfFactory.create();
+
         // Check that the name is not null or empty.
         final String udfName = udf.getName();
         if (udfName == null || udfName.equals("")) {
@@ -1646,10 +1783,10 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      * schema, plus all of the standard functions.
      */
     static class RolapSchemaFunctionTable extends FunTableImpl {
-        private final List<UserDefinedFunction> udfList;
+        private final List<UdfResolver.UdfFactory> udfFactoryList;
 
-        RolapSchemaFunctionTable(Collection<UserDefinedFunction> udfs) {
-            udfList = new ArrayList<UserDefinedFunction>(udfs);
+        RolapSchemaFunctionTable(Collection<UdfResolver.UdfFactory> udfs) {
+            udfFactoryList = new ArrayList<UdfResolver.UdfFactory>(udfs);
         }
 
         public void defineFunctions(Builder builder) {
@@ -1660,8 +1797,8 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             for (Resolver resolver : globalFunTable.getResolvers()) {
                 builder.define(resolver);
             }
-            for (UserDefinedFunction udf : udfList) {
-                builder.define(new UdfResolver(udf));
+            for (UdfResolver.UdfFactory udfFactory : udfFactoryList) {
+                builder.define(new UdfResolver(udfFactory));
             }
         }
     }

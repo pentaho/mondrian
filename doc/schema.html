@@ -5,9 +5,10 @@
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
   == Copyright (C) 2001-2002 Kana Software, Inc.
-  == Copyright (C) 2002-2009 Julian Hyde
+  == Copyright (C) 2002-2011 Julian Hyde
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
+  ==
   == jhyde, 24 September, 2002
   -->
 <head>
@@ -2350,8 +2351,8 @@ mondrian.olap.CellReader</a></code> interface.</p>
 <p>A cell formatter modifies the behavior of <code>
 <a href="api/mondrian/olap/Cell.html#getFormattedValue%28%29">
 Cell.getFormattedValue()</a></code>. The class must implement the <code>
-<a href="api/mondrian/olap/CellFormatter.html">
-mondrian.olap.CellFormatter</a></code> interface, and is specified like this:</p>
+<a href="api/mondrian/spi/CellFormatter.html">
+mondrian.spi.CellFormatter</a></code> interface, and is specified like this:</p>
 
 <blockquote style="text-indent: -20px">
     <code>
@@ -2396,8 +2397,8 @@ MDX query, you can set the same property in the MDX to achieve the same effect:<
 <p>A member formatter modifies the behavior of <code>
 <a href="api/mondrian/olap/Member.html#getCaption%28%29">
 Member.getCaption()</a></code>. The class must implement the <code>
-<a href="api/mondrian/olap/MemberFormatter.html">
-mondrian.olap.MemberFormatter</a></code> interface, and is specified like this:</p>
+<a href="api/mondrian/spi/MemberFormatter.html">
+mondrian.spi.MemberFormatter</a></code> interface, and is specified like this:</p>
 
 <blockquote>
   <code>&lt;<a href="#XML_Level">Level</a> column="column" name="name" formatter="com.acme.MyMemberFormatter"/&gt;</code>
@@ -2411,8 +2412,8 @@ mondrian.olap.MemberFormatter</a></code> interface, and is specified like this:<
 <p>A property formatter modifies the behavior of <code>
 <a href="api/mondrian/olap/Member.html#getPropertyFormattedValue%28java.lang.String%29">
 Property.getPropertyFormattedValue()</a></code>. The class must implement the<code>
-<a href="api/mondrian/olap/PropertyFormatter.html">
-mondrian.olap.PropertyFormatter</a></code> interface, and is specified like this:</p>
+<a href="api/mondrian/spi/PropertyFormatter.html">
+mondrian.spi.PropertyFormatter</a></code> interface, and is specified like this:</p>
 
 <blockquote style="text-indent: -20px">
     <code>
@@ -3379,11 +3380,11 @@ A measure originating from another cube can be a <code>&lt;CalculatedMember&gt;<
 <br />
 <br />
 
-<p>Author: Julian Hyde; last modified December 2009.<br/>
+<p>Author: Julian Hyde; last modified May 2011.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/schema.html?ac=22">log</a>)<br/>
     Copyright (C) 2001-2002 Kana Software, Inc..<br/>
-    Copyright (C) 2002-2009 Julian Hyde and others
+    Copyright (C) 2002-2011 Julian Hyde and others
 </p>
 
 <br />

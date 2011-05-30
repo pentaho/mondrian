@@ -14,12 +14,14 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
-import mondrian.spi.Dialect;
+import mondrian.spi.*;
+
+import mondrian.spi.PropertyFormatter;
+import mondrian.spi.impl.Scripts;
 
 import org.apache.log4j.Logger;
 import org.olap4j.impl.UnmodifiableArrayMap;
 
-import java.lang.reflect.Constructor;
 import java.util.*;
 
 /**
@@ -341,13 +343,23 @@ public class RolapLevel extends LevelBase {
         if (!Util.isEmpty(xmlLevel.caption)) {
             setCaption(xmlLevel.caption);
         }
-        if (!Util.isEmpty(xmlLevel.formatter)) {
-            // there is a special member formatter class
+
+        final String memberFormatterClassName;
+        final Scripts.ScriptDefinition scriptDefinition;
+        if (xmlLevel.memberFormatter != null) {
+            memberFormatterClassName = xmlLevel.memberFormatter.className;
+            scriptDefinition =
+                RolapSchema.toScriptDef(xmlLevel.memberFormatter.script);
+        } else {
+            memberFormatterClassName = xmlLevel.formatter;
+            scriptDefinition = null;
+        }
+        if (memberFormatterClassName != null || scriptDefinition != null) {
             try {
-                Class<MemberFormatter> clazz =
-                    (Class<MemberFormatter>) Class.forName(xmlLevel.formatter);
-                Constructor<MemberFormatter> ctor = clazz.getConstructor();
-                memberFormatter = ctor.newInstance();
+                memberFormatter =
+                    RolapSchema.getMemberFormatter(
+                        memberFormatterClassName,
+                        scriptDefinition);
             } catch (Exception e) {
                 throw MondrianResource.instance().MemberFormatterLoadFailed.ex(
                     xmlLevel.formatter, getUniqueName(), e);
@@ -369,14 +381,45 @@ public class RolapLevel extends LevelBase {
                     nameExp, null, null, null, true));
         }
         for (int i = 0; i < xmlLevel.properties.length; i++) {
-            MondrianDef.Property property = xmlLevel.properties[i];
+            MondrianDef.Property xmlProperty = xmlLevel.properties[i];
+
+            final PropertyFormatter formatter;
+            final String propertyFormatterClassName;
+            final Scripts.ScriptDefinition scriptDefinition;
+            if (xmlProperty.propertyFormatter != null) {
+                propertyFormatterClassName =
+                    xmlProperty.propertyFormatter.className;
+                scriptDefinition =
+                    RolapSchema.toScriptDef(
+                        xmlProperty.propertyFormatter.script);
+            } else {
+                propertyFormatterClassName = xmlProperty.formatter;
+                scriptDefinition = null;
+            }
+            if (propertyFormatterClassName != null
+                || scriptDefinition != null)
+            {
+                try {
+                    formatter =
+                        RolapSchema.createPropertyFormatter(
+                            propertyFormatterClassName,
+                            scriptDefinition);
+                } catch (Exception e) {
+                    throw MondrianResource.instance()
+                        .PropertyFormatterLoadFailed.ex(
+                            propertyFormatterClassName, xmlProperty.name, e);
+                }
+            } else {
+                formatter = null;
+            }
+
             list.add(
                 new RolapProperty(
-                    property.name,
-                    convertPropertyTypeNameToCode(property.type),
+                    xmlProperty.name,
+                    convertPropertyTypeNameToCode(xmlProperty.type),
                     xmlLevel.getPropertyExp(i),
-                    property.formatter,
-                    property.caption,
+                    formatter,
+                    xmlProperty.caption,
                     xmlLevel.properties[i].dependsOnLevelValue,
                     false));
         }

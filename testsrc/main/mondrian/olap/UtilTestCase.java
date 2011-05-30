@@ -319,6 +319,17 @@ public class UtilTestCase extends TestCase {
                     new Id.Segment("California", Id.Quoting.QUOTED))));
     }
 
+    public void testQuoteJava() {
+        assertEquals(
+            "\"San Francisco\"", Util.quoteJavaString("San Francisco"));
+        assertEquals(
+            "\"null\"", Util.quoteJavaString("null"));
+        assertEquals(
+            "null", Util.quoteJavaString(null));
+        assertEquals(
+            "\"a\\\\b\\\"c\"", Util.quoteJavaString("a\\b\"c"));
+    }
+
     public void testBufReplace() {
         // Replace with longer string. Search pattern at beginning & end.
         checkReplace("xoxox", "x", "yy", "yyoyyoyy");

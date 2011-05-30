@@ -8,18 +8,18 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-package mondrian.olap;
+package mondrian.spi;
+
+import mondrian.olap.Member;
 
 /**
  * SPI to redefine a member property display string.
  *
- * @deprecated Use {@link mondrian.spi.PropertyFormatter}. This interface
- * exists for temporary backwards compatibility and will be removed
- * in mondrian-4.0.
- *
  * @version $Id$
  */
-public interface PropertyFormatter extends mondrian.spi.PropertyFormatter {
+public interface PropertyFormatter {
+    String formatProperty(
+        Member member, String propertyName, Object propertyValue);
 }
 
 // End PropertyFormatter.java
