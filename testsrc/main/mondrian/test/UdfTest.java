@@ -1261,7 +1261,7 @@ public class UdfTest extends FoodMartTestCase {
             "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"
             + "  <Hierarchy hasAll='true' allMemberName='All Promotions' primaryKey='promotion_id' defaultMember='[All Promotions]'>\n"
             + "    <Table name='promotion'/>\n"
-            + "    <Level name='Promotion Name' column='promotion_name' uniqueMembers='true'>\n"
+            + "    <Level name='Promotion Name' column='promotion_id' uniqueMembers='true'>\n"
             + "      <Property name='Medium' column='media_type' formatter='"
             + FooBarPropertyFormatter.class.getName()
             + "'/>\n"
@@ -1276,8 +1276,8 @@ public class UdfTest extends FoodMartTestCase {
             result.getAxes().get(0).getPositions().get(0).getMembers().get(0);
         final Property property = member.getProperties().get("Medium");
         assertEquals(
-            member.getPropertyFormattedValue(property),
-            "fooBag Stuffers/Medium/Bulk Mailbar");
+            "foo0/Medium/No Mediabar",
+            member.getPropertyFormattedValue(property));
     }
 
     /**
@@ -1292,7 +1292,7 @@ public class UdfTest extends FoodMartTestCase {
             "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"
             + "  <Hierarchy hasAll='true' allMemberName='All Promotions' primaryKey='promotion_id' defaultMember='[All Promotions]'>\n"
             + "    <Table name='promotion'/>\n"
-            + "    <Level name='Promotion Name' column='promotion_name' uniqueMembers='true'>\n"
+            + "    <Level name='Promotion Name' column='promotion_id' uniqueMembers='true'>\n"
             + "      <Property name='Medium' column='media_type'>\n"
             + "        <PropertyFormatter className='"
             + FooBarPropertyFormatter.class.getName()
@@ -1309,8 +1309,8 @@ public class UdfTest extends FoodMartTestCase {
             result.getAxes().get(0).getPositions().get(0).getMembers().get(0);
         final Property property = member.getProperties().get("Medium");
         assertEquals(
-            member.getPropertyFormattedValue(property),
-            "fooBag Stuffers/Medium/Bulk Mailbar");
+            "foo0/Medium/No Mediabar",
+            member.getPropertyFormattedValue(property));
     }
 
     /**
@@ -1327,7 +1327,7 @@ public class UdfTest extends FoodMartTestCase {
             "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"
             + "  <Hierarchy hasAll='true' allMemberName='All Promotions' primaryKey='promotion_id' defaultMember='[All Promotions]'>\n"
             + "    <Table name='promotion'/>\n"
-            + "    <Level name='Promotion Name' column='promotion_name' uniqueMembers='true'>\n"
+            + "    <Level name='Promotion Name' column='promotion_id' uniqueMembers='true'>\n"
             + "      <Property name='Medium' column='media_type'>\n"
             + "        <PropertyFormatter>\n"
             + "          <Script language='JavaScript'>\n"
@@ -1348,8 +1348,8 @@ public class UdfTest extends FoodMartTestCase {
             result.getAxes().get(0).getPositions().get(0).getMembers().get(0);
         final Property property = member.getProperties().get("Medium");
         assertEquals(
-            member.getPropertyFormattedValue(property),
-            "fooBag Stuffers/Medium/Bulk Mailbar");
+            "foo0/Medium/No Mediabar",
+            member.getPropertyFormattedValue(property));
     }
 
     // ~ Inner classes --------------------------------------------------------
