@@ -131,12 +131,27 @@ public class Formula extends QueryPart {
                 mdxMember.setProperty(Property.FORMAT_EXP.name, formatExp);
             }
 
+            final List<MemberProperty> memberPropertyList =
+                new ArrayList<MemberProperty>(Arrays.asList(memberProperties));
+
+            // put CELL_FORMATTER_SCRIPT_LANGUAGE first, if it exists; we must
+            // see it before CELL_FORMATTER_SCRIPT.
+            for (int i = 0; i < memberPropertyList.size(); i++) {
+                MemberProperty memberProperty = memberPropertyList.get(i);
+                if (memberProperty.getName().equals(
+                        Property.CELL_FORMATTER_SCRIPT_LANGUAGE.name))
+                {
+                    memberPropertyList.remove(i);
+                    memberPropertyList.add(0, memberProperty);
+                }
+            }
+
             // For each property of the formula, make it a property of the
             // member.
-            final List formatPropertyList =
-                    Arrays.asList(Property.FORMAT_PROPERTIES);
-            for (MemberProperty memberProperty : memberProperties) {
-                if (formatPropertyList.contains(memberProperty.getName())) {
+            for (MemberProperty memberProperty : memberPropertyList) {
+                if (Property.FORMAT_PROPERTIES.contains(
+                        memberProperty.getName()))
+                {
                     continue; // we already dealt with format_string props
                 }
                 final Exp exp = memberProperty.getExp();

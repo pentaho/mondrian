@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -85,6 +85,19 @@ public class UtilCompatibleJdk14 implements UtilCompatible {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public <T> T compileScript(
+        Class<T> iface,
+        String script,
+        String engineName)
+    {
+        throw new UnsupportedOperationException(
+            "Scripting not supported until Java 1.6");
+    }
+
+    public <T> void threadLocalRemove(ThreadLocal<T> threadLocal) {
+        // nothing: ThreadLocal.remove() does not exist until JDK 1.5
     }
 }
 

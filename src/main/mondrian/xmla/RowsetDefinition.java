@@ -4494,7 +4494,9 @@ TODO: see above
             int cardinality = extra.getHierarchyCardinality(hierarchy);
             row.set(HierarchyCardinality.name, cardinality);
 
-            row.set(DefaultMember.name, hierarchy.getDefaultMember());
+            row.set(
+                DefaultMember.name,
+                hierarchy.getDefaultMember().getUniqueName());
             if (hierarchy.hasAll()) {
                 row.set(
                     AllMember.name,

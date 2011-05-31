@@ -224,10 +224,24 @@ public class AggregationManager extends RolapAggregationManager {
         }
 
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug(
-                "NO MATCH: " + star.getFactTable().getAlias() + Util.nl
-                + "   foreign=" + levelBitKey + Util.nl
-                + "   measure=" + measureBitKey + Util.nl);
+            StringBuilder sb = new StringBuilder();
+            sb.append("NO MATCH : ");
+            sb.append(star.getFactTable().getAlias());
+            sb.append(Util.nl);
+            sb.append("Foreign columns bit key=");
+            sb.append(levelBitKey);
+            sb.append(Util.nl);
+            sb.append("Measure bit key=        ");
+            sb.append(measureBitKey);
+            sb.append(Util.nl);
+            sb.append("Agg Stars=[");
+            sb.append(Util.nl);
+            for (AggStar aggStar : star.getAggStars()) {
+                sb.append(aggStar.toString());
+            }
+            sb.append(Util.nl);
+            sb.append("]");
+            getLogger().debug(sb.toString());
         }
 
 

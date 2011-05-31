@@ -4,14 +4,15 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2006 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 1 March, 1999
 */
-
 package mondrian.olap;
+
+import mondrian.spi.MemberFormatter;
 
 /**
  * A <code>Level</code> is a group of {@link Member}s in a {@link Hierarchy},
@@ -44,7 +45,8 @@ public interface Level extends OlapElement, Annotated {
     /** Returns properties defined against this level and parent levels. */
     Property[] getInheritedProperties();
 
-    /** @return the MemberFormatter
+    /**
+      * Returns the object that is used to format members of this level.
       */
     MemberFormatter getMemberFormatter();
 

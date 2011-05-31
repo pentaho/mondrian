@@ -3,7 +3,7 @@
 # Checks that a file is valid.
 
 function error(fname, linum, msg) {
-    printf "%s: %d: %s\n", fname, linum, msg;
+    printf "%s:%d: %s\n", fname, linum, msg;
     if (0) print; # for debug
 }
 function _matchFile(fname) {
@@ -66,6 +66,14 @@ function unmatchedOpenParens(s) {
     }
     if (0) print FNR, "unmatchedOpenParens=1";
     return 1;
+}
+
+function countLeadingSpaces(str) {
+    i = 0;
+    while (i < length(str) && substr(str, i + 1, 1) == " ") {
+        ++i;
+    }
+    return i;
 }
 
 BEGIN {
@@ -141,6 +149,15 @@ FNR == 1 {
     } else {
         stringCol = 0;
     }
+
+    # Is the line indented as expected?
+    if (nextIndent > 0) {
+        indent = countLeadingSpaces(s);
+        if (indent != nextIndent) {
+            error(fname, FNR, "Incorrect indent for first line of arg list");
+        }
+    }
+    nextIndent = -1;
 }
 / $/ {
     error(fname, FNR, "Line ends in space");
@@ -364,6 +381,12 @@ s ~ /\<finally\>/ {
     if (!matchFile) {}
     else if (s !~ /^(    )+} finally {/) {
         error(fname, FNR, "finally must be preceded by }, followed by space {, and correctly indented");
+    }
+}
+s ~ /\($/ {
+    nextIndent = countLeadingSpaces(s) + 4;
+    if (s ~ / (if|while) .*\(.*\(/) {
+        nextIndent += 4;
     }
 }
 match(s, /([]A-Za-z0-9()])(+|-|\*|\^|\/|%|=|==|+=|-=|\*=|\/=|>=|<=|!=|&|&&|\||\|\||^|\?|:) *[A-Za-z0-9(]/, a) {

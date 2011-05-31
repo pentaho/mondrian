@@ -18,13 +18,17 @@ import mondrian.olap.Level;
 import mondrian.olap.Member;
 import mondrian.olap.NamedSet;
 import mondrian.olap.Property;
+import mondrian.olap.fun.UdfResolver;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.spi.Dialect;
-import mondrian.spi.UserDefinedFunction;
-
+import mondrian.spi.CellFormatter;
+import mondrian.spi.MemberFormatter;
+import mondrian.spi.PropertyFormatter;
+import mondrian.spi.impl.Scripts;
 import mondrian.util.Pair;
+
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.log4j.Logger;
 
@@ -205,10 +209,12 @@ public class RolapSchemaLoader {
         // Validate user-defined functions. Must be done before we validate
         // calculated members, because calculated members will need to use the
         // function table.
-        final Map<String, UserDefinedFunction> mapNameToUdf =
-            new HashMap<String, UserDefinedFunction>();
+        final Map<String, UdfResolver.UdfFactory> mapNameToUdf =
+            new HashMap<String, UdfResolver.UdfFactory>();
         for (MondrianDef.UserDefinedFunction udf : xmlUserDefinedFunctions) {
-            schema.defineFunction(mapNameToUdf, udf.name, udf.className);
+            final Scripts.ScriptDefinition scriptDef = toScriptDef(udf.script);
+            schema.defineFunction(
+                mapNameToUdf, udf.name, udf.className, scriptDef);
         }
         schema.initFunctionTable(mapNameToUdf.values());
 
@@ -288,6 +294,21 @@ public class RolapSchemaLoader {
 
         schema.aggTableManager.initialize();
         schema.setSchemaLoadDate();
+    }
+
+    private static Scripts.ScriptDefinition toScriptDef(
+        MondrianDef.Script script)
+    {
+        if (script == null) {
+            return null;
+        }
+        final Scripts.ScriptLanguage language =
+            Scripts.ScriptLanguage.lookup(script.language);
+        if (language == null) {
+            throw Util.newError(
+                "Invalid script language '" + script.language + "'");
+        }
+        return new Scripts.ScriptDefinition(script.cdata, language);
     }
 
     private RolapSchema.PhysSchema validatePhysicalSchema(
@@ -1221,15 +1242,28 @@ public class RolapSchemaLoader {
         measureGroup.measureList.add(measure);
         validator.putXml(measure, xmlMeasure);
 
-        try {
-            CellFormatter cellFormatter =
-                getCellFormatter(xmlMeasure.formatter);
-            if (cellFormatter != null) {
+        final String cellFormatterClassName;
+        final Scripts.ScriptDefinition scriptDefinition;
+        final MondrianDef.CellFormatter xmlCellFormatter =
+            xmlMeasure.getCellFormatter();
+        if (xmlCellFormatter != null) {
+            cellFormatterClassName = xmlCellFormatter.className;
+            scriptDefinition = toScriptDef(xmlCellFormatter.script);
+        } else {
+            cellFormatterClassName = xmlMeasure.formatter;
+            scriptDefinition = null;
+        }
+        if (cellFormatterClassName != null || scriptDefinition != null) {
+            try {
+                CellFormatter cellFormatter =
+                    getCellFormatter(
+                        cellFormatterClassName,
+                        scriptDefinition);
                 measure.setFormatter(cellFormatter);
+            } catch (Exception e) {
+                throw MondrianResource.instance().CellFormatterLoadFailed.ex(
+                    cellFormatterClassName, measure.getUniqueName(), e);
             }
-        } catch (Exception e) {
-            throw MondrianResource.instance().CellFormatterLoadFailed.ex(
-                xmlMeasure.formatter, measure.getUniqueName(), e);
         }
 
         // Set member's caption, if present.
@@ -1898,8 +1932,8 @@ public class RolapSchemaLoader {
         hierarchy.init2(
             this,
             xmlHierarchy == null
-            ? null
-            : xmlHierarchy.defaultMember);
+                ? null
+                : xmlHierarchy.defaultMember);
     }
 
     private void initLevel(RolapLevel level)
@@ -1982,14 +2016,39 @@ public class RolapSchemaLoader {
         final org.olap4j.metadata.Level.Type levelType =
             stringToLevelType(
                 xmlAttribute.levelType);
+
+        MemberFormatter memberFormatter = null;
+        final MondrianDef.MemberFormatter xmlMemberFormatter =
+            xmlAttribute.getMemberFormatter();
+        if (xmlMemberFormatter != null) {
+            final String memberFormatterClassName =
+                xmlMemberFormatter.className;
+            final Scripts.ScriptDefinition scriptDefinition =
+                toScriptDef(xmlMemberFormatter.script);
+            if (memberFormatterClassName != null || scriptDefinition != null) {
+                try {
+                    memberFormatter =
+                        RolapSchemaLoader.getMemberFormatter(
+                            memberFormatterClassName,
+                            scriptDefinition);
+                } catch (Exception e) {
+                    throw MondrianResource.instance().MemberFormatterLoadFailed
+                        .ex(
+                            memberFormatterClassName, xmlAttribute.name, e);
+                }
+            }
+        }
+
         final RolapAttribute attribute = new RolapAttribute(
             xmlAttribute.name,
             keyList,
             nameExpr,
             captionExpr,
             orderByList,
+            memberFormatter,
             xmlAttribute.nullValue,
-            false, levelType,
+            false,
+            levelType,
             approxRowCount);
         validator.putXml(attribute, xmlAttribute);
         return attribute;
@@ -2039,23 +2098,6 @@ public class RolapSchemaLoader {
             return null;
         }
 
-        MemberFormatter memberFormatter;
-        if (!Util.isEmpty(xmlLevel.formatter)) {
-            // there is a special member formatter class
-            try {
-                Class<MemberFormatter> clazz =
-                    (Class<MemberFormatter>) Class.forName(xmlLevel.formatter);
-                Constructor<MemberFormatter> ctor = clazz.getConstructor();
-                memberFormatter = ctor.newInstance();
-            } catch (Exception e) {
-                String name = first(xmlLevel.name, xmlLevel.attribute);
-                throw MondrianResource.instance().MemberFormatterLoadFailed.ex(
-                    xmlLevel.formatter, name, e);
-            }
-        } else {
-            memberFormatter = null;
-        }
-
         final RolapLevel level =
             new RolapLevel(
                 hierarchy,
@@ -2065,7 +2107,6 @@ public class RolapSchemaLoader {
                 depth,
                 attribute,
                 RolapLevel.HideMemberCondition.valueOf(xmlLevel.hideMemberIf),
-                memberFormatter,
                 createAnnotationMap(xmlLevel.getAnnotations()));
         validator.putXml(level, xmlLevel);
         return level;
@@ -2283,8 +2324,7 @@ public class RolapSchemaLoader {
                 xmlProperty.name,
                 attribute,
                 dialectToPropertyDatatype(attribute.getDatatype()),
-                makePropertyFormatter(
-                    xmlProperty.name, xmlProperty.formatter),
+                makePropertyFormatter(xmlProperty),
                 xmlProperty.caption,
                 false);
             validator.putXml(property, xmlProperty);
@@ -2315,21 +2355,33 @@ public class RolapSchemaLoader {
     }
 
     private static PropertyFormatter makePropertyFormatter(
-        String name,
-        String formatterDef)
+        MondrianDef.Property xmlProperty)
     {
-        if (Util.isEmpty(formatterDef)) {
-            return null;
+        final String propertyFormatterClassName;
+        final Scripts.ScriptDefinition scriptDefinition;
+        if (xmlProperty.propertyFormatter != null) {
+            propertyFormatterClassName =
+                xmlProperty.propertyFormatter.className;
+            scriptDefinition =
+                toScriptDef(xmlProperty.propertyFormatter.script);
+        } else {
+            propertyFormatterClassName = xmlProperty.formatter;
+            scriptDefinition = null;
         }
-        try {
-            Class<PropertyFormatter> clazz =
-                (Class<PropertyFormatter>) Class.forName(formatterDef);
-            Constructor<PropertyFormatter> ctor = clazz.getConstructor();
-            return ctor.newInstance();
-        } catch (Exception e) {
-            throw
-                MondrianResource.instance().PropertyFormatterLoadFailed.ex(
-                    formatterDef, name, e);
+        if (propertyFormatterClassName != null
+            || scriptDefinition != null)
+        {
+            try {
+                return RolapSchemaLoader.createPropertyFormatter(
+                    propertyFormatterClassName,
+                    scriptDefinition);
+            } catch (Exception e) {
+                throw MondrianResource.instance()
+                    .PropertyFormatterLoadFailed.ex(
+                        propertyFormatterClassName, xmlProperty.name, e);
+            }
+        } else {
+            return null;
         }
     }
 
@@ -2872,7 +2924,9 @@ public class RolapSchemaLoader {
 
         // Generate SQL.
         assert memberUniqueName.startsWith("[");
-        buf.append("MEMBER ").append(memberUniqueName).append(Util.nl)
+        buf.append("MEMBER ")
+            .append(memberUniqueName)
+            .append(Util.nl)
             .append("  AS ");
         String result;
         if (xmlCalcMember.getFormula() != null) {
@@ -2881,6 +2935,27 @@ public class RolapSchemaLoader {
             result = xmlCalcMember.formula;
         }
         Util.singleQuoteString(result, buf);
+
+        final MondrianDef.CellFormatter xmlCellFormatter =
+            xmlCalcMember.getCellFormatter();
+        if (xmlCellFormatter != null) {
+            if (xmlCellFormatter.className != null) {
+                propNames.add(Property.CELL_FORMATTER.name);
+                propExprs.add(
+                    Util.quoteForMdx(xmlCellFormatter.className));
+            }
+            if (xmlCellFormatter.script != null) {
+                if (xmlCellFormatter.script.language != null) {
+                    propNames.add(Property.CELL_FORMATTER_SCRIPT_LANGUAGE.name);
+                    propExprs.add(
+                        Util.quoteForMdx(
+                            xmlCellFormatter.script.language));
+                }
+                propNames.add(Property.CELL_FORMATTER_SCRIPT.name);
+                propExprs.add(
+                    Util.quoteForMdx(xmlCellFormatter.script.cdata));
+            }
+        }
 
         assert propNames.size() == propExprs.size();
         processFormatStringAttribute(xmlCalcMember, buf);
@@ -2982,26 +3057,101 @@ public class RolapSchemaLoader {
     }
 
     /**
-     * Given the name of a cell formatter class, returns a cell formatter.
-     * If class name is null, returns null.
+     * Given the name of a cell formatter class and/or a cell formatter script,
+     * returns a cell formatter.
      *
-     * @param cellFormatterClassName Name of cell formatter class
-     * @return Cell formatter or null
+     * @param className Name of cell formatter class
+     * @param script Script
+     * @return Cell formatter
      * @throws Exception if class cannot be instantiated
      */
-    @SuppressWarnings({"unchecked"})
     static CellFormatter getCellFormatter(
-        String cellFormatterClassName)
+        String className,
+        Scripts.ScriptDefinition script)
         throws Exception
     {
-        if (Util.isEmpty(cellFormatterClassName)) {
-            return null;
+        if (className == null && script == null) {
+            throw Util.newError(
+                "Must specify either className attribute or Script element");
         }
-        Class<CellFormatter> clazz =
-            (Class<CellFormatter>)
-                Class.forName(cellFormatterClassName);
-        Constructor<CellFormatter> ctor = clazz.getConstructor();
-        return ctor.newInstance();
+        if (className != null && script != null) {
+            throw Util.newError(
+                "Must not specify both className attribute and Script element");
+        }
+        if (className != null) {
+            @SuppressWarnings({"unchecked"})
+            Class<CellFormatter> clazz =
+                (Class<CellFormatter>) Class.forName(className);
+            Constructor<CellFormatter> ctor = clazz.getConstructor();
+            return ctor.newInstance();
+        } else {
+            return Scripts.cellFormatter(script);
+        }
+    }
+
+    /**
+     * Given the name of a member formatter class, returns a member formatter.
+     *
+     * @param className Name of cell formatter class
+     * @param script Script
+     * @return Member formatter
+     * @throws Exception if class cannot be instantiated
+     */
+    static MemberFormatter getMemberFormatter(
+        String className,
+        Scripts.ScriptDefinition script)
+        throws Exception
+    {
+        if (className == null && script == null) {
+            throw Util.newError(
+                "Must specify either className attribute or Script element");
+        }
+        if (className != null && script != null) {
+            throw Util.newError(
+                "Must not specify both className attribute and Script element");
+        }
+        if (className != null) {
+            @SuppressWarnings({"unchecked"})
+            Class<MemberFormatter> clazz =
+                (Class<MemberFormatter>) Class.forName(className);
+            Constructor<MemberFormatter> ctor = clazz.getConstructor();
+            return ctor.newInstance();
+        } else {
+            return Scripts.memberFormatter(script);
+        }
+    }
+
+    /**
+     * Given the name of a property formatter class, returns a propert
+     * formatter.
+     *
+     * @param className Name of property formatter class
+     * @param script Script
+     * @return Property formatter
+     * @throws Exception if class cannot be instantiated
+     */
+    static PropertyFormatter createPropertyFormatter(
+        String className,
+        Scripts.ScriptDefinition script)
+        throws Exception
+    {
+        if (className == null && script == null) {
+            throw Util.newError(
+                "Must specify either className attribute or Script element");
+        }
+        if (className != null && script != null) {
+            throw Util.newError(
+                "Must not specify both className attribute and Script element");
+        }
+        if (className != null) {
+            @SuppressWarnings({"unchecked"})
+            Class<PropertyFormatter> clazz =
+                (Class<PropertyFormatter>) Class.forName(className);
+            Constructor<PropertyFormatter> ctor = clazz.getConstructor();
+            return ctor.newInstance();
+        } else {
+            return Scripts.propertyFormatter(script);
+        }
     }
 
     /**

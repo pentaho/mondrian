@@ -13,9 +13,9 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.spi.MemberFormatter;
 
 import org.apache.log4j.Logger;
-import org.olap4j.impl.UnmodifiableArrayMap;
 
 import java.util.*;
 
@@ -42,7 +42,6 @@ public class RolapLevel extends LevelBase {
     /** Condition under which members are hidden. */
     private final HideMemberCondition hideMemberCondition;
     private final Map<String, Annotation> annotationMap;
-    private final MemberFormatter memberFormatter;
 
     static final RolapProperty KEY_PROPERTY =
         new RolapProperty(
@@ -80,11 +79,9 @@ public class RolapLevel extends LevelBase {
         int depth,
         RolapAttribute attribute,
         HideMemberCondition hideMemberCondition,
-        MemberFormatter memberFormatter,
         Map<String, Annotation> annotationMap)
     {
         super(hierarchy, name, caption, description, depth);
-        this.memberFormatter = memberFormatter;
         this.annotationMap = annotationMap;
         this.attribute = attribute;
         this.hideMemberCondition = hideMemberCondition;
@@ -103,6 +100,10 @@ public class RolapLevel extends LevelBase {
 
     public Map<String, Annotation> getAnnotationMap() {
         return annotationMap;
+    }
+
+    public MemberFormatter getMemberFormatter() {
+        return attribute.memberFormatter;
     }
 
     // override with refined return type

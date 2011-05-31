@@ -53,7 +53,7 @@ public class QueryTiming {
 
     protected static QueryTiming done() {
         QueryTiming ret = tlocal.get();
-        tlocal.remove();
+        Util.threadLocalRemove(tlocal);
         return ret;
     }
 

@@ -10985,11 +10985,23 @@ Intel platforms):
 
         // Add some UDFs.
         funInfoList.add(
-            new FunInfo(new UdfResolver(new CurrentDateMemberExactUdf())));
+            new FunInfo(
+                new UdfResolver(
+                    new UdfResolver.ClassUdfFactory(
+                        CurrentDateMemberExactUdf.class,
+                        null))));
         funInfoList.add(
-            new FunInfo(new UdfResolver(new CurrentDateMemberUdf())));
+            new FunInfo(
+                new UdfResolver(
+                    new UdfResolver.ClassUdfFactory(
+                        CurrentDateMemberUdf.class,
+                        null))));
         funInfoList.add(
-            new FunInfo(new UdfResolver(new CurrentDateStringUdf())));
+            new FunInfo(
+                new UdfResolver(
+                    new UdfResolver.ClassUdfFactory(
+                        CurrentDateStringUdf.class,
+                        null))));
         Collections.sort(funInfoList);
 
         final File file = new File("functions.html");

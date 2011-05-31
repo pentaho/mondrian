@@ -4,13 +4,12 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 6 August, 2001
 */
-
 package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
@@ -18,7 +17,7 @@ import mondrian.resource.MondrianResource;
 import java.util.List;
 
 /**
- * Skeleton implementation of {@link Level}
+ * Skeleton implementation of {@link Level}.
  *
  * @author jhyde
  * @since 6 August, 2001
@@ -33,7 +32,6 @@ public abstract class LevelBase
     protected final String uniqueName;
     protected final String description;
     protected final int depth;
-    protected MemberFormatter memberFormatter;
     protected int approxRowCount;
 
     protected LevelBase(
@@ -121,14 +119,6 @@ public abstract class LevelBase
                 schemaReader, hierarchy, s, matchType)
             : null;
     }
-
-    /**
-      * Returns the object which is used to format members of this level.
-      */
-    public MemberFormatter getMemberFormatter() {
-        return memberFormatter;
-    }
 }
-
 
 // End LevelBase.java

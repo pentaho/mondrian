@@ -808,6 +808,12 @@
     </text>
 </exception>
 
+<exception id="7000634" name="SegmentCacheFailedToDeleteSegment">
+    <text>
+        An exception was encountered while deleting a segment from the SegmentCache.
+    </text>
+</exception>
+
 <exception id="7000650" name="SegmentCacheReadTimeout">
     <text>
         Timeout reached while reading segment from SegmentCache.

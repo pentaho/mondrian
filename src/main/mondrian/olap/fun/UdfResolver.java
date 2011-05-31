@@ -26,12 +26,16 @@ import java.util.*;
  * @version $Id$
  */
 public class UdfResolver implements Resolver {
+    private final UdfFactory factory;
     private final UserDefinedFunction udf;
+
     private static final String[] emptyStringArray = new String[0];
 
-    public UdfResolver(UserDefinedFunction udf) {
-        this.udf = udf;
+    public UdfResolver(UdfFactory factory) {
+        this.factory = factory;
+        this.udf = factory.create();
     }
+
     public String getName() {
         return udf.getName();
     }
@@ -152,10 +156,9 @@ public class UdfResolver implements Resolver {
                 expCalcs[i] = new CalcExp(calc, scalarCalc, listCalc, iterCalc);
             }
 
-            // Clone the UDF, because some UDFs use member variables as state.
-            UserDefinedFunction udf2 =
-                Util.createUdf(
-                    udf.getClass(), udf.getName());
+            // Create a new instance of the UDF, because some UDFs use member
+            // variables as state.
+            UserDefinedFunction udf2 = factory.create();
             if (call.getType() instanceof SetType) {
                 return new ListCalcImpl(call, calcs, udf2, expCalcs);
             } else {
@@ -189,7 +192,13 @@ public class UdfResolver implements Resolver {
         }
 
         public Object evaluate(Evaluator evaluator) {
-            return udf.execute(evaluator, args);
+            try {
+                return udf.execute(evaluator, args);
+            } catch (Exception e) {
+                return FunUtil.newEvalException(
+                    "Exception while executing function " + udf.getName(),
+                    e);
+            }
         }
 
         public boolean dependsOn(Hierarchy hierarchy) {
@@ -349,6 +358,52 @@ public class UdfResolver implements Resolver {
             } else {
                 return TupleCollections.asMemberArrayIterable(tupleIterable);
             }
+        }
+    }
+
+    /**
+     * Factory for {@link UserDefinedFunction}.
+     *
+     * <p>This factory is required because a user-defined function is allowed
+     * to store state in itself. Therefore it is unsanitary to use the same
+     * UDF in the function table for validation and runtime. In the function
+     * table there is a factory. We use one instance of instance of the UDF to
+     * validate, and create another for the runtime plan.</p>
+     */
+    public interface UdfFactory {
+        /**
+         * Creates a UDF.
+         *
+         * @return UDF
+         */
+        UserDefinedFunction create();
+    }
+
+    /**
+     * Implementation of {@link UdfFactory} that instantiates a given class
+     * using a public default constructor.
+     */
+    public static class ClassUdfFactory implements UdfResolver.UdfFactory {
+        private final Class<? extends UserDefinedFunction> clazz;
+        private final String name;
+
+        /**
+         * Creates a ClassUdfFactory.
+         *
+         * @param clazz Class to instantiate
+         * @param name Name
+         */
+        public ClassUdfFactory(
+            Class<? extends UserDefinedFunction> clazz,
+            String name)
+        {
+            this.clazz = clazz;
+            this.name = name;
+            assert clazz != null;
+        }
+
+        public UserDefinedFunction create() {
+            return Util.createUdf(clazz, name);
         }
     }
 }

@@ -19,6 +19,7 @@ import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.spi.CellFormatter;
 import mondrian.util.ConcatenableList;
 import mondrian.util.Format;
 import mondrian.util.ObjectPool;
@@ -915,7 +916,6 @@ public class RolapResult extends ResultBase {
                     ci = cellInfos.create(point.getOrdinals());
 
                     String cachedFormatString = null;
-                    ValueFormatter valueFormatter;
 
                     // Determine if there is a CellFormatter registered for
                     // the current Cube's Measure's Dimension. If so,
@@ -927,15 +927,8 @@ public class RolapResult extends ResultBase {
                         cube.getMeasuresHierarchy();
                     RolapMeasure m =
                         (RolapMeasure) revaluator.getContext(measuresHierarchy);
-                    CellFormatter cf = m.getFormatter();
-                    if (cf != null) {
-                        valueFormatter = cellFormatters.get(cf);
-                        if (valueFormatter == null) {
-                            valueFormatter =
-                                new CellFormatterValueFormatter(cf);
-                            cellFormatters.put(cf, valueFormatter);
-                        }
-                    } else {
+                    ValueFormatter valueFormatter = m.getFormatter();
+                    if (valueFormatter == null) {
                         cachedFormatString = revaluator.getFormatString();
                         Locale locale = query.getConnection().getLocale();
                         valueFormatter = formatValueFormatters.get(locale);
@@ -1596,19 +1589,8 @@ public class RolapResult extends ResultBase {
      * Should these be a WeakHashMap?
      */
     protected static final Map<Locale, ValueFormatter>
-            formatValueFormatters =
+        formatValueFormatters =
             Collections.synchronizedMap(new HashMap<Locale, ValueFormatter>());
-
-    /**
-     * Synchronized Map from CellFormatter to ValueFormatter.
-     * CellFormatter's are defined in schema files. It is expected
-     * the there will only be a small number of CellFormatter's.
-     * Should these be a WeakHashMap?
-     */
-    protected static final Map<CellFormatter, ValueFormatter>
-        cellFormatters =
-            Collections.synchronizedMap(
-                new HashMap<CellFormatter, ValueFormatter>());
 
     /**
      * A CellInfo contains all of the information that a Cell requires.

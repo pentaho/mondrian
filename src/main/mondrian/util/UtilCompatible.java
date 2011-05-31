@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -39,6 +39,22 @@ public interface UtilCompatible {
         Method method, String annotationClassName, T defaultValue);
 
     String generateUuidString();
+
+    /**
+     * Compiles a script to yield a Java interface.
+     *
+     * @param iface Interface script should implement
+     * @param script Script code
+     * @param engineName Name of engine (e.g. "JavaScript")
+     * @param <T> Interface
+     * @return Object that implements given interface
+     */
+    <T> T compileScript(
+        Class<T> iface,
+        String script,
+        String engineName);
+
+    <T> void threadLocalRemove(ThreadLocal<T> threadLocal);
 }
 
 // End UtilCompatible.java

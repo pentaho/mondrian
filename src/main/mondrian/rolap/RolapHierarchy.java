@@ -26,6 +26,8 @@ import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
+import mondrian.spi.CellFormatter;
+import mondrian.spi.impl.Scripts;
 import mondrian.util.UnionIterator;
 
 import org.apache.log4j.Logger;
@@ -140,7 +142,6 @@ public class RolapHierarchy extends HierarchyBase {
                 0,
                 ALL_ATTRIBUTE,
                 RolapLevel.HideMemberCondition.Never,
-                null,
                 Collections.<String, Annotation>emptyMap());
         if (hasAll) {
             this.levelList.add(allLevel);
@@ -157,7 +158,6 @@ public class RolapHierarchy extends HierarchyBase {
                 0,
                 NULL_ATTRIBUTE,
                 RolapLevel.HideMemberCondition.Never,
-                null,
                 Collections.<String, Annotation>emptyMap());
 
         if (this instanceof RolapCubeHierarchy) {
@@ -287,7 +287,6 @@ public class RolapHierarchy extends HierarchyBase {
                 levelList.size(),
                 MEASURES_ATTRIBUTE,
                 RolapLevel.HideMemberCondition.Never,
-                null,
                 Collections.<String, Annotation>emptyMap()));
         /*
         for (RolapLevel level : levelList) {
@@ -654,7 +653,6 @@ public class RolapHierarchy extends HierarchyBase {
                 peerHier.levelList.size(),
                 src.attribute.parentAttribute,
                 src.getHideMemberCondition(),
-                null,
                 Collections.<String, Annotation>emptyMap());
         peerHier.levelList.add(level);
 
@@ -672,7 +670,6 @@ public class RolapHierarchy extends HierarchyBase {
                 peerHier.levelList.size(),
                 src.attribute, // TODO: new attr, also change its row count
                 src.getHideMemberCondition(),
-                null,
                 Collections.<String, Annotation>emptyMap());
         peerHier.levelList.add(sublevel);
         return peerDimension;
@@ -746,7 +743,7 @@ public class RolapHierarchy extends HierarchyBase {
         extends RolapCalculatedMember
         implements RolapMeasure
     {
-        private CellFormatter cellFormatter;
+        private RolapResult.ValueFormatter cellFormatter;
 
         public RolapCalculatedMeasure(
             RolapMember parent, RolapLevel level, String name, Formula formula)
@@ -758,18 +755,43 @@ public class RolapHierarchy extends HierarchyBase {
             if (name.equals(Property.CELL_FORMATTER.getName())) {
                 String cellFormatterClass = (String) value;
                 try {
+                    CellFormatter formatter =
+                        RolapSchemaLoader.getCellFormatter(
+                            cellFormatterClass,
+                            null);
                     this.cellFormatter =
-                        RolapSchemaLoader.getCellFormatter(cellFormatterClass);
+                        new RolapResult.CellFormatterValueFormatter(formatter);
                 } catch (Exception e) {
                     throw MondrianResource.instance().CellFormatterLoadFailed
                         .ex(
                             cellFormatterClass, getUniqueName(), e);
                 }
             }
+            if (name.equals(Property.CELL_FORMATTER_SCRIPT.name)) {
+                String language = (String) getPropertyValue(
+                    Property.CELL_FORMATTER_SCRIPT_LANGUAGE.name);
+                String scriptText = (String) value;
+                try {
+                    final Scripts.ScriptDefinition script =
+                        new Scripts.ScriptDefinition(
+                            scriptText,
+                            Scripts.ScriptLanguage.lookup(language));
+                    CellFormatter formatter =
+                        RolapSchemaLoader.getCellFormatter(
+                            null,
+                            script);
+                    this.cellFormatter =
+                        new RolapResult.CellFormatterValueFormatter(formatter);
+                } catch (Exception e) {
+                    throw MondrianResource.instance().CellFormatterLoadFailed
+                        .ex(
+                            scriptText, getUniqueName(), e);
+                }
+            }
             super.setProperty(name, value);
         }
 
-        public CellFormatter getFormatter() {
+        public RolapResult.ValueFormatter getFormatter() {
             return cellFormatter;
         }
     }
@@ -962,6 +984,7 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             Collections.<RolapSchema.PhysColumn>emptyList(),
             null,
+            null,
             true,
             org.olap4j.metadata.Level.Type.ALL,
             ALL_LEVEL_CARDINALITY);
@@ -974,6 +997,7 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             Collections.<RolapSchema.PhysColumn>emptyList(),
             null,
+            null,
             false,
             org.olap4j.metadata.Level.Type.NULL,
             NULL_LEVEL_CARDINALITY);
@@ -985,6 +1009,7 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             null,
             Collections.<RolapSchema.PhysColumn>emptyList(),
+            null,
             null,
             false,
             org.olap4j.metadata.Level.Type.REGULAR,

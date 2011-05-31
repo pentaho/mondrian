@@ -3,13 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.spi.CellFormatter;
 import mondrian.spi.Dialect;
 
 import java.util.*;
@@ -47,7 +48,7 @@ public class RolapBaseCubeMeasure
      */
     private RolapStar.Measure starMeasure;
 
-    private CellFormatter formatter;
+    private RolapResult.ValueFormatter formatter;
 
     private final RolapMeasureGroup measureGroup;
     private final Dialect.Datatype datatype;
@@ -129,12 +130,13 @@ public class RolapBaseCubeMeasure
         return measureGroup;
     }
 
-    public CellFormatter getFormatter() {
+    public RolapResult.ValueFormatter getFormatter() {
         return formatter;
     }
 
-    public void setFormatter(CellFormatter formatter) {
-        this.formatter = formatter;
+    public void setFormatter(CellFormatter cellFormatter) {
+        this.formatter =
+            new RolapResult.CellFormatterValueFormatter(cellFormatter);
     }
 
     public RolapStar.Measure getStarMeasure() {

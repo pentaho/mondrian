@@ -714,7 +714,11 @@ Revision is $Id$
         <Attribute name="formatter" required="false">
             <Doc>
                 Name of a formatter class for the member labels being displayed.
-                The class must implement the mondrian.olap.MemberFormatter interface.
+                The class must implement the mondrian.spi.MemberFormatter
+                interface.
+
+                <p>This attribute is deprecated. Please use a nested
+                MemberFormatter element.</p>
             </Doc>
         </Attribute>
         <Attribute name="caption" required="false">
@@ -764,6 +768,11 @@ Revision is $Id$
             <Doc>
                 The SQL expression used to join to the parent member in a
                 parent-child hierarchy.
+            </Doc>
+        </Object>
+        <Object name="memberFormatter" type="MemberFormatter" required="false">
+            <Doc>
+                Member formatter.
             </Doc>
         </Object>
         <Object name="closure" type="Closure" required="false"/>
@@ -862,10 +871,14 @@ Revision is $Id$
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
-                Name of a formatter class for the appropriate property value
-                being displayed.
-                The class must implement the mondrian.olap.PropertyFormatter
-                interface.
+                <p>Name of a formatter class for the appropriate property value
+                being displayed.</p>
+
+                <p>The class must implement the mondrian.spi.PropertyFormatter
+                interface.</p>
+
+                <p>This attribute is deprecated. Please use a nested
+                PropertyFormatter element.</p>
             </Doc>
         </Attribute>
         <Attribute name="caption" required="false">
@@ -889,6 +902,11 @@ Revision is $Id$
                 databases, such as MySQL.
             </Doc>
         </Attribute>
+        <Object name="propertyFormatter" type="PropertyFormatter" required="false">
+            <Doc>
+                Property formatter.
+            </Doc>
+        </Object>
     </Element>
 
     <Element type="Measure">
@@ -934,8 +952,14 @@ Revision is $Id$
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
-                Name of a formatter class for the appropriate cell being displayed.
-                The class must implement the mondrian.olap.CellFormatter interface.
+                <p>Name of a formatter class for the appropriate cell being
+                displayed.</p>
+
+                <p>The class must implement the
+                mondrian.spi.CellFormatter interface.</p>
+
+                <p>This attribute is deprecated. Please use a nested
+                CellFormatter element.</p>
             </Doc>
         </Attribute>
         <Attribute name="caption" required="false">
@@ -963,6 +987,11 @@ Revision is $Id$
             <Doc>
                 The SQL expression used to calculate a measure.
                 Must be specified if a source column is not specified.
+            </Doc>
+        </Object>
+        <Object name="cellFormatter" type="CellFormatter" required="false">
+            <Doc>
+                Cell formatter.
             </Doc>
         </Object>
         <Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
@@ -1015,6 +1044,11 @@ Revision is $Id$
         <Object name="formulaElement" type="Formula" required="false">
             <Doc>
                 MDX expression which gives the value of this member.
+            </Doc>
+        </Object>
+        <Object name="cellFormatter" type="CellFormatter" required="false">
+            <Doc>
+                Cell formatter.
             </Doc>
         </Object>
         <Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
@@ -2086,13 +2120,21 @@ Revision is $Id$
         <Attribute name="name" required="true">
             <Doc>Name with which the user-defined function will be referenced in MDX expressions.</Doc>
         </Attribute>
-        <Attribute name="className" required="true">
+        <Attribute name="className" required="false">
             <Doc>
                 Name of the class which implemenets this user-defined function.
                 Must implement the <code>mondrian.spi.UserDefinedFunction</code>
                 interface.
             </Doc>
         </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this user-defined function.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
     </Element>
 
     <Element type="Parameter">
@@ -2155,6 +2197,106 @@ Revision is $Id$
             </Doc>
         </Attribute>
         <CData/>
+    </Element>
+
+    <Element type="Script">
+        <Doc>
+            Script fragment to implement an SPI such as user-defined function,
+            member formatter, cell formatter.
+        </Doc>
+        <Attribute name="language" required="false" default="JavaScript">
+            <Doc>
+                The language of the script. Must be a supported scripting
+                language in the current JVM. See
+                {@link javax.script.ScriptEngineManager}.
+                Default value is 'JavaScript'.
+            </Doc>
+        </Attribute>
+        <CData/>
+    </Element>
+
+    <Element type="CellFormatter">
+        <Doc>
+            Plugin that formats the values of cells.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/CellFormatter.html">mondrian.spi.CellFormatter</a>,
+            or by a script.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this cell formatter.
+                Must implement the <code>mondrian.spi.CellFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this cell formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="MemberFormatter">
+        <Doc>
+            Plugin that formats members.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/MemberFormatter.html">mondrian.spi.MemberFormatter</a>,
+            or by a script.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this member formatter.
+                Must implement the <code>mondrian.spi.MemberFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this member formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="PropertyFormatter">
+        <Doc>
+            Plugin that formats properties.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/PropertyFormatter.html">mondrian.spi.PropertyFormatter</a>,
+            or by a script.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this property formatter.
+                Must implement the <code>mondrian.spi.PropertyFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this property formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
     </Element>
 </Model>
 

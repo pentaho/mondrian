@@ -316,6 +316,11 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
 
     // good 2/25 : (partial implementation)
     public void testMDHierarchies() throws Exception {
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
+            return;
+        }
         String requestType = "MDSCHEMA_HIERARCHIES";
 
         Properties props = new Properties();
@@ -724,7 +729,12 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
      * XMLA"</a>.
      */
     public void testExecuteCrossjoin() throws Exception {
-       String requestType = "EXECUTE";
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
+            return;
+        }
+        String requestType = "EXECUTE";
         String query =
             "SELECT CrossJoin({[Product].[All Products].children}, "
             + "{[Customers].[All Customers].children}) ON columns FROM Sales";
@@ -763,6 +773,11 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
      * [Customers].[All Customers].[Mexico].
      */
     public void testExecuteCrossjoinRole() throws Exception {
+        if (!MondrianProperties.instance().FilterChildlessSnowflakeMembers
+            .get())
+        {
+            return;
+        }
         String requestType = "EXECUTE";
         String query =
             "SELECT CrossJoin({[Product].[All Products].children}, "

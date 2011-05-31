@@ -115,6 +115,16 @@ public class MockSegmentCache implements SegmentCache {
             });
     }
 
+    public Future<Boolean> remove(final SegmentHeader header) {
+        return executor.submit(
+            new Callable<Boolean>() {
+                public Boolean call() throws Exception {
+                    cache.remove(header);
+                    return true;
+                }
+            });
+    }
+
     public void tearDown() {
         cache.clear();
     }

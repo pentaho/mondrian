@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.olap.Property;
 import mondrian.olap.Util;
 import mondrian.spi.Dialect;
+import mondrian.spi.MemberFormatter;
 import org.olap4j.metadata.Level;
 
 import java.util.ArrayList;
@@ -66,15 +67,18 @@ public class RolapAttribute {
     final org.olap4j.metadata.Level.Type levelType;
     private final int approxRowCount;
 
+    final MemberFormatter memberFormatter;
+
     public RolapAttribute(
         String name,
         List<RolapSchema.PhysColumn> keyList,
         RolapSchema.PhysColumn nameExp,
         RolapSchema.PhysColumn captionExp,
         List<RolapSchema.PhysColumn> orderByList,
+        MemberFormatter memberFormatter,
         String nullValue,
         boolean all,
-        org.olap4j.metadata.Level.Type levelType,
+        Level.Type levelType,
         int approxRowCount)
     {
         assert levelType != null;
@@ -93,6 +97,7 @@ public class RolapAttribute {
         this.keyList = keyList;
         this.nameExp = nameExp;
         this.captionExp = captionExp;
+        this.memberFormatter = memberFormatter;
         this.nullValue = nullValue;
         this.all = all;
         this.levelType = levelType;

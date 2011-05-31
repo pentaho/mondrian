@@ -529,6 +529,7 @@ compile.java"/>
       <include name="mondrian/**/*.java"/>
       <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java" if="jdk16.present"/>
       <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java" if="jdk16.not.present"/>
+      <exclude name="mondrian/util/UtilCompatibleJdk16.java" if="jdk16.not.present"/>
       <exclude name="mondrian/rolap/RolapSchemaUpgrader.java"/>
       <exclude name="mondrian/rolap/PhysSchemaConverter.java"/>
       <exclude name="mondrian/rolap/HierarchyUsage.java"/>
@@ -554,6 +555,7 @@ META-INF/**"/>
         destdir="${testclasses.dir}"
         debug="${project.build.debug}"
         classpathref="project.test.classpath"
+        includeantruntime="false"
         source="1.5">
         <include name="mondrian/**/*.java"/>
     </javac>
@@ -983,8 +985,6 @@ build.properties,
 ivy.xml,
 ivysettings.xml,
 log4j.properties,
-mondrian.properties,
-mondrian.properties.template,
 LICENSE.html,
 README.txt,
 VERSION.txt,
@@ -996,6 +996,10 @@ ${javadoc.dir}/**,
 **/junit-results/**,
 ${generated.java.files},
 doc/deployDoc.sh" />
+      <zipfileset
+          dir="."
+          includes="mondrian.properties.template"
+          fullpath="${dist.name}/mondrian.properties" />
       <zipfileset
           dir="."
           prefix="${dist.name}"
@@ -1088,9 +1092,9 @@ buildJdk16.sh" />
                 <arg value="-inputFile=demo/myData.sql"/>
                 <arg value="-inputFile=demo/myData.zip"/> - will access this without unzipping
 
-        You can override the JDBC batch size by setting the same property in your mondrian.properties.
-        Current using the default of 50 SQL statements per batch.
-
+        You can override the JDBC batch size by setting the same
+        property in your mondrian.properties.  Current using the
+        default of 50 SQL statements per batch.
     -->
 
     <property name="mondrian.foodmart.loaderBatchSize" value="50" />
@@ -1434,6 +1438,10 @@ diagrams and hyperlinks to source code">
         <linecontains negate="true">
           <contains value="FactoryJdbc4Impl.java"/>
         </linecontains>
+         <!-- ignore: UtilCompatibleJdk16 is only built in JDK1.6 -->
+        <linecontains negate="true">
+          <contains value="UtilCompatibleJdk16.java"/>
+        </linecontains>
         <striplinebreaks />
       </filterchain>
     </loadfile>
@@ -1465,7 +1473,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
     <!-- The Ant war task was doing funny things with update="yes" so piece the mondrian.war
          together from the jpivot.war and Mondrian specific settings -->
 
-    <filter filtersfile="mondrian.properties"/>
+    <filterset filtersfile="mondrian.properties" onmissingfiltersfile="warn"/>
     <delete dir="${build.dir}/mondrian" />
     <mkdir dir="${build.dir}/mondrian" />
     <delete file="${war.file}"/>
@@ -1514,7 +1522,7 @@ Assumes that mondrian.jar exists (use 'jar' target)">
 
   <target name="derby-war" depends="jar,compile.tests,unzip-FoodMartDerbyDB" description="
 Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded database.">
-    <filter filtersfile="mondrian.properties"/>
+    <filterset filtersfile="mondrian.properties" onmissingfiltersfile="warn"/>
     <delete dir="${build.dir}/mondrian-embedded" />
     <mkdir dir="${build.dir}/mondrian-embedded" />
     <delete file="${war.embeddedDb.file}"/>
@@ -1575,7 +1583,7 @@ Creates mondrian-embedded.war based upon jpivot.war for Derby with embedded data
 Creates mondrian.war.
 Assumes that mondrian.jar exists (use 'jar' target),
 and lib contains ant.jar, junit.jar etc.">
-    <filter filtersfile="mondrian.properties"/>
+    <filterset filtersfile="mondrian.properties" onmissingfiltersfile="warn"/>
     <mkdir dir="${lib.dir}" />
     <delete file="${war.file}"/>
     <delete file="${lib.dir}/web.xml"/>

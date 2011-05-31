@@ -92,6 +92,14 @@ public interface SegmentCache {
     Future<Boolean> put(SegmentHeader header, SegmentBody body);
 
     /**
+     * Removes a segment from the cache.
+     * @param header The header of the segment we want to remove.
+     * @return True if the segment was found and removed,
+     * false otherwise.
+     */
+    Future<Boolean> remove(SegmentHeader header);
+
+    /**
      * Tear down and clean up the cache.
      */
     void tearDown();

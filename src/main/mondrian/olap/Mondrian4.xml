@@ -719,8 +719,8 @@ Revision is $Id$
         <Array name="children" type="AttributeElement">
             <Doc>
                 Child elements. Key, Name, OrderBy, Caption, Closure,
-                Annotations can each occur at most once; Property can occur
-                multiple times.
+                MemberFormatter, Annotations can each occur at most once;
+                Property can occur multiple times.
             </Doc>
         </Array>
         <Code><![CDATA[
@@ -737,6 +737,7 @@ Revision is $Id$
                     Caption.class,
                     Closure.class,
                     Property.class,
+                    MemberFormatter.class,
                     Annotations.class);
             }
             public NamedList<Property> getProperties() {
@@ -756,6 +757,9 @@ Revision is $Id$
             }
             public Closure getClosure() {
                 return children().singleton(Closure.class);
+            }
+            public MemberFormatter getMemberFormatter() {
+                return children().singleton(MemberFormatter.class);
             }
             public NamedList<Annotation> getAnnotations() {
                 return children().only(Annotations.EMPTY).toList();
@@ -894,7 +898,11 @@ Revision is $Id$
         <Attribute name="formatter" required="false">
             <Doc>
                 Name of a formatter class for the member labels being displayed.
-                The class must implement the mondrian.olap.MemberFormatter interface.
+                The class must implement the mondrian.spi.MemberFormatter
+                interface.
+
+                <p>This attribute is deprecated. Please use a nested
+                MemberFormatter element.</p>
             </Doc>
         </Attribute>
         <Attribute name="caption" required="false">
@@ -974,12 +982,21 @@ Revision is $Id$
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
-                Name of a formatter class for the appropriate property value
-                being displayed.
-                The class must implement the mondrian.olap.PropertyFormatter
-                interface.
+                <p>Name of a formatter class for the appropriate property value
+                being displayed.</p>
+
+                <p>The class must implement the mondrian.spi.PropertyFormatter
+                interface.</p>
+
+                <p>This attribute is deprecated. Please use a nested
+                PropertyFormatter element.</p>
             </Doc>
         </Attribute>
+        <Object name="propertyFormatter" type="PropertyFormatter" required="false">
+            <Doc>
+                Property formatter.
+            </Doc>
+        </Object>
         <Code>
             <![CDATA[
             public String getNameAttribute() {
@@ -1036,8 +1053,14 @@ Revision is $Id$
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
-                Name of a formatter class for the appropriate cell being displayed.
-                The class must implement the mondrian.olap.CellFormatter interface.
+                <p>Name of a formatter class for the appropriate cell being
+                displayed.</p>
+
+                <p>The class must implement the
+                mondrian.spi.CellFormatter interface.</p>
+
+                <p>This attribute is deprecated. Please use a nested
+                CellFormatter element.</p>
             </Doc>
         </Attribute>
         <Attribute name="caption" required="false">
@@ -1061,8 +1084,8 @@ Revision is $Id$
         <Array name="children" type="MeasureElement">
             <Doc>
                 Child elements of a Measure. Arguments and Annotations can
-                appear at most once, CalculatedMemberProperty can occur zero or
-                more times, in any order.
+                appear at most once, CalculatedMemberProperty and
+                CellFormatter can occur zero or more times, in any order.
             </Doc>
         </Array>
         <Code>
@@ -1076,13 +1099,17 @@ Revision is $Id$
                     children,
                     Arguments.class,
                     Annotations.class,
-                    CalculatedMemberProperty.class);
+                    CalculatedMemberProperty.class,
+                    CellFormatter.class);
             }
             public NamedList<CalculatedMemberProperty> getCalculatedMemberProperties() {
                 return children().filterNamed(CalculatedMemberProperty.class);
             }
             public Arguments getArguments() {
                 return children().singleton(Arguments.class);
+            }
+            public CellFormatter getCellFormatter() {
+                return children().singleton(CellFormatter.class);
             }
             public NamedList<Annotation> getAnnotations() {
                 return children().only(Annotations.EMPTY).toList();
@@ -1153,9 +1180,9 @@ Revision is $Id$
         </Attribute>
         <Array name="children" type="CalculatedMemberElement">
             <Doc>
-                Child elements of a NamedSet. Formula and Annotations
-                can occur at most once; CalculatedMemberProperty can occur zero
-                or more times, in any order.
+                Child elements of a NamedSet. Formula, CellFormatter and
+                Annotations can occur at most once; CalculatedMemberProperty can
+                occur zero or more times, in any order.
             </Doc>
         </Array>
         <Code>
@@ -1169,10 +1196,14 @@ Revision is $Id$
                     children,
                     Annotations.class,
                     CalculatedMemberProperty.class,
+                    CellFormatter.class,
                     Formula.class);
             }
             public Formula getFormula() {
                 return children().singleton(Formula.class);
+            }
+            public CellFormatter getCellFormatter() {
+                return children().singleton(CellFormatter.class);
             }
             public NamedList<Annotation> getAnnotations() {
                 return children().only(Annotations.EMPTY).toList();
@@ -2095,13 +2126,21 @@ Revision is $Id$
         <Attribute name="name" required="true">
             <Doc>Name with which the user-defined function will be referenced in MDX expressions.</Doc>
         </Attribute>
-        <Attribute name="className" required="true">
+        <Attribute name="className" required="false">
             <Doc>
                 Name of the class which implemenets this user-defined function.
                 Must implement the <code>mondrian.spi.UserDefinedFunction</code>
                 interface.
             </Doc>
         </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this user-defined function.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
         <Code>
             <![CDATA[
                 public String getNameAttribute() { return name; }
@@ -2193,6 +2232,106 @@ Revision is $Id$
             }
             ]]>
         </Code>
+    </Element>
+
+    <Element type="Script">
+        <Doc>
+            Script fragment to implement an SPI such as user-defined function,
+            member formatter, cell formatter.
+        </Doc>
+        <Attribute name="language" required="false" default="JavaScript">
+            <Doc>
+                The language of the script. Must be a supported scripting
+                language in the current JVM. See
+                {@link javax.script.ScriptEngineManager}.
+                Default value is 'JavaScript'.
+            </Doc>
+        </Attribute>
+        <CData/>
+    </Element>
+
+    <Element type="CellFormatter" class="CalculatedMemberElement,MeasureElement">
+        <Doc>
+            Plugin that formats the values of cells.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/CellFormatter.html">mondrian.spi.CellFormatter</a>,
+            or by a script.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this cell formatter.
+                Must implement the <code>mondrian.spi.CellFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this cell formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="MemberFormatter" class="AttributeElement">
+        <Doc>
+            Plugin that formats members.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/MemberFormatter.html">mondrian.spi.MemberFormatter</a>,
+            or by a script.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this member formatter.
+                Must implement the <code>mondrian.spi.MemberFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this member formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="PropertyFormatter">
+        <Doc>
+            Plugin that formats properties.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/PropertyFormatter.html">mondrian.spi.PropertyFormatter</a>,
+            or by a script.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this property formatter.
+                Must implement the <code>mondrian.spi.PropertyFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this property formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
     </Element>
 
     <Element type="PhysicalSchema" class="SchemaElement">

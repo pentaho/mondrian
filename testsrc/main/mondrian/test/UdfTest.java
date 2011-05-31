@@ -3,21 +3,31 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Member;
 import mondrian.olap.type.*;
-import mondrian.spi.UserDefinedFunction;
+import mondrian.spi.*;
+import mondrian.spi.CellFormatter;
+import mondrian.spi.MemberFormatter;
+import mondrian.spi.PropertyFormatter;
+import org.olap4j.CellSet;
+import org.olap4j.metadata.Property;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Pattern;
 
 /**
  * Unit-test for {@link UserDefinedFunction user-defined functions}.
+ * Also tests {@link mondrian.spi.CellFormatter cell formatters}
+ * and {@link mondrian.spi.MemberFormatter member formatters}.
  *
  * <p>TODO:
  * 1. test that function which does not return a name, description etc.
@@ -32,6 +42,7 @@ public class UdfTest extends FoodMartTestCase {
 
     public UdfTest() {
     }
+
     public UdfTest(String name) {
         super(name);
     }
@@ -40,19 +51,52 @@ public class UdfTest extends FoodMartTestCase {
      * Test context which uses the local FoodMart schema, and adds a "PlusOne"
      * user-defined function.
      */
-    private final TestContext tc = TestContext.create(
-        null,
-        null,
-        null,
-        null,
+    private final TestContext tc = udfTestContext(
         "<UserDefinedFunction name=\"PlusOne\" className=\""
         + PlusOneUdf.class.getName()
-        + "\"/>\n",
-        null);
+        + "\"/>\n");
 
     public TestContext getTestContext() {
         return tc;
     }
+
+    /**
+     * Shorthand for containing a test context that consists of the standard
+     * FoodMart schema plus a UDF.
+     *
+     * @param xmlUdf UDF definition
+     * @return Test context
+     */
+    private TestContext udfTestContext(String xmlUdf) {
+        return TestContext.create(
+            null, null, null, null, xmlUdf, null);
+    }
+
+    /**
+     * Shorthand for containing a test context that consists of the standard
+     * FoodMart Sales cube plus one measure.
+     *
+     * @param xmlMeasure Measure definition
+     * @return Test context
+     */
+    private TestContext measureTestContext(String xmlMeasure) {
+        return TestContext.createSubstitutingCube(
+            "Sales", null, xmlMeasure, null, null);
+    }
+
+    /**
+     * Shorthand for containing a test context that consists of the standard
+     * FoodMart Sales cube plus one calculated member.
+     *
+     * @param xmlCalcMember Calculated member definition
+     * @return Test context
+     */
+    private TestContext calcMemberTestContext(String xmlCalcMember) {
+        return TestContext.createSubstitutingCube(
+            "Sales", null, null, xmlCalcMember, null);
+    }
+
+    // ~ Tests follow ----------------------------------------------------------
 
     public void testSanity() {
         // sanity check, make sure the schema is loading correctly
@@ -188,15 +232,10 @@ public class UdfTest extends FoodMartTestCase {
     }
 
     public void testBadFun() {
-        final TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
+        final TestContext tc = udfTestContext(
             "<UserDefinedFunction name=\"BadPlusOne\" className=\""
             + BadPlusOneUdf.class.getName()
-            + "\"/>\n",
-            null);
+            + "\"/>\n");
         try {
             tc.executeQuery("SELECT {} ON COLUMNS FROM [Sales]");
             fail("Expected exception");
@@ -209,18 +248,13 @@ public class UdfTest extends FoodMartTestCase {
     }
 
     public void testGenericFun() {
-        final TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
+        final TestContext tc = udfTestContext(
             "<UserDefinedFunction name=\"GenericPlusOne\" className=\""
             + PlusOrMinusOneUdf.class.getName()
             + "\"/>\n"
             + "<UserDefinedFunction name=\"GenericMinusOne\" className=\""
             + PlusOrMinusOneUdf.class.getName()
-            + "\"/>\n",
-            null);
+            + "\"/>\n");
         tc.assertExprReturns("GenericPlusOne(3)", "4");
         tc.assertExprReturns("GenericMinusOne(3)", "2");
     }
@@ -267,13 +301,13 @@ public class UdfTest extends FoodMartTestCase {
         assertTrue(cell.isError());
         getTestContext().assertMatchesVerbose(
             Pattern.compile(
-                ".*Invalid value for inverse normal distribution: 1.4708.*"),
+                "(?s).*Invalid value for inverse normal distribution: 1.4708.*"),
             cell.getValue().toString());
         cell = result.getCell(new int[]{0, 5});
         assertTrue(cell.isError());
         getTestContext().assertMatchesVerbose(
             Pattern.compile(
-                ".*Invalid value for inverse normal distribution: 1.4435.*"),
+                "(?s).*Invalid value for inverse normal distribution: 1.4435.*"),
             cell.getValue().toString());
     }
 
@@ -635,15 +669,10 @@ public class UdfTest extends FoodMartTestCase {
      * guesses based on the type of the first argument.
      */
     public void testNonGuessableReturnType() {
-        TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
+        TestContext tc = udfTestContext(
             "<UserDefinedFunction name=\"StringMult\" className=\""
             + StringMultUdf.class.getName()
-            + "\"/>\n",
-            null);
+            + "\"/>\n");
         // The default implementation of getResultType would assume that
         // StringMult(int, string) returns an int, whereas it returns a string.
         tc.assertExprReturns(
@@ -656,15 +685,10 @@ public class UdfTest extends FoodMartTestCase {
      * member should have been evaluated to a scalar.
      */
     public void testUdfToString() {
-        TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
+        TestContext tc = udfTestContext(
             "<UserDefinedFunction name=\"StringMult\" className=\""
             + StringMultUdf.class.getName()
-            + "\"/>\n",
-            null);
+            + "\"/>\n");
         tc.assertQueryReturns(
             "with member [Measures].[ABC] as StringMult(1, 'A')\n"
             + "member [Measures].[Unit Sales Formatted] as\n"
@@ -689,16 +713,11 @@ public class UdfTest extends FoodMartTestCase {
      * case, applies f(member,dimension) to args(member,hierarchy).
      */
     public void testAnotherMemberFun() {
-        final TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
+        final TestContext tc = udfTestContext(
             "<UserDefinedFunction name=\"PlusOne\" className=\""
             + PlusOneUdf.class.getName() + "\"/>\n"
             + "<UserDefinedFunction name=\"AnotherMemberError\" className=\""
-            + AnotherMemberErrorUdf.class.getName() + "\"/>",
-            null);
+            + AnotherMemberErrorUdf.class.getName() + "\"/>");
 
         tc.assertQueryReturns(
             "WITH MEMBER [Measures].[Test] AS "
@@ -720,7 +739,9 @@ public class UdfTest extends FoodMartTestCase {
     public void testCachingCurrentDate() {
         assertQueryReturns(
             "SELECT {filter([Time].[Month].Members, "
-            + "[Time].[Time].CurrentMember in {CurrentDateMember([Time].[Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', BEFORE)})} ON COLUMNS "
+            + "[Time].[Time].CurrentMember in {CurrentDateMember([Time]"
+            + ".[Time], '[\"Time\"]\\.[yyyy]\\.[\"Q\"q]\\.[m]', "
+            + "BEFORE)})} ON COLUMNS "
             + "from [Sales]",
             "Axis #0:\n"
             + "{}\n"
@@ -754,15 +775,10 @@ public class UdfTest extends FoodMartTestCase {
     private void checkListUdf(
         final Class<? extends ReverseFunction> functionClass)
     {
-        TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
+        TestContext tc = udfTestContext(
             "<UserDefinedFunction name=\"Reverse\" className=\""
             + functionClass.getName()
-            + "\"/>\n",
-            null);
+            + "\"/>\n");
         final String expectedResult =
             "Axis #0:\n"
             + "{}\n"
@@ -788,8 +804,7 @@ public class UdfTest extends FoodMartTestCase {
         tc.assertQueryReturns(
             "with set [Foo] as [Gender].Members\n"
             + "select Reverse([Foo]) on 0\n"
-            + "from [Sales]",
-            expectedResult);
+            + "from [Sales]", expectedResult);
     }
 
     /**
@@ -801,20 +816,15 @@ public class UdfTest extends FoodMartTestCase {
             // such things are not supposed to exist.
             return;
         }
-        TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
+        TestContext tc = udfTestContext(
             "<UserDefinedFunction name=\"Reverse2\" className=\""
             + ReverseFunctionNotStatic.class.getName()
-            + "\"/>\n",
-            null);
+            + "\"/>\n");
         tc.assertQueryThrows(
-            "select Reverse2([Gender].Members) on 0\n"
-            + "from [Sales]",
+            "select Reverse2([Gender].Members) on 0\n" + "from [Sales]",
             "Failed to load user-defined function 'Reverse2': class "
-            + "'mondrian.test.UdfTest$ReverseFunctionNotStatic' must be public "
+            + "'mondrian.test.UdfTest$ReverseFunctionNotStatic' must be "
+            + "public "
             + "and static");
     }
 
@@ -824,18 +834,522 @@ public class UdfTest extends FoodMartTestCase {
      * value.
      */
     public void testMemberUdfDoesNotEvaluateToScalar() {
-        TestContext tc = TestContext.create(
-            null,
-            null,
-            null,
-            null,
+        TestContext tc = udfTestContext(
             "<UserDefinedFunction name=\"MemberName\" className=\""
             + MemberNameFunction.class.getName()
-            + "\"/>\n",
-            null);
+            + "\"/>\n");
         tc.assertExprReturns(
-            "MemberName([Gender].[F])",
-            "F");
+            "MemberName([Gender].[F])", "F");
+    }
+
+    /**
+     * Unit test that ensures that a UDF has either a script or a className.
+     */
+    public void testUdfNeitherScriptNorClassname() {
+        TestContext tc = udfTestContext(
+            "<UserDefinedFunction name='StringMult'/>\n");
+        tc.assertQueryThrows(
+            "select from [Sales]",
+            "Must specify either className attribute or Script element");
+    }
+
+    /**
+     * Unit test that ensures that a UDF does not have both a script
+     * and a className.
+     */
+    public void testUdfBothScriptAndClassname() {
+        TestContext tc = udfTestContext(
+            "<UserDefinedFunction name='StringMult' className='foo'>\n"
+            + " <Script>bar</Script>\n"
+            + "</UserDefinedFunction>");
+        tc.assertQueryThrows(
+            "select from [Sales]",
+            "Must not specify both className attribute and Script element");
+    }
+
+    /**
+     * Unit test that ensures that a UDF has either a script or a className.
+     */
+    public void testUdfScriptBadLanguage() {
+        TestContext tc = udfTestContext(
+            "<UserDefinedFunction name='StringMult'>\n"
+            + " <Script language='bad'>bar</Script>\n"
+            + "</UserDefinedFunction>");
+        tc.assertQueryThrows(
+            "select from [Sales]",
+            "Invalid script language 'bad'");
+    }
+
+    /**
+     * Unit test that ensures that script UDFs fail before JDK 1.6.
+     */
+    public void testUdfScriptBadJdk() {
+        if (!Util.PreJdk16) {
+            return;
+        }
+        TestContext tc = udfTestContext(
+            "<UserDefinedFunction name='StringMult'>\n"
+            + " <Script language='JavaScript'>bar</Script>\n"
+            + "</UserDefinedFunction>");
+        tc.assertQueryThrows(
+            "select from [Sales]", "Scripting not supported until Java 1.6");
+    }
+
+    /**
+     * Unit test for a UDF defined in JavaScript.
+     */
+    public void testScriptUdf() {
+        if (Util.PreJdk16) {
+            return;
+        }
+        TestContext tc = udfTestContext(
+            "<UserDefinedFunction name='StringMult'>\n"
+            + "  <Script language='JavaScript'>\n"
+            + "    function getParameterTypes() {\n"
+            + "      return new Array(\n"
+            + "        new mondrian.olap.type.NumericType(),\n"
+            + "        new mondrian.olap.type.StringType());\n"
+            + "    }\n"
+            + "    function getReturnType(parameterTypes) {\n"
+            + "      return new mondrian.olap.type.StringType();\n"
+            + "    }\n"
+            + "    function execute(evaluator, arguments) {\n"
+            + "      var n = arguments[0].evaluateScalar(evaluator);\n"
+            + "      var s = arguments[1].evaluateScalar(evaluator);\n"
+            + "      var r = \"\";\n"
+            + "      while (n-- > 0) {\n"
+            + "        r = r + s;\n"
+            + "      }\n"
+            + "      return r;\n"
+            + "    }\n"
+            + "  </Script>\n"
+            + "</UserDefinedFunction>\n");
+        tc.assertQueryReturns(
+            "with member [Measures].[ABC] as StringMult(1, 'A')\n"
+            + "member [Measures].[Unit Sales Formatted] as\n"
+            + "  [Measures].[Unit Sales],\n"
+            + "  FORMAT_STRING = '#,###|color=' ||\n"
+            + "      Iif([Measures].[ABC] = 'A', 'red', 'green')\n"
+            + "select [Measures].[Unit Sales Formatted] on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales Formatted]}\n"
+            + "Row #0: 266,773|color=red\n");
+    }
+
+    /**
+     * Unit test for a UDF defined in JavaScript, this time the factorial
+     * function. We also use 'CDATA' section to mask the '&lt;' symbol.
+     */
+    public void testScriptUdfFactorial() {
+        if (Util.PreJdk16) {
+            return;
+        }
+        TestContext tc = udfTestContext(
+            "<UserDefinedFunction name='Factorial'>\n"
+            + "  <Script language='JavaScript'><![CDATA[\n"
+            + "    function getParameterTypes() {\n"
+            + "      return new Array(\n"
+            + "        new mondrian.olap.type.NumericType());\n"
+            + "    }\n"
+            + "    function getReturnType(parameterTypes) {\n"
+            + "      return new mondrian.olap.type.NumericType();\n"
+            + "    }\n"
+            + "    function execute(evaluator, arguments) {\n"
+            + "      var n = arguments[0].evaluateScalar(evaluator);\n"
+            + "      return factorial(n);\n"
+            + "    }\n"
+            + "    function factorial(n) {\n"
+            + "      return n <= 1 ? 1 : n * factorial(n - 1);\n"
+            + "    }\n"
+            + "  ]]>\n"
+            + "  </Script>\n"
+            + "</UserDefinedFunction>\n");
+        tc.assertExprReturns(
+            "Factorial(4 + 2)",
+            "720");
+    }
+
+    /**
+     * Unit test that we get a nice error if a script UDF contains an error.
+     */
+    public void testScriptUdfInvalid() {
+        if (Util.PreJdk16) {
+            return;
+        }
+        TestContext tc = udfTestContext(
+            "<UserDefinedFunction name='Factorial'>\n"
+            + "  <Script language='JavaScript'><![CDATA[\n"
+            + "    function getParameterTypes() {\n"
+            + "      return new Array(\n"
+            + "        new mondrian.olap.type.NumericType());\n"
+            + "    }\n"
+            + "    function getReturnType(parameterTypes) {\n"
+            + "      return new mondrian.olap.type.NumericType();\n"
+            + "    }\n"
+            + "    function execute(evaluator, arguments) {\n"
+            + "      var n = arguments[0].evaluateScalar(evaluator);\n"
+            + "      return factorial(n);\n"
+            + "    }\n"
+            + "    function factorial(n) {\n"
+            + "      return n <= 1 ? 1 : n * factorial_xx(n - 1);\n"
+            + "    }\n"
+            + "  ]]>\n"
+            + "  </Script>\n"
+            + "</UserDefinedFunction>\n");
+        final Cell cell = tc.executeExprRaw("Factorial(4 + 2)");
+        getTestContext().assertMatchesVerbose(
+            Pattern.compile(
+                "(?s).*ReferenceError: \"factorial_xx\" is not defined..*"),
+            cell.getValue().toString());
+    }
+
+    /**
+     * Unit test for a cell formatter defined in the old way -- a 'formatter'
+     * attribute of a Measure element.
+     */
+    public void testCellFormatter() {
+        // Note that
+        //   formatString="Standard"
+        // is ignored.
+        TestContext tc = measureTestContext(
+            "<Measure name='Unit Sales Foo Bar' column='unit_sales'\n"
+            + "    aggregator='sum' formatString='Standard' formatter='"
+            + FooBarCellFormatter.class.getName()
+            + "'/>");
+        tc.assertQueryReturns(
+            "select {[Measures].[Unit Sales],\n"
+            + "      [Measures].[Unit Sales Foo Bar]} on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Unit Sales Foo Bar]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: foo266773.0bar\n");
+    }
+
+    /**
+     * As {@link #testCellFormatter()}, but using new-style nested
+     * CellFormatter element.
+     */
+    public void testCellFormatterNested() {
+        // Note that
+        //   formatString="Standard"
+        // is ignored.
+        TestContext tc = measureTestContext(
+            "<Measure name='Unit Sales Foo Bar' column='unit_sales'\n"
+            + "    aggregator='sum' formatString='Standard'>\n"
+            + "  <CellFormatter className='"
+            + FooBarCellFormatter.class.getName()
+            + "'/>\n"
+            + "</Measure>");
+        tc.assertQueryReturns(
+            "select {[Measures].[Unit Sales],\n"
+            + "      [Measures].[Unit Sales Foo Bar]} on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Unit Sales Foo Bar]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: foo266773.0bar\n");
+    }
+
+    /**
+     * As {@link #testCellFormatterNested()}, but using a script.
+     */
+    public void testCellFormatterScript() {
+        if (Util.PreJdk16) {
+            return;
+        }
+        TestContext tc = measureTestContext(
+            "<Measure name='Unit Sales Foo Bar' column='unit_sales'\n"
+            + "    aggregator='sum' formatString='Standard'>\n"
+            + "  <CellFormatter>\n"
+            + "    <Script>\n"
+            + "      return \"foo\" + value + \"bar\";\n"
+            + "    </Script>\n"
+            + "  </CellFormatter>\n"
+            + "</Measure>");
+        // Note that the result is slightly different to above (a missing ".0").
+        // Not a great concern -- in fact it proves that the scripted UDF is
+        // being used.
+        tc.assertQueryReturns(
+            "select {[Measures].[Unit Sales],\n"
+            + "      [Measures].[Unit Sales Foo Bar]} on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Unit Sales Foo Bar]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: foo266773bar\n");
+    }
+
+    /**
+     * Unit test for a cell formatter defined against a calculated member,
+     * using the old syntax (a member property called "CELL_FORMATTER").
+     */
+    public void testCellFormatterOnCalcMember() {
+        TestContext tc = calcMemberTestContext(
+            "<CalculatedMember\n"
+            + "  name='Unit Sales Foo Bar'\n"
+            + "      dimension='Measures'>\n"
+            + "  <Formula>[Measures].[Unit Sales]</Formula>\n"
+            + "  <CalculatedMemberProperty name='CELL_FORMATTER' value='"
+            + FooBarCellFormatter.class.getName()
+            + "'/>\n"
+            + "</CalculatedMember>");
+        tc.assertQueryReturns(
+            "select {[Measures].[Unit Sales],\n"
+            + "      [Measures].[Unit Sales Foo Bar]} on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Unit Sales Foo Bar]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: foo266773.0bar\n");
+    }
+
+    /**
+     * Unit test for a cell formatter defined against a calculated member,
+     * using the new syntax (a nested CellFormatter element).
+     */
+    public void testCellFormatterOnCalcMemberNested() {
+        TestContext tc = calcMemberTestContext(
+            "<CalculatedMember\n"
+            + "  name='Unit Sales Foo Bar'\n"
+            + "      dimension='Measures'>\n"
+            + "  <Formula>[Measures].[Unit Sales]</Formula>\n"
+            + "  <CellFormatter className='"
+            + FooBarCellFormatter.class.getName()
+            + "'/>\n"
+            + "</CalculatedMember>");
+        tc.assertQueryReturns(
+            "select {[Measures].[Unit Sales],\n"
+            + "      [Measures].[Unit Sales Foo Bar]} on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Unit Sales Foo Bar]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: foo266773.0bar\n");
+    }
+
+    /**
+     * Unit test for a cell formatter defined against a calculated member,
+     * using a script.
+     */
+    public void testCellFormatterOnCalcMemberScript() {
+        if (Util.PreJdk16) {
+            return;
+        }
+        TestContext tc = calcMemberTestContext(
+            "<CalculatedMember\n"
+            + "  name='Unit Sales Foo Bar'\n"
+            + "      dimension='Measures'>\n"
+            + "  <Formula>[Measures].[Unit Sales]</Formula>\n"
+            + "  <CellFormatter>\n"
+            + "    <Script>\n"
+            + "      return \"foo\" + value + \"bar\";\n"
+            + "    </Script>\n"
+            + "  </CellFormatter>\n"
+            + "</CalculatedMember>");
+        tc.assertQueryReturns(
+            "select {[Measures].[Unit Sales],\n"
+            + "      [Measures].[Unit Sales Foo Bar]} on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "{[Measures].[Unit Sales Foo Bar]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: foo266773bar\n");
+    }
+
+    /**
+     * Unit test for a member formatter defined in the old way -- a 'formatter'
+     * attribute of a Measure element.
+     */
+    public void testMemberFormatter() {
+        TestContext tc = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name='Promotion Media2' foreignKey='promotion_id'>\n"
+            + "    <Hierarchy hasAll='true' allMemberName='All Media' primaryKey='promotion_id'>\n"
+            + "      <Table name='promotion'/>\n"
+            + "      <Level name='Media Type' column='media_type'\n"
+            + "          uniqueMembers='true' formatter='"
+            + FooBarMemberFormatter.class.getName()
+            + "'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>");
+        tc.assertExprReturns(
+            "[Promotion Media2].FirstChild.Caption",
+            "fooBulk Mailbar");
+    }
+
+    /**
+     * As {@link #testMemberFormatter()}, but using new-style nested
+     * memberFormatter element.
+     */
+    public void testMemberFormatterNested() {
+        TestContext tc = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name='Promotion Media2' foreignKey='promotion_id'>\n"
+            + "    <Hierarchy hasAll='true' allMemberName='All Media' primaryKey='promotion_id'>\n"
+            + "      <Table name='promotion'/>\n"
+            + "      <Level name='Media Type' column='media_type'\n"
+            + "          uniqueMembers='true'>\n"
+            + "        <MemberFormatter className='"
+            + FooBarMemberFormatter.class.getName()
+            + "'/>\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>");
+        tc.assertExprReturns(
+            "[Promotion Media2].FirstChild.Caption",
+            "fooBulk Mailbar");
+    }
+
+    /**
+     * As {@link #testMemberFormatterNested()}, but using a script.
+     */
+    public void testMemberFormatterScript() {
+        if (Util.PreJdk16) {
+            return;
+        }
+        TestContext tc = TestContext.createSubstitutingCube(
+            "Sales",
+            "  <Dimension name='Promotion Media2' foreignKey='promotion_id'>\n"
+            + "    <Hierarchy hasAll='true' allMemberName='All Media' primaryKey='promotion_id'>\n"
+            + "      <Table name='promotion'/>\n"
+            + "      <Level name='Media Type' column='media_type'\n"
+            + "          uniqueMembers='true'>\n"
+            + "        <MemberFormatter>\n"
+            + "          <Script language='JavaScript'>\n"
+            + "             return \"foo\" + member.getName() + \"bar\"\n"
+            + "          </Script>\n"
+            + "        </MemberFormatter>\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>");
+        tc.assertExprReturns(
+            "[Promotion Media2].FirstChild.Caption",
+            "fooBulk Mailbar");
+    }
+
+    /**
+     * Unit test for a property formatter defined in the old way -- a
+     * 'formatter' attribute of a Property element.
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public void testPropertyFormatter() throws SQLException {
+        TestContext tc = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"
+            + "  <Hierarchy hasAll='true' allMemberName='All Promotions' primaryKey='promotion_id' defaultMember='[All Promotions]'>\n"
+            + "    <Table name='promotion'/>\n"
+            + "    <Level name='Promotion Name' column='promotion_id' uniqueMembers='true'>\n"
+            + "      <Property name='Medium' column='media_type' formatter='"
+            + FooBarPropertyFormatter.class.getName()
+            + "'/>\n"
+            + "    </Level>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>");
+        final CellSet result =
+            tc.executeOlap4jQuery(
+                "select [Promotions2].Children on 0\n"
+                + "from [Sales]");
+        final org.olap4j.metadata.Member member =
+            result.getAxes().get(0).getPositions().get(0).getMembers().get(0);
+        final Property property = member.getProperties().get("Medium");
+        assertEquals(
+            "foo0/Medium/No Mediabar",
+            member.getPropertyFormattedValue(property));
+    }
+
+    /**
+     * As {@link #testPropertyFormatter()}, but using new-style nested
+     * PropertyFormatter element.
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public void testPropertyFormatterNested() throws SQLException {
+        TestContext tc = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"
+            + "  <Hierarchy hasAll='true' allMemberName='All Promotions' primaryKey='promotion_id' defaultMember='[All Promotions]'>\n"
+            + "    <Table name='promotion'/>\n"
+            + "    <Level name='Promotion Name' column='promotion_id' uniqueMembers='true'>\n"
+            + "      <Property name='Medium' column='media_type'>\n"
+            + "        <PropertyFormatter className='"
+            + FooBarPropertyFormatter.class.getName()
+            + "'/>\n"
+            + "      </Property>\n"
+            + "    </Level>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>");
+        final CellSet result =
+            tc.executeOlap4jQuery(
+                "select [Promotions2].Children on 0\n"
+                + "from [Sales]");
+        final org.olap4j.metadata.Member member =
+            result.getAxes().get(0).getPositions().get(0).getMembers().get(0);
+        final Property property = member.getProperties().get("Medium");
+        assertEquals(
+            "foo0/Medium/No Mediabar",
+            member.getPropertyFormattedValue(property));
+    }
+
+    /**
+     * As {@link #testPropertyFormatterNested()}, but using a script.
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public void testPropertyFormatterScript() throws SQLException {
+        if (Util.PreJdk16) {
+            return;
+        }
+        TestContext tc = TestContext.createSubstitutingCube(
+            "Sales",
+            "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"
+            + "  <Hierarchy hasAll='true' allMemberName='All Promotions' primaryKey='promotion_id' defaultMember='[All Promotions]'>\n"
+            + "    <Table name='promotion'/>\n"
+            + "    <Level name='Promotion Name' column='promotion_id' uniqueMembers='true'>\n"
+            + "      <Property name='Medium' column='media_type'>\n"
+            + "        <PropertyFormatter>\n"
+            + "          <Script language='JavaScript'>\n"
+            + "            return \"foo\" + member.getName() + \"/\"\n"
+            + "                   + propertyName + \"/\"\n"
+            + "                   + propertyValue + \"bar\";\n"
+            + "          </Script>\n"
+            + "        </PropertyFormatter>\n"
+            + "      </Property>\n"
+            + "    </Level>\n"
+            + "  </Hierarchy>\n"
+            + "</Dimension>");
+        final CellSet result =
+            tc.executeOlap4jQuery(
+                "select [Promotions2].Children on 0\n"
+                + "from [Sales]");
+        final org.olap4j.metadata.Member member =
+            result.getAxes().get(0).getPositions().get(0).getMembers().get(0);
+        final Property property = member.getProperties().get("Medium");
+        assertEquals(
+            "foo0/Medium/No Mediabar",
+            member.getPropertyFormattedValue(property));
     }
 
     // ~ Inner classes --------------------------------------------------------
@@ -1161,6 +1675,39 @@ public class UdfTest extends FoodMartTestCase {
 
         public Syntax getSyntax() {
             return Syntax.Function;
+        }
+    }
+
+    /**
+     * Member formatter for test purposes. Returns name of the member prefixed
+     * with "foo" and suffixed with "bar".
+     */
+    public static class FooBarMemberFormatter implements MemberFormatter {
+        public String formatMember(Member member) {
+            return "foo" + member.getName() + "bar";
+        }
+    }
+
+    /**
+     * Cell formatter for test purposes. Returns value of the cell prefixed
+     * with "foo" and suffixed with "bar".
+     */
+    public static class FooBarCellFormatter implements CellFormatter {
+        public String formatCell(Object value) {
+            return "foo" + value + "bar";
+        }
+    }
+
+    /**
+     * Property formatter for test purposes. Returns name of the member and
+     * property, then the value, prefixed with "foo" and suffixed with "bar".
+     */
+    public static class FooBarPropertyFormatter implements PropertyFormatter {
+        public String formatProperty(
+            Member member, String propertyName, Object propertyValue)
+        {
+            return "foo" + member.getName() + "/" + propertyName + "/"
+                   + propertyValue + "bar";
         }
     }
 }

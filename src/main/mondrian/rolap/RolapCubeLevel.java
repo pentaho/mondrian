@@ -14,6 +14,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
+import mondrian.spi.MemberFormatter;
 
 import java.util.Collections;
 import java.util.List;
@@ -48,7 +49,6 @@ public class RolapCubeLevel extends RolapLevel {
             level.getDepth(),
             level.attribute,
             level.getHideMemberCondition(),
-            null,
             level.getAnnotationMap());
 
         this.rolapLevel = level;

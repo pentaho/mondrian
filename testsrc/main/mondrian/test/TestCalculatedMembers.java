@@ -890,7 +890,9 @@ public class TestCalculatedMembers extends BatchTestCase {
         // calc measure defined in query
         assertQueryReturns(
             "with member [Measures].[Foo] as ' [Measures].[Unit Sales] * 2 ',\n"
-            + " CELL_FORMATTER='mondrian.test.FooBarCellFormatter' \n"
+            + " CELL_FORMATTER='"
+            + mondrian.test.UdfTest.FooBarCellFormatter.class.getName()
+            + "' \n"
             + "select {[Measures].[Unit Sales], [Measures].[Foo]} on 0,\n"
             + " {[Store].Children} on rows\n"
             + "from [Sales]",
@@ -945,7 +947,7 @@ public class TestCalculatedMembers extends BatchTestCase {
         // the MDX spec. -- jhyde, 2007/9/5.
         assertQueryReturns(
             "with member [Store].[CA or OR] as ' Aggregate({[Store].[USA].[CA], [Store].[USA].[OR]}) ',\n"
-            + " CELL_FORMATTER='mondrian.test.FooBarCellFormatter'\n"
+            + " CELL_FORMATTER='mondrian.test.UdfTest.FooBarCellFormatter'\n"
             + "select {[Store].[USA], [Store].[CA or OR]} on columns\n"
             + "from [Sales]",
             "Axis #0:\n"
@@ -969,7 +971,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "    visible=\"false\"\n"
             + "    formula=\"[Measures].[Store Sales]-[Measures].[Store Cost]\">\n"
             + "  <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n"
-            + "  <CalculatedMemberProperty name=\"CELL_FORMATTER\" value=\"mondrian.test.FooBarCellFormatter\"/>\n"
+            + "  <CalculatedMemberProperty name=\"CELL_FORMATTER\" value=\""
+            + mondrian.test.UdfTest.FooBarCellFormatter.class.getName()
+            + "\"/>\n"
             + "</CalculatedMember>\n");
         testContext.assertQueryReturns(
             "select {[Measures].[Unit Sales], [Measures].[Profit Formatted]} on 0,\n"

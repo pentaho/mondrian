@@ -22,6 +22,7 @@ import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.*;
+import mondrian.spi.impl.Scripts;
 import mondrian.util.DirectedGraph;
 
 import org.apache.log4j.Logger;
@@ -586,38 +587,60 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
      * @param className Name of the class which implements the function.
      *   The class must implement {@link mondrian.spi.UserDefinedFunction}
      *   (otherwise it is a user-error).
+     * @param script Script
      */
     void defineFunction(
-        Map<String, UserDefinedFunction> mapNameToUdf,
-        String name,
-        String className)
+        Map<String, UdfResolver.UdfFactory> mapNameToUdf,
+        final String name,
+        String className,
+        final Scripts.ScriptDefinition script)
     {
-        // Lookup class.
-        final Class<UserDefinedFunction> klass;
-        try {
-            klass = (Class<UserDefinedFunction>) Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            throw MondrianResource.instance().UdfClassNotFound.ex(
-                name,
-                className);
+        if (className == null && script == null) {
+            throw Util.newError(
+                "Must specify either className attribute or Script element");
         }
-        // Instantiate UDF by calling correct constructor.
-        final UserDefinedFunction udf = Util.createUdf(klass, name);
+        if (className != null && script != null) {
+            throw Util.newError(
+                "Must not specify both className attribute and Script element");
+        }
+        final UdfResolver.UdfFactory udfFactory;
+        if (className != null) {
+            // Lookup class.
+            final Class<UserDefinedFunction> klass;
+            try {
+                //noinspection unchecked
+                klass = (Class<UserDefinedFunction>) Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                throw MondrianResource.instance().UdfClassNotFound.ex(
+                    name,
+                    className);
+            }
+            // Instantiate UDF by calling correct constructor.
+            udfFactory = new UdfResolver.ClassUdfFactory(klass, name);
+        } else {
+            udfFactory = new UdfResolver.UdfFactory() {
+                public UserDefinedFunction create() {
+                    return Scripts.userDefinedFunction(script, name);
+                }
+            };
+        }
         // Validate function.
-        validateFunction(udf);
+        validateFunction(udfFactory);
         // Check for duplicate.
-        UserDefinedFunction existingUdf = mapNameToUdf.get(name);
+        UdfResolver.UdfFactory existingUdf = mapNameToUdf.get(name);
         if (existingUdf != null) {
             throw MondrianResource.instance().UdfDuplicateName.ex(name);
         }
-        mapNameToUdf.put(name, udf);
+        mapNameToUdf.put(name, udfFactory);
     }
 
     /**
      * Throws an error if a user-defined function does not adhere to the
      * API.
      */
-    private void validateFunction(final UserDefinedFunction udf) {
+    private void validateFunction(final UdfResolver.UdfFactory udfFactory) {
+        final UserDefinedFunction udf = udfFactory.create();
+
         // Check that the name is not null or empty.
         final String udfName = udf.getName();
         if (udfName == null || udfName.equals("")) {
@@ -866,7 +889,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     }
 
     void initFunctionTable(
-        Collection<UserDefinedFunction> userDefinedFunctions)
+        Collection<UdfResolver.UdfFactory> userDefinedFunctions)
     {
         funTable = new RolapSchemaFunctionTable(userDefinedFunctions);
         ((RolapSchemaFunctionTable) funTable).init();
@@ -918,10 +941,10 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
      * schema, plus all of the standard functions.
      */
     static class RolapSchemaFunctionTable extends FunTableImpl {
-        private final List<UserDefinedFunction> udfList;
+        private final List<UdfResolver.UdfFactory> udfFactoryList;
 
-        RolapSchemaFunctionTable(Collection<UserDefinedFunction> udfs) {
-            udfList = new ArrayList<UserDefinedFunction>(udfs);
+        RolapSchemaFunctionTable(Collection<UdfResolver.UdfFactory> udfs) {
+            udfFactoryList = new ArrayList<UdfResolver.UdfFactory>(udfs);
         }
 
         public void defineFunctions(Builder builder) {
@@ -932,8 +955,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             for (Resolver resolver : globalFunTable.getResolvers()) {
                 builder.define(resolver);
             }
-            for (UserDefinedFunction udf : udfList) {
-                builder.define(new UdfResolver(udf));
+            for (UdfResolver.UdfFactory udfFactory : udfFactoryList) {
+                builder.define(new UdfResolver(udfFactory));
             }
         }
     }
