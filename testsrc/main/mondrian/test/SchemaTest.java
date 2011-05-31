@@ -176,11 +176,13 @@ defauls to the name attribute (or key, if name is not specified).
 
 For example,
 
-  <Level name="Product Name" table="product" key="product_id" name="product_name"/>
+  <Level name="Product Name" table="product" key="product_id"
+      name="product_name"/>
 
 is equivalent to
 
-  <Level name="Product Name" table="product" key="product_id" name="product_name" ordinal="product_name"/>
+  <Level name="Product Name" table="product" key="product_id"
+      name="product_name" ordinal="product_name"/>
 
 and ultimately to
 
@@ -230,41 +232,52 @@ Rename Attribute@levelType.
 
 Add back Level@formatter. (Should it go to Attribute?)
 
-Add back Property@formatter. (Should it go to Attribute? Obsolete PropertyFormatter class?)
+Add back Property@formatter. (Should it go to Attribute? Obsolete
+PropertyFormatter class?)
 
 Add back Table.aggTables, Table.aggExcludes. But where?
 
 Test that get error if attribute name is not specified and key is composite.
 
-Test that get error if attribute name is not specified and key is of non-text type.
+Test that get error if attribute name is not specified and key is of non-text
+type.
 
-Test that get error if there is more than one Key, Name, Ordinal, Caption element in Attribute.
+Test that get error if there is more than one Key, Name, Ordinal, Caption
+element in Attribute.
 
 Test that get error if Level@attribute is not specified.
 
-Test that get error if Level@attribute is not a valid attribute in this Dimension.
+Test that get error if Level@attribute is not a valid attribute in this
+Dimension.
 
 Test Attribute with Closure. (Currently ignored.)
 
-Test Attribute with no key (no keyColumn attribute or Key subelement). Should fail.
+Test Attribute with no key (no keyColumn attribute or Key subelement). Should
+fail.
 
 Test Attribute with composite key and no nameColun/Name subelement. Should fail.
 
-Change Dimension@type (and Dimension.getType()) to use org.olap4j.Dimension.Type values.
+Change Dimension@type (and Dimension.getType()) to use org.olap4j.Dimension.Type
+values.
 
-Change Level@type (and Level.getLevelType()) to use org.olap4j.Level.Type values.
+Change Level@type (and Level.getLevelType()) to use org.olap4j.Level.Type
+values.
 
-Probably broke level member count on sybase (which does not support compound distinct-count). See old SqlMemberSource.makeLevelMemberCountSql.
+Probably broke level member count on sybase (which does not support compound
+distinct-count). See old SqlMemberSource.makeLevelMemberCountSql.
 
-Write test to ensure that RolapSchema.createMemberReader returns the same MemberReader for instances of the same shared hierarchy.
+Write test to ensure that RolapSchema.createMemberReader returns the same
+MemberReader for instances of the same shared hierarchy.
 
 Test that Dimension@name is mandatory for schema dimensions.
 
-Test that Dimension@name is optional for cube dimensions, and name defaults to source.
+Test that Dimension@name is optional for cube dimensions, and name defaults to
+source.
 
 Test that source must not be speicied in schema dimensions.
 
-Test that source is specified in cube dimensions, and is the name of a schema dimension. (Could be one declared after the cube.)
+Test that source is specified in cube dimensions, and is the name of a schema
+dimension. (Could be one declared after the cube.)
 
 Test uniqueness; get error if more than one object of given name in parent:
 - cube in schema
@@ -281,25 +294,34 @@ Move Level@formatter to Attribute.
 
 Test Dimension@type with illegal value.
 
-Test Dimension@type with value "standard" even though there are time levels. (What should happen?)
+Test Dimension@type with value "standard" even though there are time
+levels. (What should happen?)
 
-Test Dimension@type with value "time" even though there are no time levels. (What should happen?)
+Test Dimension@type with value "time" even though there are no time
+levels. (What should happen?)
 
-Create Measure@datatype, unify with Attribute@datatype (formerly Property@type) and Level@type (obsolete).
+Create Measure@datatype, unify with Attribute@datatype (formerly Property@type)
+and Level@type (obsolete).
 
-Test that cube contains MeasureGroups element, and that it has at least one MeasureGroup.
+Test that cube contains MeasureGroups element, and that it has at least one
+MeasureGroup.
 
-Test that get an error if a measure is in a different table than its measure group.
+Test that get an error if a measure is in a different table than its measure
+group.
 
-Test that a measure can be based on a column (as attribute or element) but not an expression.
+Test that a measure can be based on a column (as attribute or element) but not
+an expression.
 
-Test that get an error if MeasureGroup@table is not set, or is not a valid table name.
+Test that get an error if MeasureGroup@table is not set, or is not a valid table
+name.
 
 Test that get an error if DimensionLink@dimension is not valid.
 
-Test MeasureGroup@ignoreUnrelatedDimensions. (Maybe there are existing tests; the attribute used to be on CubeUsage@ignoreUnrelatedDimensions.)
+Test MeasureGroup@ignoreUnrelatedDimensions. (Maybe there are existing tests;
+the attribute used to be on CubeUsage@ignoreUnrelatedDimensions.)
 
-Test Property based on attribute with a composite key and a different name. Also test query of same.
+Test Property based on attribute with a composite key and a different name. Also
+test query of same.
 
 Is it possible for a level's KEY to be unique within its parent and its
 NAME not to be unique? Or vice versa? And if so, how to model it? We no longer
@@ -317,9 +339,14 @@ Test that duplicate attribute within dimension gives error.
 Test that level referencing non-existent attribute gives error.
 
 RegularDimensionLink: foreignKeyColumn and ForeignKey gives error
+
 RegularDimensionLink: Key and ForeignKey different cardinality gives error
-RegularDimensionLink: using foreignKeyColumn if dimension's key is composite gives error
-RegularDimensionLink with Key different to key attribute's key (should we allow this?)
+
+RegularDimensionLink: using foreignKeyColumn if dimension's key is composite
+gives error
+
+RegularDimensionLink with Key different to key attribute's key (should we allow
+this?)
 
 Test what happens if a dimension's key is not unique. (We should either reject
 it or wrap in 'select distinct'.)

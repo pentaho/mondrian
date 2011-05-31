@@ -397,8 +397,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                 message, describe(node), xmlLocation, Severity.ERROR, cause);
         if (internalConnection != null
             && "true".equals(
-            internalConnection.getProperty(
-                RolapConnectionProperties.Ignore.name())))
+                internalConnection.getProperty(
+                    RolapConnectionProperties.Ignore.name())))
         {
             ++errorCount;
             warningList.add(ex);
@@ -479,7 +479,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             }
             for (MondrianDef.CalculatedMember calculatedMember
                 : Util.filter(
-                cube.children, MondrianDef.CalculatedMember.class))
+                    cube.children, MondrianDef.CalculatedMember.class))
             {
                 if (Util.equalName(
                         calculatedMember.dimension, nameParts.get(0).name)

@@ -166,7 +166,7 @@ public class RolapSchemaUpgrader {
             {
                 if (xmlVirtualCubeDimension.cubeName != null
                     && !xmlVirtualCubeDimension.cubeName.equals(
-                    cubeName))
+                        cubeName))
                 {
                     continue;
                 }
@@ -204,7 +204,7 @@ public class RolapSchemaUpgrader {
             for (Member cubeMeasure : cubeMeasures) {
                 if (cubeMeasure.getUniqueName().equals(xmlMeasure.name)) {
                     if (cubeMeasure.getName().equalsIgnoreCase(
-                        xmlVirtualCube.defaultMeasure))
+                            xmlVirtualCube.defaultMeasure))
                     {
                         defaultMeasure = cubeMeasure;
                     }
@@ -339,7 +339,8 @@ public class RolapSchemaUpgrader {
         List<MondrianDef.CalculatedMember> xmlVirtualCubeCalculatedMemberList =
                 Arrays.asList(xmlVirtualCube.calculatedMembers);
         if (!vcHasAllCalcMembers(
-            origCalcMeasureList, xmlVirtualCubeCalculatedMemberList))
+                origCalcMeasureList,
+                xmlVirtualCubeCalculatedMemberList))
         {
             // Remove from the calculated members array
             // those members that weren't originally defined
@@ -349,9 +350,9 @@ public class RolapSchemaUpgrader {
             calculatedMemberList.clear();
             for (Formula calculatedMember : calculatedMemberListCopy) {
                 if (findOriginalMembers(
-                    calculatedMember,
-                    origCalcMeasureList,
-                    calculatedMemberList))
+                        calculatedMember,
+                        origCalcMeasureList,
+                        calculatedMemberList))
                 {
                     continue;
                 }
@@ -364,7 +365,7 @@ public class RolapSchemaUpgrader {
 
         for (Formula calcMember : calculatedMemberList) {
             if (calcMember.getName().equalsIgnoreCase(
-                xmlVirtualCube.defaultMeasure))
+                    xmlVirtualCube.defaultMeasure))
             {
                 this.measuresHierarchy.setDefaultMember(
                     calcMember.getMdxMember());
@@ -1243,12 +1244,12 @@ public class RolapSchemaUpgrader {
                 new RolapStar.Condition(
                     physSchemaBuilder.getPhysRelation(leftAlias, true)
                         .getColumn(
-                        join.leftKey,
-                        true),
+                            join.leftKey,
+                            true),
                     physSchemaBuilder.getPhysRelation(rightAlias, true)
                         .getColumn(
-                        join.rightKey,
-                        true));
+                            join.rightKey,
+                            true));
             return addJoin(
                 leftTable, physSchemaBuilder, join.right, joinCondition);
 
@@ -1531,7 +1532,7 @@ public class RolapSchemaUpgrader {
                     : virtualCube.measureGroupList)
                 {
                     if (measureGroup2.getName().equals(
-                        baseMeasure.getCube().getName()))
+                            baseMeasure.getCube().getName()))
                     {
                         measureGroup = measureGroup2;
                         break;
@@ -1729,7 +1730,8 @@ public class RolapSchemaUpgrader {
                     this.fullName = this.name;
                     this.source = du.source;
                 } else {
-                    String hname = this.hierarchyName.substring(
+                    String hname =
+                        this.hierarchyName.substring(
                             index + 1, this.hierarchyName.length());
 
                     StringBuilder buf = new StringBuilder(32);

@@ -114,7 +114,9 @@ public abstract class RolapNativeSet extends RolapNative {
                 {
                     RolapLevel level = arg.getLevel();
                     RolapCube baseCube = null; // TODO:
-                    if (level == null || levelIsOnBaseCube(starSet.getMeasureGroup(), level)) {
+                    if (level == null
+                        || levelIsOnBaseCube(starSet.getMeasureGroup(), level))
+                    {
                         arg.addConstraint(sqlQuery, starSet, aggStar);
                     }
                 }

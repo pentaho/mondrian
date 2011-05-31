@@ -537,8 +537,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             (RolapCubeHierarchy) cube.lookupHierarchy(
                 new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
-        return (SmartMemberReader) RolapHierarchy
-            .createMemberReader(hierarchy.getRolapHierarchy(), schemaReader.getRole());
+        return (SmartMemberReader) RolapHierarchy.createMemberReader(
+            hierarchy.getRolapHierarchy(), schemaReader.getRole());
     }
 
     RolapStar getStar(String starName) {

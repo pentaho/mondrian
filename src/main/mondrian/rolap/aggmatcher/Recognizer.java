@@ -390,10 +390,10 @@ abstract class Recognizer {
                 if (matchCount > 1) {
                     String msg =
                         mres.TooManyMatchingForeignKeyColumns.str(
-                        aggTable.getName(),
-                        dbFactTable.getName(),
-                        matchCount,
-                        factUsage.getColumn().getName());
+                            aggTable.getName(),
+                            dbFactTable.getName(),
+                            matchCount,
+                            factUsage.getColumn().getName());
                     msgRecorder.reportError(msg);
 
                     returnValue = false;
@@ -925,15 +925,15 @@ abstract class Recognizer {
     @Deprecated
     protected static class HierarchyUsage {
         public String getForeignKey() {
-            return null;  //To change body of created methods use File | Settings | File Templates.
+            return null;
         }
 
         public RolapSchema.PhysRelation getJoinTable() {
-            return null;  //To change body of created methods use File | Settings | File Templates.
+            return null;
         }
 
         public String getUsagePrefix() {
-            return null;  //To change body of created methods use File | Settings | File Templates.
+            return null;
         }
     }
 }

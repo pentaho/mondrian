@@ -334,7 +334,6 @@ public class RolapCube extends CubeBase {
                 new MeasureMemberSource(measuresHierarchy, measureList)));
 
         this.measuresHierarchy.setDefaultMember(defaultMeasure);
-
     }
 
     public RolapSchema getSchema() {
@@ -527,7 +526,7 @@ public class RolapCube extends CubeBase {
     RolapHierarchy findBaseCubeHierarchy(RolapHierarchy hierarchy) {
         for (RolapCubeDimension dimension : dimensionList) {
             if (dimension.getName().equals(
-                hierarchy.getDimension().getName()))
+                    hierarchy.getDimension().getName()))
             {
                 for (RolapCubeHierarchy hier
                     : dimension .getRolapCubeHierarchyList())

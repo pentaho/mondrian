@@ -2119,7 +2119,7 @@ public class TestContext {
                             .append(xmlLocation.getRange())
                             .append(nl);
                         if (xmlLocation.getRange().equals(
-                            errorStart + "-" + errorEnd))
+                                errorStart + "-" + errorEnd))
                         {
                             return;
                         }
@@ -2127,7 +2127,7 @@ public class TestContext {
                 }
                 if (errorStart != -1) {
                     if (xmlLocation.getRange().equals(
-                        errorStart + "-" + errorEnd))
+                            errorStart + "-" + errorEnd))
                     {
                         return;
                     }

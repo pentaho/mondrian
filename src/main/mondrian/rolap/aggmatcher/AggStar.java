@@ -808,8 +808,11 @@ public class AggStar extends RolapStar {
             // AggStar. This lets us later determine if a measure is
             // based upon a foreign key (see AggregationManager findAgg
             // method).
-            mondrian.rolap.RolapStar.Column col = null /*
-                getAggStar().getStar().getFactTable().lookupColumn(left.name) */;
+            mondrian.rolap.RolapStar.Column col =
+                null
+                /*
+                getAggStar().getStar().getFactTable().lookupColumn(left.name)
+                */;
             if (col != null) {
                 getAggStar().setForeignKey(col.getBitPosition());
             }

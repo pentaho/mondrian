@@ -60,9 +60,11 @@ public class RolapMeasureGroup {
 
     private final Map<RolapAttribute, List<RolapAttribute>> attrMap =
         new HashMap<RolapAttribute, List<RolapAttribute>>();
-    final Map<Pair<RolapCubeDimension,RolapSchema.PhysColumn>,RolapStar.Column>
+    final Map<Pair<RolapCubeDimension, RolapSchema.PhysColumn>,
+              RolapStar.Column>
         starColumnMap =
-        new HashMap<Pair<RolapCubeDimension, RolapSchema.PhysColumn>, RolapStar.Column>();
+        new HashMap<Pair<RolapCubeDimension, RolapSchema.PhysColumn>,
+                    RolapStar.Column>();
 
     /**
      * Creates a RolapMeasureGroup.
@@ -117,7 +119,8 @@ public class RolapMeasureGroup {
      * @return Set of dimensions that do not exist (non joining) in this cube
      */
     public Set<Dimension> nonJoiningDimensions(Set<Dimension> otherDims) {
-        Dimension[] baseCubeDimensions = new Dimension[0]; // TODO: getDimensions();
+        Dimension[] baseCubeDimensions =
+            new Dimension[0]; // TODO: getDimensions();
         Set<String>  baseCubeDimNames = new HashSet<String>();
         for (Dimension baseCubeDimension : baseCubeDimensions) {
             baseCubeDimNames.add(baseCubeDimension.getUniqueName());

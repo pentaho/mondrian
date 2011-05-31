@@ -140,11 +140,11 @@ public class RolapNativeTopCount extends RolapNativeSet {
         final List<RolapMeasureGroup> measureGroupList =
             new ArrayList<RolapMeasureGroup>();
         if (!SqlContextConstraint.checkValidContext(
-            evaluator,
-            true,
-            Collections.<RolapLevel>emptyList(),
-            restrictMemberTypes(),
-            measureGroupList))
+                evaluator,
+                true,
+                Collections.<RolapLevel>emptyList(),
+                restrictMemberTypes(),
+                measureGroupList))
         {
             return null;
         }

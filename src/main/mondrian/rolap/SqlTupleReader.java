@@ -165,7 +165,8 @@ public class SqlTupleReader implements TupleReader {
                                 // value for uniformity in hashmaps.
                                 break pc;
                             } else if (value.toString().equals(
-                                childLevel.attribute.parentAttribute.nullValue))
+                                    childLevel.attribute.parentAttribute
+                                        .nullValue))
                             {
                                 // member is at top of hierarchy; its parent is
                                 // the 'all' member
@@ -973,7 +974,8 @@ Util.deprecated("obsolete basecube parameter", false);
                     attribute.parentAttribute.keyList;
                 for (RolapSchema.PhysColumn parentExp : parentExps) {
                     String parentSql = parentExp.toSql();
-                    final String alias = sqlQuery.addSelectGroupBy(parentSql, null);
+                    final String alias =
+                        sqlQuery.addSelectGroupBy(parentSql, null);
                     levelLayoutBuilder.parentOrdinalList.add(
                         layoutBuilder.register(parentSql, alias));
                     if (selectOrdinal == selectCount - 1) {
@@ -1001,7 +1003,8 @@ Util.deprecated("obsolete basecube parameter", false);
                 final String sql = column.toSql();
                 int ordinal = layoutBuilder.lookup(sql);
                 if (ordinal < 0) {
-                    String alias = sqlQuery.addSelect(sql, column.getInternalType());
+                    String alias =
+                        sqlQuery.addSelect(sql, column.getInternalType());
                     ordinal = layoutBuilder.register(sql, alias);
                     if (needsGroupBy) {
                         sqlQuery.addGroupBy(sql, alias);
@@ -1014,7 +1017,8 @@ Util.deprecated("obsolete basecube parameter", false);
                 final String sql = column.toSql();
                 int ordinal = layoutBuilder.lookup(sql);
                 if (ordinal < 0) {
-                    String alias = sqlQuery.addSelect(sql, column.getInternalType());
+                    String alias =
+                        sqlQuery.addSelect(sql, column.getInternalType());
                     ordinal = layoutBuilder.register(sql, alias);
                     if (needsGroupBy) {
                         sqlQuery.addGroupBy(sql, alias);

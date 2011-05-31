@@ -270,7 +270,8 @@ public final class ScenarioImpl implements Scenario {
         int k = 0;
         for (Member member : memberList) {
             if (member.isMeasure()) {
-                member = ((RolapStoredMeasure) member).getMeasureGroup().factCountMeasure;
+                member = ((RolapStoredMeasure) member).getMeasureGroup()
+                    .factCountMeasure;
                 assert member != null
                     : "fact count measure is required for writeback cubes";
             }

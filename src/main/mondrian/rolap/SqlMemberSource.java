@@ -657,7 +657,7 @@ class SqlMemberSource
             }
             layoutBuilder.currentLevelLayout.propertyOrdinalList.add(ordinal);
         }
-        Pair<String,List<SqlStatement.Type>> pair = sqlQuery.toSqlAndTypes();
+        Pair<String, List<SqlStatement.Type>> pair = sqlQuery.toSqlAndTypes();
         layoutBuilder.types.addAll(pair.right);
         return pair.left;
     }

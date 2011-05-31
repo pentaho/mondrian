@@ -114,8 +114,8 @@ class RolapSchemaPool {
         if (catalogUrl == null && catalogStr == null) {
             throw MondrianResource.instance()
                 .ConnectStringMandatoryProperties.ex(
-                RolapConnectionProperties.Catalog.name(),
-                RolapConnectionProperties.CatalogContent.name());
+                    RolapConnectionProperties.Catalog.name(),
+                    RolapConnectionProperties.CatalogContent.name());
         }
 
         // If CatalogContent is specified in the connect string, ignore

@@ -165,7 +165,7 @@ public class AndPredicate extends ListPredicate {
             // ValueColumnPredicate
             assert predicate instanceof ValueColumnPredicate;
             if (inListRhsBitKey.get(
-                ((ValueColumnPredicate) predicate).getColumn().ordinal()))
+                    ((ValueColumnPredicate) predicate).getColumn().ordinal()))
             {
                 sortedPredicates.add((ValueColumnPredicate)predicate);
             }

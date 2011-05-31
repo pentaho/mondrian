@@ -1886,9 +1886,8 @@ public class RolapSchemaLoader {
                     && dimensionType != DimensionType.TimeDimension)
                 {
                     getHandler().error(
-                        MondrianResource
-                            .instance().TimeLevelInNonTimeHierarchy.ex(
-                            dimension.getUniqueName()),
+                        MondrianResource.instance().TimeLevelInNonTimeHierarchy
+                            .ex(dimension.getUniqueName()),
                         validator.getXml(level),
                         null);
                 }
@@ -1897,9 +1896,8 @@ public class RolapSchemaLoader {
                     && dimensionType == DimensionType.TimeDimension)
                 {
                     getHandler().error(
-                        MondrianResource
-                            .instance().NonTimeLevelInTimeHierarchy.ex(
-                            dimension.getUniqueName()),
+                        MondrianResource.instance().NonTimeLevelInTimeHierarchy
+                            .ex(dimension.getUniqueName()),
                         validator.getXml(level),
                         null);
                 }
@@ -2884,7 +2882,7 @@ public class RolapSchemaLoader {
             Formula formula = calculatedMemberList.get(i);
             if (formula.getName().equals(xmlCalcMember.name)
                 && formula.getMdxMember().getDimension().getName().equals(
-                dimension.getName()))
+                    dimension.getName()))
             {
                 if (errOnDup) {
                     throw MondrianResource.instance().CalcMemberNotUnique.ex(

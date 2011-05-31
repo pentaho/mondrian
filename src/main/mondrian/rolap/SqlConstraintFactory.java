@@ -63,11 +63,11 @@ public final class SqlConstraintFactory {
         final List<RolapMeasureGroup> measureGroupList =
             new ArrayList<RolapMeasureGroup>();
         if (!SqlContextConstraint.checkValidContext(
-            context,
-            true,
-            Collections.<RolapLevel>emptyList(),
-            false,
-            measureGroupList))
+                context,
+                true,
+                Collections.<RolapLevel>emptyList(),
+                false,
+                measureGroupList))
         {
             return DefaultMemberChildrenConstraint.instance();
         }
@@ -101,11 +101,11 @@ public final class SqlConstraintFactory {
         final List<RolapMeasureGroup> measureGroupList =
             new ArrayList<RolapMeasureGroup>();
         if (!SqlContextConstraint.checkValidContext(
-            context,
-            false,
-            levels,
-            false,
-            measureGroupList))
+                context,
+                false,
+                levels,
+                false,
+                measureGroupList))
         {
             return DefaultTupleConstraint.instance();
         }

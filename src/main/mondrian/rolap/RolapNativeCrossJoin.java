@@ -207,11 +207,11 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         final List<RolapMeasureGroup> measureGroupList =
             new ArrayList<RolapMeasureGroup>();
         if (!SqlContextConstraint.checkValidContext(
-            evaluator,
-            false,
-            levels,
-            restrictMemberTypes(),
-            measureGroupList))
+                evaluator,
+                false,
+                levels,
+                restrictMemberTypes(),
+                measureGroupList))
         {
             // Missing join conditions due to non-conforming dimensions
             // meant native evaluation would have led to a true cross
