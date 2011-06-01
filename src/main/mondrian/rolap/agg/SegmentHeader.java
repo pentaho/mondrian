@@ -94,7 +94,6 @@ public class SegmentHeader implements Serializable {
         Arrays.sort(
             this.constrainedColumns,
             new Comparator<ConstrainedColumn>() {
-                @Override
                 public int compare(
                     ConstrainedColumn o1,
                     ConstrainedColumn o2)
