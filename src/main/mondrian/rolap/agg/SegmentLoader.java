@@ -167,8 +167,6 @@ public class SegmentLoader {
      * @param groupingSets List of segments to lookup.
      * @param pinnedSegments PinSet of segments to keep a hard
      * link to in memory.
-     * @return True if segments remain to be loaded, false if
-     * all segments were successfully fetched out of the cache.
      */
     private void loadSegmentsFromCache(
         List<GroupingSet> groupingSets,
@@ -207,6 +205,13 @@ public class SegmentLoader {
         }
     }
 
+    /**
+     * Tries to load segments by performing a rollup operation
+     * on pre-existing segments.
+     * @param groupingSets List of segments to lookup.
+     * @param pinnedSegments PinSet of segments to keep a hard
+     * link to in memory.
+     */
     private void loadSegmentsFromRollup(
         List<GroupingSet> groupingSets,
         RolapAggregationManager.PinSet pinnedSegments)

@@ -1047,15 +1047,6 @@ public class RolapStar {
     // -- Inner classes --------------------------------------------------------
 
     /**
-     * Defines the interface to interact with
-     * {@link RolapStar#forEachCachedGlobalAggregation(AggregationTask)} and
-     * {@link RolapStar#forEachCachedLocalAggregation(AggregationTask)
-     */
-    public interface AggregationTask {
-        void run(AggregationKey key, Aggregation aggregation);
-    }
-
-    /**
      * A column in a star schema.
      */
     public static class Column {
