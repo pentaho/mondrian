@@ -27,7 +27,7 @@ public class CombiningGenerator {
 
     private final static ExecutorService executor =
         Util.getExecutorService(
-            1,
+            4,
             "mondrian.util.CombiningGenerator$ExecutorThread");
     /**
      * Generates all combinations of a list of objects.
