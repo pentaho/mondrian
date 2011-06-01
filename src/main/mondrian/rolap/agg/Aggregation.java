@@ -89,6 +89,13 @@ public class Aggregation {
     private RolapStar.Column[] columns;
 
     /**
+     * This is set in the load method and is used during
+     * the process of loading aggregations/segments from
+     * rollup operations.
+     */
+    private Aggregation.Axis[] axes;
+
+    /**
      * Creates an Aggregation.
      *
      * @param aggregationKey the key specifying the axes, the context and
@@ -150,9 +157,7 @@ public class Aggregation {
         int axisCount = columns.length;
         Util.assertTrue(predicates.length == axisCount);
 
-        // This array of Aggregation.Axis is shared by all Segments for
-        // this set of measures and constraints
-        Aggregation.Axis[] axes = new Aggregation.Axis[axisCount];
+        axes = new Aggregation.Axis[axisCount];
         for (int i = 0; i < axisCount; i++) {
             axes[i] = new Aggregation.Axis(predicates[i]);
         }
@@ -747,6 +752,16 @@ public class Aggregation {
      */
     public BitKey getConstrainedColumnsBitKey() {
         return constrainedColumnsBitKey;
+    }
+
+    /**
+     * Returns an array of axis representing this aggregation.
+     * It is only available once the aggregation has been loaded.
+     * @return An array of axis objects, or null if the aggregation
+     * has not been loaded yet.
+     */
+    public Axis[] getAxes() {
+        return this.axes;
     }
 
     // -- classes -------------------------------------------------------------

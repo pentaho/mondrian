@@ -12,7 +12,11 @@ package mondrian.rolap.agg;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import mondrian.olap.Util;
 import mondrian.rolap.BitKey;
@@ -85,12 +89,26 @@ public class SegmentHeader implements Serializable {
         this.constrainedColsBitKey = constrainedColsBitKey;
         this.arity = constrainedColumns.length;
         // Hash code might be used extensively. Better compute
-        // it up front.
+        // it up front. Make sure the columns are ordered in a
+        // deterministic order (alpha...)
+        Arrays.sort(
+            this.constrainedColumns,
+            new Comparator<ConstrainedColumn>() {
+                @Override
+                public int compare(
+                    ConstrainedColumn o1,
+                    ConstrainedColumn o2)
+                {
+                    return
+                        o1.columnExpression
+                            .compareTo(o2.columnExpression);
+                }
+        });
         int hash = 42;
         hash = Util.hash(hash, schemaName);
         hash = Util.hash(hash, cubeName);
         hash = Util.hash(hash, measureName);
-        for (ConstrainedColumn col : constrainedColumns) {
+        for (ConstrainedColumn col : this.constrainedColumns) {
             hash = Util.hash(hash, col.columnExpression);
             for (Object val : col.values) {
                 hash = Util.hash(hash, val);
@@ -140,6 +158,33 @@ public class SegmentHeader implements Serializable {
                 cc,
                 segment.aggregation.getStar().getFactTable().getAlias(),
                 segment.aggregation.getConstrainedColumnsBitKey());
+    }
+
+    /**
+     * Creates a clone of this header by replacing some of the
+     * constrained columns in the process.
+     * @param overrideValues A list of constrained columns to either
+     * replace or add to the original header.
+     * @return A clone of the header with the columns replaced.
+     */
+    public SegmentHeader clone(ConstrainedColumn[] overrideValues) {
+        Map<String, ConstrainedColumn> colsToAdd =
+            new HashMap<String, ConstrainedColumn>();
+        for (ConstrainedColumn cc : this.constrainedColumns) {
+            colsToAdd.put(cc.columnExpression, cc);
+        }
+        for (ConstrainedColumn override : overrideValues) {
+            colsToAdd.put(override.columnExpression, override);
+        }
+        return
+            new SegmentHeader(
+                schemaName,
+                cubeName,
+                measureName,
+                colsToAdd.values()
+                    .toArray(new ConstrainedColumn[colsToAdd.size()]),
+                rolapStarFactTableName,
+                constrainedColsBitKey);
     }
 
     /**
