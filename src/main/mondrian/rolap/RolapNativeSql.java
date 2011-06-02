@@ -210,11 +210,6 @@ public class RolapNativeSql {
             if (!match(exp)) {
                 return null;
             }
-            if (!MondrianProperties.instance()
-                .EnableNativeRegexpFilter.get())
-            {
-                return null;
-            }
             if (!dialect.allowsRegularExpressionInWhereClause()
                 || !(exp instanceof ResolvedFunCall)
                 || evaluator == null)
@@ -275,31 +270,34 @@ public class RolapNativeSql {
                 return null;
             }
 
-            // TODO Add support for aggregate tables when using
-            // matching native filter.
-
             if (rolapLevel != null
                 && dimension.equals(rolapLevel.getDimension()))
             {
                 // We can't use the evaluator because the filter is filtering
                 // a set which is uses same dimension as the predicate.
                 // We must use, in order of priority,
-                //  caption requested: caption->name->key
-                //  name requested: name->key
-                return
-                dialect.generateRegularExpression(
-                    useCaption
-                        ? rolapLevel.captionExp == null
-                            ? rolapLevel.nameExp == null
-                                ? rolapLevel.keyExp.getExpression(sqlQuery)
-                                : rolapLevel.nameExp.getExpression(sqlQuery)
-                            : rolapLevel.captionExp.getExpression(sqlQuery)
-                        : rolapLevel.nameExp == null
+                //  - caption requested: caption->name->key
+                //  - name requested: name->key
+                String sourceExp = useCaption
+                ? rolapLevel.captionExp == null
+                        ? rolapLevel.nameExp == null
                             ? rolapLevel.keyExp.getExpression(sqlQuery)
-                            : rolapLevel.nameExp.getExpression(sqlQuery),
-                    String.valueOf(
-                        evaluator.getCachedResult(
-                            new ExpCacheDescriptor(arg1, evaluator))));
+                            : rolapLevel.nameExp.getExpression(sqlQuery)
+                        : rolapLevel.captionExp.getExpression(sqlQuery)
+                    : rolapLevel.nameExp == null
+                        ? rolapLevel.keyExp.getExpression(sqlQuery)
+                        : rolapLevel.nameExp.getExpression(sqlQuery);
+                // The dialect might require the use of the alias rather
+                // then the column exp.
+                if (dialect.requiresHavingAlias()) {
+                    sourceExp = sqlQuery.getAlias(sourceExp);
+                }
+                return
+                    dialect.generateRegularExpression(
+                        sourceExp,
+                        String.valueOf(
+                            evaluator.getCachedResult(
+                                new ExpCacheDescriptor(arg1, evaluator))));
             } else {
                 return null;
             }

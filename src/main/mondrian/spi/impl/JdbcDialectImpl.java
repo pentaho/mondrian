@@ -808,6 +808,10 @@ public class JdbcDialectImpl implements Dialect {
         return false;
     }
 
+    public boolean requiresHavingAlias() {
+        return false;
+    }
+
     public boolean allowsOrderByAlias() {
         return requiresOrderByAlias();
     }
@@ -848,7 +852,7 @@ public class JdbcDialectImpl implements Dialect {
         String source,
         String javaRegExp)
     {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     /**

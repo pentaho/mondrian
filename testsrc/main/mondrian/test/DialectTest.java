@@ -174,7 +174,7 @@ public class DialectTest extends TestCase {
                 // neoview
                 ".* ERROR\\[3129\\] Function COUNT DISTINCT accepts exactly one operand\\. .*",
                 // postgres
-                "ERROR: function count\\(integer, integer\\) does not exist",
+                "ERROR: function count\\(integer, integer\\) does not exist.*",
                 // LucidDb
                 ".*Invalid number of arguments to function 'COUNT'. Was expecting 1 arguments",
                 // teradata
@@ -312,7 +312,7 @@ public class DialectTest extends TestCase {
                 // hive
                 "(?s).*mismatched input \'<EOF>\' expecting Identifier in subquery source.*",
                 // postgres
-                "ERROR: subquery in FROM must have an alias",
+                "ERROR\\: subquery in FROM must have an alias.*",
                 // teradata
                 ".*Syntax error, expected something like a name or a Unicode "
                 + "delimited identifier or an 'UDFCALLNAME' keyword between "
@@ -402,9 +402,9 @@ public class DialectTest extends TestCase {
                 + "expression\n",
                 // teradata
                 ".*The ORDER BY clause must contain only integer constants.",
-                // Greenplum
+                // Greenplum / Postgres
                 "ERROR: ORDER BY on a UNION/INTERSECT/EXCEPT result must be on "
-                + "one of the result columns",
+                + "one of the result columns.*",
             };
             assertQueryFails(sql, errs);
         }
@@ -463,7 +463,7 @@ public class DialectTest extends TestCase {
                 // luciddb
                 "(?s).*Encountered \"GROUPING\" at line 3, column 2\\..*",
                 // postgres
-                "ERROR: syntax error at or near \"SETS\"",
+                "ERROR: syntax error at or near \"SETS\".*",
                 // neoview
                 NEOVIEW_SYNTAX_ERROR,
                 // netezza
@@ -892,6 +892,65 @@ public class DialectTest extends TestCase {
                 + "GROUP BY clause or be used in an aggregate function",
             };
             assertQueryFails(sql, errs);
+        }
+    }
+
+    public void testHavingRequiresAlias() throws Exception {
+        Dialect dialect = getDialect();
+        StringBuilder sb =
+            new StringBuilder(
+                "select upper("
+                + dialect.quoteIdentifier("customer", "fname")
+                + ") as c from "
+                + dialect.quoteIdentifier("customer")
+                + " group by "
+                + dialect.quoteIdentifier("customer", "fname")
+                + " having "
+                + dialect.quoteIdentifier("customer", "fname")
+                + " LIKE ");
+        dialect.quoteStringLiteral(sb, "%");
+        if (!dialect.requiresHavingAlias()) {
+            final ResultSet resultSet =
+                getConnection().createStatement().executeQuery(sb.toString());
+            assertTrue(resultSet.next());
+            resultSet.close();
+        } else {
+            String[] errs = {
+                // mysql
+                "Unknown column 'customer\\.fname' in 'having clause'",
+            };
+            assertQueryFails(sb.toString(), errs);
+        }
+    }
+
+    public void testAllowsRegularExpressionInWhereClause() throws Exception {
+        Dialect dialect = getDialect();
+        if (dialect.allowsRegularExpressionInWhereClause()) {
+            assertNotNull(
+                dialect.generateRegularExpression(
+                    dialect.quoteIdentifier("customer", "fname"),
+                    "(?i).*\\QJeanne\\E.*"));
+            StringBuilder sb =
+                new StringBuilder(
+                    "select "
+                    + dialect.quoteIdentifier("customer", "fname")
+                    + " from "
+                    + dialect.quoteIdentifier("customer")
+                    + " group by "
+                    + dialect.quoteIdentifier("customer", "fname")
+                    + " having "
+                    + dialect.generateRegularExpression(
+                        dialect.quoteIdentifier("customer", "fname"),
+                        "(?i).*\\QJeanne\\E.*"));
+            final ResultSet resultSet =
+                getConnection().createStatement().executeQuery(sb.toString());
+            assertTrue(resultSet.next());
+            resultSet.close();
+        } else {
+            assertNull(
+                dialect.generateRegularExpression(
+                    "Foo",
+                    "(?i).*\\QBar\\E.*"));
         }
     }
 }

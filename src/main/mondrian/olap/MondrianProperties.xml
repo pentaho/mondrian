@@ -686,21 +686,6 @@ lists of members.
         <Default>false</Default>
     </PropertyDefinition>
     <PropertyDefinition>
-        <Name>EnableNativeRegexpFilter</Name>
-        <Path>mondrian.native.EnableNativeRegexpFilter</Path>
-        <Category>SQL generation</Category>
-        <Description>
-<p>If this property is true, when evaluating a filter which using a
-regular expression, Mondrian will try to nativize the operation.
-It must be implemented in the database dialect used, and only a
-subset of Filter expressions are supported.</p>
-<p>An example of a supported filter expression is:</p>
-<p>Filter([Dimension].[Level].Members, [Dimension].CurrentMember.Caption Matches ("(^i).*Foo.*")</p>
-        </Description>
-        <Type>boolean</Type>
-        <Default>false</Default>
-    </PropertyDefinition>
-    <PropertyDefinition>
         <Name>CompareSiblingsByOrderKey</Name>
         <Path>mondrian.rolap.compareSiblingsByOrderKey</Path>
         <Description>

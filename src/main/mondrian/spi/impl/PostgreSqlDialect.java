@@ -128,15 +128,11 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
     }
 
     public String generateRegularExpression(String source, String javaRegExp) {
+        javaRegExp = javaRegExp.replace("\\Q", "");
+        javaRegExp = javaRegExp.replace("\\E", "");
         final StringBuilder sb = new StringBuilder();
         sb.append(source);
         sb.append(" ~ ");
-        /*
-         * FIXME This is a temporary fix because PGSQL doesn't support
-         * escape characters.
-         */
-        javaRegExp = javaRegExp.replace("\\Q", "");
-        javaRegExp = javaRegExp.replace("\\E", "");
         quoteStringLiteral(sb, javaRegExp);
         return sb.toString();
     }

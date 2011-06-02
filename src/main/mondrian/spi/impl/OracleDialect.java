@@ -9,6 +9,8 @@
 package mondrian.spi.impl;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -20,6 +22,11 @@ import java.sql.SQLException;
  * @since Nov 23, 2008
  */
 public class OracleDialect extends JdbcDialectImpl {
+
+    private final String flagsRegexp = "^(\\(\\?([a-zA-Z])\\)).*$";
+    private final Pattern flagsPattern = Pattern.compile(flagsRegexp);
+    private final String escapeRegexp = "^.*(\\\\Q(.*)\\\\E).*$";
+    private final Pattern escapePattern = Pattern.compile(escapeRegexp);
 
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
@@ -73,11 +80,44 @@ public class OracleDialect extends JdbcDialectImpl {
         String source,
         String javaRegExp)
     {
+        final Matcher flagsMatcher = flagsPattern.matcher(javaRegExp);
+        final StringBuilder suffixSb = new StringBuilder();
+        if (flagsMatcher.matches()) {
+            // We need to convert leading flags into oracle
+            // specific flags
+            final String flags = flagsMatcher.group(2);
+            if (flags.contains("i")) {
+                suffixSb.append("i");
+            }
+            if (flags.contains("c")) {
+                suffixSb.append("c");
+            }
+            if (flags.contains("m")) {
+                suffixSb.append("m");
+            }
+            javaRegExp =
+                javaRegExp.replace(
+                    flagsMatcher.group(1),
+                    "");
+        }
+        final Matcher escapeMatcher = escapePattern.matcher(javaRegExp);
+        if (escapeMatcher.matches()) {
+            // We need to convert escape characters \E and \Q into
+            // oracle compatible escapes.
+            String sequence = escapeMatcher.group(2);
+            sequence = sequence.replaceAll("\\\\", "\\\\");
+            javaRegExp =
+                javaRegExp.replace(
+                    escapeMatcher.group(1),
+                    sequence);
+        }
         final StringBuilder sb = new StringBuilder();
         sb.append("REGEXP_LIKE(");
         sb.append(source);
         sb.append(", ");
         quoteStringLiteral(sb, javaRegExp);
+        sb.append(", ");
+        quoteStringLiteral(sb, suffixSb.toString());
         sb.append(")");
         return sb.toString();
     }

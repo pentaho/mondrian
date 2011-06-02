@@ -17,18 +17,21 @@ import mondrian.test.TestContext;
 
 public class NativeFilterMatchingTest extends BatchTestCase {
     public void testPositiveMatching() throws Exception {
-        propSaver.set(
-            MondrianProperties.instance().EnableNativeRegexpFilter,
-            true);
         final String sqlOracle =
-            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\", \"time_by_day\" \"time_by_day\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" having REGEXP_LIKE(\"fname\" || ' ' || \"lname\", '.*Jeanne.*') order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, \"customer\".\"city\" ASC, \"fname\" || ' ' || \"lname\" ASC";
+            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\", \"time_by_day\" \"time_by_day\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" having REGEXP_LIKE(\"fname\" || ' ' || \"lname\", '.*jeanne.*', 'i') order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, \"customer\".\"city\" ASC, \"fname\" || ' ' || \"lname\" ASC";
         final String sqlPgsql =
-            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", fullname as \"c4\", fullname as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\", \"time_by_day\" as \"time_by_day\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", fullname, \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" having fullname ~ '.*Jeanne.*' order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, \"customer\".\"city\" ASC, fullname ASC";
+            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", fullname as \"c4\", fullname as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\", \"time_by_day\" as \"time_by_day\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", fullname, \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" having fullname ~ '(?i).*jeanne.*' order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, \"customer\".\"city\" ASC, fullname ASC";
+        final String sqlMysql =
+            "select `customer`.`country` as `c0`, `customer`.`state_province` as `c1`, `customer`.`city` as `c2`, `customer`.`customer_id` as `c3`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c5`, `customer`.`gender` as `c6`, `customer`.`marital_status` as `c7`, `customer`.`education` as `c8`, `customer`.`yearly_income` as `c9` from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997`, `time_by_day` as `time_by_day` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 group by `customer`.`country`, `customer`.`state_province`, `customer`.`city`, `customer`.`customer_id`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`), `customer`.`gender`, `customer`.`marital_status`, `customer`.`education`, `customer`.`yearly_income` having UPPER(c5) REGEXP '.*JEANNE.*' order by ISNULL(`customer`.`country`), `customer`.`country` ASC, ISNULL(`customer`.`state_province`), `customer`.`state_province` ASC, ISNULL(`customer`.`city`), `customer`.`city` ASC, ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)), CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC";
         SqlPattern[] patterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ORACLE,
                 sqlOracle,
                 sqlOracle.length()),
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                sqlMysql,
+                sqlMysql.length()),
             new SqlPattern(
                 Dialect.DatabaseProduct.POSTGRESQL,
                 sqlPgsql,
@@ -62,116 +65,71 @@ public class NativeFilterMatchingTest extends BatchTestCase {
             "With\n"
             + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Customers], Not IsEmpty ([Measures].[Unit Sales]))'\n"
             + "Set [*SORTED_COL_AXIS] as 'Order([*CJ_COL_AXIS],[Customers].CurrentMember.OrderKey,BASC,Ancestor([Customers].CurrentMember,[Customers].[City]).OrderKey,BASC)'\n"
-            + "Set [*BASE_MEMBERS_Customers] as 'Filter([Customers].[Name].Members,[Customers].CurrentMember.Caption Matches (\".*Jeanne.*\"))'\n"
+            + "Set [*BASE_MEMBERS_Customers] as 'Filter([Customers].[Name].Members,[Customers].CurrentMember.Caption Matches (\"(?i).*\\Qjeanne\\E.*\"))'\n"
             + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
             + "Set [*CJ_COL_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember)})'\n"
             + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=400\n"
             + "Select\n"
             + "CrossJoin([*SORTED_COL_AXIS],[*BASE_MEMBERS_Measures]) on columns\n"
             + "From [Sales]";
-        final String queryPgsql =
-            "With\n"
-            + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Customers], Not IsEmpty ([Measures].[Unit Sales]))'\n"
-            + "Set [*SORTED_COL_AXIS] as 'Order([*CJ_COL_AXIS],[Customers].CurrentMember.OrderKey,BASC,Ancestor([Customers].CurrentMember,[Customers].[City]).OrderKey,BASC)'\n"
-            + "Set [*BASE_MEMBERS_Customers] as 'Filter([Customers].[Name].Members,[Customers].CurrentMember.Caption Matches (\".*\\QJeanne\\E.*\"))'\n"
-            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
-            + "Set [*CJ_COL_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember)})'\n"
-            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=400\n"
-            + "Select\n"
-            + "CrossJoin([*SORTED_COL_AXIS],[*BASE_MEMBERS_Measures]) on columns\n"
-            + "From [Sales]";
-        if (getTestContext().getDialect().getDatabaseProduct()
-            == Dialect.DatabaseProduct.POSTGRESQL)
-        {
-            assertQuerySqlOrNot(
-                getTestContext(),
-                queryPgsql,
-                patterns,
-                false,
-                true,
-                true);
-            assertQueryReturns(
-                queryPgsql,
-                queryResults);
-        } else {
-            assertQuerySqlOrNot(
-                getTestContext(),
-                query,
-                patterns,
-                false,
-                true,
-                true);
-            assertQueryReturns(
-                query,
-                queryResults);
-        }
+        assertQuerySqlOrNot(
+            getTestContext(),
+            query,
+            patterns,
+            false,
+            true,
+            true);
+        assertQueryReturns(
+            query,
+            queryResults);
     }
 
     public void testNegativeMatching() throws Exception {
-        propSaver.set(
-            MondrianProperties.instance().EnableNativeRegexpFilter,
-            true);
         final String sqlOracle =
-            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\", \"time_by_day\" \"time_by_day\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" having NOT(REGEXP_LIKE(\"fname\" || ' ' || \"lname\", '.*Jeanne.*'))  order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, \"customer\".\"city\" ASC, \"fname\" || ' ' || \"lname\" ASC";
+            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\", \"time_by_day\" \"time_by_day\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" having NOT(REGEXP_LIKE(\"fname\" || ' ' || \"lname\", '.*jeanne.*', 'i'))  order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, \"customer\".\"city\" ASC, \"fname\" || ' ' || \"lname\" ASC";
         final String sqlPgsql =
-            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", fullname as \"c4\", fullname as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\", \"time_by_day\" as \"time_by_day\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", fullname, \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" having NOT(fullname ~ '.*Jeanne.*')  order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, \"customer\".\"city\" ASC, fullname ASC";
+            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", fullname as \"c4\", fullname as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\", \"time_by_day\" as \"time_by_day\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", fullname, \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" having NOT(fullname ~ '(?i).*jeanne.*')  order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, \"customer\".\"city\" ASC, fullname ASC";
+        final String sqlMysql =
+            "select `customer`.`country` as `c0`, `customer`.`state_province` as `c1`, `customer`.`city` as `c2`, `customer`.`customer_id` as `c3`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c5`, `customer`.`gender` as `c6`, `customer`.`marital_status` as `c7`, `customer`.`education` as `c8`, `customer`.`yearly_income` as `c9` from `customer` as `customer`, `sales_fact_1997` as `sales_fact_1997`, `time_by_day` as `time_by_day` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 group by `customer`.`country`, `customer`.`state_province`, `customer`.`city`, `customer`.`customer_id`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`), `customer`.`gender`, `customer`.`marital_status`, `customer`.`education`, `customer`.`yearly_income` having NOT(UPPER(c5) REGEXP '.*JEANNE.*')  order by ISNULL(`customer`.`country`), `customer`.`country` ASC, ISNULL(`customer`.`state_province`), `customer`.`state_province` ASC, ISNULL(`customer`.`city`), `customer`.`city` ASC, ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)), CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC";
+
         SqlPattern[] patterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ORACLE,
                 sqlOracle,
                 sqlOracle.length()),
             new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL,
+                sqlMysql,
+                sqlMysql.length()),
+            new SqlPattern(
                 Dialect.DatabaseProduct.POSTGRESQL,
                 sqlPgsql,
                 sqlPgsql.length())
         };
+
         final String query =
             "With\n"
             + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Customers], Not IsEmpty ([Measures].[Unit Sales]))'\n"
             + "Set [*SORTED_COL_AXIS] as 'Order([*CJ_COL_AXIS],[Customers].CurrentMember.OrderKey,BASC,Ancestor([Customers].CurrentMember,[Customers].[City]).OrderKey,BASC)'\n"
-            + "Set [*BASE_MEMBERS_Customers] as 'Filter([Customers].[Name].Members,[Customers].CurrentMember.Caption Not Matches (\".*Jeanne.*\"))'\n"
+            + "Set [*BASE_MEMBERS_Customers] as 'Filter([Customers].[Name].Members,[Customers].CurrentMember.Caption Not Matches (\"(?i).*\\Qjeanne\\E.*\"))'\n"
             + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
             + "Set [*CJ_COL_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember)})'\n"
             + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=400\n"
             + "Select\n"
             + "CrossJoin([*SORTED_COL_AXIS],[*BASE_MEMBERS_Measures]) on columns\n"
             + "From [Sales]";
-        final String queryPgsql =
-            "With\n"
-            + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Customers], Not IsEmpty ([Measures].[Unit Sales]))'\n"
-            + "Set [*SORTED_COL_AXIS] as 'Order([*CJ_COL_AXIS],[Customers].CurrentMember.OrderKey,BASC,Ancestor([Customers].CurrentMember,[Customers].[City]).OrderKey,BASC)'\n"
-            + "Set [*BASE_MEMBERS_Customers] as 'Filter([Customers].[Name].Members,[Customers].CurrentMember.Caption Not Matches (\".*\\QJeanne\\E.*\"))'\n"
-            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
-            + "Set [*CJ_COL_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember)})'\n"
-            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=400\n"
-            + "Select\n"
-            + "CrossJoin([*SORTED_COL_AXIS],[*BASE_MEMBERS_Measures]) on columns\n"
-            + "From [Sales]";
-        if (getTestContext().getDialect()
-            .equals(Dialect.DatabaseProduct.POSTGRESQL))
-        {
-            assertQuerySqlOrNot(
-                getTestContext(),
-                queryPgsql,
-                patterns,
-                false,
-                true,
-                true);
-            final Result result = executeQuery(queryPgsql);
-            final String resultString = TestContext.toString(result);
-            assertFalse(resultString.contains("Jeanne"));
-        } else {
-            assertQuerySqlOrNot(
-                getTestContext(),
-                query,
-                patterns,
-                false,
-                true,
-                true);
-            final Result result = executeQuery(query);
-            final String resultString = TestContext.toString(result);
-            assertFalse(resultString.contains("Jeanne"));
-        }
+
+        assertQuerySqlOrNot(
+            getTestContext(),
+            query,
+            patterns,
+            false,
+            true,
+            true);
+
+        final Result result = executeQuery(query);
+        final String resultString = TestContext.toString(result);
+        assertFalse(resultString.contains("Jeanne"));
     }
 }
 // End NativeFilterMatchingTest.java

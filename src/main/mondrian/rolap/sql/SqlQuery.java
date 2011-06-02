@@ -121,6 +121,9 @@ public class SqlQuery {
         mapRootToRelations =
         new HashMap<MondrianDef.RelationOrJoin, List<RelInfo>>();
 
+    private final Map<String, String> columnAliases =
+        new HashMap<String, String>();
+
     /**
      * Base constructor used by all other constructors to create an empty
      * instance.
@@ -525,7 +528,12 @@ public class SqlQuery {
 
         select.add(buf.toString());
         addType(type);
+        columnAliases.put(expression, alias);
         return alias;
+    }
+
+    public String getAlias(String expression) {
+        return columnAliases.get(expression);
     }
 
     public void addWhere(
