@@ -9,7 +9,6 @@
 */
 package mondrian.util;
 
-import com.sun.xml.internal.xsom.impl.ListSimpleTypeImpl;
 import mondrian.olap.Util;
 
 import java.util.*;
