@@ -1579,6 +1579,30 @@ public class Util extends XOMUtil {
      * @return List containing the given members
      */
     public static <T> List<T> flatList(T... t) {
+        return _flatList(t, false);
+    }
+
+    /**
+     * Creates a memory-, CPU- and cache-efficient immutable list,
+     * always copying the contents.
+     *
+     * @param t Array of members of list
+     * @param <T> Element type
+     * @return List containing the given members
+     */
+    public static <T> List<T> flatListCopy(T... t) {
+        return _flatList(t, true);
+    }
+
+    /**
+     * Creates a memory-, CPU- and cache-efficient immutable list, optionally
+     * copying the list.
+     *
+     * @param copy Whether to always copy the list
+     * @param t Array of members of list
+     * @return List containing the given members
+     */
+    private static <T> List<T> _flatList(T[] t, boolean copy) {
         switch (t.length) {
         case 0:
             return Collections.emptyList();
@@ -1592,7 +1616,11 @@ public class Util extends XOMUtil {
             // REVIEW: AbstractList contains a modCount field; we could
             //   write our own implementation and reduce creation overhead a
             //   bit.
-            return Arrays.asList(t);
+            if (copy) {
+                return Arrays.asList(t.clone());
+            } else {
+                return Arrays.asList(t);
+            }
         }
     }
 

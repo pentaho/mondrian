@@ -48,8 +48,8 @@ public class CombiningGenerator {
      * @return A set of all possible combinations.
      */
     public static <E> Set<Set<E>> generate(
-            Collection<E> seed,
-            int minLength)
+        Collection<E> seed,
+        int minLength)
     {
         final Set<Set<E>> result =
             Collections.synchronizedSet(
@@ -91,8 +91,7 @@ public class CombiningGenerator {
             return;
         }
         combined.add(new HashSet<E>(seed));
-        if (seed.size() == 1)
-        {
+        if (seed.size() == 1) {
             combined.add(new HashSet<E>(seed));
             countLatch.getAndDecrement();
             return;

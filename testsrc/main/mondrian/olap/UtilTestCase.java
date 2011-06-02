@@ -832,6 +832,7 @@ public class UtilTestCase extends TestCase {
                     Arrays.asList("1", "2", "3")));
         assertEquals(6, list.size());
         assertFalse(list.isEmpty());
+        checkCartesianListContents(list);
 
         assertEquals(
             "[[a, 1], [a, 2], [a, 3], [b, 1], [b, 2], [b, 3]]",
@@ -845,6 +846,7 @@ public class UtilTestCase extends TestCase {
                     Arrays.asList("1", "2", "3")));
         assertTrue(list2.isEmpty());
         assertEquals("[]", list2.toString());
+        checkCartesianListContents(list2);
 
         // Other component empty
         final CartesianProductList<String> list3 =
@@ -854,13 +856,15 @@ public class UtilTestCase extends TestCase {
                     Arrays.<String>asList()));
         assertTrue(list3.isEmpty());
         assertEquals("[]", list3.toString());
+        checkCartesianListContents(list3);
 
         // Zeroary
         final CartesianProductList<String> list4 =
             new CartesianProductList<String>(
                 Collections.<List<String>>emptyList());
         assertFalse(list4.isEmpty());
-        assertEquals("[[]]", list4.toString());
+//        assertEquals("[[]]", list4.toString());
+        checkCartesianListContents(list4);
 
         // 1-ary
         final CartesianProductList<String> list5 =
@@ -868,6 +872,7 @@ public class UtilTestCase extends TestCase {
                 Collections.singletonList(
                     Arrays.asList("a", "b")));
         assertEquals("[[a], [b]]", list5.toString());
+        checkCartesianListContents(list5);
 
         // 3-ary
         final CartesianProductList<String> list6 =
@@ -881,6 +886,7 @@ public class UtilTestCase extends TestCase {
         assertEquals("[a, 1, x]", list6.get(0).toString());
         assertEquals("[a, 1, y]", list6.get(1).toString());
         assertEquals("[d, 2, z]", list6.get(23).toString());
+        checkCartesianListContents(list6);
 
         final Object[] strings = new Object[6];
         list6.getIntoArray(1, strings);
@@ -888,7 +894,7 @@ public class UtilTestCase extends TestCase {
             "[a, 1, y, null, null, null]",
             Arrays.asList(strings).toString());
 
-        CartesianProductList list7 =
+        CartesianProductList<Object> list7 =
             new CartesianProductList<Object>(
                 Arrays.<List<Object>>asList(
                     Arrays.<Object>asList(
@@ -908,6 +914,15 @@ public class UtilTestCase extends TestCase {
         assertEquals(
             "[2a, null, 2c, bb, bbb, null]",
             Arrays.asList(strings).toString());
+        checkCartesianListContents(list7);
+    }
+
+    private <T> void checkCartesianListContents(CartesianProductList<T> list) {
+        List<List<T>> arrayList = new ArrayList<List<T>>();
+        for (List<T> ts : list) {
+            arrayList.add(ts);
+        }
+        assertEquals(arrayList, list);
     }
 
     public void testFlatList() {
