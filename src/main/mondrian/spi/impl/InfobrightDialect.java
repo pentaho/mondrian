@@ -99,12 +99,6 @@ public class InfobrightDialect extends MySqlDialect {
         // does not.
         return false;
     }
-
-    public boolean allowsJoinOn() {
-        // Infobright performs much better when using joins in the
-        // FROM clause rather than joining the tables in the WHERE clause.
-        return true;
-    }
 }
 
 // End InfobrightDialect.java

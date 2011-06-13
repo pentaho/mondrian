@@ -71,7 +71,14 @@ public enum RolapConnectionProperties {
      * cubes, hierarchies, and so forth.
      * Catalogs are described in <a target="_top"
      * href="{@docRoot}/../schema.html">the Schema Guide</a>.
-     * See also {@link #Catalog}.
+     *
+     * <p>When using this property, quote its value with either single or
+     * double quotes, then escape all occurrences of that character within the
+     * catalog content by using double single/double quotes. ie:
+     *
+     * <p>&nbsp;&nbsp;CatalogContent="&lt;Schema name=""My Schema""/&gt;"
+     *
+     * <p>See also {@link #Catalog}.
      */
     CatalogContent,
 
