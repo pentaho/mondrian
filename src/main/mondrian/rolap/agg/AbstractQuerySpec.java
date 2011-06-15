@@ -80,7 +80,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
 
     protected abstract boolean isAggregate();
 
-    protected void nonDistinctGenerateSql(SqlQuery sqlQuery)
+    protected Map<String, String> nonDistinctGenerateSql(SqlQuery sqlQuery)
     {
         // add constraining dimensions
         RolapStar.Column[] columns = getColumns();
@@ -146,6 +146,8 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         for (int i = 0, count = getMeasureCount(); i < count; i++) {
             addMeasure(i, sqlQuery);
         }
+
+        return Collections.emptyMap();
     }
 
     /**
@@ -164,16 +166,19 @@ public abstract class AbstractQuerySpec implements QuerySpec {
 
         int k = getDistinctMeasureCount();
         final Dialect dialect = sqlQuery.getDialect();
+        final Map<String, String> groupingSetsAliases;
         if (!dialect.allowsCountDistinct() && k > 0
             || !dialect.allowsMultipleCountDistinct() && k > 1)
         {
-            distinctGenerateSql(sqlQuery, countOnly);
+            groupingSetsAliases =
+                distinctGenerateSql(sqlQuery, countOnly);
         } else {
-            nonDistinctGenerateSql(sqlQuery);
+            groupingSetsAliases =
+                nonDistinctGenerateSql(sqlQuery);
         }
         if (!countOnly) {
             addGroupingFunction(sqlQuery);
-            addGroupingSets(sqlQuery);
+            addGroupingSets(sqlQuery, groupingSetsAliases);
         }
         return sqlQuery.toSqlAndTypes();
     }
@@ -182,7 +187,10 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         throw new UnsupportedOperationException();
     }
 
-    protected void addGroupingSets(SqlQuery sqlQuery) {
+    protected void addGroupingSets(
+        SqlQuery sqlQuery,
+        Map<String, String> groupingSetsAliases)
+    {
         throw new UnsupportedOperationException();
     }
 
@@ -212,14 +220,18 @@ public abstract class AbstractQuerySpec implements QuerySpec {
      * @param countOnly If true, only generate a single row: no need to
      *   generate a GROUP BY clause or put any constraining columns in the
      *   SELECT clause
+     * @return A map of aliases used in the inner query if grouping sets
+     * were enabled.
      */
-    protected void distinctGenerateSql(
+    protected Map<String, String> distinctGenerateSql(
         final SqlQuery outerSqlQuery,
         boolean countOnly)
     {
         final Dialect dialect = outerSqlQuery.getDialect();
         final Dialect.DatabaseProduct databaseProduct =
             dialect.getDatabaseProduct();
+        final Map<String, String> groupingSetsAliases =
+            new HashMap<String, String>();
         // Generate something like
         //
         //  select d0, d1, count(m0)
@@ -269,13 +281,18 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             if (countOnly) {
                 continue;
             }
-            final String alias = "d" + i;
-            innerSqlQuery.addSelect(expr, null, alias);
+            String alias = "d" + i;
+            alias = innerSqlQuery.addSelect(expr, null, alias);
             if (databaseProduct == Dialect.DatabaseProduct.GREENPLUM) {
                 innerSqlQuery.addGroupBy(expr, alias);
             }
             final String quotedAlias = dialect.quoteIdentifier(alias);
             outerSqlQuery.addSelectGroupBy(quotedAlias, null);
+            // Add this alias to the map of grouping sets aliases
+            groupingSetsAliases.put(
+                expr,
+                dialect.quoteIdentifier(
+                    "dummyname." + alias));
         }
 
         // add predicates not associated with columns
@@ -300,6 +317,7 @@ public abstract class AbstractQuerySpec implements QuerySpec {
                 null);
         }
         outerSqlQuery.addFrom(innerSqlQuery, "dummyname", true);
+        return groupingSetsAliases;
     }
 
     /**
