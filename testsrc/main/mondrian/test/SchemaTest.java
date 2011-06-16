@@ -18,6 +18,7 @@ import org.olap4j.metadata.*;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.olap.*;
 import mondrian.util.Bug;
+import mondrian.olap.Axis;
 import mondrian.olap.Member;
 import mondrian.olap.Position;
 import mondrian.olap.Cube;
@@ -25,6 +26,7 @@ import mondrian.olap.Dimension;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Property;
 import mondrian.olap.NamedSet;
+import mondrian.olap.Result;
 import mondrian.olap.Schema;
 import mondrian.spi.Dialect;
 import mondrian.spi.PropertyFormatter;
@@ -3438,39 +3440,35 @@ public class SchemaTest extends FoodMartTestCase {
     /**
      * Test for MONDRIAN-943 and MONDRIAN-465.
      */
-    public void testCaptionColumnUsedWithOrdinalColumn() throws Exception {
-        final TestContext context =
+    public void testCaptionWithOrdinalColumn() {
+        TestContext tc =
             TestContext.createSubstitutingCube(
                 "HR",
-                "  <Dimension name=\"FooBarDimension\" foreignKey=\"employee_id\">\n"
-                + "    <Hierarchy hasAll=\"false\" primaryKey=\"position_id\">\n"
-                + "      <Table name=\"position\"/>\n"
-                + "      <Level name=\"FooBarLevel\" uniqueMembers=\"true\"\n"
-                + "          column=\"position_id\""
-                + "          nameColumn=\"management_role\""
-                + "          captionColumn=\"position_title\""
-                + "          ordinalColumn=\"management_role\""
-                + "          />\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n",
-                null,
-                null,
-                null);
-        context.assertQueryReturns(
-            "select {[FooBarDimension].[FooBarLevel].Members} on columns from [HR]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[FooBarDimension].[Middle Management]}\n"
-            + "{[FooBarDimension].[Senior Management]}\n"
-            + "{[FooBarDimension].[Store Full Time Staff]}\n"
-            + "{[FooBarDimension].[Store Management]}\n"
-            + "{[FooBarDimension].[Store Temp Staff]}\n"
-            + "Row #0: $270.00\n"
-            + "Row #0: $864.00\n"
-            + "Row #0: \n"
-            + "Row #0: \n"
-            + "Row #0: \n");
+                "<Dimension name=\"Position\" foreignKey=\"employee_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Position\" primaryKey=\"employee_id\">\n"
+                + "    <Table name=\"employee\"/>\n"
+                + "    <Level name=\"Management Role\" uniqueMembers=\"true\" column=\"management_role\"/>\n"
+                + "    <Level name=\"Position Title\" uniqueMembers=\"false\" column=\"position_title\" ordinalColumn=\"position_id\" captionColumn=\"position_title\"/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>\n");
+        String mdxQuery =
+            "WITH SET [#DataSet#] as '{Descendants([Position].[All Position], 2)}' "
+            + "SELECT {[Measures].[Org Salary]} on columns, "
+            + "NON EMPTY Hierarchize({[#DataSet#]}) on rows FROM [HR]";
+        Result result = tc.executeQuery(mdxQuery);
+        Axis[] axes = result.getAxes();
+        List<Position> positions = axes[1].getPositions();
+        Member mall = positions.get(0).get(0);
+        String caption = mall.getHierarchy().getCaption();
+        assertEquals("Position", caption);
+        String captionValue = mall.getCaption();
+        assertEquals("HQ Information Systems", captionValue);
+        mall = positions.get(14).get(0);
+        captionValue = mall.getCaption();
+        assertEquals("Store Manager", captionValue);
+        mall = positions.get(15).get(0);
+        captionValue = mall.getCaption();
+        assertEquals("Store Assistant Manager", captionValue);
     }
 }
 
