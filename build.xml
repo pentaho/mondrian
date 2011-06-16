@@ -39,6 +39,7 @@
   <import file="subfloor.xml" />
 
   <property name="testsrc.dir" value="testsrc"/>
+  <property name="testsrc.dir.relative" value="testsrc"/>
   <property name="java.dir" value="${src.dir}/main"/>
   <property name="javatest.dir" value="${testsrc.dir}/main"/>
   <property name="etc.dir" value="${src.dir}/etc"/>
@@ -936,14 +937,14 @@ ${java.dir}/**/*.gif,
 ${java.dir}/**/*.png,
 ${java.dir}/**/*.html,
 ${lib.dir}/mondrian.xsd,
-${testsrc.dir}/queryFiles/**/*.xml,
-${testsrc.dir}/**/*.csv,
-${testsrc.dir}/**/*.error,
-${testsrc.dir}/**/*.java,
-${testsrc.dir}/**/*.xml,
-${testsrc.dir}/**/*.html,
-${testsrc.dir}/**/*.txt,
-${testsrc.dir}/**/*.sql,
+${testsrc.dir.relative}/queryFiles/**/*.xml,
+${testsrc.dir.relative}/**/*.csv,
+${testsrc.dir.relative}/**/*.error,
+${testsrc.dir.relative}/**/*.java,
+${testsrc.dir.relative}/**/*.xml,
+${testsrc.dir.relative}/**/*.html,
+${testsrc.dir.relative}/**/*.txt,
+${testsrc.dir.relative}/**/*.sql,
 ${webapp.dir}/WEB-INF/*.xml,
 ${webapp.dir}/**/*.jsp,
 ${webapp.dir}/WEB-INF/*.xsl,
@@ -978,6 +979,7 @@ ivysettings.xml,
 log4j.properties,
 LICENSE.html,
 README.txt,
+subfloor.xml,
 VERSION.txt,
 ${demo.dir}/FoodMart.xml"
           excludes="
