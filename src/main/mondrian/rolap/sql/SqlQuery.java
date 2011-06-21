@@ -104,6 +104,12 @@ public class SqlQuery {
      */
     private final List<String> fromAliases;
 
+    /**
+     * This is a list which associates all original table names with their
+     * assigned alias.
+     */
+    private final Map<String, String> fromAliasesMap;
+
     /** The SQL dialect this query is to be generated in. */
     private final Dialect dialect;
 
@@ -145,6 +151,7 @@ public class SqlQuery {
         this.having = new ClauseList(false);
         this.orderBy = new ClauseList(false);
         this.fromAliases = new ArrayList<String>();
+        this.fromAliasesMap = new HashMap<String, String>();
         this.buf = new StringBuilder(128);
         this.groupingSet = new ArrayList<ClauseList>();
         this.dialect = dialect;
@@ -234,6 +241,7 @@ public class SqlQuery {
         }
         dialect.quoteIdentifier(alias, buf);
         fromAliases.add(alias);
+        fromAliasesMap.put(query, alias);
 
         from.add(buf.toString());
         return true;
@@ -283,6 +291,7 @@ public class SqlQuery {
             }
             dialect.quoteIdentifier(alias, buf);
             fromAliases.add(alias);
+            fromAliasesMap.put(name, alias);
         }
 
         if (this.allowHints) {
@@ -787,6 +796,17 @@ public class SqlQuery {
                     rightKey,
                     rightAlias));
         }
+    }
+
+    /**
+     * Returns the alias, if any, which was assigned to a given
+     * table name within this query.
+     * @param tableName The original table name for which we want
+     * the alias.
+     * @return The table alias, or null if the table is not present.
+     */
+    public String getTableAlias(String tableName) {
+        return fromAliasesMap.get(tableName);
     }
 
     private static class JoinOnClause {

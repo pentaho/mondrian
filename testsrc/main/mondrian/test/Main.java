@@ -315,7 +315,7 @@ public class Main extends TestSuite {
             addTest(suite, AggregationOnDistinctCountMeasuresTest.class);
             addTest(suite, BitKeyTest.class);
             addTest(suite, TypeTest.class);
-            addTest(suite, SteelWheelsTestCase.class);
+            addTest(suite, SteelWheelsSchemaTest.class);
             addTest(suite, MultipleColsInTupleAggTest.class);
             addTest(suite, CodeComplianceTest.class);
 
