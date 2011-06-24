@@ -171,7 +171,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement path="${env.CLASSPATH}"/>
     <pathelement location="${ant.home}/lib/ant.jar"/>
     <pathelement location="${ant.home}/lib/optional.jar"/>
-    <pathelement location="${wb.plugins.dir}/pentaho-database.jar"/>
+    <pathelement location="${wb.plugins.dir}/kettle-dbdialog.jar"/>
     <pathelement location="${wb.plugins.dir}/kettle-core.jar"/>
     <pathelement location="${wb.plugins.dir}/kettle-db.jar"/>
     <pathelement location="${wb.plugins.dir}/kettle-engine.jar"/>
