@@ -1069,7 +1069,19 @@ public class SqlTupleReader implements TupleReader {
 
             RolapProperty[] properties = currLevel.getProperties();
             for (RolapProperty property : properties) {
-                String propSql = property.getExp().getExpression(sqlQuery);
+                final MondrianDef.Expression propExp = property.getExp();
+                final String propSql;
+                if (propExp instanceof MondrianDef.Column) {
+                    // When dealing with a column, we must use the same table
+                    // alias as the one used by the level. We also assume that
+                    // the property lives in the same table as the level.
+                    propSql =
+                        sqlQuery.getDialect().quoteIdentifier(
+                            currLevel.getTableAlias(),
+                            ((MondrianDef.Column)propExp).name);
+                } else {
+                    propSql = property.getExp().getExpression(sqlQuery);
+                }
                 alias = sqlQuery.addSelect(propSql, null);
                 if (needsGroupBy) {
                     // Certain dialects allow us to eliminate properties

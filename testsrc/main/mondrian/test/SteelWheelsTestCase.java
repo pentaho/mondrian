@@ -48,15 +48,11 @@ public class SteelWheelsTestCase extends TestCase {
      * different source for your FoodMart connection.
      */
     public TestContext getTestContext() {
-        return new SteelWheelsTestContext(TestContext.instance());
+        return new SteelWheelsTestContext();
     }
 
-    public static class SteelWheelsTestContext extends DelegatingTestContext
+    static class SteelWheelsTestContext extends TestContext
     {
-        public SteelWheelsTestContext(TestContext testContext) {
-            super(testContext);
-        }
-
         @Override
         public Util.PropertyList getFoodMartConnectionProperties() {
             final Util.PropertyList propertyList =
@@ -85,13 +81,19 @@ public class SteelWheelsTestCase extends TestCase {
         /**
          * Creates a TestContext which contains the given schema text.
          *
+         * @param schema A XML schema.
+         * @param baseCubeName The name of a cube present in the schema.
+         * Used for testing if the connection is valid.
          * @return TestContext which contains the given schema
          */
-        public static TestContext create(final String schema) {
-            return new TestContext() {
+        public static TestContext create(
+            final String schema,
+            final String baseCubeName)
+        {
+            return new SteelWheelsTestContext() {
                 public Util.PropertyList getFoodMartConnectionProperties() {
-                    Util.PropertyList properties =
-                        super.getFoodMartConnectionProperties();
+                    final Util.PropertyList properties =
+                        Util.parseConnectString(getDefaultConnectString());
                     properties.put(
                         RolapConnectionProperties.Jdbc.name(),
                         Util.replace(
@@ -102,7 +104,12 @@ public class SteelWheelsTestCase extends TestCase {
                     properties.put(
                         RolapConnectionProperties.CatalogContent.name(),
                         schema);
+                    properties.remove(
+                        RolapConnectionProperties.Catalog.name());
                     return properties;
+                }
+                public String getDefaultCubeName() {
+                    return baseCubeName;
                 }
             };
         }

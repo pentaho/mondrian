@@ -183,7 +183,7 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
      */
     public void testBugMondrian756() {
         TestContext testContext =
-            new SteelWheelsTestContext(TestContext.instance()) {
+            new SteelWheelsTestContext() {
                 @Override
                 public Util.PropertyList getFoodMartConnectionProperties() {
                     Util.PropertyList propertyList =
@@ -273,7 +273,8 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
                 + "</DimensionUsage><DimensionUsage source=\"Time\" usagePrefix=\"TW_\" name=\"Time\" foreignKey=\"SHIPPEDDATE\" highCardinality=\"false\">\n"
                 + "</DimensionUsage><Measure name=\"Price Each\" column=\"PRICEEACH\" formatString=\"#,###.0\" aggregator=\"sum\">\n"
                 + "</Measure><Measure name=\"Total Price\" column=\"TOTALPRICE\" formatString=\"#,###.00\" aggregator=\"sum\">\n"
-                + "</Measure></Cube></Schema>\n");
+                + "</Measure></Cube></Schema>\n",
+                "SteelWheelsSales1");
         final String mdxQuery =
             "with set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], (NOT IsEmpty([Measures].[Price Each])))'\n"
             + "  set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], Ancestor([Time].CurrentMember, [Time].[Years]).OrderKey, BASC, [Time].CurrentMember.OrderKey, BASC)'\n"
@@ -285,7 +286,36 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "select [*BASE_MEMBERS_Measures] ON COLUMNS,\n"
             + "  [*SORTED_ROW_AXIS] ON ROWS\n"
             + "from [SteelWheelsSales2]\n";
-        context.executeQuery(mdxQuery);
+        if (!context.databaseIsValid()) {
+            return;
+        }
+        context.assertQueryReturns(
+            mdxQuery,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[2003].[QTR1]}\n"
+            + "{[Time].[2003].[QTR2]}\n"
+            + "{[Time].[2003].[QTR3]}\n"
+            + "{[Time].[2003].[QTR4]}\n"
+            + "{[Time].[2004].[QTR1]}\n"
+            + "{[Time].[2004].[QTR2]}\n"
+            + "{[Time].[2004].[QTR3]}\n"
+            + "{[Time].[2004].[QTR4]}\n"
+            + "{[Time].[2005].[QTR1]}\n"
+            + "{[Time].[2005].[QTR2]}\n"
+            + "Row #0: 3,373.8\n"
+            + "Row #1: 2,384.9\n"
+            + "Row #2: 4,480.1\n"
+            + "Row #3: 19,829.8\n"
+            + "Row #4: 6,167.2\n"
+            + "Row #5: 5,493.5\n"
+            + "Row #6: 6,433.7\n"
+            + "Row #7: 25,362.9\n"
+            + "Row #8: 12,406.3\n"
+            + "Row #9: 6,107.0\n");
     }
 }
 // End SteelWheelsSchemaTest.java

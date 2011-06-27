@@ -1838,14 +1838,7 @@ Revision is $Id$
             }
 
             public String getExpression(SqlQuery query) {
-                final String tableAlias = query.getTableAlias(table);
-                if (tableAlias == null) {
-                    return
-                        query.getDialect().quoteIdentifier(table, name);
-                } else {
-                    return
-                        query.getDialect().quoteIdentifier(tableAlias, name);
-                }
+                return query.getDialect().quoteIdentifier(table, name);
             }
 
             public String getGenericExpression() {
