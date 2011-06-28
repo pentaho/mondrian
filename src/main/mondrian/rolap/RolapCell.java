@@ -11,12 +11,17 @@ package mondrian.rolap;
 
 import mondrian.mdx.*;
 import mondrian.olap.*;
+import mondrian.olap.Axis;
 import mondrian.olap.Cell;
 import mondrian.olap.Connection;
+import mondrian.olap.Position;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.SetFunDef;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.rolap.agg.AndPredicate;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.agg.MemberColumnPredicate;
+import mondrian.rolap.agg.OrPredicate;
 import mondrian.spi.Dialect;
 
 import java.sql.*;
@@ -95,18 +100,39 @@ public class RolapCell implements Cell {
     public String getDrillThroughSQL(boolean extendedContext) {
         RolapAggregationManager aggMan = AggregationManager.instance();
         final Member[] currentMembers = getMembersForDrillThrough();
+        // Create a StarPredicate to represent the compound slicer
+        // (if necessary)
+        // NOTE: the method buildDrillthroughSlicerPredicate modifies
+        // the array of members, so it MUST be called before calling
+        // RolapAggregationManager.makeDrillThroughRequest
+        StarPredicate starPredicateSlicer =
+            buildDrillthroughSlicerPredicate(
+                currentMembers,
+                result.getSlicerAxis());
         CellRequest cellRequest =
             RolapAggregationManager.makeDrillThroughRequest(
                 currentMembers, extendedContext, result.getCube());
         return (cellRequest == null)
             ? null
-            : aggMan.getDrillThroughSql(cellRequest, false);
+            : aggMan.getDrillThroughSql(
+                cellRequest,
+                starPredicateSlicer,
+                false);
     }
 
 
     public int getDrillThroughCount() {
         RolapAggregationManager aggMan = AggregationManager.instance();
         final Member[] currentMembers = getMembersForDrillThrough();
+        // Create a StarPredicate to represent the compound
+        // slicer (if necessary)
+        // NOTE: the method buildDrillthroughSlicerPredicate modifies
+        // the array of members, so it MUST be called before calling
+        // RolapAggregationManager.makeDrillThroughRequest
+        StarPredicate starPredicateSlicer =
+            buildDrillthroughSlicerPredicate(
+                currentMembers,
+                result.getSlicerAxis());
         CellRequest cellRequest =
             RolapAggregationManager.makeDrillThroughRequest(
                 currentMembers, false, result.getCube());
@@ -115,7 +141,11 @@ public class RolapCell implements Cell {
         }
         RolapConnection connection =
             (RolapConnection) result.getQuery().getConnection();
-        final String sql = aggMan.getDrillThroughSql(cellRequest, true);
+        final String sql =
+            aggMan.getDrillThroughSql(
+                cellRequest,
+                starPredicateSlicer,
+                true);
         final SqlStatement stmt =
             RolapUtil.executeQuery(
                 connection.getDataSource(),
@@ -132,6 +162,122 @@ public class RolapCell implements Cell {
         } finally {
             stmt.close();
         }
+    }
+
+    /**
+     * This method handles the case of a compound slicer with more than one
+     * {@link Position}. In this case, a simple array of {@link Member}s is not
+     * sufficient to express the set of drill through rows. If the slicer axis
+     * does have multiple positions, this method will do two things:
+     * <ol>
+     *  <li>Modify the passed-in array if any Member is overly restrictive.
+     *  This can happen if the slicer specifies multiple members in the same
+     *  hierarchy. In this scenario, the array of Members will contain an
+     *  element for only the last selected member in the hierarchy. This method
+     *  will replace that Member with the "All" Member from that hierarchy.
+     *  </li>
+     *  <li>Create a {@link StarPredicate} representing the Positions indicated
+     *  by the slicer axis.
+     *  </li>
+     * </ol>
+     *
+     * @param membersForDrillthrough the array of Members returned by
+     * {@link #getMembersForDrillThrough()}
+     * @param slicerAxis the slicer {@link Axis}
+     * @return an instance of <code>StarPredicate</code> representing all
+     * of the the positions from the slicer if it has more than one,
+     * or <code>null</code> otherwise.
+     */
+    private StarPredicate buildDrillthroughSlicerPredicate(
+        Member[] membersForDrillthrough,
+        Axis slicerAxis)
+    {
+        List<Position> listOfPositions = slicerAxis.getPositions();
+        // If the slicer has zero or one position(s),
+        // then there is no need to do
+        // anything; the array of Members is correct as-is
+        if (listOfPositions.size() <= 1) {
+            return null;
+        }
+        // First, iterate through the positions' members, un-constraining the
+        // "membersForDrillthrough" array if any position member is not
+        // in the array
+        for (Position position : listOfPositions) {
+            for (Member member : position) {
+                RolapHierarchy rolapHierarchy =
+                    (RolapHierarchy) member.getHierarchy();
+                // Check if the membersForDrillthrough constraint is identical
+                // to that of the position member
+                if (!membersForDrillthrough[rolapHierarchy.getOrdinalInCube()]
+                    .equals(member))
+                {
+                    // There is a discrepancy, so un-constrain the
+                    // membersForDrillthrough array
+                    membersForDrillthrough[rolapHierarchy.getOrdinalInCube()] =
+                        rolapHierarchy.getAllMember();
+                }
+            }
+        }
+        // This is a list containing an AndPredicate for each position in the
+        // slicer axis
+        List<StarPredicate> listOfStarPredicatesForSlicerPositions =
+            new ArrayList<StarPredicate>();
+        // Now we re-iterate the positions' members,
+        // creating the slicer constraint
+        for (Position position : listOfPositions) {
+            // This is a list of the predicates required to select the
+            // current position (excluding the members of the position
+            // that are already constrained in the membersForDrillthrough array)
+            List<StarPredicate> listOfStarPredicatesForCurrentPosition =
+                new ArrayList<StarPredicate>();
+            // Iterate the members of the current position
+            for (Member member : position) {
+                RolapHierarchy rolapHierarchy =
+                    (RolapHierarchy) member.getHierarchy();
+                // If the membersForDrillthrough is already constraining to
+                // this member, then there is no need to create additional
+                // predicate(s) for this member
+                if (!membersForDrillthrough[rolapHierarchy.getOrdinalInCube()]
+                   .equals(member))
+                {
+                    // Walk up the member's hierarchy, adding a
+                    // predicate for each level
+                    Member memberWalk = member;
+                    Level levelLast = null;
+                    while (memberWalk != null && ! memberWalk.isAll()) {
+                        // Only create a predicate for this member if we
+                        // are at a new level. This is for parent-child levels,
+                        // however it still suffers from the following bug:
+                        //  http://jira.pentaho.com/browse/MONDRIAN-318
+                        if (memberWalk.getLevel() != levelLast) {
+                            RolapCubeMember rolapCubeMember =
+                                (RolapCubeMember) memberWalk;
+                            RolapStar.Column column =
+                                rolapCubeMember.getLevel()
+                                    .getBaseStarKeyColumn(result.getCube());
+                            // Add a predicate for the member at this level
+                            listOfStarPredicatesForCurrentPosition.add(
+                                new MemberColumnPredicate(
+                                    column,
+                                    rolapCubeMember));
+                        }
+                        levelLast = memberWalk.getLevel();
+                        // Walk up the hierarchy
+                        memberWalk = memberWalk.getParentMember();
+                    }
+                }
+            }
+            // AND together all of the predicates that specify
+            // the current position
+            StarPredicate starPredicateForCurrentSlicerPosition =
+                new AndPredicate(listOfStarPredicatesForCurrentPosition);
+            // Add this position's predicate to the list
+            listOfStarPredicatesForSlicerPositions
+                .add(starPredicateForCurrentSlicerPosition);
+        }
+        // OR together the predicates for all of the slicer's
+        // positions and return
+        return new OrPredicate(listOfStarPredicatesForSlicerPositions);
     }
 
     /**

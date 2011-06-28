@@ -123,11 +123,13 @@ public class AggregationManager extends RolapAggregationManager {
 
     public String getDrillThroughSql(
         final CellRequest request,
-        boolean countOnly)
+        final StarPredicate starPrediateSlicer,
+        final boolean countOnly)
     {
         DrillThroughQuerySpec spec =
             new DrillThroughQuerySpec(
                 request,
+                starPrediateSlicer,
                 countOnly);
         Pair<String, List<SqlStatement.Type>> pair = spec.generateSqlQuery();
 

@@ -615,10 +615,14 @@ public abstract class RolapAggregationManager {
      *
      * @param request Cell request
      * @param countOnly If true, return a statment which returns only the count
+     * @param starPredicateSlicer A StarPredicate representing slicer positions
+     * that could not be represented by the CellRequest, or
+     * <code>null</code> if no additional predicate is necessary.
      * @return SQL statement
      */
     public abstract String getDrillThroughSql(
         CellRequest request,
+        StarPredicate starPredicateSlicer,
         boolean countOnly);
 
     /**
