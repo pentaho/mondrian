@@ -317,6 +317,7 @@ public class Main extends TestSuite {
             addTest(suite, TypeTest.class);
             addTest(suite, SteelWheelsSchemaTest.class);
             addTest(suite, MultipleColsInTupleAggTest.class);
+            addTest(suite, DynamicSchemaProcessorTest.class);
             addTest(suite, CodeComplianceTest.class);
 
             boolean testNonEmpty = isRunOnce();
