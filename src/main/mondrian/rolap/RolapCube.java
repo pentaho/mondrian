@@ -648,6 +648,22 @@ public class RolapCube extends CubeBase {
             }
         }
 
+        // We modify the measures schema reader one last time with a version
+        // which includes all calculated members as well.
+        final List<RolapMember> finalMeasureMembers =
+            new ArrayList<RolapMember>();
+        for (RolapVirtualCubeMeasure measure : origMeasureList) {
+            finalMeasureMembers.add((RolapMember)measure);
+        }
+        for (Formula formula : calculatedMemberList) {
+            finalMeasureMembers.add(
+                (RolapMember)formula.getMdxMember());
+        }
+        setMeasuresHierarchyMemberReader(
+            new CacheMemberReader(
+                new MeasureMemberSource(
+                    this.measuresHierarchy,
+                    Util.<RolapMember>cast(finalMeasureMembers))));
         // Note: virtual cubes do not get aggregate
     }
 

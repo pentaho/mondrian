@@ -3470,6 +3470,57 @@ public class SchemaTest extends FoodMartTestCase {
         captionValue = mall.getCaption();
         assertEquals("Store Assistant Manager", captionValue);
     }
+
+    /**
+     * This is a test case for bug Mondrian-923. When a virtual cube included
+     * calculated members in its schema, they were not included in the list of
+     * existing measures because of an override of the hierarchy schema reader
+     * which was done at cube init time when resolving the calculated members
+     * of the base cubes.
+     */
+    public void testBugMondrian923() throws Exception {
+        TestContext context =
+            TestContext.createSubstitutingCube(
+                "Warehouse and Sales",
+                null,
+                null,
+                "<CalculatedMember name=\"Image Unit Sales\" dimension=\"Measures\"><Formula>[Measures].[Unit Sales]</Formula><CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"|$#,###.00|image=icon_chart\\.gif|link=http://www\\.pentaho\\.com\"/></CalculatedMember>"
+                + "<CalculatedMember name=\"Arrow Unit Sales\" dimension=\"Measures\"><Formula>[Measures].[Unit Sales]</Formula><CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"IIf([Measures].[Unit Sales] > 10000,'|#,###|arrow=up',IIf([Measures].[Unit Sales] > 5000,'|#,###|arrow=down','|#,###|arrow=none'))\"/></CalculatedMember>"
+                + "<CalculatedMember name=\"Style Unit Sales\" dimension=\"Measures\"><Formula>[Measures].[Unit Sales]</Formula><CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"IIf([Measures].[Unit Sales] > 100000,'|#,###|style=green',IIf([Measures].[Unit Sales] > 50000,'|#,###|style=yellow','|#,###|style=red'))\"/></CalculatedMember>",
+                null);
+        for (Cube cube
+                : context.getConnection().getSchemaReader().getCubes())
+        {
+            if (cube.getName().equals("Warehouse and Sales")) {
+                for (Dimension dim : cube.getDimensions()) {
+                    if (dim.isMeasures()) {
+                        List<Member> members =
+                            context.getConnection()
+                                .getSchemaReader().getLevelMembers(
+                                    dim.getHierarchy().getLevels()[0],
+                                    true);
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Profit Per Unit Shipped]"));
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Image Unit Sales]"));
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Arrow Unit Sales]"));
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Style Unit Sales]"));
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Average Warehouse Sale]"));
+                        return;
+                    }
+                }
+            }
+        }
+        fail("Didn't find measures in sales cube.");
+    }
 }
 
 // End SchemaTest.java
