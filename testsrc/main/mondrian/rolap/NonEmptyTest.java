@@ -4813,6 +4813,36 @@ public class NonEmptyTest extends BatchTestCase {
             }
         }
     }
+
+    /**
+    * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-897">
+    * MONDRIAN-897, "ClassCastException in
+    * CrossJoinArgFactory.allArgsCheapToExpand when defining a NamedSet as
+    * another NamedSet"</a>.
+    */
+    public void testBugMondrian897DoubleNamedSetDefinitions() {
+       TestContext ctx = getTestContext();
+       ctx.assertQueryReturns(
+           "WITH SET [CustomerSet] as {[Customers].[Canada].[BC].[Burnaby].[Alexandra Wellington], [Customers].[USA].[WA].[Tacoma].[Eric Coleman]} "
+           + "SET [InterestingCustomers] as [CustomerSet] "
+           + "SET [TimeRange] as {[Time].[1998].[Q1], [Time].[1998].[Q2]} "
+           + "SELECT {[Measures].[Store Sales]} ON COLUMNS, "
+           + "CrossJoin([InterestingCustomers], [TimeRange]) ON ROWS "
+           + "FROM [Sales]",
+           "Axis #0:\n"
+           + "{}\n"
+           + "Axis #1:\n"
+           + "{[Measures].[Store Sales]}\n"
+           + "Axis #2:\n"
+           + "{[Customers].[Canada].[BC].[Burnaby].[Alexandra Wellington], [Time].[1998].[Q1]}\n"
+           + "{[Customers].[Canada].[BC].[Burnaby].[Alexandra Wellington], [Time].[1998].[Q2]}\n"
+           + "{[Customers].[USA].[WA].[Tacoma].[Eric Coleman], [Time].[1998].[Q1]}\n"
+           + "{[Customers].[USA].[WA].[Tacoma].[Eric Coleman], [Time].[1998].[Q2]}\n"
+           + "Row #0: \n"
+           + "Row #1: \n"
+           + "Row #2: \n"
+           + "Row #3: \n");
+    }
 }
 
 // End NonEmptyTest.java

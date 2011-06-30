@@ -931,7 +931,7 @@ public class CrossJoinArgFactory {
         Arrays.asList("LastChild", "FirstChild", "Lag");
 
     private boolean allArgsCheapToExpand(Exp exp) {
-        if (exp instanceof NamedSetExpr) {
+        while (exp instanceof NamedSetExpr) {
             exp = ((NamedSetExpr) exp).getNamedSet().getExp();
         }
         for (Exp arg : ((ResolvedFunCall) exp).getArgs()) {
