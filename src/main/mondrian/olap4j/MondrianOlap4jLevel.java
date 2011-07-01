@@ -90,7 +90,7 @@ class MondrianOlap4jLevel implements Level, Named {
             return Type.REGULAR;
         case TimeDays:
             return Type.TIME_DAYS;
-        case TimeHalfYear:
+        case TimeHalfYears:
             return Type.TIME_HALF_YEAR;
         case TimeHours:
             return Type.TIME_HOURS;

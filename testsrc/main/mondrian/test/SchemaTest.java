@@ -2717,12 +2717,21 @@ public class SchemaTest extends FoodMartTestCase {
      * "adding hours/mins as levelType for level of type Dimension"</a>.
      */
     public void testBugMondrian355() {
+        checkBugMondrian355("TimeHalfYears");
+
+        // make sure that the deprecated name still works
+        checkBugMondrian355("TimeHalfYear");
+    }
+
+    public void checkBugMondrian355(String timeHalfYear) {
         final String xml =
             "<Dimension name=\"Time2\" foreignKey=\"time_id\" type=\"TimeDimension\">\n"
             + "<Hierarchy hasAll=\"true\" primaryKey=\"time_id\">\n"
             + "  <Table name=\"time_by_day\"/>\n"
             + "  <Level name=\"Years\" column=\"the_year\" uniqueMembers=\"true\" type=\"Numeric\" levelType=\"TimeYears\"/>\n"
-            + "  <Level name=\"Half year\" column=\"quarter\" uniqueMembers=\"false\" levelType=\"TimeHalfYear\"/>\n"
+            + "  <Level name=\"Half year\" column=\"quarter\" uniqueMembers=\"false\" levelType=\""
+            + timeHalfYear
+            + "\"/>\n"
             + "  <Level name=\"Hours\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\" levelType=\"TimeHours\"/>\n"
             + "  <Level name=\"Quarter hours\" column=\"time_id\" uniqueMembers=\"false\" type=\"Numeric\" levelType=\"TimeUndefined\"/>\n"
             + "</Hierarchy>\n"

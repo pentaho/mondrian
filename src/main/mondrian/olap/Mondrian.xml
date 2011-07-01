@@ -679,9 +679,13 @@ Revision is $Id$
                 Whether this is a regular or a time-related level.
                 The value makes a difference to time-related functions
                 such as YTD (year-to-date).
+
+                <p>The "TimeHalfYear" value is deprecated and will be removed
+                 in mondrian-4.0; use "TimeHalfYears" instead.</p>
             </Doc>
             <Value>Regular</Value>
             <Value>TimeYears</Value>
+            <Value>TimeHalfYears</Value>
             <Value>TimeHalfYear</Value>
             <Value>TimeQuarters</Value>
             <Value>TimeMonths</Value>

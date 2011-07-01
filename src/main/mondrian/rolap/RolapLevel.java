@@ -336,7 +336,10 @@ public class RolapLevel extends LevelBase {
             xmlLevel.getDatatype(),
             toInternalType(xmlLevel.internalType),
             HideMemberCondition.valueOf(xmlLevel.hideMemberIf),
-            LevelType.valueOf(xmlLevel.levelType),
+            LevelType.valueOf(
+                xmlLevel.levelType.equals("TimeHalfYear")
+                    ? "TimeHalfYears"
+                    : xmlLevel.levelType),
             xmlLevel.approxRowCount,
             RolapHierarchy.createAnnotationMap(xmlLevel.annotations));
 
