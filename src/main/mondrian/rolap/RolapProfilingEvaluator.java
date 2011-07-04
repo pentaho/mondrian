@@ -64,13 +64,18 @@ public class RolapProfilingEvaluator extends RolapEvaluator {
      */
     private RolapProfilingEvaluator(
         RolapEvaluatorRoot root,
-        RolapProfilingEvaluator evaluator)
+        RolapProfilingEvaluator evaluator,
+        List<List<Member>> aggregationList)
     {
-        super(root, evaluator);
+        super(
+            root,
+            evaluator,
+            aggregationList);
     }
 
-    public RolapEvaluator _push() {
-        return new RolapProfilingEvaluator(root, this);
+    @Override
+    protected RolapEvaluator _push(List<List<Member>> aggregationList) {
+        return new RolapProfilingEvaluator(root, this, aggregationList);
     }
 
     /**
@@ -137,6 +142,11 @@ public class RolapProfilingEvaluator extends RolapEvaluator {
             return calc.getResultStyle();
         }
 
+        @Override
+        public boolean dependsOn(Hierarchy hierarchy) {
+            return calc.dependsOn(hierarchy);
+        }
+
         public Object evaluate(Evaluator evaluator) {
             ++callCount;
             long start = System.currentTimeMillis();
@@ -198,6 +208,16 @@ public class RolapProfilingEvaluator extends RolapEvaluator {
         @Override
         public Type getType() {
             return calc.getType();
+        }
+
+        @Override
+        public Calc[] getCalcs() {
+            return ((AbstractCalc) calc).getCalcs();
+        }
+
+        @Override
+        public boolean dependsOn(Hierarchy hierarchy) {
+            return calc.dependsOn(hierarchy);
         }
 
         public Object evaluate(Evaluator evaluator) {
