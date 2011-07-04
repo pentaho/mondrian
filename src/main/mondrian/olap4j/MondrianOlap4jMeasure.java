@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -23,7 +23,7 @@ import org.olap4j.metadata.Measure;
  * @version $Id$
  * @since Dec 10, 2007
  */
-public class MondrianOlap4jMeasure
+class MondrianOlap4jMeasure
     extends MondrianOlap4jMember
     implements Measure
 {

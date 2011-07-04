@@ -4,13 +4,12 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 20 January, 1999
 */
-
 package mondrian.olap;
 
 import java_cup.runtime.Symbol;
@@ -256,6 +255,7 @@ public class Scanner {
         initResword(ParserSym.ELSE,                 "ELSE");
         initResword(ParserSym.EMPTY,                "EMPTY");
         initResword(ParserSym.END,                  "END");
+        initResword(ParserSym.EXPLAIN,              "EXPLAIN");
 //      initResword(ParserSym.FIRSTCHILD,           "FIRSTCHILD");
         initResword(ParserSym.FIRSTROWSET,          "FIRSTROWSET");
 //      initResword(ParserSym.FIRSTSIBLING,         "FIRSTSIBLING");
@@ -265,6 +265,7 @@ public class Scanner {
 //      initResword(ParserSym.FORE_COLOR,           "FORE_COLOR");
 //      initResword(ParserSym.FORMATTED_VALUE,      "FORMATTED_VALUE");
 //      initResword(ParserSym.FORMAT_STRING,        "FORMAT_STRING");
+        initResword(ParserSym.FOR,                  "FOR");
         initResword(ParserSym.FROM,                 "FROM");
         initResword(ParserSym.IS,                   "IS");
         initResword(ParserSym.IN,                   "IN");
@@ -284,6 +285,7 @@ public class Scanner {
         initResword(ParserSym.OR,                   "OR");
         initResword(ParserSym.PAGES,                "PAGES");
 //      initResword(ParserSym.PARENT,               "PARENT");
+        initResword(ParserSym.PLAN,                 "PLAN");
 //      initResword(ParserSym.PREVMEMBER,           "PREVMEMBER");
         initResword(ParserSym.PROPERTIES,           "PROPERTIES");
 //      initResword(ParserSym.RECURSIVE,            "RECURSIVE");

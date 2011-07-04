@@ -9,10 +9,12 @@
 */
 package mondrian.calc.impl;
 
+import mondrian.mdx.MdxVisitor;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.calc.*;
 
+import java.io.PrintWriter;
 import java.util.List;
 
 /**
@@ -50,7 +52,8 @@ public class DelegatingExpCompiler implements ExpCompiler {
     }
 
     public Calc compile(Exp exp) {
-        return parent.compile(exp);
+        final Calc calc = parent.compile(wrap(exp));
+        return afterCompile(exp, calc, false);
     }
 
     public Calc compileAs(
@@ -58,75 +61,75 @@ public class DelegatingExpCompiler implements ExpCompiler {
         Type resultType,
         List<ResultStyle> preferredResultTypes)
     {
-        return parent.compileAs(exp, resultType, preferredResultTypes);
+        return parent.compileAs(wrap(exp), resultType, preferredResultTypes);
     }
 
     public MemberCalc compileMember(Exp exp) {
-        MemberCalc calc = parent.compileMember(exp);
+        MemberCalc calc = parent.compileMember(wrap(exp));
         return (MemberCalc) afterCompile(exp, calc, false);
     }
 
     public LevelCalc compileLevel(Exp exp) {
-        final LevelCalc calc = parent.compileLevel(exp);
+        final LevelCalc calc = parent.compileLevel(wrap(exp));
         return (LevelCalc) afterCompile(exp, calc, false);
     }
 
     public DimensionCalc compileDimension(Exp exp) {
-        final DimensionCalc calc = parent.compileDimension(exp);
+        final DimensionCalc calc = parent.compileDimension(wrap(exp));
         return (DimensionCalc) afterCompile(exp, calc, false);
     }
 
     public HierarchyCalc compileHierarchy(Exp exp) {
-        final HierarchyCalc calc = parent.compileHierarchy(exp);
+        final HierarchyCalc calc = parent.compileHierarchy(wrap(exp));
         return (HierarchyCalc) afterCompile(exp, calc, false);
     }
 
     public IntegerCalc compileInteger(Exp exp) {
-        final IntegerCalc calc = parent.compileInteger(exp);
+        final IntegerCalc calc = parent.compileInteger(wrap(exp));
         return (IntegerCalc) afterCompile(exp, calc, false);
     }
 
     public StringCalc compileString(Exp exp) {
-        final StringCalc calc = parent.compileString(exp);
+        final StringCalc calc = parent.compileString(wrap(exp));
         return (StringCalc) afterCompile(exp, calc, false);
     }
 
     public DateTimeCalc compileDateTime(Exp exp) {
-        final DateTimeCalc calc = parent.compileDateTime(exp);
+        final DateTimeCalc calc = parent.compileDateTime(wrap(exp));
         return (DateTimeCalc) afterCompile(exp, calc, false);
     }
 
-    public ListCalc compileList(Exp exp) {
+    public final ListCalc compileList(Exp exp) {
         return compileList(exp, false);
     }
 
     public ListCalc compileList(Exp exp, boolean mutable) {
-        final ListCalc calc = parent.compileList(exp, mutable);
+        final ListCalc calc = parent.compileList(wrap(exp), mutable);
         return (ListCalc) afterCompile(exp, calc, mutable);
     }
 
     public IterCalc compileIter(Exp exp) {
-        final IterCalc calc = parent.compileIter(exp);
+        final IterCalc calc = parent.compileIter(wrap(exp));
         return (IterCalc) afterCompile(exp, calc, false);
     }
 
     public BooleanCalc compileBoolean(Exp exp) {
-        final BooleanCalc calc = parent.compileBoolean(exp);
+        final BooleanCalc calc = parent.compileBoolean(wrap(exp));
         return (BooleanCalc) afterCompile(exp, calc, false);
     }
 
     public DoubleCalc compileDouble(Exp exp) {
-        final DoubleCalc calc = parent.compileDouble(exp);
+        final DoubleCalc calc = parent.compileDouble(wrap(exp));
         return (DoubleCalc) afterCompile(exp, calc, false);
     }
 
     public TupleCalc compileTuple(Exp exp) {
-        final TupleCalc calc = parent.compileTuple(exp);
+        final TupleCalc calc = parent.compileTuple(wrap(exp));
         return (TupleCalc) afterCompile(exp, calc, false);
     }
 
     public Calc compileScalar(Exp exp, boolean scalar) {
-        final Calc calc = parent.compileScalar(exp, scalar);
+        final Calc calc = parent.compileScalar(wrap(exp), scalar);
         return afterCompile(exp, calc, false);
     }
 
@@ -136,6 +139,72 @@ public class DelegatingExpCompiler implements ExpCompiler {
 
     public List<ResultStyle> getAcceptableResultStyles() {
         return parent.getAcceptableResultStyles();
+    }
+
+    /**
+     * Wrapping an expression ensures that when it is visited, it calls
+     * back to this compiler rather than our parent (wrapped) compiler.
+     *
+     * <p>All methods that pass an expression to the delegate compiler should
+     * wrap expressions in this way. Hopefully the delegate compiler doesn't
+     * use {@code instanceof}; it should be using the visitor pattern instead.
+     *
+     * <p>If we didn't do this, the decorator would get forgotten at the first
+     * level of recursion. It's not pretty, and I thought about other ways
+     * of combining Visitor + Decorator. For instance, I tried replacing
+     * {@link #afterCompile(mondrian.olap.Exp, mondrian.calc.Calc, boolean)}
+     * with a callback (Strategy), but the exit points in ExpCompiler not
+     * clear because there are so many methods.
+     *
+     * @param e Expression to be wrapped
+     * @return wrapper expression
+     */
+    private Exp wrap(Exp e) {
+        return new WrapExp(e, this);
+    }
+
+    /**
+     * See {@link mondrian.calc.impl.DelegatingExpCompiler#wrap}.
+     */
+    private static class WrapExp implements Exp {
+        private final Exp e;
+        private final ExpCompiler wrappingCompiler;
+
+        WrapExp(
+            Exp e,
+            ExpCompiler wrappingCompiler)
+        {
+            this.e = e;
+            this.wrappingCompiler = wrappingCompiler;
+        }
+
+        public Exp clone() {
+            throw new UnsupportedOperationException();
+        }
+
+        public int getCategory() {
+            return e.getCategory();
+        }
+
+        public Type getType() {
+            return e.getType();
+        }
+
+        public void unparse(PrintWriter pw) {
+            e.unparse(pw);
+        }
+
+        public Exp accept(Validator validator) {
+            return e.accept(validator);
+        }
+
+        public Calc accept(ExpCompiler compiler) {
+            return e.accept(wrappingCompiler);
+        }
+
+        public Object accept(MdxVisitor visitor) {
+            return e.accept(visitor);
+        }
     }
 }
 

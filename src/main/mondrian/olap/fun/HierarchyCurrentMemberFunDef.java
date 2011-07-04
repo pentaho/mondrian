@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -17,8 +17,7 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.rolap.RolapHierarchy;
 
-import java.util.List;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * Definition of the <code>&lt;Hierarchy&gt;.CurrentMember</code> MDX
@@ -103,8 +102,9 @@ public class HierarchyCurrentMemberFunDef extends FunDefBase {
             return this.hierarchy == hierarchy;
         }
 
-        public List<Object> getArguments() {
-            return Collections.<Object>singletonList(hierarchy);
+        public void collectArguments(Map<String, Object> arguments) {
+            arguments.put("hierarchy", hierarchy);
+            super.collectArguments(arguments);
         }
     }
 }

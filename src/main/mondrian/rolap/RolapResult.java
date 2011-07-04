@@ -67,8 +67,13 @@ public class RolapResult extends ResultBase {
      * @param query Query
      * @param execute Whether to execute the query
      */
-    RolapResult(final Query query, boolean execute) {
+    RolapResult(
+        final Query query,
+        boolean execute)
+    {
         super(query, new Axis[query.axes.length]);
+
+        assert query != null;
 
         this.point = CellKey.Generator.newCellKey(query.axes.length);
         final int expDeps =
@@ -78,7 +83,11 @@ public class RolapResult extends ResultBase {
         } else {
             final RolapEvaluatorRoot root =
                 new RolapResultEvaluatorRoot(this);
-            this.evaluator = new RolapEvaluator(root);
+            if (query.isProfilingEnabled()) {
+                this.evaluator = new RolapProfilingEvaluator(root);
+            } else {
+                this.evaluator = new RolapEvaluator(root);
+            }
         }
         RolapCube cube = (RolapCube) query.getCube();
         this.batchingReader = new FastBatchingCellReader(cube);
@@ -235,7 +244,7 @@ public class RolapResult extends ResultBase {
             loadMembers(
                 emptyNonAllMembers,
                 evaluator,
-                query.slicerAxis,
+                query.getSlicerAxis(),
                 query.slicerCalc,
                 axisMembers);
             axisMembers.setSlicer(false);
@@ -323,7 +332,7 @@ public class RolapResult extends ResultBase {
                         nonAllMembers,
                         nonAllMembers.size() - 1,
                         savedEvaluator,
-                        query.slicerAxis,
+                        query.getSlicerAxis(),
                         query.slicerCalc);
                 // Materialize the iterable as a list. Although it may take
                 // memory, we need the first member below, and besides, slicer
@@ -474,6 +483,12 @@ public class RolapResult extends ResultBase {
                 LOGGER.debug("RolapResult<init>: " + Util.printMemory());
             }
         }
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        query.close();
     }
 
     protected boolean removeDimension(

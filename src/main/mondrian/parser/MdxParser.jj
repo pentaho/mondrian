@@ -216,7 +216,9 @@ TOKEN :
     | <ELSE: "ELSE">
     | <EMPTY: "EMPTY">
     | <END: "END">
+    | <EXPLAIN: "EXPLAIN">
     | <FIRSTROWSET: "FIRSTROWSET">
+    | <FOR: "FOR">
     | <FROM: "FROM">
     | <IN: "IN">
     | <IS: "IS">
@@ -229,6 +231,7 @@ TOKEN :
     | <ON: "ON">
     | <OR: "OR">
     | <PAGES: "PAGES">
+    | <PLAN: "PLAN">
     | <PROPERTIES: "PROPERTIES">
     | <RETURN: "RETURN">
     | <ROWS: "ROWS">
@@ -909,6 +912,7 @@ List<Exp> expList() :
 //
 // <statement> ::= <selectStatement>
 //                   | <drillthroughStatement>
+//                   | <explainStatement>
 //
 // <selectStatement> ::= [WITH <formulaSpecification>]
 //                         SELECT [<axisSpecification>
@@ -924,7 +928,27 @@ List<Exp> expList() :
 //     <selectStatement>
 //     [ RETURN <memberOrAttribute> [, <memberOrAttribute>...] ]
 //
+// <explainStatement> ::=
+//     EXPLAIN PLAN FOR ( <selectStatement> | <drillthroughStatement> )
+//
 QueryPart statement() :
+{
+    QueryPart qp;
+}
+{
+    (
+        qp = selectStatement()
+    |
+        qp = drillthroughStatement()
+    |
+        qp = explainStatement()
+    )
+    {
+        return qp;
+    }
+}
+
+QueryPart selectOrDrillthroughStatement() :
 {
     QueryPart qp;
 }
@@ -1202,5 +1226,20 @@ Id returnItem() :
     }
 }
 
-// End MdxParser.jj
+QueryPart explainStatement() :
+{
+    QueryPart qp;
+}
+{
+    <EXPLAIN> <PLAN> <FOR>
+    (
+        qp = selectStatement()
+    |
+        qp = drillthroughStatement()
+    )
+    {
+        return factory.makeExplain(qp);
+    }
+}
 
+// End MdxParser.jj

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -184,6 +184,15 @@ parser code {:
             return new DrillThrough(
                 query, maxRowCount, firstRowOrdinal, returnList);
         }
+
+        /**
+         * Creates an {@link Explain} object.
+         */
+        public Explain makeExplain(
+            QueryPart query)
+        {
+            return new Explain(query);
+        }
     }
 
     // Override lr_parser methods for NLS.  With this error handling scheme,
@@ -324,7 +333,9 @@ terminal
     ELSE,
     EMPTY,
     END,
+    EXPLAIN,
     FIRSTROWSET,
+    FOR,
     FROM,
     IN,
     IS,
@@ -337,6 +348,7 @@ terminal
     ON,
     OR,
     PAGES,
+    PLAN,
     PROPERTIES,
     RETURN,
     ROWS,
@@ -407,7 +419,9 @@ non terminal Query
     select_statement;
 non terminal QueryPart
     statement,
-    drillthrough_statement;
+    select_or_drillthrough_statement,
+    drillthrough_statement,
+    explain_statement;
 non terminal Id
     bang_compound_id,
     compound_id,
@@ -1342,6 +1356,7 @@ aliasedExpression ::=
 //                   | <create_formula_statement>
 //                   | <drop_formula_statement>
 //                   | <drillthrough_statement>
+//                   | <explain_statement>
 //
 // <select_statement> ::= [WITH <formula_specification>]
 //                         SELECT [<axis_specification>
@@ -1357,9 +1372,14 @@ aliasedExpression ::=
 //     <select_statement>
 //     [ RETURN <member_or_attribute> [, <member_or_attribute>...] ]
 //
+// <explain_statement> ::=
+//    EXPLAIN PLAN FOR
+//    ( <select_statement> | <drillthrough_statement> )
+
 statement ::=
         select_statement
     |   drillthrough_statement
+    |   explain_statement
     |   _VALUE_EXPRESSION expression:e {:
             RESULT = (QueryPart) e;
         :}
@@ -1724,6 +1744,18 @@ return_item_list ::=
 return_item ::=
         compound_id:i // TODO: allow NAME(id) etc.
     ;
+
+select_or_drillthrough_statement ::=
+        select_statement
+    |   drillthrough_statement
+    ;
+
+explain_statement ::=
+        EXPLAIN PLAN FOR select_or_drillthrough_statement:s {:
+            RESULT = parser.factory.makeExplain(
+                s);
+        :}
+   ;
 
 //
 // <create_formula_statement> ::= CREATE [<scope>]<formula_specification>

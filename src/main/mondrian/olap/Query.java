@@ -12,9 +12,7 @@
 */
 package mondrian.olap;
 
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.ResultStyle;
+import mondrian.calc.*;
 import mondrian.mdx.*;
 import mondrian.olap.fun.ParameterFunDef;
 import mondrian.olap.type.*;
@@ -28,7 +26,6 @@ import java.util.*;
 import org.olap4j.impl.IdentifierParser;
 
 import org.apache.commons.collections.collection.CompositeCollection;
-import org.olap4j.mdx.IdentifierNode;
 import org.olap4j.mdx.IdentifierSegment;
 
 /**
@@ -64,11 +61,7 @@ import org.olap4j.mdx.IdentifierSegment;
  */
 public class Query extends QueryPart {
 
-    /**
-     * public-private: This must be public because it is still accessed in
-     * rolap.RolapCube
-     */
-    public Formula[] formulas;
+    private Formula[] formulas;
 
     /**
      * public-private: This must be public because it is still accessed in
@@ -76,11 +69,7 @@ public class Query extends QueryPart {
      */
     public QueryAxis[] axes;
 
-    /**
-     * public-private: This must be public because it is still accessed in
-     * rolap.RolapResult
-     */
-    public QueryAxis slicerAxis;
+    private QueryAxis slicerAxis;
 
     /**
      * Definitions of all parameters used in this query.
@@ -139,6 +128,11 @@ public class Query extends QueryPart {
     private boolean isExecuting;
 
     /**
+     * Whether query has been closed.
+     */
+    private boolean closed;
+
+    /**
      * Unique list of members referenced from the measures dimension.
      * Will be used to determine if cross joins can be processed natively
      * for virtual cubes.
@@ -181,6 +175,16 @@ public class Query extends QueryPart {
      */
     private final List<ScopedNamedSet> scopedNamedSets =
         new ArrayList<ScopedNamedSet>();
+
+    /**
+     * Writer to which to send profiling information, or null if profiling is
+     * disabled.
+     *
+     * <p>TODO: make non-static. Problem is that RolapResult
+     * (and the RolapEvaluatorRoot) gets created
+     * before Query has finished constructing. That's wrong.
+     */
+    private static ProfileHandler profileHandler;
 
     /**
      * Creates a Query.
@@ -237,6 +241,18 @@ public class Query extends QueryPart {
         this.alertedNonNativeFunDefs = new HashSet<FunDef>();
         QueryTiming.init();
         resolve();
+
+        if (RolapUtil.PROFILE_LOGGER.isDebugEnabled()
+            && !isProfilingEnabled())
+        {
+            enableProfiling(
+                new ProfileHandler() {
+                    public void explain(String s) {
+                        RolapUtil.PROFILE_LOGGER.debug(s);
+                    }
+                }
+            );
+        }
     }
 
     /**
@@ -648,6 +664,27 @@ public class Query extends QueryPart {
                     hierarchy.getUniqueName());
             }
         }
+    }
+
+    @Override
+    public void explain(PrintWriter pw) {
+        final CalcWriter calcWriter = new CalcWriter(pw, false);
+        for (Formula formula : formulas) {
+            formula.getMdxMember(); // TODO:
+        }
+        if (slicerCalc != null) {
+            pw.println("Axis (FILTER):");
+            slicerCalc.accept(calcWriter);
+            pw.println();
+        }
+        int i = -1;
+        for (QueryAxis axis : axes) {
+            ++i;
+            pw.println("Axis (" + axis.getAxisName() + "):");
+            axisCalcs[i].accept(calcWriter);
+            pw.println();
+        }
+        pw.flush();
     }
 
     /**
@@ -1312,7 +1349,11 @@ public class Query extends QueryPart {
 
         final int expDeps =
             MondrianProperties.instance().TestExpDependencies.get();
-        if (expDeps > 0) {
+        if (profileHandler != null) {
+            // Cannot test dependencies and profile at the same time. Profiling
+            // trumps.
+            compiler = RolapUtil.createProfilingCompiler(compiler);
+        } else if (expDeps > 0) {
             compiler = RolapUtil.createDependencyTestingCompiler(compiler);
         }
         return compiler;
@@ -1423,6 +1464,50 @@ public class Query extends QueryPart {
      */
     public void clearEvalCache() {
         evalCache.clear();
+    }
+
+    /**
+     * Enables profiling.
+     *
+     * <p>Profiling information will be sent to the given writer when
+     * {@link Result#close()} is called.
+     *
+     * <p>If <tt>profileHandler</tt> is null, disables profiling.
+     *
+     * @param _profileHandler Writer to which to send profiling information
+     */
+    public static void enableProfiling(ProfileHandler _profileHandler) {
+        profileHandler = _profileHandler;
+    }
+
+    /**
+     * Returns whther profiling is enabled.
+     *
+     * @return Whether profiling is enabled.
+     */
+    public boolean isProfilingEnabled() {
+        return profileHandler != null;
+    }
+
+    /**
+     * Closes this query.
+     *
+     * <p>Releases any resources held. Writes statistics to log if profiling
+     * is enabled.
+     *
+     * <p>This method is idempotent.
+     */
+    public void close() {
+        if (!closed) {
+            closed = true;
+            if (profileHandler != null) {
+                final StringWriter stringWriter = new StringWriter();
+                final PrintWriter printWriter = new PrintWriter(stringWriter);
+                explain(printWriter);
+                printWriter.close();
+                profileHandler.explain(stringWriter.toString());
+            }
+        }
     }
 
     /**
@@ -1992,6 +2077,10 @@ public class Query extends QueryPart {
                 }
             }
         }
+    }
+
+    public interface ProfileHandler {
+        public void explain(String s);
     }
 }
 
