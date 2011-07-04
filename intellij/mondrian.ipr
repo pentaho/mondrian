@@ -10,6 +10,32 @@
     <option name="PROJECT_PROFILE" />
     <option name="USE_PROJECT_LEVEL_SETTINGS" value="false" />
   </component>
+  <component name="CodeStyleSettingsManager">
+    <option name="PER_PROJECT_SETTINGS">
+      <value>
+        <ADDITIONAL_INDENT_OPTIONS fileType="java">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+          <option name="USE_RELATIVE_INDENTS" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+        <ADDITIONAL_INDENT_OPTIONS fileType="xml">
+          <option name="INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="8" />
+          <option name="TAB_SIZE" value="4" />
+          <option name="USE_TAB_CHARACTER" value="false" />
+          <option name="SMART_TABS" value="false" />
+          <option name="LABEL_INDENT_SIZE" value="0" />
+          <option name="LABEL_INDENT_ABSOLUTE" value="false" />
+          <option name="USE_RELATIVE_INDENTS" value="false" />
+        </ADDITIONAL_INDENT_OPTIONS>
+      </value>
+    </option>
+  </component>
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="Javac" />
     <excludeFromCompile>
@@ -321,9 +347,9 @@
     </library>
     <library name="jdbcDrivers">
       <CLASSES>
-        <root url="jar:///usr/lib/oracle/xe/app/oracle/product/10.2.0/server/jdbc/lib/ojdbc14.jar!/" />
         <root url="jar:///usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/derby.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../testlib/ojdbc14.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
@@ -355,7 +381,9 @@
         <root url="jar://$PROJECT_DIR$/../lib/olap4j-tck.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES />
+      <SOURCES>
+        <root url="file://$USER_HOME$/open1/olap4j/testsrc" />
+      </SOURCES>
     </library>
     <library name="olap4j-xmla">
       <CLASSES>
@@ -371,8 +399,8 @@
         <root url="jar://$PROJECT_DIR$/../workbench/plugins/pentaho-xul-swing.jar!/" />
         <root url="jar://$PROJECT_DIR$/../workbench/plugins/kettle-engine.jar!/" />
         <root url="jar://$PROJECT_DIR$/../workbench/plugins/kettle-core.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../workbench/plugins/pentaho-database.jar!/" />
         <root url="jar://$PROJECT_DIR$/../workbench/plugins/pentaho-xul-core.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../workbench/plugins/kettle-dbdialog.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
