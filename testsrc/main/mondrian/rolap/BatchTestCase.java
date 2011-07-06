@@ -190,9 +190,33 @@ public class BatchTestCase extends FoodMartTestCase {
      * @param requests Sequence of cell requests
      * @param patterns Set of patterns
      */
-    void assertRequestSql(
+    protected void assertRequestSql(
         CellRequest[] requests,
         SqlPattern[] patterns)
+    {
+        assertRequestSql(requests, patterns, false);
+    }
+
+    /**
+     * Checks that a given sequence of cell requests results in a
+     * particular SQL statement being generated.
+     *
+     * <p>Always clears the cache before running the requests.
+     *
+     * <p>Runs the requests once for each SQL pattern in the current
+     * dialect. If there are multiple patterns, runs the MDX query multiple
+     * times, and expects to see each SQL statement appear. If there are no
+     * patterns in this dialect, the test trivially succeeds.
+     *
+     * @param requests Sequence of cell requests
+     * @param patterns Set of patterns
+     * @param negative Set to false in order to 'expect' a query or
+     * true to 'forbid' a query.
+     */
+    protected void assertRequestSql(
+        CellRequest[] requests,
+        SqlPattern[] patterns,
+        boolean negative)
     {
         final RolapStar star = requests[0].getMeasure().getStar();
         final String cubeName = requests[0].getMeasure().getCubeName();
@@ -247,8 +271,10 @@ public class BatchTestCase extends FoodMartTestCase {
             } finally {
                 RolapUtil.threadHooks.set(null);
             }
-            if (bomb == null) {
+            if (!negative && bomb == null) {
                 fail("expected query [" + sql + "] did not occur");
+            } else if (negative && bomb != null) {
+                fail("forbidden query [" + sql + "] detected");
             }
             TestContext.assertEqualsVerbose(
                 replaceQuotes(sql),
@@ -492,7 +518,7 @@ public class BatchTestCase extends FoodMartTestCase {
         return s;
     }
 
-    CellRequest createRequest(
+    protected CellRequest createRequest(
         final String cube, final String measure,
         final String table, final String column, final String value)
     {
@@ -501,7 +527,7 @@ public class BatchTestCase extends FoodMartTestCase {
             new String[]{table}, new String[]{column}, new String[]{value});
     }
 
-    CellRequest createRequest(
+    protected CellRequest createRequest(
         final String cube, final String measureName,
         final String[] tables, final String[] columns, final String[] values)
     {
@@ -523,7 +549,7 @@ public class BatchTestCase extends FoodMartTestCase {
         return request;
     }
 
-    CellRequest createRequest(
+    protected CellRequest createRequest(
         final String cube, final String measure,
         final String table, final String column, final String value,
         CellRequestConstraint aggConstraint)
@@ -534,7 +560,7 @@ public class BatchTestCase extends FoodMartTestCase {
             aggConstraint);
     }
 
-    CellRequest createRequest(
+    protected CellRequest createRequest(
         final String cube, final String measureName,
         final String[] tables, final String[] columns, final String[] values,
         CellRequestConstraint aggConstraint)

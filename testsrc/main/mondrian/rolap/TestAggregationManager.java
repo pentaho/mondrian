@@ -1678,6 +1678,192 @@ public class TestAggregationManager extends BatchTestCase {
             + "Row #46: 914\n"
             + "Row #47: 3,145\n");
     }
+
+    /**
+     * This is a test for MONDRIAN-918 and MONDRIAN-903. We have added
+     * an attribute to AggName called approxRowCount so that the
+     * aggregation manager can optimize the aggregation tables without
+     * having to issue a select count() query.
+     */
+    public void testAggNameApproxRowCount() {
+        propSaver.set(MondrianProperties.instance().UseAggregates, true);
+        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        final TestContext context =
+            TestContext.create(
+                "<schema name=\"FooSchema\"><Cube name=\"Sales_Foo\" defaultMeasure=\"Unit Sales\">\n"
+                + "  <Table name=\"sales_fact_1997\">\n"
+                + " <AggName name=\"agg_pl_01_sales_fact_1997\" approxRowCount=\"86000\">\n"
+                + "     <AggFactCount column=\"FACT_COUNT\"/>\n"
+                + "     <AggForeignKey factColumn=\"product_id\" aggColumn=\"PRODUCT_ID\" />\n"
+                + "     <AggForeignKey factColumn=\"customer_id\" aggColumn=\"CUSTOMER_ID\" />\n"
+                + "     <AggForeignKey factColumn=\"time_id\" aggColumn=\"TIME_ID\" />\n"
+                + "     <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"UNIT_SALES_SUM\" />\n"
+                + "     <AggMeasure name=\"[Measures].[Store Cost]\" column=\"STORE_COST_SUM\" />\n"
+                + "     <AggMeasure name=\"[Measures].[Store Sales]\" column=\"STORE_SALES_SUM\" />\n"
+                + " </AggName>\n"
+                + "    <AggExclude name=\"agg_c_special_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_lc_100_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_lc_10_sales_fact_1997\" />\n"
+                + "    <AggExclude name=\"agg_pc_10_sales_fact_1997\" />\n"
+                + "  </Table>\n"
+                + "<Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
+                + "    <Hierarchy hasAll=\"true\" name=\"Weekly\" primaryKey=\"time_id\">\n"
+                + "      <Table name=\"time_by_day\"/>\n"
+                + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+                + "          levelType=\"TimeYears\"/>\n"
+                + "      <Level name=\"Week\" column=\"week_of_year\" type=\"Numeric\" uniqueMembers=\"false\"\n"
+                + "          levelType=\"TimeWeeks\"/>\n"
+                + "      <Level name=\"Day\" column=\"day_of_month\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+                + "          levelType=\"TimeDays\"/>\n"
+                + "    </Hierarchy>\n"
+                + "</Dimension>\n"
+                + "<Dimension name=\"Product\" foreignKey=\"product_id\">\n"
+                + "    <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+                + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+                + "        <Table name=\"product\"/>\n"
+                + "        <Table name=\"product_class\"/>\n"
+                + "      </Join>\n"
+                + "      <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+                + "          uniqueMembers=\"true\"/>\n"
+                + "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
+                + "          uniqueMembers=\"false\"/>\n"
+                + "      <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
+                + "          uniqueMembers=\"false\"/>\n"
+                + "      <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
+                + "          uniqueMembers=\"false\"/>\n"
+                + "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+                + "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+                + "          uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "</Dimension>\n"
+                + "  <Dimension name=\"Customers\" foreignKey=\"customer_id\">\n"
+                + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\">\n"
+                + "      <Table name=\"customer\"/>\n"
+                + "      <Level name=\"Country\" column=\"country\" uniqueMembers=\"true\"/>\n"
+                + "      <Level name=\"State Province\" column=\"state_province\" uniqueMembers=\"true\"/>\n"
+                + "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/>\n"
+                + "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\">\n"
+                + "        <NameExpression>\n"
+                + "          <SQL dialect=\"oracle\">\n"
+                + "\"fname\" || ' ' || \"lname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"hive\">\n"
+                + "`customer`.`fullname`\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"hsqldb\">\n"
+                + "\"fname\" || ' ' || \"lname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"access\">\n"
+                + "fname + ' ' + lname\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"postgres\">\n"
+                + "\"fname\" || ' ' || \"lname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"mysql\">\n"
+                + "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"mssql\">\n"
+                + "fname + ' ' + lname\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"derby\">\n"
+                + "\"customer\".\"fullname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"db2\">\n"
+                + "CONCAT(CONCAT(\"customer\".\"fname\", ' '), \"customer\".\"lname\")\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"luciddb\">\n"
+                + "\"fname\" || ' ' || \"lname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"neoview\">\n"
+                + "\"customer\".\"fullname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"teradata\">\n"
+                + "\"fname\" || ' ' || \"lname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"generic\">\n"
+                + "fullname\n"
+                + "          </SQL>\n"
+                + "        </NameExpression>\n"
+                + "        <OrdinalExpression>\n"
+                + "          <SQL dialect=\"oracle\">\n"
+                + "\"fname\" || ' ' || \"lname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"hsqldb\">\n"
+                + "\"fname\" || ' ' || \"lname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"access\">\n"
+                + "fname + ' ' + lname\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"postgres\">\n"
+                + "\"fname\" || ' ' || \"lname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"mysql\">\n"
+                + "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"mssql\">\n"
+                + "fname + ' ' + lname\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"neoview\">\n"
+                + "\"customer\".\"fullname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"derby\">\n"
+                + "\"customer\".\"fullname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"db2\">\n"
+                + "CONCAT(CONCAT(\"customer\".\"fname\", ' '), \"customer\".\"lname\")\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"luciddb\">\n"
+                + "\"fname\" || ' ' || \"lname\"\n"
+                + "          </SQL>\n"
+                + "          <SQL dialect=\"generic\">\n"
+                + "fullname\n"
+                + "          </SQL>\n"
+                + "        </OrdinalExpression>\n"
+                + "        <Property name=\"Gender\" column=\"gender\"/>\n"
+                + "        <Property name=\"Marital Status\" column=\"marital_status\"/>\n"
+                + "        <Property name=\"Education\" column=\"education\"/>\n"
+                + "        <Property name=\"Yearly Income\" column=\"yearly_income\"/>\n"
+                + "      </Level>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+                + "      formatString=\"Standard\"/>\n"
+                + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###.00\"/>\n"
+                + "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###.00\"/>\n"
+                + "  <Measure name=\"Sales Count\" column=\"product_id\" aggregator=\"count\"\n"
+                + "      formatString=\"#,###\"/>\n"
+                + "  <Measure name=\"Customer Count\" column=\"customer_id\"\n"
+                + "      aggregator=\"distinct-count\" formatString=\"#,###\"/>\n"
+                + "</Cube></schema>\n");
+        final String mdxQuery =
+            "select {[Measures].[Unit Sales]} on columns, "
+            + "non empty CrossJoin({[Time.Weekly].[1997].[1].[15]},CrossJoin({[Customers].[USA].[CA].[Lincoln Acres].[William Smith]}, {[Product].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Washington].[Washington Diet Cola]})) on rows "
+            + "from [Sales_Foo] ";
+        final String sqlOracle =
+            "select count(*) as \"c0\" from \"agg_pl_01_sales_fact_1997\" \"agg_pl_01_sales_fact_1997\"";
+        final String sqlMysql =
+            "select count(*) as `c0` from `agg_pl_01_sales_fact_1997` as `agg_pl_01_sales_fact_1997`";
+        // If the approxRowcount is used, there should not be
+        // a query like : select count(*) from agg_pl_01_sales_fact_1997
+        assertQuerySqlOrNot(
+            context,
+            mdxQuery,
+            new SqlPattern[] {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.ORACLE,
+                    sqlOracle,
+                    sqlOracle.length()),
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysql,
+                    sqlMysql.length())
+            },
+            true,
+            false,
+            false);
+    }
 }
 
 // End TestAggregationManager.java

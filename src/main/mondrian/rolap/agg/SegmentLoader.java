@@ -186,19 +186,21 @@ public class SegmentLoader {
                 if (SegmentCacheWorker.contains(sh)) {
                     final SegmentBody sb =
                         SegmentCacheWorker.get(sh);
-
-                    // Load the axis keys for this segment
-                    for (int i = 0; i < segment.axes.length; i++) {
-                        Aggregation.Axis axis = segment.axes[i];
-                        axis.loadKeys(
-                            sb.getAxisValueSets()[i],
-                            sb.getNullAxisFlags()[i]);
+                    // Make sure to dereference as the cache might have removed
+                    // the data between calls to contains() and get().
+                    if (sb != null) {
+                        // Load the axis keys for this segment
+                        for (int i = 0; i < segment.axes.length; i++) {
+                            Aggregation.Axis axis = segment.axes[i];
+                            axis.loadKeys(
+                                    sb.getAxisValueSets()[i],
+                                    sb.getNullAxisFlags()[i]);
+                        }
+                        final SegmentDataset dataSet =
+                            sb.createSegmentDataset(segment);
+                        segment.setData(dataSet, pinnedSegments);
+                        segmentsToRemove.add(segment);
                     }
-
-                    final SegmentDataset dataSet =
-                        sb.createSegmentDataset(segment);
-                    segment.setData(dataSet, pinnedSegments);
-                    segmentsToRemove.add(segment);
                 }
             }
             groupingSet.getSegments().removeAll(segmentsToRemove);

@@ -1674,9 +1674,21 @@ Revision is $Id$
                 The Table name of a Specific aggregate table.
             </Doc>
         </Attribute>
+        <Attribute name="approxRowCount" required="false">
+            <Doc>
+                The estimated number of rows in this aggregation
+                table. Setting this property improves the
+                performance of the aggregation optimizer and
+                prevents it from issuing a 'select count(*)'
+                query over the aggregation table.
+            </Doc>
+        </Attribute>
         <Code>
             public String getNameAttribute() {
                 return name;
+            }
+            public String getApproxRowCountAttribute() {
+                return approxRowCount;
             }
         </Code>
     </Element>

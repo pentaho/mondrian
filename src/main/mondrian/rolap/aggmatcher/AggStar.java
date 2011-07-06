@@ -60,9 +60,10 @@ public class AggStar {
     public static AggStar makeAggStar(
         final RolapStar star,
         final JdbcSchema.Table dbTable,
-        final MessageRecorder msgRecorder)
+        final MessageRecorder msgRecorder,
+        final int approxRowCount)
     {
-        AggStar aggStar = new AggStar(star, dbTable);
+        AggStar aggStar = new AggStar(star, dbTable, approxRowCount);
         AggStar.FactTable aggStarFactTable = aggStar.getFactTable();
 
         // 1. load fact count
@@ -201,9 +202,15 @@ public class AggStar {
      */
     private final BitKey distinctMeasureBitKey;
     private final AggStar.Table.Column[] columns;
+    private final int approxRowCount;
 
-    AggStar(final RolapStar star, final JdbcSchema.Table aggTable) {
+    AggStar(
+        final RolapStar star,
+        final JdbcSchema.Table aggTable,
+        final int approxRowCount)
+    {
         this.star = star;
+        this.approxRowCount = approxRowCount;
         this.bitKey = BitKey.Factory.makeBitKey(star.getColumnCount());
         this.levelBitKey = bitKey.emptyCopy();
         this.measureBitKey = bitKey.emptyCopy();
@@ -1074,7 +1081,7 @@ public class AggStar {
          * Get the number of rows in this aggregate table.
          */
         public int getNumberOfRows() {
-            if (numberOfRows == -1) {
+            if (numberOfRows < 0) {
                 makeNumberOfRows();
             }
             return numberOfRows;
@@ -1297,6 +1304,10 @@ public class AggStar {
         }
 
         private void makeNumberOfRows() {
+            if (approxRowCount >= 0) {
+                numberOfRows = approxRowCount;
+                return;
+            }
             SqlQuery query = getSqlQuery();
             query.addSelect("count(*)", null);
             query.addFrom(getRelation(), getName(), false);
