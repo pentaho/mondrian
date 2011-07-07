@@ -464,7 +464,7 @@ public class ParserTest extends FoodMartTestCase {
 
         // exponents akimbo
         assertParseExpr("1e2", "100", true);
-        assertParseExpr("1e2", "1E+2", false);
+        assertParseExpr("1e2", Util.PreJdk15 ? "100" : "1E+2", false);
         assertParseExprFails(
             "1e2e3",
             "Syntax error at line 1, column 37, token 'e3'");

@@ -623,6 +623,10 @@ public class UtilTestCase extends TestCase {
         for (Class<Driver> driverClass : list) {
             expectedClassNames.remove(driverClass.getName());
         }
+        if (Util.PreJdk15) {
+            // JDK only discovers services from jars in JDK 1.5 and later.
+            return;
+        }
         assertTrue(expectedClassNames.toString(), expectedClassNames.isEmpty());
     }
 

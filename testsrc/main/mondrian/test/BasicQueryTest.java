@@ -7190,6 +7190,11 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testExplain() throws SQLException {
+        if (Util.PreJdk15) {
+            // Cannot use explain before JDK 1.5. EmptyResultSet relies on
+            // javax.sql.rowset.RowSetMetaDataImpl, which arrived in JDK 1.5.
+            return;
+        }
         OlapConnection connection =
             TestContext.instance().getOlap4jConnection();
         final OlapStatement statement = connection.createStatement();
@@ -7222,6 +7227,11 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testExplainComplex() throws SQLException {
+        if (Util.PreJdk15) {
+            // Cannot use explain before JDK 1.5. EmptyResultSet relies on
+            // javax.sql.rowset.RowSetMetaDataImpl, which arrived in JDK 1.5.
+            return;
+        }
         OlapConnection connection =
             TestContext.instance().getOlap4jConnection();
         final OlapStatement statement = connection.createStatement();

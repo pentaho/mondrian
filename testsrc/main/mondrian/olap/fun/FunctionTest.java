@@ -7166,6 +7166,10 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderCalc() {
+        if (Util.Retrowoven) {
+            // If retrowoven, we don't use Iterable, so plans are different.
+            return;
+        }
         // [Measures].[Unit Sales] is a constant member, so it is evaluated in
         // a ContextCalc.
         assertAxisCompilesTo(
