@@ -13,6 +13,8 @@
 package mondrian.olap;
 
 import mondrian.calc.Calc;
+import mondrian.rolap.RolapSchema;
+import mondrian.rolap.RolapUtil;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -21,8 +23,8 @@ import java.util.List;
  * <code>DelegatingSchemaReader</code> implements {@link SchemaReader} by
  * delegating all methods to an underlying {@link SchemaReader}.
  *
- * It is a convenient base class if you want to override just a few of
- * {@link SchemaReader}'s methods.
+ * <p>It is a convenient base class if you want to override just a few of
+ * {@link SchemaReader}'s methods.</p>
  *
  * @author jhyde
  * @since Feb 26, 2003
@@ -38,6 +40,10 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
      */
     protected DelegatingSchemaReader(SchemaReader schemaReader) {
         this.schemaReader = schemaReader;
+    }
+
+    public RolapSchema getSchema() {
+        return schemaReader.getSchema();
     }
 
     public Role getRole() {
@@ -248,7 +254,10 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     }
 
     public SchemaReader withLocus() {
-        return schemaReader.withLocus();
+        return RolapUtil.locusSchemaReader(
+            schemaReader.getSchema().getInternalConnection(),
+            this);
+
     }
 }
 

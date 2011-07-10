@@ -76,7 +76,7 @@ public class Execution {
         canceled = true;
     }
 
-    public void setOutOfMemory(String msg) {
+    public final void setOutOfMemory(String msg) {
         this.outOfMemoryMsg = msg;
     }
 
@@ -106,7 +106,7 @@ public class Execution {
         queryTiming.done();
     }
 
-    public long getStartTime() {
+    public final long getStartTime() {
         return startTimeMillis;
     }
 
@@ -114,15 +114,15 @@ public class Execution {
         return statement;
     }
 
-    public QueryTiming getQueryTiming() {
+    public final QueryTiming getQueryTiming() {
         return queryTiming;
     }
 
-    public long getId() {
+    public final long getId() {
         return id;
     }
 
-    public long getElapsedMillis() {
+    public final long getElapsedMillis() {
         return System.currentTimeMillis() - startTimeMillis;
     }
 }

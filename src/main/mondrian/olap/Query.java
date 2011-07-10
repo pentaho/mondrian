@@ -602,7 +602,8 @@ public class Query extends QueryPart {
 
     @Override
     public void explain(PrintWriter pw) {
-        final CalcWriter calcWriter = new CalcWriter(pw, false);
+        final boolean profiling = getStatement().getProfileHandler() != null;
+        final CalcWriter calcWriter = new CalcWriter(pw, profiling);
         for (Formula formula : formulas) {
             formula.getMdxMember(); // TODO:
         }

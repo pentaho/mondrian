@@ -30,7 +30,7 @@ public class PropertiesTest extends FoodMartTestCase {
      */
     public void testMandatoryMemberProperties() {
         Cube salesCube = getConnection().getSchema().lookupCube("Sales", true);
-        SchemaReader scr = salesCube.getSchemaReader(null);
+        SchemaReader scr = salesCube.getSchemaReader(null).withLocus();
         Member member =
             scr.getMemberByUniqueName(
                 Id.Segment.toList("Customers", "All Customers", "USA", "CA"),

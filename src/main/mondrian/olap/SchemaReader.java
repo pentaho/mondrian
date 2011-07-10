@@ -12,8 +12,7 @@
 package mondrian.olap;
 
 import mondrian.calc.Calc;
-import mondrian.rolap.RolapHierarchy;
-import mondrian.rolap.RolapMember;
+import mondrian.rolap.RolapSchema;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -23,13 +22,31 @@ import java.util.List;
  * {@link Cube}, {@link Dimension}, {@link Hierarchy}, {@link Level},
  * {@link Member}).
  *
- * <p>It is generally created using {@link Connection#getSchemaReader}.
+ * <p>It is generally created using {@link Connection#getSchemaReader},
+ * but also via {@link Cube#getSchemaReader(Role)}.</p>
+ *
+ * <p>SchemaReader is deprecated for code outside of mondrian. For new code,
+ * use the metadata provided by olap4j, for example
+ * {@link mondrian.olap4j.MondrianOlap4jSchema#getCubes()}.
+ *
+ * <p>If you use a SchemaReader from outside of a mondrian statement, you may
+ * get a {@link java.util.EmptyStackException} indicating that mondrian cannot
+ * deduce the current locus (statement context). If you get that error, call
+ * {@link #withLocus()} to create a SchemaReader that automatically provides a
+ * locus whenever a call is made.</p>
  *
  * @author jhyde
  * @since Feb 24, 2003
  * @version $Id$
  */
 public interface SchemaReader {
+    /**
+     * Returns the schema.
+     *
+     * @return Schema, never null
+     */
+    RolapSchema getSchema();
+
     /**
      * Returns the access-control profile that this <code>SchemaReader</code>
      * is implementing.

@@ -638,12 +638,7 @@ public class RolapSchemaReader
         return schema.getInternalConnection().getDataSource();
     }
 
-    /**
-     * Returns the schema.
-     *
-     * @return Schema, never null
-     */
-    RolapSchema getSchema() {
+    public RolapSchema getSchema() {
         return schema;
     }
 

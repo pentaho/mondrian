@@ -55,7 +55,7 @@ public class ParameterTest extends FoodMartTestCase {
 
     // -- Tests --------------
 
-    public void _testChangeable() {
+    public void testChangeable() {
         // jpivot needs to set a parameters value before the query is executed
         String mdx =
             "select {Parameter(\"Foo\",[Time],[Time].[1997],\"Foo\")} "

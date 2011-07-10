@@ -26,12 +26,14 @@ public class CalcWriter {
     private static String BIG_STRING = "                ";
 
     private final PrintWriter writer;
+    private final boolean profiling;
     private int linePrefixLength;
     private final Map<Calc, Map<String, Object>> parentArgMap =
         new IdentityHashMap<Calc, Map<String, Object>>();
 
     public CalcWriter(PrintWriter writer, boolean profiling) {
         this.writer = writer;
+        this.profiling = profiling;
     }
 
     public PrintWriter getWriter() {
@@ -120,7 +122,7 @@ public class CalcWriter {
      * @return Whether client should send attributes about profiling
      */
     public boolean enableProfiling() {
-        return false;
+        return profiling;
     }
 }
 

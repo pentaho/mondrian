@@ -18,8 +18,8 @@ import mondrian.olap.Connection;
 import mondrian.olap.Position;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
-import mondrian.olap4j.Unsafe;
 import mondrian.rolap.RolapConnectionProperties;
+import mondrian.spi.ProfileHandler;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.spi.Dialect;
 import mondrian.util.Bug;
@@ -7295,15 +7295,21 @@ public class BasicQueryTest extends FoodMartTestCase {
             s);
 
         // Plan after execution, including profiling.
-        final StringWriter sw = new StringWriter();
-        final PrintWriter pw = new PrintWriter(sw);
-        Unsafe.INSTANCE.setStatementProfiling(statement, pw);
+        final String[] strings = {null, null};
+        ((mondrian.server.Statement) statement).enableProfiling(
+            new ProfileHandler() {
+                public void explain(String plan, QueryTiming timing) {
+                    strings[0] = plan;
+                    strings[1] = String.valueOf(timing);
+                }
+            }
+        );
         final CellSet cellSet = statement.executeOlapQuery(mdx);
         new RectangularCellSetFormatter(true).format(
             cellSet, new PrintWriter(new StringWriter()));
         cellSet.close();
         final String actual =
-            sw.toString().replaceAll(
+            strings[0].replaceAll(
                 "callMillis=[0-9]+",
                 "callMillis=nnn")
             .replaceAll(
@@ -7311,34 +7317,30 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "nnnms");
         TestContext.assertEqualsVerbose(
             "Axis (FILTER):\n"
-            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[F]>>, resultStyle=MUTABLE_LIST)\n"
+            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[F]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=2, elementSquaredCount=2)\n"
             + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE)\n"
-            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[F])\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[F], callCount=2, callMillis=nnn)\n"
             + "\n"
             + "Axis (COLUMNS):\n"
-            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Measures].[Unit Sales]>>, resultStyle=MUTABLE_LIST)\n"
+            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Measures].[Unit Sales]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=4, elementSquaredCount=8)\n"
             + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE)\n"
-            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales], callCount=2, callMillis=nnn)\n"
             + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Measures].[Store Margin]>, resultStyle=VALUE)\n"
-            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Store Margin]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store Margin])\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Store Margin]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store Margin], callCount=2, callMillis=nnn)\n"
             + "\n"
             + "Axis (ROWS):\n"
-            + "CrossJoinIterCalc(name=CrossJoinIterCalc, class=class mondrian.olap.fun.CrossJoinFunDef$CrossJoinIterCalc, type=SetType<TupleType<MemberType<member=[Product].[Drink]>, MemberType<hierarchy=[Marital Status]>>>, resultStyle=ITERABLE)\n"
+            + "CrossJoinIterCalc(name=CrossJoinIterCalc, class=class mondrian.olap.fun.CrossJoinFunDef$CrossJoinIterCalc, type=SetType<TupleType<MemberType<member=[Product].[Drink]>, MemberType<hierarchy=[Marital Status]>>>, resultStyle=ITERABLE, callCount=2, callMillis=nnn, elementCount=0, elementSquaredCount=0)\n"
             + "    1(name=1, class=class mondrian.mdx.NamedSetExpr$1, type=SetType<MemberType<member=[Product].[Drink]>>, resultStyle=ITERABLE)\n"
             + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$27$1, type=SetType<MemberType<hierarchy=[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
-            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=HierarchyType<hierarchy=[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Marital Status])\n"
-            + "\n"
-            + "\n"
-            + "FilterFunDef invoked 6 times for total of nnnms.  (Avg. nnnms/invocation)\n"
-            + "SqlStatement-SqlTupleReader.readTuples [[Marital Status].[Marital Status]] invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n"
-            + "SqlStatement-RolapStar.Column.getCardinality invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n"
-            + "SqlStatement-SqlTupleReader.readTuples [[Product].[Product Name]] invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n"
-            + "SqlStatement-SqlTupleReader.readTuples [[Product].[Product Subcategory]] invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n"
-            + "SqlStatement-SqlMemberSource.getMemberChildren invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n"
-            + "SqlStatement-Segment.load invoked 3 times for total of nnnms.  (Avg. nnnms/invocation)\n"
-            + "SqlStatement-SqlTupleReader.readTuples [[Product].[Brand Name]] invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n"
-            + "SqlStatement-SqlTupleReader.readTuples [[Product].[Product Category]] invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n",
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=HierarchyType<hierarchy=[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Marital Status], callCount=2, callMillis=nnn)\n"
+            + "\n",
             actual);
+
+        assertTrue(
+            strings[1],
+            strings[1].contains(
+                "SqlStatement-SqlTupleReader.readTuples [[Product].[Product "
+                + "Category]] invoked 1 times for total of "));
     }
 
     public void testExplainInvalid() throws SQLException {
