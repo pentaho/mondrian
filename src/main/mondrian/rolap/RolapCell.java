@@ -22,6 +22,8 @@ import mondrian.rolap.agg.AndPredicate;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.agg.MemberColumnPredicate;
 import mondrian.rolap.agg.OrPredicate;
+import mondrian.server.*;
+import mondrian.server.Statement;
 import mondrian.spi.Dialect;
 
 import java.sql.*;
@@ -146,12 +148,15 @@ public class RolapCell implements Cell {
                 cellRequest,
                 starPredicateSlicer,
                 true);
+
         final SqlStatement stmt =
             RolapUtil.executeQuery(
                 connection.getDataSource(),
                 sql,
-                "RolapCell.getDrillThroughCount",
-                "Error while counting drill-through");
+                new Locus(
+                    new Execution(connection.createDummyStatement(), 0),
+                    "RolapCell.getDrillThroughCount",
+                    "Error while counting drill-through"));
         try {
             ResultSet rs = stmt.getResultSet();
             rs.next();
@@ -439,10 +444,13 @@ public class RolapCell implements Cell {
         // Choose the appropriate scrollability. If we need to start from an
         // offset row, it is useful that the cursor is scrollable, but not
         // essential.
-        final Connection connection = result.getQuery().getConnection();
+        final Statement statement =
+            result.getExecution().getMondrianStatement();
+        final Execution execution = new Execution(statement, 0);
+        final Connection connection = statement.getMondrianConnection();
         int resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE;
         int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY;
-        final Schema schema = connection.getSchema();
+        final Schema schema = statement.getSchema();
         Dialect dialect = ((RolapSchema) schema).getDialect();
         if (!dialect.supportsResultSetConcurrency(
                 resultSetType, resultSetConcurrency)
@@ -459,8 +467,10 @@ public class RolapCell implements Cell {
                 null,
                 maxRowCount,
                 firstRowOrdinal,
-                "RolapCell.drillThrough",
-                "Error in drill through",
+                new Locus(
+                    execution,
+                    "RolapCell.drillThrough",
+                    "Error in drill through"),
                 resultSetType,
                 resultSetConcurrency);
     }

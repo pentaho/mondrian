@@ -10,9 +10,9 @@
 //
 // jhyde, 6 August, 2001
 */
-
 package mondrian.olap;
 
+import mondrian.server.Locus;
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
@@ -1268,8 +1268,22 @@ public class Util extends XOMUtil {
      *
      * @deprecated
      */
-    public static void deprecated(String reason) {
-        throw new UnsupportedOperationException(reason);
+    public static <T> T deprecated(T reason) {
+        throw new UnsupportedOperationException(reason.toString());
+    }
+
+    /**
+     * Insert a call to this method if you want to flag a piece of
+     * undesirable code.
+     *
+     * @deprecated
+     */
+    public static <T> T deprecated(T reason, boolean fail) {
+        if (fail) {
+            throw new UnsupportedOperationException(reason.toString());
+        } else {
+            return reason;
+        }
     }
 
     public static List<Member> addLevelCalculatedMembers(

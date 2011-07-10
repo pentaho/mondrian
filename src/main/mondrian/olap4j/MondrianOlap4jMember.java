@@ -83,6 +83,7 @@ class MondrianOlap4jMember implements Member, Named {
     public int getChildMemberCount() throws OlapException {
         return olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
             .olap4jConnection.getMondrianConnection().getSchemaReader()
+            .withLocus()
             .getMemberChildren(member).size();
     }
 

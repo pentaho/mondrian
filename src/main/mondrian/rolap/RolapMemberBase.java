@@ -16,6 +16,7 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.VisualTotalsFunDef;
+import mondrian.server.Locus;
 import mondrian.spi.PropertyFormatter;
 import mondrian.util.*;
 
@@ -371,18 +372,26 @@ public class RolapMemberBase
                 return getOrdinal();
 
             case Property.CHILDREN_CARDINALITY_ORDINAL:
-                Integer cardinality;
-
-                if (isAll() && childLevelHasApproxRowCount()) {
-                    cardinality =
-                        getLevel().getChildLevel().getApproxRowCount();
-                } else {
-                    list = new ArrayList<RolapMember>();
-                    getHierarchy().getMemberReader().getMemberChildren(
-                        this, list);
-                    cardinality = list.size();
-                }
-                return cardinality;
+                return Locus.execute(
+                    ((RolapSchema) level.getDimension().getSchema())
+                        .getInternalConnection(),
+                    "Member.CHILDREN_CARDINALITY",
+                    new Locus.Action<Integer>() {
+                        public Integer execute() {
+                            if (isAll() && childLevelHasApproxRowCount()) {
+                                return getLevel().getChildLevel()
+                                    .getApproxRowCount();
+                            } else {
+                                ArrayList<RolapMember> list =
+                                    new ArrayList<RolapMember>();
+                                getHierarchy().getMemberReader()
+                                    .getMemberChildren(
+                                        RolapMemberBase.this, list);
+                                return list.size();
+                            }
+                        }
+                    }
+                );
 
             case Property.PARENT_LEVEL_ORDINAL:
                 parentMember = getParentMember();

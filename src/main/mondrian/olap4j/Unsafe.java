@@ -9,6 +9,8 @@
 */
 package mondrian.olap4j;
 
+import mondrian.olap.QueryTiming;
+import mondrian.spi.ProfileHandler;
 import org.olap4j.OlapStatement;
 
 import java.io.PrintWriter;
@@ -30,9 +32,18 @@ public final class Unsafe {
 
     public void setStatementProfiling(
         OlapStatement statement,
-        PrintWriter pw)
+        final PrintWriter pw)
     {
-        ((MondrianOlap4jStatement) statement).setProfiling(pw);
+        ((MondrianOlap4jStatement) statement).enableProfiling(
+            new ProfileHandler() {
+                public void explain(String plan, QueryTiming timing) {
+                    pw.println(plan);
+                    if (timing != null) {
+                        pw.println(timing);
+                    }
+                }
+            }
+        );
     }
 }
 

@@ -13,7 +13,6 @@ package mondrian.rolap;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
@@ -24,6 +23,9 @@ import mondrian.calc.*;
 import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
+import mondrian.server.Statement;
 import mondrian.util.*;
 import mondrian.spi.*;
 import mondrian.spi.impl.JndiDataSourceResolver;
@@ -53,9 +55,6 @@ public class RolapConnection extends ConnectionBase {
     private final MondrianServer server;
 
     private final Util.PropertyList connectInfo;
-
-    // used for MDX logging, allows for a MDX Statement UID
-    private static long executeCount = 0;
 
     /**
      * Factory for JDBC connections to talk to the RDBMS. This factory will
@@ -133,25 +132,35 @@ public class RolapConnection extends ConnectionBase {
         if (schema == null) {
             // If RolapSchema.Pool.get were to call this with schema == null,
             // we would loop.
-            if (dataSource == null) {
-                // If there is no external data source is passed in, we expect
-                // the properties Jdbc, JdbcUser, DataSource to be set, as they
-                // are used to generate the schema cache key.
-                final String connectionKey =
-                    jdbcConnectString
-                    + getJdbcProperties(connectInfo).toString();
+            final Locus locus =
+                new Locus(
+                    new Execution(null, 0),
+                    null,
+                    "Initializing connection");
+            Locus.push(locus);
+            try {
+                if (dataSource == null) {
+                    // If there is no external data source is passed in, we
+                    // expect the properties Jdbc, JdbcUser, DataSource to be
+                    // set, as they are used to generate the schema cache key.
+                    final String connectionKey =
+                        jdbcConnectString
+                        + getJdbcProperties(connectInfo).toString();
 
-                schema = RolapSchema.Pool.instance().get(
-                    catalogUrl,
-                    connectionKey,
-                    jdbcUser,
-                    strDataSource,
-                    connectInfo);
-            } else {
-                schema = RolapSchema.Pool.instance().get(
-                    catalogUrl,
-                    dataSource,
-                    connectInfo);
+                    schema = RolapSchema.Pool.instance().get(
+                        catalogUrl,
+                        connectionKey,
+                        jdbcUser,
+                        strDataSource,
+                        connectInfo);
+                } else {
+                    schema = RolapSchema.Pool.instance().get(
+                        catalogUrl,
+                        dataSource,
+                        connectInfo);
+                }
+            } finally {
+                Locus.pop(locus);
             }
             String roleNameList =
                 connectInfo.get(RolapConnectionProperties.Role.name());
@@ -197,7 +206,7 @@ public class RolapConnection extends ConnectionBase {
             // make sure that the JDBC credentials are valid, for this
             // connection and for external connections built on top of this.
             Connection conn = null;
-            Statement statement = null;
+            java.sql.Statement statement = null;
             try {
                 conn = this.dataSource.getConnection();
                 Dialect dialect =
@@ -492,7 +501,7 @@ public class RolapConnection extends ConnectionBase {
     public void close() {
     }
 
-    public Schema getSchema() {
+    public RolapSchema getSchema() {
         return schema;
     }
 
@@ -540,72 +549,81 @@ public class RolapConnection extends ConnectionBase {
      * @throws QueryCanceledException if query was canceled during execution
      * @throws QueryTimeoutException if query exceeded timeout specified in
      *     the property file
+     *
+     * @deprecated Use {@link #execute(mondrian.server.Execution)}; this method
+     *     will be removed in mondrian-4.0
      */
     public Result execute(Query query) {
-        class Listener implements MemoryMonitor.Listener {
-            private final Query query;
+        final Statement statement = query.getStatement();
+        Execution execution =
+            new Execution(statement, statement.getQueryTimeoutMillis());
+        return execute(execution);
+    }
 
-            Listener(final Query query) {
-                this.query = query;
-            }
-
+    /**
+     * Executes a statement.
+     *
+     * @param execution Execution context (includes statement, query)
+     *
+     * @throws ResourceLimitExceededException if some resource limit specified
+     *     in the property file was exceeded
+     * @throws QueryCanceledException if query was canceled during execution
+     * @throws QueryTimeoutException if query exceeded timeout specified in
+     *     the property file
+     */
+    public Result execute(final Execution execution) {
+        final Statement statement = execution.getMondrianStatement();
+        final Query query = statement.getQuery();
+        final MemoryMonitor.Listener listener = new MemoryMonitor.Listener() {
             public void memoryUsageNotification(long used, long max) {
-                StringBuilder buf = new StringBuilder(200);
-                buf.append("OutOfMemory used=");
-                buf.append(used);
-                buf.append(", max=");
-                buf.append(max);
-                buf.append(" for connection: ");
-                buf.append(getConnectString());
-                // Call ConnectionBase method which has access to
-                // Query methods.
-                RolapConnection.memoryUsageNotification(query, buf.toString());
+                execution.setOutOfMemory(
+                    "OutOfMemory used="
+                    + used
+                    + ", max="
+                    + max
+                    + " for connection: "
+                    + getConnectString());
             }
-        }
-
-        Listener listener = new Listener(query);
+        };
         MemoryMonitor mm = MemoryMonitorFactory.getMemoryMonitor();
-        long currId = -1;
+        final long currId = execution.getId();
         try {
             mm.addListener(listener);
             // Check to see if we must punt
-            query.checkCancelOrTimeout();
+            execution.checkCancelOrTimeout();
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(Util.unparse(query));
             }
 
             if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {
-                currId = executeCount++;
                 RolapUtil.MDX_LOGGER.debug(currId + ": " + Util.unparse(query));
             }
 
-            query.setQueryStartTime();
-            Result result = new RolapResult(query, true);
-            int i = 0;
-            for (QueryAxis axis : query.getAxes()) {
-                if (axis.isNonEmpty()) {
-                    result = new NonEmptyResult(result, query, i);
+            statement.start(execution);
+            final Locus locus = new Locus(execution, null, "Loading cells");
+            Locus.push(locus);
+            Result result;
+            try {
+                result = new RolapResult(execution, true);
+                int i = 0;
+                for (QueryAxis axis : query.getAxes()) {
+                    if (axis.isNonEmpty()) {
+                        result = new NonEmptyResult(result, execution, i);
+                    }
+                    ++i;
                 }
-                ++i;
+            } finally {
+                Locus.pop(locus);
             }
-            /* It will not work with HighCardinality.
-            if (LOGGER.isDebugEnabled()) {
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
-                result.print(pw);
-                pw.flush();
-                LOGGER.debug(sw.toString());
-            }
-            */
-            query.setQueryEndExecution();
+            statement.end(execution);
             return result;
         } catch (ResultLimitExceededException e) {
             // query has been punted
             throw e;
         } catch (Exception e) {
+            statement.end(execution);
             String queryString;
-            query.setQueryEndExecution();
             try {
                 queryString = Util.unparse(query);
             } catch (Exception e1) {
@@ -617,10 +635,9 @@ public class RolapConnection extends ConnectionBase {
         } finally {
             mm.removeListener(listener);
             if (RolapUtil.MDX_LOGGER.isDebugEnabled()) {
+                final long elapsed = execution.getElapsedMillis();
                 RolapUtil.MDX_LOGGER.debug(
-                    currId + ": exec: "
-                    + (System.currentTimeMillis() - query.getQueryStartTime())
-                    + " ms");
+                    currId + ": exec: " + elapsed + " ms");
             }
         }
     }
@@ -775,11 +792,11 @@ public class RolapConnection extends ConnectionBase {
          * Creates a NonEmptyResult.
          *
          * @param result Result set
-         * @param query Query
+         * @param execution Execution context
          * @param axis Which axis to make non-empty
          */
-        NonEmptyResult(Result result, Query query, int axis) {
-            super(query, result.getAxes().clone());
+        NonEmptyResult(Result result, Execution execution, int axis) {
+            super(execution, result.getAxes().clone());
 
             this.underlying = result;
             this.axis = axis;

@@ -3,13 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2010 Julian Hyde
+// Copyright (C) 2010-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.parser;
 
 import mondrian.olap.*;
+import mondrian.server.Statement;
 
 /**
  * Default implementation of {@link mondrian.parser.MdxParserValidator}.
@@ -25,7 +26,7 @@ public class MdxParserValidatorImpl implements MdxParserValidator {
     }
 
     public QueryPart parseInternal(
-        Connection connection,
+        Statement statement,
         String queryString,
         boolean debug,
         FunTable funTable,
@@ -33,18 +34,18 @@ public class MdxParserValidatorImpl implements MdxParserValidator {
     {
         return new Parser().parseInternal(
             new Parser.FactoryImpl(),
-            connection, queryString, debug, funTable, strictValidation);
+            statement, queryString, debug, funTable, strictValidation);
     }
 
     public Exp parseExpression(
-        Connection connection,
+        Statement statement,
         String queryString,
         boolean debug,
         FunTable funTable)
     {
         return new Parser().parseExpression(
             new Parser.FactoryImpl(),
-            connection, queryString, debug, funTable);
+            statement, queryString, debug, funTable);
     }
 }
 

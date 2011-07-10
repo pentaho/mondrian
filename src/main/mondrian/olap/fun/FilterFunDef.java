@@ -105,7 +105,7 @@ class FilterFunDef extends FunDefBase {
         }
 
         public TupleIterable evaluateIterable(Evaluator evaluator) {
-            QueryTiming.markStart(TIMING_NAME);
+            evaluator.getTiming().markStart(TIMING_NAME);
             try {
                 ResolvedFunCall call = (ResolvedFunCall) exp;
                 // Use a native evaluator, if more efficient.
@@ -121,7 +121,7 @@ class FilterFunDef extends FunDefBase {
                     return makeIterable(evaluator);
                 }
             } finally {
-                QueryTiming.markEnd(TIMING_NAME);
+                evaluator.getTiming().markEnd(TIMING_NAME);
             }
         }
 
@@ -140,7 +140,7 @@ class FilterFunDef extends FunDefBase {
         }
 
         protected TupleIterable makeIterable(Evaluator evaluator) {
-            QueryTiming.markStart(TIMING_NAME);
+            evaluator.getTiming().markStart(TIMING_NAME);
             try {
                 Calc[] calcs = getCalcs();
                 ListCalc lcalc = (ListCalc) calcs[0];
@@ -164,7 +164,7 @@ class FilterFunDef extends FunDefBase {
                 evaluator.restore(savepoint);
                 return result;
             } finally {
-                QueryTiming.markEnd(TIMING_NAME);
+                evaluator.getTiming().markEnd(TIMING_NAME);
             }
         }
     }
@@ -335,7 +335,7 @@ class FilterFunDef extends FunDefBase {
         }
 
         protected TupleList makeList(Evaluator evaluator) {
-            QueryTiming.markStart(TIMING_NAME);
+            evaluator.getTiming().markStart(TIMING_NAME);
             try {
                 Calc[] calcs = getCalcs();
                 ListCalc lcalc = (ListCalc) calcs[0];
@@ -357,7 +357,7 @@ class FilterFunDef extends FunDefBase {
                 evaluator.restore(savepoint);
                 return result;
             } finally {
-                QueryTiming.markEnd(TIMING_NAME);
+                evaluator.getTiming().markEnd(TIMING_NAME);
             }
         }
     }

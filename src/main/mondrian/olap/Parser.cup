@@ -19,9 +19,10 @@ import java_cup.runtime.*;
 import java.util.*;
 import java.math.BigDecimal;
 
-import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
 import mondrian.parser.MdxParserValidator;
+import mondrian.resource.MondrianResource;
+import mondrian.server.Statement;
 
 // Preliminaries to set up and use the scanner.
 // action code {: ... :};
@@ -29,7 +30,7 @@ parser code {:
     // Generated from $Id$
     private Scanner scanner;
     private String queryString;
-    Connection mdxConnection;
+    Statement statement;
     private FunTable funTable;
     boolean strictValidation;
     MdxParserValidator.QueryPartFactory factory;
@@ -40,7 +41,7 @@ parser code {:
     Exp recursivelyParseExp(String s)
     {
         return new Parser().parseExpression(
-            factory, mdxConnection, s, false, funTable);
+            factory, statement, s, false, funTable);
     }
 
     /**
@@ -49,7 +50,7 @@ parser code {:
       */
     public QueryPart parseInternal(
         MdxParserValidator.QueryPartFactory factory,
-        Connection mdxConnection,
+        Statement statement,
         String queryString,
         boolean debug,
         FunTable funTable,
@@ -58,7 +59,7 @@ parser code {:
         Symbol parse_tree;
         this.factory = factory;
         this.scanner = new StringScanner(queryString, debug);
-        this.mdxConnection = mdxConnection;
+        this.statement = statement;
         this.queryString = queryString;
         this.funTable = funTable;
         this.strictValidation = strictValidation;
@@ -75,7 +76,7 @@ parser code {:
                 queryString, e);
         } finally {
             this.scanner = null;
-            this.mdxConnection = null;
+            this.statement = null;
             this.queryString = null;
             this.funTable = null;
         }
@@ -87,7 +88,7 @@ parser code {:
       */
     public Exp parseExpression(
         MdxParserValidator.QueryPartFactory factory,
-        Connection mdxConnection,
+        Statement statement,
         String queryString,
         boolean debug,
         FunTable funTable)
@@ -98,7 +99,7 @@ parser code {:
             debug,
             new StringScanner(queryString, debug),
             new int[] {ParserSym._VALUE_EXPRESSION});
-        this.mdxConnection = mdxConnection;
+        this.statement = statement;
         this.queryString = queryString;
         this.funTable = funTable;
         try {
@@ -114,7 +115,7 @@ parser code {:
                 queryString, e);
         } finally {
             this.scanner = null;
-            this.mdxConnection = null;
+            this.statement = null;
             this.queryString = null;
             this.funTable = null;
         }
@@ -156,7 +157,7 @@ parser code {:
         implements MdxParserValidator.QueryPartFactory
     {
         public Query makeQuery(
-            Connection connection,
+            Statement statement,
             Formula[] formulae,
             QueryAxis[] axes,
             String cube,
@@ -171,7 +172,7 @@ parser code {:
                         false, slicer, AxisOrdinal.StandardAxisOrdinal.SLICER,
                         QueryAxis.SubtotalVisibility.Undefined, new Id[0]);
             return new Query(
-                connection, formulae, axes, cube, slicerAxis, cellProps,
+                statement, formulae, axes, cube, slicerAxis, cellProps,
                 strictValidation);
         }
 
@@ -1396,7 +1397,7 @@ select_statement ::=
             // yet.
             String cubeName = c.getElement(0).name;
             RESULT = parser.factory.makeQuery(
-                parser.mdxConnection,
+                parser.statement,
                 Parser.toFormulaArray(f),
                 Parser.toQueryAxisArray(a),
                 cubeName,

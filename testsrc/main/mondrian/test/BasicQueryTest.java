@@ -6039,9 +6039,14 @@ public class BasicQueryTest extends FoodMartTestCase {
         Connection connection = tc.getConnection();
 
         final Query query = connection.parseQuery(queryString);
+        final Throwable[] throwables = {null};
         if (waitMillis == 0) {
             // cancel immediately
-            query.cancel();
+            try {
+                query.getStatement().cancel();
+            } catch (Exception e) {
+                throwables[0] = e;
+            }
         } else {
             // Schedule timer to cancel after waitMillis
             Timer timer = new Timer(true);
@@ -6052,21 +6057,29 @@ public class BasicQueryTest extends FoodMartTestCase {
                     Thread thread = Thread.currentThread();
                     thread.setName("CancelThread");
                     try {
-                        query.cancel();
-                    } catch (Exception ex) {
-                        Assert.fail(
-                            "Cancel request failed:  "
-                            + ex.getMessage());
+                        query.getStatement().cancel();
+                    } catch (Exception e) {
+                        throwables[0] = e;
                     }
                 }
             };
             timer.schedule(task, waitMillis);
+        }
+        if (throwables[0] != null) {
+            Assert.fail(
+                "Cancel request failed:  "
+                + throwables[0]);
         }
         Throwable throwable = null;
         try {
             connection.execute(query);
         } catch (Throwable ex) {
             throwable = ex;
+        }
+        if (throwables[0] != null) {
+            Assert.fail(
+                "Cancel request failed:  "
+                + throwables[0]);
         }
         TestContext.checkThrowable(throwable, "canceled");
     }
@@ -7292,7 +7305,10 @@ public class BasicQueryTest extends FoodMartTestCase {
         final String actual =
             sw.toString().replaceAll(
                 "callMillis=[0-9]+",
-                "callMillis=nnn");
+                "callMillis=nnn")
+            .replaceAll(
+                "[0-9]+ms",
+                "nnnms");
         TestContext.assertEqualsVerbose(
             "Axis (FILTER):\n"
             + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[F]>>, resultStyle=MUTABLE_LIST)\n"
@@ -7312,7 +7328,16 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$27$1, type=SetType<MemberType<hierarchy=[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
             + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=HierarchyType<hierarchy=[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Marital Status])\n"
             + "\n"
-            + "\n",
+            + "\n"
+            + "FilterFunDef invoked 6 times for total of nnnms.  (Avg. nnnms/invocation)\n"
+            + "SqlStatement-SqlTupleReader.readTuples [[Marital Status].[Marital Status]] invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n"
+            + "SqlStatement-RolapStar.Column.getCardinality invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n"
+            + "SqlStatement-SqlTupleReader.readTuples [[Product].[Product Name]] invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n"
+            + "SqlStatement-SqlTupleReader.readTuples [[Product].[Product Subcategory]] invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n"
+            + "SqlStatement-SqlMemberSource.getMemberChildren invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n"
+            + "SqlStatement-Segment.load invoked 3 times for total of nnnms.  (Avg. nnnms/invocation)\n"
+            + "SqlStatement-SqlTupleReader.readTuples [[Product].[Brand Name]] invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n"
+            + "SqlStatement-SqlTupleReader.readTuples [[Product].[Product Category]] invoked 1 times for total of nnnms.  (Avg. nnnms/invocation)\n",
             actual);
     }
 

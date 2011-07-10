@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde and others
+// Copyright (C) 2007-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,6 +13,9 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.SegmentLoader;
 import mondrian.rolap.agg.GroupingSet;
 import mondrian.rolap.agg.AggregationKey;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
+import mondrian.server.Statement;
 import mondrian.test.TestContext;
 import mondrian.test.SqlPattern;
 import mondrian.spi.Dialect;
@@ -28,9 +31,24 @@ import java.util.*;
  */
 public class FastBatchingCellReaderTest extends BatchTestCase {
 
+    private Locus locus;
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         getTestContext().clearConnection();
+        final Statement statement =
+            ((RolapConnection) getTestContext().getConnection())
+                .createDummyStatement();
+        final Execution execution = new Execution(statement, 0);
+        locus = new Locus(execution, "FastBatchingCellReaderTest", null);
+        Locus.push(locus);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        Locus.pop(locus);
+        super.tearDown();
     }
 
     public void testMissingSubtotalBugMetricFilter() {

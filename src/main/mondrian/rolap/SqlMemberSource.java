@@ -19,6 +19,7 @@ import mondrian.rolap.sql.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.server.Locus;
 import mondrian.spi.Dialect;
 import mondrian.util.CreationException;
 import mondrian.util.ObjectFactory;
@@ -108,8 +109,12 @@ class SqlMemberSource
         String sql = makeLevelMemberCountSql(level, dataSource, mustCount);
         final SqlStatement stmt =
             RolapUtil.executeQuery(
-                dataSource, sql, "SqlMemberSource.getLevelMemberCount",
-                "while counting members of level '" + level);
+                dataSource,
+                sql,
+                new Locus(
+                    Locus.peek().execution,
+                    "SqlMemberSource.getLevelMemberCount",
+                    "while counting members of level '" + level));
         try {
             ResultSet resultSet = stmt.getResultSet();
             int count;
@@ -292,8 +297,12 @@ class SqlMemberSource
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
         SqlStatement stmt =
             RolapUtil.executeQuery(
-                dataSource, sql, types, 0, 0, "SqlMemberSource.getMembers",
-                "while building member cache", -1, -1);
+                dataSource, sql, types, 0, 0,
+                new Locus(
+                    null,
+                    "SqlMemberSource.getMembers",
+                    "while building member cache"),
+                -1, -1);
         try {
             final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             List<RolapMember> list = new ArrayList<RolapMember>();
@@ -902,8 +911,11 @@ RME is this right
         SqlStatement stmt =
             RolapUtil.executeQuery(
                 dataSource, sql, types, 0, 0,
-                "SqlMemberSource.getMemberChildren",
-                "while building member cache", -1, -1);
+                new Locus(
+                    Locus.peek().execution,
+                    "SqlMemberSource.getMemberChildren",
+                    "while building member cache"),
+                -1, -1);
         try {
             int limit = MondrianProperties.instance().ResultLimit.get();
             boolean checkCacheStatus = true;

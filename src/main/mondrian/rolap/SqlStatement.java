@@ -9,8 +9,8 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.QueryTiming;
 import mondrian.olap.Util;
+import mondrian.server.Locus;
 import mondrian.util.DelegatingInvocationHandler;
 
 import javax.sql.DataSource;
@@ -53,6 +53,12 @@ import java.util.List;
 public class SqlStatement {
     private static final String TIMING_NAME = "SqlStatement-";
 
+    // used for SQL logging, allows for a SQL Statement UID
+    private static long executeCount = -1;
+
+    private static final RolapUtil.Semaphore querySemaphore =
+        RolapUtil.getQuerySemaphore();
+
     private final DataSource dataSource;
     private Connection jdbcConnection;
     private ResultSet resultSet;
@@ -60,19 +66,13 @@ public class SqlStatement {
     private final List<Type> types;
     private final int maxRows;
     private final int firstRowOrdinal;
-    private final String component;
+    private final Locus locus;
     private final int resultSetType;
     private final int resultSetConcurrency;
-    private final RolapUtil.Semaphore querySemaphore =
-        RolapUtil.getQuerySemaphore();
-    private final String message;
     private boolean haveSemaphore;
     public int rowCount;
     private long startTime;
     private final List<Accessor> accessors = new ArrayList<Accessor>();
-
-    // used for SQL logging, allows for a SQL Statement UID
-    private static long executeCount = -1;
     private boolean done;
 
     /**
@@ -85,8 +85,7 @@ public class SqlStatement {
      *     each not-null entry overrides deduced JDBC type of the column
      * @param maxRows Maximum rows; <= 0 means no maximum
      * @param firstRowOrdinal Ordinal of first row to skip to; <= 0 do not skip
-     * @param component Description of component/purpose of this statement
-     * @param message Error message
+     * @param locus Execution context of this statement
      * @param resultSetType Result set type
      * @param resultSetConcurrency Result set concurrency
      */
@@ -96,8 +95,7 @@ public class SqlStatement {
         List<Type> types,
         int maxRows,
         int firstRowOrdinal,
-        String component,
-        String message,
+        Locus locus,
         int resultSetType,
         int resultSetConcurrency)
     {
@@ -106,8 +104,7 @@ public class SqlStatement {
         this.types = types;
         this.maxRows = maxRows;
         this.firstRowOrdinal = firstRowOrdinal;
-        this.component = component;
-        this.message = message;
+        this.locus = locus;
         this.resultSetType = resultSetType;
         this.resultSetConcurrency = resultSetConcurrency;
     }
@@ -129,7 +126,7 @@ public class SqlStatement {
                 StringBuilder sqllog = new StringBuilder();
                 sqllog.append(currId)
                     .append(": ")
-                    .append(component)
+                    .append(locus.component)
                     .append(": executing sql [");
                 if (sql.indexOf('\n') >= 0) {
                     // SQL appears to be formatted as multiple lines. Make it
@@ -204,7 +201,7 @@ public class SqlStatement {
 
             if (RolapUtil.LOGGER.isDebugEnabled()) {
                 RolapUtil.LOGGER.debug(
-                    component + ": executing sql [" + sql + "]" + status);
+                    locus.component + ": executing sql [" + sql + "]" + status);
             }
         }
     }
@@ -235,7 +232,7 @@ public class SqlStatement {
                 statement = resultSet.getStatement();
                 resultSet.close();
             } catch (SQLException e) {
-                throw Util.newError(message + "; sql=[" + sql + "]");
+                throw Util.newError(locus.message + "; sql=[" + sql + "]");
             } finally {
                 resultSet = null;
             }
@@ -244,14 +241,14 @@ public class SqlStatement {
             try {
                 statement.close();
             } catch (SQLException e) {
-                throw Util.newError(message + "; sql=[" + sql + "]");
+                throw Util.newError(locus.message + "; sql=[" + sql + "]");
             }
         }
         if (jdbcConnection != null) {
             try {
                 jdbcConnection.close();
             } catch (SQLException e) {
-                throw Util.newError(message + "; sql=[" + sql + "]");
+                throw Util.newError(locus.message + "; sql=[" + sql + "]");
             } finally {
                 jdbcConnection = null;
             }
@@ -261,13 +258,15 @@ public class SqlStatement {
         String status =
             ", exec+fetch " + totalMs + " ms, " + rowCount + " rows";
 
-        QueryTiming.markFull(TIMING_NAME + this.component, totalMs);
+        locus.execution.getQueryTiming().markFull(
+            TIMING_NAME + locus.component, totalMs);
 
         RolapUtil.SQL_LOGGER.debug(executeCount + ": " + status);
 
         if (RolapUtil.LOGGER.isDebugEnabled()) {
             RolapUtil.LOGGER.debug(
-                component + ": done executing sql [" + sql + "]" + status);
+                locus.component + ": done executing sql [" + sql + "]"
+                + status);
         }
     }
 
@@ -285,7 +284,7 @@ public class SqlStatement {
      */
     public RuntimeException handle(Exception e) {
         RuntimeException runtimeException =
-            Util.newError(e, message + "; sql=[" + sql + "]");
+            Util.newError(e, locus.message + "; sql=[" + sql + "]");
         try {
             close();
         } catch (RuntimeException re) {

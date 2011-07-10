@@ -2929,7 +2929,8 @@ public class SchemaTest extends FoodMartTestCase {
         // Description comes from the DESCRIPTION member property.
         // Annotations are always empty for regular members.
         final List<Member> memberList =
-            cube.getSchemaReader(null).getLevelMembers(level, false);
+            cube.getSchemaReader(null).withLocus()
+                .getLevelMembers(level, false);
         final Member member = memberList.get(0);
         assertEquals("Canada", member.getName());
         assertEquals("Canada", member.getCaption());

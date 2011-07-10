@@ -650,7 +650,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         final Role role;
         final RolapConnection connection1 = getMondrianConnection();
         if (roleName == null) {
-            role = ((RolapSchema) connection1.getSchema())
+            role = connection1.getSchema()
                 .getInternalConnection().getRole();
             assert role != null;
         } else {
@@ -671,7 +671,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     public List<String> getAvailableRoleNames() throws OlapException {
         return UnmodifiableArrayList.of(
-            ((RolapSchema) getMondrianConnection().getSchema()).roleNames());
+            getMondrianConnection().getSchema().roleNames());
     }
 
     public void setPreferList(boolean preferList) {

@@ -10,6 +10,7 @@
 package mondrian.parser;
 
 import mondrian.olap.*;
+import mondrian.server.Statement;
 
 /**
  * Default implementation of {@link MdxParserValidator}, using the
@@ -39,7 +40,7 @@ public class JavaccParserValidatorImpl implements MdxParserValidator {
     }
 
     public QueryPart parseInternal(
-        Connection connection,
+        Statement statement,
         String queryString,
         boolean debug,
         FunTable funTable,
@@ -48,7 +49,7 @@ public class JavaccParserValidatorImpl implements MdxParserValidator {
         final MdxParserImpl mdxParser =
             new MdxParserImpl(
                 factory,
-                connection,
+                statement,
                 queryString,
                 debug,
                 funTable,
@@ -61,7 +62,7 @@ public class JavaccParserValidatorImpl implements MdxParserValidator {
     }
 
     public Exp parseExpression(
-        Connection connection,
+        Statement statement,
         String queryString,
         boolean debug,
         FunTable funTable)
@@ -69,7 +70,7 @@ public class JavaccParserValidatorImpl implements MdxParserValidator {
         final MdxParserImpl mdxParser =
             new MdxParserImpl(
                 factory,
-                connection,
+                statement,
                 queryString,
                 debug,
                 funTable,

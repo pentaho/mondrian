@@ -18,6 +18,8 @@ import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.CrossJoinFunDef;
 import mondrian.rolap.BatchTestCase;
 import mondrian.rolap.RolapCube;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 import mondrian.spi.Dialect;
@@ -46,7 +48,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             cubeNameSales);
         salesCubeSchemaReader =
             salesCube.getSchemaReader(
-                getTestContext().getConnection().getRole());
+                getTestContext().getConnection().getRole()).withLocus();
     }
 
     public TestContext getTestContext() {
@@ -1350,9 +1352,17 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         return false;
     }
 
-    private TupleList optimizeChildren(TupleList memberList) {
-        return AggregateFunDef.AggregateCalc.optimizeChildren(
-            memberList, schemaReader, salesCube);
+    private TupleList optimizeChildren(final TupleList memberList) {
+        return Locus.execute(
+            Execution.NONE,
+            "AggregationOnDistinctCountMeasuresTest",
+            new Locus.Action<TupleList>() {
+                public TupleList execute() {
+                    return AggregateFunDef.AggregateCalc.optimizeChildren(
+                        memberList, schemaReader, salesCube);
+                }
+            }
+        );
     }
 }
 

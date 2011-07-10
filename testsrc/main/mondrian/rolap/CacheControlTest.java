@@ -469,7 +469,8 @@ public class CacheControlTest extends FoodMartTestCase {
 
         // Region consists of [Time].[1997].[Q1] and its children, and products
         // [Beer] and [Dairy].
-        final SchemaReader schemaReader = salesCube.getSchemaReader(null);
+        final SchemaReader schemaReader =
+            salesCube.getSchemaReader(null).withLocus();
         final Member memberQ1 = schemaReader.getMemberByUniqueName(
             Id.Segment.toList("Time", "1997", "Q1"), true);
         final Member memberBeer = schemaReader.getMemberByUniqueName(
@@ -540,7 +541,8 @@ public class CacheControlTest extends FoodMartTestCase {
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
 
         // Region consists of [Time].[1997].[Q1] and its children.
-        final SchemaReader schemaReader = salesCube.getSchemaReader(null);
+        final SchemaReader schemaReader =
+            salesCube.getSchemaReader(null).withLocus();
         final Member memberQ1 = schemaReader.getMemberByUniqueName(
             Id.Segment.toList("Time", "1997", "Q1"), true);
 
@@ -570,7 +572,8 @@ public class CacheControlTest extends FoodMartTestCase {
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
 
         // Region consists of [Time].[1997].[Q2].[4] and its children.
-        final SchemaReader schemaReader = salesCube.getSchemaReader(null);
+        final SchemaReader schemaReader =
+            salesCube.getSchemaReader(null).withLocus();
         final Member memberApril = schemaReader.getMemberByUniqueName(
             Id.Segment.toList("Time", "1997", "Q2", "4"), true);
 
@@ -636,7 +639,8 @@ public class CacheControlTest extends FoodMartTestCase {
 
         // Region consists of [Product].[Food], [Product].[Drink] and their
         // children.
-        final SchemaReader schemaReader = salesCube.getSchemaReader(null);
+        final SchemaReader schemaReader =
+            salesCube.getSchemaReader(null).withLocus();
         final Member memberFood = schemaReader.getMemberByUniqueName(
             Id.Segment.toList("Product", "Food"), true);
         final Member memberDrink = schemaReader.getMemberByUniqueName(
@@ -827,7 +831,8 @@ public class CacheControlTest extends FoodMartTestCase {
 
         // Region consists of [Time].[1997].[Q1] and its children, and products
         // [Beer] and [Dairy].
-        final SchemaReader schemaReader = salesCube.getSchemaReader(null);
+        final SchemaReader schemaReader =
+            salesCube.getSchemaReader(null).withLocus();
         final Member memberQ1 = schemaReader.getMemberByUniqueName(
             Id.Segment.toList("Time", "1997", "Q1"), true);
         final Member memberBeer = schemaReader.getMemberByUniqueName(
@@ -918,7 +923,8 @@ public class CacheControlTest extends FoodMartTestCase {
         final Connection connection = testContext.getConnection();
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
         final CacheControl cacheControl = new CacheControlImpl();
-        final SchemaReader schemaReader = salesCube.getSchemaReader(null);
+        final SchemaReader schemaReader =
+            salesCube.getSchemaReader(null).withLocus();
         final Member member = schemaReader.getMemberByUniqueName(ids, true);
         return cacheControl.createMemberRegion(member, false);
     }

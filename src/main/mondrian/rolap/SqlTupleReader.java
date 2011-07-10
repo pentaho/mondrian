@@ -20,6 +20,7 @@ import mondrian.rolap.sql.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.server.Locus;
 import mondrian.spi.Dialect;
 import mondrian.util.Pair;
 
@@ -373,8 +374,10 @@ public class SqlTupleReader implements TupleReader {
                 assert sql != null && !sql.equals("");
                 stmt = RolapUtil.executeQuery(
                     dataSource, sql, types, maxRows, 0,
-                    "SqlTupleReader.readTuples " + partialTargets,
-                    message,
+                    new Locus(
+                        Locus.peek().execution,
+                        "SqlTupleReader.readTuples " + partialTargets,
+                        message),
                     -1, -1);
                 resultSet = stmt.getResultSet();
             } else {

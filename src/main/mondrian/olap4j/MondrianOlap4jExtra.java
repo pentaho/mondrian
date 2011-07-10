@@ -65,7 +65,8 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
             final MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
             final mondrian.olap.SchemaReader schemaReader =
                 olap4jLevel.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-                    .olap4jConnection.getMondrianConnection().getSchemaReader();
+                    .olap4jConnection.getMondrianConnection().getSchemaReader()
+                    .withLocus();
             return schemaReader.getLevelCardinality(
                 olap4jLevel.level, true, true);
         } else {
@@ -162,7 +163,8 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
             (MondrianOlap4jHierarchy) hierarchy;
         final mondrian.olap.SchemaReader schemaReader =
             olap4jHierarchy.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-                .olap4jConnection.getMondrianConnection().getSchemaReader();
+                .olap4jConnection.getMondrianConnection().getSchemaReader()
+                .withLocus();
         return RolapMemberBase.getHierarchyCardinality(
             schemaReader, olap4jHierarchy.hierarchy);
     }
@@ -218,7 +220,8 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
                 (MondrianOlap4jMember) member;
             final mondrian.olap.SchemaReader schemaReader =
                 olap4jMember.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-                    .olap4jConnection.getMondrianConnection().getSchemaReader();
+                    .olap4jConnection.getMondrianConnection().getSchemaReader()
+                    .withLocus();
             RolapMemberBase.setOrdinals(schemaReader, olap4jMember.member);
         }
     }

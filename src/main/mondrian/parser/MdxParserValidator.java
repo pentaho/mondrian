@@ -10,6 +10,7 @@
 package mondrian.parser;
 
 import mondrian.olap.*;
+import mondrian.server.Statement;
 
 import java.util.List;
 
@@ -29,14 +30,14 @@ public interface MdxParserValidator {
       * Called only by {@link mondrian.olap.ConnectionBase#parseQuery}.
       */
     QueryPart parseInternal(
-        Connection mdxConnection,
+        Statement statement,
         String queryString,
         boolean debug,
         FunTable funTable,
         boolean strictValidation);
 
     Exp parseExpression(
-        Connection connection,
+        Statement statement,
         String queryString,
         boolean debug,
         FunTable funTable);
@@ -48,7 +49,7 @@ public interface MdxParserValidator {
          * Override this function to make your kind of query.
          */
         Query makeQuery(
-            Connection connection,
+            Statement statement,
             Formula[] formulae,
             QueryAxis[] axes,
             String cube,

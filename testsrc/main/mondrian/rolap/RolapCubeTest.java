@@ -231,7 +231,7 @@ public class RolapCubeTest extends FoodMartTestCase {
             RolapCube warehouseAndSalesCube =
                 (RolapCube) cubeByName(connection, "Warehouse and Sales");
             SchemaReader readerWarehouseAndSales =
-                warehouseAndSalesCube.getSchemaReader();
+                warehouseAndSalesCube.getSchemaReader().withLocus();
 
             List<Member> members = new ArrayList<Member>();
             List<Member> warehouseMembers =
@@ -263,14 +263,15 @@ public class RolapCubeTest extends FoodMartTestCase {
         try {
             RolapCube salesCube1 = (RolapCube) cubeByName(connection1, "Sales");
             SchemaReader readerSales1 =
-                salesCube1.getSchemaReader();
+                salesCube1.getSchemaReader().withLocus();
             List<Member> storeMembersSales =
                 storeMembersCAAndOR(readerSales1).slice(0);
             Dimension storeDim1 = storeMembersSales.get(0).getDimension();
             assertEquals(storeDim1, storeDim1);
 
             RolapCube salesCube2 = (RolapCube) cubeByName(connection2, "Sales");
-            SchemaReader readerSales2 = salesCube2.getSchemaReader();
+            SchemaReader readerSales2 =
+                salesCube2.getSchemaReader().withLocus();
             List<Member> storeMembersSales2 =
                 storeMembersCAAndOR(readerSales2).slice(0);
             Dimension storeDim2 = storeMembersSales2.get(0).getDimension();
@@ -280,7 +281,7 @@ public class RolapCubeTest extends FoodMartTestCase {
             RolapCube warehouseAndSalesCube =
                 (RolapCube) cubeByName(connection1, "Warehouse and Sales");
             SchemaReader readerWarehouseAndSales =
-                warehouseAndSalesCube.getSchemaReader();
+                warehouseAndSalesCube.getSchemaReader().withLocus();
             List<Member> storeMembersWarehouseAndSales =
                 storeMembersCAAndOR(readerWarehouseAndSales).slice(0);
             Dimension storeDim3 =

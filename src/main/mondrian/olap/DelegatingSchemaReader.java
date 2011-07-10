@@ -246,6 +246,10 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
     public SchemaReader withoutAccessControl() {
         return schemaReader.withoutAccessControl();
     }
+
+    public SchemaReader withLocus() {
+        return schemaReader.withLocus();
+    }
 }
 
 // End DelegatingSchemaReader.java

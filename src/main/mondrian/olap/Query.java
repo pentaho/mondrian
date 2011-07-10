@@ -18,9 +18,14 @@ import mondrian.olap.fun.ParameterFunDef;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
+import mondrian.server.Statement;
+import mondrian.spi.ProfileHandler;
 import mondrian.util.ArrayStack;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.util.*;
 
 import org.olap4j.impl.IdentifierParser;
@@ -50,8 +55,10 @@ import org.olap4j.mdx.IdentifierSegment;
  * <li>The {@link MondrianProperties#QueryLimit} parameter limits the number
  *     of cells returned by a query.</li>
  *
- * <li>At any time while a query is executing, another thread can call the
- *     {@link #cancel()} method. The call to {@link Connection#execute(Query)}
+ * <li>At any time while a query is executing, another thread can cancel the
+ *     query by calling
+ *     {@link #getStatement()}.{@link Statement#cancel() cancel()}.
+ *     The call to {@link Connection#execute(Query)}
  *     will throw an exception.</li>
  *
  * </ul>
@@ -89,7 +96,7 @@ public class Query extends QueryPart {
      */
     private final Cube cube;
 
-    private final Connection connection;
+    private final Statement statement;
     public Calc[] axisCalcs;
     public Calc slicerCalc;
 
@@ -98,39 +105,6 @@ public class Query extends QueryPart {
      * have already been posted.
      */
     Set<FunDef> alertedNonNativeFunDefs;
-
-    /**
-     * Start time of query execution
-     */
-    private long startTime;
-
-    /**
-     * Query timeout, in milliseconds
-     */
-    private long queryTimeout;
-
-    private QueryTiming queryTiming;
-
-    /**
-     * If true, cancel this query
-     */
-    private boolean isCanceled;
-
-    /**
-     * If not <code>null</code>, this query was notified that it
-     * might cause an OutOfMemoryError.
-     */
-    private String outOfMemoryMsg;
-
-    /**
-     * If true, query is in the middle of execution
-     */
-    private boolean isExecuting;
-
-    /**
-     * Whether query has been closed.
-     */
-    private boolean closed;
 
     /**
      * Unique list of members referenced from the measures dimension.
@@ -177,20 +151,10 @@ public class Query extends QueryPart {
         new ArrayList<ScopedNamedSet>();
 
     /**
-     * Writer to which to send profiling information, or null if profiling is
-     * disabled.
-     *
-     * <p>TODO: make non-static. Problem is that RolapResult
-     * (and the RolapEvaluatorRoot) gets created
-     * before Query has finished constructing. That's wrong.
-     */
-    private static ProfileHandler profileHandler;
-
-    /**
      * Creates a Query.
      */
     public Query(
-        Connection connection,
+        Statement statement,
         Formula[] formulas,
         QueryAxis[] axes,
         String cube,
@@ -199,8 +163,8 @@ public class Query extends QueryPart {
         boolean strictValidation)
     {
         this(
-            connection,
-            Util.lookupCube(connection.getSchemaReader(), cube, true),
+            statement,
+            Util.lookupCube(statement.getSchemaReader(), cube, true),
             formulas,
             axes,
             slicerAxis,
@@ -213,7 +177,7 @@ public class Query extends QueryPart {
      * Creates a Query.
      */
     public Query(
-        Connection connection,
+        Statement statement,
         Cube mdxCube,
         Formula[] formulas,
         QueryAxis[] axes,
@@ -222,7 +186,7 @@ public class Query extends QueryPart {
         Parameter[] parameters,
         boolean strictValidation)
     {
-        this.connection = connection;
+        this.statement = statement;
         this.cube = mdxCube;
         this.formulas = formulas;
         this.axes = axes;
@@ -230,25 +194,25 @@ public class Query extends QueryPart {
         this.slicerAxis = slicerAxis;
         this.cellProps = cellProps;
         this.parameters.addAll(Arrays.asList(parameters));
-        this.isExecuting = false;
-        this.queryTimeout =
-            MondrianProperties.instance().QueryTimeout.get() * 1000;
         this.measuresMembers = new HashSet<Member>();
         // assume, for now, that cross joins on virtual cubes can be
         // processed natively; as we parse the query, we'll know otherwise
         this.nativeCrossJoinVirtualCube = true;
         this.strictValidation = strictValidation;
         this.alertedNonNativeFunDefs = new HashSet<FunDef>();
-        QueryTiming.init();
+        statement.setQuery(this);
         resolve();
 
         if (RolapUtil.PROFILE_LOGGER.isDebugEnabled()
-            && !isProfilingEnabled())
+            && statement.getProfileHandler() == null)
         {
-            enableProfiling(
+            statement.enableProfiling(
                 new ProfileHandler() {
-                    public void explain(String s) {
-                        RolapUtil.PROFILE_LOGGER.debug(s);
+                    public void explain(String plan, QueryTiming timing) {
+                        if (timing != null) {
+                            plan += "\n" + timing;
+                        }
+                        RolapUtil.PROFILE_LOGGER.debug(plan);
                     }
                 }
             );
@@ -261,9 +225,11 @@ public class Query extends QueryPart {
      * <p>Zero means no timeout.
      *
      * @param queryTimeoutMillis Timeout in milliseconds
+     *
+     * @deprecated This method will be removed in mondrian-4.0
      */
     public void setQueryTimeoutMillis(long queryTimeoutMillis) {
-        this.queryTimeout = queryTimeoutMillis;
+        statement.setQueryTimeoutMillis(queryTimeoutMillis);
     }
 
     /**
@@ -342,7 +308,7 @@ public class Query extends QueryPart {
      */
     public Validator createValidator() {
         return createValidator(
-            connection.getSchema().getFunTable(),
+            statement.getSchema().getFunTable(),
             false);
     }
 
@@ -366,10 +332,11 @@ public class Query extends QueryPart {
     }
 
     /**
-     * @deprecated this method has been deprecated; please use {@link #clone}
+     * @deprecated Please use {@link #clone}; this method will be removed in
+     * mondrian-4.0
      */
     public Query safeClone() {
-        return (Query) clone();
+        return clone();
     }
 
     @SuppressWarnings({
@@ -378,7 +345,7 @@ public class Query extends QueryPart {
     })
     public Query clone() {
         return new Query(
-            connection,
+            statement,
             cube,
             Formula.cloneArray(formulas),
             QueryAxis.cloneArray(axes),
@@ -389,7 +356,7 @@ public class Query extends QueryPart {
     }
 
     public Connection getConnection() {
-        return connection;
+        return statement.getMondrianConnection();
     }
 
     /**
@@ -397,13 +364,15 @@ public class Query extends QueryPart {
      * running the query detects the cancel request, the query execution will
      * throw an exception. See <code>BasicQueryTest.testCancel</code> for an
      * example of usage of this method.
+     *
+     * @deprecated This method is deprecated and will be removed in mondrian-4.0
      */
     public void cancel() {
-        isCanceled = true;
-    }
-
-    void setOutOfMemory(String msg) {
-        outOfMemoryMsg = msg;
+        try {
+            statement.cancel();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -413,60 +382,25 @@ public class Query extends QueryPart {
      * met.  This method should be called periodically during query execution
      * to ensure timely detection of these events, particularly before/after
      * any potentially long running operations.
+     *
+     * @deprecated This method will be removed in mondrian-4.0
      */
     public void checkCancelOrTimeout() {
-        if (!isExecuting) {
-            return;
-        }
-        if (isCanceled) {
-            throw MondrianResource.instance().QueryCanceled.ex();
-        }
-        if (queryTimeout > 0) {
-            long currTime = System.currentTimeMillis();
-            if ((currTime - startTime) >= queryTimeout) {
-                throw MondrianResource.instance().QueryTimeout.ex(
-                    queryTimeout / 1000);
-            }
-        }
-        if (outOfMemoryMsg != null) {
-            throw new MemoryLimitExceededException(outOfMemoryMsg);
-        }
-    }
-
-    /**
-     * Sets the start time of query execution.  Used to detect timeout for
-     * queries.
-     */
-    public void setQueryStartTime() {
-        startTime = System.currentTimeMillis();
-        isExecuting = true;
-        if (queryTiming != null) {
-            // query re-use, reinit QueryTimings!?
-            QueryTiming.init();
-            queryTiming = null;
-        }
+        statement.checkCancelOrTimeout();
     }
 
     /**
      * Gets the query start time
      * @return start time
+     *
+     * @deprecated Use {@link Execution#getStartTime}. This method is deprecated
+     *   and will be removed in mondrian-4.0
      */
     public long getQueryStartTime() {
-        return startTime;
-    }
-
-    public QueryTiming getQueryTiming() {
-        return queryTiming;
-    }
-
-    /**
-     * Called when query execution has completed.  Once query execution has
-     * ended, it is not possible to cancel or timeout the query until it
-     * starts executing again.
-     */
-    public void setQueryEndExecution() {
-        isExecuting = false;
-        queryTiming = QueryTiming.done();
+        final Execution currentExecution = statement.getCurrentExecution();
+        return currentExecution == null
+            ? 0
+            : currentExecution.getStartTime();
     }
 
     /**
@@ -511,7 +445,7 @@ public class Query extends QueryPart {
         final Validator validator = createValidator();
         resolve(validator); // resolve self and children
         // Create a dummy result so we can use its evaluator
-        final Evaluator evaluator = RolapUtil.createEvaluator(this);
+        final Evaluator evaluator = RolapUtil.createEvaluator(statement);
         ExpCompiler compiler =
             createCompiler(
                 evaluator, validator, Collections.singletonList(resultStyle));
@@ -825,7 +759,7 @@ public class Query extends QueryPart {
      *
      * @throws RuntimeException if there is not parameter with the given name
      */
-    public void setParameter(String parameterName, Object value) {
+    public void setParameter(final String parameterName, final Object value) {
         // Need to resolve query before we set parameters, in order to create
         // slots to store them in. (This code will go away when parameters
         // belong to prepared statements.)
@@ -833,7 +767,8 @@ public class Query extends QueryPart {
             resolve();
         }
 
-        Parameter param = getSchemaReader(false).getParameter(parameterName);
+        final Parameter param =
+            getSchemaReader(false).getParameter(parameterName);
         if (param == null) {
             throw MondrianResource.instance().UnknownParameter.ex(
                 parameterName);
@@ -843,8 +778,16 @@ public class Query extends QueryPart {
                 parameterName, param.getScope().name());
         }
         final Object value2 =
-            quickParse(
-                parameterName, param.getType(), value, this);
+        Locus.execute(
+            new Execution(statement, 0),
+            "Query.quickParse",
+            new Locus.Action<Object>() {
+                public Object execute() {
+                    return quickParse(
+                        parameterName, param.getType(), value, Query.this);
+                }
+            }
+        );
         param.setValue(value2);
     }
 
@@ -1002,7 +945,7 @@ public class Query extends QueryPart {
      * Returns a schema reader.
      *
      * @param accessControlled If true, schema reader returns only elements
-     * which are accessible to the connection's current role
+     * which are accessible to the statement's current role
      *
      * @return schema reader
      */
@@ -1311,29 +1254,43 @@ public class Query extends QueryPart {
         boolean scalar,
         ResultStyle resultStyle)
     {
-        Evaluator evaluator = RolapEvaluator.create(this);
-        final Validator validator = createValidator();
-        List<ResultStyle> resultStyleList;
-        resultStyleList =
-            Collections.singletonList(
-                resultStyle != null ? resultStyle : this.resultStyle);
-        final ExpCompiler compiler =
-            createCompiler(
-                evaluator, validator, resultStyleList);
-        if (scalar) {
-            return compiler.compileScalar(exp, false);
-        } else {
-            return compiler.compile(exp);
+        final Statement statement =
+            ((ConnectionBase) getConnection()).createDummyStatement();
+        try {
+            statement.setQuery(this);
+            Evaluator evaluator = RolapEvaluator.create(statement);
+            final Validator validator = createValidator();
+            List<ResultStyle> resultStyleList;
+            resultStyleList =
+                Collections.singletonList(
+                    resultStyle != null ? resultStyle : this.resultStyle);
+            final ExpCompiler compiler =
+                createCompiler(
+                    evaluator, validator, resultStyleList);
+            if (scalar) {
+                return compiler.compileScalar(exp, false);
+            } else {
+                return compiler.compile(exp);
+            }
+        } finally {
+            statement.close();
         }
     }
 
     public ExpCompiler createCompiler() {
-        Evaluator evaluator = RolapEvaluator.create(this);
-        Validator validator = createValidator();
-        return createCompiler(
-            evaluator,
-            validator,
-            Collections.singletonList(resultStyle));
+        final Statement statement =
+            ((ConnectionBase) getConnection()).createDummyStatement();
+        try {
+            statement.setQuery(this);
+            Evaluator evaluator = RolapEvaluator.create(statement);
+            Validator validator = createValidator();
+            return createCompiler(
+                evaluator,
+                validator,
+                Collections.singletonList(resultStyle));
+        } finally {
+            statement.close();
+        }
     }
 
     private ExpCompiler createCompiler(
@@ -1349,6 +1306,7 @@ public class Query extends QueryPart {
 
         final int expDeps =
             MondrianProperties.instance().TestExpDependencies.get();
+        final ProfileHandler profileHandler = statement.getProfileHandler();
         if (profileHandler != null) {
             // Cannot test dependencies and profile at the same time. Profiling
             // trumps.
@@ -1467,47 +1425,22 @@ public class Query extends QueryPart {
     }
 
     /**
-     * Enables profiling.
-     *
-     * <p>Profiling information will be sent to the given writer when
-     * {@link Result#close()} is called.
-     *
-     * <p>If <tt>profileHandler</tt> is null, disables profiling.
-     *
-     * @param _profileHandler Writer to which to send profiling information
-     */
-    public static void enableProfiling(ProfileHandler _profileHandler) {
-        profileHandler = _profileHandler;
-    }
-
-    /**
-     * Returns whther profiling is enabled.
-     *
-     * @return Whether profiling is enabled.
-     */
-    public boolean isProfilingEnabled() {
-        return profileHandler != null;
-    }
-
-    /**
      * Closes this query.
      *
      * <p>Releases any resources held. Writes statistics to log if profiling
      * is enabled.
      *
      * <p>This method is idempotent.
+     *
+     * @deprecated Call {@code Query.getStatement().close()}. This method
+     * will be removed in mondrian-4.0.
      */
     public void close() {
-        if (!closed) {
-            closed = true;
-            if (profileHandler != null) {
-                final StringWriter stringWriter = new StringWriter();
-                final PrintWriter printWriter = new PrintWriter(stringWriter);
-                explain(printWriter);
-                printWriter.close();
-                profileHandler.explain(stringWriter.toString());
-            }
-        }
+        statement.close();
+    }
+
+    public Statement getStatement() {
+        return statement;
     }
 
     /**
@@ -1745,12 +1678,12 @@ public class Query extends QueryPart {
                 }
             }
 
-            // Look for a parameter defined in this connection.
+            // Look for a parameter defined in this statement.
             if (Util.lookup(RolapConnectionProperties.class, name) != null) {
-                Object value = query.connection.getProperty(name);
+                Object value = query.statement.getProperty(name);
                 // TODO: Don't assume it's a string.
                 // TODO: Create expression which will get the value from the
-                //  connection at the time the query is executed.
+                //  statement at the time the query is executed.
                 Literal defaultValue =
                     Literal.createString(String.valueOf(value));
                 return new ConnectionParameterImpl(name, defaultValue);
@@ -2072,15 +2005,11 @@ public class Query extends QueryPart {
                     final Id id = (Id) call2.getArg(1);
                     createScopedNamedSet(
                         id.getSegments().get(0).name,
-                        (QueryPart) parent,
+                        parent,
                         call2.getArg(0));
                 }
             }
         }
-    }
-
-    public interface ProfileHandler {
-        public void explain(String s);
     }
 }
 

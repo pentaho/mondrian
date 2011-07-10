@@ -18,6 +18,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+import mondrian.server.Locus;
 import mondrian.util.CombiningGenerator;
 import mondrian.util.Pair;
 import org.apache.log4j.Logger;
@@ -654,8 +655,10 @@ public class SegmentLoader {
             pair.right,
             0,
             0,
-            "Segment.load",
-            "Error while loading segment",
+            new Locus(
+                Locus.peek().execution,
+                "Segment.load",
+                "Error while loading segment"),
             -1,
             -1);
     }

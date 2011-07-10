@@ -14,6 +14,9 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
+import mondrian.server.Statement;
 import mondrian.test.TestContext;
 import mondrian.test.SqlPattern;
 import mondrian.spi.Dialect;
@@ -33,6 +36,25 @@ public class TestAggregationManager extends BatchTestCase {
         Olap4jUtil.enumSetOf(
             Dialect.DatabaseProduct.ACCESS,
             Dialect.DatabaseProduct.MYSQL);
+
+    private Locus locus;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        final Statement statement =
+            ((RolapConnection) getTestContext().getConnection())
+                .createDummyStatement();
+        final Execution execution = new Execution(statement, 0);
+        locus = new Locus(execution, "TestAggregationManager", null);
+        Locus.push(locus);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        Locus.pop(locus);
+        super.tearDown();
+    }
 
     public TestAggregationManager(String name) {
         super(name);

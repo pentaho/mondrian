@@ -35,7 +35,6 @@ public interface Result {
     Cell getCell(int[] pos);
     void print(PrintWriter pw);
     void close();
-    QueryTiming getQueryTiming();
 }
 
 // End Result.java

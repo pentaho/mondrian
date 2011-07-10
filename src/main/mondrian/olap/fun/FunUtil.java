@@ -507,7 +507,7 @@ public class FunUtil extends Util {
             return memberList;
         }
 
-        QueryTiming.markStart(SORT_EVAL_TIMING_NAME);
+        evaluator.getTiming().markStart(SORT_EVAL_TIMING_NAME);
         boolean timingEval = true;
         boolean timingSort = false;
         try {
@@ -531,17 +531,17 @@ public class FunUtil extends Util {
                 comp = new HierarchicalMemberComparator(evaluator, exp, desc);
             }
             comp.preloadValues(mapMemberToValue);
-            QueryTiming.markEnd(SORT_EVAL_TIMING_NAME);
+            evaluator.getTiming().markEnd(SORT_EVAL_TIMING_NAME);
             timingEval = false;
-            QueryTiming.markStart(SORT_TIMING_NAME);
+            evaluator.getTiming().markStart(SORT_TIMING_NAME);
             timingSort = true;
             Collections.sort(memberList, comp.wrap());
             return memberList;
         } finally {
             if (timingEval) {
-                QueryTiming.markEnd(SORT_EVAL_TIMING_NAME);
+                evaluator.getTiming().markEnd(SORT_EVAL_TIMING_NAME);
             } else if (timingSort) {
-                QueryTiming.markEnd(SORT_TIMING_NAME);
+                evaluator.getTiming().markEnd(SORT_TIMING_NAME);
             }
         }
     }
@@ -694,7 +694,7 @@ public class FunUtil extends Util {
         int limit,
         boolean desc)
     {
-        QueryTiming.markStart(SORT_EVAL_TIMING_NAME);
+        evaluator.getTiming().markStart(SORT_EVAL_TIMING_NAME);
         boolean timingEval = true;
         boolean timingSort = false;
         try {
@@ -702,17 +702,17 @@ public class FunUtil extends Util {
                 new BreakMemberComparator(evaluator, exp, desc);
             Map<Member, Object> valueMap =
                 evaluateMembers(evaluator, exp, list, null, false);
-            QueryTiming.markEnd(SORT_EVAL_TIMING_NAME);
+            evaluator.getTiming().markEnd(SORT_EVAL_TIMING_NAME);
             timingEval = false;
-            QueryTiming.markStart(SORT_TIMING_NAME);
+            evaluator.getTiming().markStart(SORT_TIMING_NAME);
             timingSort = true;
             comp.preloadValues(valueMap);
             return stablePartialSort(list, comp.wrap(), limit);
         } finally {
             if (timingEval) {
-                QueryTiming.markEnd(SORT_EVAL_TIMING_NAME);
+                evaluator.getTiming().markEnd(SORT_EVAL_TIMING_NAME);
             } else if (timingSort) {
-                QueryTiming.markEnd(SORT_TIMING_NAME);
+                evaluator.getTiming().markEnd(SORT_TIMING_NAME);
             }
         }
     }

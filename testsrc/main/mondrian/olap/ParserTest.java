@@ -10,6 +10,7 @@
 package mondrian.olap;
 
 import mondrian.parser.JavaccParserValidatorImpl;
+import mondrian.server.Statement;
 import mondrian.test.FoodMartTestCase;
 import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.mdx.UnresolvedFunCall;
@@ -396,12 +397,19 @@ public class ParserTest extends FoodMartTestCase {
                 + " * [Measures].[Store Cost]"
                 + " * [Measures].[Store Sales])");
 
-        final QueryPart query =
-            p.parseInternal(
-                new Parser.FactoryImpl(),
-                getConnection(), mdx, false, funTable, false);
-        assertTrue(query instanceof Query);
-        ((Query) query).resolve();
+        final Statement statement =
+            ((ConnectionBase) getConnection()).createDummyStatement();
+        try {
+            final QueryPart query =
+                p.parseInternal(
+                    new Parser.FactoryImpl(),
+                    statement, mdx, false,
+                    funTable, false);
+            assertTrue(query instanceof Query);
+            ((Query) query).resolve();
+        } finally {
+            statement.close();
+        }
     }
 
     public void testBangFunction() {
@@ -778,7 +786,7 @@ public class ParserTest extends FoodMartTestCase {
         }
 
         public QueryPart parseInternal(
-            Connection mdxConnection,
+            Statement statement,
             String queryString,
             boolean debug,
             FunTable funTable,
@@ -786,7 +794,7 @@ public class ParserTest extends FoodMartTestCase {
         {
             return super.parseInternal(
                 this,
-                mdxConnection,
+                statement,
                 queryString,
                 debug,
                 funTable,
@@ -794,7 +802,7 @@ public class ParserTest extends FoodMartTestCase {
         }
 
         public Query makeQuery(
-            Connection connection,
+            Statement statement,
             Formula[] formulae,
             QueryAxis[] axes,
             String cube,

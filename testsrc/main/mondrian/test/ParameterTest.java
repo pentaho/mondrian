@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -61,7 +61,7 @@ public class ParameterTest extends FoodMartTestCase {
             "select {Parameter(\"Foo\",[Time],[Time].[1997],\"Foo\")} "
             + "ON COLUMNS from [Sales]";
         Query query = getConnection().parseQuery(mdx);
-        SchemaReader sr = query.getSchemaReader(false);
+        SchemaReader sr = query.getSchemaReader(false).withLocus();
         Member m =
             sr.getMemberByUniqueName(
                 Id.Segment.toList("Time", "1997", "Q2", "5"), true);
@@ -752,7 +752,8 @@ public class ParameterTest extends FoodMartTestCase {
 
         SchemaReader sr =
             TestContext.instance().getConnection()
-                .parseQuery("select from [Sales]").getSchemaReader(true);
+                .parseQuery("select from [Sales]").getSchemaReader(true)
+                .withLocus();
 
         // Member of wrong hierarchy.
         assertAssignParameter(
@@ -848,7 +849,8 @@ public class ParameterTest extends FoodMartTestCase {
         List<Member> list;
         SchemaReader sr =
             TestContext.instance().getConnection()
-                .parseQuery("select from [Sales]").getSchemaReader(true);
+                .parseQuery("select from [Sales]").getSchemaReader(true)
+                .withLocus();
 
         // Empty list is OK.
         list = Collections.emptyList();

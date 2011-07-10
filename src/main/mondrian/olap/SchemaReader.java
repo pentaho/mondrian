@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -461,6 +461,18 @@ public interface SchemaReader {
      * @return Default cube
      */
     Cube getCube();
+
+    /**
+     * Returns a schema reader that automatically assigns a locus to each
+     * operation.
+     *
+     * <p>It is less efficient; use this only if the operation is occurring
+     * outside the context of a statement. If you get the internal error
+     * "no locus", that's a sign you should use this method.</p>
+     *
+     * @return Schema reader that assigns a locus to each operation
+     */
+    SchemaReader withLocus();
 }
 
 // End SchemaReader.java

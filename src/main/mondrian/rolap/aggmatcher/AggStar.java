@@ -14,6 +14,8 @@ import mondrian.resource.MondrianResource;
 import mondrian.recorder.MessageRecorder;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
 import mondrian.spi.Dialect;
 import org.apache.log4j.Logger;
 
@@ -1314,9 +1316,12 @@ public class AggStar {
             DataSource dataSource = getAggStar().getStar().getDataSource();
             SqlStatement stmt =
                 RolapUtil.executeQuery(
-                    dataSource, query.toString(),
-                    "AggStar.FactTable.makeNumberOfRows",
-                    "Counting rows in aggregate table");
+                    dataSource,
+                    query.toString(),
+                    new Locus(
+                        Execution.NONE,
+                        "AggStar.FactTable.makeNumberOfRows",
+                        "Counting rows in aggregate table"));
             try {
                 ResultSet resultSet = stmt.getResultSet();
                 if (resultSet.next()) {
