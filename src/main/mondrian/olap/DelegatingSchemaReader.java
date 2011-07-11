@@ -257,7 +257,6 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return RolapUtil.locusSchemaReader(
             schemaReader.getSchema().getInternalConnection(),
             this);
-
     }
 }
 

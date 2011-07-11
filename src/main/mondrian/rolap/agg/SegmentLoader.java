@@ -194,8 +194,8 @@ public class SegmentLoader {
                         for (int i = 0; i < segment.axes.length; i++) {
                             Aggregation.Axis axis = segment.axes[i];
                             axis.loadKeys(
-                                    sb.getAxisValueSets()[i],
-                                    sb.getNullAxisFlags()[i]);
+                                sb.getAxisValueSets()[i],
+                                sb.getNullAxisFlags()[i]);
                         }
                         final SegmentDataset dataSet =
                             sb.createSegmentDataset(segment);
