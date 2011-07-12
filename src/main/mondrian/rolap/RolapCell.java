@@ -17,11 +17,7 @@ import mondrian.olap.Connection;
 import mondrian.olap.Position;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.SetFunDef;
-import mondrian.rolap.agg.AggregationManager;
-import mondrian.rolap.agg.AndPredicate;
-import mondrian.rolap.agg.CellRequest;
-import mondrian.rolap.agg.MemberColumnPredicate;
-import mondrian.rolap.agg.OrPredicate;
+import mondrian.rolap.agg.*;
 import mondrian.server.*;
 import mondrian.server.Statement;
 import mondrian.spi.Dialect;
@@ -257,13 +253,9 @@ public class RolapCell implements Cell {
                         if (memberWalk.getLevel() != levelLast) {
                             RolapCubeMember rolapCubeMember =
                                 (RolapCubeMember) memberWalk;
-                            RolapStar.Column column =
-                                rolapCubeMember.getLevel()
-                                    .getBaseStarKeyColumn(result.getCube());
                             // Add a predicate for the member at this level
                             listOfStarPredicatesForCurrentPosition.add(
-                                new MemberColumnPredicate(
-                                    column,
+                                Predicates.memberPredicate(
                                     rolapCubeMember));
                         }
                         levelLast = memberWalk.getLevel();
