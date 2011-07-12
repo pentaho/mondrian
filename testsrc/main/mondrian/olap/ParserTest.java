@@ -769,7 +769,7 @@ public class ParserTest extends FoodMartTestCase {
     public static class TestParser
         extends Parser
         implements MdxParserValidator.QueryPartFactory
-     {
+    {
         private Formula[] formulas;
         private QueryAxis[] axes;
         private String cube;
