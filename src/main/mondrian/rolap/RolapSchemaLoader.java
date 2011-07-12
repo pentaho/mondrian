@@ -2698,7 +2698,7 @@ public class RolapSchemaLoader {
 
         // Now pick through the formulas.
         Util.assertTrue(
-            queryExp.formulas.length
+            queryExp.getFormulas().length
             == xmlCalcMembers.size() + xmlNamedSets.size());
         for (int i = 0; i < xmlCalcMembers.size(); i++) {
             postCalcMember(
@@ -2767,7 +2767,7 @@ public class RolapSchemaLoader {
     {
         MondrianDef.NamedSet xmlNamedSet = xmlNamedSets.get(i);
         Util.discard(xmlNamedSet);
-        Formula formula = queryExp.formulas[offset + i];
+        Formula formula = queryExp.getFormulas()[offset + i];
         final SetBase namedSet = (SetBase) formula.getNamedSet();
         if (xmlNamedSet.caption != null
             && xmlNamedSet.caption.length() > 0)
@@ -2824,7 +2824,7 @@ public class RolapSchemaLoader {
         List<RolapMember> memberList)
     {
         MondrianDef.CalculatedMember xmlCalcMember = xmlCalcMembers.get(i);
-        final Formula formula = queryExp.formulas[i];
+        final Formula formula = queryExp.getFormulas()[i];
         calculatedMemberList.add(formula);
 
         final RolapMember member = (RolapMember) formula.getMdxMember();

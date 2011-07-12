@@ -11,6 +11,8 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.calc.*;
+import mondrian.server.Execution;
+import mondrian.server.Statement;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 
@@ -35,6 +37,7 @@ class RolapEvaluatorRoot {
     final SchemaReader schemaReader;
     final Map<CompiledExpKey, Calc> compiledExps =
         new HashMap<CompiledExpKey, Calc>();
+    final Statement statement;
     final Query query;
     private final Date queryStartTime;
     final Dialect currentDialect;
@@ -60,14 +63,26 @@ class RolapEvaluatorRoot {
      * The size of the command stack at which we will next check for recursion.
      */
     int recursionCheckCommandCount;
+    public final Execution execution;
 
     /**
      * Creates a RolapEvaluatorRoot.
      *
-     * @param query Query
+     * @param statement statement
+     * @deprecated
      */
-    public RolapEvaluatorRoot(Query query) {
-        this.query = query;
+    public RolapEvaluatorRoot(Statement statement) {
+        this(statement, null);
+    }
+
+    public RolapEvaluatorRoot(Execution execution) {
+        this(execution.getMondrianStatement(), execution);
+    }
+
+    private RolapEvaluatorRoot(Statement statement, Execution execution) {
+        this.execution = execution;
+        this.statement = statement;
+        this.query = statement.getQuery();
         this.cube = (RolapCube) query.getCube();
         this.connection = (RolapConnection) query.getConnection();
         this.schemaReader = query.getSchemaReader(true);
@@ -121,7 +136,9 @@ class RolapEvaluatorRoot {
         CompiledExpKey key = new CompiledExpKey(exp, scalar, resultStyle);
         Calc calc = compiledExps.get(key);
         if (calc == null) {
-            calc = query.compileExpression(exp, scalar, resultStyle);
+            calc =
+                statement.getQuery().compileExpression(
+                    exp, scalar, resultStyle);
             compiledExps.put(key, calc);
         }
         return calc;

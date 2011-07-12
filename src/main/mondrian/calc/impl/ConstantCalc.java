@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -15,6 +15,8 @@ import mondrian.olap.type.*;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
 import mondrian.calc.*;
+
+import java.util.Map;
 
 /**
  * Calculator which always returns the same value.
@@ -33,6 +35,11 @@ public class ConstantCalc extends GenericCalc {
         this.o = o;
         this.i = initializeInteger(o);
         this.d = initializeDouble(o);
+    }
+
+    @Override
+    protected String getName() {
+        return "Literal";
     }
 
     public ResultStyle getResultStyle() {
@@ -69,8 +76,10 @@ public class ConstantCalc extends GenericCalc {
         return value;
     }
 
-    public void accept(CalcWriter calcWriter) {
-        calcWriter.getWriter().print(o);
+    @Override
+    public void collectArguments(Map<String, Object> arguments) {
+        super.collectArguments(arguments);
+        arguments.put("value", o);
     }
 
     public Object evaluate(Evaluator evaluator) {

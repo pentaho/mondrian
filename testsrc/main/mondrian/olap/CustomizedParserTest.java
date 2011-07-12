@@ -3,12 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2010 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
- */
+*/
 package mondrian.olap;
 
+import mondrian.server.Statement;
 import mondrian.test.FoodMartTestCase;
 import mondrian.olap.fun.*;
 
@@ -57,8 +58,15 @@ public class CustomizedParserTest extends FoodMartTestCase {
         boolean strictValidation)
     {
         String mdx = wrapExpr(expr);
-        return (Query) ((ConnectionBase) getConnection()).parseStatement(
-            mdx, cftab, strictValidation);
+        final ConnectionBase connectionBase = (ConnectionBase) getConnection();
+        final Statement statement =
+            connectionBase.createDummyStatement();
+        try {
+            return (Query) connectionBase.parseStatement(
+                statement, mdx, cftab, strictValidation);
+        } finally {
+            statement.close();
+        }
     }
 
     private Query getParsedQueryForExpr(

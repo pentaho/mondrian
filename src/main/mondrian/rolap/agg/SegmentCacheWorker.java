@@ -12,11 +12,11 @@ package mondrian.rolap.agg;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.SegmentCache;
 import mondrian.util.ServiceDiscovery;
@@ -37,7 +37,9 @@ public final class SegmentCacheWorker {
         Logger.getLogger(SegmentCacheWorker.class);
     private static SegmentCache segmentCache = null;
     private final static ExecutorService executor =
-        Executors.newCachedThreadPool();
+        Util.getExecutorService(
+            1,
+            "mondrian.rolap.agg.SegmentCacheWorker$ExecutorThread");
     private final static ServiceDiscovery<SegmentCache> serviceDiscovery =
         ServiceDiscovery.forClass(SegmentCache.class);
 
@@ -349,6 +351,11 @@ public final class SegmentCacheWorker {
             }
         }
         return Collections.emptyList();
+    }
+
+    public static boolean isCacheEnabled() {
+        initCache();
+        return getSegmentCache() != null;
     }
 }
 

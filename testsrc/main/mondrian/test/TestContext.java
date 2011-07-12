@@ -1016,14 +1016,14 @@ public class TestContext {
         Query query = connection.parseQuery(queryString);
         final Exp exp;
         if (scalar) {
-            exp = query.formulas[0].getExpression();
+            exp = query.getFormulas()[0].getExpression();
         } else {
-            exp = query.axes[0].getSet();
+            exp = query.getAxes()[0].getSet();
         }
         final Calc calc = query.compileExpression(exp, scalar, null);
         final StringWriter sw = new StringWriter();
         final PrintWriter pw = new PrintWriter(sw);
-        final CalcWriter calcWriter = new CalcWriter(pw);
+        final CalcWriter calcWriter = new CalcWriter(pw, false);
         calc.accept(calcWriter);
         pw.flush();
         return sw.toString();

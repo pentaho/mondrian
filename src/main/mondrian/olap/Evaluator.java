@@ -489,6 +489,13 @@ public interface Evaluator {
     Member getPreviousContext(Hierarchy hierarchy);
 
     /**
+     * Returns the query timing context for this execution.
+     *
+     * @return query timing context
+     */
+    QueryTiming getTiming();
+
+    /**
      * Interface for evaluating a particular named set.
      */
     interface NamedSetEvaluator {

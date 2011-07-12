@@ -9,7 +9,10 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.rolap.*;
+import mondrian.spi.Dialect;
+import mondrian.test.SqlPattern;
 import mondrian.util.DelegatingInvocationHandler;
 
 import java.lang.reflect.Proxy;
@@ -27,6 +30,32 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+    }
+
+    public void testRollup() throws Exception {
+        propSaver.set(
+            MondrianProperties.instance().DisableCaching,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().SegmentCache,
+            MockSegmentCache.class.getName());
+        final String queryOracle =
+            "select \"store\".\"store_country\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", sum(\"sales_fact_1997\".\"unit_sales\") as \"m0\" from \"store\" \"store\", \"sales_fact_1997\" \"sales_fact_1997\", \"time_by_day\" \"time_by_day\" where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" and \"store\".\"store_country\" = 'USA' and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 group by \"store\".\"store_country\", \"time_by_day\".\"the_year\"";
+        executeQuery(
+            "select {[Store].[Store Country].Members} on rows, {[Measures].[Unit Sales]} on columns from [Sales]");
+        getTestContext().flushSchemaCache();
+        assertQuerySqlOrNot(
+            getTestContext(),
+            "select {[Store].[Store Country].[USA]} on rows, {[Measures].[Unit Sales]} on columns from [Sales]",
+            new SqlPattern[] {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.ORACLE,
+                    queryOracle,
+                    queryOracle.length())
+            },
+            true,
+            true,
+            true);
     }
 
     public void testLoadWithMockResultsForLoadingSummaryAndDetailedSegments() {

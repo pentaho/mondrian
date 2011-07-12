@@ -1074,6 +1074,146 @@ public class DrillThroughTest extends FoodMartTestCase {
         final Cell cell = result.getCell(new int[]{0});
         assertFalse(cell.canDrillThrough());
     }
+
+    /**
+     * Test case for MONDRIAN-791.
+     */
+    public void testDrillThroughMultiPositionCompoundSlicer() {
+        // A query with a simple multi-position compound slicer
+        Result result =
+            executeQuery(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+                + " {[Product].[All Products]} ON ROWS\n"
+                + "FROM [Sales]\n"
+                + "WHERE {[Time].[1997].[Q1], [Time].[1997].[Q2]}");
+        Cell cell = result.getCell(new int[]{0, 0});
+        assertTrue(cell.canDrillThrough());
+        String sql = cell.getDrillThroughSQL(false);
+        String expectedSql;
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case MYSQL:
+            expectedSql =
+                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and (((time_by_day.the_year, time_by_day.quarter) in ((1997, 'Q1'), (1997, 'Q2'))))";
+            break;
+        case ORACLE:
+            expectedSql =
+                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
+            break;
+        default:
+            return;
+        }
+        getTestContext().assertSqlEquals(expectedSql, sql, 41956);
+
+        // A query with a slightly more complex multi-position compound slicer
+        result =
+            executeQuery(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+                + " {[Product].[All Products]} ON ROWS\n"
+                + "FROM [Sales]\n"
+                + "WHERE Crossjoin(Crossjoin({[Gender].[F]}, {[Marital Status].[M]}),"
+                + "                {[Time].[1997].[Q1], [Time].[1997].[Q2]})");
+        cell = result.getCell(new int[]{0, 0});
+        assertTrue(cell.canDrillThrough());
+        sql = cell.getDrillThroughSQL(false);
+
+        // Note that gender and marital status get their own predicates,
+        // independent of the time portion of the slicer
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case MYSQL:
+            expectedSql =
+                "select customer.gender as Gender, customer.marital_status as Marital Status, sales_fact_1997.unit_sales as Unit Sales from customer as customer, sales_fact_1997 as sales_fact_1997, time_by_day as time_by_day where sales_fact_1997.customer_id = customer.customer_id and customer.gender = 'F' and customer.marital_status = 'M' and sales_fact_1997.time_id = time_by_day.time_id and (((time_by_day.the_year, time_by_day.quarter) in ((1997, 'Q1'), (1997, 'Q2')))) order by customer.gender ASC, customer.marital_status ASC";
+            break;
+        case ORACLE:
+            expectedSql =
+                "select customer.gender as Gender, customer.marital_status as Marital Status, sales_fact_1997.unit_sales as Unit Sales from customer customer, sales_fact_1997 sales_fact_1997, time_by_day time_by_day where sales_fact_1997.customer_id = customer.customer_id and customer.gender = 'F' and customer.marital_status = 'M' and sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997)) order by customer.gender ASC, customer.marital_status ASC";
+            break;
+        default:
+            return;
+        }
+        getTestContext().assertSqlEquals(expectedSql, sql, 10430);
+
+        // A query with an even more complex multi-position compound slicer
+        // (gender must be in the slicer predicate along with time)
+        result =
+            executeQuery(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+                + " {[Product].[All Products]} ON ROWS\n"
+                + "FROM [Sales]\n"
+                + "WHERE Union(Crossjoin({[Gender].[F]}, {[Time].[1997].[Q1]}),"
+                + "            Crossjoin({[Gender].[M]}, {[Time].[1997].[Q2]}))");
+        cell = result.getCell(new int[]{0, 0});
+        assertTrue(cell.canDrillThrough());
+        sql = cell.getDrillThroughSQL(false);
+
+        // Note that gender and marital status get their own predicates,
+        // independent of the time portion of the slicer
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case MYSQL:
+            expectedSql =
+                "select sales_fact_1997.unit_sales as Unit Sales from customer as customer, sales_fact_1997 as sales_fact_1997, time_by_day as time_by_day where sales_fact_1997.customer_id = customer.customer_id and sales_fact_1997.time_id = time_by_day.time_id and (((time_by_day.the_year, time_by_day.quarter, customer.gender) in ((1997, 'Q1', 'F'), (1997, 'Q2', 'M'))))";
+            break;
+        case ORACLE:
+            expectedSql =
+                "select sales_fact_1997.unit_sales as Unit Sales from customer customer, sales_fact_1997 sales_fact_1997, time_by_day time_by_day where sales_fact_1997.customer_id = customer.customer_id and sales_fact_1997.time_id = time_by_day.time_id and ((customer.gender = 'F' and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (customer.gender = 'M' and time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
+            break;
+        default:
+            return;
+        }
+        getTestContext().assertSqlEquals(expectedSql, sql, 20971);
+
+        // A query with a simple multi-position compound slicer with
+        // different levels (overlapping)
+        result =
+            executeQuery(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+                + " {[Product].[All Products]} ON ROWS\n"
+                + "FROM [Sales]\n"
+                + "WHERE {[Time].[1997].[Q1], [Time].[1997].[Q1].[1]}");
+        cell = result.getCell(new int[]{0, 0});
+        assertTrue(cell.canDrillThrough());
+        sql = cell.getDrillThroughSQL(false);
+
+        // With overlapping slicer members, the first slicer predicate is
+        // redundant, but does not affect the query's results
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case MYSQL:
+            expectedSql =
+                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997))";
+            break;
+        case ORACLE:
+            expectedSql =
+                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997))";
+            break;
+        default:
+            return;
+        }
+        getTestContext().assertSqlEquals(expectedSql, sql, 21588);
+
+        // A query with a simple multi-position compound slicer with
+        // different levels (non-overlapping)
+        result =
+            executeQuery(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+                + " {[Product].[All Products]} ON ROWS\n"
+                + "FROM [Sales]\n"
+                + "WHERE {[Time].[1997].[Q1].[1], [Time].[1997].[Q2]}");
+        cell = result.getCell(new int[]{0, 0});
+        assertTrue(cell.canDrillThrough());
+        sql = cell.getDrillThroughSQL(false);
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case MYSQL:
+            expectedSql =
+                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997) or (time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997))";
+            break;
+        case ORACLE:
+            expectedSql =
+                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
+            break;
+        default:
+            return;
+        }
+        getTestContext().assertSqlEquals(expectedSql, sql, 27402);
+    }
 }
 
 // End DrillThroughTest.java

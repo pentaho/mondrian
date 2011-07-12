@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -12,8 +12,7 @@
 package mondrian.olap;
 
 import mondrian.calc.Calc;
-import mondrian.rolap.RolapHierarchy;
-import mondrian.rolap.RolapMember;
+import mondrian.rolap.RolapSchema;
 
 import javax.sql.DataSource;
 import java.util.List;
@@ -23,13 +22,31 @@ import java.util.List;
  * {@link Cube}, {@link Dimension}, {@link Hierarchy}, {@link Level},
  * {@link Member}).
  *
- * <p>It is generally created using {@link Connection#getSchemaReader}.
+ * <p>It is generally created using {@link Connection#getSchemaReader},
+ * but also via {@link Cube#getSchemaReader(Role)}.</p>
+ *
+ * <p>SchemaReader is deprecated for code outside of mondrian. For new code,
+ * use the metadata provided by olap4j, for example
+ * {@link mondrian.olap4j.MondrianOlap4jSchema#getCubes()}.
+ *
+ * <p>If you use a SchemaReader from outside of a mondrian statement, you may
+ * get a {@link java.util.EmptyStackException} indicating that mondrian cannot
+ * deduce the current locus (statement context). If you get that error, call
+ * {@link #withLocus()} to create a SchemaReader that automatically provides a
+ * locus whenever a call is made.</p>
  *
  * @author jhyde
  * @since Feb 24, 2003
  * @version $Id$
  */
 public interface SchemaReader {
+    /**
+     * Returns the schema.
+     *
+     * @return Schema, never null
+     */
+    RolapSchema getSchema();
+
     /**
      * Returns the access-control profile that this <code>SchemaReader</code>
      * is implementing.
@@ -461,6 +478,18 @@ public interface SchemaReader {
      * @return Default cube
      */
     Cube getCube();
+
+    /**
+     * Returns a schema reader that automatically assigns a locus to each
+     * operation.
+     *
+     * <p>It is less efficient; use this only if the operation is occurring
+     * outside the context of a statement. If you get the internal error
+     * "no locus", that's a sign you should use this method.</p>
+     *
+     * @return Schema reader that assigns a locus to each operation
+     */
+    SchemaReader withLocus();
 }
 
 // End SchemaReader.java

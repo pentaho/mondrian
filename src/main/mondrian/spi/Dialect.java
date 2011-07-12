@@ -523,6 +523,30 @@ public interface Dialect {
     boolean requiresOrderByAlias();
 
     /**
+     * Returns true if this Dialect can include expressions in the HAVING
+     * clause only by adding an expression to the SELECT clause and using
+     * its alias.
+     *
+     * <p>For example, in such a dialect,
+     * <blockquote>
+     * <code>SELECT CONCAT(x) as foo FROM t HAVING CONCAT(x) LIKE "%"</code>
+     * </blockquote>
+     * would be illegal, but
+     * <blockquote>
+     * <code>SELECT CONCAT(x) as foo FROM t HAVING foo LIKE "%"</code>
+     * </blockquote>
+     *
+     * would be legal.</p>
+     *
+     * <p>MySQL is an example of such dialects.</p>
+     *
+     * @return Whether this Dialect can include expressions in the HAVING
+     *   clause only by adding an expression to the SELECT clause and using
+     *   its alias
+     */
+    boolean requiresHavingAlias();
+
+    /**
      * Returns true if aliases defined in the SELECT clause can be used as
      * expressions in the ORDER BY clause.
      *
@@ -704,6 +728,47 @@ public interface Dialect {
      * @return Whether this dialect supports FROM-JOIN-ON syntax.
      */
     boolean allowsJoinOn();
+
+    /**
+     * Informs Mondrian if the dialect supports regular expressions
+     * when creating the 'where' or the 'having' clause.
+     * @return True if regular expressions are supported.
+     */
+    boolean allowsRegularExpressionInWhereClause();
+
+    /**
+     * Must generate a String representing a regular expression match
+     * operation between a string literal and a Java regular expression.
+     * The string literal might be a column identifier or some other
+     * identifier, but the implementation must presume that it is already
+     * escaped and fit for use. The regular expression is not escaped
+     * and must be adapted to the proper dialect rules.
+     * <p>Postgres / Greenplum example:
+     * <p><code>
+     * generateRegularExpression(
+     *   "'foodmart'.'customer_name'", "(?i).*oo.*") ->
+     *   'foodmart'.'customer_name' ~ "(?i).*oo.*"
+     * </code></p>
+     * <p>Oracle example:
+     * <p><code>
+     * generateRegularExpression(
+     *   "'foodmart'.'customer_name'", ".*oo.*") ->
+     *   REGEXP_LIKE('foodmart'.'customer_name', ".*oo.*")
+     * </code></p>
+     *
+     * <p>Dialects are allowed to return null if the dialect cannot
+     * convert that particular regular expression into something that
+     * the database would support.</p>
+     *
+     * @param source A String identifying the column to match against.
+     * @param javaRegExp A Java regular expression to match against.
+     * @return A dialect specific matching operation, or null if the
+     * dialect cannot convert that particular regular expression into
+     * something that the database would support.
+     */
+    String generateRegularExpression(
+        String source,
+        String javaRegExp);
 
     /**
      * Converts a SQL type code and type name to a dialect data type.

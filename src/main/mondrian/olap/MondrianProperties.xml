@@ -8,7 +8,9 @@
   == All Rights Reserved.
   ==
   == Definitions of configuration properties used by Mondrian. From this file,
-  == PropertyUtil generates MondrianProperties.java.
+  == PropertyUtil generates MondrianProperties.java,
+  == mondrian.properties.template, and doc/properties.html (which is included in
+  == configuration.html).
   -->
 <PropertyDefinitions>
     <PropertyDefinition>
@@ -212,7 +214,7 @@ mondrian.jdbcDrivers=org.postgresql.Driver</code></blockquote>
 <blockquote><code>
 mondrian.foodmart.jdbcURL=jdbc:hpt4jdbc://localhost:18650/:schema=PENTAHO;serverDataSource=PENTAHO_DataSource<br/>
 mondrian.foodmart.jdbcUser=<i>user</i><br/>
-mondrian.foodmart.jdbcPassword<i>password</i><br/>
+mondrian.foodmart.jdbcPassword=<i>password</i><br/>
 mondrian.jdbcDrivers=com.hp.t4jdbc.HPT4Driver<br/>
 driver.classpath=/some/path/hpt4jdbc.jar</code></blockquote>
 
@@ -220,7 +222,7 @@ driver.classpath=/some/path/hpt4jdbc.jar</code></blockquote>
 <blockquote><code>
 mondrian.foodmart.jdbcURL=jdbc:netezza://127.0.1.10/foodmart<br/>
 mondrian.foodmart.jdbcUser=<i>user</i><br/>
-mondrian.foodmart.jdbcPassword<i>password</i><br/>
+mondrian.foodmart.jdbcPassword=<i>password</i><br/>
 mondrian.jdbcDrivers=org.netezza.Driver<br/>
 driver.classpath=/some/path/nzjdbc.jar</code></blockquote>
 
@@ -228,7 +230,7 @@ driver.classpath=/some/path/nzjdbc.jar</code></blockquote>
 <blockquote><code>
 mondrian.foodmart.jdbcURL=jdbc:jtds:sybase://xxx.xxx.xxx.xxx:<i>port</i>/<i>dbName</i><br/>
 mondrian.foodmart.jdbcUser=<i>user</i><br/>
-mondrian.foodmart.jdbcPassword<i>password</i><br/>
+mondrian.foodmart.jdbcPassword=<i>password</i><br/>
 mondrian.jdbcDrivers=net.sourceforge.jtds.jdbc.Driver<br/>
 driver.classpath=/some/path/jtds-1.2.jar</code></blockquote>
 
@@ -236,7 +238,7 @@ driver.classpath=/some/path/jtds-1.2.jar</code></blockquote>
 <blockquote><code>
 mondrian.foodmart.jdbcURL=jdbc:teradata://DatabaseServerName/DATABASE=FoodMart<br/>
 mondrian.foodmart.jdbcUser=<i>user</i><br/>
-mondrian.foodmart.jdbcPassword<i>password</i><br/>
+mondrian.foodmart.jdbcPassword=<i>password</i><br/>
 mondrian.jdbcDrivers=com.ncr.teradata.TeraDriver<br/>
 driver.classpath=/some/path/terajdbc/classes/terajdbc4.jar</code></blockquote>
 
@@ -272,6 +274,17 @@ Property containing the JDBC password of a test database.
 The default value is null, to cope with DBMSs that don't need this.
         </Description>
         <Type>String</Type>
+    </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>RollupAnalyzerNumberThreads</Name>
+        <Path>mondrian.rolap.RollupAnalyzerNumberThreads</Path>
+        <Description>
+Property which defines how many threads are created in order to
+analyze possible segment rollup opportunities. This value defaults
+to 4, but it can be set to a higher value on big multi-core systems.
+        </Description>
+        <Type>int</Type>
+        <Default>4</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>SegmentCache</Name>

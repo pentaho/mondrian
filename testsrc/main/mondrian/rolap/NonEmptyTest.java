@@ -1156,9 +1156,9 @@ public class NonEmptyTest extends BatchTestCase {
             "With "
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],[*BASE_MEMBERS_Product])' "
             + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' "
-            + "Set [*BASE_MEMBERS_Gender] as 'Filter([Gender].[Gender].Members,[Gender].CurrentMember.Name Matches (\"abc\"))' "
+            + "Set [*BASE_MEMBERS_Gender] as '{}' "
             + "Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})' "
-            + "Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Name].Members, [Product].[Product Name].CurrentMember.Name Matches (\"abc\"))' "
+            + "Set [*BASE_MEMBERS_Product] as '{}' "
             + "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' "
             + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 "
             + "Select "
@@ -4812,6 +4812,36 @@ public class NonEmptyTest extends BatchTestCase {
                 conn.close();
             }
         }
+    }
+
+    /**
+    * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-897">
+    * MONDRIAN-897, "ClassCastException in
+    * CrossJoinArgFactory.allArgsCheapToExpand when defining a NamedSet as
+    * another NamedSet"</a>.
+    */
+    public void testBugMondrian897DoubleNamedSetDefinitions() {
+       TestContext ctx = getTestContext();
+       ctx.assertQueryReturns(
+           "WITH SET [CustomerSet] as {[Customers].[Canada].[BC].[Burnaby].[Alexandra Wellington], [Customers].[USA].[WA].[Tacoma].[Eric Coleman]} "
+           + "SET [InterestingCustomers] as [CustomerSet] "
+           + "SET [TimeRange] as {[Time].[1998].[Q1], [Time].[1998].[Q2]} "
+           + "SELECT {[Measures].[Store Sales]} ON COLUMNS, "
+           + "CrossJoin([InterestingCustomers], [TimeRange]) ON ROWS "
+           + "FROM [Sales]",
+           "Axis #0:\n"
+           + "{}\n"
+           + "Axis #1:\n"
+           + "{[Measures].[Store Sales]}\n"
+           + "Axis #2:\n"
+           + "{[Customers].[Canada].[BC].[Burnaby].[Alexandra Wellington], [Time].[1998].[Q1]}\n"
+           + "{[Customers].[Canada].[BC].[Burnaby].[Alexandra Wellington], [Time].[1998].[Q2]}\n"
+           + "{[Customers].[USA].[WA].[Tacoma].[Eric Coleman], [Time].[1998].[Q1]}\n"
+           + "{[Customers].[USA].[WA].[Tacoma].[Eric Coleman], [Time].[1998].[Q2]}\n"
+           + "Row #0: \n"
+           + "Row #1: \n"
+           + "Row #2: \n"
+           + "Row #3: \n");
     }
 }
 

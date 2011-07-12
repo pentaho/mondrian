@@ -10,15 +10,21 @@
 //
 // jhyde, 22 December, 2001
 */
-
 package mondrian.rolap;
+
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 
+import mondrian.server.Execution;
+import mondrian.server.Locus;
+import mondrian.server.Statement;
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.StringProperty;
 import java.io.*;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -37,6 +43,9 @@ import javax.sql.DataSource;
 public class RolapUtil {
     public static final Logger MDX_LOGGER = Logger.getLogger("mondrian.mdx");
     public static final Logger SQL_LOGGER = Logger.getLogger("mondrian.sql");
+    public static final Logger PROFILE_LOGGER =
+        Logger.getLogger("mondrian.profile");
+
     static final Logger LOGGER = Logger.getLogger(RolapUtil.class);
     private static Semaphore querySemaphore;
 
@@ -55,6 +64,46 @@ public class RolapUtil {
      * Special value represents a null key.
      */
     public static final Comparable<?> sqlNullValue = new RolapUtilComparable();
+
+    /**
+     * Wraps a schema reader in a proxy so that each call to schema reader
+     * has a locus for profiling purposes.
+     *
+     * @param connection Connection
+     * @param schemaReader Schema reader
+     * @return Wrapped schema reader
+     */
+    public static SchemaReader locusSchemaReader(
+        RolapConnection connection,
+        final SchemaReader schemaReader)
+    {
+        final Statement statement = connection.createDummyStatement();
+        final Execution execution = new Execution(statement, 0);
+        final Locus locus =
+            new Locus(
+                execution,
+                "Schema reader",
+                null);
+        return (SchemaReader) Proxy.newProxyInstance(
+            ClassLoader.getSystemClassLoader(),
+            new Class[]{SchemaReader.class},
+            new InvocationHandler() {
+                public Object invoke(
+                    Object proxy,
+                    Method method,
+                    Object[] args)
+                    throws Throwable
+                {
+                    Locus.push(locus);
+                    try {
+                        return method.invoke(schemaReader, args);
+                    } finally {
+                        Locus.pop(locus);
+                    }
+                }
+            }
+        );
+    }
 
     private final static class RolapUtilComparable
             implements Comparable, Serializable
@@ -178,20 +227,15 @@ public class RolapUtil {
      *
      * @param dataSource DataSource
      * @param sql SQL string
-     * @param component Description of a the component executing the query,
-     *   generally a method name, e.g. "SqlTupleReader.readTuples"
-     * @param message Description of the purpose of this statement, to be
-     *   printed if there is an error
+     * @param locus Locus of execution
      * @return ResultSet
      */
     public static SqlStatement executeQuery(
         DataSource dataSource,
         String sql,
-        String component,
-        String message)
+        Locus locus)
     {
-        return executeQuery(
-            dataSource, sql, null, 0, 0, component, message, -1, -1);
+        return executeQuery(dataSource, sql, null, 0, 0, locus, -1, -1);
     }
 
     /**
@@ -213,10 +257,7 @@ public class RolapUtil {
      * @param maxRowCount Maximum number of rows to retrieve, <= 0 if unlimited
      * @param firstRowOrdinal Ordinal of row to skip to (1-based), or 0 to
      *   start from beginning
-     * @param component Description of a the component executing the query,
-     *   generally a method name, e.g. "SqlTupleReader.readTuples"
-     * @param message Description of the purpose of this statement, to be
-     *   printed if there is an error
+     * @param locus Execution context of this statement
      * @param resultSetType Result set type, or -1 to use default
      * @param resultSetConcurrency Result set concurrency, or -1 to use default
      * @return ResultSet
@@ -227,15 +268,14 @@ public class RolapUtil {
         List<SqlStatement.Type> types,
         int maxRowCount,
         int firstRowOrdinal,
-        String component,
-        String message,
+        Locus locus,
         int resultSetType,
         int resultSetConcurrency)
     {
         SqlStatement stmt =
             new SqlStatement(
-                dataSource, sql, types, maxRowCount, firstRowOrdinal, component,
-                message, resultSetType, resultSetConcurrency);
+                dataSource, sql, types, maxRowCount, firstRowOrdinal, locus,
+                resultSetType, resultSetConcurrency);
         stmt.execute();
         return stmt;
     }
@@ -453,6 +493,11 @@ public class RolapUtil {
         return member;
     }
 
+    public static ExpCompiler createProfilingCompiler(ExpCompiler compiler) {
+        return new RolapProfilingEvaluator.ProfilingEvaluatorCompiler(
+            compiler);
+    }
+
     public static RolapSchema.PhysView convertInlineTableToRelation(
         RolapSchema.PhysInlineTable inlineTable,
         final Dialect dialect)
@@ -552,8 +597,11 @@ public class RolapUtil {
     /**
      * Creates a dummy evaluator.
      */
-    public static Evaluator createEvaluator(Query query) {
-        final RolapResult result = new RolapResult(query, false);
+    public static Evaluator createEvaluator(
+        Statement statement)
+    {
+        Execution dummyExecution = new Execution(statement, 0);
+        final RolapResult result = new RolapResult(dummyExecution, false);
         return result.getRootEvaluator();
     }
 

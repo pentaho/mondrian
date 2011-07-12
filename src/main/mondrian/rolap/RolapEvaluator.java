@@ -15,6 +15,7 @@ package mondrian.rolap;
 import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
+import mondrian.server.Statement;
 import mondrian.util.Format;
 import mondrian.spi.Dialect;
 
@@ -212,8 +213,8 @@ public class RolapEvaluator implements Evaluator {
     /**
      * Creates an evaluator.
      */
-    public static Evaluator create(Query query) {
-        final RolapEvaluatorRoot root = new RolapEvaluatorRoot(query);
+    public static Evaluator create(Statement statement) {
+        final RolapEvaluatorRoot root = new RolapEvaluatorRoot(statement);
         return new RolapEvaluator(root);
     }
 
@@ -285,6 +286,10 @@ public class RolapEvaluator implements Evaluator {
             }
         }
         return null;
+    }
+
+    public final QueryTiming getTiming() {
+        return root.execution.getQueryTiming();
     }
 
     public final int savepoint() {

@@ -12,6 +12,8 @@ import mondrian.olap.Util;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.sql.*;
 
 /**
@@ -22,6 +24,11 @@ import java.sql.*;
  * @since Nov 23, 2008
  */
 public class MySqlDialect extends JdbcDialectImpl {
+
+    private final String flagsRegexp = "^(\\(\\?([a-zA-Z])\\)).*$";
+    private final Pattern flagsPattern = Pattern.compile(flagsRegexp);
+    private final String escapeRegexp = "^.*(\\\\Q(.*)\\\\E).*$";
+    private final Pattern escapePattern = Pattern.compile(escapeRegexp);
 
     public static final JdbcDialectFactory FACTORY =
         new JdbcDialectFactory(
@@ -239,6 +246,10 @@ public class MySqlDialect extends JdbcDialectImpl {
         return true;
     }
 
+    public boolean requiresHavingAlias() {
+        return true;
+    }
+
     public boolean supportsMultiValueInExpr() {
         return true;
     }
@@ -246,6 +257,40 @@ public class MySqlDialect extends JdbcDialectImpl {
     private enum Scope {
         SESSION,
         GLOBAL
+    }
+
+    public boolean allowsRegularExpressionInWhereClause() {
+        return true;
+    }
+
+    public String generateRegularExpression(
+        String source,
+        String javaRegExp)
+    {
+        final Matcher flagsMatcher = flagsPattern.matcher(javaRegExp);
+        if (flagsMatcher.matches()) {
+            javaRegExp =
+                javaRegExp.replace(
+                    flagsMatcher.group(1),
+                    "");
+        }
+        final Matcher escapeMatcher = escapePattern.matcher(javaRegExp);
+        if (escapeMatcher.matches()) {
+            String sequence = escapeMatcher.group(2);
+            sequence = sequence.replaceAll("\\\\", "\\\\");
+            javaRegExp =
+                javaRegExp.replace(
+                    escapeMatcher.group(1),
+                    sequence.toUpperCase());
+        }
+        final StringBuilder sb = new StringBuilder();
+        sb.append("UPPER(");
+        sb.append(source);
+        sb.append(") REGEXP ");
+        sb.append("'");
+        sb.append(javaRegExp);
+        sb.append("'");
+        return sb.toString();
     }
 }
 

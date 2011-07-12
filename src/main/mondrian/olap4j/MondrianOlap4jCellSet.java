@@ -10,6 +10,8 @@
 package mondrian.olap4j;
 
 import mondrian.rolap.RolapAxis;
+import mondrian.server.Execution;
+import mondrian.spi.ProfileHandler;
 import org.olap4j.*;
 import org.olap4j.Cell;
 import org.olap4j.Position;
@@ -18,12 +20,11 @@ import mondrian.olap.*;
 import mondrian.olap.Axis;
 import mondrian.rolap.RolapCell;
 
+import java.io.*;
 import java.util.*;
 import java.sql.*;
 import java.sql.Date;
 import java.math.BigDecimal;
-import java.io.InputStream;
-import java.io.Reader;
 import java.net.URL;
 
 /**
@@ -37,7 +38,10 @@ import java.net.URL;
  * @version $Id$
  * @since May 24, 2007
  */
-abstract class MondrianOlap4jCellSet implements CellSet {
+abstract class MondrianOlap4jCellSet
+    extends Execution
+    implements CellSet
+{
     final MondrianOlap4jStatement olap4jStatement;
     final Query query;
     private Result result;
@@ -51,16 +55,14 @@ abstract class MondrianOlap4jCellSet implements CellSet {
      * Creates a MondrianOlap4jCellSet.
      *
      * @param olap4jStatement Statement
-     * @param query Mondrian query
      */
     public MondrianOlap4jCellSet(
-        MondrianOlap4jStatement olap4jStatement,
-        Query query)
+        MondrianOlap4jStatement olap4jStatement)
     {
-        assert olap4jStatement != null;
-        assert query != null;
+        super(olap4jStatement, olap4jStatement.getQueryTimeoutMillis());
         this.olap4jStatement = olap4jStatement;
-        this.query = query;
+        this.query = olap4jStatement.getQuery();
+        assert query != null;
         this.closed = false;
         if (olap4jStatement instanceof MondrianOlap4jPreparedStatement) {
             this.metaData =
@@ -79,12 +81,13 @@ abstract class MondrianOlap4jCellSet implements CellSet {
      *
      * <p>This method may take some time. While it is executing, a client may
      * execute {@link MondrianOlap4jStatement#cancel()}.
+     *
+     * @throws org.olap4j.OlapException on error
      */
     void execute() throws OlapException {
-        query.setQueryTimeoutMillis(olap4jStatement.timeoutSeconds * 1000);
         result =
             olap4jStatement.olap4jConnection.getMondrianConnection().execute(
-                query);
+                this);
 
         // initialize axes
         mondrian.olap.Axis[] axes = result.getAxes();
@@ -252,8 +255,21 @@ abstract class MondrianOlap4jCellSet implements CellSet {
         throw new UnsupportedOperationException();
     }
 
-    public void close() throws SQLException {
+    public void close() {
+        if (closed) {
+            return;
+        }
         this.closed = true;
+        final ProfileHandler profileHandler =
+            olap4jStatement.getProfileHandler();
+        if (profileHandler != null) {
+            final StringWriter stringWriter = new StringWriter();
+            final PrintWriter printWriter = new PrintWriter(stringWriter);
+            olap4jStatement.getQuery().explain(printWriter);
+            printWriter.close();
+            profileHandler.explain(stringWriter.toString(), getQueryTiming());
+        }
+        this.result.close();
     }
 
     public boolean wasNull() throws SQLException {

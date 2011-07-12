@@ -183,7 +183,7 @@ public class AccessControlTest extends FoodMartTestCase {
         final boolean fail = true;
         Cube salesCube = schema.lookupCube("Sales", fail);
         final SchemaReader schemaReader =
-            salesCube.getSchemaReader(null); // unrestricted
+            salesCube.getSchemaReader(null).withLocus(); // unrestricted
         final Member member =
             schemaReader.getMemberByUniqueName(
                 Util.parseIdentifier(memberName), true);
@@ -517,7 +517,8 @@ public class AccessControlTest extends FoodMartTestCase {
         Schema schema = connection.getSchema();
         final boolean fail = true;
         Cube salesCube = schema.lookupCube("Sales", fail);
-        final SchemaReader schemaReader = salesCube.getSchemaReader(null);
+        final SchemaReader schemaReader =
+            salesCube.getSchemaReader(null).withLocus();
         Hierarchy storeHierarchy = salesCube.lookupHierarchy(
             new Id.Segment("Store", Id.Quoting.UNQUOTED), false);
         role.grant(schema, Access.ALL_DIMENSIONS);
@@ -728,7 +729,7 @@ public class AccessControlTest extends FoodMartTestCase {
     private void checkQuery(TestContext testContext, String mdx) {
         Result result = testContext.executeQuery(mdx);
         final SchemaReader schemaReader =
-            testContext.getConnection().getSchemaReader();
+            testContext.getConnection().getSchemaReader().withLocus();
         for (Axis axis : result.getAxes()) {
             for (Position position : axis.getPositions()) {
                 for (Member member : position) {
@@ -2105,6 +2106,47 @@ public class AccessControlTest extends FoodMartTestCase {
         assertEquals("Store City", member2.getLevel().getName());
     }
 
+    /**
+     * Testcase for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-935">MONDRIAN-935,
+     * "no results when some level members in a member grant have no data"</a>.
+     */
+    public void testBugMondrian935() {
+        final TestContext testContext =
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name='Role1'>\n"
+                + "  <SchemaGrant access='none'>\n"
+                + "    <CubeGrant cube='Sales' access='all'>\n"
+                + "      <HierarchyGrant hierarchy='[Store Type]' access='custom' rollupPolicy='partial'>\n"
+                + "        <MemberGrant member='[Store Type].[All Store Types]' access='none'/>\n"
+                + "        <MemberGrant member='[Store Type].[Supermarket]' access='all'/>\n"
+                + "      </HierarchyGrant>\n"
+                + "      <HierarchyGrant hierarchy='[Customers]' access='custom' rollupPolicy='partial' >\n"
+                + "        <MemberGrant member='[Customers].[All Customers]' access='none'/>\n"
+                + "        <MemberGrant member='[Customers].[USA].[WA]' access='all'/>\n"
+                + "        <MemberGrant member='[Customers].[USA].[CA]' access='none'/>\n"
+                + "        <MemberGrant member='[Customers].[USA].[CA].[Los Angeles]' access='all'/>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>\n");
+
+        testContext.withRole("Role1").assertQueryReturns(
+            "select [Measures] on 0,\n"
+            + "[Customers].[USA].Children * [Store Type].Children on 1\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[USA].[CA], [Store Type].[Supermarket]}\n"
+            + "{[Customers].[USA].[WA], [Store Type].[Supermarket]}\n"
+            + "Row #0: 1,118\n"
+            + "Row #1: 73,178\n");
+    }
+
     // ~ Inner classes =========================================================
 
     public static class PeopleRole extends DelegatingRole {
@@ -2135,7 +2177,8 @@ public class AccessControlTest extends FoodMartTestCase {
             boolean foundMember = false;
 
             List <Member> members =
-                schema.getSchemaReader().getLevelMembers(topLevel, true);
+                schema.getSchemaReader().withLocus()
+                    .getLevelMembers(topLevel, true);
 
             for (Member member : members) {
                 if (member.getUniqueName().contains("[" + repName + "]")) {

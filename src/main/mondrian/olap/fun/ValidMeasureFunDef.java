@@ -66,12 +66,13 @@ public class ValidMeasureFunDef extends FunDefBase
 
         public Object evaluate(Evaluator evaluator) {
             final List<Member> memberList;
-            if (calc instanceof MemberCalc) {
+            if (calc.isWrapperFor(MemberCalc.class)) {
                 memberList = new ArrayList<Member>(1);
-                memberList.add(((MemberCalc) calc).evaluateMember(evaluator));
+                memberList.add(
+                    calc.unwrap(MemberCalc.class).evaluateMember(evaluator));
             } else {
                 final Member[] tupleMembers =
-                    ((TupleCalc)calc).evaluateTuple(evaluator);
+                    calc.unwrap((TupleCalc.class)).evaluateTuple(evaluator);
                 memberList = Arrays.asList(tupleMembers);
             }
             RolapCube virtualCube = (RolapCube) evaluator.getCube();

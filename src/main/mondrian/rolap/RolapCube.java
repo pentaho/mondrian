@@ -10,7 +10,6 @@
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.Calc;
@@ -21,6 +20,7 @@ import mondrian.olap.fun.FunDefBase;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.rolap.cache.SoftSmartCache;
+import mondrian.server.Statement;
 import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
@@ -663,19 +663,25 @@ public class RolapCube extends CubeBase {
             new Id(segmentList),
             createDummyExp(calc),
             new MemberProperty[0]);
-        final Query query =
-            new Query(
-                schema.getInternalConnection(),
-                this,
-                new Formula[] {formula},
-                new QueryAxis[0],
-                null,
-                new QueryPart[0],
-                new Parameter[0],
-                false);
-        query.createValidator().validate(formula);
-        calculatedMemberList.add(formula);
-        return (RolapMember) formula.getMdxMember();
+        final Statement statement =
+            schema.getInternalConnection().createDummyStatement();
+        try {
+            final Query query =
+                new Query(
+                    statement,
+                    this,
+                    new Formula[] {formula},
+                    new QueryAxis[0],
+                    null,
+                    new QueryPart[0],
+                    new Parameter[0],
+                    false);
+            query.createValidator().validate(formula);
+            calculatedMemberList.add(formula);
+            return (RolapMember) formula.getMdxMember();
+        } finally {
+            statement.close();
+        }
     }
 
     /**

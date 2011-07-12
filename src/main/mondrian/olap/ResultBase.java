@@ -13,6 +13,9 @@
 package mondrian.olap;
 
 import java.util.List;
+
+import mondrian.server.Execution;
+import mondrian.server.Statement;
 import org.apache.log4j.Logger;
 import java.io.PrintWriter;
 
@@ -24,19 +27,27 @@ import java.io.PrintWriter;
  * @version $Id$
  */
 public abstract class ResultBase implements Result {
+    protected final Execution execution;
+    protected final Statement statement;
     protected final Query query;
     protected final Axis[] axes;
     protected Axis slicerAxis;
 
-    protected ResultBase(Query query, Axis[] axes) {
-        this.query = query;
-        this.axes = axes;
+    protected ResultBase(Execution execution, Axis[] axes) {
+        this.execution = execution;
+        this.statement = execution.getMondrianStatement();
+        this.query = statement.getQuery();
+        assert query != null;
+        this.axes =
+            axes == null
+                ? new Axis[query.getAxes().length]
+                : axes;
     }
 
     protected abstract Logger getLogger();
 
     public Query getQuery() {
-        return query;
+        return statement.getQuery();
     }
 
     // implement Result
@@ -138,11 +149,6 @@ public abstract class ResultBase implements Result {
 
     public void close() {
     }
-
-    public QueryTiming getQueryTiming() {
-        return query.getQueryTiming();
-    }
 }
-
 
 // End ResultBase.java

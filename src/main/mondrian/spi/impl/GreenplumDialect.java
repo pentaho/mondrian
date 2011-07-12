@@ -65,6 +65,15 @@ public class GreenplumDialect extends PostgreSqlDialect {
     public DatabaseProduct getDatabaseProduct() {
         return DatabaseProduct.GREENPLUM;
     }
+
+    public boolean allowsRegularExpressionInWhereClause() {
+        // Support for regexp was added in GP 3.2+
+        if (productVersion.compareTo("3.2") >= 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 // End GreenplumDialect.java

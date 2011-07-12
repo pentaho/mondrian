@@ -18,6 +18,7 @@ import org.olap4j.metadata.*;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.olap.*;
 import mondrian.util.Bug;
+import mondrian.olap.Axis;
 import mondrian.olap.Member;
 import mondrian.olap.Position;
 import mondrian.olap.Cube;
@@ -25,6 +26,7 @@ import mondrian.olap.Dimension;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Property;
 import mondrian.olap.NamedSet;
+import mondrian.olap.Result;
 import mondrian.olap.Schema;
 import mondrian.spi.Dialect;
 import mondrian.spi.PropertyFormatter;
@@ -3082,12 +3084,21 @@ years, quarters etc.
      * "adding hours/mins as levelType for level of type Dimension"</a>.
      */
     public void testBugMondrian355() {
+        checkBugMondrian355("TimeHalfYears");
+
+        // make sure that the deprecated name still works
+        checkBugMondrian355("TimeHalfYear");
+    }
+
+    public void checkBugMondrian355(String timeHalfYear) {
         final String xml =
             "<Dimension name=\"Time2\" foreignKey=\"time_id\" type=\"TimeDimension\">\n"
             + "<Hierarchy hasAll=\"true\" primaryKey=\"time_id\">\n"
             + "  <Table name=\"time_by_day\"/>\n"
             + "  <Level name=\"Years\" column=\"the_year\" uniqueMembers=\"true\" type=\"Numeric\" levelType=\"TimeYears\"/>\n"
-            + "  <Level name=\"Half year\" column=\"quarter\" uniqueMembers=\"false\" levelType=\"TimeHalfYear\"/>\n"
+            + "  <Level name=\"Half year\" column=\"quarter\" uniqueMembers=\"false\" levelType=\""
+            + timeHalfYear
+            + "\"/>\n"
             + "  <Level name=\"Hours\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\" levelType=\"TimeHours\"/>\n"
             + "  <Level name=\"Quarter hours\" column=\"time_id\" uniqueMembers=\"false\" type=\"Numeric\" levelType=\"TimeUndefined\"/>\n"
             + "</Hierarchy>\n"
@@ -3285,7 +3296,8 @@ years, quarters etc.
         // Description comes from the DESCRIPTION member property.
         // Annotations are always empty for regular members.
         final List<Member> memberList =
-            cube.getSchemaReader(null).getLevelMembers(level, false);
+            cube.getSchemaReader(null).withLocus()
+                .getLevelMembers(level, false);
         final Member member = memberList.get(0);
         assertEquals("Canada", member.getName());
         assertEquals("Canada", member.getCaption());
@@ -3806,39 +3818,86 @@ years, quarters etc.
     /**
      * Test for MONDRIAN-943 and MONDRIAN-465.
      */
-    public void testCaptionColumnUsedWithOrdinalColumn() throws Exception {
-        final TestContext context =
+    public void testCaptionWithOrdinalColumn() {
+        TestContext tc =
             TestContext.createSubstitutingCube(
                 "HR",
-                "  <Dimension name=\"FooBarDimension\" foreignKey=\"employee_id\">\n"
-                + "    <Hierarchy hasAll=\"false\" primaryKey=\"position_id\">\n"
-                + "      <Table name=\"position\"/>\n"
-                + "      <Level name=\"FooBarLevel\" uniqueMembers=\"true\"\n"
-                + "          column=\"position_id\""
-                + "          nameColumn=\"management_role\""
-                + "          captionColumn=\"position_title\""
-                + "          ordinalColumn=\"management_role\""
-                + "          />\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n",
+                "<Dimension name=\"Position\" foreignKey=\"employee_id\">\n"
+                + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Position\" primaryKey=\"employee_id\">\n"
+                + "    <Table name=\"employee\"/>\n"
+                + "    <Level name=\"Management Role\" uniqueMembers=\"true\" column=\"management_role\"/>\n"
+                + "    <Level name=\"Position Title\" uniqueMembers=\"false\" column=\"position_title\" ordinalColumn=\"position_id\" captionColumn=\"position_title\"/>\n"
+                + "  </Hierarchy>\n"
+                + "</Dimension>\n");
+        String mdxQuery =
+            "WITH SET [#DataSet#] as '{Descendants([Position].[All Position], 2)}' "
+            + "SELECT {[Measures].[Org Salary]} on columns, "
+            + "NON EMPTY Hierarchize({[#DataSet#]}) on rows FROM [HR]";
+        Result result = tc.executeQuery(mdxQuery);
+        Axis[] axes = result.getAxes();
+        List<Position> positions = axes[1].getPositions();
+        Member mall = positions.get(0).get(0);
+        String caption = mall.getHierarchy().getCaption();
+        assertEquals("Position", caption);
+        String captionValue = mall.getCaption();
+        assertEquals("HQ Information Systems", captionValue);
+        mall = positions.get(14).get(0);
+        captionValue = mall.getCaption();
+        assertEquals("Store Manager", captionValue);
+        mall = positions.get(15).get(0);
+        captionValue = mall.getCaption();
+        assertEquals("Store Assistant Manager", captionValue);
+    }
+
+    /**
+     * This is a test case for bug Mondrian-923. When a virtual cube included
+     * calculated members in its schema, they were not included in the list of
+     * existing measures because of an override of the hierarchy schema reader
+     * which was done at cube init time when resolving the calculated members
+     * of the base cubes.
+     */
+    public void testBugMondrian923() throws Exception {
+        TestContext context =
+            TestContext.createSubstitutingCube(
+                "Warehouse and Sales",
                 null,
                 null,
+                "<CalculatedMember name=\"Image Unit Sales\" dimension=\"Measures\"><Formula>[Measures].[Unit Sales]</Formula><CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"|$#,###.00|image=icon_chart\\.gif|link=http://www\\.pentaho\\.com\"/></CalculatedMember>"
+                + "<CalculatedMember name=\"Arrow Unit Sales\" dimension=\"Measures\"><Formula>[Measures].[Unit Sales]</Formula><CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"IIf([Measures].[Unit Sales] > 10000,'|#,###|arrow=up',IIf([Measures].[Unit Sales] > 5000,'|#,###|arrow=down','|#,###|arrow=none'))\"/></CalculatedMember>"
+                + "<CalculatedMember name=\"Style Unit Sales\" dimension=\"Measures\"><Formula>[Measures].[Unit Sales]</Formula><CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"IIf([Measures].[Unit Sales] > 100000,'|#,###|style=green',IIf([Measures].[Unit Sales] > 50000,'|#,###|style=yellow','|#,###|style=red'))\"/></CalculatedMember>",
                 null);
-        context.assertQueryReturns(
-            "select {[FooBarDimension].[FooBarLevel].Members} on columns from [HR]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[FooBarDimension].[Middle Management]}\n"
-            + "{[FooBarDimension].[Senior Management]}\n"
-            + "{[FooBarDimension].[Store Full Time Staff]}\n"
-            + "{[FooBarDimension].[Store Management]}\n"
-            + "{[FooBarDimension].[Store Temp Staff]}\n"
-            + "Row #0: $270.00\n"
-            + "Row #0: $864.00\n"
-            + "Row #0: \n"
-            + "Row #0: \n"
-            + "Row #0: \n");
+        for (Cube cube
+                : context.getConnection().getSchemaReader().getCubes())
+        {
+            if (cube.getName().equals("Warehouse and Sales")) {
+                for (Dimension dim : cube.getDimensions()) {
+                    if (dim.isMeasures()) {
+                        List<Member> members =
+                            context.getConnection()
+                                .getSchemaReader().getLevelMembers(
+                                    dim.getHierarchy().getLevels()[0],
+                                    true);
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Profit Per Unit Shipped]"));
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Image Unit Sales]"));
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Arrow Unit Sales]"));
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Style Unit Sales]"));
+                        assertTrue(
+                            members.toString().contains(
+                                "[Measures].[Average Warehouse Sale]"));
+                        return;
+                    }
+                }
+            }
+        }
+        fail("Didn't find measures in sales cube.");
     }
 
     /**

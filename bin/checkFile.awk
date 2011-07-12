@@ -22,6 +22,9 @@ function _isCpp(fname) {
 function _isJava(fname) {
     return fname ~ /\.(java|jj)$/;
 }
+function _isMondrian(fname) {
+    return fname ~ /mondrian/;
+}
 function push(val) {
     switchStack[switchStackLen++] = val;
 }
@@ -92,6 +95,7 @@ FNR == 1 {
     matchFile = _matchFile(fname);
     isCpp = _isCpp(fname);
     isJava = _isJava(fname);
+    mondrian = _isMondrian(fname);
 }
 {
     if (previousLineEndedInCloseBrace > 0) {
@@ -130,7 +134,7 @@ FNR == 1 {
         # mask out /* */ comments
         gsub(/\/\*.*\*\//, "/* comment */", s);
     }
-    if (s ~ /\/\/\$NON-NLS/) {
+    if (mondrian && s ~ /\/\/\$NON-NLS/) {
         error(fname, FNR, "NON-NLS not allowed");
     }
     # mask out // comments

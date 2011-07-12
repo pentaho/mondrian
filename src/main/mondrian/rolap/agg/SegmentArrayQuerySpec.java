@@ -17,6 +17,7 @@ import mondrian.rolap.sql.SqlQuery;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Provides the information necessary to generate a SQL statement to
@@ -134,13 +135,22 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
         }
     }
 
-    protected void addGroupingSets(SqlQuery sqlQuery) {
+    protected void addGroupingSets(
+        SqlQuery sqlQuery,
+        Map<String, String> groupingSetsAliases)
+    {
         List<RolapStar.Column[]> groupingSetsColumns =
             groupingSetsList.getGroupingSetsColumns();
         for (RolapStar.Column[] groupingSetsColumn : groupingSetsColumns) {
-            ArrayList<String> groupingColumnsExpr = new ArrayList<String>();
+            List<String> groupingColumnsExpr = new ArrayList<String>();
             for (RolapStar.Column column : groupingSetsColumn) {
-                groupingColumnsExpr.add(column.getExpression().toSql());
+                final String columnExpr = column.getExpression().toSql();
+                if (groupingSetsAliases.containsKey(columnExpr)) {
+                    groupingColumnsExpr.add(
+                        groupingSetsAliases.get(columnExpr));
+                } else {
+                    groupingColumnsExpr.add(columnExpr);
+                }
             }
             sqlQuery.addGroupingSet(groupingColumnsExpr);
         }

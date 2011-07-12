@@ -4,14 +4,14 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 23 January, 1999
 */
-
 package mondrian.olap;
+
 import java.io.PrintWriter;
 
 /**
@@ -41,6 +41,16 @@ public abstract class QueryPart implements Walkable {
     public Object[] getChildren() {
         // By default, a QueryPart is atomic (has no children).
         return null;
+    }
+
+    /**
+     * Returns the plan that Mondrian intends to use to execute this query.
+     *
+     * @param pw Print writer
+     */
+    public void explain(PrintWriter pw) {
+        throw new UnsupportedOperationException(
+            "explain not implemented for " + this + " (" + getClass() + ")");
     }
 }
 

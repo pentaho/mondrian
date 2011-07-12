@@ -237,6 +237,7 @@ public class AggTableManager {
                         ExplicitRules.getIncludeByTableDef(name, aggGroups);
 
                     boolean makeAggStar = false;
+                    int approxRowCount = Integer.MIN_VALUE;
                     // Is it handled by the ExplicitRules
                     if (tableDef != null) {
                         // load columns
@@ -247,6 +248,7 @@ public class AggTableManager {
                                 dbFactTable,
                                 dbTable,
                                 msgRecorder);
+                            approxRowCount = tableDef.getApproxRowCount();
                     }
                     if (! makeAggStar) {
                         // Is it handled by the DefaultRules
@@ -266,19 +268,19 @@ public class AggTableManager {
                     if (makeAggStar) {
                         dbTable.setTableUsageType(
                             JdbcSchema.TableUsageType.AGG);
-                        String alias = null;
                         dbTable.table =
                             new RolapSchema.PhysTable(
                                 schema.getPhysicalSchema(),
                                 schemaName,
                                 name,
-                                alias,
+                                null, // null alias
                                 null); // don't know about table hints
                         AggStar aggStar =
                             AggStar.makeAggStar(
                                 star,
                                 dbTable,
-                                msgRecorder);
+                                msgRecorder,
+                                approxRowCount);
                         if (aggStar.getSize() > 0) {
                             star.addAggStar(aggStar);
                         } else {

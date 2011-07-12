@@ -10,6 +10,10 @@
 package mondrian.olap4j;
 
 import mondrian.olap.Role;
+import mondrian.rolap.RolapConnection;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
+import mondrian.server.Statement;
 import org.olap4j.OlapException;
 import org.olap4j.metadata.*;
 import org.olap4j.impl.ArrayNamedListImpl;
@@ -117,19 +121,31 @@ class MondrianOlap4jLevel implements Level, Named {
     public List<Member> getMembers() throws OlapException {
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
-        final mondrian.olap.SchemaReader schemaReader =
-            olap4jConnection.getMondrianConnection().getSchemaReader();
-        final List<mondrian.olap.Member> levelMembers =
-            schemaReader.getLevelMembers(level, true);
-        return new AbstractList<Member>() {
-            public Member get(int index) {
-                return olap4jConnection.toOlap4j(levelMembers.get(index));
-            }
+        final RolapConnection mondrianConnection =
+            olap4jConnection.getMondrianConnection();
+        return Locus.execute(
+            mondrianConnection,
+            "Reading members of level",
+            new Locus.Action<List<Member>>()
+            {
+                public List<Member> execute() {
+                    final mondrian.olap.SchemaReader schemaReader =
+                        mondrianConnection.getSchemaReader();
+                    final List<mondrian.olap.Member> levelMembers =
+                        schemaReader.getLevelMembers(level, true);
+                    return new AbstractList<Member>() {
+                        public Member get(int index) {
+                            return olap4jConnection.toOlap4j(
+                                levelMembers.get(index));
+                        }
 
-            public int size() {
-                return levelMembers.size();
+                        public int size() {
+                            return levelMembers.size();
+                        }
+                    };
+                }
             }
-        };
+        );
     }
 
     public String getName() {

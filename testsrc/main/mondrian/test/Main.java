@@ -208,6 +208,7 @@ public class Main extends TestSuite {
                 addTest(suite, Base64Test.class);
                 return suite;
             }
+            addTest(suite, NativeFilterMatchingTest.class);
             addTest(suite, RolapConnectionTest.class);
             addTest(suite, FilteredIterableTest.class);
             addTest(suite, HighDimensionsTest.class);
@@ -314,8 +315,9 @@ public class Main extends TestSuite {
             addTest(suite, AggregationOnDistinctCountMeasuresTest.class);
             addTest(suite, BitKeyTest.class);
             addTest(suite, TypeTest.class);
-            addTest(suite, SteelWheelsTestCase.class);
+            addTest(suite, SteelWheelsSchemaTest.class);
             addTest(suite, MultipleColsInTupleAggTest.class);
+            addTest(suite, DynamicSchemaProcessorTest.class);
             addTest(suite, CodeComplianceTest.class);
 
             boolean testNonEmpty = isRunOnce();

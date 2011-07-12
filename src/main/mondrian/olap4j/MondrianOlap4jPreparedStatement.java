@@ -3,12 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
+import mondrian.olap.Query;
+import mondrian.util.Pair;
 import org.olap4j.*;
 import org.olap4j.type.*;
 import org.olap4j.metadata.*;
@@ -21,7 +23,6 @@ import java.util.Calendar;
 import java.net.URL;
 
 import mondrian.olap.Parameter;
-import mondrian.olap.Query;
 import mondrian.olap.Util;
 
 /**
@@ -40,7 +41,6 @@ abstract class MondrianOlap4jPreparedStatement
     implements PreparedOlapStatement, OlapParameterMetaData
 {
     private final String mdx; // for debug
-    private Query query;
     MondrianOlap4jCellSetMetaData cellSetMetaData;
 
     /**
@@ -58,22 +58,15 @@ abstract class MondrianOlap4jPreparedStatement
     {
         super(olap4jConnection);
         this.mdx = mdx;
-        this.query = olap4jConnection.getMondrianConnection().parseQuery(mdx);
-        this.cellSetMetaData = new MondrianOlap4jCellSetMetaData(this, query);
-    }
-
-    // override OlapStatement
-
-    public CellSet executeOlapQuery(String mdx) throws OlapException {
-        this.query = olap4jConnection.getMondrianConnection().parseQuery(mdx);
-        this.cellSetMetaData = new MondrianOlap4jCellSetMetaData(this, query);
-        return executeOlapQueryInternal(query);
+        final Pair<Query, MondrianOlap4jCellSetMetaData> pair = parseQuery(mdx);
+        this.query = pair.left;
+        this.cellSetMetaData = pair.right;
     }
 
     // implement PreparedOlapStatement
 
     public CellSet executeQuery() throws OlapException {
-        return executeOlapQueryInternal(query);
+        return executeOlapQueryInternal(query, cellSetMetaData);
     }
 
     public OlapParameterMetaData getParameterMetaData() throws OlapException {

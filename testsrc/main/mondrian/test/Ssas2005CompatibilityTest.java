@@ -1483,6 +1483,59 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         }
     }
 
+    public void testMemberNameSortCaseSensitivity()
+    {
+        // In SSAS, "MacDougal" occurs between "Maccietto" and "Macha". This
+        // would not occur if sort was case-sensitive.
+        final TestContext testContext =
+            TestContext.createSubstitutingCube(
+                "Sales",
+                "  <Dimension name=\"Customer Last Name\" "
+                + "foreignKey=\"customer_id\">\n"
+                + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\""
+                + " primaryKey=\"customer_id\">\n"
+                + "      <Table name=\"customer\"/>\n"
+                + "      <Level name=\"Last Name\" column=\"lname\" keyColumn=\"customer_id\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n");
+        testContext.assertAxisReturns(
+            "head(\n"
+            + "  filter(\n"
+            + "    [Customer Last Name].[Last Name].Members,"
+            + "    Left([Customer Last Name].[Last Name].CurrentMember.Name, "
+            + "1) = \"M\"),\n"
+            + "  10)",
+            "[Customer Last Name].[Mabe]\n"
+            + "[Customer Last Name].[Macaluso]\n"
+            + "[Customer Last Name].[MacBride]\n"
+            + "[Customer Last Name].[Maccietto]\n"
+            + "[Customer Last Name].[MacDougal]\n"
+            + "[Customer Last Name].[Macha]\n"
+            + "[Customer Last Name].[Macias]\n"
+            + "[Customer Last Name].[Mack]\n"
+            + "[Customer Last Name].[Mackin]\n"
+            + "[Customer Last Name].[Maddalena]");
+
+        testContext.assertAxisReturns(
+            "order(\n"
+            + "  head(\n"
+            + "    filter(\n"
+            + "      [Customer Last Name].[Last Name].Members,"
+            + "      Left([Customer Last Name].[Last Name].CurrentMember.Name, 1) = \"M\"),\n"
+            + "  10),\n"
+            + " [Customer Last Name].[Last Name].CurrentMember.Name)",
+            "[Customer Last Name].[Mabe]\n"
+            + "[Customer Last Name].[Macaluso]\n"
+            + "[Customer Last Name].[MacBride]\n"
+            + "[Customer Last Name].[Maccietto]\n"
+            + "[Customer Last Name].[MacDougal]\n"
+            + "[Customer Last Name].[Macha]\n"
+            + "[Customer Last Name].[Macias]\n"
+            + "[Customer Last Name].[Mack]\n"
+            + "[Customer Last Name].[Mackin]\n"
+            + "[Customer Last Name].[Maddalena]");
+    }
+
     /**
      * Subclass of {@link mondrian.test.Ssas2005CompatibilityTest} that runs
      * with {@link mondrian.olap.MondrianProperties#SsasCompatibleNaming}=false.

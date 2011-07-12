@@ -17,6 +17,7 @@ import mondrian.rolap.agg.Aggregation;
 import mondrian.rolap.agg.AggregationKey;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.server.Locus;
 import mondrian.spi.DataSourceChangeListener;
 import mondrian.spi.Dialect;
 import org.apache.log4j.Logger;
@@ -76,7 +77,6 @@ public class RolapStar {
             }
         );
     }
-
 
     private final RolapSchema schema;
 
@@ -1097,10 +1097,13 @@ public class RolapStar {
             String sql = sqlQuery.toString();
             final SqlStatement stmt =
                 RolapUtil.executeQuery(
-                    dataSource, sql,
-                    "RolapStar.Column.getCardinality",
-                    "while counting distinct values of column '"
-                    + expression .toSql());
+                    dataSource,
+                    sql,
+                    new Locus(
+                        Locus.peek().execution,
+                        "RolapStar.Column.getCardinality",
+                        "while counting distinct values of column '"
+                        + expression.toSql()));
             try {
                 ResultSet resultSet = stmt.getResultSet();
                 Util.assertTrue(resultSet.next());

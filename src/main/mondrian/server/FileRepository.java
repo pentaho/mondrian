@@ -303,8 +303,7 @@ public class FileRepository implements Repository {
                         (RolapConnection)
                             DriverManager.getConnection(
                                 connectString, null);
-                    rolapSchema =
-                        (RolapSchema) rolapConnection.getSchema();
+                    rolapSchema = rolapConnection.getSchema();
                 } finally {
                     if (rolapConnection != null) {
                         rolapConnection.close();

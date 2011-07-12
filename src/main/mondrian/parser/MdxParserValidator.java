@@ -3,13 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2010 Julian Hyde
+// Copyright (C) 2010-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.parser;
 
 import mondrian.olap.*;
+import mondrian.server.Statement;
 
 import java.util.List;
 
@@ -29,14 +30,14 @@ public interface MdxParserValidator {
       * Called only by {@link mondrian.olap.ConnectionBase#parseQuery}.
       */
     QueryPart parseInternal(
-        Connection mdxConnection,
+        Statement statement,
         String queryString,
         boolean debug,
         FunTable funTable,
         boolean strictValidation);
 
     Exp parseExpression(
-        Connection connection,
+        Statement statement,
         String queryString,
         boolean debug,
         FunTable funTable);
@@ -48,7 +49,7 @@ public interface MdxParserValidator {
          * Override this function to make your kind of query.
          */
         Query makeQuery(
-            Connection connection,
+            Statement statement,
             Formula[] formulae,
             QueryAxis[] axes,
             String cube,
@@ -64,6 +65,12 @@ public interface MdxParserValidator {
             int maxRowCount,
             int firstRowOrdinal,
             List<Exp> returnList);
+
+        /**
+         * Creates an {@link mondrian.olap.Explain} object.
+         */
+        Explain makeExplain(
+            QueryPart query);
     }
 }
 

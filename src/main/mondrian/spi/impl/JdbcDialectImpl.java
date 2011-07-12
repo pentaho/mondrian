@@ -826,6 +826,10 @@ public class JdbcDialectImpl implements Dialect {
         return false;
     }
 
+    public boolean requiresHavingAlias() {
+        return false;
+    }
+
     public boolean allowsOrderByAlias() {
         return requiresOrderByAlias();
     }
@@ -856,6 +860,17 @@ public class JdbcDialectImpl implements Dialect {
 
     public int getMaxColumnNameLength() {
         return maxColumnNameLength;
+    }
+
+    public boolean allowsRegularExpressionInWhereClause() {
+        return false;
+    }
+
+    public String generateRegularExpression(
+        String source,
+        String javaRegExp)
+    {
+        return null;
     }
 
     /**

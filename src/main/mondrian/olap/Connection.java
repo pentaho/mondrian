@@ -4,13 +4,12 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 29 February, 2000
 */
-
 package mondrian.olap;
 
 import javax.sql.DataSource;
@@ -57,7 +56,11 @@ public interface Connection {
     /**
      * Executes a query.
      *
-     * @throws RuntimeException if another thread calls {@link Query#cancel()}.
+     * @throws RuntimeException if another thread cancels the query's statement.
+     *
+     * @deprecated This method is deprecated and will be removed in
+     * mondrian-4.0. It operates by internally creating a statement. Better
+     * to use olap4j and explicitly create a statement.
      */
     Result execute(Query query);
 

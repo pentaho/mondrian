@@ -10,6 +10,7 @@
 package mondrian.olap;
 
 import mondrian.parser.JavaccParserValidatorImpl;
+import mondrian.server.Statement;
 import mondrian.test.FoodMartTestCase;
 import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.mdx.UnresolvedFunCall;
@@ -396,12 +397,19 @@ public class ParserTest extends FoodMartTestCase {
                 + " * [Measures].[Store Cost]"
                 + " * [Measures].[Store Sales])");
 
-        final QueryPart query =
-            p.parseInternal(
-                new Parser.FactoryImpl(),
-                getConnection(), mdx, false, funTable, false);
-        assertTrue(query instanceof Query);
-        ((Query) query).resolve();
+        final Statement statement =
+            ((ConnectionBase) getConnection()).createDummyStatement();
+        try {
+            final QueryPart query =
+                p.parseInternal(
+                    new Parser.FactoryImpl(),
+                    statement, mdx, false,
+                    funTable, false);
+            assertTrue(query instanceof Query);
+            ((Query) query).resolve();
+        } finally {
+            statement.close();
+        }
     }
 
     public void testBangFunction() {
@@ -464,12 +472,12 @@ public class ParserTest extends FoodMartTestCase {
 
         // exponents akimbo
         assertParseExpr("1e2", "100", true);
-        assertParseExpr("1e2", "1E+2", false);
+        assertParseExpr("1e2", Util.PreJdk15 ? "100" : "1E+2", false);
         assertParseExprFails(
             "1e2e3",
             "Syntax error at line 1, column 37, token 'e3'");
         assertParseExpr("1.2e3", "1200", true);
-        assertParseExpr("1.2e3", "1.2E+3", false);
+        assertParseExpr("1.2e3", Util.PreJdk15 ? "1200" : "1.2E+3", false);
         assertParseExpr("-1.2345e3", "(- 1234.5)");
         assertParseExprFails(
             "1.2e3.4",
@@ -611,6 +619,33 @@ public class ParserTest extends FoodMartTestCase {
             + " return  return [Xxx].[AAa], [YYY]");
     }
 
+    public void testExplain() {
+        assertParseQuery(
+            "explain plan for\n"
+            + "with member [Mesaures].[Foo] as 1 + 3\n"
+            + "select [Measures].[Unit Sales] on 0,\n"
+            + " [Product].Children on 1\n"
+            + "from [Sales]",
+            "explain plan for\n"
+            + "with member [Mesaures].[Foo] as '(1 + 3)'\n"
+            + "select [Measures].[Unit Sales] ON COLUMNS,\n"
+            + "  [Product].Children ON ROWS\n"
+            + "from [Sales]\n");
+        assertParseQuery(
+            "explain plan for\n"
+            + "drillthrough maxrows 5\n"
+            + "with member [Mesaures].[Foo] as 1 + 3\n"
+            + "select [Measures].[Unit Sales] on 0,\n"
+            + " [Product].Children on 1\n"
+            + "from [Sales]",
+            "explain plan for\n"
+            + "drillthrough maxrows 5\n"
+            + "with member [Mesaures].[Foo] as '(1 + 3)'\n"
+            + "select [Measures].[Unit Sales] ON COLUMNS,\n"
+            + "  [Product].Children ON ROWS\n"
+            + "from [Sales]\n");
+    }
+
     /**
      * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-924">
      * MONDRIAN-924, "Parsing fails with multiple spaces between words"</a>.
@@ -683,7 +718,9 @@ public class ParserTest extends FoodMartTestCase {
                 parser.parseInternal(
                     null, mdx, false, funTable, false);
         }
-        if (!(query instanceof DrillThrough)) {
+        if (!(query instanceof DrillThrough
+            || query instanceof Explain))
+        {
             assertNull("Test parser should return null query", query);
         }
         final String actual = p.toMdxString();
@@ -742,13 +779,14 @@ public class ParserTest extends FoodMartTestCase {
         private int maxRowCount;
         private int firstRowOrdinal;
         private List<Exp> returnList;
+        private boolean explain;
 
         public TestParser() {
             super();
         }
 
         public QueryPart parseInternal(
-            Connection mdxConnection,
+            Statement statement,
             String queryString,
             boolean debug,
             FunTable funTable,
@@ -756,7 +794,7 @@ public class ParserTest extends FoodMartTestCase {
         {
             return super.parseInternal(
                 this,
-                mdxConnection,
+                statement,
                 queryString,
                 debug,
                 funTable,
@@ -764,7 +802,7 @@ public class ParserTest extends FoodMartTestCase {
         }
 
         public Query makeQuery(
-            Connection connection,
+            Statement statement,
             Formula[] formulae,
             QueryAxis[] axes,
             String cube,
@@ -790,6 +828,11 @@ public class ParserTest extends FoodMartTestCase {
             this.maxRowCount = maxRowCount;
             this.firstRowOrdinal = firstRowOrdinal;
             this.returnList = returnList;
+            return null;
+        }
+
+        public Explain makeExplain(QueryPart query) {
+            this.explain = true;
             return null;
         }
 
@@ -846,6 +889,9 @@ public class ParserTest extends FoodMartTestCase {
         }
 
         private void unparse(PrintWriter pw) {
+            if (explain) {
+                pw.println("explain plan for");
+            }
             if (drillThrough) {
                 pw.print("drillthrough");
                 if (maxRowCount > 0) {

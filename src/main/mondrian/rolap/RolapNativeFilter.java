@@ -15,7 +15,10 @@ import java.util.*;
 import javax.sql.DataSource;
 
 import mondrian.olap.*;
+import mondrian.olap.type.SetType;
+import mondrian.olap.type.StringType;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.sql.DescendantsCrossJoinArg;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.CrossJoinArg;
@@ -74,7 +77,9 @@ public class RolapNativeFilter extends RolapNativeSet {
             AggStar aggStar)
         {
             // Use aggregate table to generate filter condition
-            RolapNativeSql sql = new RolapNativeSql(sqlQuery, aggStar);
+            RolapNativeSql sql =
+                new RolapNativeSql(
+                    sqlQuery, aggStar, getEvaluator(), args[0].getLevel());
             String filterSql =  sql.generateFilterCondition(filterExpr);
             sqlQuery.addHaving(filterSql);
             super.addConstraint(sqlQuery, starSet, aggStar);
@@ -149,9 +154,11 @@ public class RolapNativeFilter extends RolapNativeSet {
         // generate the WHERE condition
         // Need to generate where condition here to determine whether
         // or not the filter condition can be created. The filter
-        // condition could change to use an aggregate table later in evaulation
+        // condition could change to use an aggregate table later in evaluation
         SqlQuery sqlQuery = SqlQuery.newQuery(ds, "NativeFilter");
-        RolapNativeSql sql = new RolapNativeSql(sqlQuery, null);
+        RolapNativeSql sql =
+            new RolapNativeSql(
+                sqlQuery, null, evaluator, cjArgs[0].getLevel());
         final Exp filterExpr = args[1];
         String filterExprStr = sql.generateFilterCondition(filterExpr);
         if (filterExprStr == null) {

@@ -12,19 +12,29 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.olap.Axis;
+import mondrian.olap.Cell;
+import mondrian.olap.Connection;
+import mondrian.olap.Position;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
 import mondrian.rolap.RolapConnectionProperties;
+import mondrian.spi.ProfileHandler;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.spi.Dialect;
 import mondrian.util.Bug;
 import mondrian.calc.ResultStyle;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.sql.*;
 import java.util.regex.Pattern;
 import java.util.*;
 
 import junit.framework.Assert;
+import org.olap4j.*;
+import org.olap4j.layout.RectangularCellSetFormatter;
 
 /**
  * <code>BasicQueryTest</code> is a test case which tests simple queries
@@ -6087,9 +6097,14 @@ public class BasicQueryTest extends FoodMartTestCase {
         Connection connection = tc.getConnection();
 
         final Query query = connection.parseQuery(queryString);
+        final Throwable[] throwables = {null};
         if (waitMillis == 0) {
             // cancel immediately
-            query.cancel();
+            try {
+                query.getStatement().cancel();
+            } catch (Exception e) {
+                throwables[0] = e;
+            }
         } else {
             // Schedule timer to cancel after waitMillis
             Timer timer = new Timer(true);
@@ -6100,21 +6115,29 @@ public class BasicQueryTest extends FoodMartTestCase {
                     Thread thread = Thread.currentThread();
                     thread.setName("CancelThread");
                     try {
-                        query.cancel();
-                    } catch (Exception ex) {
-                        Assert.fail(
-                            "Cancel request failed:  "
-                            + ex.getMessage());
+                        query.getStatement().cancel();
+                    } catch (Exception e) {
+                        throwables[0] = e;
                     }
                 }
             };
             timer.schedule(task, waitMillis);
+        }
+        if (throwables[0] != null) {
+            Assert.fail(
+                "Cancel request failed:  "
+                + throwables[0]);
         }
         Throwable throwable = null;
         try {
             connection.execute(query);
         } catch (Throwable ex) {
             throwable = ex;
+        }
+        if (throwables[0] != null) {
+            Assert.fail(
+                "Cancel request failed:  "
+                + throwables[0]);
         }
         TestContext.checkThrowable(throwable, "canceled");
     }
@@ -7235,6 +7258,166 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Gender].[M]}\n"
             + "Row #0: 135,215\n");
+    }
+
+    public void testExplain() throws SQLException {
+        if (Util.PreJdk15) {
+            // Cannot use explain before JDK 1.5. EmptyResultSet relies on
+            // javax.sql.rowset.RowSetMetaDataImpl, which arrived in JDK 1.5.
+            return;
+        }
+        OlapConnection connection =
+            TestContext.instance().getOlap4jConnection();
+        final OlapStatement statement = connection.createStatement();
+        final ResultSet resultSet = statement.executeQuery(
+            "explain plan for\n"
+            + "select [Measures].[Unit Sales] on 0,\n"
+            + "  Filter([Product].Children, [Measures].[Unit Sales] > 100) on 1\n"
+            + "from [Sales]");
+        assertTrue(resultSet.next());
+        assertEquals(1, resultSet.getMetaData().getColumnCount());
+        assertEquals("PLAN", resultSet.getMetaData().getColumnName(1));
+        assertEquals(Types.VARCHAR, resultSet.getMetaData().getColumnType(1));
+        String s = resultSet.getString(1);
+        TestContext.assertEqualsVerbose(
+            "Axis (COLUMNS):\n"
+            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Measures].[Unit Sales]>>, resultStyle=MUTABLE_LIST)\n"
+            + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
+            + "\n"
+            + "Axis (ROWS):\n"
+            + "ImmutableIterCalc(name=ImmutableIterCalc, class=class mondrian.olap.fun.FilterFunDef$ImmutableIterCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=ITERABLE)\n"
+            + "    Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
+            + "        CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
+            + "    >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$63$1, type=BOOLEAN, resultStyle=VALUE)\n"
+            + "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
+            + "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=NUMERIC, resultStyle=VALUE_NOT_NULL, value=100.0)\n"
+            + "\n",
+            s);
+    }
+
+    public void testExplainComplex() throws SQLException {
+        if (Util.PreJdk15) {
+            // Cannot use explain before JDK 1.5. EmptyResultSet relies on
+            // javax.sql.rowset.RowSetMetaDataImpl, which arrived in JDK 1.5.
+            return;
+        }
+        OlapConnection connection =
+            TestContext.instance().getOlap4jConnection();
+        final OlapStatement statement = connection.createStatement();
+        final String mdx =
+            "with member [Time].[1997].[H1] as\n"
+            + "    Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})\n"
+            + "  member [Measures].[Store Margin] as\n"
+            + "    [Measures].[Store Sales] - [Measures].[Store Cost],\n"
+            + "      format_string =\n"
+            + "        iif(\n"
+            + "          [Measures].[Unit Sales] > 50000,\n"
+            + "          \"\\<b\\>#.00\\<\\/b\\>\",\n"
+            + "           \"\\<i\\>#.00\\<\\/i\\>\")\n"
+            + "  set [Hi Val Products] as\n"
+            + "    Filter(\n"
+            + "      Descendants([Product].[Drink], , LEAVES),\n"
+            + "     [Measures].[Unit Sales] > 100)\n"
+            + "select\n"
+            + "  {[Measures].[Unit Sales], [Measures].[Store Margin]} on 0,\n"
+            + "  [Hi Val Products] * [Marital Status].Members on 1\n"
+            + "from [Sales]\n"
+            + "where [Gender].[F]";
+
+        // Plan before execution.
+        final ResultSet resultSet =
+            statement.executeQuery("explain plan for\n" + mdx);
+        assertTrue(resultSet.next());
+        String s = resultSet.getString(1);
+        TestContext.assertEqualsVerbose(
+            "Axis (FILTER):\n"
+            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[F]>>, resultStyle=MUTABLE_LIST)\n"
+            + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[F])\n"
+            + "\n"
+            + "Axis (COLUMNS):\n"
+            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Measures].[Unit Sales]>>, resultStyle=MUTABLE_LIST)\n"
+            + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
+            + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Measures].[Store Margin]>, resultStyle=VALUE)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Store Margin]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store Margin])\n"
+            + "\n"
+            + "Axis (ROWS):\n"
+            + "CrossJoinIterCalc(name=CrossJoinIterCalc, class=class mondrian.olap.fun.CrossJoinFunDef$CrossJoinIterCalc, type=SetType<TupleType<MemberType<member=[Product].[Drink]>, MemberType<hierarchy=[Marital Status]>>>, resultStyle=ITERABLE)\n"
+            + "    1(name=1, class=class mondrian.mdx.NamedSetExpr$1, type=SetType<MemberType<member=[Product].[Drink]>>, resultStyle=ITERABLE)\n"
+            + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$27$1, type=SetType<MemberType<hierarchy=[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=HierarchyType<hierarchy=[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Marital Status])\n"
+            + "\n",
+            s);
+
+        // Plan after execution, including profiling.
+        final String[] strings = {null, null};
+        ((mondrian.server.Statement) statement).enableProfiling(
+            new ProfileHandler() {
+                public void explain(String plan, QueryTiming timing) {
+                    strings[0] = plan;
+                    strings[1] = String.valueOf(timing);
+                }
+            }
+        );
+        final CellSet cellSet = statement.executeOlapQuery(mdx);
+        new RectangularCellSetFormatter(true).format(
+            cellSet, new PrintWriter(new StringWriter()));
+        cellSet.close();
+        final String actual =
+            strings[0].replaceAll(
+                "callMillis=[0-9]+",
+                "callMillis=nnn")
+            .replaceAll(
+                "[0-9]+ms",
+                "nnnms");
+        TestContext.assertEqualsVerbose(
+            "Axis (FILTER):\n"
+            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[F]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=2, elementSquaredCount=2)\n"
+            + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[F], callCount=2, callMillis=nnn)\n"
+            + "\n"
+            + "Axis (COLUMNS):\n"
+            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Measures].[Unit Sales]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=4, elementSquaredCount=8)\n"
+            + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales], callCount=2, callMillis=nnn)\n"
+            + "    2(name=2, class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Measures].[Store Margin]>, resultStyle=VALUE)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Store Margin]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store Margin], callCount=2, callMillis=nnn)\n"
+            + "\n"
+            + "Axis (ROWS):\n"
+            + "CrossJoinIterCalc(name=CrossJoinIterCalc, class=class mondrian.olap.fun.CrossJoinFunDef$CrossJoinIterCalc, type=SetType<TupleType<MemberType<member=[Product].[Drink]>, MemberType<hierarchy=[Marital Status]>>>, resultStyle=ITERABLE, callCount=2, callMillis=nnn, elementCount=0, elementSquaredCount=0)\n"
+            + "    1(name=1, class=class mondrian.mdx.NamedSetExpr$1, type=SetType<MemberType<member=[Product].[Drink]>>, resultStyle=ITERABLE)\n"
+            + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$27$1, type=SetType<MemberType<hierarchy=[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=HierarchyType<hierarchy=[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Marital Status], callCount=2, callMillis=nnn)\n"
+            + "\n",
+            actual);
+
+        assertTrue(
+            strings[1],
+            strings[1].contains(
+                "SqlStatement-SqlTupleReader.readTuples [[Product].[Product "
+                + "Category]] invoked 1 times for total of "));
+    }
+
+    public void testExplainInvalid() throws SQLException {
+        OlapConnection connection =
+            TestContext.instance().getOlap4jConnection();
+        final OlapStatement statement = connection.createStatement();
+        try {
+            final ResultSet resultSet = statement.executeQuery(
+                "select\n"
+                + "  {[Measures].[Unit Sales], [Measures].[Store Margin]} on 0,\n"
+                + "  [Hi Val Products] * [Marital Status].Members on 1\n"
+                + "from [Sales]\n"
+                + "where [Gender].[F]");
+            fail("expected error, got " + resultSet);
+        } catch (SQLException e) {
+            TestContext.checkThrowable(
+                e,
+                "MDX object '[Measures].[Store Margin]' not found in cube 'Sales'");
+        }
     }
 }
 

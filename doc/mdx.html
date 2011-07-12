@@ -130,6 +130,16 @@ For example, the following query finds all employees whose name starts with 'sam
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Employees].CurrentMember.Name MATCHES '(?i)sam.*') ON ROWS<br/>
 FROM [HR]</code>
 </blockquote>
+
+<p>The MATCHES operator takes a Java compliant regular expression syntax.
+Mondrian can evaluate the MATCHES operator natively by pushing it down to the
+underlying RDBMS. Not all dialects support the evaluation of regular expressions,
+and most do not support the full extent of the Java syntax. Mondrian
+relies on the database dialect SPI to convert Java regular expressions into
+something the database can understand. If the database does not support regular
+expressions, Mondrian will evaluate the results in memory, using the full
+Java compliant syntax.</p>
+
 <!--
 #######################
 ##  VBA functions #####

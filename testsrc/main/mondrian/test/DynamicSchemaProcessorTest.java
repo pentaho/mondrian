@@ -1,0 +1,221 @@
+/*
+// $Id$
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2011 Julian Hyde & others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+ */
+package mondrian.test;
+
+import junit.framework.Assert;
+import junit.framework.TestCase;
+import mondrian.olap.*;
+import mondrian.spi.DynamicSchemaProcessor;
+
+/**
+ * Unit test DynamicSchemaProcessor. Tests availability of properties that DSP's
+ * are called, and used to modify the resulting Mondrian schema
+ *
+ * @version $Id$
+ * @author ngoodman
+ */
+public class DynamicSchemaProcessorTest
+    extends TestCase
+{
+
+    public static final String FRAGMENT_ONE =
+        "<?xml version=\"1.0\"?>\n"
+        + "<Schema name=\"";
+
+    public static final String FRAGMENT_TWO =
+        "\">\n"
+        + "<Cube name=\"Sales\">\n" + " <Table name=\"sales_fact_1997\"/>"
+        + " <Dimension name=\"Fake\"><Hierarchy hasAll=\"true\">"
+        + "  <Level name=\"blah\" column=\"store_id\"/>"
+        + " </Hierarchy></Dimension>"
+        + " <Measure name=\"c\" column=\"store_id\" aggregator=\"count\"/>"
+        + "</Cube>\n" + "</Schema>\n";
+
+    public static final String TEMPLATE_SCHEMA =
+        FRAGMENT_ONE
+        + "REPLACEME"
+        + FRAGMENT_TWO;
+
+    /**
+     * Tests to make sure that our base DynamicSchemaProcessor works, with no
+     * replacement. Does not test Mondrian is able to connect with the schema
+     * definition.
+     */
+    public void testDSPBasics() {
+        DynamicSchemaProcessor dsp = new BaseDSP();
+        Util.PropertyList dummy = new Util.PropertyList();
+        String processedSchema = "";
+        try {
+            processedSchema = dsp.processSchema("", dummy);
+        } catch (Exception e) {
+            // TODO some other assert failure message
+            assertEquals(0, 1);
+        }
+        Assert.assertEquals(TEMPLATE_SCHEMA, processedSchema);
+    }
+
+    /**
+     * Tests to make sure that our base DynamicSchemaProcessor works, and
+     * Mondrian is able to parse and connect to FoodMart with it
+     */
+    public void testFoodmartDSP() {
+        TestContext tc = TestContext.instance();
+        Connection monConnection = tc.getFoodMartConnection(BaseDSP.class);
+
+        assertEquals(monConnection.getSchema().getName(), "REPLACEME");
+    }
+
+    /**
+     * Our base, token replacing schema processor.
+     *
+     * @author ngoodman
+     */
+    public static class BaseDSP implements DynamicSchemaProcessor {
+        // Determines the "cubeName"
+        protected String replaceToken = "REPLACEME";
+
+        public BaseDSP() {}
+
+        public String processSchema(
+            String schemaUrl,
+            Util.PropertyList connectInfo)
+            throws Exception
+        {
+            return getSchema();
+        }
+
+        public String getSchema() throws Exception {
+            return
+                DynamicSchemaProcessorTest.TEMPLATE_SCHEMA.replaceAll(
+                    "REPLACEME",
+                    this.replaceToken);
+        }
+    }
+
+    /**
+     * Tests to ensure we have access to Connect properies in a DSP
+     */
+    public void testProviderTestDSP() {
+        TestContext tc = TestContext.instance();
+        Connection monConnection =
+            tc.getFoodMartConnection(ProviderTestDSP.class);
+        assertEquals(monConnection.getSchema().getName(), "mondrian");
+    }
+
+    /**
+     * DSP that checks that replaces the Schema Name with the name of the
+     * Provider property
+     *
+     * @author ngoodman
+     *
+     */
+    public static class ProviderTestDSP extends BaseDSP {
+        public String processSchema(
+            String schemaUrl,
+            Util.PropertyList connectInfo)
+            throws Exception
+        {
+            this.replaceToken = connectInfo.get("Provider");
+            return getSchema();
+        }
+    }
+
+    /**
+     * Tests to ensure we have access to Connect properies in a DSP
+     */
+    public void testDBInfoDSP() {
+        TestContext tc = TestContext.instance();
+        Connection monConnection =
+            tc.getFoodMartConnection(FoodMartCatalogDSP.class);
+        assertEquals(
+            monConnection.getSchema().getName(),
+            "FoodmartFoundInCatalogProperty");
+    }
+
+    /**
+     * Checks to make sure our Catalog property contains our FoodMart.xml VFS
+     * URL
+     *
+     * @author ngoodman
+     *
+     */
+    public static class FoodMartCatalogDSP extends BaseDSP {
+        public String processSchema(
+            String schemaUrl,
+            Util.PropertyList connectInfo)
+            throws Exception
+        {
+            if (connectInfo.get("Catalog").indexOf("FoodMart.xml") <= 0) {
+                this.replaceToken = "NoFoodmartFoundInCatalogProperty";
+            } else {
+                this.replaceToken = "FoodmartFoundInCatalogProperty";
+            }
+
+            return getSchema();
+        }
+    }
+
+    /**
+     * Tests to ensure we have access to Connect properties in a DSP
+     */
+    public void testCheckJDBCPropertyDSP() {
+        TestContext tc = TestContext.instance();
+        Connection monConnection =
+            tc.getFoodMartConnection(CheckJdbcPropertyDsp.class);
+        assertEquals(
+            monConnection.getSchema().getName(),
+            CheckJdbcPropertyDsp.RETURNTRUESTRING);
+    }
+
+    /**
+     * Ensures we have access to the JDBC URL. Note, since Foodmart can run on
+     * multiple databases all we check in schema name is the first four
+     * characters (JDBC)
+     *
+     * @author ngoodman
+     *
+     */
+    public static class CheckJdbcPropertyDsp extends BaseDSP {
+        public static String RETURNTRUESTRING = "true";
+        public static String RETURNFALSESTRING = "false";
+
+        public String processSchema(
+            String schemaUrl,
+            Util.PropertyList connectInfo)
+            throws Exception
+        {
+            String dataSource = null;
+            String jdbc = null;
+
+            dataSource = connectInfo.get("DataSource");
+            jdbc = connectInfo.get("Jdbc");
+
+            // If we're using a DataSource we might not get a Jdbc= property
+            // trivially return true.
+            if (dataSource != null && dataSource.length() > 0) {
+                this.replaceToken = RETURNTRUESTRING;
+                return getSchema();
+            }
+
+            // IF we're here, we don't have a DataSource and
+            // our JDBC property should have jdbc: in the URL
+            if (jdbc == null || !jdbc.startsWith("jdbc")) {
+                this.replaceToken = RETURNFALSESTRING;
+                return getSchema();
+            } else {
+                // If we're here, we have a JDBC url
+                this.replaceToken = RETURNTRUESTRING;
+                return getSchema();
+            }
+        }
+    }
+
+}
+// End DynamicSchemaProcessorTest.java

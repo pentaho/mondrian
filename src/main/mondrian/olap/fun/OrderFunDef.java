@@ -44,15 +44,15 @@ class OrderFunDef extends FunDefBase {
         final Calc expCalc = keySpecList.get(0).getKey();
         calcList[1] = expCalc;
         if (keySpecCount == 1) {
-            if (expCalc instanceof MemberValueCalc
-                || expCalc instanceof MemberArrayValueCalc)
+            if (expCalc.isWrapperFor(MemberValueCalc.class)
+                || expCalc.isWrapperFor(MemberArrayValueCalc.class))
             {
                 List<MemberCalc> constantList = new ArrayList<MemberCalc>();
                 List<MemberCalc> variableList = new ArrayList<MemberCalc>();
                 final MemberCalc[] calcs =
                     (MemberCalc[]) ((AbstractCalc) expCalc).getCalcs();
                 for (MemberCalc memberCalc : calcs) {
-                    if (memberCalc instanceof ConstantCalc
+                    if (memberCalc.isWrapperFor(ConstantCalc.class)
                         && !listCalc.dependsOn(
                             memberCalc.getType().getHierarchy()))
                     {
@@ -263,12 +263,14 @@ class OrderFunDef extends FunDefBase {
             }
         }
 
-        public List<Object> getArguments() {
+        public void collectArguments(Map<String, Object> arguments) {
+            super.collectArguments(arguments);
+
             // only good for original Order syntax
             assert originalKeySpecCount == 1;
             Flag sortKeyDir = keySpecList.get(0).getDirection();
-            return Collections.singletonList(
-                (Object)
+            arguments.put(
+                "direction",
                 (sortKeyDir.descending
                  ? (sortKeyDir.brk ? Flag.BDESC : Flag.DESC)
                  : (sortKeyDir.brk ? Flag.BASC : Flag.ASC)));

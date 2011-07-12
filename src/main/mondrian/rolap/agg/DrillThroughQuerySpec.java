@@ -16,6 +16,7 @@ import mondrian.rolap.sql.SqlQuery;
 import mondrian.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,12 +31,23 @@ import java.util.Set;
  */
 class DrillThroughQuerySpec extends AbstractQuerySpec {
     private final CellRequest request;
+    private final List<StarPredicate> listOfStarPredicates;
     private final List<String> columnNames;
     private final int maxColumnNameLength;
 
-    public DrillThroughQuerySpec(CellRequest request, boolean countOnly) {
+    public DrillThroughQuerySpec(
+        CellRequest request,
+        StarPredicate starPredicateSlicer,
+        boolean countOnly)
+    {
         super(request.getMeasure().getStar(), countOnly);
         this.request = request;
+        if (starPredicateSlicer != null) {
+            this.listOfStarPredicates =
+                Collections.singletonList(starPredicateSlicer);
+        } else {
+            this.listOfStarPredicates = Collections.emptyList();
+        }
         int tmpMaxColumnNameLength =
             getStar().getSqlQueryDialect().getMaxColumnNameLength();
         if (tmpMaxColumnNameLength == 0) {
@@ -155,6 +167,10 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
 
     protected boolean isOrdered() {
         return true;
+    }
+
+    protected List<StarPredicate> getPredicateList() {
+        return listOfStarPredicates;
     }
 }
 

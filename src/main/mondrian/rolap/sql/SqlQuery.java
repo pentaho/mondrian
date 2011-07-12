@@ -110,6 +110,9 @@ public class SqlQuery {
     /** Scratch buffer. Clear it before use. */
     private final StringBuilder buf;
 
+    private final Map<String, String> columnAliases =
+        new HashMap<String, String>();
+
     /**
      * Base constructor used by all other constructors to create an empty
      * instance.
@@ -419,7 +422,12 @@ public class SqlQuery {
 
         select.add(buf.toString());
         addType(type);
+        columnAliases.put(expression, alias);
         return alias;
+    }
+
+    public String getAlias(String expression) {
+        return columnAliases.get(expression);
     }
 
     public void addWhere(

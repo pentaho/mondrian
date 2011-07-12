@@ -13,9 +13,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mondrian.olap.*;
+import mondrian.olap.type.MemberType;
+import mondrian.olap.type.StringType;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.HierarchyExpr;
+import mondrian.mdx.LevelExpr;
 import mondrian.mdx.MemberExpr;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.spi.Dialect;
 
 /**
@@ -35,7 +41,9 @@ public class RolapNativeSql {
     CompositeSqlCompiler booleanCompiler;
 
     RolapStoredMeasure storedMeasure;
-    AggStar aggStar;
+    final AggStar aggStar;
+    final Evaluator evaluator;
+    final RolapLevel rolapLevel;
 
     /**
      * We remember one of the measures so we can generate
@@ -183,6 +191,115 @@ public class RolapNativeSql {
 
         public String toString() {
             return "StoredMeasureSqlCompiler";
+        }
+    }
+
+    /**
+     * Compiles a MATCHES MDX operator into SQL regular
+     * expression match.
+     */
+    class MatchingSqlCompiler extends FunCallSqlCompilerBase {
+
+        protected MatchingSqlCompiler()
+        {
+            super(Category.Logical, "MATCHES", 2);
+        }
+
+        public String compile(Exp exp) {
+            if (!match(exp)) {
+                return null;
+            }
+            if (!dialect.allowsRegularExpressionInWhereClause()
+                || !(exp instanceof ResolvedFunCall)
+                || evaluator == null)
+            {
+                return null;
+            }
+
+            final Exp arg0 = ((ResolvedFunCall)exp).getArg(0);
+            final Exp arg1 = ((ResolvedFunCall)exp).getArg(1);
+
+            // Must finish by ".Caption" or ".Name"
+            if (!(arg0 instanceof ResolvedFunCall)
+                || ((ResolvedFunCall)arg0).getArgCount() != 1
+                || !(arg0.getType() instanceof StringType)
+                || (!((ResolvedFunCall)arg0).getFunName().equals("Name")
+                    && !((ResolvedFunCall)arg0)
+                            .getFunName().equals("Caption")))
+            {
+                return null;
+            }
+
+            final boolean useCaption;
+            if (((ResolvedFunCall)arg0).getFunName().equals("Name")) {
+                useCaption = false;
+            } else {
+                useCaption = true;
+            }
+
+            // Must be ".CurrentMember"
+            final Exp currMemberExpr = ((ResolvedFunCall)arg0).getArg(0);
+            if (!(currMemberExpr instanceof ResolvedFunCall)
+                || ((ResolvedFunCall)currMemberExpr).getArgCount() != 1
+                || !(currMemberExpr.getType() instanceof MemberType)
+                || !((ResolvedFunCall)currMemberExpr)
+                        .getFunName().equals("CurrentMember"))
+            {
+                return null;
+            }
+
+            // Must be a dimension, a hierarchy or a level.
+            final RolapCubeDimension dimension;
+            final Exp dimExpr = ((ResolvedFunCall)currMemberExpr).getArg(0);
+            if (dimExpr instanceof DimensionExpr) {
+                dimension =
+                    (RolapCubeDimension) evaluator.getCachedResult(
+                        new ExpCacheDescriptor(dimExpr, evaluator));
+            } else if (dimExpr instanceof HierarchyExpr) {
+                final RolapCubeHierarchy hierarchy =
+                    (RolapCubeHierarchy) evaluator.getCachedResult(
+                        new ExpCacheDescriptor(dimExpr, evaluator));
+                dimension = (RolapCubeDimension) hierarchy.getDimension();
+            } else if (dimExpr instanceof LevelExpr) {
+                final RolapCubeLevel level =
+                    (RolapCubeLevel) evaluator.getCachedResult(
+                        new ExpCacheDescriptor(dimExpr, evaluator));
+                dimension = (RolapCubeDimension) level.getDimension();
+            } else {
+                return null;
+            }
+
+            if (rolapLevel != null
+                && dimension.equals(rolapLevel.getDimension()))
+            {
+                // We can't use the evaluator because the filter is filtering
+                // a set which is uses same dimension as the predicate.
+                // We must use, in order of priority,
+                //  - caption requested: caption->name->key
+                //  - name requested: name->key
+                String sourceExp =
+                    useCaption
+                        ? rolapLevel.attribute.captionExp == null
+                            ? rolapLevel.attribute.nameExp.toSql()
+                            : rolapLevel.attribute.captionExp.toSql()
+                        : rolapLevel.attribute.nameExp.toSql();
+                // The dialect might require the use of the alias rather
+                // then the column exp.
+                if (dialect.requiresHavingAlias()) {
+                    sourceExp = sqlQuery.getAlias(sourceExp);
+                }
+                return
+                    dialect.generateRegularExpression(
+                        sourceExp,
+                        String.valueOf(
+                            evaluator.getCachedResult(
+                                new ExpCacheDescriptor(arg1, evaluator))));
+            } else {
+                return null;
+            }
+        }
+        public String toString() {
+            return "MatchingSqlCompiler";
         }
     }
 
@@ -434,11 +551,18 @@ public class RolapNativeSql {
     /**
      * Creates a RolapNativeSql.
      *
-     * @param sqlQuery the query which is needed for different SQL dialects - it
-     * is not modified
+     * @param sqlQuery the query which is needed for different SQL dialects -
+     * it is not modified
      */
-    RolapNativeSql(SqlQuery sqlQuery, AggStar aggStar) {
+    public RolapNativeSql(
+        SqlQuery sqlQuery,
+        AggStar aggStar,
+        Evaluator evaluator,
+        RolapLevel rolapLevel)
+    {
         this.sqlQuery = sqlQuery;
+        this.rolapLevel = rolapLevel;
+        this.evaluator = evaluator;
         this.dialect = sqlQuery.getDialect();
         this.aggStar = aggStar;
 
@@ -496,6 +620,8 @@ public class RolapNativeSql {
         booleanCompiler.add(
             new UnaryOpSqlCompiler(
                 Category.Logical, "not", "NOT", booleanCompiler));
+        booleanCompiler.add(
+            new MatchingSqlCompiler());
         booleanCompiler.add(
             new ParenthesisSqlCompiler(Category.Logical, booleanCompiler));
         booleanCompiler.add(

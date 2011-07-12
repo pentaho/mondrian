@@ -19,6 +19,9 @@ import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
+import mondrian.server.Statement;
 import mondrian.spi.CellFormatter;
 import mondrian.util.ConcatenableList;
 import mondrian.util.Format;
@@ -64,13 +67,16 @@ public class RolapResult extends ResultBase {
     /**
      * Creates a RolapResult.
      *
-     * @param query Query
+     * @param execution Execution of a statement
      * @param execute Whether to execute the query
      */
-    RolapResult(final Query query, boolean execute) {
-        super(query, new Axis[query.axes.length]);
+    RolapResult(
+        final Execution execution,
+        boolean execute)
+    {
+        super(execution, null);
 
-        this.point = CellKey.Generator.newCellKey(query.axes.length);
+        this.point = CellKey.Generator.newCellKey(axes.length);
         final int expDeps =
             MondrianProperties.instance().TestExpDependencies.get();
         if (expDeps > 0) {
@@ -78,7 +84,11 @@ public class RolapResult extends ResultBase {
         } else {
             final RolapEvaluatorRoot root =
                 new RolapResultEvaluatorRoot(this);
-            this.evaluator = new RolapEvaluator(root);
+            if (statement.getProfileHandler() != null) {
+                this.evaluator = new RolapProfilingEvaluator(root);
+            } else {
+                this.evaluator = new RolapEvaluator(root);
+            }
         }
         RolapCube cube = (RolapCube) query.getCube();
         this.batchingReader = new FastBatchingCellReader(cube);
@@ -239,7 +249,7 @@ public class RolapResult extends ResultBase {
             loadMembers(
                 emptyNonAllMembers,
                 evaluator,
-                query.slicerAxis,
+                query.getSlicerAxis(),
                 query.slicerCalc,
                 axisMembers);
             axisMembers.setSlicer(false);
@@ -327,7 +337,7 @@ public class RolapResult extends ResultBase {
                         nonAllMembers,
                         nonAllMembers.size() - 1,
                         savedEvaluator,
-                        query.slicerAxis,
+                        query.getSlicerAxis(),
                         query.slicerCalc);
                 // Materialize the iterable as a list. Although it may take
                 // memory, we need the first member below, and besides, slicer
@@ -433,7 +443,13 @@ public class RolapResult extends ResultBase {
             evaluator.restore(savepoint);
 
             // Get value for each Cell
-            executeBody(slicerEvaluator, this.query, new int[axes.length]);
+            final Locus locus = new Locus(execution, null, "Loading cells");
+            Locus.push(locus);
+            try {
+                executeBody(slicerEvaluator, query, new int[axes.length]);
+            } finally {
+                Locus.pop(locus);
+            }
 
             // If you are very close to running out of memory due to
             // the number of CellInfo's in cellInfos, then calling this
@@ -482,6 +498,11 @@ public class RolapResult extends ResultBase {
         }
     }
 
+    @Override
+    public void close() {
+        super.close();
+    }
+
     protected boolean removeDimension(
         Dimension dimension,
         List<List<Member>> memberLists)
@@ -494,6 +515,10 @@ public class RolapResult extends ResultBase {
             }
         }
         return false;
+    }
+
+    public final Execution getExecution() {
+        return execution;
     }
 
     private static class CalculatedMeasureVisitor
@@ -566,7 +591,7 @@ public class RolapResult extends ResultBase {
                 calc,
                 axisMembers);
 
-            if (!batchingReader.loadAggregations(query)) {
+            if (!batchingReader.loadAggregations(statement.getQuery())) {
                 break;
             } else {
                 // Clear invalid expression result so that the next evaluation
@@ -714,7 +739,7 @@ public class RolapResult extends ResultBase {
 
         for (int i = 0; i < pos.length; i++) {
             if (positionsHighCardinality.get(i)) {
-                executeBody(evaluator, this.query, pos);
+                executeBody(evaluator, statement.getQuery(), pos);
                 break;
             }
         }
@@ -930,7 +955,8 @@ public class RolapResult extends ResultBase {
                     ValueFormatter valueFormatter = m.getFormatter();
                     if (valueFormatter == null) {
                         cachedFormatString = revaluator.getFormatString();
-                        Locale locale = query.getConnection().getLocale();
+                        Locale locale =
+                            statement.getMondrianConnection().getLocale();
                         valueFormatter = formatValueFormatters.get(locale);
                         if (valueFormatter == null) {
                             valueFormatter = new FormatValueFormatter(locale);
@@ -1013,7 +1039,8 @@ public class RolapResult extends ResultBase {
             } else {
                 for (List<Member> tuple : tupleList) {
                     List<Member> measures =
-                        new ArrayList<Member>(query.getMeasuresMembers());
+                        new ArrayList<Member>(
+                            statement.getQuery().getMeasuresMembers());
                     for (Member measure : measures) {
                         if (measure instanceof RolapBaseCubeMeasure) {
                             RolapBaseCubeMeasure baseCubeMeasure =
@@ -1373,7 +1400,7 @@ public class RolapResult extends ResultBase {
         private static final Object NullSentinel = new Object();
 
         public RolapResultEvaluatorRoot(RolapResult result) {
-            super(result.query);
+            super(result.execution);
             this.result = result;
         }
 

@@ -10,26 +10,21 @@
 //
 // jhyde, 6 August, 2001
 */
-
 package mondrian.olap;
 
+import mondrian.server.Locus;
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
 import org.eigenbase.xom.XOMUtil;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.net.*;
+import java.security.*;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.math.BigDecimal;
+import java.util.concurrent.*;
+import java.util.regex.*;
+import java.math.*;
 import java.lang.reflect.*;
 
 import mondrian.olap.fun.*;
@@ -204,6 +199,88 @@ public class Util extends XOMUtil {
                 }
             }
         );
+    }
+
+    /**
+     * Distributes and executes a list of tasks via an executor
+     * service. This function will only return if one of the two
+     * following things occur:
+     * <ul>
+     * <li>all tasks have finished running</li>
+     * <li><code>breakAtFirstNonNull</code> is set to true and
+     * one of the tasks has returned a non null value.</li>
+     * </ul>
+     * @param <E>
+     * @param tasks List of tasks to run.
+     * @param executor The executor service to use.
+     * @param breakAtFirstNonNull Whether or not to stop executing
+     * the tasks if one of them returns a non null value. Useful
+     * when scanning a list of items for the first match found.
+     * @return If <code>breakAtFirstNonNull</code> is true, this
+     * function returns the first non null result given by the first
+     * task to complete. Returns null otherwise.
+     */
+    public static <E> E executeDistributedTasks(
+        List<Callable<E>> tasks,
+        ExecutorService executor,
+        boolean breakAtFirstNonNull)
+    {
+        final List<Future<E>> tasksList =
+            new ArrayList<Future<E>>();
+        final CountDownLatch latch =
+            new CountDownLatch(tasks.size());
+        try {
+            for (final Callable<E> call : tasks) {
+                tasksList.add(
+                    executor.submit(
+                        new Callable<E>() {
+                            public E call() throws Exception {
+                                E result = call.call();
+                                latch.countDown();
+                                return result;
+                            }
+                        }));
+            }
+
+            E result = null;
+            taskLoop:
+            while (true) {
+                if (breakAtFirstNonNull) {
+                    for (Future<E> task : tasksList) {
+                        if (task.isDone()) {
+                            E taskResult = null;
+                            try {
+                                taskResult = task.get();
+                            } catch (InterruptedException e) {
+                                throw new MondrianException(e);
+                            } catch (ExecutionException e) {
+                                throw new MondrianException(e);
+                            }
+                            if (taskResult != null) {
+                                result = taskResult;
+                                break taskLoop;
+                            }
+                        }
+                    }
+                }
+                // Break anyway if all tasks are completed.
+                if (latch.getCount() == 0) {
+                    break taskLoop;
+                }
+                // Sleep for some time as not all tasks seem completed.
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    throw new MondrianException(e);
+                }
+            }
+            return result;
+        } finally {
+            // Make double sure all tasks are killed
+            for (Future<E> task : tasksList) {
+                task.cancel(true);
+            }
+        }
     }
 
     /**
@@ -1231,6 +1308,16 @@ public class Util extends XOMUtil {
      *
      * @deprecated
      */
+    public static <T> T deprecated(T reason) {
+        throw new UnsupportedOperationException(reason.toString());
+    }
+
+    /**
+     * Insert a call to this method if you want to flag a piece of
+     * undesirable code.
+     *
+     * @deprecated
+     */
     public static <T> T deprecated(T reason, boolean fail) {
         if (fail) {
             throw new UnsupportedOperationException(String.valueOf(reason));
@@ -1562,6 +1649,30 @@ public class Util extends XOMUtil {
      * @return List containing the given members
      */
     public static <T> List<T> flatList(T... t) {
+        return _flatList(t, false);
+    }
+
+    /**
+     * Creates a memory-, CPU- and cache-efficient immutable list,
+     * always copying the contents.
+     *
+     * @param t Array of members of list
+     * @param <T> Element type
+     * @return List containing the given members
+     */
+    public static <T> List<T> flatListCopy(T... t) {
+        return _flatList(t, true);
+    }
+
+    /**
+     * Creates a memory-, CPU- and cache-efficient immutable list, optionally
+     * copying the list.
+     *
+     * @param copy Whether to always copy the list
+     * @param t Array of members of list
+     * @return List containing the given members
+     */
+    private static <T> List<T> _flatList(T[] t, boolean copy) {
         switch (t.length) {
         case 0:
             return Collections.emptyList();
@@ -1575,7 +1686,11 @@ public class Util extends XOMUtil {
             // REVIEW: AbstractList contains a modCount field; we could
             //   write our own implementation and reduce creation overhead a
             //   bit.
-            return Arrays.asList(t);
+            if (copy) {
+                return Arrays.asList(t.clone());
+            } else {
+                return Arrays.asList(t);
+            }
         }
     }
 

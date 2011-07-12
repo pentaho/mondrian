@@ -3,13 +3,12 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
-import mondrian.olap.Query;
 import mondrian.rolap.RolapConnection;
 import org.olap4j.OlapException;
 
@@ -54,10 +53,9 @@ class FactoryJdbc3Impl implements Factory {
     }
 
     public MondrianOlap4jCellSet newCellSet(
-        MondrianOlap4jStatement olap4jStatement,
-        Query query)
+        MondrianOlap4jStatement olap4jStatement)
     {
-        return new MondrianOlap4jCellSetJdbc3(olap4jStatement, query);
+        return new MondrianOlap4jCellSetJdbc3(olap4jStatement);
     }
 
     public MondrianOlap4jPreparedStatement newPreparedStatement(
@@ -94,9 +92,9 @@ class FactoryJdbc3Impl implements Factory {
         extends MondrianOlap4jCellSet
     {
         public MondrianOlap4jCellSetJdbc3(
-            MondrianOlap4jStatement olap4jStatement, Query query)
+            MondrianOlap4jStatement olap4jStatement)
         {
-            super(olap4jStatement, query);
+            super(olap4jStatement);
         }
     }
 

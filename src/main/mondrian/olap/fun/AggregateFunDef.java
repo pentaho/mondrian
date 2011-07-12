@@ -67,12 +67,12 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         }
 
         public Object evaluate(Evaluator evaluator) {
-            QueryTiming.markStart(TIMING_NAME);
+            evaluator.getTiming().markStart(TIMING_NAME);
             try {
                 TupleList list = evaluateCurrentList(listCalc, evaluator);
                 return aggregate(calc, evaluator, list);
             } finally {
-                QueryTiming.markEnd(TIMING_NAME);
+                evaluator.getTiming().markEnd(TIMING_NAME);
             }
         }
 

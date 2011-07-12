@@ -14,6 +14,8 @@ import mondrian.resource.MondrianResource;
 import mondrian.recorder.MessageRecorder;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
 import mondrian.spi.Dialect;
 import org.apache.log4j.Logger;
 
@@ -60,9 +62,10 @@ public class AggStar extends RolapStar {
     public static AggStar makeAggStar(
         final RolapStar star,
         final JdbcSchema.Table dbTable,
-        final MessageRecorder msgRecorder)
+        final MessageRecorder msgRecorder,
+        final int approxRowCount)
     {
-        AggStar aggStar = new AggStar(star, dbTable);
+        AggStar aggStar = new AggStar(star, dbTable, approxRowCount);
         AggStar.FactTable aggStarFactTable = aggStar.getAggFactTable();
 
         // 1. load fact count
@@ -201,10 +204,16 @@ public class AggStar extends RolapStar {
      */
     private final BitKey distinctMeasureBitKey;
     private final AggStar.Table.Column[] columns;
+    private final int approxRowCount;
 
-    AggStar(final RolapStar star, final JdbcSchema.Table aggTable) {
+    AggStar(
+        final RolapStar star,
+        final JdbcSchema.Table aggTable,
+        final int approxRowCount)
+    {
         super(star.getSchema(), star.getDataSource(), /*TODO:*/ null);
         this.star = star;
+        this.approxRowCount = approxRowCount;
         this.bitKey = BitKey.Factory.makeBitKey(star.getColumnCount());
         this.levelBitKey = bitKey.emptyCopy();
         this.measureBitKey = bitKey.emptyCopy();
@@ -1068,7 +1077,7 @@ public class AggStar extends RolapStar {
          * Get the number of rows in this aggregate table.
          */
         public int getNumberOfRows() {
-            if (numberOfRows == -1) {
+            if (numberOfRows < 0) {
                 makeNumberOfRows();
             }
             return numberOfRows;
@@ -1298,15 +1307,22 @@ public class AggStar extends RolapStar {
         }
 
         private void makeNumberOfRows() {
+            if (approxRowCount >= 0) {
+                numberOfRows = approxRowCount;
+                return;
+            }
             SqlQuery query = getSqlQuery();
             query.addSelect("count(*)", null);
             query.addFrom(getRelation(), getName(), false);
             DataSource dataSource = getAggStar().getStar().getDataSource();
             SqlStatement stmt =
                 RolapUtil.executeQuery(
-                    dataSource, query.toString(),
-                    "AggStar.FactTable.makeNumberOfRows",
-                    "Counting rows in aggregate table");
+                    dataSource,
+                    query.toString(),
+                    new Locus(
+                        Execution.NONE,
+                        "AggStar.FactTable.makeNumberOfRows",
+                        "Counting rows in aggregate table"));
             try {
                 ResultSet resultSet = stmt.getResultSet();
                 if (resultSet.next()) {
@@ -1424,7 +1440,7 @@ public class AggStar extends RolapStar {
      */
     public void print(final PrintWriter pw, final String prefix) {
         pw.print(prefix);
-        pw.println("AggStar:");
+        pw.println("AggStar:" + getFactTable());
         String subprefix = prefix + "  ";
 
         pw.print(subprefix);
@@ -1442,6 +1458,11 @@ public class AggStar extends RolapStar {
         pw.print(subprefix);
         pw.print("has foreign key=");
         pw.println(aggTable.hasChildren());
+
+        for (Column column : getFactTable().getColumns()) {
+            pw.print("    ");
+            pw.println(column);
+        }
 
         aggTable.print(pw, subprefix);
     }

@@ -121,6 +121,21 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
     public DatabaseProduct getDatabaseProduct() {
         return DatabaseProduct.POSTGRESQL;
     }
+
+    @Override
+    public boolean allowsRegularExpressionInWhereClause() {
+        return true;
+    }
+
+    public String generateRegularExpression(String source, String javaRegExp) {
+        javaRegExp = javaRegExp.replace("\\Q", "");
+        javaRegExp = javaRegExp.replace("\\E", "");
+        final StringBuilder sb = new StringBuilder();
+        sb.append(source);
+        sb.append(" ~ ");
+        quoteStringLiteral(sb, javaRegExp);
+        return sb.toString();
+    }
 }
 
 // End PostgreSqlDialect.java

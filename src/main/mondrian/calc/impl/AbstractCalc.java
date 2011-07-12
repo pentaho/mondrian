@@ -18,9 +18,7 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.rolap.RolapEvaluator;
 import mondrian.rolap.RolapHierarchy;
 
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.Calc} interface.
@@ -51,29 +49,28 @@ public abstract class AbstractCalc implements Calc {
         return type;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * Default implementation just does 'instanceof TargetClass'. Subtypes that
+     * are wrappers should override.
+     */
+    public boolean isWrapperFor(Class<?> iface) {
+        return iface.isInstance(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * Default implementation just casts to TargetClass.
+     * Subtypes that are wrappers should override.
+     */
+    public <T> T unwrap(Class<T> iface) {
+        return iface.cast(this);
+    }
+
     public void accept(CalcWriter calcWriter) {
-        final PrintWriter pw = calcWriter.getWriter();
-        String name = getName();
-        pw.print(name);
-        final Calc[] calcs = getCalcs();
-        final List<Object> argumentList = getArguments();
-        if (calcs.length > 0 || !argumentList.isEmpty()) {
-            pw.print("(");
-            int k = 0;
-            for (Calc calc : calcs) {
-                if (k++ > 0) {
-                    pw.print(", ");
-                }
-                calc.accept(calcWriter);
-            }
-            for (Object o : argumentList) {
-                if (k++ > 0) {
-                    pw.print(", ");
-                }
-                pw.print(o);
-            }
-            pw.print(")");
-        }
+        calcWriter.visitCalc(this, getName(), getArguments(), getCalcs());
     }
 
     /**
@@ -84,20 +81,46 @@ public abstract class AbstractCalc implements Calc {
      * call, if any, then prints the last part of the class name.
      */
     protected String getName() {
-        String name;
-        if (exp instanceof ResolvedFunCall) {
+        String name = lastSegment(getClass());
+        if (isDigits(name)
+            && exp instanceof ResolvedFunCall)
+        {
             ResolvedFunCall funCall = (ResolvedFunCall) exp;
             name = funCall.getFunDef().getName();
-        } else {
-            name = getClass().getName();
-            int dot = name.lastIndexOf('.');
-            int dollar = name.lastIndexOf('$');
-            int dotDollar = Math.max(dot, dollar);
-            if (dotDollar >= 0) {
-                name = name.substring(dotDollar + 1);
-            }
         }
         return name;
+    }
+
+    /**
+     * Returns the last segment of a class name.
+     *
+     * <p>Examples:
+     * lastSegment("com.acme.Foo") = "Foo"
+     * lastSegment("com.acme.Foo$Bar") = "Bar"
+     * lastSegment("com.acme.Foo$1") = "1"
+     *
+     * @param clazz Class
+     * @return Last segment of class name
+     */
+    private String lastSegment(Class clazz) {
+        final String name = clazz.getName();
+        int dot = name.lastIndexOf('.');
+        int dollar = name.lastIndexOf('$');
+        int dotDollar = Math.max(dot, dollar);
+        if (dotDollar >= 0) {
+            return name.substring(dotDollar + 1);
+        }
+        return name;
+    }
+
+    private static boolean isDigits(String name) {
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if ("0123456789".indexOf(c) < 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -177,10 +200,29 @@ public abstract class AbstractCalc implements Calc {
 
     /**
      * Returns any other arguments to this calc.
-     * The default implementation returns the empty list.
+     *
+     * @return Collection of name/value pairs, represented as a map
      */
-    public List<Object> getArguments() {
-        return Collections.emptyList();
+    protected final Map<String, Object> getArguments() {
+        final Map<String, Object> argumentMap =
+            new LinkedHashMap<String, Object>();
+        collectArguments(argumentMap);
+        return argumentMap;
+    }
+
+    /**
+     * Collects any other arguments to this calc.
+     *
+     * <p>The default implementation returns name, class, type, resultStyle.
+     * A subclass must call super, but may add other arguments.
+     *
+     * @param arguments Collection of name/value pairs, represented as a map
+     */
+    protected void collectArguments(Map<String, Object> arguments) {
+        arguments.put("name", getName());
+        arguments.put("class", getClass());
+        arguments.put("type", getType());
+        arguments.put("resultStyle", getResultStyle());
     }
 
     /**

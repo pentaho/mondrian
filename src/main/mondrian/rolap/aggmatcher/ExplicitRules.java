@@ -849,6 +849,7 @@ RME TODO
         private Map<String, String> foreignKeyMap;
         private List<Level> levels;
         private List<Measure> measures;
+        protected int approxRowCount = Integer.MIN_VALUE;
 
         protected TableDef(
             final boolean ignoreCase,
@@ -864,10 +865,13 @@ RME TODO
         }
 
         /**
-         * TODO: This does not seemed to be used anywhere???
+         * Returns an approximate number of rows in this table.
+         * A negative value indicates that no estimate is available.
+         * @return An estimated row count, or a negative value if no
+         * row count approximation was available.
          */
-        public int getId() {
-            return this.id;
+        public int getApproxRowCount() {
+            return approxRowCount;
         }
 
         /**
@@ -1222,6 +1226,7 @@ RME TODO
             ExplicitRules.NameTableDef name =
                 new ExplicitRules.NameTableDef(
                     aggName.getNameAttribute(),
+                    aggName.getApproxRowCountAttribute(),
                     aggName.isIgnoreCase(),
                     group);
 
@@ -1234,11 +1239,25 @@ RME TODO
 
         public NameTableDef(
             final String name,
+            final String approxRowCount,
             final boolean ignoreCase,
             final ExplicitRules.Group group)
         {
             super(ignoreCase, group);
             this.name = name;
+            this.approxRowCount = loadApproxRowCount(approxRowCount);
+        }
+
+        private int loadApproxRowCount(String approxRowCount) {
+            boolean notNullAndNumeric =
+                approxRowCount != null
+                    && approxRowCount.matches("^\\d+$");
+            if (notNullAndNumeric) {
+                return Integer.parseInt(approxRowCount);
+            } else {
+                // if approxRowCount is not set, return MIN_VALUE to indicate
+                return Integer.MIN_VALUE;
+            }
         }
 
         /**

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -53,9 +53,54 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
             metaData.setColumnCount(headerList.size());
             for (int i = 0; i < headerList.size(); i++) {
                 metaData.setColumnName(i + 1, headerList.get(i));
+                deduceType(rowList, i);
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    protected void deduceType(List<List<Object>> rowList, int column)
+        throws SQLException
+    {
+        int nullability = ResultSetMetaData.columnNoNulls;
+        int type = Types.OTHER;
+        int maxLen = 0;
+        for (List<Object> objects : rowList) {
+            final Object o = objects.get(column);
+            if (o == null) {
+                nullability = ResultSetMetaData.columnNullable;
+            } else {
+                if (type == Types.OTHER) {
+                    type = deduceColumnType(o);
+                }
+                if (o instanceof String) {
+                    maxLen = Math.max(maxLen, ((String) o).length());
+                }
+            }
+        }
+        metaData.setNullable(column + 1, nullability);
+        metaData.setColumnType(column + 1, type);
+        if (maxLen > 0) {
+            metaData.setPrecision(column + 1, maxLen);
+        }
+    }
+
+    private int deduceColumnType(Object o) {
+        if (o instanceof String) {
+            return Types.VARCHAR;
+        } else if (o instanceof Integer) {
+            return Types.INTEGER;
+        } else if (o instanceof Long) {
+            return Types.BIGINT;
+        } else if (o instanceof Double) {
+            return Types.DOUBLE;
+        } else if (o instanceof Float) {
+            return Types.FLOAT;
+        } else if (o instanceof Boolean) {
+            return Types.BOOLEAN;
+        } else {
+            return Types.VARCHAR;
         }
     }
 
