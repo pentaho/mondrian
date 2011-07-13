@@ -957,6 +957,20 @@ value of 0 (the default), indicates no timeout.</p>
         <Default>0</Default>
     </PropertyDefinition>
     <PropertyDefinition>
+        <Name>RolapConnectionShepherdThreadPollingInterval</Name>
+        <Path>mondrian.rolap.shepherdThreadPollingInterval</Path>
+        <Description>
+<p>Property that defines the interval value (in miliseconds) between
+polling operations performed by the RolapConnection shepherd thread.
+This controls query timeouts and calcelation, so a small value
+(a few miliseconds) is best. Setting this to a value higher than
+mondrian.rolap.queryTimeout will result the timeout not being enforced
+as expected. Defaults to 1000ms.</p>
+        </Description>
+        <Type>int</Type>
+        <Default>1000</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
         <Name>IgnoreInvalidMembers</Name>
         <Path>mondrian.rolap.ignoreInvalidMembers</Path>
         <Description>

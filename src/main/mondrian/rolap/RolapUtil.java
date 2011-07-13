@@ -54,11 +54,11 @@ public class RolapUtil {
      */
     public static final Object valueNotReadyException = new Double(0);
 
-    /**
-     * Hook to run when a query is executed.
+    /*
+     * Hook to run when a query is executed. This should not be
+     * used at runtime but only for testing.
      */
-    static final ThreadLocal<ExecuteQueryHook> threadHooks =
-        new ThreadLocal<ExecuteQueryHook>();
+    static ExecuteQueryHook threadHooks = null;
 
     /**
      * Special value represents a null key.

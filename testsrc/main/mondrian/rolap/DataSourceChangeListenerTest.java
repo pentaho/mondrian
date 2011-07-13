@@ -109,7 +109,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         // to execute a particular SQL statement, but will otherwise behave
         // exactly the same as the current DataSource.
         SqlLogger sqlLogger = new SqlLogger();
-        RolapUtil.threadHooks.set(sqlLogger);
+        RolapUtil.threadHooks = sqlLogger;
 
         try {
             String s1, s2, s3, s4, s5, s6;
@@ -208,7 +208,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             RolapStar star = getStar("Sales");
             star.setChangeListener(null);
 
-            RolapUtil.threadHooks.set(null);
+            RolapUtil.threadHooks = null;
         }
     }
 

@@ -12,7 +12,6 @@
 */
 package mondrian.olap;
 
-import mondrian.server.Locus;
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
@@ -177,7 +176,8 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Creates an {@link ExecutorService} object.
+     * Creates an {@link ExecutorService} object backed by a thread pool
+     * with a fixed number of threads..
      * @param maxNbThreads Maximum number of concurrent
      * threads.
      * @param name The name of the threads.
@@ -189,6 +189,28 @@ public class Util extends XOMUtil {
     {
         return Executors.newFixedThreadPool(
             maxNbThreads,
+            new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    final Thread thread =
+                        Executors.defaultThreadFactory().newThread(r);
+                    thread.setDaemon(true);
+                    thread.setName(name);
+                    return thread;
+                }
+            }
+        );
+    }
+
+    /**
+     * Creates an {@link ExecutorService} object backed by an expanding
+     * cached thread pool.
+     * @param name The name of the threads.
+     * @return An executor service preconfigured.
+     */
+    public static ExecutorService getExecutorService(
+        final String name)
+    {
+        return Executors.newCachedThreadPool(
             new ThreadFactory() {
                 public Thread newThread(Runnable r) {
                     final Thread thread =

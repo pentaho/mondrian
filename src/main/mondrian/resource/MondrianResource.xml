@@ -839,6 +839,14 @@
     </text>
 </exception>
 
+<!-- ====================================================================== -->
+<!-- Execution -->
+<exception id="8500001" name="ExecutionStatementCleanupException">
+    <text>
+        An exception was encountered while trying to cleanup an execution context. A statement failed to cancel gracefully. Locus was : "{0}".
+    </text>
+</exception>
+
 <!-- End of last error section ============================================ -->
 
 </resourceBundle>

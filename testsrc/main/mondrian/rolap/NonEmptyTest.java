@@ -2823,7 +2823,14 @@ public class NonEmptyTest extends BatchTestCase {
         try {
             checkNotNative(3, mdx);
             fail("Expected NativeEvaluationUnsupportedException");
-        } catch (NativeEvaluationUnsupportedException ex) {
+        } catch (Exception ex) {
+            Throwable t = ex;
+            while (t.getCause() != null && t != t.getCause()) {
+                t = t.getCause();
+            }
+            if (!(t instanceof NativeEvaluationUnsupportedException)) {
+                fail();
+            }
             // Expected
         } finally {
             propSaver.reset();

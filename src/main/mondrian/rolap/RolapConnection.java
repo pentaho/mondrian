@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
@@ -572,6 +573,18 @@ public class RolapConnection extends ConnectionBase {
      *     the property file
      */
     public Result execute(final Execution execution) {
+        return
+            RolapResultShepherd
+                .shepherdExecution(
+                    execution,
+                    new Callable<Result>() {
+                        public Result call() throws Exception {
+                            return executeInternal(execution);
+                        }
+                    });
+    }
+
+    private Result executeInternal(final Execution execution) {
         final Statement statement = execution.getMondrianStatement();
         final Query query = statement.getQuery();
         final MemoryMonitor.Listener listener = new MemoryMonitor.Listener() {
