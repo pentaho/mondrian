@@ -260,6 +260,11 @@ public class BatchTestCase extends FoodMartTestCase {
             // behave exactly the same as the current DataSource.
             RolapUtil.threadHooks = new TriggerHook(trigger);
             Bomb bomb;
+            final Locus locus =
+                new Locus(
+                    new Execution(null, 1000),
+                    "BatchTestCase",
+                    "BatchTestCase");
             try {
                 FastBatchingCellReader fbcr =
                     new FastBatchingCellReader(getCube(cubeName));
@@ -268,17 +273,14 @@ public class BatchTestCase extends FoodMartTestCase {
                 }
                 // The FBCR will presume there is a current Locus in the stack,
                 // so let's create a mock one.
-                Locus.push(
-                    new Locus(
-                        new Execution(null, 1000),
-                        "BatchTestCase",
-                        "BatchTestCase"));
+                Locus.push(locus);
                 fbcr.loadAggregations(null);
                 bomb = null;
             } catch (Bomb e) {
                 bomb = e;
             } finally {
                 RolapUtil.threadHooks = null;
+                Locus.pop(locus);
             }
             if (!negative && bomb == null) {
                 fail("expected query [" + sql + "] did not occur");
