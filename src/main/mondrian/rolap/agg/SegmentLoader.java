@@ -84,9 +84,7 @@ public class SegmentLoader {
     {
         // Simple assertion. Is this Execution instance still valid,
         // or should we get outa here.
-//        if (Locus.peek() != null) {
-//            Locus.peek().execution.checkCancelOrTimeout();
-//        }
+        Locus.peek().execution.checkCancelOrTimeout();
 
         // First check for cached segments.
         // This method will remove all the segments it fetched from
