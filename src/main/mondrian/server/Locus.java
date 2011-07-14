@@ -60,9 +60,6 @@ public class Locus {
     }
 
     public static Locus peek() {
-        if (THREAD_LOCAL.get().size() == 0) {
-            return null;
-        }
         return THREAD_LOCAL.get().peek();
     }
 
