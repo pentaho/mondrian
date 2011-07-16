@@ -19,7 +19,6 @@ import org.apache.log4j.*;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of
@@ -45,21 +44,10 @@ public class DynamicContentFinder
     private static final Logger LOGGER =
         Logger.getLogger(MondrianServer.class);
 
-    private static AtomicInteger threadNumber = new AtomicInteger(0);
-
     private final static ScheduledExecutorService executorService =
-        Executors.newScheduledThreadPool(
-            0,
-            new ThreadFactory() {
-                public Thread newThread(Runnable r) {
-                    Thread t = Executors.defaultThreadFactory().newThread(r);
-                    t.setDaemon(true);
-                    t.setName(
-                        "mondrian.DynamicContentFinderUpdaterThread"
-                        + threadNumber.addAndGet(1));
-                    return t;
-               }
-            });
+        Util.getScheduledExecutorService(
+            1,
+            "mondrian.server.DynamicContentFinder$executorService");
 
     private final ScheduledFuture<?> scheduledTask;
 

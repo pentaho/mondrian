@@ -9,6 +9,7 @@
 package mondrian.xmla.impl;
 
 import junit.framework.TestCase;
+import mondrian.olap.MondrianProperties;
 import mondrian.server.DynamicContentFinder;
 import mondrian.xmla.DataSourcesConfig;
 import org.eigenbase.xom.DOMWrapper;
@@ -250,6 +251,62 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
             out.flush();
 
             finder.reloadDataSources();
+            assertTrue(
+                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
+            assertTrue(
+                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
+            assertFalse(
+                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
+            finder.shutdown();
+        } finally {
+            if (dsFile != null) {
+                dsFile.delete();
+            }
+        }
+    }
+
+    public void testAutoReloadDataSources() throws Exception {
+        DataSourcesConfig.DataSources ds1 =
+            getDataSources(CATALOG_0_DEFINITION, CATALOG_1_DEFINITION);
+        DataSourcesConfig.DataSources ds2 =
+            getDataSources(CATALOG_1_DEFINITION, CATALOG_2_DEFINITION);
+
+        File dsFile = null;
+        try {
+            dsFile = File.createTempFile(
+                Long.toString(System.currentTimeMillis()), null);
+            dsFile.deleteOnExit();
+
+            OutputStream out = new FileOutputStream(dsFile);
+            out.write(ds1.toXML().getBytes());
+            out.flush();
+
+            final MockDynamicContentFinder finder =
+                new MockDynamicContentFinder(
+                    dsFile.toURL().toString());
+
+            out = new FileOutputStream(dsFile);
+            out.write(ds2.toXML().getBytes());
+            out.flush();
+
+            finder.reloadDataSources();
+
+            assertTrue(
+                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
+            assertTrue(
+                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
+            assertFalse(
+                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
+
+            out = new FileOutputStream(dsFile);
+            out.write(ds1.toXML().getBytes());
+            out.flush();
+
+            // Wait for it to auto-reload.
+            Thread.sleep(
+                    MondrianProperties.instance()
+                        .XmlaSchemaRefreshInterval.get() + 1000);
+
             assertTrue(
                 finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
             assertTrue(

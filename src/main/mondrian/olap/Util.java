@@ -202,6 +202,31 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Creates an {@link ScheduledExecutorService} object backed by a
+     * thread pool with a fixed number of threads..
+     * @param maxNbThreads Maximum number of concurrent
+     * threads.
+     * @param name The name of the threads.
+     * @return An scheduled executor service preconfigured.
+     */
+    public static ScheduledExecutorService getScheduledExecutorService(
+        final int maxNbThreads,
+        final String name)
+    {
+        return Executors.newScheduledThreadPool(
+            maxNbThreads,
+            new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    final Thread thread =
+                        Executors.defaultThreadFactory().newThread(r);
+                    thread.setDaemon(true);
+                    thread.setName(name);
+                    return thread;
+                }
+            }
+        );
+    }
+    /**
      * Creates an {@link ExecutorService} object backed by an expanding
      * cached thread pool.
      * @param name The name of the threads.

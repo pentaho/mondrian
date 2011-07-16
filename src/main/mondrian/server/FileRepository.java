@@ -21,10 +21,8 @@ import org.olap4j.impl.Olap4jUtil;
 
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -49,18 +47,10 @@ public class FileRepository implements Repository {
     private static AtomicInteger threadNumber = new AtomicInteger(0);
 
     private final static ScheduledExecutorService executorService =
-        Executors.newScheduledThreadPool(
-            0,
-            new ThreadFactory() {
-                public Thread newThread(Runnable r) {
-                    Thread t = Executors.defaultThreadFactory().newThread(r);
-                    t.setDaemon(true);
-                    t.setName(
-                        "mondrian.FileRepositoryUpdaterThread"
-                        + threadNumber.addAndGet(1));
-                    return t;
-               }
-            });
+        Util.getScheduledExecutorService(
+            1,
+            "mondrian.server.DynamicContentFinder$executorService");
+
     private final ScheduledFuture<?> scheduledFuture;
 
     public FileRepository(RepositoryContentFinder repositoryContentFinder) {
