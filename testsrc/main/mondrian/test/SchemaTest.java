@@ -3531,6 +3531,216 @@ public class SchemaTest extends FoodMartTestCase {
         }
         fail("Didn't find measures in sales cube.");
     }
+
+    public void testCubesVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name=\"Foo\" visible=\"@REPLACE_ME@\">\n"
+                + "  <Table name=\"store\"/>\n"
+                + "  <Dimension name=\"Store Type\">\n"
+                + "    <Hierarchy hasAll=\"true\">\n"
+                + "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###\"/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                TestContext.create(null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            assertTrue(testValue.equals(cube.isVisible()));
+        }
+    }
+
+    public void testVirtualCubesVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<VirtualCube name=\"Foo\" defaultMeasure=\"Store Sales\" visible=\"@REPLACE_ME@\">\n"
+                + "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\"/>\n"
+                + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
+                + "</VirtualCube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                TestContext.create(null, null, cubeDef, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            assertTrue(testValue.equals(cube.isVisible()));
+        }
+    }
+
+    public void testDimensionVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name=\"Foo\">\n"
+                + "  <Table name=\"store\"/>\n"
+                + "  <Dimension name=\"Bar\" visible=\"@REPLACE_ME@\">\n"
+                + "    <Hierarchy hasAll=\"true\">\n"
+                + "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###\"/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                TestContext.create(null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensions()) {
+                if (dimCheck.getName().equals("Bar")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            assertTrue(testValue.equals(dim.isVisible()));
+        }
+    }
+
+    public void testVirtualDimensionVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<VirtualCube name=\"Foo\" defaultMeasure=\"Store Sales\">\n"
+                + "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\" visible=\"@REPLACE_ME@\"/>\n"
+                + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
+                + "</VirtualCube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                TestContext.create(null, null, cubeDef, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensions()) {
+                if (dimCheck.getName().equals("Customers")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            assertTrue(testValue.equals(dim.isVisible()));
+        }
+    }
+
+    public void testDimensionUsageVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name=\"Foo\">\n"
+                + "  <Table name=\"store\"/>\n"
+                + "  <Dimension name=\"Bacon\">\n"
+                + "    <Hierarchy hasAll=\"true\">\n"
+                + "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###\"/>\n"
+                + "</Cube>\n";
+            final TestContext context =
+                TestContext.create(null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            String dimensionDef =
+                "<DimensionUsage name=\"Bar\" source=\"Time\" foreignKey=\"time_id\" visible=\"@REPLACE_ME@\"/>";
+            dimensionDef = dimensionDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            context.getConnection().getSchema().createDimension(
+                cube, dimensionDef);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensions()) {
+                if (dimCheck.getName().equals("Bar")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            assertTrue(testValue.equals(dim.isVisible()));
+        }
+    }
+
+    public void testHierarchyVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name=\"Foo\">\n"
+                + "  <Table name=\"store\"/>\n"
+                + "  <Dimension name=\"Bar\">\n"
+                + "    <Hierarchy name=\"Bacon\" hasAll=\"true\" visible=\"@REPLACE_ME@\">\n"
+                + "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###\"/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                TestContext.create(null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensions()) {
+                if (dimCheck.getName().equals("Bar")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            final Hierarchy hier = dim.getHierarchy();
+            assertNotNull(hier);
+            assertEquals("Bar.Bacon", hier.getName());
+            assertTrue(testValue.equals(hier.isVisible()));
+        }
+    }
+
+    public void testLevelVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name=\"Foo\">\n"
+                + "  <Table name=\"store\"/>\n"
+                + "  <Dimension name=\"Bar\">\n"
+                + "    <Hierarchy name=\"Bacon\" hasAll=\"false\">\n"
+                + "      <Level name=\"Samosa\" column=\"store_type\" uniqueMembers=\"true\" visible=\"@REPLACE_ME@\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###\"/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                TestContext.create(null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensions()) {
+                if (dimCheck.getName().equals("Bar")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            final Hierarchy hier = dim.getHierarchy();
+            assertNotNull(hier);
+            assertEquals("Bar.Bacon", hier.getName());
+            final mondrian.olap.Level level = hier.getLevels()[0];
+            assertEquals("Samosa", level.getName());
+            assertTrue(testValue.equals(level.isVisible()));
+        }
+    }
 }
 
 // End SchemaTest.java

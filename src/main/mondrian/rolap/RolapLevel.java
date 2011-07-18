@@ -97,6 +97,7 @@ public class RolapLevel extends LevelBase {
         RolapHierarchy hierarchy,
         String name,
         String caption,
+        boolean visible,
         String description,
         int depth,
         MondrianDef.Expression keyExp,
@@ -115,7 +116,8 @@ public class RolapLevel extends LevelBase {
         String approxRowCount,
         Map<String, Annotation> annotationMap)
     {
-        super(hierarchy, name, caption, description, depth, levelType);
+        super(
+            hierarchy, name, caption, visible, description, depth, levelType);
         assert annotationMap != null;
         Util.assertPrecondition(properties != null, "properties != null");
         Util.assertPrecondition(
@@ -322,6 +324,7 @@ public class RolapLevel extends LevelBase {
             hierarchy,
             xmlLevel.name,
             xmlLevel.caption,
+            xmlLevel.visible,
             xmlLevel.description,
             depth,
             xmlLevel.getKeyExp(),

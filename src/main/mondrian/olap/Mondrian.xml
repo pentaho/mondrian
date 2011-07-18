@@ -123,6 +123,13 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this dimension is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
         <Attribute name="description" required="false">
             <Doc>
                 Description of this dimension.
@@ -177,6 +184,13 @@ Revision is $Id$
             <Doc>
                 A string being displayed instead of the cube's name.
                 Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this cube is visible in the user-interface.
+                Default true.
             </Doc>
         </Attribute>
         <Attribute name="description" required="false">
@@ -268,6 +282,13 @@ Revision is $Id$
             <Doc>
                 A string being displayed instead of the cube's name.
                 Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this cube is visible in the user-interface.
+                Default true.
             </Doc>
         </Attribute>
         <Attribute name="description" required="false">
@@ -499,6 +520,13 @@ Revision is $Id$
                 has the same name as its dimension.
             </Doc>
         </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this hierarchy is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
         <Attribute name="hasAll" type="Boolean" required="true">
             <Doc>
                 Whether this hierarchy has an 'all' member.
@@ -593,6 +621,13 @@ Revision is $Id$
             </Doc>
         </Attribute>
         <Attribute name="name"><Doc></Doc></Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this level is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
         <Attribute name="table" required="false">
             <Doc>
                 The name of the table that the column comes from. If

@@ -95,12 +95,13 @@ public class RolapHierarchy extends HierarchyBase {
         RolapDimension dimension,
         String subName,
         String caption,
+        boolean visible,
         String description,
         boolean hasAll,
         RolapHierarchy closureFor,
         Map<String, Annotation> annotationMap)
     {
-        super(dimension, subName, caption, description, hasAll);
+        super(dimension, subName, caption, visible, description, hasAll);
         this.annotationMap = annotationMap;
         this.allLevelName = "(All)";
         this.allMemberName =
@@ -117,6 +118,7 @@ public class RolapHierarchy extends HierarchyBase {
                     this,
                     this.allLevelName,
                     null,
+                    true,
                     null,
                     0,
                     null,
@@ -145,6 +147,7 @@ public class RolapHierarchy extends HierarchyBase {
                 this,
                 this.allLevelName,
                 null,
+                true,
                 null,
                 0,
                 null,
@@ -181,6 +184,7 @@ public class RolapHierarchy extends HierarchyBase {
             dimension,
             xmlHierarchy.name,
             xmlHierarchy.caption,
+            xmlHierarchy.visible,
             xmlHierarchy.description,
             xmlHierarchy.hasAll,
             null,
@@ -212,6 +216,7 @@ public class RolapHierarchy extends HierarchyBase {
                 this,
                 this.allLevelName,
                 null,
+                true,
                 null,
                 0,
                 null,
@@ -424,6 +429,7 @@ public class RolapHierarchy extends HierarchyBase {
                 this,
                 "MeasuresLevel",
                 null,
+                true,
                 null,
                 this.levels.length,
                 null,
@@ -1031,6 +1037,7 @@ public class RolapHierarchy extends HierarchyBase {
             dimension.getSchema(),
             dimension.getName() + "$Closure",
             null,
+            true,
             "Closure dimension for parent-child hierarchy " + getName(),
             DimensionType.StandardDimension,
             dimension.isHighCardinality(),
@@ -1059,7 +1066,7 @@ public class RolapHierarchy extends HierarchyBase {
 
         RolapLevel level =
             new RolapLevel(
-                peerHier, "Closure", caption, description, index++,
+                peerHier, "Closure", caption, true, description, index++,
                 keyExp, null, null, null,
                 null, null,  // no longer a parent-child hierarchy
                 null,
@@ -1084,6 +1091,7 @@ public class RolapHierarchy extends HierarchyBase {
             peerHier,
             "Item",
             null,
+            true,
             null,
             index++,
             keyExp,
@@ -1409,6 +1417,10 @@ public class RolapHierarchy extends HierarchyBase {
         }
 
         public Dimension getDimension() {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isVisible() {
             throw new UnsupportedOperationException();
         }
     }

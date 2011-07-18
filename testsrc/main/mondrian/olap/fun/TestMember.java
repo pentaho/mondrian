@@ -170,6 +170,10 @@ public class TestMember implements Member {
         throw new UnsupportedOperationException();
     }
 
+    public boolean isVisible() {
+        throw new UnsupportedOperationException();
+    }
+
     public Dimension getDimension() {
         return new MockDimension();
     }
@@ -208,6 +212,10 @@ public class TestMember implements Member {
         }
 
         public String getDescription() {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isVisible() {
             throw new UnsupportedOperationException();
         }
 

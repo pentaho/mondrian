@@ -54,6 +54,7 @@ public abstract class HierarchyBase
         Dimension dimension,
         String subName,
         String caption,
+        boolean visible,
         String description,
         boolean hasAll)
     {
@@ -67,6 +68,7 @@ public abstract class HierarchyBase
             this.caption = subName;
         }
         this.description = description;
+        this.visible = visible;
 
         String name = dimension.getName();
         if (MondrianProperties.instance().SsasCompatibleNaming.get()) {

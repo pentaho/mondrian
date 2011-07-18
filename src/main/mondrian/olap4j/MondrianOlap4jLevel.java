@@ -202,7 +202,7 @@ class MondrianOlap4jLevel implements Level, Named {
     }
 
     public boolean isVisible() {
-        return true;
+        return level.isVisible();
     }
 }
 

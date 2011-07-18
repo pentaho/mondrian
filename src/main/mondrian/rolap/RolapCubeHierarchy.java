@@ -82,6 +82,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             cubeDimension,
             subName,
             applyPrefix(cubeDim, rolapHierarchy.getCaption()),
+            rolapHierarchy.isVisible(),
             applyPrefix(cubeDim, rolapHierarchy.getDescription()),
             rolapHierarchy.hasAll(),
             null,

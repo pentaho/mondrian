@@ -116,6 +116,7 @@ public class RolapCube extends CubeBase {
         RolapSchema schema,
         MondrianDef.Schema xmlSchema,
         String name,
+        boolean visible,
         String caption,
         String description,
         boolean isCache,
@@ -127,6 +128,7 @@ public class RolapCube extends CubeBase {
         super(
             name,
             caption,
+            visible,
             description,
             new RolapDimension[dimensions.length + 1]);
 
@@ -166,6 +168,7 @@ public class RolapCube extends CubeBase {
                 schema,
                 Dimension.MEASURES_NAME,
                 null,
+                true,
                 null,
                 DimensionType.MeasuresDimension,
                 false,
@@ -221,6 +224,7 @@ public class RolapCube extends CubeBase {
             schema,
             xmlSchema,
             xmlCube.name,
+            xmlCube.visible,
             xmlCube.caption,
             xmlCube.description,
             xmlCube.cache,
@@ -439,6 +443,7 @@ public class RolapCube extends CubeBase {
             schema,
             xmlSchema,
             xmlVirtualCube.name,
+            xmlVirtualCube.visible,
             xmlVirtualCube.caption,
             xmlVirtualCube.description,
             true,

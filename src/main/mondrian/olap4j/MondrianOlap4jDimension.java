@@ -96,7 +96,7 @@ class MondrianOlap4jDimension implements Dimension, Named {
     }
 
     public boolean isVisible() {
-        return true;
+        return dimension.isVisible();
     }
 }
 

@@ -123,7 +123,7 @@ class MondrianOlap4jHierarchy implements Hierarchy, Named {
     }
 
     public boolean isVisible() {
-        return true;
+        return hierarchy.isVisible();
     }
 }
 

@@ -1166,6 +1166,7 @@
                                 <xsd:element name="IS_READWRITE" sql:field="IS_READWRITE" type="xsd:boolean"/>
                                 <xsd:element name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
                                 <xsd:element name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+                                <xsd:element name="HIERARCHY_IS_VISIBLE" sql:field="HIERARCHY_IS_VISIBLE" type="xsd:boolean"/>
                                 <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
                                 <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
                                 <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>

@@ -701,7 +701,6 @@ public enum RowsetDefinition {
      *      Default restriction is a value of 1.
      *
      * Not supported
-     *  HIERARCHY_IS_VISIBLE
      *  HIERARCHY_ORIGIN
      *  HIERARCHY_DISPLAY_FOLDER
      *  INSTANCE_SELECTION
@@ -727,6 +726,7 @@ public enum RowsetDefinition {
             MdschemaHierarchiesRowset.IsReadWrite,
             MdschemaHierarchiesRowset.DimensionUniqueSettings,
             MdschemaHierarchiesRowset.DimensionIsVisible,
+            MdschemaHierarchiesRowset.HierarchyIsVisible,
             MdschemaHierarchiesRowset.HierarchyOrdinal,
             MdschemaHierarchiesRowset.DimensionIsShared,
             MdschemaHierarchiesRowset.ParentChild,
@@ -3945,7 +3945,7 @@ TODO: see above
             // Are these the levels with uniqueMembers == true?
             // How are they mapped to specific column numbers?
             row.set(DimensionUniqueSettings.name, 0);
-            row.set(DimensionIsVisible.name, true);
+            row.set(DimensionIsVisible.name, dimension.isVisible());
             if (deep) {
                 row.set(
                     Hierarchies.name,
@@ -4346,7 +4346,15 @@ TODO: see above
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
-                "Always returns true.");
+                "A Boolean that indicates whether the parent dimension is visible.");
+        private static final Column HierarchyIsVisible =
+            new Column(
+                "HIERARCHY_IS_VISIBLE",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
+                "A Boolean that indicates whether the hieararchy is visible.");
         private static final Column HierarchyOrdinal =
             new Column(
                 "HIERARCHY_ORDINAL",
@@ -4515,8 +4523,8 @@ TODO: see above
             // NOTE that SQL Server returns '0' not '1'.
             row.set(DimensionUniqueSettings.name, 0);
 
-            // always true
-            row.set(DimensionIsVisible.name, true);
+            row.set(DimensionIsVisible.name, dimension.isVisible());
+            row.set(HierarchyIsVisible.name, hierarchy.isVisible());
 
             row.set(HierarchyOrdinal.name, ordinal);
 
@@ -4869,7 +4877,7 @@ TODO: see above
                 uniqueSettings |= 1;
             }
             row.set(LevelUniqueSettings.name, uniqueSettings);
-            row.set(LevelIsVisible.name, true);
+            row.set(LevelIsVisible.name, level.isVisible());
             row.set(Description.name, desc);
             addRow(row, rows);
             return true;

@@ -3265,6 +3265,10 @@ public class FunUtil extends Util {
             throw new UnsupportedOperationException();
         }
 
+        public boolean isVisible() {
+            throw new UnsupportedOperationException();
+        }
+
         public Dimension getDimension() {
             throw new UnsupportedOperationException();
         }

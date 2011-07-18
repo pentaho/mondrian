@@ -29,6 +29,8 @@ public abstract class OlapElementBase
 
     protected String caption = null;
 
+    protected boolean visible = true;
+
     // cache hash-code because it is often used and elements are immutable
     private int hash;
 
@@ -90,6 +92,10 @@ public abstract class OlapElementBase
      */
     public void setCaption(String caption) {
         this.caption = caption;
+    }
+
+    public boolean isVisible() {
+        return visible;
     }
 }
 

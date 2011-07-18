@@ -39,6 +39,7 @@ public abstract class LevelBase
         Hierarchy hierarchy,
         String name,
         String caption,
+        boolean visible,
         String description,
         int depth,
         LevelType levelType)
@@ -46,6 +47,7 @@ public abstract class LevelBase
         this.hierarchy = hierarchy;
         this.name = name;
         this.caption = caption;
+        this.visible = visible;
         this.description = description;
         this.uniqueName = Util.makeFqName(hierarchy, name);
         this.depth = depth;

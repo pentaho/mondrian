@@ -59,6 +59,7 @@ public class RolapCubeDimension extends RolapDimension {
             cubeDim.caption != null
                 ? cubeDim.caption
                 : rolapDim.getCaption(),
+            cubeDim.visible,
             cubeDim.caption != null
                 ? cubeDim.description
                 : rolapDim.getDescription(),

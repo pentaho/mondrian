@@ -331,6 +331,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>0</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -390,6 +391,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>1</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -484,6 +486,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>2</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -612,6 +615,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>3</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -689,6 +693,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>4</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -766,6 +771,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>5</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -860,6 +866,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>6</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -937,6 +944,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>7</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>true</PARENT_CHILD>
@@ -1143,6 +1151,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 0,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1202,6 +1211,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 1,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1296,6 +1306,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 2,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1424,6 +1435,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 3,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1501,6 +1513,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 4,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1578,6 +1591,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 5,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1672,6 +1686,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 6,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1749,6 +1764,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 7,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": true,
@@ -8949,6 +8965,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                 <xsd:element name="IS_READWRITE" sql:field="IS_READWRITE" type="xsd:boolean"/>
                                 <xsd:element name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
                                 <xsd:element name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+                                <xsd:element name="HIERARCHY_IS_VISIBLE" sql:field="HIERARCHY_IS_VISIBLE" type="xsd:boolean"/>
                                 <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
                                 <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
                                 <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
@@ -8974,6 +8991,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>9</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -8996,6 +9014,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>10</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9018,6 +9037,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>11</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9040,6 +9060,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>12</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9061,6 +9082,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>0</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9083,6 +9105,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>6</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9105,6 +9128,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>7</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9127,6 +9151,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>8</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9149,6 +9174,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>2</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9171,6 +9197,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>3</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9193,6 +9220,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>1</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9214,6 +9242,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>4</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9236,6 +9265,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>5</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9258,6 +9288,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>13</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -13484,6 +13515,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                 <xsd:element name="IS_READWRITE" sql:field="IS_READWRITE" type="xsd:boolean"/>
                                 <xsd:element name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
                                 <xsd:element name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+                                <xsd:element name="HIERARCHY_IS_VISIBLE" sql:field="HIERARCHY_IS_VISIBLE" type="xsd:boolean"/>
                                 <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
                                 <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
                                 <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
@@ -13509,6 +13541,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>12</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>

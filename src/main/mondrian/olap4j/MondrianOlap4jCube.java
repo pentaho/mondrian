@@ -132,7 +132,7 @@ class MondrianOlap4jCube implements Cube, Named {
     }
 
     public boolean isVisible() {
-        return true;
+        return cube.isVisible();
     }
 
     public MondrianOlap4jMember lookupMember(

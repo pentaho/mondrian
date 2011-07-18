@@ -64,11 +64,13 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     protected CubeBase(
         String name,
         String caption,
+        boolean visible,
         String description,
         Dimension[] dimensions)
     {
         this.name = name;
         this.caption = caption;
+        this.visible = visible;
         this.description = description;
         this.dimensions = dimensions;
         this.uniqueName = Util.quoteMdxIdentifier(name);

@@ -63,7 +63,7 @@ class MondrianOlap4jNamedSet implements NamedSet, Named {
     }
 
     public boolean isVisible() {
-        return true;
+        return namedSet.isVisible();
     }
 }
 
