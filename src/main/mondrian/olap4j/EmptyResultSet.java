@@ -142,7 +142,8 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
     }
 
     public String getString(int columnIndex) throws SQLException {
-        return String.valueOf(getColumn(columnIndex - 1));
+        final Object result = getColumn(columnIndex - 1);
+        return result == null ? null: String.valueOf(result);
     }
 
     public boolean getBoolean(int columnIndex) throws SQLException {
@@ -225,8 +226,8 @@ abstract class EmptyResultSet implements ResultSet, OlapWrapper {
     }
 
     public String getString(String columnLabel) throws SQLException {
-        Object o = getColumn(columnLabel);
-        return String.valueOf(o);
+        final Object result = getColumn(columnLabel);
+        return result == null ? null: String.valueOf(result);
     }
 
     public boolean getBoolean(String columnLabel) throws SQLException {
