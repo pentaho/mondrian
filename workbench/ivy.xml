@@ -42,8 +42,10 @@
         <dependency org="pentaho-kettle" name="kettle-dbdialog" rev="${dependency.kettle.revision}" changing="true" />
 
         <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
-        
 
+        <!--  internal runtime dependencies -->
+        <dependency org="pentaho" name="launcher" rev="${dependency.pentaho-launcher.revision}" />
+        
         <!--Exclusions-->
         <exclude org="jaxme" module="jaxme-api"/>
         <exclude org="jdom" module="jdom"/>

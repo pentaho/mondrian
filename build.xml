@@ -66,7 +66,8 @@
   <property name="jar-jdk14.file" value="${lib.dir}/${name}-jdk14.jar" />
   <property name="workbench.jar.file" value="${lib.dir}/workbench.jar"/>
   <property name="workbench.dist.name" value="workbench-${project.revision}"/>
-  <property name="workbench.dist.file" value="${workbench.dist.name}.zip"/>
+  <property name="workbench.zip-dist.file" value="${workbench.dist.name}.zip"/>
+  <property name="workbench.tar-dist.file" value="${workbench.dist.name}.tar.gz"/>
   <property name="workbench.main.class" value="mondrian.gui.Workbench"/>
   <property name="resource.jar.file" value="${lib.dir}/eigenbase-resgen.jar"/>
   <property name="xom.jar.file" value="${lib.dir}/eigenbase-xom.jar"/>
@@ -1646,31 +1647,32 @@ xalan.jar"/>
   <target name="workbench-dist" 
       depends="version,workbench">
     <mkdir dir="${dist.dir}" />
-    <delete file="${dist.dir}/${workbench.dist.file}"/>
-    <zip zipfile="${dist.dir}/${workbench.dist.file}">
+    <delete file="${dist.dir}/${workbench.zip-dist.file}"/>
+    <zip zipfile="${dist.dir}/${workbench.zip-dist.file}">
       <zipfileset
           dir="."
           prefix="${workbench.dist.name}"
           includes="
-${doc.dir}/**/*.pdf,
-lib/mondrian.jar,
-lib/workbench.jar,
-lib/log4j.jar,
-lib/x*.jar,
-lib/eigenbase*.jar,
-lib/commons*.jar,
-lib/javacup.jar,
-lib/jlfgr.jar,
-lib/olap4j.jar,
-lib/*.dtd,
-lib/*.xsd,
-demo/FoodMart.xml,
-LICENSE.html"
+			${doc.dir}/**/*.pdf,
+			lib/mondrian.jar,
+			lib/workbench.jar,
+			lib/log4j.jar,
+			lib/x*.jar,
+			lib/eigenbase*.jar,
+			lib/commons*.jar,
+			lib/javacup.jar,
+			lib/jlfgr.jar,
+			lib/olap4j.jar,
+			lib/launcher.jar,
+			lib/*.dtd,
+			lib/*.xsd,
+			demo/FoodMart.xml,
+			LICENSE.html"
           excludes="
-**/*~,
-**/_vti*/*,
-**/*.psp,
-${doc.dir}/api/src-html/**/*"/>
+			**/*~,
+			**/_vti*/*,
+			**/*.psp,
+			${doc.dir}/api/src-html/**/*"/>
       <zipfileset
           dir="workbench"
           prefix="${workbench.dist.name}"
@@ -1680,6 +1682,50 @@ ${doc.dir}/api/src-html/**/*"/>
           prefix="${workbench.dist.name}/src"
           includes="mondrian/gui/**/*"/>
     </zip>
+    <delete file="${dist.dir}/${workbench.tar-dist.file}"/>
+    <tar destfile="${dist.dir}/${workbench.tar-dist.file}" longfile="gnu" compression="gzip">
+        <tarfileset dir="." prefix="${workbench.dist.name}" mode="755" includes="*.sh"/>
+	    <tarfileset dir="."  prefix="${workbench.dist.name}" includes="
+				${doc.dir}/**/*.pdf,
+				lib/mondrian.jar,
+				lib/workbench.jar,
+				lib/log4j.jar,
+				lib/x*.jar,
+				lib/eigenbase*.jar,
+				lib/commons*.jar,
+				lib/javacup.jar,
+				lib/jlfgr.jar,
+				lib/olap4j.jar,
+				lib/launcher.jar,
+				lib/*.dtd,
+				lib/*.xsd,
+				demo/FoodMart.xml,
+				LICENSE.html"
+          		excludes="
+				**/*~,
+				**/_vti*/*,
+				**/*.psp,
+	    		**/*.sh,
+	    		**/JavaApplicationStub,
+				${doc.dir}/api/src-html/**/*"/>
+      	<tarfileset mode="755"
+          dir="workbench"
+          prefix="${workbench.dist.name}">
+            <include name="**/*.sh" />
+            <include name="**/JavaApplicationStub" />
+   		</tarfileset>      		
+      	<tarfileset
+          dir="workbench"
+          prefix="${workbench.dist.name}">
+      		<include name="**/*" />
+            <exclude name="**/*.sh" />
+            <exclude name="**/JavaApplicationStub" />
+   		</tarfileset>
+      	<tarfileset
+          dir="src/main"
+          prefix="${workbench.dist.name}/src"
+          includes="mondrian/gui/**/*"/>
+    </tar>
   </target>
 
   <!--
