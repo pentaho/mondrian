@@ -25,6 +25,9 @@ import mondrian.spi.Dialect;
 import mondrian.util.Pair;
 
 import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -70,6 +73,8 @@ import java.util.*;
  * @version $Id$
  */
 public class SqlTupleReader implements TupleReader {
+    private final static Logger LOGGER =
+        Logger.getLogger(SqlTupleReader.class);
     protected final TupleConstraint constraint;
     List<TargetBase> targets = new ArrayList<TargetBase>();
     int maxRows = 0;
@@ -164,6 +169,13 @@ public class SqlTupleReader implements TupleReader {
                                     member,
                                     parentValue);
                             parentMember = cache.getMember(parentKey);
+                            if (parentMember == null) {
+                                LOGGER.warn(
+                                    MondrianResource.instance()
+                                        .LevelTableParentNotFound.str(
+                                            childLevel.getUniqueName(),
+                                            String.valueOf(parentValue)));
+                            }
                         }
                     }
                     Object value = accessors.get(column++).get();
@@ -227,7 +239,7 @@ public class SqlTupleReader implements TupleReader {
                             constraint.getMemberChildrenConstraint(member);
                         // we keep a reference to cachedChildren so they don't
                         // get garbage-collected
-                        List cachedChildren =
+                        List<RolapMember> cachedChildren =
                             cache.getChildrenFromCache(member, mcc);
                         if (i < levelDepth && cachedChildren == null) {
                             siblings.set(i + 1, new ArrayList<RolapMember>());
@@ -981,7 +993,7 @@ public class SqlTupleReader implements TupleReader {
                 if (whichSelect == WhichSelect.LAST
                     || whichSelect == WhichSelect.ONLY)
                 {
-                    sqlQuery.addOrderBy(parentSql, true, false, true);
+                    sqlQuery.addOrderBy(parentSql, true, false, true, false);
                 }
             }
 

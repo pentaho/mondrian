@@ -47,25 +47,6 @@ public class HsqldbDialect extends JdbcDialectImpl {
         Util.singleQuoteString(value, buf);
     }
 
-    @Override
-    public NullCollation getNullCollation() {
-        return NullCollation.NEGINF;
-    }
-
-    @Override
-    public String generateOrderItem(
-        String expr,
-        boolean nullable,
-        boolean ascending)
-    {
-        if (nullable && ascending) {
-            return "CASE WHEN " + expr + " IS NULL THEN 1 ELSE 0 END, "
-               + expr + " ASC";
-        } else {
-            return super.generateOrderItem(expr, nullable, ascending);
-        }
-    }
-
     public String generateInline(
         List<String> columnNames,
         List<String> columnTypes,

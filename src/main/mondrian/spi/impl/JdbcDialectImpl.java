@@ -699,36 +699,22 @@ public class JdbcDialectImpl implements Dialect {
         return !readOnly;
     }
 
-    public NullCollation getNullCollation() {
-        return NullCollation.POSINF;
-    }
-
     public String generateOrderItem(
         String expr,
         boolean nullable,
         boolean ascending)
     {
+        return this.generateOrderItem(expr, nullable, ascending, true);
+    }
+
+    public String generateOrderItem(
+        String expr,
+        boolean nullable,
+        boolean ascending,
+        boolean collateNullsLast)
+    {
         if (nullable) {
-            NullCollation collateLast = getNullCollation();
-            switch (collateLast) {
-            case NEGINF:
-                // For DESC, NULLs already appear last.
-                // For ASC, we need to reverse the order.
-                // Use the SQL standard syntax 'ORDER BY x ASC NULLS LAST'.
-                if (ascending) {
-                    return generateOrderByNullsLast(expr, ascending);
-                } else {
-                    return expr + " DESC";
-                }
-            case POSINF:
-                if (ascending) {
-                    return expr + " ASC";
-                } else {
-                    return generateOrderByNullsLast(expr, ascending);
-                }
-            default:
-                throw Util.unexpected(collateLast);
-            }
+            return generateOrderByNulls(expr, ascending, collateNullsLast);
         } else {
             if (ascending) {
                 return expr + " ASC";
@@ -741,43 +727,78 @@ public class JdbcDialectImpl implements Dialect {
     /**
      * Generates SQL to force null values to collate last.
      *
-     * <p>ANSI SQL provides the syntax "ASC NULLS LAST" and "DESC
-     * NULLS LAST". Since this is not supported by many databases, the
-     * default implementation returns just "expr direction".
+     * <p>This default implementation makes use of the ANSI
+     * SQL 1999 CASE-WHEN-THEN-ELSE in conjunction with IS NULL
+     * syntax. The resulting SQL will look something like this:
      *
-     * <p>If your database supports the ANSI syntax, implement this
-     * method by calling {@link #generateOrderByNullsLastAnsi}.
+     * <p><code>CASE WHEN "expr" IS NULL THEN 0 ELSE 1 END</code>
+     *
+     * <p>You can override this method for a particular database
+     * to use something more efficient, like ISNULL().
+     *
+     * <p>ANSI SQL provides the syntax "ASC/DESC NULLS LAST" and
+     * "ASC/DESC NULLS FIRST". If your database supports the ANSI
+     * syntax, implement this method by calling
+     * {@link #generateOrderByNullsAnsi}.
      *
      * <p>This method is only called from
-     * {@link #generateOrderItem(String, boolean, boolean)}. Some dialects
-     * override that method and therefore never call this method.
+     * {@link #generateOrderItem(String, boolean, boolean, boolean)}.
+     * Some dialects override that method and therefore never call
+     * this method.
      *
-     * @param expr Expression
-     * @param ascending Whether ascending
-     * @return Expression to force null values to collate last
+     * @param expr Expression.
+     * @param ascending Whether ascending.
+     * @param collateNullsLast Whether nulls should appear first or last.
+     * @return Expression to force null values to collate last or first.
      */
-    protected String generateOrderByNullsLast(
+    protected String generateOrderByNulls(
         String expr,
-        boolean ascending)
+        boolean ascending,
+        boolean collateNullsLast)
     {
-        // default implementation makes no attempt to force nulls to
-        // collate last
-        return expr + (ascending ? " ASC" : " DESC");
+        if (collateNullsLast) {
+            if (ascending) {
+                return
+                    "CASE WHEN " + expr + " IS NULL THEN 1 ELSE 0 END, " + expr
+                    + " ASC";
+            } else {
+                return
+                    "CASE WHEN " + expr + " IS NULL THEN 1 ELSE 0 END, " + expr
+                    + " DESC";
+            }
+        } else {
+            if (ascending) {
+                return
+                    "CASE WHEN " + expr + " IS NULL THEN 0 ELSE 1 END, " + expr
+                    + " ASC";
+            } else {
+                return
+                    "CASE WHEN " + expr + " IS NULL THEN 0 ELSE 1 END, " + expr
+                    + " DESC";
+            }
+        }
     }
 
     /**
-     * Implementation for the {@link #generateOrderByNullsLast} method
-     * that uses the ANSI syntax "expr direction NULLS LAST".
+     * Implementation for the {@link #generateOrderByNulls} method
+     * that uses the ANSI syntax "expr direction NULLS LAST"
+     * and "expr direction NULLS FIRST".
      *
      * @param expr Expression
      * @param ascending Whether ascending
+     * @param collateNullsLast Whether nulls should appear first or last.
      * @return Expression "expr direction NULLS LAST"
      */
-    protected final String generateOrderByNullsLastAnsi(
+    protected final String generateOrderByNullsAnsi(
         String expr,
-        boolean ascending)
+        boolean ascending,
+        boolean collateNullsLast)
     {
-        return expr + (ascending ? " ASC" : " DESC") + " NULLS LAST";
+        if (collateNullsLast) {
+            return expr + (ascending ? " ASC" : " DESC") + " NULLS LAST";
+        } else {
+            return expr + (ascending ? " ASC" : " DESC") + " NULLS FIRST";
+        }
     }
 
     public boolean supportsGroupByExpressions() {

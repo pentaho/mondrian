@@ -599,7 +599,31 @@ public class SqlQuery {
         boolean prepend,
         boolean nullable)
     {
-        String orderExpr = dialect.generateOrderItem(expr, nullable, ascending);
+        this.addOrderBy(expr, ascending, prepend, nullable, true);
+    }
+
+    /**
+     * Adds an item to the ORDER BY clause.
+     *
+     * @param expr the expr to order by
+     * @param ascending sort direction
+     * @param prepend whether to prepend to the current list of items
+     * @param nullable whether the expression might be null
+     * @param collateNullsLast whether null values should appear first or last.
+     */
+    public void addOrderBy(
+        String expr,
+        boolean ascending,
+        boolean prepend,
+        boolean nullable,
+        boolean collateNullsLast)
+    {
+        String orderExpr =
+            dialect.generateOrderItem(
+                expr,
+                nullable,
+                ascending,
+                collateNullsLast);
         if (prepend) {
             orderBy.add(0, orderExpr);
         } else {

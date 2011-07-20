@@ -104,10 +104,6 @@ public class HiveDialect extends JdbcDialectImpl {
         return false;
     }
 
-    public NullCollation getNullCollation() {
-        return NullCollation.NEGINF;
-    }
-
     public String generateInline(
         List<String> columnNames,
         List<String> columnTypes,
@@ -128,15 +124,25 @@ public class HiveDialect extends JdbcDialectImpl {
         Util.singleQuoteString(value, buf);
     }
 
-    public String generateOrderItem(
+    @Override
+    protected String generateOrderByNulls(
         String expr,
-        boolean nullable,
-        boolean ascending)
+        boolean ascending,
+        boolean collateNullsLast)
     {
-        if (nullable && ascending) {
-            return expr + " IS NULL" + ", " + expr + " ASC";
+        // In Hive, Null values are worth negative infinity.
+        if (collateNullsLast) {
+            if (ascending) {
+                return "ISNULL(" + expr + ") ASC, " + expr + " ASC";
+            } else {
+                return expr + " DESC";
+            }
         } else {
-            return super.generateOrderItem(expr, nullable, ascending);
+            if (ascending) {
+                return expr + " ASC";
+            } else {
+                return "ISNULL(" + expr + ") DESC, " + expr + " DESC";
+            }
         }
     }
 

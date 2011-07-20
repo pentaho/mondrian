@@ -583,41 +583,14 @@ public class DialectTest extends TestCase {
     }
 
     /**
-     * Tests that the method {@link mondrian.spi.Dialect#getNullCollation()}
-     * is accurate.
-     */
-    public void testNullCollation() throws SQLException {
-        Dialect dialect = getDialect();
-        String ascQuery =
-            "select "
-            + dialect.quoteIdentifier("store_manager")
-            + " from "
-            + dialect.quoteIdentifier("store")
-            + " order by "
-            + dialect.quoteIdentifier("store_manager");
-        String descQuery = ascQuery + " DESC";
-        Dialect.NullCollation nullCollation = getDialect().getNullCollation();
-        switch (nullCollation) {
-        case NEGINF:
-            assertFirstLast(ascQuery, null, "Williams");
-            assertFirstLast(descQuery, "Williams", null);
-            break;
-        case POSINF:
-            assertFirstLast(ascQuery, "Brown", null);
-            assertFirstLast(descQuery, null, "Brown");
-            break;
-        default:
-            fail("unexpected value " + nullCollation);
-        }
-    }
-
-    /**
      * Tests that the dialect can generate a valid query to sort ascending and
      * descending, with NULL values appearing last in both cases.
      */
     public void testForceNullCollation() throws SQLException {
-        checkForceNullCollation(true);
-        checkForceNullCollation(false);
+        checkForceNullCollation(true, true);
+        checkForceNullCollation(false, true);
+        checkForceNullCollation(true, false);
+        checkForceNullCollation(false, false);
     }
 
     /**
@@ -625,8 +598,11 @@ public class DialectTest extends TestCase {
      * direction, with NULL values appearing last.
      *
      * @param ascending Whether ascending
+     * @param nullsLast Force nulls last or not.
      */
-    private void checkForceNullCollation(boolean ascending) throws SQLException
+    private void checkForceNullCollation(
+        boolean ascending,
+        boolean nullsLast) throws SQLException
     {
         Dialect dialect = getDialect();
         String query =
@@ -636,10 +612,14 @@ public class DialectTest extends TestCase {
             + dialect.quoteIdentifier("store")
             + " order by "
             + dialect.generateOrderItem(
-                dialect.quoteIdentifier("store_manager"), true, ascending);
+                dialect.quoteIdentifier("store_manager"),
+                true, ascending, nullsLast);
         if (ascending) {
-            // Lowest value comes first, null comes last.
-            assertFirstLast(query, "Brown", null);
+            if (nullsLast) {
+                assertFirstLast(query, "Brown", null);
+            } else {
+                assertFirstLast(query, null, "Williams");
+            }
         } else {
             // Largest value comes first, null comes last.
             switch (dialect.getDatabaseProduct()) {
@@ -654,7 +634,11 @@ public class DialectTest extends TestCase {
                 // Neoview cannot force nulls to appear last
                 return;
             }
-            assertFirstLast(query, "Williams", null);
+            if (nullsLast) {
+                assertFirstLast(query, "Williams", null);
+            } else {
+                assertFirstLast(query, null, "Brown");
+            }
         }
     }
 

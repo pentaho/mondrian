@@ -37,20 +37,6 @@ public class VerticaDialect extends JdbcDialectImpl {
     public boolean requiresAliasForFromQuery() {
         return true;
     }
-
-    @Override
-    public String generateOrderItem(
-        String expr,
-        boolean nullable,
-        boolean ascending)
-    {
-        if (ascending) {
-            return expr + " ASC";
-        } else {
-            return expr + " DESC";
-        }
-    }
-
 }
 
 // End VerticaDialect.java

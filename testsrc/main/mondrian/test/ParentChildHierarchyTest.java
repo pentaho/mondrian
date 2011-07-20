@@ -987,35 +987,6 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             null,
             null);
 
-        // Make sure <Hierarchy>.MEMBERS is sorted.
-        // Note that last_name is not unique, and databases may return members
-        // in arbitrary order -- so to keep things deterministic, this example
-        // deliberately uses a set of  employees with unique last names.
-        testContext.assertQueryReturns(
-            "with member [Measures].[First Name] as "
-            + " 'Iif([Employees].Level.Name = \"Employee Id\", [Employees].CurrentMember.Properties(\"First Name\"), Cast(NULL AS STRING)) '\n"
-            + "select {[Measures].[Org Salary], [Measures].[First Name]} on columns,\n"
-            + " {Tail(Head([Employees].Members, 15), 4)} on rows\n"
-            + "from [HR-ordered]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Org Salary]}\n"
-            + "{[Measures].[First Name]}\n"
-            + "Axis #2:\n"
-            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg]}\n"
-            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack]}\n"
-            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack].[Samuel Agcaoili]}\n"
-            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack].[Megan Davis]}\n"
-            + "Row #0: $29,762.88\n"
-            + "Row #0: Brenda\n"
-            + "Row #1: $27,908.33\n"
-            + "Row #1: Wayne\n"
-            + "Row #2: $981.82\n"
-            + "Row #2: Samuel\n"
-            + "Row #3: $927.27\n"
-            + "Row #3: Megan\n");
-
         // Make sure <Member>.CHILDREN is sorted.
         testContext.assertQueryReturns(
             "select {[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].Children} on columns from [HR-ordered]",

@@ -39,8 +39,12 @@ public class FirebirdDialect extends JdbcDialectImpl {
     }
 
     @Override
-    protected String generateOrderByNullsLast(String expr, boolean ascending) {
-        return generateOrderByNullsLastAnsi(expr, ascending);
+    public String generateOrderByNulls(
+        String expr,
+        boolean ascending,
+        boolean collateNullsLast)
+    {
+        return generateOrderByNullsAnsi(expr, ascending, collateNullsLast);
     }
 }
 
