@@ -22,8 +22,8 @@ import org.olap4j.metadata.Member.TreeOp;
 import org.olap4j.metadata.XmlaConstants;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -1584,14 +1584,35 @@ public enum RowsetDefinition {
             XmlaResponse response, OlapConnection connection, List<Row> rows)
             throws XmlaException, SQLException
         {
-            final XmlaHandler.XmlaExtra extra = getExtra(connection);
-            for (Map<String, Object> ds : extra.getDataSources(connection)) {
+            if (needConnection()) {
+                final XmlaHandler.XmlaExtra extra = getExtra(connection);
+                for (Map<String, Object> ds : extra.getDataSources(connection))
+                {
+                    Row row = new Row();
+                    for (Column column : columns) {
+                        row.set(column.name, ds.get(column.name));
+                    }
+                    addRow(row, rows);
+                }
+            } else {
+                // using pre-configured discover datasources response
                 Row row = new Row();
+                Map<String, Object> map =
+                    this.handler.connectionFactory
+                        .getPreConfiguredDiscoverDatasourcesResponse();
                 for (Column column : columns) {
-                    row.set(column.name, ds.get(column.name));
+                    row.set(column.name, map.get(column.name));
                 }
                 addRow(row, rows);
             }
+        }
+
+        @Override
+        protected boolean needConnection() {
+            // If the olap connection factory has a pre configured response,
+            // we don't need to connect to find metadata. This is good.
+            return this.handler.connectionFactory
+                       .getPreConfiguredDiscoverDatasourcesResponse() == null;
         }
 
         protected void setProperty(
@@ -6431,6 +6452,18 @@ TODO: see above
 
         public boolean isDrillThrough() {
             return request.isDrillThrough();
+        }
+
+        public String getUsername() {
+            return request.getUsername();
+        }
+
+        public String getPassword() {
+            return request.getPassword();
+        }
+
+        public String getSessionId() {
+            return request.getSessionId();
         }
     }
 }

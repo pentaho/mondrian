@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -47,14 +47,36 @@ public class DefaultXmlaRequest
     private String requestType;
     private Map<String, Object> restrictions;
 
-    public DefaultXmlaRequest(final Element xmlaRoot, final String roleName)
+    private final String username;
+    private final String password;
+    private final String sessionId;
+
+    public DefaultXmlaRequest(
+        final Element xmlaRoot,
+        final String roleName,
+        final String username,
+        final String password,
+        final String sessionId)
         throws XmlaException
     {
         init(xmlaRoot);
         this.roleName = roleName;
+        this.username = username;
+        this.password = password;
+        this.sessionId = sessionId;
     }
 
-    /* Interface implmentation */
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
 
     public Method getMethod() {
         return method;

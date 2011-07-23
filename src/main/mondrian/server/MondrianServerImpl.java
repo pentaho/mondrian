@@ -15,6 +15,7 @@ import mondrian.rolap.*;
 import mondrian.spi.CatalogLocator;
 import mondrian.util.LockBox;
 import mondrian.xmla.*;
+
 import org.apache.log4j.Logger;
 import org.olap4j.OlapConnection;
 
@@ -207,6 +208,12 @@ class MondrianServerImpl
                 // per server.
                 repository.getDatabaseNames(connection).get(0),
                 catalogName);
+    }
+
+    public Map<String, Object> getPreConfiguredDiscoverDatasourcesResponse() {
+        // No pre-configured response; XMLA servlet will connect to get
+        // data source info.
+        return null;
     }
 }
 

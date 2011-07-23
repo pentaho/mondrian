@@ -6,8 +6,6 @@
 // Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, May 2, 2003
 */
 package mondrian.xmla;
 
@@ -31,12 +29,11 @@ public abstract class XmlaServlet
     extends HttpServlet
     implements XmlaConstants
 {
-
     protected static final Logger LOGGER = Logger.getLogger(XmlaServlet.class);
 
     public static final String PARAM_DATASOURCES_CONFIG = "DataSourcesConfig";
     public static final String PARAM_OPTIONAL_DATASOURCE_CONFIG =
-            "OptionalDataSourceConfig";
+        "OptionalDataSourceConfig";
     public static final String PARAM_CHAR_ENCODING = "CharacterEncoding";
     public static final String PARAM_CALLBACKS = "Callbacks";
 
@@ -222,7 +219,7 @@ public abstract class XmlaServlet
                 // check request's content type
                 String contentType = request.getContentType();
                 if (contentType == null
-                    || contentType.indexOf("text/xml") == -1)
+                    || !contentType.contains("text/xml"))
                 {
                     throw new IllegalArgumentException(
                         "Only accepts content type 'text/xml', not '"

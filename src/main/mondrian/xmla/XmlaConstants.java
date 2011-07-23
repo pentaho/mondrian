@@ -3,12 +3,11 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.xmla;
-
 
 /**
  * Constants for XML/A.
@@ -47,6 +46,8 @@ public interface XmlaConstants {
     public static final String NS_XMLA_EX =
         "urn:schemas-microsoft-com:xml-analysis:exception";
 
+    public static final String NS_SOAP_SECEXT =
+        "http://schemas.xmlsoap.org/ws/2002/04/secext";
 
     public static final String SOAP_PREFIX = "SOAP-ENV";
 
@@ -62,7 +63,7 @@ public interface XmlaConstants {
     public static final String XMLA_SESSION            = "Session";
     public static final String XMLA_END_SESSION        = "EndSession";
     public static final String XMLA_SESSION_ID         = "SessionId";
-
+    public static final String XMLA_SECURITY           = "Security";
 
     /*
      * Names of context keys known by both callbacks and Mondrian code.

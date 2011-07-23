@@ -1,4 +1,5 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
@@ -12,19 +13,22 @@ import mondrian.olap.Util;
 import mondrian.util.Bug;
 import mondrian.xmla.XmlaHandler;
 
+import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp.DelegatingConnection;
+import org.apache.log4j.Logger;
+
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapWrapper;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * XMLA servlet that gets its connections from an olap4j data source.
@@ -34,6 +38,9 @@ import java.util.Properties;
  * @author Michele Rossi
  */
 public class Olap4jXmlaServlet extends DefaultXmlaServlet {
+    private static final Logger LOGGER =
+        Logger.getLogger(Olap4jXmlaServlet.class);
+
     private static final String OLAP_DRIVER_CLASS_NAME_PARAM =
         "OlapDriverClassName";
 
@@ -42,6 +49,34 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
 
     private static final String OLAP_DRIVER_CONNECTION_PROPERTIES_PREFIX =
         "OlapDriverConnectionProperty.";
+
+    private static final String
+        OLAP_DRIVER_PRECONFIGURED_DISCOVER_DATASOURCES_RESPONSE =
+        "OlapDriverUsePreConfiguredDiscoverDatasourcesResponse";
+
+    private static final String OLAP_DRIVER_IDLE_CONNECTIONS_TIMEOUT_MINUTES =
+        "OlapDriverIdleConnectionsTimeoutMinutes";
+
+    private static final String
+        OLAP_DRIVER_PRECONFIGURED_DISCOVER_DATASOURCES_PREFIX =
+        "OlapDriverDiscoverDatasources.";
+
+    /**
+     * Name of property used by JDBC to hold user name.
+     */
+    private static final String JDBC_USER = "user";
+
+    /**
+     * Name of property used by JDBC to hold password.
+     */
+    private static final String JDBC_PASSWORD = "password";
+
+    /** idle connections are cleaned out after 5 minutes by default */
+    private static final int DEFAULT_IDLE_CONNECTIONS_TIMEOUT_MS =
+        5 * 60 * 1000;
+
+    private static final String OLAP_DRIVER_MAX_NUM_CONNECTIONS_PER_USER =
+        "OlapDriverMaxNumConnectionsPerUser";
 
     /**
      * Unwraps a given interface from a given connection.
@@ -88,15 +123,49 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
             servletConfig.getInitParameter(OLAP_DRIVER_CLASS_NAME_PARAM);
         final String olap4jDriverConnectionString =
             servletConfig.getInitParameter(OLAP_DRIVER_CONNECTION_STRING_PARAM);
+        final String olap4jUsePreConfiguredDiscoverDatasourcesRes =
+            servletConfig.getInitParameter(
+                OLAP_DRIVER_PRECONFIGURED_DISCOVER_DATASOURCES_RESPONSE);
+        boolean hardcodedDiscoverDatasources =
+            olap4jUsePreConfiguredDiscoverDatasourcesRes != null
+            && Boolean.parseBoolean(
+                olap4jUsePreConfiguredDiscoverDatasourcesRes);
+
+        final String idleConnTimeoutStr =
+            servletConfig.getInitParameter(
+                OLAP_DRIVER_IDLE_CONNECTIONS_TIMEOUT_MINUTES);
+        final int idleConnectionsCleanupTimeoutMs =
+            idleConnTimeoutStr != null
+            ? Integer.parseInt(idleConnTimeoutStr) * 60 * 1000
+            : DEFAULT_IDLE_CONNECTIONS_TIMEOUT_MS;
+
+        final String maxNumConnPerUserStr =
+            servletConfig.getInitParameter(
+                OLAP_DRIVER_MAX_NUM_CONNECTIONS_PER_USER);
+        int maxNumConnectionsPerUser =
+            maxNumConnPerUserStr != null
+            ? Integer.parseInt(maxNumConnPerUserStr)
+            : 1;
         try {
             Map<String, String> connectionProperties =
                 getOlap4jConnectionProperties(
                     servletConfig,
                     OLAP_DRIVER_CONNECTION_PROPERTIES_PREFIX);
-            return new Olap4jConnectionFactory(
+            final Map<String, Object> ddhcRes;
+            if (hardcodedDiscoverDatasources) {
+                ddhcRes =
+                    getDiscoverDatasourcesPreConfiguredResponse(servletConfig);
+            } else {
+                ddhcRes = null;
+            }
+
+            return new Olap4jPoolingConnectionFactory(
                 olap4jDriverClassName,
                 olap4jDriverConnectionString,
-                connectionProperties);
+                connectionProperties,
+                idleConnectionsCleanupTimeoutMs,
+                maxNumConnectionsPerUser,
+                ddhcRes);
         } catch (Exception ex) {
             String msg =
                 "Exception [" + ex + "] while trying to create "
@@ -108,52 +177,163 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
         }
     }
 
-    /**
-     * A {@link mondrian.xmla.XmlaHandler.ConnectionFactory} implementation that
-     * creates a {@link org.olap4j.OlapConnection} from the specified olap4j
-     * driver.
-     */
-    private static class Olap4jConnectionFactory
+    private static Map<String, Object>
+    getDiscoverDatasourcesPreConfiguredResponse(
+        ServletConfig servletConfig)
+    {
+        final Map<String, Object> map = new LinkedHashMap<String, Object>();
+        foo(map, "DataSourceName", servletConfig, "dataSourceName");
+        foo(
+            map, "DataSourceDescription",
+            servletConfig, "dataSourceDescription");
+        foo(map, "URL", servletConfig, "url");
+        foo(map, "DataSourceInfo", servletConfig, "dataSourceInfo");
+        foo(map, "ProviderName", servletConfig, "providerName");
+        foo(map, "ProviderType", servletConfig, "providerType");
+        foo(map, "AuthenticationMode", servletConfig, "authenticationMode");
+        return map;
+    }
+
+    private static void foo(
+        Map<String, Object> map,
+        String targetProp,
+        ServletConfig servletConfig,
+        String sourceProp)
+    {
+        final String value =
+            servletConfig.getInitParameter(
+                OLAP_DRIVER_PRECONFIGURED_DISCOVER_DATASOURCES_PREFIX
+                + sourceProp);
+        map.put(targetProp, value);
+    }
+
+    private static class Olap4jPoolingConnectionFactory
         implements XmlaHandler.ConnectionFactory
     {
         private final String olap4jDriverConnectionString;
-        private final Map<String, String> connectionProperties;
+        private final Properties connProperties;
+        private final Map<String, Object> discoverDatasourcesResponse;
+        private final String olap4jDriverClassName;
+        private final Map<String, BasicDataSource> datasourcesPool =
+            new HashMap<String, BasicDataSource>();
+        private final int idleConnectionsCleanupTimeoutMs;
+        private final int maxPerUserConnectionCount;
 
         /**
-         * Creates an Olap4jConnectionFactory.
+         * Creates an Olap4jPoolingConnectionFactory.
          *
          * @param olap4jDriverClassName Driver class name
          * @param olap4jDriverConnectionString Connect string
          * @param connectionProperties Connection properties
+         * @param maxPerUserConnectionCount max number of connections to create
+         *     for every different username
+         * @param idleConnectionsCleanupTimeoutMs pooled connections inactive
+         *     for longer than this period of time can be cleaned up
+         * @param discoverDatasourcesResponse Pre-configured response to
+         *     DISCOVER_DATASOURCES request, or null
          * @throws ClassNotFoundException if driver class is not found
          */
-        public Olap4jConnectionFactory(
+        public Olap4jPoolingConnectionFactory(
             final String olap4jDriverClassName,
             final String olap4jDriverConnectionString,
-            final Map<String, String> connectionProperties)
+            final Map<String, String> connectionProperties,
+            final int idleConnectionsCleanupTimeoutMs,
+            final int maxPerUserConnectionCount,
+            final Map<String, Object> discoverDatasourcesResponse)
             throws ClassNotFoundException
         {
             Class.forName(olap4jDriverClassName);
+            this.maxPerUserConnectionCount = maxPerUserConnectionCount;
+            this.idleConnectionsCleanupTimeoutMs =
+                idleConnectionsCleanupTimeoutMs;
+            this.olap4jDriverClassName = olap4jDriverClassName;
             this.olap4jDriverConnectionString = olap4jDriverConnectionString;
-            this.connectionProperties = connectionProperties;
+            this.connProperties = new Properties();
+            this.connProperties.putAll(connectionProperties);
+            this.discoverDatasourcesResponse = discoverDatasourcesResponse;
+
+            // Create an eviction task that runs for all our BasicDataSource
+            // instances; this saves threads compared to having an evictor
+            // thread per pool.
+            Timer connectionEvictionsTimer = new Timer();
+            TimerTask evictionTask = new TimerTask() {
+                public void run() {
+                    synchronized (datasourcesPool) {
+                        for (BasicDataSource bds : datasourcesPool.values()) {
+                            try {
+                                bds.getConnectionPool().evict();
+                            } catch (Exception e) {
+                                LOGGER.error(
+                                    "Exception [" + e
+                                    + "] while running evict on [" + bds
+                                    + "]");
+                            }
+                        }
+                    }
+                }
+            };
+            // Run the eviction task every minute.
+            //
+            // REVIEW: Is the timer task ever shut down? It should be shut down
+            // on Servlet.destroy()?
+            connectionEvictionsTimer.schedule(evictionTask, 60000, 60 * 1000);
         }
 
         public OlapConnection getConnection(
-            final String catalog,
-            final String schema,
-            final String roleName,
-            final Properties props)
+            String catalog,
+            String schema,
+            String roleName,
+            Properties props)
             throws SQLException
         {
-            final Properties properties = new Properties();
-            properties.putAll(connectionProperties);
-            Connection connection =
-                DriverManager.getConnection(
-                    olap4jDriverConnectionString,
-                    properties);
-            OlapConnection olapConnection =
-                unwrap(connection, OlapConnection.class);
+            final String user = props.getProperty(JDBC_USER);
+            final String pwd = props.getProperty(JDBC_PASSWORD);
 
+            // note: this works also for un-authenticated connections; they will
+            // simply all be created by the same BasicDataSource object
+            final String dataSourceKey = user + "_" + pwd;
+
+            BasicDataSource bds;
+            synchronized (datasourcesPool) {
+                bds = datasourcesPool.get(dataSourceKey);
+                if (bds == null) {
+                    bds = new BasicDataSource() {
+                        {
+                            connectionProperties.putAll(connProperties);
+                        }
+                    };
+                    bds.setDefaultReadOnly(true);
+                    bds.setDriverClassName(olap4jDriverClassName);
+                    bds.setPassword(pwd);
+                    bds.setUsername(user);
+                    bds.setUrl(olap4jDriverConnectionString);
+                    bds.setPoolPreparedStatements(false);
+                    bds.setMaxIdle(maxPerUserConnectionCount);
+                    bds.setMaxActive(maxPerUserConnectionCount);
+                    bds.setMinEvictableIdleTimeMillis(
+                        idleConnectionsCleanupTimeoutMs);
+                    bds.setAccessToUnderlyingConnectionAllowed(true);
+                    bds.setInitialSize(1);
+
+                    if (catalog != null) {
+                        bds.setDefaultCatalog(catalog);
+                    }
+                    datasourcesPool.put(dataSourceKey, bds);
+                }
+            }
+
+            Connection connection = bds.getConnection();
+            DelegatingConnection dc = (DelegatingConnection) connection;
+            Connection underlyingOlapConnection = dc.getInnermostDelegate();
+            OlapConnection olapConnection =
+                unwrap(underlyingOlapConnection, OlapConnection.class);
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    "Obtained connection object [" + olapConnection
+                    + "] (ext pool wrapper " + connection + ") for key "
+                    + dataSourceKey);
+            }
             if (catalog != null) {
                 olapConnection.setCatalog(catalog);
             }
@@ -163,7 +343,13 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
             if (roleName != null) {
                 olapConnection.setRoleName(roleName);
             }
-            return olapConnection;
+
+            return createDelegatingOlapConnection(connection, olapConnection);
+        }
+
+        public Map<String, Object> getPreConfiguredDiscoverDatasourcesResponse()
+        {
+            return discoverDatasourcesResponse;
         }
     }
 
@@ -235,6 +421,40 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
         }
 
         return options;
+    }
+
+    /**
+     * Returns something that implements {@link OlapConnection} but still
+     * behaves as the wrapper returned by the connection pool.
+     *
+     * <p>In other words we want the "close" method to play nice and do all the
+     * pooling actions while we want all the olap methods to execute directly on
+     * the un-wrapped OlapConnection object.
+     */
+    private static OlapConnection createDelegatingOlapConnection(
+        final Connection connection,
+        final OlapConnection olapConnection)
+    {
+        return (OlapConnection) Proxy.newProxyInstance(
+            olapConnection.getClass().getClassLoader(),
+            new Class[] {OlapConnection.class},
+            new InvocationHandler() {
+                public Object invoke(
+                    Object proxy,
+                    Method method,
+                    Object[] args)
+                    throws Throwable
+                {
+                    if (OlapConnection.class.isAssignableFrom(
+                            method.getClass()))
+                    {
+                        return method.invoke(olapConnection, args);
+                    } else {
+                        return method.invoke(connection, args);
+                    }
+                }
+            }
+        );
     }
 }
 

@@ -1,4 +1,5 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
@@ -4849,6 +4850,47 @@ public class NonEmptyTest extends BatchTestCase {
            + "Row #1: \n"
            + "Row #2: \n"
            + "Row #3: \n");
+   }
+
+   public void testBugY() throws Exception {
+        final String sqlOracle =
+            "select \"store\".\"store_country\" as \"c0\""
+            + " from \"store\" \"store\""
+            + " group by \"store\".\"store_country\" order by \"store\".\"store_country\" ASC";
+        SqlPattern[] patterns = {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.ORACLE,
+                    sqlOracle,
+                    sqlOracle.length())
+            };
+
+        final String query =
+            "With Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Fact Attribute])'\n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Product].CurrentMember.OrderKey,BASC,[Store Country].CurrentMember.OrderKey,BASC)'\n"
+            + "Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'\n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Product].currentMember,[Store Country].currentMember)})'\n"
+            + "Set [*BASE_MEMBERS_Fact Attribute] as '{[Store Country].[USA]}'\n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=400\n"
+            + "Select [*BASE_MEMBERS_Measures] on columns, Non Empty [*SORTED_ROW_AXIS] on rows\n"
+            + "From [Sales]";
+
+        final TestContext context =
+            TestContext.createSubstitutingCube(
+                "Sales",
+                "<DimensionUsage name=\"Store\" highCardinality=\"true\" source=\"Store\" foreignKey=\"store_id\"/>",
+                null,
+                null,
+                null);
+
+        assertQuerySqlOrNot(
+            context,
+            query,
+            patterns,
+            true,
+            true,
+            true);
     }
 }
 

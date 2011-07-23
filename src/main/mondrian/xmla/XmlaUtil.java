@@ -6,8 +6,6 @@
 // Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, May 2, 2003
 */
 package mondrian.xmla;
 
@@ -314,6 +312,15 @@ way too noisy
                 {
                     return connection;
                 }
+
+                public Map<String, Object>
+                getPreConfiguredDiscoverDatasourcesResponse()
+                {
+                    // This method should not be used by the olap4j xmla
+                    // servlet. For the mondrian xmla servlet we don't provide
+                    // the "pre configured discover datasources" feature.
+                    return null;
+                }
             };
         final XmlaRequest request = new XmlaRequest() {
             public Method getMethod() {
@@ -346,6 +353,18 @@ way too noisy
 
             public Format getFormat() {
                 throw new UnsupportedOperationException();
+            }
+
+            public String getUsername() {
+                return null;
+            }
+
+            public String getPassword() {
+                return null;
+            }
+
+            public String getSessionId() {
+                return null;
             }
         };
         final Rowset rowset =
