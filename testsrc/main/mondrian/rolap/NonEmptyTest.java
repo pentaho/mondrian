@@ -4278,36 +4278,15 @@ public class NonEmptyTest extends BatchTestCase {
             + "[Measures].[unit sales Female], [Measures].[store sales Female]} on 0, "
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
-        final SqlPattern pattern = new SqlPattern(
-            Dialect.DatabaseProduct.ORACLE,
-            "select \"customer\".\"country\" as \"c0\", "
-            + "\"customer\".\"state_province\" as \"c1\", "
-            + "\"customer\".\"city\" as \"c2\", "
-            + "\"customer\".\"customer_id\" as \"c3\", "
-            + "\"fname\" || ' ' || \"lname\" as \"c4\", "
-            + "\"fname\" || ' ' || \"lname\" as \"c5\", "
-            + "\"customer\".\"gender\" as \"c6\", "
-            + "\"customer\".\"marital_status\" as \"c7\", "
-            + "\"customer\".\"education\" as \"c8\", "
-            + "\"customer\".\"yearly_income\" as \"c9\" "
-            + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
-            + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-            + "and (\"customer\".\"gender\" in ('M', 'F')) "
-            + "group by \"customer\".\"country\", "
-            + "\"customer\".\"state_province\", "
-            + "\"customer\".\"city\", "
-            + "\"customer\".\"customer_id\", "
-            + "\"fname\" || ' ' || \"lname\", "
-            + "\"customer\".\"gender\", "
-            + "\"customer\".\"marital_status\", "
-            + "\"customer\".\"education\", "
-            + "\"customer\".\"yearly_income\" "
-            + "order by \"customer\".\"country\" ASC,"
-            + " \"customer\".\"state_province\" ASC,"
-            + " \"customer\".\"city\" ASC, "
-            + "\"fname\" || ' ' || \"lname\" ASC",
-            860);
-        assertQuerySql(mdx, new SqlPattern[]{pattern});
+        final String sqlOracle =
+            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" in ('M', 'F')) group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST";
+        assertQuerySql(
+            mdx,
+            new SqlPattern[]{
+                new SqlPattern(
+                    Dialect.DatabaseProduct.ORACLE,
+                    sqlOracle,
+                    sqlOracle.length())});
     }
 
     public void testNestedMeasureConstraintsGetOptimized() {
@@ -4318,8 +4297,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "non empty {[Measures].[unit sales Male Married]} on 0, "
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
-        SqlPattern pattern = new SqlPattern(
-            Dialect.DatabaseProduct.ORACLE,
+        final String sqlOracle =
             "select \"customer\".\"country\" as \"c0\", "
             + "\"customer\".\"state_province\" as \"c1\", "
             + "\"customer\".\"city\" as \"c2\", "
@@ -4344,11 +4322,14 @@ public class NonEmptyTest extends BatchTestCase {
             + "\"customer\".\"marital_status\", "
             + "\"customer\".\"education\", "
             + "\"customer\".\"yearly_income\" "
-            + "order by \"customer\".\"country\" ASC, "
-            + "\"customer\".\"state_province\" ASC, "
-            + "\"customer\".\"city\" ASC, "
-            + "\"fname\" || \" \" || \"lname\" ASC",
-            892);
+            + "order by \"customer\".\"country\" ASC NULLS LAST, "
+            + "\"customer\".\"state_province\" ASC NULLS LAST, "
+            + "\"customer\".\"city\" ASC NULLS LAST, "
+            + "\"fname\" || \" \" || \"lname\" ASC NULLS LAST";
+        SqlPattern pattern = new SqlPattern(
+            Dialect.DatabaseProduct.ORACLE,
+            sqlOracle,
+            sqlOracle.length());
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
 
@@ -4385,10 +4366,10 @@ public class NonEmptyTest extends BatchTestCase {
             + "\"customer\".\"marital_status\", "
             + "\"customer\".\"education\", "
             + "\"customer\".\"yearly_income\" "
-            + "order by \"customer\".\"country\" ASC,"
-            + " \"customer\".\"state_province\" ASC,"
-            + " \"customer\".\"city\" ASC, "
-            + "\"fname\" || ' ' || \"lname\" ASC",
+            + "order by \"customer\".\"country\" ASC NULLS LAST,"
+            + " \"customer\".\"state_province\" ASC NULLS LAST,"
+            + " \"customer\".\"city\" ASC NULLS LAST, "
+            + "\"fname\" || ' ' || \"lname\" ASC NULLS LAST",
             852);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
@@ -4401,29 +4382,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "non empty {[Measures].[unit sales Male], [Measures].[unit sales Married]} on 0, "
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
+        final String sqlOracle =
+            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" in ('M', 'F')) group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
-            "select \"customer\".\"country\" as \"c0\", "
-            + "\"customer\".\"state_province\" as \"c1\", "
-            + "\"customer\".\"city\" as \"c2\", "
-            + "\"customer\".\"customer_id\" as \"c3\", "
-            + "\"fname\" || ' ' || \"lname\" as \"c4\", "
-            + "\"fname\" || ' ' || \"lname\" as \"c5\", "
-            + "\"customer\".\"gender\" as \"c6\", "
-            + "\"customer\".\"marital_status\" as \"c7\", "
-            + "\"customer\".\"education\" as \"c8\", "
-            + "\"customer\".\"yearly_income\" as \"c9\" "
-            + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
-            + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-            + "and (\"customer\".\"marital_status\" = 'M') and (\"customer\".\"gender\" = 'M') "
-            + "group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", "
-            + "\"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", "
-            + "\"customer\".\"gender\", \"customer\".\"marital_status\", "
-            + "\"customer\".\"education\", \"customer\".\"yearly_income\" "
-            + "order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, "
-            + "\"customer\".\"city\" ASC, "
-            + "\"fname\" || ' ' || \"lname\" ASC",
-            892);
+            sqlOracle,
+            sqlOracle.length());
         assertQuerySqlOrNot(
             getTestContext(), mdx, new SqlPattern[]{pattern},true, false, true);
     }
@@ -4851,47 +4815,6 @@ public class NonEmptyTest extends BatchTestCase {
            + "Row #2: \n"
            + "Row #3: \n");
    }
-
-   public void testBugY() throws Exception {
-        final String sqlOracle =
-            "select \"store\".\"store_country\" as \"c0\""
-            + " from \"store\" \"store\""
-            + " group by \"store\".\"store_country\" order by \"store\".\"store_country\" ASC";
-        SqlPattern[] patterns = {
-                new SqlPattern(
-                    Dialect.DatabaseProduct.ORACLE,
-                    sqlOracle,
-                    sqlOracle.length())
-            };
-
-        final String query =
-            "With Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Fact Attribute])'\n"
-            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Product].CurrentMember.OrderKey,BASC,[Store Country].CurrentMember.OrderKey,BASC)'\n"
-            + "Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'\n"
-            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
-            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Product].currentMember,[Store Country].currentMember)})'\n"
-            + "Set [*BASE_MEMBERS_Fact Attribute] as '{[Store Country].[USA]}'\n"
-            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n"
-            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=400\n"
-            + "Select [*BASE_MEMBERS_Measures] on columns, Non Empty [*SORTED_ROW_AXIS] on rows\n"
-            + "From [Sales]";
-
-        final TestContext context =
-            TestContext.createSubstitutingCube(
-                "Sales",
-                "<DimensionUsage name=\"Store\" highCardinality=\"true\" source=\"Store\" foreignKey=\"store_id\"/>",
-                null,
-                null,
-                null);
-
-        assertQuerySqlOrNot(
-            context,
-            query,
-            patterns,
-            true,
-            true,
-            true);
-    }
 }
 
 // End NonEmptyTest.java
