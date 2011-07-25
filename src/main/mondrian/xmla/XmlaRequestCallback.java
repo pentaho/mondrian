@@ -101,6 +101,11 @@ public interface XmlaRequestCallback {
      * sequence id was requested by the XMLA client and will be used
      * for all subsequent communications in the Soap Header block.
      *
+     * Implementation can return <code>null</code> if they do not want
+     * to generate a custom session ID, in which case, the default algorithm
+     * to generate session IDs will be used.
+     * @param context The context of this query.
+     * @return An arbitrary session id to use, or <code>null</code>.
      */
     String generateSessionId(Map<String, Object> context);
 

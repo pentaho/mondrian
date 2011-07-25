@@ -49,8 +49,6 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
      * and the remote host IP.
      */
     private static final String REUSE_SESSION_IDS = "reuseSessionIds";
-    private static final String CONTEXT_XMLA_USERNAME = "username";
-    private static final String CONTEXT_XMLA_PASSWORD = "password";
 
     private DocumentBuilderFactory domFactory = null;
 
@@ -425,47 +423,49 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
     }
 
     protected String generateSessionId(Map<String, Object> context) {
-        List<XmlaRequestCallback> callbacks = getCallbacks();
-        if (callbacks.size() > 0) {
-            // get only the first callback if it exists
-            XmlaRequestCallback callback = callbacks.get(0);
-            return callback.generateSessionId(context);
-        } else {
-            if (reuseSessionIds) {
-                // This is how we use the same session id (key to retrieve a
-                // connection) for requests with the same username coming from
-                // the same remote host. The password can't be part of the
-                // string because if you use Simba and you don't tick "save
-                // password" in the login dialog then Simba only sends the
-                // password with the first session that it opens - after which
-                // it sends something like the following:
-                //
-                // <Header>
-                //   <Security xmlns="http://schemas.xmlsoap.org/ws/2002/04/secext">
-                //        <UsernameToken>
-                //            <Username>michele</Username>
-                //            <Password Type="PasswordText"/>
-                //        </UsernameToken>
-                //    </Security>
-                //    <BeginSession
-                //      xmlns="urn:schemas-microsoft-com:xml-analysis"
-                //      mustUnderstand="1"/>
-                // </Header>
-                //
-                // Note the Password element with no value in it.
-                String sessionString =
-                    "session_"
-                    + context.get(CONTEXT_XMLA_USERNAME)
-                    + "_"
-                    + "_"
-                    + context.get("remote_host");
-                return Long.toString(sessionString.hashCode(), 35);
-            } else {
-                // Generate a semi-random new session ID.
-                return Long.toString(
-                    -17L * System.nanoTime() + 11L * System.currentTimeMillis(),
-                    35);
+        for (XmlaRequestCallback callback : getCallbacks()) {
+            final String sessionId = callback.generateSessionId(context);
+            if (sessionId != null) {
+                return sessionId;
             }
+        }
+        /*
+         * Fallback to the default session ID generation algorithm.
+         */
+        if (reuseSessionIds) {
+            // This is how we use the same session id (key to retrieve a
+            // connection) for requests with the same username coming from
+            // the same remote host. The password can't be part of the
+            // string because if you use Simba and you don't tick "save
+            // password" in the login dialog then Simba only sends the
+            // password with the first session that it opens - after which
+            // it sends something like the following:
+            //
+            // <Header>
+            //   <Security xmlns="http://schemas.xmlsoap.org/ws/2002/04/secext">
+            //        <UsernameToken>
+            //            <Username>michele</Username>
+            //            <Password Type="PasswordText"/>
+            //        </UsernameToken>
+            //    </Security>
+            //    <BeginSession
+            //      xmlns="urn:schemas-microsoft-com:xml-analysis"
+            //      mustUnderstand="1"/>
+            // </Header>
+            //
+            // Note the Password element with no value in it.
+            String sessionString =
+                "session_"
+                + context.get(CONTEXT_XMLA_USERNAME)
+                + "_"
+                + "_"
+                + context.get("remote_host");
+            return Long.toString(sessionString.hashCode(), 35);
+        } else {
+            // Generate a semi-random new session ID.
+            return Long.toString(
+                -17L * System.nanoTime() + 11L * System.currentTimeMillis(),
+                35);
         }
     }
 
