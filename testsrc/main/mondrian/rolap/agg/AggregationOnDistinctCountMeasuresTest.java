@@ -42,7 +42,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     private RolapCube salesCube;
 
     protected void setUp() throws Exception {
-        schemaReader = getTestContext().getConnection().getSchemaReader();
+        schemaReader =
+            getTestContext().getConnection().getSchemaReader().withLocus();
         salesCube = (RolapCube) cubeByName(
             getTestContext().getConnection(),
             cubeNameSales);

@@ -35,7 +35,7 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
         Connection connection =
             getTestContext().withRole("No HR Cube").getConnection();
         try {
-            SchemaReader reader = connection.getSchemaReader();
+            SchemaReader reader = connection.getSchemaReader().withLocus();
 
             Cube[] cubes = reader.getCubes();
 
@@ -55,7 +55,7 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
 
         Connection connection = getTestContext().getConnection();
         try {
-            SchemaReader reader = connection.getSchemaReader();
+            SchemaReader reader = connection.getSchemaReader().withLocus();
 
             Cube[] cubes = reader.getCubes();
 
@@ -75,7 +75,7 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
         Connection connection =
                 getTestContext().withRole("California manager").getConnection();
         try {
-            SchemaReader reader = connection.getSchemaReader();
+            SchemaReader reader = connection.getSchemaReader().withLocus();
 
             Cube[] cubes = reader.getCubes();
 
@@ -144,7 +144,7 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
                 .withRole("REG1");
         Connection connection = testContext.getConnection();
         try {
-            SchemaReader reader = connection.getSchemaReader();
+            SchemaReader reader = connection.getSchemaReader().withLocus();
             final Map<String, Cube> cubes = new HashMap<String, Cube>();
             for (Cube cube : reader.getCubes()) {
                 cubes.put(cube.getName(), cube);

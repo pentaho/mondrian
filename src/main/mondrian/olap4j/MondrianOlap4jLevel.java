@@ -161,7 +161,7 @@ class MondrianOlap4jLevel implements Level, Named {
             {
                 public List<Member> execute() {
                     final mondrian.olap.SchemaReader schemaReader =
-                        mondrianConnection.getSchemaReader();
+                        mondrianConnection.getSchemaReader().withLocus();
                     final List<mondrian.olap.Member> levelMembers =
                         schemaReader.getLevelMembers(level, true);
                     return new AbstractList<Member>() {

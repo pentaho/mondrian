@@ -379,7 +379,7 @@ public class FoodMartTestCase extends TestCase {
     }
 
     protected Cube cubeByName(Connection connection, String cubeName) {
-        SchemaReader reader = connection.getSchemaReader();
+        SchemaReader reader = connection.getSchemaReader().withLocus();
 
         Cube[] cubes = reader.getCubes();
         return cubeByName(cubeName, cubes);

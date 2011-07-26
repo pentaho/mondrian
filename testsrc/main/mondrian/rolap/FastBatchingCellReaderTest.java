@@ -180,7 +180,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     private RolapCube salesCube = (RolapCube)
-        getTestContext().getConnection().getSchemaReader().getCubes()[0];
+        getTestContext().getConnection().getSchemaReader()
+            .withLocus().getCubes()[0];
 
     public void testGroupBatchesForNonGroupableBatchesWithSorting() {
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube);

@@ -1201,7 +1201,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     public void testSchemaReaderLevelMembers()
     {
         final SchemaReader schemaReader =
-            TestContext.instance().getConnection().getSchemaReader();
+            TestContext.instance().getConnection()
+            .getSchemaReader().withLocus();
         int found = 0;
         for (Cube cube : schemaReader.getCubes()) {
             if (!cube.getName().equals("HR")) {

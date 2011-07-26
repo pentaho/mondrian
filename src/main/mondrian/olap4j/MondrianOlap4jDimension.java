@@ -50,7 +50,8 @@ class MondrianOlap4jDimension implements Dimension, Named {
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
         final mondrian.olap.SchemaReader schemaReader =
-            olap4jConnection.getMondrianConnection2().getSchemaReader();
+            olap4jConnection.getMondrianConnection2().getSchemaReader()
+            .withLocus();
         for (mondrian.olap.Hierarchy hierarchy
             : schemaReader.getDimensionHierarchies(dimension))
         {

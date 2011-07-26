@@ -62,7 +62,8 @@ class MondrianOlap4jHierarchy implements Hierarchy, Named {
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
         final mondrian.olap.SchemaReader schemaReader =
-            olap4jConnection.getMondrianConnection2().getSchemaReader();
+            olap4jConnection.getMondrianConnection2().getSchemaReader()
+                .withLocus();
         for (mondrian.olap.Level level
             : schemaReader.getHierarchyLevels(hierarchy))
         {
@@ -86,6 +87,7 @@ class MondrianOlap4jHierarchy implements Hierarchy, Named {
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
         final List<mondrian.olap.Member> levelMembers =
             olap4jConnection.getMondrianConnection().getSchemaReader()
+                .withLocus()
                 .getLevelMembers(
                     hierarchy.getLevels()[0], true);
 
