@@ -964,6 +964,57 @@ public class UtilTestCase extends TestCase {
             assertFalse(flatABC.equals(strings));
         }
     }
+
+    /**
+     * Unit test for {@link Composite#of(Iterable[])}.
+     */
+    public void testCompositeIterable() {
+        final Iterable<String> beatles =
+            Arrays.asList("john", "paul", "george", "ringo");
+        final Iterable<String> stones =
+            Arrays.asList("mick", "keef", "brian", "bill", "charlie");
+        final List<String> empty = Collections.emptyList();
+
+        final StringBuilder buf = new StringBuilder();
+        for (String s : Composite.of(beatles, stones)) {
+            buf.append(s).append(";");
+        }
+        assertEquals(
+            "john;paul;george;ringo;mick;keef;brian;bill;charlie;",
+            buf.toString());
+
+        buf.setLength(0);
+        for (String s : Composite.of(empty, stones)) {
+            buf.append(s).append(";");
+        }
+        assertEquals(
+            "mick;keef;brian;bill;charlie;",
+            buf.toString());
+
+        buf.setLength(0);
+        for (String s : Composite.of(stones, empty)) {
+            buf.append(s).append(";");
+        }
+        assertEquals(
+            "mick;keef;brian;bill;charlie;",
+            buf.toString());
+
+        buf.setLength(0);
+        for (String s : Composite.of(empty)) {
+            buf.append(s).append(";");
+        }
+        assertEquals(
+            "",
+            buf.toString());
+
+        buf.setLength(0);
+        for (String s : Composite.of(empty, empty, beatles, empty, empty)) {
+            buf.append(s).append(";");
+        }
+        assertEquals(
+            "john;paul;george;ringo;",
+            buf.toString());
+    }
 }
 
 // End UtilTestCase.java

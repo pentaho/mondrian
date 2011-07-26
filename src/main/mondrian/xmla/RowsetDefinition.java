@@ -14,9 +14,12 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianServer;
 import mondrian.olap.Util;
 
+import mondrian.util.Composite;
 import org.olap4j.*;
+import org.olap4j.impl.ArrayNamedListImpl;
 import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.mdx.IdentifierSegment;
 import org.olap4j.metadata.*;
 import org.olap4j.metadata.Member.TreeOp;
 import org.olap4j.metadata.XmlaConstants;
@@ -3879,7 +3882,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
-                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                for (Cube cube : filteredCubes(schema, cubeNameCond)) {
                     populateCube(connection, catalog, cube, rows);
                 }
             }
@@ -4435,7 +4438,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
-                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                for (Cube cube : filteredCubes(schema, cubeNameCond)) {
                     populateCube(connection, catalog, cube, rows);
                 }
             }
@@ -4782,7 +4785,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
-                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                for (Cube cube : filteredCubes(schema, cubeNameCond)) {
                     populateCube(connection, catalog, cube, rows);
                 }
             }
@@ -5121,7 +5124,7 @@ TODO: see above
             StringBuilder buf = new StringBuilder(100);
 
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
-                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                for (Cube cube : filteredCubes(schema, cubeNameCond)) {
                     Dimension measuresDimension = cube.getDimensions().get(0);
                     Hierarchy measuresHierarchy =
                         measuresDimension.getHierarchies().get(0);
@@ -5459,7 +5462,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
-                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                for (Cube cube : filteredCubes(schema, cubeNameCond)) {
                     if (isRestricted(MemberUniqueName)) {
                         // NOTE: it is believed that if MEMBER_UNIQUE_NAME is
                         // a restriction, then none of the remaining possible
@@ -6119,7 +6122,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
-                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                for (Cube cube : filteredCubes(schema, cubeNameCond)) {
                     populateCube(catalog, cube, rows);
                 }
             }
@@ -6341,6 +6344,22 @@ TODO: see above
         );
     }
 
+    static Iterable<Cube> filteredCubes(
+        final Schema schema,
+        Util.Functor1<Boolean, Cube> cubeNameCond)
+        throws OlapException
+    {
+        final Iterable<Cube> iterable =
+            filter(sortedCubes(schema), cubeNameCond);
+        if (!cubeNameCond.apply(null)) {
+            return iterable;
+        }
+        return Composite.of(
+            Collections.singletonList(
+                new SharedDimensionHolderCube(schema)),
+            iterable);
+    }
+
     private static String getHierarchyName(Hierarchy hierarchy) {
         String hierarchyName = hierarchy.getName();
         if (MondrianProperties.instance().SsasCompatibleNaming.get()
@@ -6464,6 +6483,94 @@ TODO: see above
 
         public String getSessionId() {
             return request.getSessionId();
+        }
+    }
+
+    /**
+     * Dummy implementation of {@link Cube} that holds all shared dimensions
+     * in a given schema. Less error-prone than requiring all generator code
+     * to cope with a null Cube.
+     */
+    private static class SharedDimensionHolderCube implements Cube {
+        private final Schema schema;
+
+        public SharedDimensionHolderCube(Schema schema) {
+            this.schema = schema;
+        }
+
+        public Schema getSchema() {
+            return schema;
+        }
+
+        public NamedList<Dimension> getDimensions() {
+            try {
+                return schema.getSharedDimensions();
+            } catch (OlapException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public NamedList<Hierarchy> getHierarchies() {
+            final NamedList<Hierarchy> hierarchyList =
+                new ArrayNamedListImpl<Hierarchy>() {
+                    protected String getName(Hierarchy hierarchy) {
+                        return hierarchy.getName();
+                    }
+                };
+            for (Dimension dimension : getDimensions()) {
+                hierarchyList.addAll(dimension.getHierarchies());
+            }
+            return hierarchyList;
+        }
+
+        public List<Measure> getMeasures() {
+            throw new UnsupportedOperationException();
+        }
+
+        public NamedList<NamedSet> getSets() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Collection<Locale> getSupportedLocales() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Member lookupMember(List<IdentifierSegment> identifierSegments)
+            throws org.olap4j.OlapException
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public List<Member> lookupMembers(
+            Set<Member.TreeOp> treeOps,
+            List<IdentifierSegment> identifierSegments)
+            throws org.olap4j.OlapException
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isDrillThroughEnabled() {
+            return false;
+        }
+
+        public String getName() {
+            return "";
+        }
+
+        public String getUniqueName() {
+            return "";
+        }
+
+        public String getCaption() {
+            return "";
+        }
+
+        public String getDescription() {
+            return "";
+        }
+
+        public boolean isVisible() {
+            return false;
         }
     }
 }

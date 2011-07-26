@@ -3277,7 +3277,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="testMDimensions">
+    <TestCase name="testMDDimensions">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -3322,6 +3322,108 @@
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Product</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>1561</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Product]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Product Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>26</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store Size in SQFT</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>22</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store Size in SQFT]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Size in SQFT Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store Type</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store Type</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>7</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store Type]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Type Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Time</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Time Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Warehouse</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Warehouse]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Warehouse</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>5</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Warehouse]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Warehouse Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
@@ -4394,6 +4496,188 @@
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>${format}</Format>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testMDDimensionsShared">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element name="DIMENSION_NAME" sql:field="DIMENSION_NAME" type="xsd:string"/>
+                                <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DIMENSION_GUID" sql:field="DIMENSION_GUID" type="uuid"/>
+                                <xsd:element name="DIMENSION_CAPTION" sql:field="DIMENSION_CAPTION" type="xsd:string"/>
+                                <xsd:element name="DIMENSION_ORDINAL" sql:field="DIMENSION_ORDINAL" type="xsd:unsignedInt"/>
+                                <xsd:element name="DIMENSION_TYPE" sql:field="DIMENSION_TYPE" type="xsd:short"/>
+                                <xsd:element name="DIMENSION_CARDINALITY" sql:field="DIMENSION_CARDINALITY" type="xsd:unsignedInt"/>
+                                <xsd:element name="DEFAULT_HIERARCHY" sql:field="DEFAULT_HIERARCHY" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="IS_VIRTUAL" sql:field="IS_VIRTUAL" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="IS_READWRITE" sql:field="IS_READWRITE" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="DIMENSION_MASTER_UNIQUE_NAME" sql:field="DIMENSION_MASTER_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="HIERARCHIES" sql:field="HIERARCHIES"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Product</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>1561</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Product]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Product Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>26</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store Size in SQFT</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>22</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store Size in SQFT]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Size in SQFT Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store Type</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store Type</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>7</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store Type]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Type Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Time</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Time Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Warehouse</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Warehouse]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Warehouse</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>5</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Warehouse]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Warehouse Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CUBE_NAME>${cube.name}</CUBE_NAME>
       </RestrictionList>
     </Restrictions>
     <Properties>
@@ -10257,6 +10541,118 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Type</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Type</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION> Cube - Store Hierarchy - Store Name Level - Store Type Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Manager</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Manager</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION> Cube - Store Hierarchy - Store Name Level - Store Manager Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Store Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Store Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION> Cube - Store Hierarchy - Store Name Level - Store Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Grocery Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Grocery Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION> Cube - Store Hierarchy - Store Name Level - Grocery Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Frozen Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Frozen Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION> Cube - Store Hierarchy - Store Name Level - Frozen Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Meat Sqft</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Meat Sqft</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>5</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION> Cube - Store Hierarchy - Store Name Level - Meat Sqft Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Has coffee bar</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Has coffee bar</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>11</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION> Cube - Store Hierarchy - Store Name Level - Has coffee bar Property</DESCRIPTION>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+                        <LEVEL_UNIQUE_NAME>[Store].[Store Name]</LEVEL_UNIQUE_NAME>
+                        <PROPERTY_NAME>Street address</PROPERTY_NAME>
+                        <PROPERTY_CAPTION>Street address</PROPERTY_CAPTION>
+                        <PROPERTY_TYPE>1</PROPERTY_TYPE>
+                        <DATA_TYPE>130</DATA_TYPE>
+                        <PROPERTY_CONTENT_TYPE>0</PROPERTY_CONTENT_TYPE>
+                        <DESCRIPTION> Cube - Store Hierarchy - Store Name Level - Street address Property</DESCRIPTION>
+                    </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>

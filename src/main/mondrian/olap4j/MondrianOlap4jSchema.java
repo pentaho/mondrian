@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -16,9 +16,7 @@ import org.olap4j.metadata.Schema;
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
 
-import java.util.Locale;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 import mondrian.olap.Hierarchy;
 
@@ -73,13 +71,27 @@ class MondrianOlap4jSchema implements Schema, Named {
     }
 
     public NamedList<Dimension> getSharedDimensions() throws OlapException {
-        NamedList<MondrianOlap4jDimension> list =
-            new NamedListImpl<MondrianOlap4jDimension>();
         final MondrianOlap4jConnection olap4jConnection =
             olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
+        final SortedSet<MondrianOlap4jDimension> dimensions =
+            new TreeSet<MondrianOlap4jDimension>(
+                new Comparator<MondrianOlap4jDimension>() {
+                    public int compare(
+                        MondrianOlap4jDimension o1,
+                        MondrianOlap4jDimension o2)
+                    {
+                        return o1.getName().compareTo(o2.getName());
+                    }
+                }
+            );
         for (Hierarchy hierarchy : schema.getSharedHierarchies()) {
-            list.add(olap4jConnection.toOlap4j(hierarchy.getDimension()));
+            dimensions.add(
+                olap4jConnection.toOlap4j(hierarchy.getDimension()));
         }
+        mondrian.util.Bug.olap4jUpgrade("use NamedListImpl(Collection)");
+        NamedList<MondrianOlap4jDimension> list =
+            new NamedListImpl<MondrianOlap4jDimension>();
+        list.addAll(dimensions);
         return Olap4jUtil.cast(list);
     }
 

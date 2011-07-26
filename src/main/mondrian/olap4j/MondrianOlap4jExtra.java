@@ -247,9 +247,9 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
     }
 
     public String getCubeType(Cube cube) {
-        MondrianOlap4jCube olap4jCube = (MondrianOlap4jCube) cube;
         return
-            ((RolapCube) olap4jCube.cube).isVirtual()
+            (cube instanceof MondrianOlap4jCube)
+            && ((RolapCube) ((MondrianOlap4jCube) cube).cube).isVirtual()
                 ? RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_VIRTUAL_CUBE
                 : RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_CUBE;
     }

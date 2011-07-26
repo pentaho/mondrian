@@ -2801,9 +2801,14 @@ public class XmlaHandler {
                 t);
         } finally {
             // keep the tags balanced, even if there's an error
-            writer.endElement();
-            writer.endElement();
-            writer.endElement();
+            try {
+                writer.endElement();
+                writer.endElement();
+                writer.endElement();
+            } catch (Throwable e) {
+                // Ignore any errors balancing the tags. The original exception
+                // is more important.
+            }
         }
 
         writer.endDocument();

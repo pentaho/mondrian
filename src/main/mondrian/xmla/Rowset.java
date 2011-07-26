@@ -415,6 +415,9 @@ abstract class Rowset implements XmlaConstants {
             final List<V> requiredValues = (List) restriction;
             return new Util.Functor1<Boolean, E>() {
                 public Boolean apply(E element) {
+                    if (element == null) {
+                        return requiredValues.contains("");
+                    }
                     V value = getter.apply(element);
                     return requiredValues.contains(value);
                 }
