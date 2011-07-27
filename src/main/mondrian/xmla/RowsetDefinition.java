@@ -5125,9 +5125,6 @@ TODO: see above
 
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
                 for (Cube cube : filteredCubes(schema, cubeNameCond)) {
-                    Dimension measuresDimension = cube.getDimensions().get(0);
-                    Hierarchy measuresHierarchy =
-                        measuresDimension.getHierarchies().get(0);
 
                     buf.setLength(0);
 
@@ -5150,22 +5147,20 @@ TODO: see above
                     String levelListStr = buf.toString();
 
                     List<Member> calcMembers = new ArrayList<Member>();
-                    for (Level level : measuresHierarchy.getLevels()) {
-                        for (Measure measure
-                            : filter(
-                                Util.<Measure>cast(level.getMembers()),
-                                measureNameCond,
-                                measureUnameCond))
-                        {
-                            if (measure.isCalculated()) {
-                                // Output calculated measures after stored
-                                // measures.
-                                calcMembers.add(measure);
-                            } else {
-                                populateMember(
-                                    connection, catalog,
-                                    measure, cube, levelListStr, rows);
-                            }
+                    for (Measure measure
+                        : filter(
+                            cube.getMeasures(),
+                            measureNameCond,
+                            measureUnameCond))
+                    {
+                        if (measure.isCalculated()) {
+                            // Output calculated measures after stored
+                            // measures.
+                            calcMembers.add(measure);
+                        } else {
+                            populateMember(
+                                connection, catalog,
+                                measure, cube, levelListStr, rows);
                         }
                     }
 
@@ -6351,7 +6346,7 @@ TODO: see above
     {
         final Iterable<Cube> iterable =
             filter(sortedCubes(schema), cubeNameCond);
-        if (!cubeNameCond.apply(null)) {
+        if (!cubeNameCond.apply(new SharedDimensionHolderCube(schema))) {
             return iterable;
         }
         return Composite.of(
@@ -6524,7 +6519,7 @@ TODO: see above
         }
 
         public List<Measure> getMeasures() {
-            throw new UnsupportedOperationException();
+            return Collections.emptyList();
         }
 
         public NamedList<NamedSet> getSets() {
