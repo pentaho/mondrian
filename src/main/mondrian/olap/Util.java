@@ -929,7 +929,7 @@ public class Util extends XOMUtil {
         // Look for any kind of object (member, level, hierarchy,
         // dimension) in the cube. Use a schema reader without restrictions.
         final SchemaReader schemaReaderSansAc =
-            schemaReader.withoutAccessControl();
+            schemaReader.withoutAccessControl().withLocus();
         final Cube cube = q.getCube();
         OlapElement olapElement =
             schemaReaderSansAc.lookupCompound(
