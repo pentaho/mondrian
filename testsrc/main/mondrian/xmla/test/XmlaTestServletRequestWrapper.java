@@ -56,7 +56,7 @@ public class XmlaTestServletRequestWrapper extends HttpServletRequestWrapper {
                 throw Util.newInternal(e, "error reading body of soap request");
             }
 
-            if (soapRequest == null || soapRequest.length() == 0) {
+            if (soapRequest.length() == 0) {
                 throw new RuntimeException("SOAPRequest not set");
             }
         }

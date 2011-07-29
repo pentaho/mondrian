@@ -1736,6 +1736,27 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Converts a locale identifier (LCID) as used by Windows into a Java
+     * locale.
+     *
+     * <p>For example, {@code lcidToLocale(1033)} returns "en_US", because
+     * 1033 (hex 0409) is US english.</p>
+     *
+     * @param lcid Locale identifier
+     * @return Locale
+     * @throws RuntimeException if locale id is unkown
+     */
+    public static Locale lcidToLocale(short lcid) {
+        switch (lcid) {
+        case 0x0409: // 1033
+            return Locale.US;
+        // TODO: fill out this list
+        default:
+            throw new RuntimeException("Unknown LCID " + lcid);
+        }
+    }
+
+    /**
      * Converts a list of olap4j-style segments to a list of mondrian-style
      * segments.
      *
@@ -2648,11 +2669,11 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Reads a Reader until it returns EOF and return the contents as a String.
+     * Reads a Reader until it returns EOF and returns the contents as a String.
      *
      * @param rdr  Reader to Read.
      * @param bufferSize size of buffer to allocate for reading.
-     * @return content of Reader as String or null if Reader was empty.
+     * @return content of Reader as String
      * @throws IOException on I/O error
      */
     public static String readFully(final Reader rdr, final int bufferSize)
@@ -2672,8 +2693,7 @@ public class Util extends XOMUtil {
             len = rdr.read(buffer);
         }
 
-        final String s = buf.toString();
-        return (s.length() == 0) ? null : s;
+        return buf.toString();
     }
 
     /**
@@ -2737,9 +2757,7 @@ public class Util extends XOMUtil {
         final int BUF_SIZE = 8096;
         try {
             String xmlCatalog = readFully(r, BUF_SIZE);
-            if (map != null) {
-                xmlCatalog = Util.replaceProperties(xmlCatalog, map);
-            }
+            xmlCatalog = Util.replaceProperties(xmlCatalog, map);
             return xmlCatalog;
         } finally {
             r.close();

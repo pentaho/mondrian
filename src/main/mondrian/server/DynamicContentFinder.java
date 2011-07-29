@@ -63,7 +63,13 @@ public class DynamicContentFinder
         scheduledTask = executorService.scheduleWithFixedDelay(
             new Runnable() {
                 public void run() {
-                    reloadDataSources();
+                    Object result;
+                    try {
+                        result = reloadDataSources();
+                    } catch (Throwable e) {
+                        result = e;
+                    }
+                    Util.discard(result); // for debug
                 }
             },
             0,
@@ -80,22 +86,25 @@ public class DynamicContentFinder
 
     /**
      * Checks for updates to datasources content, flushes obsolete catalogs.
+     *
+     * @return Whether anything changed
      */
-    public void reloadDataSources() {
+    public synchronized boolean reloadDataSources() {
         try {
             String dataSourcesConfigString = getContent();
             if (!hasDataSourcesContentChanged(dataSourcesConfigString)) {
-                return;
+                return false;
             }
             DataSourcesConfig.DataSources newDataSources =
                 XmlaSupport.parseDataSources(
                     dataSourcesConfigString, LOGGER);
             if (newDataSources == null) {
-                return;
+                return false;
             }
             flushObsoleteCatalogs(newDataSources);
             this.dataSources = newDataSources;
             this.lastDataSourcesConfigString = dataSourcesConfigString;
+            return true;
         } catch (Exception e) {
             throw Util.newError(
                 e,
@@ -140,7 +149,7 @@ public class DynamicContentFinder
         return newDatasourceCatalogNames;
     }
 
-    public void flushObsoleteCatalogs(
+    public synchronized void flushObsoleteCatalogs(
         DataSourcesConfig.DataSources newDataSources)
     {
         if (dataSources == null) {
