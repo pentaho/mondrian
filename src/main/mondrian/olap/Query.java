@@ -1917,6 +1917,10 @@ public class Query extends QueryPart {
         public Dimension getDimension() {
             throw new UnsupportedOperationException();
         }
+
+        public String getLocalized(LocalizedProperty prop, Locale locale) {
+            throw new UnsupportedOperationException();
+        }
     }
 
     /**

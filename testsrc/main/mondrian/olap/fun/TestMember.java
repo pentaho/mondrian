@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,10 +12,11 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
- *
+ * Mock implementation of {@link Member} for testing.
  *
  * @author <a>Richard M. Emberson</a>
  * @version $Id$
@@ -170,6 +171,10 @@ public class TestMember implements Member {
         throw new UnsupportedOperationException();
     }
 
+    public String getLocalized(LocalizedProperty prop, Locale locale) {
+        throw new UnsupportedOperationException();
+    }
+
     public boolean isVisible() {
         throw new UnsupportedOperationException();
     }
@@ -231,6 +236,10 @@ public class TestMember implements Member {
         }
 
         public String getCaption() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getLocalized(LocalizedProperty prop, Locale locale) {
             throw new UnsupportedOperationException();
         }
 

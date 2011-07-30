@@ -7,8 +7,6 @@
 // Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 10 August, 2001
 */
 package mondrian.rolap;
 
@@ -1421,6 +1419,10 @@ public class RolapHierarchy extends HierarchyBase {
         }
 
         public boolean isVisible() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getLocalized(LocalizedProperty prop, Locale locale) {
             throw new UnsupportedOperationException();
         }
     }

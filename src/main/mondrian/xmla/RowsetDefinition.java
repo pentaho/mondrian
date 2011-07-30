@@ -5125,7 +5125,6 @@ TODO: see above
 
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
                 for (Cube cube : filteredCubes(schema, cubeNameCond)) {
-
                     buf.setLength(0);
 
                     int j = 0;
@@ -6103,7 +6102,10 @@ TODO: see above
         }
 
         private void populateMember(List<Row> rows) throws SQLException {
-            OlapConnection connection = handler.getConnection(request);
+            OlapConnection connection =
+                handler.getConnection(
+                    request,
+                    Collections.<String, String>emptyMap());
             for (Catalog catalog
                 : catIter(connection, catNameCond(), catalogCond))
             {

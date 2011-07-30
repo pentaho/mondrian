@@ -7,8 +7,6 @@
 // Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 3 March, 2002
 */
 package mondrian.olap.fun;
 
@@ -3262,6 +3260,10 @@ public class FunUtil extends Util {
         }
 
         public String getCaption() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getLocalized(LocalizedProperty prop, Locale locale) {
             throw new UnsupportedOperationException();
         }
 

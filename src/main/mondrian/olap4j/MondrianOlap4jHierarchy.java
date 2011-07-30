@@ -3,24 +3,19 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
-import java.util.*;
+import mondrian.olap.OlapElement;
 
 import org.olap4j.OlapException;
-import org.olap4j.impl.AbstractNamedList;
-import org.olap4j.impl.Named;
-import org.olap4j.impl.NamedListImpl;
-import org.olap4j.impl.Olap4jUtil;
-import org.olap4j.metadata.Dimension;
-import org.olap4j.metadata.Hierarchy;
-import org.olap4j.metadata.Level;
-import org.olap4j.metadata.Member;
-import org.olap4j.metadata.NamedList;
+import org.olap4j.impl.*;
+import org.olap4j.metadata.*;
+
+import java.util.List;
 
 /**
  * Implementation of {@link org.olap4j.metadata.Hierarchy}
@@ -115,13 +110,15 @@ class MondrianOlap4jHierarchy implements Hierarchy, Named {
     }
 
     public String getCaption() {
-        // todo: localize caption
-        return hierarchy.getCaption();
+        return hierarchy.getLocalized(
+            OlapElement.LocalizedProperty.CAPTION,
+            olap4jSchema.getLocale());
     }
 
     public String getDescription() {
-        // todo: localize description
-        return hierarchy.getDescription();
+        return hierarchy.getLocalized(
+            OlapElement.LocalizedProperty.DESCRIPTION,
+            olap4jSchema.getLocale());
     }
 
     public boolean isVisible() {

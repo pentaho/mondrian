@@ -4,16 +4,15 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 21 January, 1999
 */
-
 package mondrian.olap;
 
-import org.olap4j.metadata.Member;
+import java.util.Locale;
 
 /**
  * An <code>OlapElement</code> is a catalog object (dimension, hierarchy,
@@ -40,6 +39,16 @@ public interface OlapElement {
     String getQualifiedName();
 
     String getCaption();
+
+    /**
+     * Returns the value of a property (caption or description) of
+     * this element in the given locale.
+     *
+     * @param locale Locale
+     * @return Localized caption or description
+     */
+    String getLocalized(LocalizedProperty prop, Locale locale);
+
     Hierarchy getHierarchy();
 
     /**
@@ -79,6 +88,11 @@ public interface OlapElement {
      * @return Whether this element is visible
      */
     boolean isVisible();
+
+    enum LocalizedProperty {
+        CAPTION,
+        DESCRIPTION
+    }
 }
 
 // End OlapElement.java

@@ -238,6 +238,101 @@
 ]]>
         </Resource>
     </TestCase>
+    <TestCase name="testMDCubesLocale">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_TYPE" sql:field="CUBE_TYPE" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="CUBE_GUID" sql:field="CUBE_GUID" type="uuid"/>
+                                <xsd:element minOccurs="0" name="CREATED_ON" sql:field="CREATED_ON" type="xsd:dateTime"/>
+                                <xsd:element minOccurs="0" name="LAST_SCHEMA_UPDATE" sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
+                                <xsd:element minOccurs="0" name="SCHEMA_UPDATED_BY" sql:field="SCHEMA_UPDATED_BY" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="LAST_DATA_UPDATE" sql:field="LAST_DATA_UPDATE" type="xsd:dateTime"/>
+                                <xsd:element minOccurs="0" name="DATA_UPDATED_BY" sql:field="DATA_UPDATED_BY" type="xsd:string"/>
+                                <xsd:element name="IS_DRILLTHROUGH_ENABLED" sql:field="IS_DRILLTHROUGH_ENABLED" type="xsd:boolean"/>
+                                <xsd:element name="IS_WRITE_ENABLED" sql:field="IS_WRITE_ENABLED" type="xsd:boolean"/>
+                                <xsd:element name="IS_LINKABLE" sql:field="IS_LINKABLE" type="xsd:boolean"/>
+                                <xsd:element name="IS_SQL_ENABLED" sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="CUBE_CAPTION" sql:field="CUBE_CAPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
+                                <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+                                <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <CUBE_TYPE>CUBE</CUBE_TYPE>
+                        <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+                        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+                        <IS_LINKABLE>false</IS_LINKABLE>
+                        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+                        <CUBE_CAPTION>Verkaufen</CUBE_CAPTION>
+                        <DESCRIPTION>Cube Verkaufen</DESCRIPTION>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+        <RequestType>${request.type}</RequestType>
+        <Restrictions>
+          <RestrictionList>
+            <CUBE_NAME>${cube.name}</CUBE_NAME>
+          </RestrictionList>
+        </Restrictions>
+        <Properties>
+          <PropertyList>
+            <DataSourceInfo>${data.source.info}</DataSourceInfo>
+            <Catalog>${catalog}</Catalog>
+            <Format>${format}</Format>
+            <Content>${content}</Content>
+            <LocaleIdentifier>${locale}</LocaleIdentifier>
+          </PropertyList>
+        </Properties>
+    </Discover>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
     <TestCase name="testMDCubesDeep">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
@@ -12968,7 +13063,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <PropertyName>LocaleIdentifier</PropertyName>
-                        <PropertyDescription>Use this to read or set the numeric locale identifier for this request. The default is provider-specific. For the complete hexadecimal list of language identifiers, search on "Language Identifiers" in the MSDN Library at http://www.msdn.microsoft.com.</PropertyDescription>
+                        <PropertyDescription>Use this to read or set the numeric locale identifier for this request. The default is provider-specific. For the complete hexadecimal list of language identifiers, search on "Language Identifiers" in the MSDN Library at http://www.msdn.microsoft.com. As an extension to the XMLA standard, Mondrian also allows locale codes as specified by ISO-639 and ISO-3166 and as used by Java; for example 'en-US'. </PropertyDescription>
                         <PropertyType>UnsignedInteger</PropertyType>
                         <PropertyAccessType>ReadWrite</PropertyAccessType>
                         <IsRequired>false</IsRequired>

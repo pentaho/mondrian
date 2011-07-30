@@ -54,6 +54,13 @@ public class XmlaHandler {
      */
     private static final String JDBC_PASSWORD = "password";
 
+    /**
+     * Name of property used by JDBC to hold locale. It is not hard-wired into
+     * DriverManager like "user" and "password", but we do expect any olap4j
+     * driver that supports i18n to use this property name.
+     */
+    public static final String JDBC_LOCALE = "locale";
+
     final ConnectionFactory connectionFactory;
     private final String prefix;
 
@@ -76,8 +83,12 @@ public class XmlaHandler {
      * with the request session id.
      *
      * @param request Request
+     * @param propMap Extra properties
      */
-    public OlapConnection getConnection(XmlaRequest request) {
+    public OlapConnection getConnection(
+        XmlaRequest request,
+        Map<String, String> propMap)
+    {
         String sessionId = request.getSessionId();
         if (sessionId == null) {
             // With a Simba O2X Client session ID is only null when
@@ -93,10 +104,12 @@ public class XmlaHandler {
             + "] and session [" + sessionId + "]");
 
         Properties props = new Properties();
+        for (Map.Entry<String, String> entry : propMap.entrySet()) {
+            props.put(entry.getKey(), entry.getValue());
+        }
         if (request.getUsername() != null) {
             props.put(JDBC_USER, request.getUsername());
         }
-
         if (request.getPassword() != null) {
             props.put(JDBC_PASSWORD, request.getPassword());
         }
@@ -1304,7 +1317,8 @@ public class XmlaHandler {
         OlapStatement statement = null;
         ResultSet resultSet = null;
         try {
-            connection = getConnection(request);
+            connection =
+                getConnection(request, Collections.<String, String>emptyMap());
             statement = connection.createStatement();
             resultSet =
                 getExtra(connection).executeDrillthrough(
@@ -1618,7 +1632,8 @@ public class XmlaHandler {
         CellSet cellSet = null;
         boolean success = false;
         try {
-            connection = getConnection(request);
+            connection =
+                getConnection(request, Collections.<String, String>emptyMap());
             getExtra(connection).setPreferList(connection);
             try {
                 statement = connection.prepareOlapStatement(mdx);

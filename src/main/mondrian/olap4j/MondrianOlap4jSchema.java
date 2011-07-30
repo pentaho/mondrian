@@ -102,6 +102,16 @@ class MondrianOlap4jSchema implements Schema, Named {
     public String getName() {
         return schemaName;
     }
+
+    /**
+     * Shorthand for catalog.database.connection.getLocale().
+     * Not part of the olap4j api; do not make public.
+     *
+     * @return Locale of current connection
+     */
+    final Locale getLocale() {
+        return olap4jCatalog.olap4jDatabase.getOlapConnection().getLocale();
+    }
 }
 
 // End MondrianOlap4jSchema.java

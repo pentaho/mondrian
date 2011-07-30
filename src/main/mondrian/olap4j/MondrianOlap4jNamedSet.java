@@ -8,6 +8,8 @@
 */
 package mondrian.olap4j;
 
+import mondrian.olap.OlapElement;
+
 import org.olap4j.metadata.NamedSet;
 import org.olap4j.metadata.Cube;
 import org.olap4j.mdx.ParseTreeNode;
@@ -53,13 +55,15 @@ class MondrianOlap4jNamedSet implements NamedSet, Named {
     }
 
     public String getCaption() {
-        // todo: i18n
-        return namedSet.getCaption();
+        return namedSet.getLocalized(
+            OlapElement.LocalizedProperty.CAPTION,
+            olap4jCube.olap4jSchema.getLocale());
     }
 
     public String getDescription() {
-        // todo: i18n
-        return namedSet.getDescription();
+        return namedSet.getLocalized(
+            OlapElement.LocalizedProperty.DESCRIPTION,
+            olap4jCube.olap4jSchema.getLocale());
     }
 
     public boolean isVisible() {

@@ -375,7 +375,10 @@ way too noisy
                     "xmla")
                 {
                     @Override
-                    public OlapConnection getConnection(XmlaRequest request) {
+                    public OlapConnection getConnection(
+                        XmlaRequest request,
+                        Map<String, String> propMap)
+                    {
                         return connection;
                     }
                 }

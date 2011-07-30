@@ -66,7 +66,7 @@ public class RolapConnection extends ConnectionBase {
     private final RolapSchema schema;
     private SchemaReader schemaReader;
     protected Role role;
-    private Locale locale = Locale.US;
+    private Locale locale = Locale.getDefault();
     private Scenario scenario;
 
     private static DataSourceResolver dataSourceResolver;
@@ -256,6 +256,7 @@ public class RolapConnection extends ConnectionBase {
             connectInfo.get(RolapConnectionProperties.Locale.name());
         if (localeString != null) {
             this.locale = Util.parseLocale(localeString);
+            assert locale != null;
         }
 
         this.schema = schema;
@@ -519,6 +520,9 @@ public class RolapConnection extends ConnectionBase {
     }
 
     public void setLocale(Locale locale) {
+        if (locale == null) {
+            throw new IllegalArgumentException("locale must not be null");
+        }
         this.locale = locale;
     }
 
