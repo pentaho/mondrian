@@ -43,6 +43,8 @@
       <file url="file://$PROJECT_DIR$/../../olap4j/src/mondrian/olap4j/FactoryJdbc3Impl.java" />
       <file url="file://$PROJECT_DIR$/../../olap4j/src/org/olap4j/driver/xmla/FactoryJdbc3Impl.java" />
       <file url="file://$PROJECT_DIR$/../src/main/mondrian/olap4j/FactoryJdbc3Impl.java" />
+      <file url="file://$PROJECT_DIR$/../src/main/mondrian/rolap/RolapSchemaUpgrader.java" />
+      <file url="file://$PROJECT_DIR$/../src/main/mondrian/rolap/PhysSchemaConverter.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
@@ -382,7 +384,7 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="file://$USER_HOME$/open1/olap4j/testsrc" />
+        <root url="file://$PROJECT_DIR$/../../olap4j/testsrc" />
       </SOURCES>
     </library>
     <library name="olap4j-xmla">
