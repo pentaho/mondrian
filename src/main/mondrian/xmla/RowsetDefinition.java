@@ -6131,6 +6131,9 @@ TODO: see above
             List<Row> rows)
             throws XmlaException, SQLException
         {
+            if (cube instanceof SharedDimensionHolderCube) {
+                return;
+            }
             if (isRestricted(LevelUniqueName)) {
                 // Note: If the LEVEL_UNIQUE_NAME has been specified, then
                 // the dimension and hierarchy are specified implicitly.
