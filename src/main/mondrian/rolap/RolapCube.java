@@ -1210,10 +1210,8 @@ public class RolapCube extends CubeBase {
      */
     public synchronized SchemaReader getSchemaReader() {
         if (schemaReader == null) {
-            RoleImpl schemaDefaultRoleImpl = schema.getDefaultRole();
-            RoleImpl roleImpl = schemaDefaultRoleImpl.makeMutableClone();
-            roleImpl.grant(this, Access.ALL);
-            schemaReader = new RolapCubeSchemaReader(roleImpl);
+            schemaReader =
+                new RolapCubeSchemaReader(Util.createRootRole(schema));
         }
         return schemaReader;
     }

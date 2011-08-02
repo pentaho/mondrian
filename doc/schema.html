@@ -170,6 +170,7 @@ schema as a guiding example.</p>
             <div style="padding-left:40px;">&lt;<a href="#XML_Role">Role</a>&gt;</div>
                 <div style="padding-left:60px;">&lt;<a href="#XML_SchemaGrant">SchemaGrant</a>&gt;</div>
                     <div style="padding-left:80px;">&lt;<a href="#XML_CubeGrant">CubeGrant</a>&gt;</div>
+                        <div style="padding-left:100px;">&lt;<a href="#XML_DimensionGrant">DimensionGrant</a>&gt;</div>
                         <div style="padding-left:100px;">&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a>&gt;</div>
                             <div style="padding-left:120px;">&lt;<a href="#XML_MemberGrant">MemberGrant</a>/&gt;</div>
                 <div style="padding-left:60px;">&lt;<a href="#XML_Union">Union</a>&gt;</div>
@@ -3038,6 +3039,7 @@ Here is an example of a role:</p>
         <div style="padding-left:20px;">&lt;<a href="#XML_Role">Role</a> name="California manager"&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_SchemaGrant">SchemaGrant</a> access="none"&gt;</div>
                 <div style="padding-left:60px">&lt;<a href="#XML_CubeGrant">CubeGrant</a> cube="Sales" access="all"&gt;</div>
+                    <div style="padding-left:80px;">&lt;<a href="#XML_DimensionGrant">DimensionGrant</a> hierarchy="[Measures]" access="all"/&gt;</div>
                     <div style="padding-left:80px;">&lt;<a href="#XML_HierarchyGrant">HierarchyGrant</a> hierarchy="[Store]" access="custom" topLevel="[Store].[Store Country]"&gt;</div>
                         <div style="padding-left:100px;">&lt;<a href="#XML_MemberGrant">MemberGrant</a> member="[Store].[USA].[CA]" access="all"/&gt;</div>
                         <div style="padding-left:100px;">&lt;<a href="#XML_MemberGrant">MemberGrant</a> member="[Store].[USA].[CA].[Los Angeles]" access="none"/&gt;</div>
@@ -3067,8 +3069,17 @@ because it is explicitly granted.</p>
 <p>A <code><a href="#XML_CubeGrant">&lt;CubeGrant&gt;</a></code>
 defines the access to
 a particular cube. As for <code><a href="#XML_SchemaGrant">&lt;SchemaGrant&gt;</a></code>,
-the access attribute can be "all" or "none", and can
+the access attribute can be "all", "custom" or "none", and can
 be overridden for specific sub-objects in the cube.</p>
+
+<p>A <code><a href="#XML_DimensionGrant">&lt;DimensionGrant&gt;</a></code>
+defines access to a dimension. The access attribute can be "all", "custrom"
+or "none". An access level of "all" means that all the child hierarchies
+of the dimension will get inherited access. An access level of "custom" means
+that the role does not get an inherent access to the child hierarchies,
+unless the role is explicitely granted using a
+<a href="#XML_HierarchyGrant">&lt;HierarchyGrant&gt;</a> element.</p>
+
 <p>A <code><a href="#XML_HierarchyGrant">&lt;HierarchyGrant&gt;</a></code>
 
 defines
@@ -3107,11 +3118,17 @@ to USA, you can effectively see everything.</li>
   <li><b>A member is visible if any of its children are visible</b>.
 Suppose you deny access to USA, then grant access to California. You
 will be able to see USA, and California, but none of the other states.
-The totals against USA will still reflect all states, however.</li>
+The totals against USA will still reflect all states, however.
+If the parent HierarchyGrant specifies a top level, only the parents
+equal or below this level will be visible. Similarly, if a bottom level
+is specified, only the children above or equal to the level are visible.</li>
 
-  <li><b>Member grants don't override the hierarchy grant's top- and
+<li><b>Member grants don't override the hierarchy grant's top- and
 bottom-levels</b>. If you set <code>topLevel="[Store].[Store State]"</code>,
-and grant access to California, you won't be able to see USA.</li>
+and grant access to California, you won't be able to see USA.
+Member grants do not override the topLevel and bottomLevel attributes.
+You can grant or deny access to a member of any level, but the top
+and bottom constraints have precedence on the explicit member grants.</li>
 </ol>
 
 <p>In the example, the user will have access to California, and all of

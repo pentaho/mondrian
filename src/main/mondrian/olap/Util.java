@@ -3281,6 +3281,18 @@ public class Util extends XOMUtil {
         return true;
     }
 
+    /**
+     * Returns a role which has access to everything.
+     * @param schema A schema to bind this role to.
+     * @return A role with root access to the schema.
+     */
+    public static Role createRootRole(Schema schema) {
+        RoleImpl role = new RoleImpl();
+        role.grant(schema, Access.ALL);
+        role.makeImmutable();
+        return role;
+    }
+
     public static abstract class AbstractFlatList<T>
         implements List<T>, RandomAccess
     {

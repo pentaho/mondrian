@@ -59,13 +59,17 @@ public class RolapSchema implements Schema {
     private static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
 
     private static final Set<Access> schemaAllowed =
-        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL, Access.ALL_DIMENSIONS);
+        Olap4jUtil.enumSetOf(
+            Access.NONE,
+            Access.ALL,
+            Access.ALL_DIMENSIONS,
+            Access.CUSTOM);
 
     private static final Set<Access> cubeAllowed =
-        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL);
+        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL, Access.CUSTOM);
 
     private static final Set<Access> dimensionAllowed =
-        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL);
+        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL, Access.CUSTOM);
 
     private static final Set<Access> hierarchyAllowed =
         Olap4jUtil.enumSetOf(Access.NONE, Access.ALL, Access.CUSTOM);
@@ -97,7 +101,7 @@ public class RolapSchema implements Schema {
     /**
      * The default role for connections to this schema.
      */
-    private RoleImpl defaultRole;
+    private Role defaultRole;
 
     private final String md5Bytes;
 
@@ -184,7 +188,7 @@ public class RolapSchema implements Schema {
         this.key = key;
         this.md5Bytes = md5Bytes;
         // the order of the next two lines is important
-        this.defaultRole = createDefaultRole();
+        this.defaultRole = Util.createRootRole(this);
         final MondrianServer internalServer = MondrianServer.forId(null);
         this.internalConnection =
             new RolapConnection(internalServer, connectInfo, this, dataSource);
@@ -443,7 +447,7 @@ public class RolapSchema implements Schema {
         return Collections.unmodifiableList(warningList);
     }
 
-    RoleImpl getDefaultRole() {
+    Role getDefaultRole() {
         return defaultRole;
     }
 
@@ -1722,13 +1726,6 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             }
             exprCardinalityMap.put(columnExpr, cardinality);
         }
-    }
-
-    private RoleImpl createDefaultRole() {
-        RoleImpl role = new RoleImpl();
-        role.grant(this, Access.ALL);
-        role.makeImmutable();
-        return role;
     }
 
     private RolapStar makeRolapStar(final MondrianDef.Relation fact) {
