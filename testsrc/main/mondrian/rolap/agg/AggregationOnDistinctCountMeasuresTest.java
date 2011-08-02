@@ -1337,6 +1337,45 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         }
     }
 
+    /**
+     * This test makes sure that the AggregateFunDef will not optimize a tuples
+     * list when the rollup policy is set to something else than FULL, as it
+     * results in wrong data for a distinct count operation when using roles to
+     * narrow down the members access.
+     */
+    public void testMondrian906() {
+        final TestContext context =
+            TestContext.create(
+                null, null, null, null, null,
+                "<Role name=\"Role1\">\n"
+                + "  <SchemaGrant access=\"all\">\n"
+                + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+                + "        <MemberGrant member=\"[Customers].[USA].[OR]\" access=\"all\"/>\n"
+                + "        <MemberGrant member=\"[Customers].[USA].[WA]\" access=\"all\"/>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>\n");
+        final String mdx =
+            "select {[Customers].[USA], [Customers].[USA].[OR], [Customers].[USA].[WA]} on columns, {[Measures].[Customer Count]} on rows from [Sales]";
+        context
+            .withRole("Role1")
+                .assertQueryReturns(
+                    mdx,
+                    "Axis #0:\n"
+                    + "{}\n"
+                    + "Axis #1:\n"
+                    + "{[Customers].[USA]}\n"
+                    + "{[Customers].[USA].[OR]}\n"
+                    + "{[Customers].[USA].[WA]}\n"
+                    + "Axis #2:\n"
+                    + "{[Measures].[Customer Count]}\n"
+                    + "Row #0: 2,865\n"
+                    + "Row #0: 1,037\n"
+                    + "Row #0: 1,828\n");
+    }
+
     private boolean tuppleListContains(
         TupleList tuples,
         Member memberByUniqueName)
