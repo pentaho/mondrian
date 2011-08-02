@@ -144,8 +144,8 @@ public class RoleImpl implements Role {
         assert cube != null;
         // Check for explicit rules.
         // Both 'custom' and 'all' are good enough
-        Access access = toAccess(cubeGrants.get(cube));
-        if (access != Access.NONE) {
+        Access access = cubeGrants.get(cube);
+        if (access != null) {
             return access;
         }
         // Check for inheritance from the parent schema
@@ -156,36 +156,6 @@ public class RoleImpl implements Role {
         }
         // Deny access
         return Access.NONE;
-    }
-
-    /**
-     * Removes the upper level restriction of each hierarchy in this role.
-     * This will allow member names to be resolved even if the upper levels
-     * are not visible.
-     *
-     * <p>For example, it should be possible to resolve
-     * [Store].[USA].[CA].[San Francisco] even if the role cannot see the
-     * nation level.
-     */
-    public void removeTopLevels() {
-        for (Map.Entry<Hierarchy, HierarchyAccessImpl> entry
-            : hierarchyGrants.entrySet())
-        {
-            final HierarchyAccessImpl hierarchyAccess = entry.getValue();
-            if (hierarchyAccess.topLevel != null) {
-                final HierarchyAccessImpl hierarchyAccessClone =
-                    new HierarchyAccessImpl(
-                        hierarchyAccess.role,
-                        hierarchyAccess.hierarchy,
-                        hierarchyAccess.access,
-                        null,
-                        hierarchyAccess.bottomLevel,
-                        hierarchyAccess.rollupPolicy);
-                hierarchyAccessClone.memberGrants.putAll(
-                    hierarchyAccess.memberGrants);
-                entry.setValue(hierarchyAccessClone);
-            }
-        }
     }
 
     /**
