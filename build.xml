@@ -348,6 +348,7 @@ demo/access/MondrianFoodMart.mdb"/>
       <fileset dir="${lib.dir}" includes="*.jar,*.war" excludes="xml-apis.jar"/>
       <fileset dir="${classes.dir}"/>
       <fileset dir="${testclasses.dir}"/>
+      <fileset dir="${dist.dir}"/>
     </delete>
     <antcall target="clean"/>
   </target>
@@ -358,6 +359,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <mkdir dir="${build.dir}"/>
     <mkdir dir="${devlib.dir}"/>
     <mkdir dir="${testlib.dir}"/>
+    <mkdir dir="${dist.dir}"/>
   </target>
 
   <target name="resolve" unless="skip.download">
