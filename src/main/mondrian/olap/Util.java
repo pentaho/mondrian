@@ -29,6 +29,8 @@ import java.lang.reflect.*;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapCubeDimension;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.mdx.*;
 import mondrian.util.*;
@@ -3293,6 +3295,45 @@ public class Util extends XOMUtil {
         return role;
     }
 
+    /**
+     * Tries to find the cube from which a dimension is taken.
+     * It considers private dimensions, shared dimensions and virtual
+     * dimensions. If it can't determine with certitude the origin
+     * of the dimension, it returns null.
+     */
+    public static Cube getDimensionCube(Dimension dimension) {
+        final Cube[] cubes = dimension.getSchema().getCubes();
+        for (Cube cube : cubes) {
+            for (Dimension dimension1 : cube.getDimensions()) {
+                // If the dimensions have the same identity,
+                // we found an access rule.
+                if (dimension == dimension1) {
+                    return cube;
+                }
+                // If the passed dimension argument is of class
+                // RolapCubeDimension, we must validate the cube
+                // assignment and make sure the cubes are the same.
+                // If not, skip to the next grant.
+                if (dimension instanceof RolapCubeDimension
+                    && dimension.equals(dimension1)
+                    && !((RolapCubeDimension)dimension1)
+                    .getCube()
+                    .equals(cube))
+                {
+                    continue;
+                }
+                // Last thing is to allow for equality correspondences
+                // to work with virtual cubes.
+                if (cube instanceof RolapCube
+                    && ((RolapCube)cube).isVirtual()
+                    && dimension.equals(dimension1))
+                {
+                    return cube;
+                }
+            }
+        }
+        return null;
+    }
     public static abstract class AbstractFlatList<T>
         implements List<T>, RandomAccess
     {

@@ -9,10 +9,13 @@
 */
 package mondrian.rolap;
 
+import java.util.List;
+
 import mondrian.calc.Calc;
 import mondrian.calc.TupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
+import mondrian.resource.MondrianResource;
 
 /**
  * Describes an aggregation operator, such as "sum" or "count".
@@ -69,8 +72,105 @@ public abstract class RolapAggregator
 
     public static final RolapAggregator Avg =
         new RolapAggregator("avg", index++, false) {
+            private void fail() {
+                throw MondrianResource.instance().AvgRollupFailed.ex();
+            }
             public Aggregator getRollup() {
-                return null;
+                return new RolapAggregator("avg", index, false) {
+                    public Object aggregate(
+                        Evaluator evaluator,
+                        TupleList members,
+                        Calc calc)
+                    {
+                        /*
+                         * In order to rollup an average, we will attempt to
+                         * search the cube for two measures, both using the
+                         * same RolapStar column as the measure to rollup,
+                         * one of which is the count, the other one being the
+                         * sum. If we find both, we evaluate them separately
+                         * then return the average.
+                         */
+                        final Cube cube = Util.getDimensionCube(
+                            members.get(0).get(0).getDimension());
+                        if (cube == null
+                            || !(cube instanceof RolapCube))
+                        {
+                            fail();
+                        }
+                        Dimension measuresDim = null;
+                        for (Dimension dim : cube.getDimensions()) {
+                            if (dim.isMeasures()) {
+                                measuresDim = dim;
+                            }
+                        }
+                        final Member measureMember =
+                            evaluator.getContext(measuresDim.getHierarchy());
+                        if (!(measureMember instanceof RolapBaseCubeMeasure)) {
+                            fail();
+                        }
+                        final RolapStar.Measure originalMeasure =
+                            (RolapStar.Measure)
+                                ((RolapBaseCubeMeasure)measureMember)
+                                    .getStarMeasure();
+                        final List<Member> measuresMembers =
+                            cube.getSchemaReader(null).withLocus()
+                                .getHierarchyRootMembers(
+                                    measuresDim.getHierarchy());
+                        RolapBaseCubeMeasure sumMeasure = null;
+                        RolapBaseCubeMeasure countMeasure = null;
+                        for (Member member : measuresMembers) {
+                            if (member instanceof RolapBaseCubeMeasure) {
+                                final RolapStar.Measure measure =
+                                    (RolapStar.Measure)
+                                    ((RolapBaseCubeMeasure)member)
+                                        .getStarMeasure();
+                                if (measure.getExpression()
+                                    .equals(originalMeasure.getExpression()))
+                                {
+                                    if (measure.getAggregator()
+                                        == RolapAggregator.Sum)
+                                    {
+                                        sumMeasure =
+                                            (RolapBaseCubeMeasure) member;
+                                    } else if (measure.getAggregator()
+                                        == RolapAggregator.Count)
+                                    {
+                                        countMeasure =
+                                            (RolapBaseCubeMeasure) member;
+                                    }
+                                }
+                            }
+                            if (sumMeasure != null && countMeasure != null) {
+                                break;
+                            }
+                        }
+                        if (sumMeasure == null || countMeasure == null) {
+                            fail();
+                        }
+                        final int savepoint = evaluator.savepoint();
+                        try {
+                            // Resolve the sum.
+                            evaluator.setContext(sumMeasure);
+                            final Double sum =
+                                (Double) FunUtil.sum(evaluator, members, calc);
+                            // Resolve the count
+                            evaluator.setContext(countMeasure);
+                            final Double count =
+                                (Double) FunUtil.sum(evaluator, members, calc);
+                            if (sum == Util.nullValue
+                                || count == Util.nullValue)
+                            {
+                                fail();
+                            }
+                            if (count == 0) {
+                                return Util.nullValue;
+                            }
+                            return sum / count;
+                        } finally {
+                            evaluator.restore(savepoint);
+                        }
+                    }
+                };
             }
 
             public Object aggregate(
