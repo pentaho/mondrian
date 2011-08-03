@@ -14,6 +14,7 @@ import java.util.List;
 import mondrian.calc.Calc;
 import mondrian.calc.TupleList;
 import mondrian.olap.*;
+import mondrian.olap.MondrianDef.Expression;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 
@@ -92,11 +93,11 @@ public abstract class RolapAggregator
                          */
                         final Cube cube = Util.getDimensionCube(
                             members.get(0).get(0).getDimension());
-                        if (cube == null
-                            || !(cube instanceof RolapCube))
-                        {
+                        if (cube == null) {
                             fail();
                         }
+                        // We must find the measures dimension, to later find
+                        // the current measure in the context.
                         Dimension measuresDim = null;
                         for (Dimension dim : cube.getDimensions()) {
                             if (dim.isMeasures()) {
@@ -108,10 +109,13 @@ public abstract class RolapAggregator
                         if (!(measureMember instanceof RolapBaseCubeMeasure)) {
                             fail();
                         }
-                        final RolapStar.Measure originalMeasure =
-                            (RolapStar.Measure)
+                        final Expression starMeasureExpression =
+                            ((RolapStar.Measure)
                                 ((RolapBaseCubeMeasure)measureMember)
-                                    .getStarMeasure();
+                                    .getStarMeasure()).getExpression();
+                        // Get a list of all measures. We will scan through it
+                        // in order to find the two required measures
+                        // (count and sum).
                         final List<Member> measuresMembers =
                             cube.getSchemaReader(null).withLocus()
                                 .getHierarchyRootMembers(
@@ -120,13 +124,19 @@ public abstract class RolapAggregator
                         RolapBaseCubeMeasure countMeasure = null;
                         for (Member member : measuresMembers) {
                             if (member instanceof RolapBaseCubeMeasure) {
+                                // To difuge out if this measure is based on
+                                // the right column, we need to access the
+                                // underlying RolapStar.Measure
                                 final RolapStar.Measure measure =
                                     (RolapStar.Measure)
                                     ((RolapBaseCubeMeasure)member)
                                         .getStarMeasure();
+                                // Check if the column expressions match
                                 if (measure.getExpression()
-                                    .equals(originalMeasure.getExpression()))
+                                    .equals(starMeasureExpression))
                                 {
+                                    // Check if the aggregator is one of the
+                                    // two we need.
                                     if (measure.getAggregator()
                                         == RolapAggregator.Sum)
                                     {
@@ -140,13 +150,17 @@ public abstract class RolapAggregator
                                     }
                                 }
                             }
+                            // Maybe we can break early from the loop.
                             if (sumMeasure != null && countMeasure != null) {
                                 break;
                             }
                         }
+                        // We need to find both measures, or else we can't
+                        // compute the average.
                         if (sumMeasure == null || countMeasure == null) {
                             fail();
                         }
+                        // Now we will try to evaluate both measures.
                         final int savepoint = evaluator.savepoint();
                         try {
                             // Resolve the sum.
@@ -157,11 +171,14 @@ public abstract class RolapAggregator
                             evaluator.setContext(countMeasure);
                             final Double count =
                                 (Double) FunUtil.sum(evaluator, members, calc);
+                            // FunUtil might return a nullValue object.
                             if (sum == Util.nullValue
                                 || count == Util.nullValue)
                             {
                                 fail();
                             }
+                            // Prevent evil divisions by zero.
+                            // We return a nullValue instance.
                             if (count == 0) {
                                 return Util.nullValue;
                             }
