@@ -535,6 +535,8 @@ compile.java"/>
     </javac>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>
+    <copy file="VERSION.txt"
+            todir="${classes.dir}"/>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml"
         todir="${classes.dir}"/>
     <copy todir="${classes.dir}">
