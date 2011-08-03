@@ -1747,15 +1747,16 @@ public class Util extends XOMUtil {
      * @param lcid Locale identifier
      * @return Locale
      * @throws RuntimeException if locale id is unkown
+     *
+     * @deprecated Soon to be moved to Olap4jUtil.
      */
     public static Locale lcidToLocale(short lcid) {
-        switch (lcid) {
-        case 0x0409: // 1033
+        // Most common case first, to avoid instantiating the full map.
+        if (lcid == 0x0409) {
             return Locale.US;
-        // TODO: fill out this list
-        default:
-            throw new RuntimeException("Unknown LCID " + lcid);
         }
+        Bug.olap4jUpgrade("move LcidLocale ot Olap4jUtil");
+        return LcidLocale.instance().toLocale(lcid);
     }
 
     /**
