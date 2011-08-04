@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
+import mondrian.olap.Util;
 import mondrian.xmla.SaxWriter;
 import mondrian.util.ArrayStack;
 
@@ -183,7 +184,16 @@ public class DefaultSaxWriter implements SaxWriter {
 
     public final void textElement(String name, Object data) {
         startElement(name);
-        characters(data.toString());
+        String s = data.toString();
+
+        // Replace line endings with spaces. IBM's DOM implementation keeps
+        // line endings, whereas Sun's does not. For consistency, always strip
+        // them.
+        //
+        // REVIEW: It would be better to enclose in CDATA, but some clients
+        // might not be expecting this.
+        s = Util.replace(s, Util.nl, " ");
+        characters(s);
         endElement();
     }
 

@@ -11128,7 +11128,10 @@ Intel platforms):
             "select filter([Store].MEMBERS,"
             + "Left([Store].CURRENTMEMBER.Name, -20)=\"Bellingham\") "
             + "on 0 from sales",
-            "StringIndexOutOfBoundsException: String index out of range: -20");
+            Util.IBM_JVM
+                ? "StringIndexOutOfBoundsException: null"
+                : "StringIndexOutOfBoundsException: String index out of range: "
+                  + "-20");
     }
 
     public void testMidFunctionWithValidArguments() {
@@ -11457,7 +11460,10 @@ Intel platforms):
     public void testVbaExceptions() {
         assertExprThrows(
             "right(\"abc\", -4)",
-            "StringIndexOutOfBoundsException: String index out of range: -4");
+            Util.IBM_JVM
+                ? "StringIndexOutOfBoundsException: null"
+                : "StringIndexOutOfBoundsException: "
+                  + "String index out of range: -4");
     }
 
     public void testVbaDateTime() {

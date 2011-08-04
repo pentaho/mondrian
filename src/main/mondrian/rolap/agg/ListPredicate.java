@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -15,9 +15,7 @@ import mondrian.rolap.BitKey;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.Util;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Base class for {@link AndPredicate} and {@link OrPredicate}.
@@ -43,24 +41,21 @@ public abstract class ListPredicate implements StarPredicate {
      */
     private int hashValue;
 
-    protected final List<RolapStar.Column> columns =
-        new ArrayList<RolapStar.Column>();
+    protected final List<RolapStar.Column> columns;
 
     private BitKey columnBitKey = null;
 
     protected ListPredicate(List<StarPredicate> predicateList) {
         childrenHashMap = null;
         hashValue = 0;
+        // Ensure that columns are sorted by bit-key, for determinacy.
+        final SortedSet<RolapStar.Column> columnSet =
+            new TreeSet<RolapStar.Column>(RolapStar.Column.COMPARATOR);
         for (StarPredicate predicate : predicateList) {
             children.add(predicate);
-            for (RolapStar.Column column
-                : predicate.getConstrainedColumnList())
-            {
-                if (!columns.contains(column)) {
-                    columns.add(column);
-                }
-            }
+            columnSet.addAll(predicate.getConstrainedColumnList());
         }
+        columns = new ArrayList<RolapStar.Column>(columnSet);
     }
 
     public List<RolapStar.Column> getConstrainedColumnList() {

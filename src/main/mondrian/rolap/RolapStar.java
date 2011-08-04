@@ -1051,6 +1051,18 @@ public class RolapStar {
      * A column in a star schema.
      */
     public static class Column {
+        public static final Comparator<Column> COMPARATOR =
+            new Comparator<Column>() {
+                public int compare(
+                    Column object1,
+                    Column object2)
+                {
+                    return Util.compare(
+                        object1.getBitPosition(),
+                        object2.getBitPosition());
+                }
+        };
+
         private final Table table;
         private final MondrianDef.Expression expression;
         private final Dialect.Datatype datatype;
@@ -1062,6 +1074,7 @@ public class RolapStar {
          * is the coloumn associated with next highest Level.
          */
         private final Column parentColumn;
+
         /**
          * This is used during both aggregate table recognition and aggregate
          * table generation. For multiple dimension usages, multiple shared

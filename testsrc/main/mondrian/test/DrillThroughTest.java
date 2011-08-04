@@ -3,14 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, Feb 14, 2003
 */
 package mondrian.test;
-
 
 import mondrian.olap.*;
 import mondrian.rolap.RolapCube;
@@ -1128,7 +1127,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case MYSQL:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from customer as customer, sales_fact_1997 as sales_fact_1997, time_by_day as time_by_day where sales_fact_1997.customer_id = customer.customer_id and sales_fact_1997.time_id = time_by_day.time_id and (((time_by_day.the_year, time_by_day.quarter, customer.gender) in ((1997, 'Q1', 'F'), (1997, 'Q2', 'M'))))";
+                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997, customer as customer where sales_fact_1997.time_id = time_by_day.time_id and sales_fact_1997.customer_id = customer.customer_id and (((time_by_day.the_year, time_by_day.quarter, customer.gender) in ((1997, 'Q1', 'F'), (1997, 'Q2', 'M'))))";
             break;
         case ORACLE:
             expectedSql =
@@ -1181,7 +1180,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case MYSQL:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997) or (time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997))";
+                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
             break;
         case ORACLE:
             expectedSql =

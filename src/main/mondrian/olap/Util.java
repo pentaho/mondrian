@@ -89,6 +89,13 @@ public class Util extends XOMUtil {
         || System.getProperty("java.version").startsWith("1.5");
 
     /**
+     * Whether this is an IBM JVM.
+     */
+    public static final boolean IBM_JVM =
+        System.getProperties().getProperty("java.vendor").equals(
+            "IBM Corporation");
+
+    /**
      * What version of JDBC? Returns 4 in JDK 1.6 and higher, 3 otherwise.
      */
     public static final int JdbcVersion =
@@ -540,6 +547,17 @@ public class Util extends XOMUtil {
             k2 = k2.toString();
         }
         return ((Comparable) k1).compareTo(k2);
+    }
+
+    /**
+     * Compares integer values.
+     *
+     * @param i0 First integer
+     * @param i1 Second integer
+     * @return Comparison of integers
+     */
+    public static int compare(int i0, int i1) {
+        return i0 < i1 ? -1 : (i0 == i1 ? 0 : 1);
     }
 
     /**

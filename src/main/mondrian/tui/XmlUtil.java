@@ -10,6 +10,7 @@
 
 package mondrian.tui;
 
+import mondrian.olap.Util;
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.DOMParser;
@@ -447,8 +448,13 @@ public class XmlUtil {
         final DOMParser parser,
         Throwable t)
     {
-        final ErrorHandler errorHandler = parser.getErrorHandler();
+        if (Util.IBM_JVM) {
+            // IBM JDK returns lots of errors. Not sure whether they are
+            // real errors, but ignore for now.
+            return;
+        }
 
+        final ErrorHandler errorHandler = parser.getErrorHandler();
         if (errorHandler instanceof SaxErrorHandler) {
             final SaxErrorHandler saxEH = (SaxErrorHandler) errorHandler;
             final List<SaxErrorHandler.ErrorInfo> errors = saxEH.getErrors();
