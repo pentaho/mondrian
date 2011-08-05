@@ -251,32 +251,6 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
             this.connProperties = new Properties();
             this.connProperties.putAll(connectionProperties);
             this.discoverDatasourcesResponse = discoverDatasourcesResponse;
-
-            // Create an eviction task that runs for all our BasicDataSource
-            // instances; this saves threads compared to having an evictor
-            // thread per pool.
-            Timer connectionEvictionsTimer = new Timer();
-            TimerTask evictionTask = new TimerTask() {
-                public void run() {
-                    synchronized (datasourcesPool) {
-                        for (BasicDataSource bds : datasourcesPool.values()) {
-                            try {
-                                bds.getConnectionPool().evict();
-                            } catch (Exception e) {
-                                LOGGER.error(
-                                    "Exception [" + e
-                                    + "] while running evict on [" + bds
-                                    + "]");
-                            }
-                        }
-                    }
-                }
-            };
-            // Run the eviction task every minute.
-            //
-            // REVIEW: Is the timer task ever shut down? It should be shut down
-            // on Servlet.destroy()?
-            connectionEvictionsTimer.schedule(evictionTask, 60000, 60 * 1000);
         }
 
         public OlapConnection getConnection(
@@ -314,7 +288,7 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
                         idleConnectionsCleanupTimeoutMs);
                     bds.setAccessToUnderlyingConnectionAllowed(true);
                     bds.setInitialSize(1);
-
+                    bds.setTimeBetweenEvictionRunsMillis(60000);
                     if (catalog != null) {
                         bds.setDefaultCatalog(catalog);
                     }
