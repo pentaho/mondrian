@@ -1131,7 +1131,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             break;
         case ORACLE:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from customer customer, sales_fact_1997 sales_fact_1997, time_by_day time_by_day where sales_fact_1997.customer_id = customer.customer_id and sales_fact_1997.time_id = time_by_day.time_id and ((customer.gender = 'F' and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (customer.gender = 'M' and time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
+                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997, customer customer where sales_fact_1997.time_id = time_by_day.time_id and sales_fact_1997.customer_id = customer.customer_id and ((customer.gender = 'F' and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (customer.gender = 'M' and time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
             break;
         default:
             return;

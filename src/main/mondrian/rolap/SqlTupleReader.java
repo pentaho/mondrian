@@ -951,19 +951,21 @@ public class SqlTupleReader implements TupleReader {
         boolean needsGroupBy =
             isGroupByNeeded(sqlQuery, hierarchy, levels, levelDepth);
 
-        // Determine if the aggregate table contains the collapsed level
-        boolean levelCollapsed =
-            (aggStar != null)
-            && SqlMemberSource.isLevelCollapsed(aggStar, (RolapCubeLevel)level);
-
-        boolean multipleCols =
-            SqlMemberSource.levelContainsMultipleColumns(level);
-
         for (int i = 0; i <= levelDepth; i++) {
             RolapLevel currLevel = levels[i];
             if (currLevel.isAll()) {
                 continue;
             }
+
+            // Determine if the aggregate table contains the collapsed level
+            boolean levelCollapsed =
+                (aggStar != null)
+                && SqlMemberSource.isLevelCollapsed(
+                    aggStar,
+                    (RolapCubeLevel)currLevel);
+
+            boolean multipleCols =
+                SqlMemberSource.levelContainsMultipleColumns(currLevel);
 
             if (levelCollapsed && !multipleCols) {
                 // if this is a single column collapsed level, there is
