@@ -3522,6 +3522,28 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-977">MONDRIAN-977,
+     * "NPE in Query with Crossjoin Descendants of Unknown Member"</a>.
+     */
+    public void testCrossjoinWithDescendantsAndUnknownMember() {
+        propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
+            true);
+        assertQueryReturns(
+            "select {[Measures].[Unit Sales]} on columns,\n"
+            + "NON EMPTY CrossJoin(\n"
+            + " Descendants([Product].[All Products], [Product].[Product Family]),\n"
+            + " Descendants([Store].[All Stores].[Foo], [Store].[Store State])) on rows\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n");
+    }
+
+    /**
      * Slicer contains <code>[Promotion Media].[Daily Paper]</code>, but
      * filter expression is in terms of <code>[Promotion Media].[Radio]</code>.
      */
