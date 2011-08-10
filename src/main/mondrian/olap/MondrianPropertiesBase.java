@@ -61,29 +61,10 @@ public abstract class MondrianPropertiesBase extends TriggerableProperties {
     private static final Logger LOGGER =
         Logger.getLogger(MondrianProperties.class);
 
-    /**
-     * Properties, drawn from {@link System#getProperties}, plus the contents
-     * of "mondrian.properties" if it exists. A singleton.
-     */
-    private static MondrianProperties instance;
-    private static final String mondrianDotProperties = "mondrian.properties";
+    protected static final String mondrianDotProperties = "mondrian.properties";
 
-    /**
-     * Returns the singleton.
-     *
-     * @return Singleton instance
-     */
-    public static synchronized MondrianProperties instance() {
-        if (instance == null) {
-            instance = new MondrianProperties();
-            instance.populate();
-        }
-        return instance;
-    }
-
-    MondrianPropertiesBase() {
-        this.propertySource =
-            new FilePropertySource(new File(mondrianDotProperties));
+    protected MondrianPropertiesBase(PropertySource propertySource) {
+        this.propertySource = propertySource;
     }
 
     public boolean triggersAreEnabled() {

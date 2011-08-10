@@ -37,7 +37,7 @@ import java.util.*;
  */
 public class PropertyUtil {
     /**
-     * Generates an XML file from a MondrinProperties instance.
+     * Generates an XML file from a MondrianProperties instance.
      *
      * @param args Arguments
      * @throws IllegalAccessException on error
@@ -195,6 +195,12 @@ public class PropertyUtil {
         }
     }
 
+    private static final void printLines(PrintWriter out, String[] lines) {
+        for (String line : lines) {
+            out.println(line);
+        }
+    }
+
     enum Generator {
         JAVA {
             @Override
@@ -207,6 +213,7 @@ public class PropertyUtil {
                 out.println("package mondrian.olap;");
                 out.println();
                 out.println("import org.eigenbase.util.property.*;");
+                out.println("import java.io.File;");
                 out.println();
 
                 printJavadoc(
@@ -218,8 +225,37 @@ public class PropertyUtil {
                     + "<code>mondrian.properties</code> file. Although it is possible to retrieve\n"
                     + "properties using the inherited {@link java.util.Properties#getProperty(String)}\n"
                     + "method, we recommend that you use methods in this class.</p>\n");
-                out.println(
-                    "public class MondrianProperties extends MondrianPropertiesBase {");
+                String[] lines = {
+                    "public class MondrianProperties extends MondrianPropertiesBase {",
+                    "    /**",
+                    "     * Properties, drawn from {@link System#getProperties},",
+                    "     * plus the contents of \"mondrian.properties\" if it",
+                    "     * exists. A singleton.",
+                    "     */",
+                    "    private static final MondrianProperties instance =",
+                    "        new MondrianProperties();",
+                    "",
+                    "    private MondrianProperties() {",
+                    "        super(",
+                    "            new FilePropertySource(",
+                    "                new File(mondrianDotProperties)));",
+                    "        populate();",
+                    "    }",
+                    "",
+                    "    /**",
+                    "     * Returns the singleton.",
+                    "     *",
+                    "     * @return Singleton instance",
+                    "     */",
+                    "    public static MondrianProperties instance() {",
+                    "        // NOTE: We used to instantiate on demand, but",
+                    "        // synchronization overhead was significant. See",
+                    "        // MONDRIAN-978.",
+                    "        return instance;",
+                    "    }",
+                    "",
+                };
+                printLines(out, lines);
                 for (PropertyDef def : propertyDefinitionMap.values()) {
                     if (!def.core) {
                         continue;
