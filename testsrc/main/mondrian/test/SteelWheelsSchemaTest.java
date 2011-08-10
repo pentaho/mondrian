@@ -388,6 +388,9 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
     }
 
     public void testBugMondrian935() {
+        if (!getTestContext().databaseIsValid()) {
+            return;
+        }
         getTestContext().assertQueryReturns(
             "with set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Product]' \n"
             + "  set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], "
