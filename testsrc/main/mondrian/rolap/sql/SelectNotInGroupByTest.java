@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde and others
+// Copyright (C) 2008-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -146,7 +146,7 @@ public class SelectNotInGroupByTest extends BatchTestCase {
         };
 
         // Use dimension with level-dependent property
-        TestContext tc = TestContext.create(
+        TestContext tc = TestContext.instance().create(
             storeDimensionLevelDependent,
             cubeA,
             null,
@@ -165,7 +165,7 @@ public class SelectNotInGroupByTest extends BatchTestCase {
         };
 
         // Use dimension with level-independent property
-        TestContext tc = TestContext.create(
+        TestContext tc = TestContext.instance().create(
             storeDimensionLevelIndependent,
             cubeA,
             null,
@@ -186,7 +186,7 @@ public class SelectNotInGroupByTest extends BatchTestCase {
         };
 
         // Use dimension with unique level & level-dependent properties
-        TestContext tc = TestContext.create(
+        TestContext tc = TestContext.instance().create(
             storeDimensionUniqueLevelDependentProp,
             cubeA,
             null,
@@ -205,7 +205,7 @@ public class SelectNotInGroupByTest extends BatchTestCase {
         };
 
         // Use dimension with unique level but level-indpendent property
-        TestContext tc = TestContext.create(
+        TestContext tc = TestContext.instance().create(
             storeDimensionUniqueLevelIndependentProp,
             cubeA,
             null,

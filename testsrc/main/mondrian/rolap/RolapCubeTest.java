@@ -258,7 +258,7 @@ public class RolapCubeTest extends FoodMartTestCase {
 
         Connection connection1 = testContext.getConnection();
         Connection connection2 =
-            TestContext.create(null).getConnection();
+            TestContext.instance().withSchema(null).getConnection();
 
         try {
             RolapCube salesCube1 = (RolapCube) cubeByName(connection1, "Sales");
@@ -307,7 +307,7 @@ public class RolapCubeTest extends FoodMartTestCase {
             "  <CalculatedMember name=\"~Missing\" dimension=\"Product\">\n"
             + "    <Formula>100</Formula>\n"
             + "  </CalculatedMember>\n";
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             null,
             nonAccessibleMember

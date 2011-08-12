@@ -43,7 +43,7 @@ public class VirtualCubeTest extends BatchTestCase {
      * MONDRIAN-163, "VirtualCube SegmentArrayQuerySpec.addMeasure assert"</a>.
      */
     public void testNoTimeDimension() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\">\n"
@@ -58,7 +58,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testCalculatedMeasureAsDefaultMeasureInVC() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\" defaultMeasure=\"Profit\">\n"
@@ -80,7 +80,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testDefaultMeasureInVCForIncorrectMeasureName() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\" defaultMeasure=\"Profit Error\">\n"
@@ -103,7 +103,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testVirtualCubeMeasureInvalidCubeName() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\">\n"
@@ -122,7 +122,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testDefaultMeasureInVCForCaseSensitivity() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\" defaultMeasure=\"PROFIT\">\n"
@@ -155,7 +155,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testWithTimeDimension() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\">\n"
@@ -251,7 +251,7 @@ public class VirtualCubeTest extends BatchTestCase {
      *     Warehouse dimension is USA
      */
     private TestContext createContextWithNonDefaultAllMember() {
-        return TestContext.create(
+        return TestContext.instance().create(
             null,
 
             // Warehouse cube where the default member in the Warehouse
@@ -297,7 +297,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testMemberVisibility() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Warehouse and Sales Member Visibility\">\n"
@@ -357,7 +357,7 @@ public class VirtualCubeTest extends BatchTestCase {
      * styles.
      */
     public void testFormatStringExpressionCubeNoCache() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<Cube name=\"Warehouse No Cache\" cache=\"false\">\n"
@@ -678,7 +678,7 @@ public class VirtualCubeTest extends BatchTestCase {
      * Tests a calc member defined in the cube.
      */
     public void testCalculatedMemberInSchema() {
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Warehouse and Sales",
             null,
             "  <CalculatedMember name=\"Shipped per Ordered\" dimension=\"Measures\">\n"
@@ -782,7 +782,7 @@ public class VirtualCubeTest extends BatchTestCase {
      * ordinalColumn property
      */
     public void testOrdinalColumn() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs HR\">\n"
@@ -824,7 +824,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testDefaultMeasureProperty() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\" defaultMeasure=\"Unit Sales\">\n"
@@ -975,7 +975,7 @@ public class VirtualCubeTest extends BatchTestCase {
      * Happens when you aggregate distinct-count measures in a virtual cube.
      */
     public void testBugMondrian322() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n"
@@ -1013,7 +1013,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testBugMondrian322a() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n"
@@ -1042,7 +1042,7 @@ public class VirtualCubeTest extends BatchTestCase {
      * MONDRIAN-352, "Caption is not set on RolapVirtualCubeMesure"</a>.
      */
     public void testVirtualCubeMeasureCaption() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"TestStore\">\n"
             + "  <Table name=\"store\"/>\n"

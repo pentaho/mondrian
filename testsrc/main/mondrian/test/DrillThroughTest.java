@@ -614,7 +614,7 @@ public class DrillThroughTest extends FoodMartTestCase {
          *
          *  and DB2 and Derby don't like converting from CHAR to INTEGER
          */
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Store2\" foreignKey=\"store_id\">\n"
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
@@ -712,7 +712,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         // Specify the column and nameColumn to be the same
         // in order to reproduce the problem
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "  <Dimension name=\"Store2\" foreignKey=\"store_id\">\n"
                 + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Stores\" >\n"
@@ -823,7 +823,7 @@ public class DrillThroughTest extends FoodMartTestCase {
      * @throws Exception on error
      */
     public void testTruncateLevelName() throws Exception {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Education Level2\" foreignKey=\"customer_id\">\n"
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"

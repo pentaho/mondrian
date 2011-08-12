@@ -652,7 +652,7 @@ public class CompoundSlicerTest extends FoodMartTestCase {
      */
     public void testRollupAvg() {
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 null,
                 "<Measure name='Avg Unit Sales' aggregator='avg' column='unit_sales'/>\n"

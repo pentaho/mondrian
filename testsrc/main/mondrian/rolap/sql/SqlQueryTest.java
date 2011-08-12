@@ -567,7 +567,7 @@ public class SqlQueryTest extends BatchTestCase {
         };
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null,
                 cube,
                 null,
@@ -648,7 +648,7 @@ public class SqlQueryTest extends BatchTestCase {
         };
 
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null,
                 cubeSchema,
                 null,

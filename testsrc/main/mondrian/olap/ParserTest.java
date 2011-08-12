@@ -427,7 +427,7 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     public void testCloneQuery() {
-        Connection connection = TestContext.instance().getFoodMartConnection();
+        Connection connection = TestContext.instance().getConnection();
         Query query = connection.parseQuery(
             "select {[Measures].Members} on columns,\n"
             + " {[Store].Members} on rows\n"

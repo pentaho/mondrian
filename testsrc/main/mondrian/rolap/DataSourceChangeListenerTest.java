@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2007-2008 Bart Pappyn
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -371,7 +371,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             + "Row #0: 2,117\n"
         };
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null, null,
                 "<Cube name=\"Warehouse No Cache\" cache=\"false\">\n"
                 + "  <Table name=\"inventory_fact_1997\"/>\n"
@@ -504,7 +504,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
     }
 
     SmartMemberReader getSmartMemberReader(String hierName) {
-        Connection con = getTestContext().getFoodMartConnection();
+        Connection con = getTestContext().getConnection();
         return getSmartMemberReader(con, hierName);
     }
 
@@ -522,7 +522,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
     }
 
     SmartMemberReader getSharedSmartMemberReader(String hierName) {
-        Connection con = getTestContext().getFoodMartConnection();
+        Connection con = getTestContext().getConnection();
         return getSharedSmartMemberReader(con, hierName);
     }
 
@@ -542,7 +542,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
     }
 
     RolapStar getStar(String starName) {
-        Connection con = getTestContext().getFoodMartConnection();
+        Connection con = getTestContext().getConnection();
         return getStar(con, starName);
     }
 

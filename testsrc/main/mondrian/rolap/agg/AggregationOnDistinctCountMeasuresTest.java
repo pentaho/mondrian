@@ -53,7 +53,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public TestContext getTestContext() {
-        return TestContext.create(
+        return TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n"
@@ -507,7 +507,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "('3377 Coachman Place', 'Jones International'))))";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -560,7 +560,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and ((`warehouse`.`warehouse_name` = 'Freeman And Co' and `warehouse`.`wa_address1` = '234 West Covina Pkwy' and `warehouse`.`warehouse_fax` is null) or (`warehouse`.`warehouse_name` = 'Jones International' and `warehouse`.`wa_address1` = '3377 Coachman Place' and `warehouse`.`warehouse_fax` = '971-555-6213'))";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -615,7 +615,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and ((`warehouse`.`warehouse_fax` is null and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null) or (`warehouse`.`warehouse_fax` = '971-555-6213' and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null))";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -1345,7 +1345,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
      */
     public void testMondrian906() {
         final TestContext context =
-            TestContext.create(
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"Role1\">\n"
                 + "  <SchemaGrant access=\"all\">\n"

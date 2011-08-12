@@ -399,9 +399,12 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
 
     public void testHideIfBlankHidesWhitespace() {
         if (TestContext.instance().getDialect().getDatabaseProduct()
-            == Dialect.DatabaseProduct.ORACLE)
+            != Dialect.DatabaseProduct.ORACLE)
         {
-            TestContext testContext = TestContext.createSubstitutingCube(
+            return;
+        }
+        final TestContext testContext =
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "<Dimension name=\"Gender4\" foreignKey=\"customer_id\">\n"
                 + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
@@ -418,16 +421,15 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
                     + "      </Level>"
                     + "    </Hierarchy>\n"
                     + "  </Dimension>");
-            testContext.assertQueryReturns(
-                " select {[Gender4].[Gender].members} "
-                + "on COLUMNS "
-                + "from sales",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Gender4].[M]}\n"
-                + "Row #0: 135,215\n");
-        }
+        testContext.assertQueryReturns(
+            " select {[Gender4].[Gender].members} "
+            + "on COLUMNS "
+            + "from sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender4].[M]}\n"
+            + "Row #0: 135,215\n");
     }
 }
 

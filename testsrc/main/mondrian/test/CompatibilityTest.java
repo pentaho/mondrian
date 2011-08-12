@@ -272,7 +272,7 @@ public class CompatibilityTest extends FoodMartTestCase {
             return;
         }
         final String cubeName = "Sales_inline";
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"" + cubeName + "\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -357,7 +357,7 @@ public class CompatibilityTest extends FoodMartTestCase {
             return;
         }
         final String cubeName = "Sales_inline";
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"" + cubeName + "\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -415,7 +415,7 @@ public class CompatibilityTest extends FoodMartTestCase {
             return;
         }
         final String cubeName = "Store_NullsCollation";
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"" + cubeName + "\">\n"
             + "  <Table name=\"store\"/>\n"

@@ -28,8 +28,10 @@ public class CaptionTest extends TestCase {
      * set caption "Anzahl Verkauf" for measure "Unit Sales"
      */
     public void testMeasureCaption() {
-        TestContext tc = TestContext.instance();
-        Connection monConnection = tc.getFoodMartConnection(MyFoodmart.class);
+        final Connection monConnection =
+            TestContext.instance()
+                .withSchemaProcessor(MyFoodmart.class)
+                .getConnection();
         String mdxQuery =
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS, "
             + "{[Time].[1997].[Q1]} ON ROWS FROM [Sales]";
@@ -46,8 +48,10 @@ public class CaptionTest extends TestCase {
      * set caption "Werbemedium" for nonshared dimension "Promotion Media"
      */
     public void testDimCaption() {
-        TestContext tc = TestContext.instance();
-        Connection monConnection = tc.getFoodMartConnection(MyFoodmart.class);
+        final Connection monConnection =
+            TestContext.instance()
+                .withSchemaProcessor(MyFoodmart.class)
+                .getConnection();
         String mdxQuery =
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS, "
             + "{[Promotion Media].[All Media]} ON ROWS FROM [Sales]";
@@ -65,13 +69,15 @@ public class CaptionTest extends TestCase {
      * set caption "Quadrat-Fuesse:-)" for shared dimension "Store Size in SQFT"
      */
     public void testDimCaptionShared() {
-        TestContext tc = TestContext.instance();
         String mdxQuery =
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS, "
             + "{[Store Size in SQFT].[All Store Size in SQFTs]} ON ROWS "
             + "FROM [Sales]";
-        Connection monConnection = tc.getFoodMartConnection(MyFoodmart.class);
-         mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
+        final Connection monConnection =
+            TestContext.instance()
+                .withSchemaProcessor(MyFoodmart.class)
+                .getConnection();
+        mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
         mondrian.olap.Result monResult = monConnection.execute(monQuery);
         Axis[] axes = monResult.getAxes();
         List<Position> positions = axes[1].getPositions();
@@ -102,7 +108,9 @@ public class CaptionTest extends TestCase {
             // Oracle and MySQL are supported in this test.
             return;
         }
-        Connection monConnection = tc.getFoodMartConnection(MyFoodmart.class);
+        final Connection monConnection =
+            tc.withSchemaProcessor(MyFoodmart.class)
+                .getConnection();
         String mdxQuery =
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS, "
             + "{[Time].[Year].Members} ON ROWS FROM [Sales]";

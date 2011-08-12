@@ -618,7 +618,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testStrMeasure() {
-        TestContext ctx = TestContext.create(
+        TestContext ctx = TestContext.instance().create(
             null,
             "<Cube name=\"StrMeasure\"> \n"
             + "  <Table name=\"promotion\"/> \n"
@@ -644,7 +644,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testBug1515302() {
-        TestContext ctx = TestContext.create(
+        TestContext ctx = TestContext.instance().create(
             null,
             "<Cube name=\"Bug1515302\"> \n"
             + "  <Table name=\"sales_fact_1997\"/> \n"
@@ -1468,7 +1468,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfBlankLeafAndNoAll() {
-        setTestContext(TestContext.createSubstitutingCube(
+        setTestContext(TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"false\" primaryKey=\"product_id\">\n"
@@ -1497,7 +1497,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfBlankLeaf() {
-        setTestContext(TestContext.createSubstitutingCube(
+        setTestContext(TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -1526,7 +1526,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfParentsNameLeaf() {
-        setTestContext(TestContext.createSubstitutingCube(
+        setTestContext(TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -1554,7 +1554,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfBlankNameAncestor() {
-        setTestContext(TestContext.createSubstitutingCube(
+        setTestContext(TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -1583,7 +1583,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfParentsNameAncestor() {
-        setTestContext(TestContext.createSubstitutingCube(
+        setTestContext(TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -1612,7 +1612,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjEnumWithHideIfBlankLeaf() {
-        setTestContext(TestContext.createSubstitutingCube(
+        setTestContext(TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -2020,7 +2020,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -2115,7 +2115,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "`warehouse`.`warehouse_name` ASC, ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -2207,7 +2207,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -2626,7 +2626,7 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
 
-        Connection con = getTestContext().getFoodMartConnection(false);
+        Connection con = getTestContext().withSchemaPool(false).getConnection();
         SmartMemberReader smr = getSmartMemberReader(con, "Customers");
         MemberCacheHelper smrch = smr.cacheHelper;
         clearAndHardenCache(smrch);
@@ -3080,7 +3080,7 @@ public class NonEmptyTest extends BatchTestCase {
         if (!Bug.BugMondrian229Fixed) {
             return;
         }
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
             + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\" defaultMember=\"[Time].[1997].[Q1].[1]\" >\n"
@@ -3512,8 +3512,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
-        Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);
+        final TestContext context = getTestContext().withFreshConnection();
         context.assertQueryReturns(
             "with set [p] as '[Product].[Product Family].members' "
             + "set [s] as '[Store].[Store Country].members' "
@@ -3538,8 +3537,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
-        Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);
+        final TestContext context = getTestContext().withFreshConnection();
         context.assertQueryReturns(
             "with set [p] as '[Product].[Product Family].members' "
             + "set [s] as '[Store].[Store Country].members' "
@@ -3558,8 +3556,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
-        Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);
+        final TestContext context = getTestContext().withFreshConnection();
         context.assertQueryReturns(
             "with set [p] as '[Product].[Product Family].members' "
             + "set [s] as '[Store].[Store Country].members' "
@@ -4423,7 +4420,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testContextAtAllWorksWithConstraint() {
-        TestContext ctx = TestContext.create(
+        TestContext ctx = TestContext.instance().create(
             null,
             "<Cube name=\"onlyGender\"> \n"
             + "  <Table name=\"sales_fact_1997\"/> \n"
@@ -4468,7 +4465,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testCalculatedDefaultMeasureOnVirtualCubeNoThrowException() {
         propSaver.set(MondrianProperties.instance().EnableNativeNonEmpty, true);
         final TestContext context =
-            TestContext.create(
+            TestContext.instance().withSchema(
                 "<Schema name=\"FoodMart\">"
                 + "  <Dimension name=\"Store\">"
                 + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">"
@@ -4617,7 +4614,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     SmartMemberReader getSmartMemberReader(String hierName) {
-        Connection con = getTestContext().getFoodMartConnection();
+        Connection con = getTestContext().getConnection();
         return getSmartMemberReader(con, hierName);
     }
 
@@ -4635,7 +4632,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     SmartMemberReader getSharedSmartMemberReader(String hierName) {
-        Connection con = getTestContext().getFoodMartConnection();
+        Connection con = getTestContext().getConnection();
         return getSharedSmartMemberReader(con, hierName);
     }
 
@@ -4691,20 +4688,17 @@ public class NonEmptyTest extends BatchTestCase {
                 + " `product_class`.`product_family` ASC",
                 null)
         };
-        Connection conn = null;
+        final TestContext context = getTestContext().withFreshConnection();
         try {
-            conn = getTestContext().getFoodMartConnection(false);
-            TestContext testContext = getTestContext(conn);
-
             assertQuerySql(
-                testContext,
+                context,
                 "select [Product].[Product Family].Members on 0\n"
                 + "from [Sales]",
                 patterns);
 
             // note that returns an extra member,
             // [Product].[Drink].[Baking Goods]
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select [Product].[Drink].Children on 0\n"
                 + "from [Sales]",
                 "Axis #0:\n"
@@ -4720,7 +4714,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "Row #0: 4,186\n");
 
             // [Product].[Drink].[Baking Goods] has one child, but no fact data
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select [Product].[Drink].[Baking Goods].Children on 0\n"
                 + "from [Sales]",
                 "Axis #0:\n"
@@ -4730,7 +4724,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "Row #0: \n");
 
             // NON EMPTY filters out that child
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select non empty [Product].[Drink].[Baking Goods].Children on 0\n"
                 + "from [Sales]",
                 "Axis #0:\n"
@@ -4739,7 +4733,7 @@ public class NonEmptyTest extends BatchTestCase {
 
             // [Product].[Drink].[Baking Goods].[Dry Goods] has one child, but
             // no fact data
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select [Product].[Drink].[Baking Goods].[Dry Goods].Children on 0\n"
                 + "from [Sales]",
                 "Axis #0:\n"
@@ -4749,7 +4743,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "Row #0: \n");
 
             // NON EMPTY filters out that child
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select non empty [Product].[Drink].[Baking Goods].[Dry Goods].Children on 0\n"
                 + "from [Sales]",
                 "Axis #0:\n"
@@ -4757,14 +4751,14 @@ public class NonEmptyTest extends BatchTestCase {
                 + "Axis #1:\n");
 
             // [Coffee] has no children
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select [Product].[Drink].[Baking Goods].[Dry Goods].[Coffee].Children on 0\n"
                 + "from [Sales]",
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n");
 
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select [Measures].[Unit Sales] on 0,\n"
                 + " [Product].[Product Family].Members on 1\n"
                 + "from [Sales]",
@@ -4780,9 +4774,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "Row #1: 191,940\n"
                 + "Row #2: 50,236\n");
         } finally {
-            if (conn != null) {
-                conn.close();
-            }
+            context.close();
         }
     }
 

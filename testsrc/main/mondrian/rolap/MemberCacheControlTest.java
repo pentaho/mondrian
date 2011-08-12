@@ -56,7 +56,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
     }
 
     public TestContext getTestContext() {
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             // Reduced size Store dimension. Omits the 'Store Country' level,
             // and adds properties to non-leaf levels.

@@ -441,7 +441,8 @@ public class BatchTestCase extends FoodMartTestCase {
             Bomb bomb = null;
             try {
                 if (bypassSchemaCache) {
-                    connection = testContext.getFoodMartConnection(false);
+                    connection =
+                        testContext.withSchemaPool(false).getConnection();
                 }
                 final Query query = connection.parseQuery(mdxQuery);
                 if (clearCache) {
@@ -663,7 +664,7 @@ public class BatchTestCase extends FoodMartTestCase {
     }
 
     protected Connection getFoodMartConnection() {
-        return TestContext.instance().getFoodMartConnection();
+        return TestContext.instance().getConnection();
     }
 
     protected RolapCube getCube(final String cube) {
@@ -695,7 +696,8 @@ public class BatchTestCase extends FoodMartTestCase {
         String expectedResult)
     {
         getConnection().getCacheControl(null).flushSchemaCache();
-        Connection con = getTestContext().getFoodMartConnection(false);
+        Connection con =
+            getTestContext().withSchemaPool(false).getConnection();
         RolapNativeRegistry reg = getRegistry(con);
         reg.setListener(
             new Listener() {
@@ -791,7 +793,9 @@ public class BatchTestCase extends FoodMartTestCase {
             Logger.getLogger(getClass()).debug("*** Native: " + mdx);
             boolean reuseConnection = !freshConnection;
             Connection con =
-                getTestContext().getFoodMartConnection(reuseConnection);
+                getTestContext()
+                    .withSchemaPool(reuseConnection)
+                    .getConnection();
             RolapNativeRegistry reg = getRegistry(con);
             reg.useHardCache(true);
             TestListener listener = new TestListener();
@@ -821,7 +825,7 @@ public class BatchTestCase extends FoodMartTestCase {
             Logger.getLogger(getClass()).debug("*** Interpreter: " + mdx);
 
             getConnection().getCacheControl(null).flushSchemaCache();
-            con = getTestContext().getFoodMartConnection(false);
+            con = getTestContext().withSchemaPool(false).getConnection();
             reg = getRegistry(con);
             listener.setFoundEvaluator(false);
             reg.setListener(listener);

@@ -68,7 +68,7 @@ public class UdfTest extends FoodMartTestCase {
      * @return Test context
      */
     private TestContext udfTestContext(String xmlUdf) {
-        return TestContext.create(
+        return TestContext.instance().create(
             null, null, null, null, xmlUdf, null);
     }
 
@@ -80,7 +80,7 @@ public class UdfTest extends FoodMartTestCase {
      * @return Test context
      */
     private TestContext measureTestContext(String xmlMeasure) {
-        return TestContext.createSubstitutingCube(
+        return TestContext.instance().createSubstitutingCube(
             "Sales", null, xmlMeasure, null, null);
     }
 
@@ -92,7 +92,7 @@ public class UdfTest extends FoodMartTestCase {
      * @return Test context
      */
     private TestContext calcMemberTestContext(String xmlCalcMember) {
-        return TestContext.createSubstitutingCube(
+        return TestContext.instance().createSubstitutingCube(
             "Sales", null, null, xmlCalcMember, null);
     }
 
@@ -1183,7 +1183,7 @@ public class UdfTest extends FoodMartTestCase {
      * attribute of a Measure element.
      */
     public void testMemberFormatter() {
-        TestContext tc = TestContext.createSubstitutingCube(
+        TestContext tc = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name='Promotion Media2' foreignKey='promotion_id'>\n"
             + "    <Hierarchy hasAll='true' allMemberName='All Media' primaryKey='promotion_id'>\n"
@@ -1204,7 +1204,7 @@ public class UdfTest extends FoodMartTestCase {
      * memberFormatter element.
      */
     public void testMemberFormatterNested() {
-        TestContext tc = TestContext.createSubstitutingCube(
+        TestContext tc = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name='Promotion Media2' foreignKey='promotion_id'>\n"
             + "    <Hierarchy hasAll='true' allMemberName='All Media' primaryKey='promotion_id'>\n"
@@ -1229,7 +1229,7 @@ public class UdfTest extends FoodMartTestCase {
         if (Util.PreJdk16) {
             return;
         }
-        TestContext tc = TestContext.createSubstitutingCube(
+        TestContext tc = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name='Promotion Media2' foreignKey='promotion_id'>\n"
             + "    <Hierarchy hasAll='true' allMemberName='All Media' primaryKey='promotion_id'>\n"
@@ -1256,7 +1256,7 @@ public class UdfTest extends FoodMartTestCase {
      * @throws java.sql.SQLException on error
      */
     public void testPropertyFormatter() throws SQLException {
-        TestContext tc = TestContext.createSubstitutingCube(
+        TestContext tc = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"
             + "  <Hierarchy hasAll='true' allMemberName='All Promotions' primaryKey='promotion_id' defaultMember='[All Promotions]'>\n"
@@ -1287,7 +1287,7 @@ public class UdfTest extends FoodMartTestCase {
      * @throws java.sql.SQLException on error
      */
     public void testPropertyFormatterNested() throws SQLException {
-        TestContext tc = TestContext.createSubstitutingCube(
+        TestContext tc = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"
             + "  <Hierarchy hasAll='true' allMemberName='All Promotions' primaryKey='promotion_id' defaultMember='[All Promotions]'>\n"
@@ -1322,7 +1322,7 @@ public class UdfTest extends FoodMartTestCase {
         if (Util.PreJdk16) {
             return;
         }
-        TestContext tc = TestContext.createSubstitutingCube(
+        TestContext tc = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"
             + "  <Hierarchy hasAll='true' allMemberName='All Promotions' primaryKey='promotion_id' defaultMember='[All Promotions]'>\n"

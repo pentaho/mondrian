@@ -1257,7 +1257,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "from [Warehouse2]";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null,
                 cube,
                 null,

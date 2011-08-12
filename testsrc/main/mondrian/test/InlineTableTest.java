@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -27,7 +27,7 @@ public class InlineTableTest extends FoodMartTestCase {
 
     public void testInlineTable() {
         final String cubeName = "Sales_inline";
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"" + cubeName + "\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -76,7 +76,7 @@ public class InlineTableTest extends FoodMartTestCase {
 
     public void testInlineTableInSharedDim() {
         final String cubeName = "Sales_inline_shared";
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "  <Dimension name=\"Shared Alternative Promotion\">\n"
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"promo_id\">\n"
@@ -136,7 +136,7 @@ public class InlineTableTest extends FoodMartTestCase {
             return;
         }
         final String cubeName = "Sales_inline_snowflake";
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"" + cubeName + "\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -197,7 +197,7 @@ public class InlineTableTest extends FoodMartTestCase {
 
     public void testInlineTableDate() {
         final String cubeName = "Sales_Inline_Date";
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"" + cubeName + "\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"

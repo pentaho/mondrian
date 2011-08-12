@@ -568,7 +568,7 @@ public class FilterTest extends BatchTestCase {
         };
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -673,7 +673,7 @@ public class FilterTest extends BatchTestCase {
         };
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -859,8 +859,7 @@ public class FilterTest extends BatchTestCase {
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
-        Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);
+        final TestContext context = getTestContext().withFreshConnection();
         context.assertQueryReturns(
             "select Filter([Store].[Store Name].members, "
             + "              Not ([Measures].[Store Sqft] - [Measures].[Grocery Sqft] < 10000)) on rows, "
@@ -1007,7 +1006,7 @@ public class FilterTest extends BatchTestCase {
                 null)
         };
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Store",
                 "<Dimension name='Store Type'>\n"
                 + "    <Hierarchy name='Store Types Hierarchy' allMemberName='All Store Types Member Name' hasAll='true'>\n"

@@ -1945,7 +1945,7 @@ public class FunctionTest extends FoodMartTestCase {
             MondrianProperties.instance().SsasCompatibleNaming.get()
                 ? "[Time2].[Weekly].[1997].[23]"
                 : "[Time2.Weekly].[1997].[23]";
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Time2\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
             + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
@@ -6972,7 +6972,7 @@ public class FunctionTest extends FoodMartTestCase {
      */
     public void testHierarchizeOrdinal() {
         TestContext context = getTestContext().withCube("[Sales_Hierarchize]");
-        final Connection connection = context.getFoodMartConnection();
+        final Connection connection = context.getConnection();
         connection.getSchema().createCube(
             "<Cube name=\"Sales_Hierarchize\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -7718,12 +7718,10 @@ public class FunctionTest extends FoodMartTestCase {
         propSaver.set(
             MondrianProperties.instance().CompareSiblingsByOrderKey,
             true);
-        Connection conn = null;
+        // Use a fresh connection to make sure bad member ordinals haven't
+        // been assigned by previous tests.
+        final TestContext context = getTestContext().withFreshConnection();
         try {
-            // Use a fresh connection to make sure bad member ordinals haven't
-            // been assigned by previous tests.
-            conn = getTestContext().getFoodMartConnection(false);
-            TestContext context = getTestContext(conn);
             context.assertQueryReturns(
                 "select \n"
                 + "  Order("
@@ -7739,8 +7737,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #0: 33\n"
                 + "Row #0: 75\n");
         } finally {
-            if (conn != null) {
-                conn.close();
+            if (context != null) {
+                context.close();
             }
         }
     }
@@ -7749,12 +7747,10 @@ public class FunctionTest extends FoodMartTestCase {
         // sort by default measure
         propSaver.set(
             MondrianProperties.instance().CompareSiblingsByOrderKey, true);
-        Connection conn = null;
+        // Use a fresh connection to make sure bad member ordinals haven't
+        // been assigned by previous tests.
+        final TestContext context = getTestContext().withFreshConnection();
         try {
-            // Use a fresh connection to make sure bad member ordinals haven't
-            // been assigned by previous tests.
-            conn = getTestContext().getFoodMartConnection(false);
-            TestContext context = getTestContext(conn);
             context.assertQueryReturns(
                 "select \n"
                 + "  Order("
@@ -7770,9 +7766,7 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #0: 75\n"
                 + "Row #0: 33\n");
         } finally {
-            if (conn != null) {
-                conn.close();
-            }
+            context.close();
         }
     }
 
@@ -7859,12 +7853,10 @@ public class FunctionTest extends FoodMartTestCase {
     public void testOrderMemberMultiKeysMemberValueExp2() {
         propSaver.set(
             MondrianProperties.instance().CompareSiblingsByOrderKey, true);
-        Connection conn = null;
+        // Use a fresh connection to make sure bad member ordinals haven't
+        // been assigned by previous tests.
+        final TestContext context = getTestContext().withFreshConnection();
         try {
-            // Use a fresh connection to make sure bad member ordinals haven't
-            // been assigned by previous tests.
-            conn = getTestContext().getFoodMartConnection(false);
-            TestContext context = getTestContext(conn);
             context.assertQueryReturns(
                 "select \n"
                 + "  Order("
@@ -7883,9 +7875,7 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #0: 75\n"
                 + "Row #0: 33\n");
         } finally {
-            if (conn != null) {
-                conn.close();
-            }
+            context.close();
         }
     }
 
@@ -7913,12 +7903,10 @@ public class FunctionTest extends FoodMartTestCase {
     public void testOrderTupleSingleKeysNew() {
         propSaver.set(
             MondrianProperties.instance().CompareSiblingsByOrderKey, true);
-        Connection conn = null;
+        // Use a fresh connection to make sure bad member ordinals haven't
+        // been assigned by previous tests.
+        final TestContext context = getTestContext().withFreshConnection();
         try {
-            // Use a fresh connection to make sure bad member ordinals haven't
-            // been assigned by previous tests.
-            conn = getTestContext().getFoodMartConnection(false);
-            TestContext context = getTestContext(conn);
             context.assertQueryReturns(
                 "with \n"
                 + "  set [NECJ] as \n"
@@ -7942,21 +7930,17 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #0: 75\n"
                 + "Row #0: 33\n");
         } finally {
-            if (conn != null) {
-                conn.close();
-            }
+            context.close();
         }
     }
 
     public void testOrderTupleSingleKeysNew1() {
         propSaver.set(
             MondrianProperties.instance().CompareSiblingsByOrderKey, true);
-        Connection conn = null;
+        // Use a fresh connection to make sure bad member ordinals haven't
+        // been assigned by previous tests.
+        final TestContext context = getTestContext().withFreshConnection();
         try {
-            // Use a fresh connection to make sure bad member ordinals haven't
-            // been assigned by previous tests.
-            conn = getTestContext().getFoodMartConnection(false);
-            TestContext context = getTestContext(conn);
             context.assertQueryReturns(
                 "with \n"
                 + "  set [NECJ] as \n"
@@ -7980,9 +7964,7 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #0: 75\n"
                 + "Row #0: 33\n");
         } finally {
-            if (conn != null) {
-                conn.close();
-            }
+            context.close();
         }
     }
 
@@ -8068,7 +8050,7 @@ public class FunctionTest extends FoodMartTestCase {
         // Use a fresh connection to make sure bad member ordinals haven't
         // been assigned by previous tests.
         // a non-sense cube just to test ordering by order key
-        TestContext context = TestContext.create(
+        TestContext context = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs HR\">\n"

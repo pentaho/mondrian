@@ -49,7 +49,7 @@ public class DynamicSchemaProcessorTest
      * definition.
      */
     public void testDSPBasics() {
-        DynamicSchemaProcessor dsp = new BaseDSP();
+        DynamicSchemaProcessor dsp = new BaseDsp();
         Util.PropertyList dummy = new Util.PropertyList();
         String processedSchema = "";
         try {
@@ -65,10 +65,11 @@ public class DynamicSchemaProcessorTest
      * Tests to make sure that our base DynamicSchemaProcessor works, and
      * Mondrian is able to parse and connect to FoodMart with it
      */
-    public void testFoodmartDSP() {
-        TestContext tc = TestContext.instance();
-        Connection monConnection = tc.getFoodMartConnection(BaseDSP.class);
-
+    public void testFoodmartDsp() {
+        final Connection monConnection =
+            TestContext.instance()
+                .withSchemaProcessor(BaseDsp.class)
+                .getConnection();
         assertEquals(monConnection.getSchema().getName(), "REPLACEME");
     }
 
@@ -77,11 +78,11 @@ public class DynamicSchemaProcessorTest
      *
      * @author ngoodman
      */
-    public static class BaseDSP implements DynamicSchemaProcessor {
+    public static class BaseDsp implements DynamicSchemaProcessor {
         // Determines the "cubeName"
         protected String replaceToken = "REPLACEME";
 
-        public BaseDSP() {}
+        public BaseDsp() {}
 
         public String processSchema(
             String schemaUrl,
@@ -103,9 +104,10 @@ public class DynamicSchemaProcessorTest
      * Tests to ensure we have access to Connect properies in a DSP
      */
     public void testProviderTestDSP() {
-        TestContext tc = TestContext.instance();
         Connection monConnection =
-            tc.getFoodMartConnection(ProviderTestDSP.class);
+            TestContext.instance()
+                .withSchemaProcessor(ProviderTestDSP.class)
+                .getConnection();
         assertEquals(monConnection.getSchema().getName(), "mondrian");
     }
 
@@ -116,7 +118,7 @@ public class DynamicSchemaProcessorTest
      * @author ngoodman
      *
      */
-    public static class ProviderTestDSP extends BaseDSP {
+    public static class ProviderTestDSP extends BaseDsp {
         public String processSchema(
             String schemaUrl,
             Util.PropertyList connectInfo)
@@ -131,9 +133,10 @@ public class DynamicSchemaProcessorTest
      * Tests to ensure we have access to Connect properies in a DSP
      */
     public void testDBInfoDSP() {
-        TestContext tc = TestContext.instance();
         Connection monConnection =
-            tc.getFoodMartConnection(FoodMartCatalogDSP.class);
+            TestContext.instance()
+                .withSchemaProcessor(FoodMartCatalogDsp.class)
+                .getConnection();
         assertEquals(
             monConnection.getSchema().getName(),
             "FoodmartFoundInCatalogProperty");
@@ -146,7 +149,7 @@ public class DynamicSchemaProcessorTest
      * @author ngoodman
      *
      */
-    public static class FoodMartCatalogDSP extends BaseDSP {
+    public static class FoodMartCatalogDsp extends BaseDsp {
         public String processSchema(
             String schemaUrl,
             Util.PropertyList connectInfo)
@@ -165,10 +168,11 @@ public class DynamicSchemaProcessorTest
     /**
      * Tests to ensure we have access to Connect properties in a DSP
      */
-    public void testCheckJDBCPropertyDSP() {
-        TestContext tc = TestContext.instance();
+    public void testCheckJdbcPropertyDsp() {
         Connection monConnection =
-            tc.getFoodMartConnection(CheckJdbcPropertyDsp.class);
+            TestContext.instance()
+                .withSchemaProcessor(CheckJdbcPropertyDsp.class)
+                .getConnection();
         assertEquals(
             monConnection.getSchema().getName(),
             CheckJdbcPropertyDsp.RETURNTRUESTRING);
@@ -182,7 +186,7 @@ public class DynamicSchemaProcessorTest
      * @author ngoodman
      *
      */
-    public static class CheckJdbcPropertyDsp extends BaseDSP {
+    public static class CheckJdbcPropertyDsp extends BaseDsp {
         public static String RETURNTRUESTRING = "true";
         public static String RETURNFALSESTRING = "false";
 

@@ -44,75 +44,50 @@ public class SteelWheelsTestCase extends TestCase {
     }
 
     /**
-     * Returns the test context. Override this method if you wish to use a
-     * different source for your FoodMart connection.
+     * Creates a TestContext which contains the given schema text.
+     *
+     * @param context Base test context
+     * @param schema A XML schema, or null
+     * Used for testing if the connection is valid.
+     * @return TestContext which contains the given schema
      */
-    public TestContext getTestContext() {
-        return new SteelWheelsTestContext();
-    }
-
-    static class SteelWheelsTestContext extends TestContext
+    public static TestContext createContext(
+        TestContext context,
+        final String schema)
     {
-        @Override
-        public Util.PropertyList getFoodMartConnectionProperties() {
-            final Util.PropertyList propertyList =
-                Util.parseConnectString(getDefaultConnectString());
-            // Assume we are talking to MySQL. Connect to 'sampledata'
-            // database, using usual credentials ('foodmart').
-            propertyList.put(
-                RolapConnectionProperties.Jdbc.name(),
-                Util.replace(
-                    propertyList.get(RolapConnectionProperties.Jdbc.name()),
-                    "/foodmart",
-                    "/steelwheels"));
-            propertyList.put(
+        final Util.PropertyList properties =
+            context.getConnectionProperties().clone();
+        final String jdbc = properties.get(
+            RolapConnectionProperties.Jdbc.name());
+        properties.put(
+            RolapConnectionProperties.Jdbc.name(),
+            Util.replace(jdbc, "/foodmart", "/steelwheels"));
+        if (schema != null) {
+            properties.put(
+                RolapConnectionProperties.CatalogContent.name(),
+                schema);
+            properties.remove(
+                RolapConnectionProperties.Catalog.name());
+        } else {
+            final String catalog =
+                properties.get(RolapConnectionProperties.Catalog.name());
+            properties.put(
                 RolapConnectionProperties.Catalog.name(),
                 Util.replace(
-                    propertyList.get(RolapConnectionProperties.Catalog.name()),
+                    catalog,
                     "FoodMart.xml",
                     "SteelWheels.mondrian.xml"));
-            return propertyList;
         }
+        return context.withProperties(properties);
+    }
 
-        public String getDefaultCubeName() {
-            return "SteelWheelsSales";
-        }
-
-        /**
-         * Creates a TestContext which contains the given schema text.
-         *
-         * @param schema A XML schema.
-         * @param baseCubeName The name of a cube present in the schema.
-         * Used for testing if the connection is valid.
-         * @return TestContext which contains the given schema
-         */
-        public static TestContext create(
-            final String schema,
-            final String baseCubeName)
-        {
-            return new SteelWheelsTestContext() {
-                public Util.PropertyList getFoodMartConnectionProperties() {
-                    final Util.PropertyList properties =
-                        Util.parseConnectString(getDefaultConnectString());
-                    properties.put(
-                        RolapConnectionProperties.Jdbc.name(),
-                        Util.replace(
-                            properties.get(
-                                RolapConnectionProperties.Jdbc.name()),
-                            "/foodmart",
-                            "/steelwheels"));
-                    properties.put(
-                        RolapConnectionProperties.CatalogContent.name(),
-                        schema);
-                    properties.remove(
-                        RolapConnectionProperties.Catalog.name());
-                    return properties;
-                }
-                public String getDefaultCubeName() {
-                    return baseCubeName;
-                }
-            };
-        }
+    /**
+     * Returns the test context. Override this method if you wish to use a
+     * different source for your SteelWheels connection.
+     */
+    public TestContext getTestContext() {
+        return createContext(TestContext.instance(), null)
+            .withCube("SteelWheelsSales");
     }
 }
 

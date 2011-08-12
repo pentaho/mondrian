@@ -58,21 +58,8 @@ public class FoodMartTestCase extends TestCase {
         return TestContext.instance();
     }
 
-    /**
-     * Returns a {@link TestContext} which uses a given connection.
-     *
-     * @param connection Connection
-     */
-    public TestContext getTestContext(final Connection connection) {
-        return new DelegatingTestContext(getTestContext()) {
-            public Connection getConnection() {
-                return connection;
-            }
-        };
-    }
-
     protected Connection getConnection() {
-        return getTestContext().getFoodMartConnection();
+        return getTestContext().getConnection();
     }
 
     /**

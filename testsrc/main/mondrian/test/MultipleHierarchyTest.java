@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -162,7 +162,7 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
      * bug MONDRIAN-191, "Properties not working with multiple hierarchies"</a>.
      */
     public void testProperty() {
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"NuStore\" foreignKey=\"store_id\">\n"
             + "<Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
@@ -327,7 +327,7 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
      * throws exception"</a>.
      */
     public void testDefaultNamedHierarchy() {
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"NuStore\" foreignKey=\"store_id\">\n"
             + "<Hierarchy name=\"NuStore\" hasAll=\"true\" primaryKey=\"store_id\">\n"

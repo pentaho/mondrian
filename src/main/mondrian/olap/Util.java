@@ -2159,6 +2159,20 @@ public class Util extends XOMUtil {
         List<Pair<String, String>> list =
             new ArrayList<Pair<String, String>>();
 
+        public PropertyList() {
+            this.list = new ArrayList<Pair<String, String>>();
+        }
+
+        private PropertyList(List<Pair<String, String>> list) {
+            this.list = list;
+        }
+
+        @SuppressWarnings({"CloneDoesntCallSuperClone"})
+        @Override
+        public PropertyList clone() {
+            return new PropertyList(new ArrayList<Pair<String, String>>(list));
+        }
+
         public String get(String key) {
             return get(key, null);
         }

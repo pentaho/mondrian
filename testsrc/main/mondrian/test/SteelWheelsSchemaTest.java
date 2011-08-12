@@ -182,18 +182,13 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
      * NPE"</a>.
      */
     public void testBugMondrian756() {
-        TestContext testContext =
-            new SteelWheelsTestContext() {
-                @Override
-                public Util.PropertyList getFoodMartConnectionProperties() {
-                    Util.PropertyList propertyList =
-                        super.getFoodMartConnectionProperties();
-                    propertyList.put(
-                        RolapConnectionProperties.DynamicSchemaProcessor.name(),
-                        Mondrian756SchemaProcessor.class.getName());
-                    return propertyList;
-                }
-            };
+        TestContext testContext0 = getTestContext();
+        final Util.PropertyList propertyList =
+            testContext0.getConnectionProperties().clone();
+        propertyList.put(
+            RolapConnectionProperties.DynamicSchemaProcessor.name(),
+            Mondrian756SchemaProcessor.class.getName());
+        TestContext testContext = testContext0.withProperties(propertyList);
         if (!testContext.databaseIsValid()) {
             return;
         }
@@ -228,7 +223,8 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
 
     public void testMondrianBug476_770_957() throws Exception {
         final TestContext context =
-            SteelWheelsTestContext.create(
+            SteelWheelsTestCase.createContext(
+                TestContext.instance(),
                 "<Schema name=\"test_namecolumn\">"
                 + "<Dimension type=\"StandardDimension\" highCardinality=\"false\" name=\"Markets\">"
                 + "<Hierarchy hasAll=\"true\" allMemberName=\"All Markets\" primaryKey=\"CUSTOMERNUMBER\">"
@@ -342,8 +338,8 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
                 + "<Measure name=\"Total Price\" column=\"TOTALPRICE\" formatString=\"#,###.00\" aggregator=\"sum\">\n"
                 + "</Measure>"
                 + "</Cube>"
-                + "</Schema>\n",
-                "SteelWheelsSales1");
+                + "</Schema>\n")
+            .withCube("SteelWheelsSales1");
         final String mdxQuery =
             "with set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], (NOT IsEmpty([Measures].[Price Each])))'\n"
             + "  set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], Ancestor([Time].CurrentMember, [Time].[Years]).OrderKey, BASC, [Time].CurrentMember.OrderKey, BASC)'\n"
@@ -388,10 +384,11 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
     }
 
     public void testBugMondrian935() {
-        if (!getTestContext().databaseIsValid()) {
+        final TestContext testContext = getTestContext();
+        if (!testContext.databaseIsValid()) {
             return;
         }
-        getTestContext().assertQueryReturns(
+        testContext.assertQueryReturns(
             "with set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Product]' \n"
             + "  set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS], "
             + "[Product].CurrentMember.OrderKey, BASC)' \n"

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -39,7 +39,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             return;
         }
         final Connection connection = TestContext.instance()
-            .getFoodMartConnection();
+            .getConnection();
         Query query = connection.parseQuery(
             "with set necj as "
             + "NonEmptyCrossJoin(NonEmptyCrossJoin("
@@ -131,7 +131,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
     // disabled pending fix of bug MONDRIAN-527
     public void _testTopCount() throws Exception {
         final Connection connection = TestContext.instance()
-            .getFoodMartConnection();
+            .getConnection();
         final StringBuffer buffer = new StringBuffer();
         Query query =
             connection.parseQuery(
@@ -237,7 +237,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
         try {
             MondrianProperties.instance().ResultLimit.set(resultLimit);
             final TestContext testContext =
-                TestContext.createSubstitutingCube(
+                TestContext.instance().createSubstitutingCube(
                     "Sales Ragged",
                     "<Dimension name=\"Promotions\" highCardinality=\"true\" "
                     + "foreignKey=\"promotion_id\">"
