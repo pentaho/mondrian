@@ -1080,7 +1080,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + " {[Gender].MEMBERS} ON ROWS\n"
             + "FROM [Sales]"
             + "WHERE ([Marital Status].[S], [Marital Status].[M])",
-            "Tuple contains more than one member of hierarchy '[Marital Status]'.");
+            "Tuple contains more than one member of hierarchy '[Customer].[Marital Status]'.");
 
         // two members of different hierarchies of the same dimension in the
         // slicer tuple

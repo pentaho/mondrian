@@ -1297,7 +1297,7 @@ whether to enable new naming behavior.</p>
 [Dimension.Hierarchy].</p>
         </Description>
         <Type>boolean</Type>
-        <Default>false</Default>
+        <Default>true</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>XmlaSchemaRefreshInterval</Name>

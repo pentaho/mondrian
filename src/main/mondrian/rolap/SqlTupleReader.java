@@ -824,16 +824,25 @@ Util.deprecated("obsolete basecube parameter", false);
             // if we're going to be enumerating the values for this target,
             // then we don't need to generate sql for it
             if (target.getSrcMembers() == null) {
+                RolapLevel startLevel = target.level;
+                if (MondrianProperties.instance()
+                    .FilterChildlessSnowflakeMembers.get())
+                {
+                    startLevel =
+                        Util.last(
+                            target.level.getHierarchy().getRolapLevelList());
+                }
                 final ColumnLayoutBuilder columnLayoutBuilder =
-                    new ColumnLayoutBuilder();
+                    new ColumnLayoutBuilder(
+                        startLevel.attribute.keyList);
                 addLevelMemberSql(
-                    sqlQuery,
+                    new RolapSchema.SqlQueryBuilder(
+                        sqlQuery, columnLayoutBuilder),
                     target.getLevel(),
                     starSet,
                     selectOrdinal,
                     selectCount,
-                    aggStar,
-                    columnLayoutBuilder);
+                    aggStar);
                 target.setColumnLayout(
                     columnLayoutBuilder.toLayout());
             }
@@ -899,23 +908,23 @@ Util.deprecated("obsolete basecube parameter", false);
      * <li><code>"init", "bar"</code> are member properties.</li>
      * </ul>
      *
-     * @param sqlQuery the query object being constructed
+     * @param queryBuilder the query object being constructed
      * @param level level to be added to the sql query
      * @param starSet
      * @param selectOrdinal Ordinal of this SELECT statement in UNION
      * @param selectCount Number of SELECT statements in UNION
      * @param aggStar aggregate star if available
-     * @param layoutBuilder Column layout builder
      */
     protected void addLevelMemberSql(
-        SqlQuery sqlQuery,
+        RolapSchema.SqlQueryBuilder queryBuilder,
         RolapLevel level,
         final RolapStarSet starSet,
         int selectOrdinal,
         int selectCount,
-        AggStar aggStar,
-        ColumnLayoutBuilder layoutBuilder)
+        AggStar aggStar)
     {
+        final SqlQuery sqlQuery = queryBuilder.sqlQuery;
+        final ColumnLayoutBuilder layoutBuilder = queryBuilder.layoutBuilder;
         RolapHierarchy hierarchy = level.getHierarchy();
         RolapCubeDimension cubeDimension = null;
 
@@ -975,75 +984,55 @@ Util.deprecated("obsolete basecube parameter", false);
             if (attribute.parentAttribute != null) {
                 List<RolapSchema.PhysColumn> parentExps =
                     attribute.parentAttribute.keyList;
+                SqlMemberSource.Sgo sgo =
+                    selectOrdinal == selectCount - 1
+                        ? SqlMemberSource.Sgo.SELECT_GROUP_ORDER
+                        : SqlMemberSource.Sgo.SELECT_GROUP;
                 for (RolapSchema.PhysColumn parentExp : parentExps) {
-                    String parentSql = parentExp.toSql();
-                    final String alias =
-                        sqlQuery.addSelectGroupBy(parentSql, null);
                     levelLayoutBuilder.parentOrdinalList.add(
-                        layoutBuilder.register(parentSql, alias));
-                    if (selectOrdinal == selectCount - 1) {
-                        sqlQuery.addOrderBy(parentSql, true, false, true);
-                    }
-                    sqlQuery.addOrderBy(parentSql, true, false, true);
-                    if (starSet.cube != null && !levelCollapsed) {
-                        parentExp.addToFrom(
-                            sqlQuery, measureGroup, cubeDimension);
+                        queryBuilder.asasdasd(parentExp, sgo));
+                    if (starSet.cube != null
+                        && !levelCollapsed
+                        && measureGroup != null)
+                    {
+                        parentExp.joinToStarRoot(
+                            sqlQuery,
+                            measureGroup,
+                            cubeDimension);
                     }
                 }
             }
 
-            String captionSql = null;
-            if (attribute.captionExp != null) {
-                captionSql = attribute.captionExp.toSql();
-                if (starSet.cube != null) {
-                    attribute.captionExp.addToFrom(
+            SqlMemberSource.Sgo sgo =
+                SqlMemberSource.Sgo.SELECT_ORDER.maybeGroup(needsGroupBy);
+            for (RolapSchema.PhysColumn column : attribute.keyList) {
+                levelLayoutBuilder.keyOrdinalList.add(
+                    queryBuilder.asasdasd(column, sgo));
+                if (measureGroup != null) {
+                    column.joinToStarRoot(
                         sqlQuery, measureGroup, cubeDimension);
                 }
             }
 
-            for (RolapSchema.PhysColumn column : attribute.keyList) {
-                column.addToFrom(sqlQuery, measureGroup, cubeDimension);
-                final String sql = column.toSql();
-                int ordinal = layoutBuilder.lookup(sql);
-                if (ordinal < 0) {
-                    String alias =
-                        sqlQuery.addSelect(sql, column.getInternalType());
-                    ordinal = layoutBuilder.register(sql, alias);
-                    if (needsGroupBy) {
-                        sqlQuery.addGroupBy(sql, alias);
-                    }
-                }
-                levelLayoutBuilder.keyOrdinalList.add(ordinal);
-            }
-
             for (RolapSchema.PhysColumn column : attribute.orderByList) {
-                final String sql = column.toSql();
-                int ordinal = layoutBuilder.lookup(sql);
-                if (ordinal < 0) {
-                    String alias =
-                        sqlQuery.addSelect(sql, column.getInternalType());
-                    ordinal = layoutBuilder.register(sql, alias);
-                    if (needsGroupBy) {
-                        sqlQuery.addGroupBy(sql, alias);
-                    }
-                }
-                levelLayoutBuilder.ordinalList.add(ordinal);
+                levelLayoutBuilder.ordinalList.add(
+                    queryBuilder.asasdasd(column, sgo));
             }
 
-            if (captionSql != null) {
-                int ordinal = layoutBuilder.lookup(captionSql);
-                if (ordinal < 0) {
-                    String alias =
-                        sqlQuery.addSelect(
-                            captionSql, attribute.captionExp.getInternalType());
-                    ordinal = layoutBuilder.register(captionSql, alias);
-                    if (needsGroupBy) {
-                        sqlQuery.addGroupBy(captionSql, alias);
+            levelLayoutBuilder.captionOrdinal =
+                queryBuilder.asasdasd(
+                    attribute.captionExp,
+                    SqlMemberSource.Sgo.SELECT.maybeGroup(needsGroupBy));
+            if (attribute.captionExp != null) {
+                if (starSet.cube != null) {
+                    Util.deprecated(
+                        "join to layoutbuilder key sufficient?",
+                        false);
+                    if (measureGroup != null) {
+                        attribute.captionExp.joinToStarRoot(
+                            sqlQuery, measureGroup, cubeDimension);
                     }
                 }
-                levelLayoutBuilder.captionOrdinal = ordinal;
-            } else {
-                levelLayoutBuilder.captionOrdinal = -1;
             }
 
             constraint.addLevelConstraint(
@@ -1284,6 +1273,10 @@ Util.deprecated("obsolete basecube parameter", false);
         this.maxRows = maxRows;
     }
 
+    /**
+     *
+     * @see Util#deprecated(Object) add javadoc and make top level
+     */
     static class ColumnLayoutBuilder {
         private final List<String> exprList = new ArrayList<String>();
         private final List<String> aliasList = new ArrayList<String>();
@@ -1292,8 +1285,16 @@ Util.deprecated("obsolete basecube parameter", false);
         LevelLayoutBuilder currentLevelLayout;
         final List<SqlStatement.Type> types =
             new ArrayList<SqlStatement.Type>();
+        final List<RolapSchema.PhysColumn> keyList;
 
-        ColumnLayoutBuilder() {
+        /**
+         * Creates a ColumnLayoutBuilder.
+         *
+         * @param keyList Key of starting point for query; other attributes
+         *   will be joined to this
+         */
+        ColumnLayoutBuilder(List<RolapSchema.PhysColumn> keyList) {
+            this.keyList = keyList;
         }
 
         /**
@@ -1354,6 +1355,10 @@ Util.deprecated("obsolete basecube parameter", false);
         }
     }
 
+    /**
+     *
+     * @see Util#deprecated(Object) add javadoc and make top level
+     */
     static class LevelLayoutBuilder {
         public List<Integer> keyOrdinalList = new ArrayList<Integer>();
         public List<Integer> ordinalList = new ArrayList<Integer>();

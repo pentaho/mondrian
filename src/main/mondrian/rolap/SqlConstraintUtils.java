@@ -386,6 +386,10 @@ public class SqlConstraintUtils {
         // If this constraint is part of a native cross join and there
         // are multiple values for the parent members, then we can't
         // use single value IN clauses
+        final RolapSchema.SqlQueryBuilder queryBuilder =
+            new RolapSchema.SqlQueryBuilder(
+                sqlQuery,
+                new SqlTupleReader.ColumnLayoutBuilder(null));
         if (crossJoin
             && true /* TODO: !memberLevel.isUnique() */
             && !membersAreCrossProduct(members))
@@ -393,7 +397,7 @@ public class SqlConstraintUtils {
             assert (member.getParentMember() != null);
             condition.append(
                 constrainMultiLevelMembers(
-                    sqlQuery,
+                    queryBuilder,
                     starSet.getMeasureGroup(),
                     aggStar,
                     members,
@@ -403,7 +407,7 @@ public class SqlConstraintUtils {
         } else {
             generateSingleValueInExpr(
                 condition,
-                sqlQuery,
+                queryBuilder,
                 starSet.getMeasureGroup(),
                 aggStar,
                 members,
@@ -456,19 +460,19 @@ public class SqlConstraintUtils {
      * Adds to the where clause of a query expression matching a specified
      * list of members.
      *
-     * @param sqlQuery query containing the where clause
+     * @param queryBuilder query containing the where clause
      * @param measureGroup
-     *@param aggStar aggregate star if available
+     * @param aggStar aggregate star if available
      * @param members list of constraining members
      * @param fromLevel lowest parent level that is unique
      * @param restrictMemberTypes defines the behavior when calculated members
-* are present
+     * are present
      * @param exclude whether to exclude the members. Default is false.
-*      @return a non-empty String if SQL is generated for the multi-level
+     * @return a non-empty String if SQL is generated for the multi-level
      * member list.
      */
     private static String constrainMultiLevelMembers(
-        SqlQuery sqlQuery,
+        RolapSchema.SqlQueryBuilder queryBuilder,
         RolapMeasureGroup measureGroup,
         AggStar aggStar,
         List<RolapMember> members,
@@ -488,10 +492,10 @@ public class SqlConstraintUtils {
         }
 
         // First try to generate IN list for all members
-        if (sqlQuery.getDialect().supportsMultiValueInExpr()) {
+        if (queryBuilder.getDialect().supportsMultiValueInExpr()) {
             condition1.append(
                 generateMultiValueInExpr(
-                    sqlQuery,
+                    queryBuilder,
                     measureGroup,
                     aggStar,
                     members,
@@ -527,7 +531,7 @@ public class SqlConstraintUtils {
                     condition.append(" or ");
                     generateMultiValueIsNullExprs(
                         condition,
-                        sqlQuery,
+                        queryBuilder,
                         measureGroup,
                         members.get(0),
                         fromLevel);
@@ -616,9 +620,13 @@ public class SqlConstraintUtils {
                             AggStar.Table.Column aggColumn =
                                 aggStar.lookupColumn(bitPos);
                             AggStar.Table table = aggColumn.getTable();
-                            table.addToFrom(sqlQuery, false, true);
+                            table.addToFrom(queryBuilder.sqlQuery, false,
+                                true);
                         } else {
-                            column.getTable().addToFrom(sqlQuery, false, true);
+                            column.getTable().addToFrom(
+                                queryBuilder.sqlQuery,
+                                false,
+                                true);
                         }
                     } else {
                         assert aggStar == null;
@@ -635,12 +643,12 @@ public class SqlConstraintUtils {
                     condition2.append(
                         constrainLevel(
                             p.getLevel(),
-                            sqlQuery,
+                            queryBuilder.sqlQuery,
                             measureGroup,
                             aggStar,
                             getColumnValue(
                                 keyList.get(j),
-                                sqlQuery.getDialect(),
+                                queryBuilder.getDialect(),
                                 physColumn.getDatatype()),
                             false));
 
@@ -668,13 +676,13 @@ public class SqlConstraintUtils {
                 }
                 RolapLevel childrenLevel = p.getLevel().getChildLevel();
 
-                if (sqlQuery.getDialect().supportsMultiValueInExpr()
+                if (queryBuilder.getDialect().supportsMultiValueInExpr()
                     && childrenLevel != memberLevel)
                 {
                     // Multi-level children and multi-value IN list supported
                     condition2.append(
                         generateMultiValueInExpr(
-                            sqlQuery,
+                            queryBuilder,
                             measureGroup,
                             aggStar,
                             children,
@@ -690,7 +698,7 @@ public class SqlConstraintUtils {
                     assert childrenLevel == memberLevel;
                     generateSingleValueInExpr(
                         condition2,
-                        sqlQuery,
+                        queryBuilder,
                         measureGroup,
                         aggStar,
                         children,
@@ -720,7 +728,7 @@ public class SqlConstraintUtils {
             condition.append(") or (");
             generateMultiValueIsNullExprs(
                 condition,
-                sqlQuery,
+                queryBuilder,
                 measureGroup,
                 members.get(0),
                 fromLevel);
@@ -878,7 +886,7 @@ public class SqlConstraintUtils {
      * member expressions, and adds the expression to the WHERE clause
      * of a query, provided the member values are all non-null.
      *
-     * @param sqlQuery query containing the where clause
+     * @param queryBuilder query containing the where clause
      * @param measureGroup Measure group
      * @param aggStar aggregate star if available
      * @param members list of constraining members
@@ -891,7 +899,7 @@ public class SqlConstraintUtils {
      *        members
      */
     private static String generateMultiValueInExpr(
-        SqlQuery sqlQuery,
+        RolapSchema.SqlQueryBuilder queryBuilder,
         RolapMeasureGroup measureGroup,
         AggStar aggStar,
         List<RolapMember> members,
@@ -938,11 +946,11 @@ public class SqlConstraintUtils {
                     AggStar.Table.Column aggColumn =
                         aggStar.lookupColumn(bitPos);
                     AggStar.Table table = aggColumn.getTable();
-                    table.addToFrom(sqlQuery, false, true);
-                    columnString = aggColumn.generateExprString(sqlQuery);
+                    table.addToFrom(queryBuilder.sqlQuery, false, true);
+                    columnString = aggColumn.getExpression().toSql();
                 } else {
                     RolapStar.Table targetTable = column.getTable();
-                    targetTable.addToFrom(sqlQuery, false, true);
+                    targetTable.addToFrom(queryBuilder.sqlQuery, false, true);
                     columnString = column.getExpression().toSql();
                 }
             } else {
@@ -994,7 +1002,7 @@ public class SqlConstraintUtils {
                 Util.deprecated("obsolete", false);
                 String value = getColumnValue(
                     p.getKey(),
-                    sqlQuery.getDialect(), level.attribute.getDatatype());
+                    queryBuilder.getDialect(), level.attribute.getDatatype());
 
                 // If parent at a level is NULL, record this parent and all
                 // its children (if there are any)
@@ -1022,7 +1030,7 @@ public class SqlConstraintUtils {
                 }
 
                 Util.deprecated("obsolete", false);
-                sqlQuery.getDialect().quote(
+                queryBuilder.getDialect().quote(
                     memberBuf, value, level.attribute.getDatatype());
 
                 // Only needs to compare up to the first(lowest) unique level.
@@ -1060,14 +1068,14 @@ public class SqlConstraintUtils {
      * per level in a RolapMember.
      *
      * @param buf Buffer to which to append condition
-     * @param sqlQuery query corresponding to the expression
+     * @param queryBuilder query corresponding to the expression
      * @param measureGroup Measure group
      * @param member the RolapMember
      * @param fromLevel lowest parent level that is unique
      */
     private static void generateMultiValueIsNullExprs(
         StringBuilder buf,
-        SqlQuery sqlQuery,
+        RolapSchema.SqlQueryBuilder queryBuilder,
         RolapMeasureGroup measureGroup,
         RolapMember member,
         RolapLevel fromLevel)
@@ -1134,7 +1142,7 @@ public class SqlConstraintUtils {
      * a RolapMeasureGroup, former without.
      *
      * @param buf Buffer into which to generate condition
-     * @param sqlQuery query containing the where clause
+     * @param queryBuilder query containing the where clause
      * @param measureGroup Measure group to semijoin to; or null
      * @param aggStar aggregate star if available
      * @param members list of constraining members
@@ -1145,7 +1153,7 @@ public class SqlConstraintUtils {
      */
     private static void generateSingleValueInExpr(
         StringBuilder buf,
-        SqlQuery sqlQuery,
+        RolapSchema.SqlQueryBuilder queryBuilder,
         RolapMeasureGroup measureGroup,
         AggStar aggStar,
         List<RolapMember> members,
@@ -1155,7 +1163,7 @@ public class SqlConstraintUtils {
     {
         final int maxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
-        final Dialect dialect = sqlQuery.getDialect();
+        final Dialect dialect = queryBuilder.getDialect();
 
         boolean firstLevel = true;
         for (Collection<RolapMember> members2 = members;
@@ -1209,21 +1217,22 @@ public class SqlConstraintUtils {
                                 + column + " (bitPos " + bitPos + ")");
                         }
                         AggStar.Table table = aggColumn.getTable();
-                        table.addToFrom(sqlQuery, false, true);
-                        q = aggColumn.generateExprString(sqlQuery);
+                        table.addToFrom(queryBuilder.sqlQuery, false, true);
+                        q = aggColumn.getExpression().toSql();
                     } else {
                         RolapStar.Table targetTable = column.getTable();
-                        targetTable.addToFrom(sqlQuery, false, true);
+                        targetTable.addToFrom(queryBuilder.sqlQuery, false, true);
                         q = column.getExpression().toSql();
                     }
                 } else {
                     assert aggStar == null;
                     // REVIEW: was 'baseCube != null'
                     column = null;
+                    queryBuilder.addToFrom(key);
                     if (measureGroup != null) {
-                        key.addToFrom(sqlQuery, measureGroup, null);
+                        key.joinToStarRoot(queryBuilder.sqlQuery, measureGroup, null);
                     } else {
-//                    level.getKeyPath().addToFrom(sqlQuery, false);
+//                    level.getKeyPath().addToFrom(queryBuilder, false);
                     }
                     q = key.toSql();
                 }

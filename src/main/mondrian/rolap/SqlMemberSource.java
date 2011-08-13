@@ -184,6 +184,10 @@ class SqlMemberSource
                 dataSource,
                 "while generating query to count members in attribute "
                 + attribute);
+        SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
+            new SqlTupleReader.ColumnLayoutBuilder(null);
+        final RolapSchema.SqlQueryBuilder queryBuilder =
+            new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
         if (!sqlQuery.getDialect().allowsFromQuery()) {
             StringBuilder columnList = new StringBuilder();
             int columnCount = 0;
@@ -199,7 +203,7 @@ class SqlMemberSource
                         mustCount[0] = true;
                     }
                 }
-                column.addToFrom(sqlQuery, null, null);
+                queryBuilder.addToFrom(column);
 
                 String keyExp = column.toSql();
                 if (columnCount > 0
@@ -225,7 +229,7 @@ class SqlMemberSource
         } else {
             sqlQuery.setDistinct(true);
             for (RolapSchema.PhysColumn column : attribute.keyList) {
-                column.addToFrom(sqlQuery, null, null);
+                queryBuilder.addToFrom(column);
                 sqlQuery.addSelect(column.toSql(), column.getInternalType());
             }
             SqlQuery outerQuery =
@@ -249,7 +253,9 @@ class SqlMemberSource
 
     private List<RolapMember> getMembers(DataSource dataSource) {
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
-            new SqlTupleReader.ColumnLayoutBuilder();
+            new SqlTupleReader.ColumnLayoutBuilder(
+                hierarchy.levelList.get(hierarchy.levelList.size() - 1)
+                    .attribute.keyList);
         String sql = makeKeysSql(dataSource, layoutBuilder);
         List<SqlStatement.Type> types = layoutBuilder.types;
         SqlStatement stmt =
@@ -383,6 +389,22 @@ class SqlMemberSource
         list.add(i + 1, member);
     }
 
+    enum Sgo {
+        SELECT_ORDER, SELECT, SELECT_GROUP, SELECT_GROUP_ORDER;
+
+        public Sgo maybeGroup(boolean needsGroupBy) {
+            if (needsGroupBy) {
+                switch (this) {
+                case SELECT_ORDER:
+                    return SELECT_GROUP_ORDER;
+                case SELECT:
+                    return SELECT_GROUP;
+                }
+            }
+            return this;
+        }
+    }
+
     private String makeKeysSql(
         DataSource dataSource,
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder)
@@ -391,49 +413,31 @@ class SqlMemberSource
             SqlQuery.newQuery(
                 dataSource,
                 "while generating query to retrieve members of " + hierarchy);
-        Set<String> exps = new HashSet<String>();
+        final RolapSchema.SqlQueryBuilder queryBuilder =
+            new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
         for (RolapLevel level : hierarchy.getRolapLevelList()) {
             for (RolapSchema.PhysColumn column : level.attribute.keyList) {
-                String expString = column.toSql();
-                if (!exps.add(expString)) {
-                    continue;
-                }
-                column.addToFrom(sqlQuery, null, null);
-                final String alias =
-                    sqlQuery.addSelectGroupBy(
-                        expString, column.getInternalType());
-                layoutBuilder.register(expString, alias);
+                queryBuilder.asasdasd(column, Sgo.SELECT_GROUP);
             }
             for (RolapSchema.PhysColumn column : level.attribute.orderByList) {
-                String expString = column.toSql();
-                if (!exps.add(expString)) {
-                    continue;
-                }
-                column.addToFrom(sqlQuery, null, null);
-                sqlQuery.addOrderBy(expString, true, false, true);
-                final String alias =
-                    sqlQuery.addSelect(expString, column.getInternalType());
-                layoutBuilder.register(expString, alias);
+                queryBuilder.asasdasd(column, Sgo.SELECT_ORDER);
             }
-
             for (RolapProperty property : level.attribute.getProperties()) {
                 if (property.attribute == null) {
                     continue;
                 }
                 for (RolapSchema.PhysColumn column : property.attribute.keyList)
                 {
-                    String expString = column.toSql();
-                    if (!exps.add(expString)) {
-                        continue;
+                    final Sgo sgo;
+                    if (sqlQuery.getDialect().allowsSelectNotInGroupBy()) {
+                         sgo = Sgo.SELECT;
+                    } else {
+                        // Some dialects allow us to eliminate properties from
+                        // the group by that are functionally dependent on the
+                        // level value.
+                        sgo = Sgo.SELECT_GROUP;
                     }
-                    column.addToFrom(sqlQuery, null, null);
-                    String alias = sqlQuery.addSelect(expString, null);
-                    // Some dialects allow us to eliminate properties from the
-                    // group by that are functionally dependent on the level
-                    // value.
-                    if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()) {
-                        sqlQuery.addGroupBy(expString, alias);
-                    }
+                    queryBuilder.asasdasd(column, sgo);
                 }
             }
         }
@@ -528,6 +532,8 @@ class SqlMemberSource
                 dataSource,
                 "while generating query to retrieve children of member "
                 + member);
+        final RolapSchema.SqlQueryBuilder queryBuilder =
+            new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
 
         // If this is a non-empty constraint, it is more efficient to join to
         // an aggregate table than to the fact table. See whether a suitable
@@ -568,7 +574,7 @@ class SqlMemberSource
             final String sql = column.toSql();
             int ordinal = layoutBuilder.lookup(sql);
             if (ordinal < 0) {
-                column.addToFrom(sqlQuery, null, null);
+                queryBuilder.addToFrom(column);
                 final String alias =
                     sqlQuery.addSelectGroupBy(sql, column.getInternalType());
                 ordinal = layoutBuilder.register(sql, alias);
@@ -619,7 +625,7 @@ class SqlMemberSource
         if (level.attribute.captionExp != null) {
             RolapSchema.PhysColumn captionExp = level.attribute.captionExp;
             if (false) {
-                captionExp.addToFrom(sqlQuery, null, null);
+                queryBuilder.addToFrom(captionExp);
             }
             String captionSql = captionExp.toSql();
             int ordinal = layoutBuilder.lookup(captionSql);
@@ -634,7 +640,7 @@ class SqlMemberSource
 
         for (RolapSchema.PhysColumn key : level.attribute.orderByList) {
             // TODO: join in ordinal relation if different
-            key.addToFrom(sqlQuery, null, null);
+            queryBuilder.addToFrom(key);
             String orderBy = key.toSql();
             int ordinal = layoutBuilder.lookup(orderBy);
             if (ordinal < 0) {
@@ -648,7 +654,7 @@ class SqlMemberSource
         for (RolapProperty property : level.attribute.getProperties()) {
             // TODO: properties that are composite, or have key != name exp
             final RolapSchema.PhysExpr exp = property.attribute.nameExp;
-            exp.addToFrom(sqlQuery, null, null);
+            queryBuilder.addToFrom(exp);
             final String s = exp.toSql();
             int ordinal = layoutBuilder.lookup(s);
             // Some dialects allow us to eliminate properties from the
@@ -890,7 +896,8 @@ class SqlMemberSource
         final RolapLevel parentLevel = parentMember.getLevel();
         RolapLevel childLevel;
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
-            new SqlTupleReader.ColumnLayoutBuilder();
+            new SqlTupleReader.ColumnLayoutBuilder(
+                parentLevel.attribute.keyList);
         if (parentLevel.isParentChild()) {
             sql = makeChildMemberSqlPC(parentMember, layoutBuilder);
             parentChild = true;
@@ -1100,6 +1107,8 @@ class SqlMemberSource
                 dataSource,
                 "while generating query to retrieve children of parent/child "
                 + "hierarchy member " + member);
+        final RolapSchema.SqlQueryBuilder queryBuilder =
+            new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
         Util.assertTrue(
             member.isAll(),
             "In the current implementation, parent/child hierarchies must "
@@ -1113,7 +1122,7 @@ class SqlMemberSource
         for (RolapSchema.PhysColumn parentKey
             : level.attribute.parentAttribute.keyList)
         {
-            parentKey.addToFrom(sqlQuery, null, null);
+            queryBuilder.addToFrom(parentKey);
             String parentId = parentKey.toSql();
             condition.append(parentId);
         }
@@ -1136,12 +1145,12 @@ class SqlMemberSource
         }
         sqlQuery.addWhere(condition.toString());
         for (RolapSchema.PhysColumn key : level.attribute.keyList) {
-            key.addToFrom(sqlQuery, null, null);
+            queryBuilder.addToFrom(key);
             String childId = key.toSql();
             final String alias = sqlQuery.addSelectGroupBy(childId, null);
         }
         for (RolapSchema.PhysColumn key : level.attribute.orderByList) {
-            key.addToFrom(sqlQuery, null, null);
+            queryBuilder.addToFrom(key);
             String orderBy = key.toSql();
             int ordinal = layoutBuilder.lookup(orderBy);
             if (ordinal < 0) {
@@ -1160,7 +1169,7 @@ class SqlMemberSource
             // keys and their name is the same.
             assert property.attribute.keyList.size() == 1 : "FIXME";
             final RolapSchema.PhysExpr exp = property.attribute.nameExp;
-            exp.addToFrom(sqlQuery, null, null);
+            queryBuilder.addToFrom(exp);
             final String s = exp.toSql();
             String alias = sqlQuery.addSelect(s, null);
             // Some dialects allow us to eliminate properties from the group by
@@ -1196,6 +1205,8 @@ class SqlMemberSource
                 dataSource,
                 "while generating query to retrieve children of "
                 + "parent/child hierarchy member " + member);
+        final RolapSchema.SqlQueryBuilder queryBuilder =
+            new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
         RolapLevel level = member.getLevel();
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
@@ -1207,7 +1218,7 @@ class SqlMemberSource
             RolapSchema.PhysColumn parentKey =
                 level.attribute.parentAttribute.keyList.get(i);
             final RolapSchema.PhysColumn key = level.attribute.keyList.get(i);
-            parentKey.addToFrom(sqlQuery, null, null);
+            queryBuilder.addToFrom(parentKey);
             String parentId = parentKey.toSql();
             StringBuilder buf = new StringBuilder();
             sqlQuery.getDialect().quote(
@@ -1216,14 +1227,14 @@ class SqlMemberSource
         }
 
         for (RolapSchema.PhysColumn key : level.attribute.keyList) {
-            key.addToFrom(sqlQuery, null, null);
+            queryBuilder.addToFrom(key);
             String childId = key.toSql();
             final String alias =
                 sqlQuery.addSelectGroupBy(childId, key.getInternalType());
             layoutBuilder.register(childId, alias);
         }
         for (RolapSchema.PhysColumn key : level.attribute.orderByList) {
-            key.addToFrom(sqlQuery, null, null);
+            queryBuilder.addToFrom(key);
             String orderBy = key.toSql();
             sqlQuery.addOrderBy(orderBy, true, false, true);
             final int ordinal = layoutBuilder.lookup(orderBy);
@@ -1237,7 +1248,7 @@ class SqlMemberSource
         for (RolapProperty property : level.attribute.getProperties()) {
             // TODO: create relationship to member representing prop value
             final RolapSchema.PhysExpr exp = property.attribute.nameExp;
-            exp.addToFrom(sqlQuery, null, null);
+            queryBuilder.addToFrom(exp);
             final String s = exp.toSql();
             String alias = sqlQuery.addSelect(s, null);
             // Some dialects allow us to eliminate properties from the group by

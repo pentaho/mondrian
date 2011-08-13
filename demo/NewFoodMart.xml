@@ -402,7 +402,7 @@
                     <Hierarchy name='Gender'>
                         <Level attribute='Gender'/>
                     </Hierarchy>
-                    <Hierarchy name='Marital Status'>
+                    <Hierarchy name='Marital Status' allMemberName='All Marital Status'>
                         <Level attribute='Marital Status'/>
                     </Hierarchy>
                     <Hierarchy name='Yearly Income'>
@@ -453,7 +453,9 @@
                     <RegularDimensionLink dimension='Time' foreignKeyColumn='time_id'/>
                     <RegularDimensionLink dimension='Product' foreignKeyColumn='product_id'/>
                     <RegularDimensionLink dimension='Promotion' foreignKeyColumn='promotion_id'/>
+                    <RegularDimensionLink dimension='Promotion Media' foreignKeyColumn='promotion_id'/>
                     <RegularDimensionLink dimension='Customer' foreignKeyColumn='customer_id'/>
+                    <RegularDimensionLink dimension='Gender' foreignKeyColumn='customer_id'/>
                 </DimensionLinks>
             </MeasureGroup>
 

@@ -986,15 +986,30 @@ public class UtilTestCase extends TestCase {
             "[[]]",
             graph.findAllPaths("A", "A").toString());
         assertEquals(
+            "[[]]",
+            graph.findAllPathsUndirected("A", "A").toString());
+        assertEquals(
             "[[A-B]]",
             graph.findAllPaths("A", "B").toString());
         assertEquals(
+            "[[<A-B, true>]]",
+            graph.findAllPathsUndirected("A", "B").toString());
+        assertEquals(
             "[[A-B, B-C]]",
             graph.findAllPaths("A", "C").toString());
+        assertEquals(
+            "[[<A-B, true>, <B-C, true>]]",
+            graph.findAllPathsUndirected("A", "C").toString());
+
         // there are no paths C to A
         assertEquals(
             "[]",
             graph.findAllPaths("C", "A").toString());
+
+        // undirected, there is a path from C to A
+        assertEquals(
+            "[[<B-C, false>, <A-B, false>]]",
+            graph.findAllPathsUndirected("C", "A").toString());
 
         // no paths to nodes outside graph
         assertEquals(

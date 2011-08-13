@@ -25,6 +25,7 @@ import mondrian.spi.*;
 import mondrian.spi.impl.Scripts;
 import mondrian.util.DirectedGraph;
 
+import mondrian.util.Pair;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
@@ -1284,8 +1285,79 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                     + " to " + nextRelation + ", but found "
                     + pathList.size() + " (" + pathList + ")");
             }
-            for (PhysLink link : pathList.get(0)) {
-                pathBuilder.add(link, link.sourceKey.relation);
+            final List<PhysLink> path = pathList.get(0);
+            for (PhysLink link : path) {
+                pathBuilder.add(link, link.sourceKey.relation, true);
+            }
+        }
+
+        /**
+         * Adds to a list the hops necessary to go from one relation to another.
+         *
+         *
+         * @param pathBuilder Path builder to which to add path
+         * @param prevRelation Relation to start at
+         * @param nextRelations Relation to jump to
+         * @param directed Whether to treat graph as directed
+         * @throws PhysSchemaException if there is not a unique path
+         */
+        private void addHopsBetween(
+            PhysPathBuilder pathBuilder,
+            PhysRelation prevRelation,
+            Set<PhysRelation> nextRelations,
+            boolean directed)
+            throws PhysSchemaException
+        {
+            if (nextRelations.contains(prevRelation)) {
+                return;
+            }
+            if (nextRelations.size() == 0) {
+                throw new IllegalArgumentException("nextRelations is empty");
+            }
+            final Iterator<PhysRelation> iterator = nextRelations.iterator();
+            final PhysRelation nextRelation = iterator.next();
+            if (directed) {
+                final List<List<PhysLink>> pathList =
+                    graph.findAllPaths(prevRelation, nextRelation);
+                if (pathList.size() != 1) {
+                    throw new PhysSchemaException(
+                        "Needed to find exactly one path from " + prevRelation
+                        + " to " + nextRelation + ", but found "
+                        + pathList.size() + " (" + pathList + ")");
+                }
+                final List<PhysLink> path = pathList.get(0);
+                for (PhysLink link : path) {
+                    if (nextRelations.contains(link.targetRelation)) {
+                        break;
+                    }
+                    pathBuilder.add(link, link.sourceKey.relation, true);
+                }
+            } else {
+                List<List<Pair<PhysLink, Boolean>>> pathList =
+                    graph.findAllPathsUndirected(prevRelation, nextRelation);
+                if (pathList.size() != 1) {
+                    throw new PhysSchemaException(
+                        "Needed to find exactly one path from " + prevRelation
+                        + " to " + nextRelation + ", but found "
+                        + pathList.size() + " (" + pathList + ")");
+                }
+                final List<Pair<PhysLink, Boolean>> path = pathList.get(0);
+                for (Pair<PhysLink, Boolean> pair : path) {
+                    final PhysLink link = pair.left;
+                    final boolean forward = pair.right;
+                    PhysRelation targetRelation =
+                        forward
+                            ? link.targetRelation
+                            : link.sourceKey.relation;
+                    PhysRelation sourceRelation =
+                        forward
+                            ? link.sourceKey.relation
+                            : link.targetRelation;
+                    if (nextRelations.contains(targetRelation)) {
+                        break;
+                    }
+                    pathBuilder.add(link, sourceRelation, forward);
+                }
             }
         }
 
@@ -1303,11 +1375,32 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             PhysRelation relation1)
             throws PhysSchemaException
         {
+            return findPath(relation, Collections.singleton(relation1), true);
+        }
+
+        /**
+         * Creates a path from one relation to another.
+         *
+         *
+         * @param relation Start relation
+         * @param targetRelations Relation to jump to
+         * @param directed Whether to treat graph as directed
+         * @return path, never null
+         *
+         * @throws PhysSchemaException if there is not a unique path
+         */
+        public PhysPath findPath(
+            PhysRelation relation,
+            Set<PhysRelation> targetRelations,
+            boolean directed)
+            throws PhysSchemaException
+        {
             final PhysPathBuilder pathBuilder = new PhysPathBuilder(relation);
             addHopsBetween(
                 pathBuilder,
                 relation,
-                relation1);
+                targetRelations,
+                directed);
             return pathBuilder.done();
         }
 
@@ -1331,7 +1424,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                 pathBuilder,
                 pathBuilder.hopList.get(
                     pathBuilder.hopList.size() - 1).relation,
-                relation);
+                Collections.<PhysRelation>singleton(relation), true);
         }
     }
 
@@ -1993,9 +2086,26 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         public abstract String toSql();
 
         /**
-         * @see Util#deprecated(Object, boolean) Maybe move to {@link SqlQuery}
-         *   or elsewhere; PhysExpr shouldn't depend on objects at a higher
-         *   level of abstraction
+         * Calls a callback for each embedded PhysColumn.
+         */
+        public abstract void foreachColumn(
+            Util.Functor1<Void, PhysColumn> callback);
+
+        /**
+         * Returns the data type of this expression, or null if not known.
+         *
+         * @return Data type
+         */
+        public abstract Dialect.Datatype getDatatype();
+
+        /**
+         * Joins the table underlying this expression to the root of the
+         * corresponding star. Usually called after
+         * {@link SqlQueryBuilder#addToFrom(mondrian.rolap.RolapSchema.PhysExpr)}.
+         *
+         * @see Util#deprecated(Object, boolean) Any query-building code calling
+         * this method should instead use the root attribute of the hierarchy
+         * as a 'starting point'. Then the query will automatically join.
          *
          * @param sqlQuery Query whose FROM clause to add to
          * @param measureGroup If null, just add this expression's table; if
@@ -2004,17 +2114,25 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
          *    fact table. Must be specified if and only if measure group is
          *    specified.
          */
-        public abstract void addToFrom(
-            SqlQuery sqlQuery,
-            RolapMeasureGroup measureGroup,
-            RolapCubeDimension cubeDimension);
-
-        /**
-         * Returns the data type of this expression, or null if not known.
-         *
-         * @return Data type
-         */
-        public abstract Dialect.Datatype getDatatype();
+        public final void joinToStarRoot(
+            final SqlQuery sqlQuery,
+            final RolapMeasureGroup measureGroup,
+            final RolapCubeDimension cubeDimension)
+        {
+            assert measureGroup != null;
+            assert cubeDimension != null;
+            foreachColumn(
+                new Util.Functor1<Void, PhysColumn>() {
+                    public Void apply(PhysColumn column) {
+                        final RolapStar.Column starColumn =
+                            measureGroup.getRolapStarColumn(
+                                cubeDimension, column, true);
+                        starColumn.getTable().addToFrom(sqlQuery, false, true);
+                        return null;
+                    }
+                }
+            );
+        }
     }
 
     public static class PhysTextExpr extends PhysExpr {
@@ -2029,11 +2147,13 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         }
 
         public void addToFrom(
-            SqlQuery sqlQuery,
-            RolapMeasureGroup measureGroup,
-            RolapCubeDimension cubeDimension)
+            SqlQueryBuilder queryBuilder)
         {
             // nothing to do
+        }
+
+        public void foreachColumn(Util.Functor1<Void, PhysColumn> callback) {
+            // nothing
         }
 
         public Dialect.Datatype getDatatype() {
@@ -2082,22 +2202,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             return internalType;
         }
 
-        public void addToFrom(
-            SqlQuery sqlQuery,
-            RolapMeasureGroup measureGroup,
-            RolapCubeDimension cubeDimension)
-        {
-            Util.deprecated(
-                "add a list of RolapStar.Table to query, so we can quickly figure out whether we've added a table already",
-                false);
-            assert (measureGroup == null) == (cubeDimension == null);
-            if (measureGroup != null) {
-                final RolapStar.Column column =
-                    measureGroup.getRolapStarColumn(cubeDimension, this, true);
-                column.getTable().addToFrom(sqlQuery, false, true);
-            } else {
-                sqlQuery.addFrom(relation, relation.getAlias(), false);
-            }
+        public void foreachColumn(Util.Functor1<Void, PhysColumn> callback) {
+            callback.apply(this);
         }
 
         /**
@@ -2203,13 +2309,10 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             return buf.toString();
         }
 
-        public void addToFrom(
-            SqlQuery sqlQuery,
-            RolapMeasureGroup measureGroup,
-            RolapCubeDimension cubeDimension)
-        {
+        @Override
+        public void foreachColumn(Util.Functor1<Void, PhysColumn> callback) {
             for (PhysExpr physExpr : list) {
-                physExpr.addToFrom(sqlQuery, measureGroup, cubeDimension);
+                physExpr.foreachColumn(callback);
             }
         }
 
@@ -2247,15 +2350,10 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             return buf.toString();
         }
 
-        public void addToFrom(
-            SqlQuery sqlQuery,
-            RolapMeasureGroup measureGroup,
-            RolapCubeDimension cubeDimension)
-        {
+        public void foreachColumn(Util.Functor1<Void, PhysColumn> callback) {
             for (Object o : list) {
                 if (o instanceof PhysExpr) {
-                    PhysExpr physExpr = (PhysExpr) o;
-                    physExpr.addToFrom(sqlQuery, measureGroup, cubeDimension);
+                    ((PhysExpr) o).foreachColumn(callback);
                 }
             }
         }
@@ -2294,14 +2392,6 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                 "unresolved column " + this);
         }
 
-        public void addToFrom(
-            SqlQuery sqlQuery,
-            RolapMeasureGroup measureGroup,
-            RolapCubeDimension cubeDimension)
-        {
-            throw new UnsupportedOperationException();
-        }
-
         public enum State {
             UNRESOLVED,
             ACTIVE,
@@ -2313,21 +2403,37 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     public static class PhysHop {
         public final PhysRelation relation;
         public final PhysLink link;
+        public final boolean forward;
 
         /**
          * Creates a hop.
          *
          * @param relation Target relation
          * @param link Link from source to target relation
+         * @param forward Whether hop is in the default direction of the link
          */
         public PhysHop(
             PhysRelation relation,
-            PhysLink link)
+            PhysLink link,
+            boolean forward)
         {
             assert relation != null;
             // link is null for the first hop in a path
             this.relation = relation;
             this.link = link;
+            this.forward = forward;
+        }
+
+        public final PhysRelation fromRelation() {
+            return forward
+                ? link.sourceKey.relation
+                : link.targetRelation;
+        }
+
+        public final PhysRelation toRelation() {
+            return forward
+                ? link.targetRelation
+                : link.sourceKey.relation;
         }
     }
 
@@ -2364,9 +2470,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                 if (i == 0) {
                     assert hop.link == null;
                 } else {
-                    assert hop.relation == hop.link.sourceKey.relation;
-                    assert hopList.get(i - 1).relation
-                           == hop.link.targetRelation;
+                    assert hop.relation == hop.fromRelation();
+                    assert hopList.get(i - 1).relation == hop.toRelation();
                 }
             }
         }
@@ -2422,7 +2527,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
 
         PhysPathBuilder(PhysRelation relation) {
             this();
-            hopList.add(new PhysHop(relation, null));
+            hopList.add(new PhysHop(relation, null, true));
         }
 
         PhysPathBuilder(PhysPath path) {
@@ -2437,15 +2542,17 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             final PhysHop prevHop = hopList.get(hopList.size() - 1);
             add(
                 new PhysLink(sourceKey, prevHop.relation, columnList),
-                sourceKey.relation);
+                sourceKey.relation,
+                true);
             return this;
         }
 
         public PhysPathBuilder add(
             PhysLink link,
-            PhysRelation relation)
+            PhysRelation relation,
+            boolean forward)
         {
-            hopList.add(new PhysHop(relation, link));
+            hopList.add(new PhysHop(relation, link, forward));
             return this;
         }
 
@@ -2565,6 +2672,110 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         {
             list.set(index, column);
             physCalcColumn.compute();
+        }
+    }
+
+    public static class SqlQueryBuilder {
+        public final SqlQuery sqlQuery;
+        public final SqlTupleReader.ColumnLayoutBuilder layoutBuilder;
+        private final Set<PhysRelation> relations = new HashSet<PhysRelation>();
+
+        /**
+         * Creates a SqlQueryBuilder.
+         *
+         * @param sqlQuery SQL query
+         * @param layoutBuilder Column layout builder
+         */
+        public SqlQueryBuilder(
+            SqlQuery sqlQuery,
+            SqlTupleReader.ColumnLayoutBuilder layoutBuilder)
+        {
+            this.sqlQuery = sqlQuery;
+            this.layoutBuilder = layoutBuilder;
+
+            if (layoutBuilder.keyList != null) {
+                for (PhysColumn column : layoutBuilder.keyList) {
+                    addToFrom(column);
+                }
+            }
+        }
+
+        public void addToFrom(PhysExpr expr) {
+            expr.foreachColumn(
+                new Util.Functor1<Void, PhysColumn>() {
+                    public Void apply(PhysColumn column) {
+                        addRelation(column.relation);
+                        return null;
+                    }
+                }
+            );
+        }
+
+        private void addRelation(PhysRelation relation) {
+            if (relations.contains(relation)) {
+                return;
+            }
+            sqlQuery.addFrom(
+                relation,
+                relation.getAlias(),
+                false);
+            if (!relations.isEmpty()) {
+                try {
+                    final PhysPath path =
+                        relation.getSchema().getGraph().findPath(
+                            relation, relations, false);
+                    path.addToFrom(sqlQuery, false);
+                    for (PhysHop hop : path.hopList) {
+                        relations.add(hop.relation);
+                    }
+                } catch (PhysSchemaException e) {
+                    throw Util.newInternal(
+                        e,
+                        "While adding relation " + relation + " to query");
+                }
+            }
+            relations.add(relation);
+        }
+
+        public final Dialect getDialect() {
+            return sqlQuery.getDialect();
+        }
+
+        int asasdasd(
+            PhysColumn column,
+            SqlMemberSource.Sgo sgo)
+        {
+            if (column == null) {
+                return -1;
+            }
+            String expString = column.toSql();
+            final int ordinal = layoutBuilder.lookup(expString);
+            if (ordinal >= 0) {
+                return ordinal;
+            }
+            addToFrom(column);
+            final String alias;
+            switch (sgo) {
+            case SELECT:
+                alias = sqlQuery.addSelect(expString, column.getInternalType());
+                break;
+            case SELECT_GROUP:
+                alias = sqlQuery.addSelectGroupBy(
+                    expString, column.getInternalType());
+                break;
+            case SELECT_ORDER:
+                sqlQuery.addOrderBy(expString, true, false, true);
+                alias = sqlQuery.addSelect(expString, column.getInternalType());
+                break;
+            case SELECT_GROUP_ORDER:
+                sqlQuery.addOrderBy(expString, true, false, true);
+                alias = sqlQuery.addSelectGroupBy(
+                    expString, column.getInternalType());
+                break;
+            default:
+                throw Util.unexpected(sgo);
+            }
+            return layoutBuilder.register(expString, alias);
         }
     }
 }

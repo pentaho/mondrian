@@ -12,6 +12,7 @@
 */
 package mondrian.olap;
 
+import mondrian.rolap.RolapLevel;
 import mondrian.server.Locus;
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.http.HttpFileObject;
@@ -1911,6 +1912,18 @@ public class Util extends XOMUtil {
      */
     public static int compareIntegers(int i0, int i1) {
         return (i0 < i1 ? -1 : (i0 == i1 ? 0 : 1));
+    }
+
+    /**
+     * Returns the last item in a list.
+     *
+     * @param list List
+     * @param <T> Element type
+     * @return Last item in the list
+     * @throws IndexOutOfBoundsException if list is empty
+     */
+    public static <T> T last(List<T> list) {
+        return list.get(list.size() - 1);
     }
 
     public static class ErrorCellValue {
