@@ -58,6 +58,7 @@ public class RolapCubeDimension extends RolapDimension {
         super(
             cube.getSchema(),
             name,
+            rolapDim.isVisible(),
             RolapSchemaLoader.first(caption, rolapDim.getCaption()),
             RolapSchemaLoader.first(description, rolapDim.getDescription()),
             rolapDim.getDimensionType(),

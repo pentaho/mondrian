@@ -42,7 +42,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     private RolapCube salesCube;
 
     protected void setUp() throws Exception {
-        schemaReader = getTestContext().getConnection().getSchemaReader();
+        schemaReader =
+            getTestContext().getConnection().getSchemaReader().withLocus();
         salesCube = (RolapCube) cubeByName(
             getTestContext().getConnection(),
             cubeNameSales);
@@ -52,7 +53,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public TestContext getTestContext() {
-        return TestContext.create(
+        return TestContext.instance().create(
             null,
             null,
             "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n"
@@ -506,7 +507,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "('3377 Coachman Place', 'Jones International'))))";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -559,7 +560,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and ((`warehouse`.`warehouse_name` = 'Freeman And Co' and `warehouse`.`wa_address1` = '234 West Covina Pkwy' and `warehouse`.`warehouse_fax` is null) or (`warehouse`.`warehouse_name` = 'Jones International' and `warehouse`.`wa_address1` = '3377 Coachman Place' and `warehouse`.`warehouse_fax` = '971-555-6213'))";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -614,7 +615,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "select count(distinct `inventory_fact_1997`.`warehouse_cost`) as `m0` from `warehouse` as `warehouse`, `inventory_fact_1997` as `inventory_fact_1997` where `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id` and ((`warehouse`.`warehouse_fax` is null and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null) or (`warehouse`.`warehouse_fax` = '971-555-6213' and `warehouse`.`wa_address2` is null and `warehouse`.`wa_address3` is null))";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -1334,6 +1335,45 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         } finally {
             props.EnableGroupingSets.set(useGroupingSets);
         }
+    }
+
+    /**
+     * This test makes sure that the AggregateFunDef will not optimize a tuples
+     * list when the rollup policy is set to something else than FULL, as it
+     * results in wrong data for a distinct count operation when using roles to
+     * narrow down the members access.
+     */
+    public void testMondrian906() {
+        final TestContext context =
+            TestContext.instance().create(
+                null, null, null, null, null,
+                "<Role name=\"Role1\">\n"
+                + "  <SchemaGrant access=\"all\">\n"
+                + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+                + "        <MemberGrant member=\"[Customers].[USA].[OR]\" access=\"all\"/>\n"
+                + "        <MemberGrant member=\"[Customers].[USA].[WA]\" access=\"all\"/>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>\n");
+        final String mdx =
+            "select {[Customers].[USA], [Customers].[USA].[OR], [Customers].[USA].[WA]} on columns, {[Measures].[Customer Count]} on rows from [Sales]";
+        context
+            .withRole("Role1")
+                .assertQueryReturns(
+                    mdx,
+                    "Axis #0:\n"
+                    + "{}\n"
+                    + "Axis #1:\n"
+                    + "{[Customers].[USA]}\n"
+                    + "{[Customers].[USA].[OR]}\n"
+                    + "{[Customers].[USA].[WA]}\n"
+                    + "Axis #2:\n"
+                    + "{[Measures].[Customer Count]}\n"
+                    + "Row #0: 2,865\n"
+                    + "Row #0: 1,037\n"
+                    + "Row #0: 1,828\n");
     }
 
     private boolean tuppleListContains(

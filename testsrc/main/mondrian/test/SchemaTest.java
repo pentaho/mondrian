@@ -388,6 +388,8 @@ Missing table in Column in SQL in ExpressionView in ColumnDefs in Table
 Test that get error if add a level to a time dimension whose type is not
 years, quarters etc.
 
+Test attribute Attribute@allMemberName.
+
 === Obsolete ===
 
 
@@ -396,7 +398,7 @@ years, quarters etc.
     // Tests follow...
 
     public void testSolveOrderInCalculatedMember() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             null,
             "<CalculatedMember\n"
@@ -424,7 +426,7 @@ years, quarters etc.
     }
 
     public void testHierarchyDefaultMember() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Gender with default\" foreignKey=\"customer_id\">\n"
             + "    <Hierarchy hasAll=\"true\" "
@@ -459,7 +461,7 @@ years, quarters etc.
     }
 
     private TestContext createLevelUniqueMembersTestContext(final String s) {
-        return TestContext.createSubstitutingCube(
+        return TestContext.instance().createSubstitutingCube(
             "Sales",
             "    <Dimension name=\"Store\" foreignKey=\"store_id\">\n"
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
@@ -474,7 +476,7 @@ years, quarters etc.
 
     public void testDimensionRequiresForeignKey() {
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "    <Dimension name=\"Store\">\n"
                 + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
@@ -494,7 +496,7 @@ years, quarters etc.
      * forum post 'wrong unique name for default member when hasAll=false'</a>.
      */
     public void testDefaultMemberName() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Product with no all\" foreignKey=\"product_id\">\n"
             + "    <Hierarchy hasAll=\"false\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
@@ -520,7 +522,7 @@ years, quarters etc.
     }
 
     public void testHierarchyAbbreviatedDefaultMember() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Gender with default\" foreignKey=\"customer_id\">\n"
             + "    <Hierarchy hasAll=\"true\" "
@@ -543,7 +545,7 @@ years, quarters etc.
     }
 
     public void testHierarchyNoLevelsFails() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name='Gender no levels' foreignKey='customer_id'>\n"
             + "    <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
@@ -556,7 +558,7 @@ years, quarters etc.
     }
 
     public void testHierarchyNonUniqueLevelsFails() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name='Gender dup levels' foreignKey='customer_id'>\n"
             + "    <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
@@ -574,7 +576,7 @@ years, quarters etc.
      * Tests a measure based on 'count'.
      */
     public void testCountMeasure() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             null,
             "<Measure name=\"Fact Count\" aggregator=\"count\"/>\n");
@@ -604,7 +606,7 @@ years, quarters etc.
      * table.
      */
     public void testHierarchyTableNotFound() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Yearly Income3\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
@@ -618,7 +620,7 @@ years, quarters etc.
     }
 
     public void testPrimaryKeyTableNotFound() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Yearly Income4\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\" primaryKeyTable=\"customer_not_found\">\n"
@@ -632,7 +634,7 @@ years, quarters etc.
     }
 
     public void testLevelTableNotFound() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Yearly Income5\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
@@ -646,7 +648,7 @@ years, quarters etc.
     }
 
     public void testHierarchyBadDefaultMember() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Gender with default\" foreignKey=\"customer_id\">\n"
             + "    <Hierarchy hasAll=\"true\" "
@@ -673,7 +675,7 @@ years, quarters etc.
      * Bug MONDRIAN-236, "Mondrian generates invalid SQL"</a>.
      */
     public void testDuplicateTableAlias() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Yearly Income2\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
@@ -699,7 +701,7 @@ years, quarters etc.
      * table without an alias, and the system doesn't complain.
      */
     public void testDuplicateTableAliasSameForeignKey() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Yearly Income2\" foreignKey=\"customer_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
@@ -731,7 +733,7 @@ years, quarters etc.
      * See {@link #testDuplicateTableAlias()}.
      */
     public void testDimensionsShareTable() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Yearly Income2\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
@@ -897,7 +899,7 @@ years, quarters etc.
      * note that this works when native cross join is disabled
      */
     public void testDimensionsShareTableNativeNonEmptyCrossJoin() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Yearly Income2\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
@@ -924,7 +926,7 @@ years, quarters etc.
      * one table uses an alias.
      */
     public void testDimensionsShareTableSameForeignKeys() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Yearly Income2\" foreignKey=\"customer_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
@@ -988,7 +990,7 @@ years, quarters etc.
         }
 
         final String cubeName = "AliasedDimensionsTesting";
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"" + cubeName + "\" defaultMeasure=\"Supply Time\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -1054,7 +1056,7 @@ years, quarters etc.
      * the same join aliases to the fact table.
      */
     public void testSnowflakeHierarchyValidationNotNeeded2() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -1121,7 +1123,7 @@ years, quarters etc.
      * both using a table alias.
      */
     public void testDimensionsShareJoinTable() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -1176,7 +1178,7 @@ years, quarters etc.
      * both using a table alias.
      */
     public void testDimensionsShareJoinTableOneAlias() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -1230,7 +1232,7 @@ years, quarters etc.
      * both using a table alias.
      */
     public void testDimensionsShareJoinTableTwoAliases() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -1284,7 +1286,7 @@ years, quarters etc.
      * both using a table alias.
      */
     public void testTwoAliasesDimensionsShareTable() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n"
             + "  <Table name=\"inventory_fact_1997\"/>\n"
@@ -1334,7 +1336,7 @@ years, quarters etc.
      * both using a table alias.
      */
     public void testTwoAliasesDimensionsShareTableSameForeignKeys() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n"
             + "  <Table name=\"inventory_fact_1997\"/>\n"
@@ -1385,7 +1387,7 @@ years, quarters etc.
      * and multiple column names
      */
     public void testMultipleDimensionUsages() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
 
             "<Cube name=\"Sales Two Dimensions\">\n"
@@ -1421,7 +1423,7 @@ years, quarters etc.
      * and multiple column names
      */
     public void testMultipleDimensionHierarchyCaptionUsages() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
 
             "<Cube name=\"Sales Two Dimensions\">\n"
@@ -1463,7 +1465,7 @@ years, quarters etc.
      * correctly.
      */
     public void testDimensionCreation() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
 
             "<Cube name=\"Sales Create Dimension\">\n"
@@ -1510,7 +1512,7 @@ years, quarters etc.
      * Test DimensionUsage level attribute
      */
     public void testDimensionUsageLevel() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
 
             "<Cube name=\"Customer Usage Level\">\n"
@@ -1567,7 +1569,7 @@ years, quarters etc.
      * dimension usage name is different then source name
      */
     public void testAllMemberMultipleDimensionUsages() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"Sales Two Sales Dimensions\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -1623,7 +1625,7 @@ years, quarters etc.
      * an unaliased name instead of an aliased name
      */
     public void testNonAliasedDimensionUsage() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
 
             "<Cube name=\"Sales Two Dimensions\">\n"
@@ -1657,7 +1659,7 @@ years, quarters etc.
     }
 
     public void testDimensionUsageWithInvalidForeignKey() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"Sales77\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -1675,7 +1677,7 @@ years, quarters etc.
      * Tests a cube whose fact table is a &lt;View&gt; element.
      */
     public void testViewFactTable() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
 
             // Warehouse cube where the default member in the Warehouse
@@ -1740,7 +1742,7 @@ years, quarters etc.
      * has dimensions based on the fact table.
      */
     public void testViewFactTable2() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             // Similar to "Store" cube in FoodMart.xml.
             "<Cube name=\"Store2\">\n"
@@ -1796,7 +1798,7 @@ years, quarters etc.
      * has dimensions based on the fact table.
      */
     public void testViewFactTableInvalid() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             // Similar to "Store" cube in FoodMart.xml.
             "<Cube name=\"Store2\">\n"
@@ -1827,7 +1829,7 @@ years, quarters etc.
      * is "distinct-count".
      */
     public void testDeprecatedDistinctCountAggregator() {
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             null,
             "  <Measure name=\"Customer Count2\" column=\"customer_id\"\n"
@@ -1875,7 +1877,7 @@ years, quarters etc.
      * Tests that an invalid aggregator causes an error.
      */
     public void testInvalidAggregator() {
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             null,
             "  <Measure name=\"Customer Count3\" column=\"customer_id\"\n"
@@ -1910,7 +1912,7 @@ years, quarters etc.
         appender.addFilter(filter);
         logger.addAppender(appender);
         try {
-            TestContext testContext = TestContext.create(
+            final TestContext testContext = TestContext.instance().withSchema(
                 "<?xml version=\"1.0\"?>\n"
                 + "<Schema name=\"FoodMart\">\n"
                 + "<Cube name=\"Sales Degen\">\n"
@@ -1988,7 +1990,7 @@ years, quarters etc.
         appender.addFilter(filter);
         logger.addAppender(appender);
         try {
-            TestContext testContext = TestContext.create(
+            final TestContext testContext = TestContext.instance().withSchema(
                 "<?xml version=\"1.0\"?>\n"
                 + "<Schema name=\"FoodMart\">\n"
                 + "<Cube name=\"Denormalized Sales\">\n"
@@ -2055,7 +2057,7 @@ years, quarters etc.
 
     public void testDegenerateDimension() {
         final String cubeName = "Store_NullsCollation";
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"" + cubeName + "\">\n"
             + "  <Table name=\"store\"/>\n"
@@ -2083,7 +2085,7 @@ years, quarters etc.
 
     public void testPropertyFormatter() {
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "  <Dimension name=\"Store2\" foreignKey=\"store_id\">\n"
                 + "    <Hierarchy name=\"Store2\" hasAll=\"true\" allMemberName=\"All Stores\" primaryKey=\"store_id\">\n"
@@ -2120,7 +2122,7 @@ years, quarters etc.
      */
     public void testBugMondrian233() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null,
                 "<Cube name=\"Sales2\" defaultMeasure=\"Unit Sales\">"
                 + "  <Table name=\"sales_fact_1997\">\n"
@@ -2158,7 +2160,7 @@ years, quarters etc.
     public void testBugMondrian303() {
         // In order to reproduce the problem a dimension specifying
         // captionColumn and Properties were required.
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Store2\" foreignKey=\"store_id\">\n"
             + "    <Hierarchy name=\"Store2\" hasAll=\"true\" allMemberName=\"All Stores\" primaryKey=\"store_id\">\n"
@@ -2228,7 +2230,7 @@ years, quarters etc.
     }
 
     public void testCubeWithOneDimensionOneMeasure() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"OneDim\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -2252,7 +2254,7 @@ years, quarters etc.
     }
 
     public void testCubeWithOneDimensionUsageOneMeasure() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"OneDimUsage\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -2275,7 +2277,7 @@ years, quarters etc.
     }
 
     public void testCubeHasFact() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"Cube with caption\" caption=\"Cube with name\"/>\n",
             null, null, null, null);
@@ -2291,7 +2293,7 @@ years, quarters etc.
     }
 
     public void testCubeCaption() throws SQLException {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"Cube with caption\" caption=\"Cube with name\">"
             + "  <Table name='sales_fact_1997'/>"
@@ -2312,7 +2314,7 @@ years, quarters etc.
     }
 
     public void testCubeWithNoDimensions() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"NoDim\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -2330,7 +2332,7 @@ years, quarters etc.
     }
 
     public void testCubeWithNoMeasuresFails() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"NoMeasures\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -2349,7 +2351,7 @@ years, quarters etc.
     }
 
     public void testCubeWithOneCalcMeasure() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"OneCalcMeasure\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -2384,7 +2386,7 @@ years, quarters etc.
      */
     public void testAggTableSupportOfSharedDims() {
         if (Bug.BugMondrian361Fixed) {
-            TestContext testContext = TestContext.create(
+            final TestContext testContext = TestContext.instance().create(
                 null,
                 "<Cube name=\"Sales Two Dimensions\">\n"
                 + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -2451,7 +2453,7 @@ years, quarters etc.
      * Verifies that RolapHierarchy.tableExists() supports views.
      */
     public void testLevelTableAttributeAsView() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"GenderCube\">\n"
             + "  <Table name=\"sales_fact_1997\" alias=\"sales_fact_1997_gender\"/>\n"
@@ -2507,7 +2509,7 @@ years, quarters etc.
     }
 
     public void testInvalidSchemaAccess() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
             + "  <SchemaGrant access=\"invalid\"/>\n"
@@ -2521,7 +2523,7 @@ years, quarters etc.
     }
 
     public void testAllMemberNoStringReplace() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"Sales Special Time\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -2555,7 +2557,7 @@ years, quarters etc.
     }
 
     public void testUnionRole() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
             + "  <SchemaGrant access=\"all\"/>\n"
@@ -2583,7 +2585,7 @@ years, quarters etc.
     }
 
     public void testUnionRoleContainsGrants() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
             + "  <SchemaGrant access=\"all\"/>\n"
@@ -2600,7 +2602,7 @@ years, quarters etc.
     }
 
     public void testUnionRoleIllegalForwardRef() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
             + "  <SchemaGrant access=\"all\"/>\n"
@@ -2619,7 +2621,7 @@ years, quarters etc.
     }
 
     public void testVirtualCubeNamedSetSupportInSchema() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Warehouse and Sales",
             null, null, null,
             "<NamedSet name=\"Non CA State Stores\" "
@@ -2662,7 +2664,7 @@ years, quarters etc.
     }
 
     public void testVirtualCubeNamedSetSupportInSchemaError() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Warehouse and Sales",
             null, null, null,
             "<NamedSet name=\"Non CA State Stores\" "
@@ -2695,7 +2697,7 @@ years, quarters etc.
     public void _testValidatorFindsNumericLevel() {
         // In the real foodmart, the level has type="Numeric"
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "  <Dimension name=\"Store Size in SQFT\">\n"
                 + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
@@ -2714,7 +2716,8 @@ years, quarters etc.
             schema.replaceFirst(
                 "<Schema name=\"FoodMart\"",
                 "<Schema name=\"FoodMart\" defaultRole=\"Unknown\"");
-        final TestContext testContext = TestContext.create(schema);
+        final TestContext testContext =
+            TestContext.instance().withSchema(schema);
         final List<Exception> exceptionList = testContext.getSchemaWarnings();
         testContext.assertContains(
             exceptionList,
@@ -2737,7 +2740,7 @@ years, quarters etc.
             // therefore experiences bug MONDRIAN-413.
             return;
         }
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Binary\" foreignKey=\"promotion_id\">\n"
             + "    <Hierarchy hasAll=\"false\" primaryKey=\"id\">\n"
@@ -2810,7 +2813,7 @@ years, quarters etc.
     public void testLevelInternalType() {
         // One of the keys is larger than Integer.MAX_VALUE (2 billion), so
         // will only work if we use long values.
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Big numbers\" foreignKey=\"promotion_id\">\n"
             + "    <Hierarchy hasAll=\"false\" primaryKey=\"id\">\n"
@@ -2856,7 +2859,7 @@ years, quarters etc.
      * Negative test for Level@internalType attribute.
      */
     public void testLevelInternalTypeErr() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Big numbers\" foreignKey=\"promotion_id\">\n"
             + "    <Hierarchy hasAll=\"false\" primaryKey=\"id\">\n"
@@ -2929,7 +2932,7 @@ years, quarters etc.
      */
     public void testScdJoin() {
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "  <Dimension name=\"Product truncated\" foreignKey=\"product_id\">\n"
                 + "    <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
@@ -2964,7 +2967,7 @@ years, quarters etc.
     // Join.rightAlias cannot be the empty string.
     public void _testNonUniqueAlias() {
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "  <Dimension name=\"Product truncated\" foreignKey=\"product_id\">\n"
                 + "    <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
@@ -3025,8 +3028,7 @@ years, quarters etc.
             + "  <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n"
             + "</Cube>\n";
 
-        TestContext testContext =
-        TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             salesCube1,
             null,
@@ -3103,7 +3105,7 @@ years, quarters etc.
             + "  <Level name=\"Quarter hours\" column=\"time_id\" uniqueMembers=\"false\" type=\"Numeric\" levelType=\"TimeUndefined\"/>\n"
             + "</Hierarchy>\n"
             + "</Dimension>";
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales", xml);
 
         testContext.assertQueryReturns(
@@ -3131,7 +3133,7 @@ years, quarters etc.
 
         // Check that get an error if give invalid level type
         try {
-            TestContext
+            TestContext.instance()
                 .createSubstitutingCube(
                     "Sales",
                     Util.replace(xml, "TimeUndefined", "TimeUnspecified"))
@@ -3153,7 +3155,7 @@ years, quarters etc.
         final String salesCubeName = "DescSales";
         final String virtualCubeName = "DescWarehouseAndSales";
         final String warehouseCubeName = "Warehouse";
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().withSchema(
             "<Schema name=\"" + schemaName + "\"\n"
             + " description=\"Schema to test descriptions and captions\">\n"
             + "  <Annotations>\n"
@@ -3480,7 +3482,7 @@ years, quarters etc.
     }
 
     public void testCaption() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Gender2\" foreignKey=\"customer_id\">\n"
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\" >\n"
@@ -3531,7 +3533,7 @@ years, quarters etc.
         default:
             return;
         }
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().withSchema(
             "<Schema name='Test_DimensionUsage'> \n"
             + "  <Dimension type='StandardDimension' name='Store'> \n"
             + "    <Hierarchy hasAll='true' primaryKey='store_id'> \n"
@@ -3675,7 +3677,7 @@ years, quarters etc.
         // occurs twice).
         // Therefore in store, store_id -> region_id is a 25 to 24 mapping.
         checkBugMondrian463(
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "<Dimension name='Product3' foreignKey='product_id'>\n"
                 + "  <Hierarchy hasAll='true' primaryKey='product_id' primaryKeyTable='product'>\n"
@@ -3706,7 +3708,7 @@ years, quarters etc.
             return;
         }
         checkBugMondrian463(
-            TestContext.create(
+            TestContext.instance().withSchema(
                 "<?xml version='1.0'?>\n"
                 + "<Schema name='FoodMart'>\n"
                 + "<Dimension name='Product3'>\n"
@@ -3785,7 +3787,7 @@ years, quarters etc.
      * Same schema as {@link #testBugMondrian463}, except left-deep.
      */
     public void testLeftDeepJoinFails() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name='Product3' foreignKey='product_id'>\n"
             + "  <Hierarchy hasAll='true' primaryKey='product_id' primaryKeyTable='product'>\n"
@@ -3819,8 +3821,8 @@ years, quarters etc.
      * Test for MONDRIAN-943 and MONDRIAN-465.
      */
     public void testCaptionWithOrdinalColumn() {
-        TestContext tc =
-            TestContext.createSubstitutingCube(
+        final TestContext tc =
+            TestContext.instance().createSubstitutingCube(
                 "HR",
                 "<Dimension name=\"Position\" foreignKey=\"employee_id\">\n"
                 + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Position\" primaryKey=\"employee_id\">\n"
@@ -3858,7 +3860,7 @@ years, quarters etc.
      */
     public void testBugMondrian923() throws Exception {
         TestContext context =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Warehouse and Sales",
                 null,
                 null,
@@ -3900,13 +3902,230 @@ years, quarters etc.
         fail("Didn't find measures in sales cube.");
     }
 
+    public void testCubesVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name=\"Foo\" visible=\"@REPLACE_ME@\">\n"
+                + "  <Table name=\"store\"/>\n"
+                + "  <Dimension name=\"Store Type\">\n"
+                + "    <Hierarchy hasAll=\"true\">\n"
+                + "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###\"/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                TestContext.instance().create(
+                    null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            assertTrue(testValue.equals(cube.isVisible()));
+        }
+    }
+
+    public void testVirtualCubesVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<VirtualCube name=\"Foo\" defaultMeasure=\"Store Sales\" visible=\"@REPLACE_ME@\">\n"
+                + "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\"/>\n"
+                + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
+                + "</VirtualCube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                TestContext.instance().create(
+                    null, null, cubeDef, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            assertTrue(testValue.equals(cube.isVisible()));
+        }
+    }
+
+    public void testDimensionVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name=\"Foo\">\n"
+                + "  <Table name=\"store\"/>\n"
+                + "  <Dimension name=\"Bar\" visible=\"@REPLACE_ME@\">\n"
+                + "    <Hierarchy hasAll=\"true\">\n"
+                + "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###\"/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                TestContext.instance().create(
+                    null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensions()) {
+                if (dimCheck.getName().equals("Bar")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            assertTrue(testValue.equals(dim.isVisible()));
+        }
+    }
+
+    public void testVirtualDimensionVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<VirtualCube name=\"Foo\" defaultMeasure=\"Store Sales\">\n"
+                + "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Customers\" visible=\"@REPLACE_ME@\"/>\n"
+                + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
+                + "</VirtualCube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                TestContext.instance().create(
+                    null, null, cubeDef, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensions()) {
+                if (dimCheck.getName().equals("Customers")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            assertTrue(testValue.equals(dim.isVisible()));
+        }
+    }
+
+    public void testDimensionUsageVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name=\"Foo\">\n"
+                + "  <Table name=\"store\"/>\n"
+                + "  <Dimension name=\"Bacon\">\n"
+                + "    <Hierarchy hasAll=\"true\">\n"
+                + "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###\"/>\n"
+                + "</Cube>\n";
+            final TestContext context =
+                TestContext.instance().create(
+                    null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            String dimensionDef =
+                "<DimensionUsage name=\"Bar\" source=\"Time\" foreignKey=\"time_id\" visible=\"@REPLACE_ME@\"/>";
+            dimensionDef = dimensionDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            context.getConnection().getSchema().createDimension(
+                cube, dimensionDef);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensions()) {
+                if (dimCheck.getName().equals("Bar")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            assertTrue(testValue.equals(dim.isVisible()));
+        }
+    }
+
+    public void testHierarchyVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name=\"Foo\">\n"
+                + "  <Table name=\"store\"/>\n"
+                + "  <Dimension name=\"Bar\">\n"
+                + "    <Hierarchy name=\"Bacon\" hasAll=\"true\" visible=\"@REPLACE_ME@\">\n"
+                + "      <Level name=\"Store Type\" column=\"store_type\" uniqueMembers=\"true\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###\"/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                TestContext.instance().create(
+                    null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensions()) {
+                if (dimCheck.getName().equals("Bar")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            final Hierarchy hier = dim.getHierarchy();
+            assertNotNull(hier);
+            assertEquals("Bar.Bacon", hier.getName());
+            assertTrue(testValue.equals(hier.isVisible()));
+        }
+    }
+
+    public void testLevelVisibility() throws Exception {
+        for (Boolean testValue : new Boolean[] {true, false}) {
+            String cubeDef =
+                "<Cube name=\"Foo\">\n"
+                + "  <Table name=\"store\"/>\n"
+                + "  <Dimension name=\"Bar\">\n"
+                + "    <Hierarchy name=\"Bacon\" hasAll=\"false\">\n"
+                + "      <Level name=\"Samosa\" column=\"store_type\" uniqueMembers=\"true\" visible=\"@REPLACE_ME@\"/>\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n"
+                + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n"
+                + "      formatString=\"#,###\"/>\n"
+                + "</Cube>\n";
+            cubeDef = cubeDef.replace(
+                "@REPLACE_ME@",
+                String.valueOf(testValue));
+            final TestContext context =
+                TestContext.instance().create(
+                    null, cubeDef, null, null, null, null);
+            final Cube cube =
+                context.getConnection().getSchema()
+                    .lookupCube("Foo", true);
+            Dimension dim = null;
+            for (Dimension dimCheck : cube.getDimensions()) {
+                if (dimCheck.getName().equals("Bar")) {
+                    dim = dimCheck;
+                }
+            }
+            assertNotNull(dim);
+            final Hierarchy hier = dim.getHierarchy();
+            assertNotNull(hier);
+            assertEquals("Bar.Bacon", hier.getName());
+            final mondrian.olap.Level level = hier.getLevels()[0];
+            assertEquals("Samosa", level.getName());
+            assertTrue(testValue.equals(level.isVisible()));
+        }
+    }
+
     /**
      * Tests that it is OK for a physical schema to have no tables.
      */
     public void testEmptyPhysicalSchema() {
         // Empty physical schema is OK.
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 "<PhysicalSchema/>", null, null, null, null, null);
         testContext.assertSimpleQuery();
     }
@@ -3917,7 +4136,7 @@ years, quarters etc.
      */
     public void testPhysicalSchemaRequired() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null,
                 "<Cube name='SalesPhys'/>",
                 null, null, null, null);
@@ -3932,7 +4151,7 @@ years, quarters etc.
      */
     public void testCubeReferencesUnknownTableUsage() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 "<PhysicalSchema>"
                 + "  <Table name='sales_fact_1997'/>\n"
                 + "</PhysicalSchema>",
@@ -3953,7 +4172,7 @@ years, quarters etc.
      */
     public void testCubeReferencesObscuredTable() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 "<PhysicalSchema>"
                 + "  <Table name='sales_fact_1997' alias='foo'/>\n"
                 + "</PhysicalSchema>",
@@ -3983,7 +4202,7 @@ years, quarters etc.
 
     public void testCubeRequiresFactTable() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null, "<Cube name='cube without fact table'/>",
                 null, null, null, null);
         final List<Exception> list = testContext.getSchemaWarnings();
@@ -3994,7 +4213,7 @@ years, quarters etc.
 
     public void testPhysicalSchema() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().withSchema(
                 "<Schema name='foo'>\n"
                 + "<PhysicalSchema>\n"
                 + "  <Table name='sales_fact_1997' />\n"
@@ -4053,7 +4272,7 @@ years, quarters etc.
      */
     public void testPhysicalColumn() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 "<PhysicalSchema>"
                 + "  <Table name='sales_fact_1997' alias='myfact'>\n"
                 + "    <ColumnDefs>\n"
@@ -4267,7 +4486,7 @@ years, quarters etc.
             + "  </Table>\n"
             + "</PhysicalSchema>";
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().withSchema(
                 "<Schema name='x'>\n"
                 + physSchema
                 + "<Cube name='SalesPhys' factTable='foo'>\n"
@@ -4291,7 +4510,7 @@ years, quarters etc.
 
         // As above, except level has table specified, is OK.
         testContext =
-            TestContext.create(
+            TestContext.instance().withSchema(
                 "<Schema name='x'>\n"
                 + physSchema
                 + "<Cube name='SalesPhys' factTable='foo'>\n"
@@ -4350,7 +4569,7 @@ years, quarters etc.
      */
     public void testSnowflakeNotFunctionallyDepdendent() {
         final String cubeName = "SalesNotFD";
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name='" + cubeName + "' defaultMeasure='Supply Time'>\n"
             + "  <Table name='sales_fact_1997'/>\n"
@@ -4381,7 +4600,7 @@ years, quarters etc.
     }
 
     public void testCubeWithPhysSchema() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             "<PhysicalSchema>"
             + "  <Table name='sales_fact_1997' alias='fact'/>\n"
             + "  <Table name='customer'>\n"
@@ -4480,7 +4699,7 @@ years, quarters etc.
 
     public void testStoredMeasureMustHaveColumns() {
         // Old style cube
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name='Warehouse-old'>\n"
             + "  <Table name='inventory_fact_1997'/>\n"
@@ -4512,7 +4731,7 @@ years, quarters etc.
     }
 
     public void testVirtualCubeDimensionMustJoinToAtLeastOneCube() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             null,
             "<VirtualCube name='Sales vs HR'>\n"
@@ -4536,7 +4755,7 @@ years, quarters etc.
 
     public void testInvalidInlineTable() {
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "<Dimension name='Scenario' foreignKey='time_id'>\n"
                 + "  <Hierarchy primaryKey='time_id' hasAll='true'>\n"
@@ -4561,7 +4780,7 @@ years, quarters etc.
 
     public void testHierarchiesWithDifferentPrimaryKeysThrows() {
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "  <Dimension name='Time' type='TimeDimension'>\n"
                 + "    <Hierarchy hasAll='false' primaryKey='time_id'>\n"
@@ -4595,7 +4814,7 @@ years, quarters etc.
 
     public void testKeyAttribute() {
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "<Dimension name='Customer' key='Key'>\n"
                 + "  <Attribute name='State'>"

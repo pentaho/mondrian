@@ -1468,11 +1468,11 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "\"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", "
             + "\"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", "
             + "\"customer\".\"yearly_income\" "
-            + "order by \"customer\".\"country\" ASC, "
-            + "\"customer\".\"state_province\" ASC, \"customer\".\"city\" ASC, "
-            + "\"fname\" || ' ' || \"lname\" ASC";
+            + "order by \"customer\".\"country\" ASC NULLS LAST, "
+            + "\"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, "
+            + "\"fname\" || ' ' || \"lname\" ASC NULLS LAST";
         SqlPattern oraclePattern =
-            new SqlPattern(Dialect.DatabaseProduct.ORACLE, sql, 852);
+            new SqlPattern(Dialect.DatabaseProduct.ORACLE, sql, sql.length());
         assertQuerySql(mdx1, new SqlPattern[]{oraclePattern});
         assertQuerySql(mdx2, new SqlPattern[]{oraclePattern});
     }

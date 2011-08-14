@@ -9,11 +9,12 @@
 */
 package mondrian.olap4j;
 
+import mondrian.olap.OlapElement;
 import mondrian.olap.Role;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapConnection;
-import mondrian.server.Execution;
 import mondrian.server.Locus;
-import mondrian.server.Statement;
+
 import org.olap4j.OlapException;
 import org.olap4j.metadata.*;
 import org.olap4j.impl.ArrayNamedListImpl;
@@ -130,7 +131,7 @@ class MondrianOlap4jLevel implements Level, Named {
             {
                 public List<Member> execute() {
                     final mondrian.olap.SchemaReader schemaReader =
-                        mondrianConnection.getSchemaReader();
+                        mondrianConnection.getSchemaReader().withLocus();
                     final List<mondrian.olap.Member> levelMembers =
                         schemaReader.getLevelMembers(level, true);
                     return new AbstractList<Member>() {
@@ -157,13 +158,15 @@ class MondrianOlap4jLevel implements Level, Named {
     }
 
     public String getCaption() {
-        // todo: localized captions
-        return level.getCaption();
+        return level.getLocalized(
+            OlapElement.LocalizedProperty.CAPTION,
+            olap4jSchema.getLocale());
     }
 
     public String getDescription() {
-        // todo: localize
-        return level.getDescription();
+        return level.getLocalized(
+            OlapElement.LocalizedProperty.DESCRIPTION,
+            olap4jSchema.getLocale());
     }
 
     public int getCardinality() {
@@ -171,7 +174,7 @@ class MondrianOlap4jLevel implements Level, Named {
     }
 
     public boolean isVisible() {
-        return true;
+        return level.isVisible();
     }
 }
 

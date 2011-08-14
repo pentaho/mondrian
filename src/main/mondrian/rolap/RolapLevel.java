@@ -68,12 +68,12 @@ public class RolapLevel extends LevelBase {
      *
      * @pre parentExp != null || nullParentValue == null
      * @pre properties != null
-     * @pre levelType != null
      * @pre hideMemberCondition != null
      */
     RolapLevel(
         RolapHierarchy hierarchy,
         String name,
+        boolean visible,
         String caption,
         String description,
         int depth,
@@ -81,7 +81,7 @@ public class RolapLevel extends LevelBase {
         HideMemberCondition hideMemberCondition,
         Map<String, Annotation> annotationMap)
     {
-        super(hierarchy, name, caption, description, depth);
+        super(hierarchy, name, visible, caption, description, depth);
         this.annotationMap = annotationMap;
         this.attribute = attribute;
         this.hideMemberCondition = hideMemberCondition;

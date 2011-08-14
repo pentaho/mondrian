@@ -900,6 +900,7 @@ public class RolapStar {
          * is the coloumn associated with next highest Level.
          */
         private final Column parentColumn;
+
         /**
          * This is used during both aggregate table recognition and aggregate
          * table generation. For multiple dimension usages, multiple shared

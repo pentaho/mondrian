@@ -1896,11 +1896,19 @@ public class Query extends QueryPart {
             throw new UnsupportedOperationException();
         }
 
+        public boolean isVisible() {
+            throw new UnsupportedOperationException();
+        }
+
         public Hierarchy getHierarchy() {
             throw new UnsupportedOperationException();
         }
 
         public Dimension getDimension() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getLocalized(LocalizedProperty prop, Locale locale) {
             throw new UnsupportedOperationException();
         }
     }

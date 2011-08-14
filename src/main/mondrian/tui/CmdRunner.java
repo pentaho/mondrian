@@ -452,7 +452,7 @@ public class CmdRunner {
     //
     public Cube[] getCubes() {
         Connection conn = getConnection();
-        return conn.getSchemaReader().getCubes();
+        return conn.getSchemaReader().withLocus().getCubes();
     }
 
     public Cube getCube(String name) {

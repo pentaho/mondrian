@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -171,16 +171,24 @@ public class FilteredIterableList<T> extends AbstractSequentialList<T> {
     }
 
     public Object[] toArray() {
+        ensurePlainList();
+        return this.plainList.toArray();
+    }
+
+    @Override
+    public <T> T[] toArray(T[] contents) {
+        ensurePlainList();
+        return this.plainList.toArray(contents);
+    }
+
+    private void ensurePlainList() {
         if (this.plainList == null) {
             final List<T> tmpPlainList = new ArrayList<T>();
-            int size = 0;
             for (final Iterator<T> it = this.listIterator(0); it.hasNext();) {
                 tmpPlainList.add(it.next());
-                size++;
             }
             this.plainList = tmpPlainList;
         }
-        return this.plainList.toArray();
     }
 
     public int hashCode() {

@@ -72,7 +72,7 @@ public class RolapConnectionTest extends TestCase {
 
     public void testPooledConnectionWithProperties() throws SQLException {
         Util.PropertyList properties =
-            TestContext.instance().getFoodMartConnectionProperties();
+            TestContext.instance().getConnectionProperties().clone();
 
         // Only the JDBC-ODBC bridge gives the error necessary for this
         // test to succeed. So trivially succeed for all other JDBC
@@ -123,7 +123,7 @@ public class RolapConnectionTest extends TestCase {
 
     public void testNonPooledConnectionWithProperties() {
         Util.PropertyList properties =
-            TestContext.instance().getFoodMartConnectionProperties();
+            TestContext.instance().getConnectionProperties().clone();
 
         // Only the JDBC-ODBC bridge gives the error necessary for this
         // test to succeed. So trivially succeed for all other JDBC
@@ -247,7 +247,7 @@ public class RolapConnectionTest extends TestCase {
 
     public void testConnectSansCatalogFails() {
         Util.PropertyList properties =
-            TestContext.instance().getFoodMartConnectionProperties();
+            TestContext.instance().getConnectionProperties().clone();
         properties.remove(RolapConnectionProperties.Catalog.name());
         properties.remove(RolapConnectionProperties.CatalogContent.name());
 
@@ -281,7 +281,7 @@ public class RolapConnectionTest extends TestCase {
         }
         // get a regular connection
         Util.PropertyList properties =
-            TestContext.instance().getFoodMartConnectionProperties();
+            TestContext.instance().getConnectionProperties().clone();
         final StringBuilder buf = new StringBuilder();
         final DataSource dataSource =
             RolapConnection.createDataSource(null, properties, buf);
@@ -310,7 +310,7 @@ public class RolapConnectionTest extends TestCase {
         // Remove user and password, because some data sources (those using
         // pools) don't allow you to override user.
         Util.PropertyList properties2 =
-            TestContext.instance().getFoodMartConnectionProperties();
+            TestContext.instance().getConnectionProperties().clone();
         properties2.remove(RolapConnectionProperties.Jdbc.name());
         properties2.remove(RolapConnectionProperties.JdbcUser.name());
         properties2.remove(RolapConnectionProperties.JdbcPassword.name());
@@ -328,7 +328,7 @@ public class RolapConnectionTest extends TestCase {
     {
         // use the datasource property to connect to the database
         Util.PropertyList properties =
-            TestContext.instance().getFoodMartConnectionProperties();
+            TestContext.instance().getConnectionProperties().clone();
         final Dialect dialect = TestContext.instance().getDialect();
         if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ACCESS) {
             // Access doesn't accept user/password, so this test is pointless.

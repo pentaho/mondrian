@@ -633,17 +633,11 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public void setLocale(Locale locale) {
-        if (locale == null) {
-            throw new IllegalArgumentException("locale must not be null");
-        }
-        this.locale = locale;
+        mondrianConnection.setLocale(locale);
     }
 
     public Locale getLocale() {
-        if (locale == null) {
-            return Locale.getDefault();
-        }
-        return locale;
+        return mondrianConnection.getLocale();
     }
 
     public void setRoleName(String roleName) throws OlapException {

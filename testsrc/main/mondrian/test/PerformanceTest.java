@@ -109,7 +109,7 @@ public class PerformanceTest extends FoodMartTestCase {
     }
 
     private TestContext getBugMondrian550Schema() {
-        return TestContext.createSubstitutingCube(
+        return TestContext.instance().createSubstitutingCube(
             "Sales",
             "      <Dimension name=\"ACC\" caption=\"Account\" type=\"StandardDimension\" foreignKey=\"customer_id\">\n"
             + "         <Hierarchy hasAll=\"true\" allMemberName=\"All\" primaryKey=\"customer_id\">\n"
@@ -320,10 +320,11 @@ public class PerformanceTest extends FoodMartTestCase {
         if (!LOGGER.isDebugEnabled()) {
             return;
         }
-        TestContext testContext = TestContext.createSubstitutingCube(
-            "Sales",
-            extraGenders(1000),
-            null);
+        TestContext testContext =
+            TestContext.instance().createSubstitutingCube(
+                "Sales",
+                extraGenders(1000),
+                null);
         String mdx =
             "with "
             + " member [Measures].[one] as '1'"

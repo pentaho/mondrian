@@ -8,8 +8,6 @@
 */
 package mondrian.spi.impl;
 
-import mondrian.spi.Dialect;
-
 import java.util.List;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -59,21 +57,6 @@ public class TeradataDialect extends JdbcDialectImpl {
 
     public boolean supportsGroupingSets() {
         return true;
-    }
-
-    public NullCollation getNullCollation() {
-        return NullCollation.NEGINF;
-    }
-
-    public String generateOrderItem(
-        String expr, boolean nullable, boolean ascending)
-    {
-        if (nullable && ascending) {
-            return "CASE WHEN " + expr + " IS NULL THEN 1 ELSE 0 END, " + expr
-                + " ASC";
-        } else {
-            return super.generateOrderItem(expr, nullable, ascending);
-        }
     }
 
     public boolean requiresUnionOrderByOrdinal() {

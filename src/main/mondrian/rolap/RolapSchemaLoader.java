@@ -53,7 +53,11 @@ public class RolapSchemaLoader {
     private static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
 
     private static final Set<Access> schemaAllowed =
-        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL, Access.ALL_DIMENSIONS);
+        Olap4jUtil.enumSetOf(
+            Access.NONE,
+            Access.ALL,
+            Access.ALL_DIMENSIONS,
+            Access.CUSTOM);
 
     private static final Set<Access> cubeAllowed =
         Olap4jUtil.enumSetOf(Access.NONE, Access.ALL);
@@ -250,7 +254,7 @@ public class RolapSchemaLoader {
                 RolapCube cube =
                     new RolapCube(
                         schema,
-                        xmlCube.name, xmlCube.caption, xmlCube.description,
+                        xmlCube.name, xmlCube.visible, xmlCube.caption, xmlCube.description,
                         createAnnotationMap(xmlCube.getAnnotations()),
                         xmlSchema.measuresCaption);
                 validator.putXml(cube, xmlCube);
@@ -273,7 +277,7 @@ public class RolapSchemaLoader {
             rolesByName.put(xmlRole.name, role);
         }
 
-        RoleImpl defaultRole = null;
+        Role defaultRole = null;
         if (xmlSchema.defaultRole != null) {
             // At this stage, the only roles in mapNameToRole are
             // RoleImpl roles so it is safe to cast.
@@ -1713,6 +1717,7 @@ public class RolapSchemaLoader {
             new RolapDimension(
                 schema,
                 xmlDimension.name,
+                xmlDimension.visible,
                 xmlDimension.caption,
                 xmlDimension.description,
                 dimensionType,
@@ -1764,6 +1769,7 @@ public class RolapSchemaLoader {
                 new RolapHierarchy(
                     dimension,
                     xmlHierarchy.name,
+                    xmlHierarchy.visible,
                     xmlHierarchy.caption,
                     xmlHierarchy.description,
                     xmlHierarchy.hasAll == null || xmlHierarchy.hasAll,
@@ -2100,6 +2106,7 @@ public class RolapSchemaLoader {
             new RolapLevel(
                 hierarchy,
                 first(xmlLevel.name, xmlLevel.attribute),
+                xmlLevel.visible,
                 xmlLevel.caption,
                 xmlLevel.description,
                 depth,
@@ -2644,7 +2651,10 @@ public class RolapSchemaLoader {
                 cube =
                     new RolapCube(
                         schema,
-                        xmlCube.name, xmlCube.caption, xmlCube.description,
+                        xmlCube.name,
+                        xmlCube.visible,
+                        xmlCube.caption,
+                        xmlCube.description,
                         createAnnotationMap(xmlCube.getAnnotations()),
                         xmlSchema.measuresCaption);
                 validator.putXml(cube, xmlCube);

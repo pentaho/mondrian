@@ -4,16 +4,16 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2007 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 6 August, 2001
 */
-
 package mondrian.olap;
 
 import org.apache.log4j.Logger;
+
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * <code>OlapElementBase</code> is an abstract base class for implementations of
@@ -26,8 +26,9 @@ import org.apache.log4j.Logger;
 public abstract class OlapElementBase
     implements OlapElement
 {
-
     protected String caption = null;
+
+    protected boolean visible = true;
 
     // cache hash-code because it is often used and elements are immutable
     private int hash;
@@ -90,6 +91,49 @@ public abstract class OlapElementBase
      */
     public void setCaption(String caption) {
         this.caption = caption;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public String getLocalized(LocalizedProperty prop, Locale locale) {
+        if (this instanceof Annotated) {
+            Annotated annotated = (Annotated) this;
+            final Map<String, Annotation> annotationMap =
+                annotated.getAnnotationMap();
+            if (!annotationMap.isEmpty()) {
+                String seek = prop.name().toLowerCase() + "." + locale;
+                for (;;) {
+                    for (Map.Entry<String, Annotation> entry
+                        : annotationMap.entrySet())
+                    {
+                        if (entry.getKey().startsWith(seek)) {
+                            return entry.getValue().getValue().toString();
+                        }
+                    }
+
+                    // No match for locale. Is there a match for the parent
+                    // locale? For example, we've just looked for
+                    // 'caption.en_US', now look for 'caption.en'.
+                    final int underscore = seek.lastIndexOf('_');
+                    if (underscore < 0) {
+                        break;
+                    }
+                    seek = seek.substring(0, underscore - 1);
+                }
+            }
+        }
+
+        // No annotation. Fall back to the default caption/description.
+        switch (prop) {
+        case CAPTION:
+            return getCaption();
+        case DESCRIPTION:
+            return getDescription();
+        default:
+            throw Util.unexpected(prop);
+        }
     }
 }
 

@@ -1174,6 +1174,10 @@ public class SqlConstraintUtils {
             if (m.isAll()) {
                 continue;
             }
+            if (m.isNull()) {
+                buf.append("1 = 0");
+                return;
+            }
             if (m.isCalculated() && !m.isParentChildLeaf()) {
                 if (restrictMemberTypes) {
                     throw Util.newInternal(

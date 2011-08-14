@@ -82,6 +82,10 @@ public class SegmentLoader {
         RolapAggregationManager.PinSet pinnedSegments,
         List<StarPredicate> compoundPredicateList)
     {
+        // Simple assertion. Is this Execution instance still valid,
+        // or should we get outa here.
+        Locus.peek().execution.checkCancelOrTimeout();
+
         // First check for cached segments.
         // This method will remove all the segments it fetched from
         // the cache from the groupingSets list.
@@ -89,7 +93,7 @@ public class SegmentLoader {
 
         // Now try to load the segments from a rollup
         // operation of other segments.
-        loadSegmentsFromRollup(groupingSets, pinnedSegments);
+        loadSegmentsFromCacheRollup(groupingSets, pinnedSegments);
 
         // Now check if there are segments left which were not
         // loaded from the cache.
@@ -215,7 +219,7 @@ public class SegmentLoader {
      * @param pinnedSegments PinSet of segments to keep a hard
      * link to in memory.
      */
-    private void loadSegmentsFromRollup(
+    private void loadSegmentsFromCacheRollup(
         List<GroupingSet> groupingSets,
         RolapAggregationManager.PinSet pinnedSegments)
     {

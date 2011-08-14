@@ -2,13 +2,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.xmla.impl;
 
 import junit.framework.TestCase;
+import mondrian.olap.MondrianProperties;
 import mondrian.server.DynamicContentFinder;
 import mondrian.xmla.DataSourcesConfig;
 import org.eigenbase.xom.DOMWrapper;
@@ -218,50 +219,90 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
         DataSourcesConfig.DataSources ds2 =
             getDataSources(CATALOG_1_DEFINITION, CATALOG_2_DEFINITION);
 
-        File dsFile = null;
-        try {
-            dsFile = File.createTempFile(
-                Long.toString(System.currentTimeMillis()), null);
-            dsFile.deleteOnExit();
+        File dsFile = File.createTempFile(
+            getClass().getName()  + "-datasources", ".xml");
+        dsFile.deleteOnExit();
 
-            OutputStream out = new FileOutputStream(dsFile);
-            out.write(ds1.toXML().getBytes());
-            out.flush();
+        OutputStream out = new FileOutputStream(dsFile);
+        out.write(ds1.toXML().getBytes());
+        out.close();
 
-            final MockDynamicContentFinder finder =
-                new MockDynamicContentFinder(
-                    dsFile.toURL().toString());
+        final MockDynamicContentFinder finder =
+            new MockDynamicContentFinder(
+                dsFile.toURL().toString());
 
-            out = new FileOutputStream(dsFile);
-            out.write(ds2.toXML().getBytes());
-            out.flush();
+        out = new FileOutputStream(dsFile);
+        out.write(ds2.toXML().getBytes());
+        out.close();
 
-            finder.reloadDataSources();
+        final boolean b1 = finder.reloadDataSources();
+        assertTrue(
+            finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
+        assertTrue(
+            finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
+        assertFalse(
+            finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
 
-            assertTrue(
-                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
-            assertTrue(
-                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
-            assertFalse(
-                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
+        out = new FileOutputStream(dsFile);
+        out.write(ds1.toXML().getBytes());
+        out.flush();
 
-            out = new FileOutputStream(dsFile);
-            out.write(ds1.toXML().getBytes());
-            out.flush();
+        final boolean b2 = finder.reloadDataSources();
+        assertTrue(
+            finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
+        assertTrue(
+            finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
+        assertFalse(
+            finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
+        finder.shutdown();
+    }
 
-            finder.reloadDataSources();
-            assertTrue(
-                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
-            assertTrue(
-                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
-            assertFalse(
-                finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
-            finder.shutdown();
-        } finally {
-            if (dsFile != null) {
-                dsFile.delete();
-            }
-        }
+    public void testAutoReloadDataSources() throws Exception {
+        DataSourcesConfig.DataSources ds1 =
+            getDataSources(CATALOG_0_DEFINITION, CATALOG_1_DEFINITION);
+        DataSourcesConfig.DataSources ds2 =
+            getDataSources(CATALOG_1_DEFINITION, CATALOG_2_DEFINITION);
+
+        File dsFile = File.createTempFile(
+            getClass().getName()  + "-datasources", ".xml");
+        dsFile.deleteOnExit();
+
+        OutputStream out = new FileOutputStream(dsFile);
+        out.write(ds1.toXML().getBytes());
+        out.flush();
+
+        final MockDynamicContentFinder finder =
+            new MockDynamicContentFinder(
+                dsFile.toURL().toString());
+
+        out = new FileOutputStream(dsFile);
+        out.write(ds2.toXML().getBytes());
+        out.close();
+
+        final boolean b = finder.reloadDataSources();
+        assertTrue(
+            finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
+        assertTrue(
+            finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
+        assertFalse(
+            finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
+
+        out = new FileOutputStream(dsFile);
+        out.write(ds1.toXML().getBytes());
+        out.close();
+
+        // Wait for it to auto-reload.
+        Thread.sleep(
+            MondrianProperties.instance().XmlaSchemaRefreshInterval.get()
+            + 1000);
+
+        assertTrue(
+            finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
+        assertTrue(
+            finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
+        assertFalse(
+            finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_2_NAME));
+        finder.shutdown();
     }
 
     private static class MockDynamicContentFinder extends DynamicContentFinder
@@ -288,7 +329,7 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
             return locateCatalog(datasourceName, catalogName) != null;
         }
 
-        public DataSourcesConfig.Catalog locateCatalog(
+        public synchronized DataSourcesConfig.Catalog locateCatalog(
             String datasourceName,
             String catalogName)
         {

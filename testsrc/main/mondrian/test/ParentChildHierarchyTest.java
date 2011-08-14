@@ -44,7 +44,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * relates each descendant to all its ancestors.
      */
     private TestContext getEmpClosureTestContext() {
-        return TestContext.createSubstitutingCube(
+        return TestContext.instance().createSubstitutingCube(
             "HR",
             "  <Dimension name=\"EmployeesClosure\" foreignKey=\"employee_id\">\n"
             + "      <Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"\n"
@@ -68,7 +68,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * to validate joins with closures work
      */
     private TestContext getEmpSnowFlakeClosureTestContext() {
-        return TestContext.createSubstitutingCube(
+        return TestContext.instance().createSubstitutingCube(
             "HR",
             "<Dimension name=\"EmployeeSnowFlake\" foreignKey=\"employee_id\">"
             + "<Hierarchy hasAll=\"true\" allMemberName=\"All Employees\""
@@ -146,7 +146,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "    formatString=\"#,#\"/>"
             + "</Cube>";
 
-        return TestContext.create(
+        return TestContext.instance().create(
             sharedClosureDimension, cube, null, null, null, null);
     }
 
@@ -157,7 +157,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * closure to validate that non-closures work
      */
     private TestContext getEmpNonClosureTestContext() {
-        return TestContext.createSubstitutingCube(
+        return TestContext.instance().createSubstitutingCube(
             "HR",
             "<Dimension name=\"EmployeesNonClosure\" foreignKey=\"employee_id\">"
             + "<Hierarchy hasAll=\"true\" allMemberName=\"All Employees\""
@@ -645,7 +645,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Org Salary]}\n"
             + "Row #0: $39,431.67\n");
 
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name='HR-fewer-dims'>\n"
             + "    <Table name='salary'/>\n"
@@ -955,7 +955,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
             return;
         }
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"HR-ordered\">\n"
             + "  <Table name=\"salary\"/>\n"
@@ -985,35 +985,6 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             null,
             null,
             null);
-
-        // Make sure <Hierarchy>.MEMBERS is sorted.
-        // Note that last_name is not unique, and databases may return members
-        // in arbitrary order -- so to keep things deterministic, this example
-        // deliberately uses a set of  employees with unique last names.
-        testContext.assertQueryReturns(
-            "with member [Measures].[First Name] as "
-            + " 'Iif([Employees].Level.Name = \"Employee Id\", [Employees].CurrentMember.Properties(\"First Name\"), Cast(NULL AS STRING)) '\n"
-            + "select {[Measures].[Org Salary], [Measures].[First Name]} on columns,\n"
-            + " {Tail(Head([Employees].Members, 15), 4)} on rows\n"
-            + "from [HR-ordered]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Org Salary]}\n"
-            + "{[Measures].[First Name]}\n"
-            + "Axis #2:\n"
-            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg]}\n"
-            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack]}\n"
-            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack].[Samuel Agcaoili]}\n"
-            + "{[Employees].[Sheri Nowmer].[Maya Gutierrez].[Brenda Blumberg].[Wayne Banack].[Megan Davis]}\n"
-            + "Row #0: $29,762.88\n"
-            + "Row #0: Brenda\n"
-            + "Row #1: $27,908.33\n"
-            + "Row #1: Wayne\n"
-            + "Row #2: $981.82\n"
-            + "Row #2: Samuel\n"
-            + "Row #3: $927.27\n"
-            + "Row #3: Megan\n");
 
         // Make sure <Member>.CHILDREN is sorted.
         testContext.assertQueryReturns(
@@ -1084,7 +1055,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * test case for bug #2477623, Closure Tables not working with Virtual Cubes
      */
     public void testClosureTableInVirtualCube() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             "<Dimension name=\"Employees\" >"
             + "   <Hierarchy hasAll=\"true\" allMemberName=\"All Employees\""
             + "      primaryKey=\"employee_id\" primaryKeyTable=\"employee\">"
@@ -1172,9 +1143,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "  <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\" />\n"
             + "</Cube>\n";
 
-        TestContext testClosureContext = TestContext.create(
+        final TestContext testClosureContext = TestContext.instance().create(
             null, cubestart + closure + cubeend, null, null, null, null);
-        TestContext testNoClosureContext = TestContext.create(
+        final TestContext testNoClosureContext = TestContext.instance().create(
             null, cubestart + cubeend, null, null, null, null);
 
         String mdx;
@@ -1233,7 +1204,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     public void testSchemaReaderLevelMembers()
     {
         final SchemaReader schemaReader =
-            TestContext.instance().getConnection().getSchemaReader();
+            TestContext.instance().getConnection()
+            .getSchemaReader().withLocus();
         int found = 0;
         for (Cube cube : schemaReader.getCubes()) {
             if (!cube.getName().equals("HR")) {

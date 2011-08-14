@@ -19,6 +19,7 @@ import mondrian.spi.Dialect;
 import org.olap4j.metadata.XmlaConstants;
 import org.w3c.dom.Document;
 
+import java.util.Locale;
 import java.util.Properties;
 import java.util.Map;
 
@@ -227,6 +228,34 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, props, TestContext.instance());
     }
 
+    public void testMDCubesLocale() throws Exception {
+        String requestType = "MDSCHEMA_CUBES";
+
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, "Sales");
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+        props.setProperty(LOCALE_PROP, Locale.GERMANY.toString());
+
+        doTest(requestType, props, TestContext.instance());
+    }
+
+    public void testMDCubesLcid() throws Exception {
+        String requestType = "MDSCHEMA_CUBES";
+
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, "Sales");
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+        props.setProperty(LOCALE_PROP, 0x040c + ""); // LCID code for FRENCH
+
+        doTest(requestType, props, TestContext.instance());
+    }
+
     public void testMDSets() throws Exception {
         String requestType = "MDSCHEMA_SETS";
 
@@ -239,13 +268,26 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
         doTest(requestType, props, TestContext.instance());
     }
 
-    public void testMDimensions() throws Exception {
+    public void testMDDimensions() throws Exception {
         String requestType = "MDSCHEMA_DIMENSIONS";
 
         Properties props = new Properties();
         props.setProperty(REQUEST_TYPE_PROP, requestType);
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
         props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
+
+        doTest(requestType, props, TestContext.instance());
+    }
+
+    public void testMDDimensionsShared() throws Exception {
+        String requestType = "MDSCHEMA_DIMENSIONS";
+
+        Properties props = new Properties();
+        props.setProperty(REQUEST_TYPE_PROP, requestType);
+        props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
+        props.setProperty(CATALOG_PROP, CATALOG);
+        props.setProperty(CUBE_NAME_PROP, "");
         props.setProperty(FORMAT_PROP, FORMAT_TABLULAR);
 
         doTest(requestType, props, TestContext.instance());

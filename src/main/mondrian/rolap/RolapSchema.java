@@ -74,7 +74,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     /**
      * The default role for connections to this schema.
      */
-    private RoleImpl defaultRole;
+    private Role defaultRole;
 
     final String md5Bytes;
 
@@ -179,7 +179,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         this.key = key;
         this.md5Bytes = md5Bytes;
         // the order of the next two lines is important
-        this.defaultRole = createDefaultRole();
+        this.defaultRole = Util.createRootRole(this);
         final MondrianServer internalServer = MondrianServer.forId(null);
         this.internalConnection =
             new RolapConnection(internalServer, connectInfo, this, dataSource);
@@ -239,7 +239,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         return Collections.unmodifiableList(Util.<Exception>cast(warningList));
     }
 
-    RoleImpl getDefaultRole() {
+    Role getDefaultRole() {
         return defaultRole;
     }
 
@@ -869,19 +869,12 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         }
     }
 
-    private RoleImpl createDefaultRole() {
-        RoleImpl role = new RoleImpl();
-        role.grant(this, Access.ALL);
-        role.makeImmutable();
-        return role;
-    }
-
     private RolapStar makeRolapStar(final PhysRelation fact) {
         DataSource dataSource = getInternalConnection().getDataSource();
         return new RolapStar(this, dataSource, fact);
     }
 
-    void registerRoles(Map<String, Role> roles, RoleImpl defaultRole) {
+    void registerRoles(Map<String, Role> roles, Role defaultRole) {
         for (Map.Entry<String, Role> entry : roles.entrySet()) {
             mapNameToRole.put(entry.getKey(), entry.getValue());
         }
@@ -2162,6 +2155,17 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     }
 
     public static abstract class PhysColumn extends PhysExpr {
+        public static final Comparator<PhysColumn> COMPARATOR =
+            new Comparator<PhysColumn>() {
+                public int compare(
+                    PhysColumn object1,
+                    PhysColumn object2)
+                {
+                    return Util.compare(
+                        object1.ordinal,
+                        object2.ordinal);
+                }
+        };
         public final PhysRelation relation;
         public final String name;
         Dialect.Datatype datatype;

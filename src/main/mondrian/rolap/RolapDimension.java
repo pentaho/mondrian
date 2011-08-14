@@ -76,6 +76,7 @@ class RolapDimension extends DimensionBase {
     RolapDimension(
         RolapSchema schema,
         String name,
+        boolean visible,
         String caption,
         String description,
         DimensionType dimensionType,
@@ -83,7 +84,12 @@ class RolapDimension extends DimensionBase {
     {
         // todo: recognition of a time dimension should be improved
         // allow multiple time dimensions
-        super(name, caption, description, dimensionType);
+        super(
+            name,
+            visible,
+            caption,
+            description,
+            dimensionType);
         assert annotationMap != null;
         assert schema != null;
         this.schema = schema;
@@ -110,8 +116,13 @@ class RolapDimension extends DimensionBase {
     {
         RolapHierarchy hierarchy =
             new RolapHierarchy(
-                this, subName,
-                caption, description, hasAll, closureFor,
+                this,
+                subName,
+                visible,
+                caption,
+                description,
+                hasAll,
+                closureFor,
                 Collections.<String, Annotation>emptyMap());
         hierarchyList.add(hierarchy);
         return hierarchy;

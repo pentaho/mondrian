@@ -19,7 +19,6 @@ import mondrian.olap.Position;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
-import mondrian.rolap.RolapConnectionProperties;
 import mondrian.spi.ProfileHandler;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.spi.Dialect;
@@ -503,10 +502,9 @@ public class BasicQueryTest extends FoodMartTestCase {
         propSaver.set(
             MondrianProperties.instance().FilterChildlessSnowflakeMembers,
             false);
-        Connection conn = null;
+        final TestContext context = getTestContext().withFreshConnection();
         try {
-            conn = getTestContext().getFoodMartConnection(false);
-            getTestContext(conn).assertQueryReturns(
+            context.assertQueryReturns(
                 sampleQueries[5].query,
                 "Axis #0:\n"
                 + "{[Time].[1997]}\n"
@@ -616,9 +614,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "Row #24: \n"
                 + "Row #24: \n");
         } finally {
-            if (conn != null) {
-                conn.close();
-            }
+            context.close();
         }
     }
 
@@ -3102,7 +3098,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             return;
         }
         final long start = System.currentTimeMillis();
-        Connection connection = getTestContext().getFoodMartConnection();
+        Connection connection = getTestContext().getConnection();
         final String queryString =
             "select {[Measures].[Unit Sales],\n"
             + " [Measures].[Store Cost],\n"
@@ -3221,7 +3217,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         if (props.ReadAggregates.get()) {
             return;
         }
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Gender2\" foreignKey=\"customer_id\">\n"
             + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">\n"
@@ -3278,7 +3274,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         if (getTestContext().getDialect().allowsFromQuery()) {
             return;
         }
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"ProductView\" foreignKey=\"product_id\">\n"
             + "   <Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"productView\">\n"
@@ -3574,6 +3570,28 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-977">MONDRIAN-977,
+     * "NPE in Query with Crossjoin Descendants of Unknown Member"</a>.
+     */
+    public void testCrossjoinWithDescendantsAndUnknownMember() {
+        propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
+            true);
+        assertQueryReturns(
+            "select {[Measures].[Unit Sales]} on columns,\n"
+            + "NON EMPTY CrossJoin(\n"
+            + " Descendants([Product].[All Products], [Product].[Product Family]),\n"
+            + " Descendants([Store].[All Stores].[Foo], [Store].[Store State])) on rows\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n");
+    }
+
+    /**
      * Slicer contains <code>[Promotion Media].[Daily Paper]</code>, but
      * filter expression is in terms of <code>[Promotion Media].[Radio]</code>.
      */
@@ -3606,7 +3624,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
 
         final Connection connection =
-            TestContext.instance().getFoodMartConnection();
+            TestContext.instance().getConnection();
         String queryString =
             "select {[Measures].[Unit Sales]} on columns,\n"
             + "{[Customers].members} on rows\n"
@@ -5318,7 +5336,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         // Create a second usage of the "Store" shared dimension called "Other
         // Store". Attach it to the "unit_sales" column (which has values [1,
         // 6] whereas store has values [1, 24].
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<DimensionUsage name=\"Other Store\" source=\"Store\" foreignKey=\"unit_sales\" />");
         Axis axis = testContext.executeAxis("[Other Store].members");
@@ -5444,7 +5462,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testMemberVisibility() {
         String cubeName = "Sales_MemberVis";
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\""
             + cubeName
@@ -5490,7 +5508,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testAllMemberCaption() {
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance()
+        .createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Gender3\" foreignKey=\"customer_id\">\n"
             + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\"\n"
@@ -5509,7 +5528,8 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testAllLevelName() {
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance()
+        .createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Gender4\" foreignKey=\"customer_id\">\n"
             + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\"\n"
@@ -5534,57 +5554,58 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void testDimWithoutAll() {
         // Create a test context with a new ""Sales_DimWithoutAll" cube, and
         // which evaluates expressions against that cube.
-        TestContext testContext = new TestContext() {
-            public Util.PropertyList getFoodMartConnectionProperties() {
-                final String schema = getFoodMartSchema(
-                    null,
-                    "<Cube name=\"Sales_DimWithoutAll\">\n"
-                    + "  <Table name=\"sales_fact_1997\"/>\n"
-                    + "  <Dimension name=\"Product\" foreignKey=\"product_id\">\n"
-                    + "    <Hierarchy hasAll=\"false\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
-                    + "      <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
-                    + "        <Table name=\"product\"/>\n"
-                    + "        <Table name=\"product_class\"/>\n"
-                    + "      </Join>\n"
-                    + "      <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
-                    + "          uniqueMembers=\"true\"/>\n"
-                    + "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
-                    + "          uniqueMembers=\"false\"/>\n"
-                    + "      <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
-                    + "          uniqueMembers=\"false\"/>\n"
-                    + "      <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
-                    + "          uniqueMembers=\"false\"/>\n"
-                    + "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
-                    + "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
-                    + "          uniqueMembers=\"true\"/>\n"
-                    + "    </Hierarchy>\n"
-                    + "  </Dimension>\n"
-                    + "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n"
-                    + "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">\n"
-                    + "    <Table name=\"customer\"/>\n"
-                    + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>\n"
-                    + "    </Hierarchy>\n"
-                    + "  </Dimension>"
-                    + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
-                    + "      formatString=\"Standard\" visible=\"false\"/>\n"
-                    + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
-                    + "      formatString=\"#,###.00\"/>\n"
-                    + "</Cube>",
-                    null,
-                    null,
-                    null,
-                    null);
-                Util.PropertyList properties =
-                    super.getFoodMartConnectionProperties();
-                properties.put(
-                    RolapConnectionProperties.CatalogContent.name(), schema);
-                return properties;
-            }
-
-            public String getDefaultCubeName() {
-                return "Sales_DimWithoutAll";
-            }
-        };
+        final String schema = TestContext.instance().getSchema(
+            null,
+            "<Cube name=\"Sales_DimWithoutAll\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Dimension name=\"Product\" foreignKey=\"product_id\">\n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"product_id\" "
+            + "primaryKeyTable=\"product\">\n"
+            + "      <Join leftKey=\"product_class_id\" "
+            + "rightKey=\"product_class_id\">\n"
+            + "        <Table name=\"product\"/>\n"
+            + "        <Table name=\"product_class\"/>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Product Family\" table=\"product_class\" "
+            + "column=\"product_family\"\n"
+            + "          uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Product Department\" "
+            + "table=\"product_class\" column=\"product_department\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Product Category\" table=\"product_class\""
+            + " column=\"product_category\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Product Subcategory\" "
+            + "table=\"product_class\" column=\"product_subcategory\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Brand Name\" table=\"product\" "
+            + "column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Product Name\" table=\"product\" "
+            + "column=\"product_name\"\n"
+            + "          uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Gender\" foreignKey=\"customer_id\">\n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"customer_id\">\n"
+            + "    <Table name=\"customer\"/>\n"
+            + "      <Level name=\"Gender\" column=\"gender\" "
+            + "uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" "
+            + "aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\" visible=\"false\"/>\n"
+            + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+        TestContext testContext =
+            TestContext.instance()
+                .withSchema(schema)
+                .withCube("Sales_DimWithoutAll");
         // the default member of the Gender dimension is the first member
         testContext.assertExprReturns("[Gender].CurrentMember.Name", "F");
         testContext.assertExprReturns("[Product].CurrentMember.Name", "Drink");
@@ -5766,7 +5787,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      */
     public void testMultipleConstraintsOnSameColumn() {
         final String cubeName = "Sales_withCities";
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"" + cubeName + "\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -5861,7 +5882,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testBadMeasure1() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"SalesWithBadMeasure\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -5886,7 +5907,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testBadMeasure2() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"SalesWithBadMeasure2\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -5990,20 +6011,14 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testMemberOrdinalCaching() {
-        boolean saved = props.CompareSiblingsByOrderKey.get();
-        props.CompareSiblingsByOrderKey.set(true);
-        Connection conn = null;
+        propSaver.set(props.CompareSiblingsByOrderKey, true);
+        // Use a fresh connection to make sure bad member ordinals haven't
+        // been assigned by previous tests.
+        final TestContext context = getTestContext().withFreshConnection();
         try {
-            // Use a fresh connection to make sure bad member ordinals haven't
-            // been assigned by previous tests.
-            conn = getTestContext().getFoodMartConnection(false);
-            TestContext context = getTestContext(conn);
             tryMemberOrdinalCaching(context);
         } finally {
-            props.CompareSiblingsByOrderKey.set(saved);
-            if (conn != null) {
-                conn.close();
-            }
+            context.close();
         }
     }
 
@@ -6085,7 +6100,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     private void executeAndCancel(String queryString, int waitMillis)
     {
-        final TestContext tc = TestContext.create(
+        final TestContext tc = TestContext.instance().create(
             null,
             null,
             null,
@@ -6147,7 +6162,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         // run for at least that long; it will because the query references
         // a Udf that has a 1 ms sleep in it; and there are enough rows
         // in the result that the Udf should execute > 2000 times
-        final TestContext tc = TestContext.create(
+        final TestContext tc = TestContext.instance().create(
             null,
             null,
             null,
@@ -6402,7 +6417,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testDefaultMeasureInCube() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"DefaultMeasureTesting\" defaultMeasure=\"Supply Time\">\n"
             + "  <Table name=\"inventory_fact_1997\"/>\n"
@@ -6432,7 +6447,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testDefaultMeasureInCubeForIncorrectMeasureName() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"DefaultMeasureTesting\" defaultMeasure=\"Supply Time Error\">\n"
             + "  <Table name=\"inventory_fact_1997\"/>\n"
@@ -6462,7 +6477,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testDefaultMeasureInCubeForCaseSensitivity() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"DefaultMeasureTesting\" defaultMeasure=\"SUPPLY TIME\">\n"
             + "  <Table name=\"inventory_fact_1997\"/>\n"
@@ -6672,7 +6687,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         // In order to reproduce this bug a dimension with 2 levels with more
         // than 1000 member each was necessary. The customer_id column has more
         // than 1000 distinct members so it was used for this test.
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance()
+        .createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Customer_2\" foreignKey=\"customer_id\">\n"
             + "    <Hierarchy hasAll=\"true\" "
@@ -7245,7 +7261,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testDirectMemberReferenceOnDimensionWithCalculationsDefined() {
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             null,
             "<CalculatedMember dimension=\"Gender\" visible=\"true\" name=\"last\">"

@@ -6,7 +6,7 @@
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
   == Copyright (C) 2000-2002 Kana Software, Inc.
-  == Copyright (C) 2002-2009 Julian Hyde and others
+  == Copyright (C) 2002-2011 Julian Hyde and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   -->
@@ -115,6 +115,16 @@ WHERE "product"."product_class_id" = "product_class"."product_class_id"
 
 <!-- Sales -->
 <Cube name="Sales" defaultMeasure="Unit Sales">
+  <!-- Use annotations to provide translations of this cube's caption and
+       description into German and French. Use of annotations in this manner is
+       experimental and unsupported; just for testing right now. -->
+  <Annotations>
+    <Annotation name="caption.de_DE">Verkaufen</Annotation>
+    <Annotation name="caption.fr_FR">Ventes</Annotation>
+    <Annotation name="description.fr_FR">Cube des ventes</Annotation>
+    <Annotation name="description.de">Cube Verkaufen</Annotation>
+    <Annotation name="description.de_AT">Cube den Verkaufen</Annotation>
+  </Annotations>
   <Table name="sales_fact_1997">
 <!--
     <AggExclude name="agg_l_03_sales_fact_1997" />

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -15,6 +15,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
+import mondrian.olap.Util;
 import mondrian.xmla.SaxWriter;
 import mondrian.util.ArrayStack;
 
@@ -183,7 +184,16 @@ public class DefaultSaxWriter implements SaxWriter {
 
     public final void textElement(String name, Object data) {
         startElement(name);
-        characters(data.toString());
+        String s = data.toString();
+
+        // Replace line endings with spaces. IBM's DOM implementation keeps
+        // line endings, whereas Sun's does not. For consistency, always strip
+        // them.
+        //
+        // REVIEW: It would be better to enclose in CDATA, but some clients
+        // might not be expecting this.
+        s = Util.replace(s, Util.nl, " ");
+        characters(s);
         endElement();
     }
 
@@ -199,6 +209,7 @@ public class DefaultSaxWriter implements SaxWriter {
 
     public void startElement(String tagName, Object... attributes) {
         _startElement(null, null, tagName, new StringAttributes(attributes));
+        assert tagName != null;
         stack.add(tagName);
     }
 

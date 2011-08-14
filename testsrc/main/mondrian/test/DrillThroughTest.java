@@ -3,14 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, Feb 14, 2003
 */
 package mondrian.test;
-
 
 import mondrian.olap.*;
 import mondrian.rolap.*;
@@ -631,7 +630,7 @@ public class DrillThroughTest extends FoodMartTestCase {
          *
          *  and DB2 and Derby don't like converting from CHAR to INTEGER
          */
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Store2\" foreignKey=\"store_id\">\n"
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
@@ -732,7 +731,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         // Specify the column and nameColumn to be the same
         // in order to reproduce the problem
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "  <Dimension name=\"Store2\" foreignKey=\"store_id\">\n"
                 + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\" allMemberName=\"All Stores\" >\n"
@@ -846,7 +845,7 @@ public class DrillThroughTest extends FoodMartTestCase {
      * @throws Exception on error
      */
     public void testTruncateLevelName() throws Exception {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Education Level2\" foreignKey=\"customer_id\">\n"
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
@@ -1150,11 +1149,11 @@ public class DrillThroughTest extends FoodMartTestCase {
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case MYSQL:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from customer as customer, sales_fact_1997 as sales_fact_1997, time_by_day as time_by_day where sales_fact_1997.customer_id = customer.customer_id and sales_fact_1997.time_id = time_by_day.time_id and (((time_by_day.the_year, time_by_day.quarter, customer.gender) in ((1997, 'Q1', 'F'), (1997, 'Q2', 'M'))))";
+                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997, customer as customer where sales_fact_1997.time_id = time_by_day.time_id and sales_fact_1997.customer_id = customer.customer_id and (((time_by_day.the_year, time_by_day.quarter, customer.gender) in ((1997, 'Q1', 'F'), (1997, 'Q2', 'M'))))";
             break;
         case ORACLE:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from customer customer, sales_fact_1997 sales_fact_1997, time_by_day time_by_day where sales_fact_1997.customer_id = customer.customer_id and sales_fact_1997.time_id = time_by_day.time_id and ((customer.gender = 'F' and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (customer.gender = 'M' and time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
+                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day time_by_day, sales_fact_1997 sales_fact_1997, customer customer where sales_fact_1997.time_id = time_by_day.time_id and sales_fact_1997.customer_id = customer.customer_id and ((customer.gender = 'F' and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (customer.gender = 'M' and time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
             break;
         default:
             return;
@@ -1203,7 +1202,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         switch (getTestContext().getDialect().getDatabaseProduct()) {
         case MYSQL:
             expectedSql =
-                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997) or (time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997))";
+                "select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))";
             break;
         case ORACLE:
             expectedSql =

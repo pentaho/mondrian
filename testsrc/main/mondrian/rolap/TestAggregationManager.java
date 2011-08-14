@@ -311,7 +311,7 @@ public class TestAggregationManager extends BatchTestCase {
         String column = "store_state";
         String value = "CA";
         final Connection connection =
-                TestContext.instance().getFoodMartConnection();
+                TestContext.instance().getConnection();
         final boolean fail = true;
         Cube salesCube = connection.getSchema().lookupCube(cube, fail);
         Member storeSqftMeasure =
@@ -956,7 +956,7 @@ public class TestAggregationManager extends BatchTestCase {
      * inside of CellRequest.
      */
     public void testNoNullPtrInCellRequest() {
-        final TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Store2\" foreignKey=\"store_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"store_id\" allMemberName=\"All Stores\">"
@@ -1028,8 +1028,7 @@ public class TestAggregationManager extends BatchTestCase {
                     cardinalitySqlMySql)
             };
 
-        Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);
+        final TestContext context = getTestContext().withFreshConnection();
 
         // This MDX gets the [Product].[Product Family] cardinality from the DB.
         context.executeQuery(query1);
@@ -1130,7 +1129,7 @@ public class TestAggregationManager extends BatchTestCase {
             };
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 storeDim1 + storeDim2,
                 salesCube1 + salesCube2,
                 null,
@@ -1269,7 +1268,7 @@ public class TestAggregationManager extends BatchTestCase {
         + "</Cube>";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null,
                 cube,
                 null,
@@ -1536,7 +1535,7 @@ public class TestAggregationManager extends BatchTestCase {
         final String colName =
             TestContext.instance().getDialect()
                 .quoteIdentifier("promotion_name");
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Promotions\" foreignKey=\"promotion_id\">\n"
             + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
@@ -1551,7 +1550,7 @@ public class TestAggregationManager extends BatchTestCase {
             mdxQuery,
             "ERROR_TEST_FUNCTION_NAME");
         // Run for real this time
-        testContext = TestContext.createSubstitutingCube(
+        testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Promotions\" foreignKey=\"promotion_id\">\n"
             + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
@@ -1680,7 +1679,7 @@ public class TestAggregationManager extends BatchTestCase {
         propSaver.set(MondrianProperties.instance().UseAggregates, true);
         propSaver.set(MondrianProperties.instance().ReadAggregates, true);
         final TestContext context =
-            TestContext.create(
+            TestContext.instance().withSchema(
                 "<schema name=\"FooSchema\"><Cube name=\"Sales_Foo\" defaultMeasure=\"Unit Sales\">\n"
                 + "  <Table name=\"sales_fact_1997\">\n"
                 + " <AggName name=\"agg_pl_01_sales_fact_1997\" approxRowCount=\"86000\">\n"
@@ -1862,7 +1861,7 @@ public class TestAggregationManager extends BatchTestCase {
      */
     public void _testSpuriousJoin() {
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "  <Dimension name=\"Promotion Plus\" foreignKey=\"promotion_id\">\n"
                 + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"

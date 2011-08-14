@@ -54,11 +54,11 @@ public class RolapUtil {
      */
     public static final Object valueNotReadyException = new Double(0);
 
-    /**
-     * Hook to run when a query is executed.
+    /*
+     * Hook to run when a query is executed. This should not be
+     * used at runtime but only for testing.
      */
-    static final ThreadLocal<ExecuteQueryHook> threadHooks =
-        new ThreadLocal<ExecuteQueryHook>();
+    static ExecuteQueryHook threadHooks = null;
 
     /**
      * Special value represents a null key.
@@ -85,7 +85,7 @@ public class RolapUtil {
                 "Schema reader",
                 null);
         return (SchemaReader) Proxy.newProxyInstance(
-            ClassLoader.getSystemClassLoader(),
+            SchemaReader.class.getClassLoader(),
             new Class[]{SchemaReader.class},
             new InvocationHandler() {
                 public Object invoke(
@@ -106,7 +106,7 @@ public class RolapUtil {
     }
 
     private final static class RolapUtilComparable
-            implements Comparable, Serializable
+        implements Comparable, Serializable
     {
         private static final long serialVersionUID = -2595758291465179116L;
         public boolean equals(Object o) {

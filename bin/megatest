@@ -68,7 +68,7 @@ marmalade)
   ;;
 marmite)
   databaseList="derby hsqldb mysql"
-  jdkList="jdk1.4 jdk1.5 jdk1.6 openjdk1.6"
+  jdkList="jdk1.4 jdk1.5 jdk1.6 openjdk1.6 ibmjdk1.6"
   ;;
 ATRHisv1)
   databaseList="hsqldb neoview"
@@ -386,7 +386,7 @@ chooseAntHome() {
       echo $(cd /usr/local/apache-ant-1.6.0; pwd)
     esac
     ;;
-  jdk1.5|jdk1.6|openjdk1.6)
+  jdk1.5|jdk1.6|openjdk1.6|ibmjdk1.6)
     case $(uname -n) in
     (plank.disruptivetech.com)
       echo /home/jhyde/open/thirdparty/ant;;
@@ -426,6 +426,7 @@ chooseJavaHome() {
     (jdk1.4) echo /usr/local/jdk1.4 ;;
     (jdk1.5) echo /usr/local/jdk1.5 ;;
     (jdk1.6) echo /usr/local/jdk1.6 ;;
+    (ibmjdk1.6) echo /usr/lib/jvm/ibm-jdk1.6 ;;
     (openjdk1.6) echo /usr/lib/jvm/java-1.6.0-openjdk ;;
     (*) echo "Unknown java version $jdk"; exit 1 ;;
     esac;;
@@ -494,7 +495,7 @@ olap4j() {
 
   # Javadoc only runs clean under jdk16, because it depends on JDBC 4.0
   case "$jdk" in
-  (jdk1.6|openjdk1.6) ant javadoc ;;
+  (jdk1.6|openjdk1.6|ibmjdk1.6) ant javadoc ;;
   esac
 }
 

@@ -44,6 +44,7 @@ public class RolapCubeLevel extends RolapLevel {
         super(
             cubeHierarchy,
             level.getName(),
+            level.isVisible(),
             level.getCaption(),
             level.getDescription(),
             level.getDepth(),

@@ -918,7 +918,8 @@ public class XmlaSupport {
             roleName = entry.getMoniker();
         }
 
-        XmlaRequest request = new DefaultXmlaRequest(requestElem, roleName);
+        XmlaRequest request =
+            new DefaultXmlaRequest(requestElem, roleName, null, null, null);
 
         Enumeration.ResponseMimeType responseMimeType =
             Enumeration.ResponseMimeType.MAP.get(

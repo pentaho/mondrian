@@ -51,23 +51,6 @@ public class LucidDbDialect extends JdbcDialectImpl {
     public boolean supportsMultiValueInExpr() {
         return true;
     }
-
-    @Override
-    public NullCollation getNullCollation() {
-        return NullCollation.NEGINF;
-    }
-
-    @Override
-    public String generateOrderItem(
-        String expr, boolean nullable, boolean ascending)
-    {
-        if (nullable && ascending) {
-            return "CASE WHEN " + expr + " IS NULL THEN 1 ELSE 0 END, " + expr
-                + " ASC";
-        } else {
-            return super.generateOrderItem(expr, nullable, ascending);
-        }
-    }
 }
 
 // End LucidDbDialect.java

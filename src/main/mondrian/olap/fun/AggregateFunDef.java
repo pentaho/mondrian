@@ -13,6 +13,7 @@ import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.olap.Role.RollupPolicy;
 import mondrian.rolap.*;
 
 import java.util.*;
@@ -142,7 +143,27 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 // very slow.  May want to revisit this if someone
                 // improves the algorithm.
             } else {
-                tupleList = optimizeTupleList(evaluator, tupleList);
+                // If members of this hierarchy are controlled by a role which
+                // enforces a rollup policy of partial, we cannot safely
+                // optimize the tuples list as it might end up rolling up to
+                // the parent while not all children are actually accessible.
+                boolean canOptimize = true;
+                loop:
+                for (List<Member> tupleMembers : tupleList) {
+                    for (Member member : tupleMembers) {
+                        final RollupPolicy policy =
+                            evaluator.getSchemaReader().getRole()
+                                .getAccessDetails(member.getHierarchy())
+                                    .getRollupPolicy();
+                        if (policy == RollupPolicy.PARTIAL) {
+                            canOptimize = false;
+                            break loop;
+                        }
+                    }
+                }
+                if (canOptimize) {
+                    tupleList = optimizeTupleList(evaluator, tupleList);
+                }
             }
 
             // Can't aggregate distinct-count values in the same way

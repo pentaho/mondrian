@@ -60,10 +60,6 @@ public class NeoviewDialect extends JdbcDialectImpl {
         return false;
     }
 
-    public NullCollation getNullCollation() {
-        return NullCollation.POSINF;
-    }
-
     public String generateInline(
         List<String> columnNames,
         List<String> columnTypes,

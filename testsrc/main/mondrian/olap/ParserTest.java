@@ -427,7 +427,7 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     public void testCloneQuery() {
-        Connection connection = TestContext.instance().getFoodMartConnection();
+        Connection connection = TestContext.instance().getConnection();
         Query query = connection.parseQuery(
             "select {[Measures].Members} on columns,\n"
             + " {[Store].Members} on rows\n"
@@ -769,7 +769,7 @@ public class ParserTest extends FoodMartTestCase {
     public static class TestParser
         extends Parser
         implements MdxParserValidator.QueryPartFactory
-     {
+    {
         private Formula[] formulas;
         private QueryAxis[] axes;
         private String cube;

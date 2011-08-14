@@ -61,17 +61,24 @@ public class AccessDialect extends JdbcDialectImpl {
         buf.append("#");
     }
 
-    public NullCollation getNullCollation() {
-        return NullCollation.NEGINF;
-    }
-
-    public String generateOrderItem(
-        String expr, boolean nullable, boolean ascending)
+    @Override
+    protected String generateOrderByNulls(
+        String expr,
+        boolean ascending,
+        boolean collateNullsLast)
     {
-        if (ascending && nullable) {
-            return "Iif(" + expr + " IS NULL, 1, 0), " + expr + " ASC";
+        if (collateNullsLast) {
+            if (ascending) {
+                return "Iif(" + expr + " IS NULL, 1, 0), " + expr + " ASC";
+            } else {
+                return "Iif(" + expr + " IS NULL, 1, 0), " + expr + " DESC";
+            }
         } else {
-            return super.generateOrderItem(expr, nullable, ascending);
+            if (ascending) {
+                return "Iif(" + expr + " IS NULL, 0, 1), " + expr + " ASC";
+            } else {
+                return "Iif(" + expr + " IS NULL, 0, 1), " + expr + " DESC";
+            }
         }
     }
 

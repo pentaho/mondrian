@@ -18,6 +18,8 @@ import mondrian.rolap.RolapNative.TupleEvent;
 import mondrian.rolap.agg.*;
 import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
 import mondrian.spi.Dialect;
 
 import java.util.List;
@@ -256,20 +258,29 @@ public class BatchTestCase extends FoodMartTestCase {
             // Create a dummy DataSource which will throw a 'bomb' if it is
             // asked to execute a particular SQL statement, but will otherwise
             // behave exactly the same as the current DataSource.
-            RolapUtil.threadHooks.set(new TriggerHook(trigger));
+            RolapUtil.threadHooks = new TriggerHook(trigger);
             Bomb bomb;
+            final Locus locus =
+                new Locus(
+                    new Execution(null, 1000),
+                    "BatchTestCase",
+                    "BatchTestCase");
             try {
                 FastBatchingCellReader fbcr =
                     new FastBatchingCellReader(getCube(cubeName));
                 for (CellRequest request : requests) {
                     fbcr.recordCellRequest(request);
                 }
+                // The FBCR will presume there is a current Locus in the stack,
+                // so let's create a mock one.
+                Locus.push(locus);
                 fbcr.loadAggregations(null);
                 bomb = null;
             } catch (Bomb e) {
                 bomb = e;
             } finally {
-                RolapUtil.threadHooks.set(null);
+                RolapUtil.threadHooks = null;
+                Locus.pop(locus);
             }
             if (!negative && bomb == null) {
                 fail("expected query [" + sql + "] did not occur");
@@ -425,12 +436,13 @@ public class BatchTestCase extends FoodMartTestCase {
             // Create a dummy DataSource which will throw a 'bomb' if it is
             // asked to execute a particular SQL statement, but will otherwise
             // behave exactly the same as the current DataSource.
-            RolapUtil.threadHooks.set(new TriggerHook(trigger));
+            RolapUtil.threadHooks = new TriggerHook(trigger);
 
-            Bomb bomb;
+            Bomb bomb = null;
             try {
                 if (bypassSchemaCache) {
-                    connection = testContext.getFoodMartConnection(false);
+                    connection =
+                        testContext.withSchemaPool(false).getConnection();
                 }
                 final Query query = connection.parseQuery(mdxQuery);
                 if (clearCache) {
@@ -439,10 +451,20 @@ public class BatchTestCase extends FoodMartTestCase {
                 final Result result = connection.execute(query);
                 Util.discard(result);
                 bomb = null;
-            } catch (Bomb e) {
-                bomb = e;
+            } catch (Exception e) {
+                // Walk up the exception tree and see if the root cause
+                // was a SQL bomb.
+                Throwable node = e;
+                while (node.getCause() != null
+                    && node != node.getCause())
+                {
+                    node = node.getCause();
+                }
+                if (node instanceof Bomb) {
+                    bomb = (Bomb) node;
+                }
             } finally {
-                RolapUtil.threadHooks.set(null);
+                RolapUtil.threadHooks = null;
             }
             if (negative) {
                 if (bomb != null) {
@@ -647,7 +669,7 @@ public class BatchTestCase extends FoodMartTestCase {
     }
 
     protected Connection getFoodMartConnection() {
-        return TestContext.instance().getFoodMartConnection();
+        return TestContext.instance().getConnection();
     }
 
     protected RolapCube getCube(final String cube) {
@@ -679,7 +701,8 @@ public class BatchTestCase extends FoodMartTestCase {
         String expectedResult)
     {
         getConnection().getCacheControl(null).flushSchemaCache();
-        Connection con = getTestContext().getFoodMartConnection(false);
+        Connection con =
+            getTestContext().withSchemaPool(false).getConnection();
         RolapNativeRegistry reg = getRegistry(con);
         reg.setListener(
             new Listener() {
@@ -775,7 +798,9 @@ public class BatchTestCase extends FoodMartTestCase {
             Logger.getLogger(getClass()).debug("*** Native: " + mdx);
             boolean reuseConnection = !freshConnection;
             Connection con =
-                getTestContext().getFoodMartConnection(reuseConnection);
+                getTestContext()
+                    .withSchemaPool(reuseConnection)
+                    .getConnection();
             RolapNativeRegistry reg = getRegistry(con);
             reg.useHardCache(true);
             TestListener listener = new TestListener();
@@ -805,7 +830,7 @@ public class BatchTestCase extends FoodMartTestCase {
             Logger.getLogger(getClass()).debug("*** Interpreter: " + mdx);
 
             getConnection().getCacheControl(null).flushSchemaCache();
-            con = getTestContext().getFoodMartConnection(false);
+            con = getTestContext().withSchemaPool(false).getConnection();
             reg = getRegistry(con);
             listener.setFoundEvaluator(false);
             reg.setListener(listener);

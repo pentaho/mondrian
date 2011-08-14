@@ -12,8 +12,6 @@
 */
 package mondrian.olap;
 
-import mondrian.rolap.RolapLevel;
-import mondrian.server.Locus;
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
@@ -31,6 +29,10 @@ import java.lang.reflect.*;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapCube;
+import mondrian.rolap.RolapCubeDimension;
+import mondrian.rolap.RolapLevel;
+import mondrian.server.Locus;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.mdx.*;
 import mondrian.util.*;
@@ -87,6 +89,13 @@ public class Util extends XOMUtil {
     public static final boolean PreJdk16 =
         PreJdk15
         || System.getProperty("java.version").startsWith("1.5");
+
+    /**
+     * Whether this is an IBM JVM.
+     */
+    public static final boolean IBM_JVM =
+        System.getProperties().getProperty("java.vendor").equals(
+            "IBM Corporation");
 
     /**
      * What version of JDBC? Returns 4 in JDK 1.6 and higher, 3 otherwise.
@@ -178,7 +187,8 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Creates an {@link ExecutorService} object.
+     * Creates an {@link ExecutorService} object backed by a thread pool
+     * with a fixed number of threads..
      * @param maxNbThreads Maximum number of concurrent
      * threads.
      * @param name The name of the threads.
@@ -190,6 +200,53 @@ public class Util extends XOMUtil {
     {
         return Executors.newFixedThreadPool(
             maxNbThreads,
+            new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    final Thread thread =
+                        Executors.defaultThreadFactory().newThread(r);
+                    thread.setDaemon(true);
+                    thread.setName(name);
+                    return thread;
+                }
+            }
+        );
+    }
+
+    /**
+     * Creates an {@link ScheduledExecutorService} object backed by a
+     * thread pool with a fixed number of threads..
+     * @param maxNbThreads Maximum number of concurrent
+     * threads.
+     * @param name The name of the threads.
+     * @return An scheduled executor service preconfigured.
+     */
+    public static ScheduledExecutorService getScheduledExecutorService(
+        final int maxNbThreads,
+        final String name)
+    {
+        return Executors.newScheduledThreadPool(
+            maxNbThreads,
+            new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    final Thread thread =
+                        Executors.defaultThreadFactory().newThread(r);
+                    thread.setDaemon(true);
+                    thread.setName(name);
+                    return thread;
+                }
+            }
+        );
+    }
+    /**
+     * Creates an {@link ExecutorService} object backed by an expanding
+     * cached thread pool.
+     * @param name The name of the threads.
+     * @return An executor service preconfigured.
+     */
+    public static ExecutorService getExecutorService(
+        final String name)
+    {
+        return Executors.newCachedThreadPool(
             new ThreadFactory() {
                 public Thread newThread(Runnable r) {
                     final Thread thread =
@@ -512,6 +569,17 @@ public class Util extends XOMUtil {
             }
         }
         return 0;
+    }
+
+    /**
+     * Compares integer values.
+     *
+     * @param i0 First integer
+     * @param i1 Second integer
+     * @return Comparison of integers
+     */
+    public static int compare(int i0, int i1) {
+        return i0 < i1 ? -1 : (i0 == i1 ? 0 : 1);
     }
 
     /**
@@ -926,7 +994,7 @@ public class Util extends XOMUtil {
         // Look for any kind of object (member, level, hierarchy,
         // dimension) in the cube. Use a schema reader without restrictions.
         final SchemaReader schemaReaderSansAc =
-            schemaReader.withoutAccessControl();
+            schemaReader.withoutAccessControl().withLocus();
         final Cube cube = q.getCube();
         OlapElement olapElement =
             schemaReaderSansAc.lookupCompound(
@@ -1746,6 +1814,28 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Converts a locale identifier (LCID) as used by Windows into a Java
+     * locale.
+     *
+     * <p>For example, {@code lcidToLocale(1033)} returns "en_US", because
+     * 1033 (hex 0409) is US english.</p>
+     *
+     * @param lcid Locale identifier
+     * @return Locale
+     * @throws RuntimeException if locale id is unkown
+     *
+     * @deprecated Soon to be moved to Olap4jUtil.
+     */
+    public static Locale lcidToLocale(short lcid) {
+        // Most common case first, to avoid instantiating the full map.
+        if (lcid == 0x0409) {
+            return Locale.US;
+        }
+        Bug.olap4jUpgrade("move LcidLocale ot Olap4jUtil");
+        return LcidLocale.instance().toLocale(lcid);
+    }
+
+    /**
      * Converts a list of olap4j-style segments to a list of mondrian-style
      * segments.
      *
@@ -2150,6 +2240,20 @@ public class Util extends XOMUtil {
     {
         List<Pair<String, String>> list =
             new ArrayList<Pair<String, String>>();
+
+        public PropertyList() {
+            this.list = new ArrayList<Pair<String, String>>();
+        }
+
+        private PropertyList(List<Pair<String, String>> list) {
+            this.list = list;
+        }
+
+        @SuppressWarnings({"CloneDoesntCallSuperClone"})
+        @Override
+        public PropertyList clone() {
+            return new PropertyList(new ArrayList<Pair<String, String>>(list));
+        }
 
         public String get(String key) {
             return get(key, null);
@@ -2698,11 +2802,11 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Reads a Reader until it returns EOF and return the contents as a String.
+     * Reads a Reader until it returns EOF and returns the contents as a String.
      *
      * @param rdr  Reader to Read.
      * @param bufferSize size of buffer to allocate for reading.
-     * @return content of Reader as String or null if Reader was empty.
+     * @return content of Reader as String
      * @throws IOException on I/O error
      */
     public static String readFully(final Reader rdr, final int bufferSize)
@@ -2722,8 +2826,7 @@ public class Util extends XOMUtil {
             len = rdr.read(buffer);
         }
 
-        final String s = buf.toString();
-        return (s.length() == 0) ? null : s;
+        return buf.toString();
     }
 
     /**
@@ -2809,9 +2912,7 @@ public class Util extends XOMUtil {
         final int BUF_SIZE = 8096;
         try {
             String xmlCatalog = readFully(r, BUF_SIZE);
-            if (map != null) {
-                xmlCatalog = Util.replaceProperties(xmlCatalog, map);
-            }
+            xmlCatalog = Util.replaceProperties(xmlCatalog, map);
             return xmlCatalog;
         } finally {
             r.close();
@@ -3374,6 +3475,57 @@ public class Util extends XOMUtil {
         return true;
     }
 
+    /**
+     * Returns a role which has access to everything.
+     * @param schema A schema to bind this role to.
+     * @return A role with root access to the schema.
+     */
+    public static Role createRootRole(Schema schema) {
+        RoleImpl role = new RoleImpl();
+        role.grant(schema, Access.ALL);
+        role.makeImmutable();
+        return role;
+    }
+
+    /**
+     * Tries to find the cube from which a dimension is taken.
+     * It considers private dimensions, shared dimensions and virtual
+     * dimensions. If it can't determine with certitude the origin
+     * of the dimension, it returns null.
+     */
+    public static Cube getDimensionCube(Dimension dimension) {
+        final Cube[] cubes = dimension.getSchema().getCubes();
+        for (Cube cube : cubes) {
+            for (Dimension dimension1 : cube.getDimensions()) {
+                // If the dimensions have the same identity,
+                // we found an access rule.
+                if (dimension == dimension1) {
+                    return cube;
+                }
+                // If the passed dimension argument is of class
+                // RolapCubeDimension, we must validate the cube
+                // assignment and make sure the cubes are the same.
+                // If not, skip to the next grant.
+                if (dimension instanceof RolapCubeDimension
+                    && dimension.equals(dimension1)
+                    && !((RolapCubeDimension)dimension1)
+                    .getCube()
+                    .equals(cube))
+                {
+                    continue;
+                }
+                // Last thing is to allow for equality correspondences
+                // to work with virtual cubes.
+                if (cube instanceof RolapCube
+                    && ((RolapCube)cube).isVirtual()
+                    && dimension.equals(dimension1))
+                {
+                    return cube;
+                }
+            }
+        }
+        return null;
+    }
     public static abstract class AbstractFlatList<T>
         implements List<T>, RandomAccess
     {

@@ -226,19 +226,25 @@ public class MySqlDialect extends JdbcDialectImpl {
             columnNames, columnTypes, valueList, null, false);
     }
 
-    public NullCollation getNullCollation() {
-        return NullCollation.NEGINF;
-    }
-
-    public String generateOrderItem(
+    @Override
+    protected String generateOrderByNulls(
         String expr,
-        boolean nullable,
-        boolean ascending)
+        boolean ascending,
+        boolean collateNullsLast)
     {
-        if (nullable && ascending) {
-            return "ISNULL(" + expr + "), " + expr + " ASC";
+        // In MYSQL, Null values are worth negative infinity.
+        if (collateNullsLast) {
+            if (ascending) {
+                return "ISNULL(" + expr + ") ASC, " + expr + " ASC";
+            } else {
+                return expr + " DESC";
+            }
         } else {
-            return super.generateOrderItem(expr, nullable, ascending);
+            if (ascending) {
+                return expr + " ASC";
+            } else {
+                return "ISNULL(" + expr + ") DESC, " + expr + " DESC";
+            }
         }
     }
 

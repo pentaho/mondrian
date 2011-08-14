@@ -62,7 +62,8 @@ class MondrianOlap4jMember implements Member, Named {
     {
         final List<mondrian.olap.Member> children =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection
-                .getMondrianConnection().getSchemaReader().getMemberChildren(
+                .getMondrianConnection().getSchemaReader()
+                .withLocus().getMemberChildren(
                     member);
         return new AbstractNamedList<MondrianOlap4jMember>() {
             protected String getName(MondrianOlap4jMember member) {
@@ -92,7 +93,7 @@ class MondrianOlap4jMember implements Member, Named {
         if (parentMember == null
             || !olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
             .olap4jConnection.getMondrianConnection2().getSchemaReader()
-            .isVisible(
+            .withLocus().isVisible(
                 parentMember))
         {
             return null;

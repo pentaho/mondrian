@@ -100,12 +100,13 @@ public class RolapCube extends CubeBase {
     RolapCube(
         RolapSchema schema,
         final String name,
+        boolean visible,
         final String caption,
         final String description,
         final Map<String, Annotation> annotationMap,
         final String measuresCaption)
     {
-        super(name, caption, description);
+        super(name, visible, caption, description);
 
         assert annotationMap != null;
         this.annotationMap = annotationMap;
@@ -118,6 +119,7 @@ public class RolapCube extends CubeBase {
             new RolapDimension(
                 schema,
                 Dimension.MEASURES_NAME,
+                true,
                 measuresCaption,
                 null,
                 DimensionType.MeasuresDimension,
@@ -361,10 +363,8 @@ public class RolapCube extends CubeBase {
      */
     public synchronized SchemaReader getSchemaReader() {
         if (schemaReader == null) {
-            RoleImpl schemaDefaultRoleImpl = schema.getDefaultRole();
-            RoleImpl roleImpl = schemaDefaultRoleImpl.makeMutableClone();
-            roleImpl.grant(this, Access.ALL);
-            schemaReader = new RolapCubeSchemaReader(roleImpl);
+            schemaReader =
+                new RolapCubeSchemaReader(Util.createRootRole(schema));
         }
         return schemaReader;
     }

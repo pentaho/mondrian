@@ -10,7 +10,6 @@
 //
 // jhyde, 6 August, 2001
 */
-
 package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
@@ -65,10 +64,14 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
      * @param description Description
      */
     protected CubeBase(
-        String name, String caption, String description)
+        String name,
+        boolean visible,
+        String caption,
+        String description)
     {
         this.name = name;
         this.caption = caption;
+        this.visible = visible;
         this.description = description;
         this.uniqueName = Util.quoteMdxIdentifier(name);
     }

@@ -276,6 +276,10 @@
     <text>An MDX expression was expected. An empty expression was specified.</text>
 </exception>
 
+<exception id="350640" name="AvgRollupFailed">
+    <text>Don''t know how to rollup aggregator ''avg'' because the cube doesn''t contain at least one ''count'' and one ''sum'' measures based on the same column.</text>
+</exception>
+
 <!-- ====================================================================== -->
 <!-- Connectivity errors -->
 
@@ -443,6 +447,10 @@
 <exception id="40370" name="IllegalLeftDeepJoin">
     <text>Left side of join must not be a join; mondrian only supports right-deep joins.</text>
 </exception>
+
+<message id="40380" name="LevelTableParentNotFound">
+    <text>The level {0} makes use of the ''parentColumn'' attribute, but a parent member for key {1} is missing. This can be due to the usage of the NativizeSet MDX function with a list of members form a parent-child hierarchy that doesn''t include all parent members in its definition. Using NativizeSet with a parent-child hierarchy requires the parent members to be included in the set, or the hierarchy cannot be properly built natively.</text>
+</message>
 
 <!-- ====================================================================== -->
 <!-- Loader -->
@@ -844,6 +852,14 @@
     className="mondrian.olap.NativeEvaluationUnsupportedException">
     <text>
         Native evaluation not supported for this usage of function ''{0}''
+    </text>
+</exception>
+
+<!-- ====================================================================== -->
+<!-- Execution -->
+<exception id="8500001" name="ExecutionStatementCleanupException">
+    <text>
+        An exception was encountered while trying to cleanup an execution context. A statement failed to cancel gracefully. Locus was : "{0}".
     </text>
 </exception>
 

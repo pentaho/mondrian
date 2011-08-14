@@ -11,10 +11,28 @@
 */
 package mondrian.test;
 
-import junit.framework.Assert;
-import mondrian.olap.*;
+import java.util.List;
 
-import java.util.*;
+import junit.framework.Assert;
+import mondrian.olap.Access;
+import mondrian.olap.Axis;
+import mondrian.olap.Category;
+import mondrian.olap.Connection;
+import mondrian.olap.Cube;
+import mondrian.olap.DelegatingRole;
+import mondrian.olap.Dimension;
+import mondrian.olap.Hierarchy;
+import mondrian.olap.Id;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Position;
+import mondrian.olap.Result;
+import mondrian.olap.Role;
+import mondrian.olap.RoleImpl;
+import mondrian.olap.Schema;
+import mondrian.olap.SchemaReader;
+import mondrian.olap.Util;
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
@@ -56,13 +74,14 @@ public class AccessControlTest extends FoodMartTestCase {
         final SchemaReader schemaReader =
             cube.getSchemaReader(connection.getRole());
         final SchemaReader schemaReader1 = schemaReader.withoutAccessControl();
+        assertNotNull(schemaReader1);
         final SchemaReader schemaReader2 = schemaReader1.withoutAccessControl();
+        assertNotNull(schemaReader2);
     }
 
     public void testGrantDimensionNone() {
-        final Connection connection =
-            getTestContext().getFoodMartConnection(false);
-        TestContext testContext = getTestContext(connection);
+        final TestContext context = getTestContext().withFreshConnection();
+        final Connection connection = context.getConnection();
         RoleImpl role = ((RoleImpl) connection.getRole()).makeMutableClone();
         Schema schema = connection.getSchema();
         Cube salesCube = schema.lookupCube("Sales", true);
@@ -75,13 +94,13 @@ public class AccessControlTest extends FoodMartTestCase {
         role.grant(genderDimension, Access.NONE);
         role.makeImmutable();
         connection.setRole(role);
-        testContext.assertAxisThrows(
+        context.assertAxisThrows(
             "[Gender].children",
             "MDX object '[Gender]' not found in cube 'Sales'");
     }
 
     public void testRestrictMeasures() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
             + "  <SchemaGrant access=\"all\">\n"
@@ -131,7 +150,7 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     public void testRoleMemberAccessNonExistentMemberFails() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
             + "  <SchemaGrant access=\"none\">\n"
@@ -183,7 +202,7 @@ public class AccessControlTest extends FoodMartTestCase {
         final boolean fail = true;
         Cube salesCube = schema.lookupCube("Sales", fail);
         final SchemaReader schemaReader =
-            salesCube.getSchemaReader(null).withLocus(); // unrestricted
+            salesCube.getSchemaReader(null).withLocus();
         final Member member =
             schemaReader.getMemberByUniqueName(
                 Util.parseIdentifier(memberName), true);
@@ -273,8 +292,7 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     public void testGrantHierarchy1c() {
-        // can access Mexico (explicitly granted) which is the first accessible
-        // one
+        // the root element is All Customers
         getRestrictedTestContext().assertAxisReturns(
             "[Customers].defaultMember",
             "[Customers].[Canada].[BC]");
@@ -512,7 +530,8 @@ public class AccessControlTest extends FoodMartTestCase {
      * @return restricted connection
      */
     private Connection getRestrictedConnection(boolean restrictCustomers) {
-        Connection connection = getTestContext().getFoodMartConnection(false);
+        Connection connection =
+            getTestContext().withSchemaPool(false).getConnection();
         RoleImpl role = new RoleImpl();
         Schema schema = connection.getSchema();
         final boolean fail = true;
@@ -535,7 +554,7 @@ public class AccessControlTest extends FoodMartTestCase {
         role.grant(
             schemaReader.getMemberByUniqueName(
                 Util.parseIdentifier("[Store].[All Stores].[USA]"), fail),
-            Access.NONE);
+            Access.CUSTOM);
         role.grant(
             schemaReader.getMemberByUniqueName(
                 Util.parseIdentifier(
@@ -575,10 +594,6 @@ public class AccessControlTest extends FoodMartTestCase {
                 stateProvinceLevel,
                 customersCityLevel,
                 rollupPolicy);
-            role.grant(
-                schemaReader.getMemberByUniqueName(
-                    Util.parseIdentifier("[Customers].[All Customers]"), fail),
-                    Access.ALL);
         }
 
         // No access to HR cube.
@@ -593,7 +608,7 @@ public class AccessControlTest extends FoodMartTestCase {
     /* todo: test that access to restricted measure fails (will not work --
     have not fixed Cube.getMeasures) */
     private class RestrictedTestContext extends TestContext {
-        public synchronized Connection getFoodMartConnection() {
+        public synchronized Connection getConnection() {
             return getRestrictedConnection(false);
         }
     }
@@ -603,11 +618,12 @@ public class AccessControlTest extends FoodMartTestCase {
      * and cell values are rolled up with 'partial' policy.
      */
     private final TestContext rollupTestContext =
-        TestContext.create(
+        TestContext.instance().create(
             null, null, null, null, null,
             "<Role name=\"Role1\">\n"
             + "  <SchemaGrant access=\"none\">\n"
-            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"custom\">\n"
+            + "      <DimensionGrant dimension=\"[Measures]\" access=\"all\"/>\n"
             + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">\n"
             + "        <MemberGrant member=\"[Store].[USA]\" access=\"all\"/>\n"
             + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"none\"/>\n"
@@ -684,8 +700,8 @@ public class AccessControlTest extends FoodMartTestCase {
         String v2,
         String v3)
     {
-        TestContext testContext  =
-            TestContext.create(
+        final TestContext testContext  =
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"Role1\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
@@ -694,6 +710,7 @@ public class AccessControlTest extends FoodMartTestCase {
                     + rollupPolicy
                     + "\" bottomLevel=\"[Customers].[City]\">\n"
                     + "        <MemberGrant member=\"[Customers].[USA]\" access=\"all\"/>\n"
+                    + "        <MemberGrant member=\"[Customers].[USA].[CA]\" access=\"all\"/>\n"
                     + "        <MemberGrant member=\"[Customers].[USA].[CA].[Los Angeles]\" access=\"none\"/>\n"
                     + "      </HierarchyGrant>\n"
                     + "    </CubeGrant>\n"
@@ -751,8 +768,8 @@ public class AccessControlTest extends FoodMartTestCase {
      * appropriate error.
      */
     public void testRollupPolicyNegative() {
-        TestContext testContext  =
-            TestContext.create(
+        final TestContext testContext =
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"Role1\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
@@ -787,8 +804,8 @@ public class AccessControlTest extends FoodMartTestCase {
         String v1,
         String v2)
     {
-        TestContext testContext  =
-            TestContext.create(
+        final TestContext testContext =
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"Role1\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
@@ -831,8 +848,8 @@ public class AccessControlTest extends FoodMartTestCase {
         String v2,
         String v3)
     {
-        TestContext testContext  =
-            TestContext.create(
+        final TestContext testContext =
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"Role1\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
@@ -874,8 +891,8 @@ public class AccessControlTest extends FoodMartTestCase {
     // todo: performance test where 1 of 1000 children is not visible
 
     public void testUnionRole() {
-        TestContext testContext  =
-            TestContext.create(
+        final TestContext testContext =
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"Role1\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
@@ -1044,8 +1061,8 @@ public class AccessControlTest extends FoodMartTestCase {
      * MONDRIAN-369, "Non Empty Crossjoin fails to enforce role access".
      */
     public void testNonEmptyAccess() {
-        TestContext testContext =
-            TestContext.create(
+        final TestContext testContext =
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"Role1\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
@@ -1088,7 +1105,7 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     public void testNonEmptyAccessLevelMembers() {
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             null,
             null,
@@ -1234,7 +1251,7 @@ public class AccessControlTest extends FoodMartTestCase {
 
     private static TestContext goodmanContext(final Role.RollupPolicy policy) {
         return
-            TestContext.create(
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"California manager\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
@@ -1259,7 +1276,7 @@ public class AccessControlTest extends FoodMartTestCase {
      */
     public void testBugMondrian402() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"California manager\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
@@ -1282,7 +1299,7 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     public void testPartialRollupParentChildHierarchy() {
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null, null, null, null, null,
             "<Role name=\"Buggy Role\">\n"
             + "  <SchemaGrant access=\"none\">\n"
@@ -1397,7 +1414,7 @@ public class AccessControlTest extends FoodMartTestCase {
      */
     public void testBugBiserver1574() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null, null, null, null, null, BiServer1574Role1)
                 .withRole("role1");
         final String mdx =
@@ -1424,7 +1441,7 @@ public class AccessControlTest extends FoodMartTestCase {
      */
     public void testBugMondrian435() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null, null, null, null, null, BiServer1574Role1)
                 .withRole("role1");
 
@@ -1579,7 +1596,7 @@ public class AccessControlTest extends FoodMartTestCase {
 
     private void checkBugMondrian436() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null, null, null, null, null, BiServer1574Role1)
                 .withRole("role1");
 
@@ -1630,13 +1647,12 @@ public class AccessControlTest extends FoodMartTestCase {
      * MONDRIAN-456, "Roles and virtual cubes"</a>.
      */
     public void testVirtualCube() {
-        TestContext testContext = TestContext.create(
+        TestContext testContext = TestContext.instance().create(
             null, null, null, null, null,
             "<Role name=\"VCRole\">\n"
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Warehouse and Sales\" access=\"all\">\n"
-            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\"\n"
-            + "          topLevel=\"[Store].[Store Country]\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\">\n"
             + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>\n"
             + "        <MemberGrant member=\"[Store].[USA].[CA].[Los Angeles]\" access=\"none\"/>\n"
             + "      </HierarchyGrant>\n"
@@ -1654,6 +1670,7 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
             + "{[Store].[USA]}\n"
             + "{[Store].[USA].[CA]}\n"
             + "{[Store].[USA].[CA].[Alameda]}\n"
@@ -1664,6 +1681,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
             + "{[Store].[USA].[CA].[San Francisco]}\n"
             + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "Row #0: 159,167.84\n"
             + "Row #0: 159,167.84\n"
             + "Row #0: 159,167.84\n"
             + "Row #0: \n"
@@ -1695,7 +1713,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "</Role>";
 
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null, null, null, null, null, BiServer2491Role2)
                 .withRole("role2");
 
@@ -1782,7 +1800,7 @@ public class AccessControlTest extends FoodMartTestCase {
 
             buf2.append("    <RoleUsage roleName=\"" + name + "\"/>\n");
         }
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             " <Dimension name=\"Customers\"> \n"
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\"> \n"
             + "      <Table name=\"customer\"/> \n"
@@ -1830,7 +1848,7 @@ public class AccessControlTest extends FoodMartTestCase {
      */
     public void testBugMondrian694() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"REG1\"> \n"
                 + "  <SchemaGrant access=\"none\"> \n"
@@ -1908,7 +1926,6 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #1: $97.20\n");
     }
 
-
     /**
      * Test case for bug
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-722">MONDRIAN-722, "If
@@ -1916,8 +1933,10 @@ public class AccessControlTest extends FoodMartTestCase {
      * members"</a>.
      */
     public void testBugMondrian722() {
-        propSaver.set(MondrianProperties.instance().IgnoreInvalidMembers, true);
-        TestContext.create(
+        propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembers,
+            true);
+        TestContext.instance().create(
             null, null, null, null, null,
             "<Role name=\"CTO\">\n"
             + "  <SchemaGrant access=\"none\">\n"
@@ -1956,70 +1975,6 @@ public class AccessControlTest extends FoodMartTestCase {
 
     /**
      * Test case for bug
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-742">MONDRIAN-742, "Role
-     * security not applied correctly for the 'Top Level' restriction"</a>.
-     */
-    public void testBugMondrian742() {
-        TestContext.create(
-            null, null, null, null, null,
-            "<Role name=\"Role1\">\n"
-            + "  <SchemaGrant access=\"none\">\n"
-            + "    <CubeGrant cube=\"HR\" access=\"all\">\n"
-            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Store].[Store State]\">\n"
-            + "        <MemberGrant member=\"[Store].[All Stores]\" access=\"all\"/>\n"
-            + "      </HierarchyGrant>\n"
-            + "    </CubeGrant>\n"
-            + "  </SchemaGrant>\n"
-            + "</Role>\n")
-            .withRole("Role1")
-            .assertQueryReturns(
-                "With \n"
-                + "Member [Store].[*TOTAL_MEMBER_SEL~SUM] as 'Sum([Store].Members)', SOLVE_ORDER=-100 \n"
-                + "Select \n"
-                + "{[Measures].[Count]} on columns, \n"
-                + "{[Store].[*TOTAL_MEMBER_SEL~SUM]} on rows \n"
-                + "From [HR]",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Count]}\n"
-                + "Axis #2:\n"
-                + "{[Store].[*TOTAL_MEMBER_SEL~SUM]}\n"
-                + "Row #0: 22,176\n");
-    }
-
-    /**
-     * Tests that if a hierarchy has a top level visible, and there are no
-     * members explicitly granted, then the hierarchy is empty.
-     */
-    public void testHierarchyWithNoVisibleMembers() {
-        // Similar scenario to testBugMondrian742, but HierarchyGrant has no
-        // MemberGrants, so no members are visible. It is a common mistake to
-        // make, adding no MemberGrants if all you want to do is restrict the
-        // topLevel of the hierarchy. Note that the solution is to add a
-        // MemberGrant of the 'all' member.
-        TestContext.create(
-            null, null, null, null, null,
-            "<Role name=\"Role1\">\n"
-            + "  <SchemaGrant access=\"none\">\n"
-            + "    <CubeGrant cube=\"HR\" access=\"all\">\n"
-            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Store].[Store State]\"/>\n"
-            + "    </CubeGrant>\n"
-            + "  </SchemaGrant>\n"
-            + "</Role>\n")
-            .withRole("Role1")
-            .assertQueryThrows(
-                "With \n"
-                + "Member [Store].[*TOTAL_MEMBER_SEL~SUM] as 'Sum([Store].Members)', SOLVE_ORDER=-100 \n"
-                + "Select \n"
-                + "{[Measures].[Count]} on columns, \n"
-                + "{[Store].[*TOTAL_MEMBER_SEL~SUM]} on rows \n"
-                + "From [HR]",
-                "Hierarchy '[Store]' has no accessible members.");
-    }
-
-    /**
-     * Test case for bug
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-746">MONDRIAN-746,
      * "Report returns stack trace when turning on subtotals on a hierarchy with
      * top level hidden"</a>.
@@ -2027,13 +1982,12 @@ public class AccessControlTest extends FoodMartTestCase {
     public void testCalcMemberLevel() {
         checkCalcMemberLevel(getTestContext());
         checkCalcMemberLevel(
-            TestContext.create(
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"Role1\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
                 + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
                 + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Store].[Store State]\">\n"
-                + "        <MemberGrant member=\"[Store].[All Stores]\" access=\"all\"/>\n"
                 + "      </HierarchyGrant>\n"
                 + "    </CubeGrant>\n"
                 + "  </SchemaGrant>\n"
@@ -2048,7 +2002,7 @@ public class AccessControlTest extends FoodMartTestCase {
      */
     public void testBugMondrian568() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"Role1\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
@@ -2113,7 +2067,7 @@ public class AccessControlTest extends FoodMartTestCase {
      */
     public void testBugMondrian935() {
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name='Role1'>\n"
                 + "  <SchemaGrant access='none'>\n"
@@ -2145,6 +2099,73 @@ public class AccessControlTest extends FoodMartTestCase {
             + "{[Customers].[USA].[WA], [Store Type].[Supermarket]}\n"
             + "Row #0: 1,118\n"
             + "Row #1: 73,178\n");
+    }
+
+    public void testDimensionGrant() throws Exception {
+        final TestContext context = TestContext.instance().create(
+            null, null, null, null, null,
+            "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"custom\">\n"
+            + "      <DimensionGrant dimension=\"[Measures]\" access=\"all\" />\n"
+            + "      <DimensionGrant dimension=\"[Education Level]\" access=\"all\" />\n"
+            + "      <DimensionGrant dimension=\"[Gender]\" access=\"all\" />\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>\n"
+            + "<Role name=\"Role2\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"custom\">\n"
+            + "      <DimensionGrant dimension=\"[Measures]\" access=\"all\" />\n"
+            + "      <DimensionGrant dimension=\"[Education Level]\" access=\"all\" />\n"
+            + "      <DimensionGrant dimension=\"[Customers]\" access=\"none\" />\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>\n"
+            + "<Role name=\"Role3\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"custom\">\n"
+            + "      <DimensionGrant dimension=\"[Education Level]\" access=\"all\" />\n"
+            + "      <DimensionGrant dimension=\"[Measures]\" access=\"custom\" />\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>\n");
+        context.withRole("Role1").assertAxisReturns(
+            "[Education Level].Members",
+            "[Education Level].[All Education Levels]\n"
+            + "[Education Level].[Bachelors Degree]\n"
+            + "[Education Level].[Graduate Degree]\n"
+            + "[Education Level].[High School Degree]\n"
+            + "[Education Level].[Partial College]\n"
+            + "[Education Level].[Partial High School]");
+        context.withRole("Role1").assertAxisThrows(
+            "[Customers].Members",
+            "Mondrian Error:Failed to parse query 'select {[Customers].Members} on columns from Sales'");
+        context.withRole("Role2").assertAxisThrows(
+            "[Customers].Members",
+            "Mondrian Error:Failed to parse query 'select {[Customers].Members} on columns from Sales'");
+        context.withRole("Role1").assertQueryReturns(
+            "select {[Education Level].Members} on columns, {[Measures].[Unit Sales]} on rows from Sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Education Level].[All Education Levels]}\n"
+            + "{[Education Level].[Bachelors Degree]}\n"
+            + "{[Education Level].[Graduate Degree]}\n"
+            + "{[Education Level].[High School Degree]}\n"
+            + "{[Education Level].[Partial College]}\n"
+            + "{[Education Level].[Partial High School]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #0: 68,839\n"
+            + "Row #0: 15,570\n"
+            + "Row #0: 78,664\n"
+            + "Row #0: 24,545\n"
+            + "Row #0: 79,155\n");
+        context.withRole("Role3").assertQueryThrows(
+            "select {[Education Level].Members} on columns, {[Measures].[Unit Sales]} on rows from Sales",
+            "Mondrian Error:Failed to parse query 'select {[Education Level].Members} on columns, {[Measures].[Unit Sales]} on rows from Sales'");
     }
 
     // ~ Inner classes =========================================================

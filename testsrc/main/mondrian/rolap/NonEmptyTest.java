@@ -1,4 +1,5 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
@@ -617,7 +618,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testStrMeasure() {
-        TestContext ctx = TestContext.create(
+        TestContext ctx = TestContext.instance().create(
             null,
             "<Cube name=\"StrMeasure\"> \n"
             + "  <Table name=\"promotion\"/> \n"
@@ -643,7 +644,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testBug1515302() {
-        TestContext ctx = TestContext.create(
+        TestContext ctx = TestContext.instance().create(
             null,
             "<Cube name=\"Bug1515302\"> \n"
             + "  <Table name=\"sales_fact_1997\"/> \n"
@@ -1467,7 +1468,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfBlankLeafAndNoAll() {
-        setTestContext(TestContext.createSubstitutingCube(
+        setTestContext(TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"false\" primaryKey=\"product_id\">\n"
@@ -1496,7 +1497,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfBlankLeaf() {
-        setTestContext(TestContext.createSubstitutingCube(
+        setTestContext(TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -1525,7 +1526,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfParentsNameLeaf() {
-        setTestContext(TestContext.createSubstitutingCube(
+        setTestContext(TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -1553,7 +1554,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfBlankNameAncestor() {
-        setTestContext(TestContext.createSubstitutingCube(
+        setTestContext(TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -1582,7 +1583,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjMembersWithHideIfParentsNameAncestor() {
-        setTestContext(TestContext.createSubstitutingCube(
+        setTestContext(TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -1611,7 +1612,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testCjEnumWithHideIfBlankLeaf() {
-        setTestContext(TestContext.createSubstitutingCube(
+        setTestContext(TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Product Ragged\" foreignKey=\"product_id\">\n"
             + "  <Hierarchy hasAll=\"true\" primaryKey=\"product_id\">\n"
@@ -1905,8 +1906,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "and ((`store`.`store_city`, `store`.`store_state`) in (('Portland', 'OR'), ('Salem', 'OR'), ('San Francisco', 'CA'), ('Tacoma', 'WA'))) "
             + "and (`product_class`.`product_family` = 'Food') "
             + "group by `store`.`store_country`, `store`.`store_state`, `store`.`store_city`, `product_class`.`product_family` "
-            + "order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC, ISNULL(`store`.`store_state`), `store`.`store_state` ASC, "
-            + "ISNULL(`store`.`store_city`), `store`.`store_city` ASC, ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+            + "order by ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC, ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC, "
+            + "ISNULL(`store`.`store_city`) ASC, `store`.`store_city` ASC, ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         if (MondrianProperties.instance().UseAggregates.get()
             && MondrianProperties.instance().ReadAggregates.get())
@@ -2014,12 +2015,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "((`warehouse`.`wa_address2` is null and (`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`) in (('Arnold and Sons', '5617 Saclan Terrace'), "
             + "('Jones International', '3377 Coachman Place')))) and (`product_class`.`product_family` = 'Food') group by `warehouse`.`wa_address3`, "
             + "`warehouse`.`wa_address2`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`, `product_class`.`product_family` "
-            + "order by ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`), `warehouse`.`wa_address2` ASC, "
-            + "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`), `warehouse`.`warehouse_name` ASC, "
-            + "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+            + "order by ISNULL(`warehouse`.`wa_address3`) ASC, `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`) ASC, `warehouse`.`wa_address2` ASC, "
+            + "ISNULL(`warehouse`.`wa_address1`) ASC, `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`) ASC, `warehouse`.`warehouse_name` ASC, "
+            + "ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -2109,12 +2110,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "(`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`) in (('Freeman And Co', '234 West Covina Pkwy')))) "
             + "and (`product_class`.`product_family` = 'Food') "
             + "group by `warehouse`.`warehouse_fax`, `warehouse`.`wa_address1`, `warehouse`.`warehouse_name`, `product_class`.`product_family` "
-            + "order by ISNULL(`warehouse`.`warehouse_fax`), `warehouse`.`warehouse_fax` ASC, "
-            + "ISNULL(`warehouse`.`wa_address1`), `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`), "
-            + "`warehouse`.`warehouse_name` ASC, ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+            + "order by ISNULL(`warehouse`.`warehouse_fax`) ASC, `warehouse`.`warehouse_fax` ASC, "
+            + "ISNULL(`warehouse`.`wa_address1`) ASC, `warehouse`.`wa_address1` ASC, ISNULL(`warehouse`.`warehouse_name`) ASC, "
+            + "`warehouse`.`warehouse_name` ASC, ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -2201,12 +2202,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "(`product_class`.`product_family` = 'Food') "
             + "group by `warehouse`.`wa_address3`, `warehouse`.`wa_address2`, `warehouse`.`warehouse_fax`, "
             + "`product_class`.`product_family` "
-            + "order by ISNULL(`warehouse`.`wa_address3`), `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`), "
-            + "`warehouse`.`wa_address2` ASC, ISNULL(`warehouse`.`warehouse_fax`), `warehouse`.`warehouse_fax` ASC, "
-            + "ISNULL(`product_class`.`product_family`), `product_class`.`product_family` ASC";
+            + "order by ISNULL(`warehouse`.`wa_address3`) ASC, `warehouse`.`wa_address3` ASC, ISNULL(`warehouse`.`wa_address2`) ASC, "
+            + "`warehouse`.`wa_address2` ASC, ISNULL(`warehouse`.`warehouse_fax`) ASC, `warehouse`.`warehouse_fax` ASC, "
+            + "ISNULL(`product_class`.`product_family`) ASC, `product_class`.`product_family` ASC";
 
         TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 dimension,
                 cube,
                 null,
@@ -2625,7 +2626,7 @@ public class NonEmptyTest extends BatchTestCase {
             return;
         }
 
-        Connection con = getTestContext().getFoodMartConnection(false);
+        Connection con = getTestContext().withSchemaPool(false).getConnection();
         SmartMemberReader smr = getSmartMemberReader(con, "Customers");
         MemberCacheHelper smrch = smr.cacheHelper;
         clearAndHardenCache(smrch);
@@ -2823,7 +2824,14 @@ public class NonEmptyTest extends BatchTestCase {
         try {
             checkNotNative(3, mdx);
             fail("Expected NativeEvaluationUnsupportedException");
-        } catch (NativeEvaluationUnsupportedException ex) {
+        } catch (Exception ex) {
+            Throwable t = ex;
+            while (t.getCause() != null && t != t.getCause()) {
+                t = t.getCause();
+            }
+            if (!(t instanceof NativeEvaluationUnsupportedException)) {
+                fail();
+            }
             // Expected
         } finally {
             propSaver.reset();
@@ -3072,7 +3080,7 @@ public class NonEmptyTest extends BatchTestCase {
         if (!Bug.BugMondrian229Fixed) {
             return;
         }
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Time\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
             + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\" defaultMember=\"[Time].[1997].[Q1].[1]\" >\n"
@@ -3504,8 +3512,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
-        Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);
+        final TestContext context = getTestContext().withFreshConnection();
         context.assertQueryReturns(
             "with set [p] as '[Product].[Product Family].members' "
             + "set [s] as '[Store].[Store Country].members' "
@@ -3530,8 +3537,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
-        Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);
+        final TestContext context = getTestContext().withFreshConnection();
         context.assertQueryReturns(
             "with set [p] as '[Product].[Product Family].members' "
             + "set [s] as '[Store].[Store Country].members' "
@@ -3550,8 +3556,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // Get a fresh connection; Otherwise the mondrian property setting
         // is not refreshed for this parameter.
-        Connection conn = getTestContext().getFoodMartConnection(false);
-        TestContext context = getTestContext(conn);
+        final TestContext context = getTestContext().withFreshConnection();
         context.assertQueryReturns(
             "with set [p] as '[Product].[Product Family].members' "
             + "set [s] as '[Store].[Store Country].members' "
@@ -4270,36 +4275,15 @@ public class NonEmptyTest extends BatchTestCase {
             + "[Measures].[unit sales Female], [Measures].[store sales Female]} on 0, "
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
-        final SqlPattern pattern = new SqlPattern(
-            Dialect.DatabaseProduct.ORACLE,
-            "select \"customer\".\"country\" as \"c0\", "
-            + "\"customer\".\"state_province\" as \"c1\", "
-            + "\"customer\".\"city\" as \"c2\", "
-            + "\"customer\".\"customer_id\" as \"c3\", "
-            + "\"fname\" || ' ' || \"lname\" as \"c4\", "
-            + "\"fname\" || ' ' || \"lname\" as \"c5\", "
-            + "\"customer\".\"gender\" as \"c6\", "
-            + "\"customer\".\"marital_status\" as \"c7\", "
-            + "\"customer\".\"education\" as \"c8\", "
-            + "\"customer\".\"yearly_income\" as \"c9\" "
-            + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
-            + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-            + "and (\"customer\".\"gender\" in ('M', 'F')) "
-            + "group by \"customer\".\"country\", "
-            + "\"customer\".\"state_province\", "
-            + "\"customer\".\"city\", "
-            + "\"customer\".\"customer_id\", "
-            + "\"fname\" || ' ' || \"lname\", "
-            + "\"customer\".\"gender\", "
-            + "\"customer\".\"marital_status\", "
-            + "\"customer\".\"education\", "
-            + "\"customer\".\"yearly_income\" "
-            + "order by \"customer\".\"country\" ASC,"
-            + " \"customer\".\"state_province\" ASC,"
-            + " \"customer\".\"city\" ASC, "
-            + "\"fname\" || ' ' || \"lname\" ASC",
-            860);
-        assertQuerySql(mdx, new SqlPattern[]{pattern});
+        final String sqlOracle =
+            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" in ('M', 'F')) group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST";
+        assertQuerySql(
+            mdx,
+            new SqlPattern[]{
+                new SqlPattern(
+                    Dialect.DatabaseProduct.ORACLE,
+                    sqlOracle,
+                    sqlOracle.length())});
     }
 
     public void testNestedMeasureConstraintsGetOptimized() {
@@ -4310,8 +4294,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "non empty {[Measures].[unit sales Male Married]} on 0, "
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
-        SqlPattern pattern = new SqlPattern(
-            Dialect.DatabaseProduct.ORACLE,
+        final String sqlOracle =
             "select \"customer\".\"country\" as \"c0\", "
             + "\"customer\".\"state_province\" as \"c1\", "
             + "\"customer\".\"city\" as \"c2\", "
@@ -4336,11 +4319,14 @@ public class NonEmptyTest extends BatchTestCase {
             + "\"customer\".\"marital_status\", "
             + "\"customer\".\"education\", "
             + "\"customer\".\"yearly_income\" "
-            + "order by \"customer\".\"country\" ASC, "
-            + "\"customer\".\"state_province\" ASC, "
-            + "\"customer\".\"city\" ASC, "
-            + "\"fname\" || \" \" || \"lname\" ASC",
-            892);
+            + "order by \"customer\".\"country\" ASC NULLS LAST, "
+            + "\"customer\".\"state_province\" ASC NULLS LAST, "
+            + "\"customer\".\"city\" ASC NULLS LAST, "
+            + "\"fname\" || \" \" || \"lname\" ASC NULLS LAST";
+        SqlPattern pattern = new SqlPattern(
+            Dialect.DatabaseProduct.ORACLE,
+            sqlOracle,
+            sqlOracle.length());
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
 
@@ -4377,10 +4363,10 @@ public class NonEmptyTest extends BatchTestCase {
             + "\"customer\".\"marital_status\", "
             + "\"customer\".\"education\", "
             + "\"customer\".\"yearly_income\" "
-            + "order by \"customer\".\"country\" ASC,"
-            + " \"customer\".\"state_province\" ASC,"
-            + " \"customer\".\"city\" ASC, "
-            + "\"fname\" || ' ' || \"lname\" ASC",
+            + "order by \"customer\".\"country\" ASC NULLS LAST,"
+            + " \"customer\".\"state_province\" ASC NULLS LAST,"
+            + " \"customer\".\"city\" ASC NULLS LAST, "
+            + "\"fname\" || ' ' || \"lname\" ASC NULLS LAST",
             852);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
@@ -4393,29 +4379,12 @@ public class NonEmptyTest extends BatchTestCase {
             + "non empty {[Measures].[unit sales Male], [Measures].[unit sales Married]} on 0, "
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
+        final String sqlOracle =
+            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" in ('M', 'F')) group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
-            "select \"customer\".\"country\" as \"c0\", "
-            + "\"customer\".\"state_province\" as \"c1\", "
-            + "\"customer\".\"city\" as \"c2\", "
-            + "\"customer\".\"customer_id\" as \"c3\", "
-            + "\"fname\" || ' ' || \"lname\" as \"c4\", "
-            + "\"fname\" || ' ' || \"lname\" as \"c5\", "
-            + "\"customer\".\"gender\" as \"c6\", "
-            + "\"customer\".\"marital_status\" as \"c7\", "
-            + "\"customer\".\"education\" as \"c8\", "
-            + "\"customer\".\"yearly_income\" as \"c9\" "
-            + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
-            + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-            + "and (\"customer\".\"marital_status\" = 'M') and (\"customer\".\"gender\" = 'M') "
-            + "group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", "
-            + "\"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", "
-            + "\"customer\".\"gender\", \"customer\".\"marital_status\", "
-            + "\"customer\".\"education\", \"customer\".\"yearly_income\" "
-            + "order by \"customer\".\"country\" ASC, \"customer\".\"state_province\" ASC, "
-            + "\"customer\".\"city\" ASC, "
-            + "\"fname\" || ' ' || \"lname\" ASC",
-            892);
+            sqlOracle,
+            sqlOracle.length());
         assertQuerySqlOrNot(
             getTestContext(), mdx, new SqlPattern[]{pattern},true, false, true);
     }
@@ -4451,7 +4420,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testContextAtAllWorksWithConstraint() {
-        TestContext ctx = TestContext.create(
+        TestContext ctx = TestContext.instance().create(
             null,
             "<Cube name=\"onlyGender\"> \n"
             + "  <Table name=\"sales_fact_1997\"/> \n"
@@ -4496,7 +4465,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testCalculatedDefaultMeasureOnVirtualCubeNoThrowException() {
         propSaver.set(MondrianProperties.instance().EnableNativeNonEmpty, true);
         final TestContext context =
-            TestContext.create(
+            TestContext.instance().withSchema(
                 "<Schema name=\"FoodMart\">"
                 + "  <Dimension name=\"Store\">"
                 + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">"
@@ -4645,7 +4614,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     SmartMemberReader getSmartMemberReader(String hierName) {
-        Connection con = getTestContext().getFoodMartConnection();
+        Connection con = getTestContext().getConnection();
         return getSmartMemberReader(con, hierName);
     }
 
@@ -4663,7 +4632,7 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     SmartMemberReader getSharedSmartMemberReader(String hierName) {
-        Connection con = getTestContext().getFoodMartConnection();
+        Connection con = getTestContext().getConnection();
         return getSharedSmartMemberReader(con, hierName);
     }
 
@@ -4715,24 +4684,21 @@ public class NonEmptyTest extends BatchTestCase {
                 "select `product_class`.`product_family` as `c0` "
                 + "from `product_class` as `product_class` "
                 + "group by `product_class`.`product_family` "
-                + "order by ISNULL(`product_class`.`product_family`),"
+                + "order by ISNULL(`product_class`.`product_family`) ASC,"
                 + " `product_class`.`product_family` ASC",
                 null)
         };
-        Connection conn = null;
+        final TestContext context = getTestContext().withFreshConnection();
         try {
-            conn = getTestContext().getFoodMartConnection(false);
-            TestContext testContext = getTestContext(conn);
-
             assertQuerySql(
-                testContext,
+                context,
                 "select [Product].[Product Family].Members on 0\n"
                 + "from [Sales]",
                 patterns);
 
             // note that returns an extra member,
             // [Product].[Drink].[Baking Goods]
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select [Product].[Drink].Children on 0\n"
                 + "from [Sales]",
                 "Axis #0:\n"
@@ -4748,7 +4714,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "Row #0: 4,186\n");
 
             // [Product].[Drink].[Baking Goods] has one child, but no fact data
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select [Product].[Drink].[Baking Goods].Children on 0\n"
                 + "from [Sales]",
                 "Axis #0:\n"
@@ -4758,7 +4724,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "Row #0: \n");
 
             // NON EMPTY filters out that child
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select non empty [Product].[Drink].[Baking Goods].Children on 0\n"
                 + "from [Sales]",
                 "Axis #0:\n"
@@ -4767,7 +4733,7 @@ public class NonEmptyTest extends BatchTestCase {
 
             // [Product].[Drink].[Baking Goods].[Dry Goods] has one child, but
             // no fact data
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select [Product].[Drink].[Baking Goods].[Dry Goods].Children on 0\n"
                 + "from [Sales]",
                 "Axis #0:\n"
@@ -4777,7 +4743,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "Row #0: \n");
 
             // NON EMPTY filters out that child
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select non empty [Product].[Drink].[Baking Goods].[Dry Goods].Children on 0\n"
                 + "from [Sales]",
                 "Axis #0:\n"
@@ -4785,14 +4751,14 @@ public class NonEmptyTest extends BatchTestCase {
                 + "Axis #1:\n");
 
             // [Coffee] has no children
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select [Product].[Drink].[Baking Goods].[Dry Goods].[Coffee].Children on 0\n"
                 + "from [Sales]",
                 "Axis #0:\n"
                 + "{}\n"
                 + "Axis #1:\n");
 
-            testContext.assertQueryReturns(
+            context.assertQueryReturns(
                 "select [Measures].[Unit Sales] on 0,\n"
                 + " [Product].[Product Family].Members on 1\n"
                 + "from [Sales]",
@@ -4808,9 +4774,7 @@ public class NonEmptyTest extends BatchTestCase {
                 + "Row #1: 191,940\n"
                 + "Row #2: 50,236\n");
         } finally {
-            if (conn != null) {
-                conn.close();
-            }
+            context.close();
         }
     }
 
@@ -4842,7 +4806,7 @@ public class NonEmptyTest extends BatchTestCase {
            + "Row #1: \n"
            + "Row #2: \n"
            + "Row #3: \n");
-    }
+   }
 }
 
 // End NonEmptyTest.java

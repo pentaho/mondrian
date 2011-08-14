@@ -55,6 +55,7 @@ public abstract class HierarchyBase
     protected HierarchyBase(
         Dimension dimension,
         String subName,
+        boolean visible,
         String caption,
         String description,
         boolean hasAll)
@@ -69,6 +70,7 @@ public abstract class HierarchyBase
             this.caption = subName;
         }
         this.description = description;
+        this.visible = visible;
 
         String name = dimension.getName();
         if (true || MondrianProperties.instance().SsasCompatibleNaming.get()) {

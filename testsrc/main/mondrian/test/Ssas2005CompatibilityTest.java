@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2010 Julian Hyde
+// Copyright (C) 2008-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -80,7 +80,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // 2. Dimension [Currency] has one unnamed hierarchy
         // 3. Dimnsion [Time] has hierarchies [Time2] and [Time by Week]
         //    (intentionally named hierarchy differently from dimension)
-        return TestContext.create(
+        return TestContext.instance().withSchema(
             "<Schema name=\"FoodMart\">\n"
             + "<Cube name=\"Warehouse and Sales\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\" />\n"
@@ -888,7 +888,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
      * [name.name].
      */
     public void testDimensionDotHierarchySameNameInBrackets() {
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "<Dimension name=\"Store Type 2\" foreignKey=\"store_id\">"
             + " <Hierarchy name=\"Store Type 2\" hasAll=\"true\" primaryKey=\"store_id\">"
@@ -1428,7 +1428,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
      * @throws SQLException If the test fails.
      */
     public void testCanHaveMemberWithSameNameAsLevel() throws SQLException {
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
              "<Dimension name=\"SameName\" foreignKey=\"customer_id\">\n"
              + " <Hierarchy hasAll=\"true\" primaryKey=\"id\">\n"
@@ -1488,7 +1488,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // In SSAS, "MacDougal" occurs between "Maccietto" and "Macha". This
         // would not occur if sort was case-sensitive.
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 "  <Dimension name=\"Customer Last Name\" "
                 + "foreignKey=\"customer_id\">\n"

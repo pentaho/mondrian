@@ -19,7 +19,6 @@ import org.apache.log4j.*;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of
@@ -45,21 +44,10 @@ public class DynamicContentFinder
     private static final Logger LOGGER =
         Logger.getLogger(MondrianServer.class);
 
-    private static AtomicInteger threadNumber = new AtomicInteger(0);
-
     private final static ScheduledExecutorService executorService =
-        Executors.newScheduledThreadPool(
-            0,
-            new ThreadFactory() {
-                public Thread newThread(Runnable r) {
-                    Thread t = Executors.defaultThreadFactory().newThread(r);
-                    t.setDaemon(true);
-                    t.setName(
-                        "mondrian.DynamicContentFinderUpdaterThread"
-                        + threadNumber.addAndGet(1));
-                    return t;
-               }
-            });
+        Util.getScheduledExecutorService(
+            1,
+            "mondrian.server.DynamicContentFinder$executorService");
 
     private final ScheduledFuture<?> scheduledTask;
 
@@ -75,7 +63,13 @@ public class DynamicContentFinder
         scheduledTask = executorService.scheduleWithFixedDelay(
             new Runnable() {
                 public void run() {
-                    reloadDataSources();
+                    Object result;
+                    try {
+                        result = reloadDataSources();
+                    } catch (Throwable e) {
+                        result = e;
+                    }
+                    Util.discard(result); // for debug
                 }
             },
             0,
@@ -92,22 +86,25 @@ public class DynamicContentFinder
 
     /**
      * Checks for updates to datasources content, flushes obsolete catalogs.
+     *
+     * @return Whether anything changed
      */
-    public void reloadDataSources() {
+    public synchronized boolean reloadDataSources() {
         try {
             String dataSourcesConfigString = getContent();
             if (!hasDataSourcesContentChanged(dataSourcesConfigString)) {
-                return;
+                return false;
             }
             DataSourcesConfig.DataSources newDataSources =
                 XmlaSupport.parseDataSources(
                     dataSourcesConfigString, LOGGER);
             if (newDataSources == null) {
-                return;
+                return false;
             }
             flushObsoleteCatalogs(newDataSources);
             this.dataSources = newDataSources;
             this.lastDataSourcesConfigString = dataSourcesConfigString;
+            return true;
         } catch (Exception e) {
             throw Util.newError(
                 e,
@@ -152,7 +149,7 @@ public class DynamicContentFinder
         return newDatasourceCatalogNames;
     }
 
-    public void flushObsoleteCatalogs(
+    public synchronized void flushObsoleteCatalogs(
         DataSourcesConfig.DataSources newDataSources)
     {
         if (dataSources == null) {

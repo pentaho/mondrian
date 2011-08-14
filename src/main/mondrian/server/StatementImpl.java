@@ -123,7 +123,7 @@ public abstract class StatementImpl implements Statement {
     }
 
     public SchemaReader getSchemaReader() {
-        return getMondrianConnection().getSchemaReader();
+        return getMondrianConnection().getSchemaReader().withLocus();
     }
 
     public RolapSchema getSchema() {

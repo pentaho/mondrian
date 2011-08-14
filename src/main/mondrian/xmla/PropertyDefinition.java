@@ -3,11 +3,9 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, May 2, 2003
 */
 package mondrian.xmla;
 
@@ -128,7 +126,8 @@ public enum PropertyDefinition {
         "None",
         XmlaConstants.Method.DISCOVER_AND_EXECUTE,
         "Use this to read or set the numeric locale identifier for this request. The default is provider-specific.\n"
-        + "For the complete hexadecimal list of language identifiers, search on \"Language Identifiers\" in the MSDN Library at http://www.msdn.microsoft.com."),
+        + "For the complete hexadecimal list of language identifiers, search on \"Language Identifiers\" in the MSDN Library at http://www.msdn.microsoft.com.\n"
+        + "As an extension to the XMLA standard, Mondrian also allows locale codes as specified by ISO-639 and ISO-3166 and as used by Java; for example 'en-US'.\n"),
 
     MDXSupport(
         RowsetDefinition.Type.EnumString,

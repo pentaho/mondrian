@@ -652,10 +652,12 @@ public class CompoundSlicerTest extends FoodMartTestCase {
      */
     public void testRollupAvg() {
         final TestContext testContext =
-            TestContext.createSubstitutingCube(
+            TestContext.instance().createSubstitutingCube(
                 "Sales",
                 null,
-                "<Measure name='Avg Unit Sales' aggregator='avg' column='unit_sales'/>",
+                "<Measure name='Avg Unit Sales' aggregator='avg' column='unit_sales'/>\n"
+                + "<Measure name='Count Unit Sales' aggregator='count' column='unit_sales'/>\n"
+                + "<Measure name='Sum Unit Sales' aggregator='sum' column='unit_sales'/>\n",
                 null,
                 null);
         // basic query with avg
@@ -683,11 +685,9 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + " {[Customers].[USA].[OR], [Customers].[USA].[CA]})\n"
             + "select from [Sales]\n"
             + "where ([Measures].[Avg Unit Sales], [Customers].[OR and CA])",
-            Bug.BugMondrian675Fixed
-            ? "what?"
-            : "Axis #0:\n"
+            "Axis #0:\n"
             + "{[Measures].[Avg Unit Sales], [Customers].[OR and CA]}\n"
-            + "#ERR: mondrian.olap.fun.MondrianEvaluationException: Don't know how to rollup aggregator 'avg'");
+            + "3.092");
     }
 
     /**

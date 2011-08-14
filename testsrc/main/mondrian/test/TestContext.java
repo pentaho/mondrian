@@ -19,15 +19,17 @@ import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
+import mondrian.olap.Member;
 import mondrian.olap.Position;
 import mondrian.olap.Cell;
 import mondrian.olap.Axis;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
+import mondrian.spi.DynamicSchemaProcessor;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
-import mondrian.spi.DialectManager;
 import mondrian.spi.Dialect;
+import mondrian.spi.DialectManager;
 import mondrian.util.DelegatingInvocationHandler;
 
 import javax.sql.DataSource;
@@ -38,6 +40,7 @@ import java.net.URL;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.lang.reflect.*;
 
 import org.olap4j.*;
 import org.olap4j.impl.CoordinateIterator;
@@ -65,7 +68,7 @@ public class TestContext {
 
     /**
      * Connection to the FoodMart database. Set on the first call to
-     * {@link #getFoodMartConnection}.
+     * {@link #getConnection}.
      */
     private Connection foodMartConnection;
     private Dialect dialect;
@@ -128,11 +131,11 @@ public class TestContext {
      *
      * <p>In the base class, the result is the same as the static method
      * {@link #getDefaultConnectString}. If a derived class overrides
-     * {@link #getFoodMartConnectionProperties()}, the result of this method
+     * {@link #getConnectionProperties()}, the result of this method
      * will change also.
      */
     public final String getConnectString() {
-        return getFoodMartConnectionProperties().toString();
+        return getConnectionProperties().toString();
     }
 
     /**
@@ -202,15 +205,6 @@ public class TestContext {
         return connectProperties.toString();
     }
 
-    /**
-     * Returns the connection to run queries.
-     *
-     * <p>By default, returns a connection to the FoodMart database.
-     */
-    public Connection getConnection() {
-        return getFoodMartConnection();
-    }
-
     public synchronized void flushSchemaCache() {
         // it's pointless to flush the schema cache if we
         // have a handle on the connection object already
@@ -230,13 +224,17 @@ public class TestContext {
     }
 
     /**
-     * Returns a connection to the FoodMart database.
+     * Returns the connection to run queries.
+     *
+     * <p>When invoked on the default TestContext instance, returns a connection
+     * to the FoodMart database.
      */
-    public synchronized Connection getFoodMartConnection() {
+    public synchronized Connection getConnection() {
         if (foodMartConnection == null) {
             foodMartConnection =
                 DriverManager.getConnection(
-                    getFoodMartConnectionProperties(),
+                    getConnectionProperties(),
+                    null,
                     null);
         }
         return foodMartConnection;
@@ -246,20 +244,41 @@ public class TestContext {
      * Returns a connection to the FoodMart database
      * with a dynamic schema processor and disables use of RolapSchema Pool.
      */
-    public synchronized final Connection getFoodMartConnection(
-        Class dynProcClass)
+    public TestContext withSchemaProcessor(
+        Class<? extends DynamicSchemaProcessor> dynProcClass)
     {
-        Util.PropertyList properties = getFoodMartConnectionProperties();
+        final Util.PropertyList properties = getConnectionProperties().clone();
         properties.put(
             RolapConnectionProperties.DynamicSchemaProcessor.name(),
             dynProcClass.getName());
         properties.put(
             RolapConnectionProperties.UseSchemaPool.name(),
             "false");
-        return DriverManager.getConnection(properties, null, null);
+        return withProperties(properties);
     }
 
-    public Util.PropertyList getFoodMartConnectionProperties() {
+    /**
+     * Returns a {@link TestContext} similar to this one, but which uses a fresh
+     * connection.
+     *
+     * @return Test context which uses the a fresh connection
+     *
+     * @see #withSchemaPool(boolean)
+     */
+    public final TestContext withFreshConnection() {
+        final Connection connection = withSchemaPool(false).getConnection();
+        return withConnection(connection);
+    }
+
+    public TestContext withSchemaPool(boolean usePool) {
+        final Util.PropertyList properties = getConnectionProperties().clone();
+        properties.put(
+            RolapConnectionProperties.UseSchemaPool.name(),
+            Boolean.toString(usePool));
+        return withProperties(properties);
+    }
+
+    public Util.PropertyList getConnectionProperties() {
         final Util.PropertyList propertyList =
             Util.parseConnectString(getDefaultConnectString());
         if (MondrianProperties.instance().TestHighCardinalityDimensionList
@@ -276,61 +295,10 @@ public class TestContext {
     }
 
     /**
-     * Returns a connection to the FoodMart database
-     * with an inline schema.
-     */
-    public synchronized Connection getFoodMartConnection(
-        String catalogContent)
-    {
-        Util.PropertyList properties = getFoodMartConnectionProperties();
-        catalogContent = checkErrorLocation(catalogContent);
-        properties.put(
-            RolapConnectionProperties.CatalogContent.name(),
-            catalogContent);
-        return DriverManager.getConnection(properties, null, null);
-    }
-
-    /**
-     * Returns a connection to the FoodMart database with an inline schema and
-     * a given role.
-     */
-    public synchronized Connection getFoodMartConnection(
-        String catalogContent,
-        String role)
-    {
-        Util.PropertyList properties = getFoodMartConnectionProperties();
-        catalogContent = checkErrorLocation(catalogContent);
-        properties.put(
-            RolapConnectionProperties.CatalogContent.name(),
-            catalogContent);
-        properties.put(
-            RolapConnectionProperties.Role.name(),
-            role);
-        return DriverManager.getConnection(properties, null, null);
-    }
-
-    /**
-     * Returns a connection to the FoodMart database, optionally not from the
-     * schema pool.
-     *
-     * @param useSchemaPool If false, use a fresh connection, not one from the
-     *   schema pool
-     */
-    public synchronized Connection getFoodMartConnection(
-        boolean useSchemaPool)
-    {
-        Util.PropertyList properties = getFoodMartConnectionProperties();
-        properties.put(
-            RolapConnectionProperties.UseSchemaPool.name(),
-            useSchemaPool ? "true" : "false");
-        return DriverManager.getConnection(properties, null, null);
-    }
-
-    /**
-     * Returns a the XML of the foodmart schema with added parameters and cube
+     * Returns a the XML of the current schema with added parameters and cube
      * definitions.
      */
-    public static String getFoodMartSchema(
+    public String getSchema(
         String parameterDefs,
         String cubeDefs,
         String virtualCubeDefs,
@@ -411,8 +379,11 @@ public class TestContext {
     public static String getRawFoodMartSchema() {
         synchronized (SnoopingSchemaProcessor.class) {
             if (unadulteratedFoodMartSchema == null) {
-                instance().getFoodMartConnection(
-                    SnoopingSchemaProcessor.class);
+                TestContext context =
+                    instance()
+                        .withSchemaProcessor(SnoopingSchemaProcessor.class);
+                final Connection connection = context.getConnection();
+                connection.close();
                 unadulteratedFoodMartSchema =
                     SnoopingSchemaProcessor.catalogContent;
             }
@@ -425,28 +396,15 @@ public class TestContext {
      * Returns a the XML of the foodmart schema, adding dimension definitions
      * to the definition of a given cube.
      */
-    public String getFoodMartSchemaSubstitutingCube(
-        String cubeName,
-        String dimensionDefs,
-        String memberDefs)
-    {
-        return getFoodMartSchemaSubstitutingCube(
-            cubeName, dimensionDefs, null, memberDefs, null);
-    }
-
-    /**
-     * Returns a the XML of the foodmart schema, adding dimension definitions
-     * to the definition of a given cube.
-     */
-    public String getFoodMartSchemaSubstitutingCube(
+    private String substituteSchema(
+        String rawSchema,
         String cubeName,
         String dimensionDefs,
         String measureDefs,
         String memberDefs,
         String namedSetDefs)
     {
-        // First, get the unadulterated schema.
-        String s = getRawFoodMartSchema();
+        String s = rawSchema;
 
         // Search for the <Cube> or <VirtualCube> element.
         int h = s.indexOf("<Cube name=\"" + cubeName + "\"");
@@ -854,7 +812,7 @@ public class TestContext {
      * Massages the actual result of executing a query to handle differences in
      * unique names betweeen old and new behavior.
      *
-     * <p>Even though the new naming is not enabled by default, reference logs
+     * <p>Since the new naming is now the default, reference logs
      * should be in terms of the new naming.
      *
      * @see mondrian.olap.MondrianProperties#SsasCompatibleNaming
@@ -892,6 +850,7 @@ public class TestContext {
                 actual,
                 "[Customer].[Marital Status]",
                 "[Marital Status]");
+
 
             // for a few tests in SchemaTest
             actual = Util.replace(
@@ -1327,7 +1286,7 @@ public class TestContext {
      *
      * @return Test context with active scenario
      */
-    public TestContext withScenario() {
+    public final TestContext withScenario() {
         return new DelegatingTestContext(this)
         {
             OlapConnection connection;
@@ -1402,6 +1361,10 @@ public class TestContext {
             }
         }
         return newSuite;
+    }
+
+    public void close() {
+        // nothing
     }
 
     /**
@@ -1631,7 +1594,7 @@ public class TestContext {
         String actualSql,
         int expectedRows)
     {
-        Util.PropertyList connectProperties = getFoodMartConnectionProperties();
+        Util.PropertyList connectProperties = getConnectionProperties();
 
         java.sql.Connection jdbcConn = null;
         Statement stmt = null;
@@ -1721,7 +1684,7 @@ public class TestContext {
     public void assertSetExprDependsOn(String expr, String dimList) {
         // Construct a query, and mine it for a parsed expression.
         // Use a fresh connection, because some tests define their own dims.
-        final Connection connection = getFoodMartConnection();
+        final Connection connection = getConnection();
         final String queryString =
                 "SELECT {" + expr + "} ON COLUMNS FROM [Sales]";
         final Query query = connection.parseQuery(queryString);
@@ -1747,7 +1710,7 @@ public class TestContext {
     public void assertExprDependsOn(String expr, String hierList) {
         // Construct a query, and mine it for a parsed expression.
         // Use a fresh connection, because some tests define their own dims.
-        final Connection connection = getFoodMartConnection();
+        final Connection connection = getConnection();
         final String queryString =
             "WITH MEMBER [Measures].[Foo] AS "
             + Util.singleQuoteString(expr)
@@ -1813,28 +1776,33 @@ public class TestContext {
      * @param roleDefs Definitions of roles
      * @return TestContext which reads from a slightly different hymnbook
      */
-    public static TestContext create(
-        final String parameterDefs,
-        final String cubeDefs,
-        final String virtualCubeDefs,
-        final String namedSetDefs,
-        final String udfDefs,
-        final String roleDefs)
+    public final TestContext create(
+        String parameterDefs,
+        String cubeDefs,
+        String virtualCubeDefs,
+        String namedSetDefs,
+        String udfDefs,
+        String roleDefs)
     {
-        return new TestContext() {
-            public Util.PropertyList getFoodMartConnectionProperties() {
-                String catalogContent = getFoodMartSchema(
-                    parameterDefs, cubeDefs, virtualCubeDefs, namedSetDefs,
-                    udfDefs, roleDefs);
-                Util.PropertyList properties =
-                    super.getFoodMartConnectionProperties();
-                catalogContent = checkErrorLocation(catalogContent);
-                properties.put(
-                    RolapConnectionProperties.CatalogContent.name(),
-                    catalogContent);
-                return properties;
-            }
-        };
+        final String catalogContent = getSchema(
+            parameterDefs, cubeDefs, virtualCubeDefs, namedSetDefs,
+            udfDefs, roleDefs);
+        return withSchema(catalogContent);
+    }
+
+    /**
+     * Creates a TestContext which contains the given schema text.
+     *
+     * @param catalogContent XML schema content
+     * @return TestContext which contains the given schema
+     */
+    public final TestContext withSchema(String catalogContent) {
+        final Util.PropertyList properties = getConnectionProperties().clone();
+        catalogContent = checkErrorLocation(catalogContent);
+        properties.put(
+            RolapConnectionProperties.CatalogContent.name(),
+            catalogContent);
+        return withProperties(properties);
     }
 
     protected String checkErrorLocation(String schema) {
@@ -1868,24 +1836,18 @@ public class TestContext {
         this.schema = schema;
         this.errorStart = errorStart;
         this.errorEnd = errorEnd;
-    }
+     }
 
     /**
-     * Creates a TestContext which contains the given schema text.
+     * Creates a TestContext which is like this one but uses the given
+     * connection properties.
      *
-     * @return TestContext which contains the given schema
+     * @param properties Connection properties
+     * @return TestContext which contains the given properties
      */
-    public static TestContext create(final String catalogContent) {
-        return new TestContext() {
-            public Util.PropertyList getFoodMartConnectionProperties() {
-                Util.PropertyList properties =
-                    super.getFoodMartConnectionProperties();
-                if (catalogContent != null) {
-                    String catalogContent2 = checkErrorLocation(catalogContent);
-                    properties.put(
-                        RolapConnectionProperties.CatalogContent.name(),
-                        catalogContent2);
-                }
+    public TestContext withProperties(final Util.PropertyList properties) {
+        return new DelegatingTestContext(this) {
+            public Util.PropertyList getConnectionProperties() {
                 return properties;
             }
         };
@@ -1898,7 +1860,7 @@ public class TestContext {
      * @param dimensionDefs String defining dimensions, or null
      * @return TestContext with modified cube defn
      */
-    public static TestContext createSubstitutingCube(
+    public final TestContext createSubstitutingCube(
         final String cubeName,
         final String dimensionDefs)
     {
@@ -1914,7 +1876,7 @@ public class TestContext {
      * @param memberDefs String defining calculated members, or null
      * @return TestContext with modified cube defn
      */
-    public static TestContext createSubstitutingCube(
+    public final TestContext createSubstitutingCube(
         final String cubeName,
         final String dimensionDefs,
         final String memberDefs)
@@ -1935,28 +1897,19 @@ public class TestContext {
      * @param namedSetDefs String defining named set definitions, or null
      * @return TestContext with modified cube defn
      */
-    public static TestContext createSubstitutingCube(
+    public final TestContext createSubstitutingCube(
         final String cubeName,
         final String dimensionDefs,
         final String measureDefs,
         final String memberDefs,
         final String namedSetDefs)
     {
-        return new TestContext() {
-            public Util.PropertyList getFoodMartConnectionProperties() {
-                String catalogContent =
-                    getFoodMartSchemaSubstitutingCube(
-                        cubeName, dimensionDefs,
-                        measureDefs, memberDefs, namedSetDefs);
-                Util.PropertyList properties =
-                    super.getFoodMartConnectionProperties();
-                catalogContent = checkErrorLocation(catalogContent);
-                properties.put(
-                    RolapConnectionProperties.CatalogContent.name(),
-                    catalogContent);
-                return properties;
-            }
-        };
+        final String schema =
+            substituteSchema(
+                getRawFoodMartSchema(),
+                cubeName, dimensionDefs,
+                measureDefs, memberDefs, namedSetDefs);
+        return withSchema(schema);
     }
 
     /**
@@ -1965,14 +1918,13 @@ public class TestContext {
      * @param roleName Role name
      * @return Test context with the given role
      */
-    public TestContext withRole(final String roleName) {
+    public final TestContext withRole(final String roleName) {
+        final Util.PropertyList properties = getConnectionProperties().clone();
+        properties.put(
+            RolapConnectionProperties.Role.name(),
+            roleName);
         return new DelegatingTestContext(this) {
-            public Util.PropertyList getFoodMartConnectionProperties() {
-                Util.PropertyList properties =
-                    context.getFoodMartConnectionProperties();
-                properties.put(
-                    RolapConnectionProperties.Role.name(),
-                    roleName);
+            public Util.PropertyList getConnectionProperties() {
                 return properties;
             }
         };
@@ -1985,10 +1937,30 @@ public class TestContext {
      * @param cubeName Cube name
      * @return Test context with the given default cube
      */
-    public TestContext withCube(final String cubeName) {
+    public final TestContext withCube(final String cubeName) {
         return new DelegatingTestContext(this) {
             public String getDefaultCubeName() {
                 return cubeName;
+            }
+        };
+    }
+
+    /**
+     * Returns a {@link TestContext} similar to this one, but which uses a given
+     * connection.
+     *
+     * @param connection Connection
+     * @return Test context which uses the given connection
+     */
+    public final TestContext withConnection(final Connection connection) {
+        return new DelegatingTestContext(this) {
+            public Connection getConnection() {
+                return connection;
+            }
+
+            @Override
+            public void close() {
+                connection.close();
             }
         };
     }
@@ -2037,18 +2009,13 @@ public class TestContext {
      * @return Warnings encountered while loading schema
      */
     public List<Exception> getSchemaWarnings() {
+        final Util.PropertyList propertyList =
+            getConnectionProperties().clone();
+        propertyList.put(
+            RolapConnectionProperties.Ignore.name(),
+            "true");
         final Connection connection =
-            new DelegatingTestContext(this) {
-                public Util.PropertyList getFoodMartConnectionProperties() {
-                    final Util.PropertyList propertyList =
-                        super.getFoodMartConnectionProperties();
-                    propertyList.put(
-                        RolapConnectionProperties.Ignore.name(),
-                        "true");
-                    return propertyList;
-                }
-            }
-            .getFoodMartConnection();
+            withProperties(propertyList).getConnection();
         return connection.getSchema().getWarnings();
     }
 

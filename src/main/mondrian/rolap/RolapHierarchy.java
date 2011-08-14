@@ -96,13 +96,14 @@ public class RolapHierarchy extends HierarchyBase {
     RolapHierarchy(
         RolapDimension dimension,
         String subName,
+        boolean visible,
         String caption,
         String description,
         boolean hasAll,
         RolapHierarchy closureFor,
         Map<String, Annotation> annotationMap)
     {
-        super(dimension, subName, caption, description, hasAll);
+        super(dimension, subName, visible, caption, description, hasAll);
         this.annotationMap = annotationMap;
         this.closureFor = closureFor;
     }
@@ -137,6 +138,7 @@ public class RolapHierarchy extends HierarchyBase {
             new RolapLevel(
                 this,
                 allLevelName,
+                true,
                 null,
                 null,
                 0,
@@ -153,6 +155,7 @@ public class RolapHierarchy extends HierarchyBase {
             new RolapLevel(
                 this,
                 allLevelName,
+                true,
                 null,
                 null,
                 0,
@@ -282,6 +285,7 @@ public class RolapHierarchy extends HierarchyBase {
             new RolapLevel(
                 this,
                 "MeasuresLevel",
+                true,
                 null,
                 null,
                 levelList.size(),
@@ -631,6 +635,7 @@ public class RolapHierarchy extends HierarchyBase {
         RolapDimension peerDimension = new RolapDimension(
             (RolapSchema) dimension.getSchema(),
             dimension.getName() + "$Closure",
+            false,
             null,
             "Closure dimension for parent-child hierarchy " + getName(),
             DimensionType.StandardDimension,
@@ -648,6 +653,7 @@ public class RolapHierarchy extends HierarchyBase {
             new RolapLevel(
                 peerHier,
                 "Closure",
+                false,
                 caption,
                 description,
                 peerHier.levelList.size(),
@@ -665,6 +671,7 @@ public class RolapHierarchy extends HierarchyBase {
             new RolapLevel(
                 peerHier,
                 "Item",
+                false,
                 null,
                 null,
                 peerHier.levelList.size(),
@@ -972,6 +979,14 @@ public class RolapHierarchy extends HierarchyBase {
         }
 
         public Dimension getDimension() {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isVisible() {
+            throw new UnsupportedOperationException();
+        }
+
+        public String getLocalized(LocalizedProperty prop, Locale locale) {
             throw new UnsupportedOperationException();
         }
     }

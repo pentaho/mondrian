@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2010 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,7 +14,6 @@ import java.util.*;
 import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-
 
 /**
  * Unit test for {@link SchemaReader}.
@@ -35,7 +34,7 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
         Connection connection =
             getTestContext().withRole("No HR Cube").getConnection();
         try {
-            SchemaReader reader = connection.getSchemaReader();
+            SchemaReader reader = connection.getSchemaReader().withLocus();
 
             Cube[] cubes = reader.getCubes();
 
@@ -55,7 +54,7 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
 
         Connection connection = getTestContext().getConnection();
         try {
-            SchemaReader reader = connection.getSchemaReader();
+            SchemaReader reader = connection.getSchemaReader().withLocus();
 
             Cube[] cubes = reader.getCubes();
 
@@ -75,7 +74,7 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
         Connection connection =
                 getTestContext().withRole("California manager").getConnection();
         try {
-            SchemaReader reader = connection.getSchemaReader();
+            SchemaReader reader = connection.getSchemaReader().withLocus();
 
             Cube[] cubes = reader.getCubes();
 
@@ -89,7 +88,7 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
 
     public void testConnectUseContentChecksum() {
         Util.PropertyList properties =
-            TestContext.instance().getFoodMartConnectionProperties();
+            TestContext.instance().getConnectionProperties().clone();
         properties.put(
             RolapConnectionProperties.UseContentChecksum.name(),
             "true");
@@ -128,7 +127,7 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
         final String timeWeekly =
             TestContext.hierarchyName("Time", "Weekly");
         final TestContext testContext =
-            TestContext.create(
+            TestContext.instance().create(
                 null, null, null, null, null,
                 "<Role name=\"REG1\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
@@ -144,7 +143,7 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
                 .withRole("REG1");
         Connection connection = testContext.getConnection();
         try {
-            SchemaReader reader = connection.getSchemaReader();
+            SchemaReader reader = connection.getSchemaReader().withLocus();
             final Map<String, Cube> cubes = new HashMap<String, Cube>();
             for (Cube cube : reader.getCubes()) {
                 cubes.put(cube.getName(), cube);

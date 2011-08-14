@@ -22,6 +22,9 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.server.Locus;
 import mondrian.spi.Dialect;
 import mondrian.util.Pair;
+
+import org.apache.log4j.Logger;
+
 import org.olap4j.impl.UnmodifiableArrayList;
 
 import javax.sql.DataSource;
@@ -70,6 +73,8 @@ import java.util.*;
  * @version $Id$
  */
 public class SqlTupleReader implements TupleReader {
+    private final static Logger LOGGER =
+        Logger.getLogger(SqlTupleReader.class);
     protected final TupleConstraint constraint;
     protected final List<TargetBase> targets = new ArrayList<TargetBase>();
     int maxRows = 0;
@@ -181,6 +186,13 @@ public class SqlTupleReader implements TupleReader {
                                 ? parentKeys[0]
                                 : Arrays.asList(parentKeys);
                         parentMember = cache.getMember(parentKey);
+                        if (parentMember == null) {
+                            LOGGER.warn(
+                                MondrianResource.instance()
+                                    .LevelTableParentNotFound.str(
+                                        childLevel.getUniqueName(),
+                                        parentKey.toString()));
+                        }
                     }
                     Object[] keys = new Object[layout.keyOrdinals.length];
                     for (int j = 0; j < layout.keyOrdinals.length; j++) {
@@ -241,7 +253,7 @@ public class SqlTupleReader implements TupleReader {
                             constraint.getMemberChildrenConstraint(member);
                         // we keep a reference to cachedChildren so they don't
                         // get garbage-collected
-                        List cachedChildren =
+                        List<RolapMember> cachedChildren =
                             cache.getChildrenFromCache(member, mcc);
                         if (i < levelDepth && cachedChildren == null) {
                             siblings.set(i + 1, new ArrayList<RolapMember>());
@@ -948,12 +960,7 @@ Util.deprecated("obsolete basecube parameter", false);
         boolean needsGroupBy =
             isGroupByNeeded(sqlQuery, hierarchy, levels, levelDepth);
 
-        // Determine if the aggregate table contains the collapsed level
         final RolapMeasureGroup measureGroup = starSet.getMeasureGroup();
-        boolean levelCollapsed =
-            (aggStar != null)
-            && SqlMemberSource.isLevelCollapsed(
-                aggStar, (RolapCubeLevel) level, measureGroup);
 
         for (int i = 0; i <= levelDepth; i++) {
             RolapLevel currLevel = levels.get(i);
@@ -962,6 +969,12 @@ Util.deprecated("obsolete basecube parameter", false);
             }
             final LevelLayoutBuilder levelLayoutBuilder =
                 layoutBuilder.createLayoutFor(currLevel);
+
+            // Determine if the aggregate table contains the collapsed level
+            boolean levelCollapsed =
+                (aggStar != null)
+                && SqlMemberSource.isLevelCollapsed(
+                    aggStar, (RolapCubeLevel) level, measureGroup);
             if (levelCollapsed) {
                 // an earlier check was made in chooseAggStar() to verify
                 // that this is a single column level
@@ -1082,7 +1095,7 @@ Util.deprecated("obsolete basecube parameter", false);
                 sqlQuery.addOrderBy(
                     Integer.toString(
                         sqlQuery.getCurrentSelectListSize()),
-                    true, false, nullable);
+                    true, false, nullable, false);
             }
 
             if (selectOrdinal == 0 && selectCount == 1) {

@@ -1,4 +1,5 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
@@ -43,6 +44,23 @@ import static org.olap4j.metadata.XmlaConstants.*;
 public class XmlaHandler {
     private static final Logger LOGGER = Logger.getLogger(XmlaHandler.class);
 
+    /**
+     * Name of property used by JDBC to hold user name.
+     */
+    private static final String JDBC_USER = "user";
+
+    /**
+     * Name of property used by JDBC to hold password.
+     */
+    private static final String JDBC_PASSWORD = "password";
+
+    /**
+     * Name of property used by JDBC to hold locale. It is not hard-wired into
+     * DriverManager like "user" and "password", but we do expect any olap4j
+     * driver that supports i18n to use this property name.
+     */
+    public static final String JDBC_LOCALE = "locale";
+
     final ConnectionFactory connectionFactory;
     private final String prefix;
 
@@ -59,17 +77,52 @@ public class XmlaHandler {
         return new XmlaExtraImpl();
     }
 
-    public OlapConnection getConnection(XmlaRequest request) {
-        final Map<String, String> properties = request.getProperties();
-        final String dataSourceInfo =
-            properties.get(PropertyDefinition.DataSourceInfo.name());
-        final String catalog =
-            properties.get(PropertyDefinition.Catalog.name());
-        String roleName = request.getRoleName();
+    /**
+     * Returns a new OlapConnection opened with the credentials specified in the
+     * XMLA request or an existing connection if one can be found associated
+     * with the request session id.
+     *
+     * @param request Request
+     * @param propMap Extra properties
+     */
+    public OlapConnection getConnection(
+        XmlaRequest request,
+        Map<String, String> propMap)
+    {
+        String sessionId = request.getSessionId();
+        if (sessionId == null) {
+            // With a Simba O2X Client session ID is only null when
+            // serving "discover datasources".
+            //
+            // Let's have a magic ID for the non-authenticated session.
+            //
+            // REVIEW: Security hole?
+            sessionId = "<no_session>";
+        }
+        LOGGER.debug(
+            "Creating new connection for user [" + request.getUsername()
+            + "] and session [" + sessionId + "]");
 
-        // REVIEW: Should we pass request properties to getConnection?
-        return getConnection(
-            dataSourceInfo, catalog, roleName, new Properties());
+        Properties props = new Properties();
+        for (Map.Entry<String, String> entry : propMap.entrySet()) {
+            props.put(entry.getKey(), entry.getValue());
+        }
+        if (request.getUsername() != null) {
+            props.put(JDBC_USER, request.getUsername());
+        }
+        if (request.getPassword() != null) {
+            props.put(JDBC_PASSWORD, request.getPassword());
+        }
+
+        // [MROSSI] getConnection does not take a dataSourceInfo. I think
+        // it was a bug.
+        //
+        // String dataSourceInfo =
+        //   properties.get(PropertyDefinition.DataSourceInfo.name());
+        //
+        final String catalog =
+            request.getProperties().get(PropertyDefinition.Catalog.name());
+        return getConnection(catalog, null, request.getRoleName(), props);
     }
 
     private enum SetType {
@@ -1264,7 +1317,8 @@ public class XmlaHandler {
         OlapStatement statement = null;
         ResultSet resultSet = null;
         try {
-            connection = getConnection(request);
+            connection =
+                getConnection(request, Collections.<String, String>emptyMap());
             statement = connection.createStatement();
             resultSet =
                 getExtra(connection).executeDrillthrough(
@@ -1578,7 +1632,8 @@ public class XmlaHandler {
         CellSet cellSet = null;
         boolean success = false;
         try {
-            connection = getConnection(request);
+            connection =
+                getConnection(request, Collections.<String, String>emptyMap());
             getExtra(connection).setPreferList(connection);
             try {
                 statement = connection.prepareOlapStatement(mdx);
@@ -2761,9 +2816,14 @@ public class XmlaHandler {
                 t);
         } finally {
             // keep the tags balanced, even if there's an error
-            writer.endElement();
-            writer.endElement();
-            writer.endElement();
+            try {
+                writer.endElement();
+                writer.endElement();
+                writer.endElement();
+            } catch (Throwable e) {
+                // Ignore any errors balancing the tags. The original exception
+                // is more important.
+            }
         }
 
         writer.endDocument();
@@ -3120,6 +3180,21 @@ public class XmlaHandler {
             String roleName,
             Properties props)
             throws SQLException;
+
+        /**
+         * Returns a map of property name-value pairs with which to populate
+         * the response to the DISCOVER_DATASOURCES request.
+         *
+         * <p>Properties correspond to the columns of that request:
+         * ""DataSourceName", et cetera.</p>
+         *
+         * <p>Returns null if there is no pre-configured response; in
+         * which case, the driver will have to connect to get a response.</p>
+         *
+         * @return Column names and values for the DISCOVER_DATASOURCES
+         * response
+         */
+        Map<String, Object> getPreConfiguredDiscoverDatasourcesResponse();
     }
 }
 

@@ -123,6 +123,13 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this dimension is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
         <Attribute name="description" required="false">
             <Doc>
                 Description of this dimension.
@@ -177,6 +184,13 @@ Revision is $Id$
             <Doc>
                 A string being displayed instead of the cube's name.
                 Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this cube is visible in the user-interface.
+                Default true.
             </Doc>
         </Attribute>
         <Attribute name="description" required="false">
@@ -268,6 +282,13 @@ Revision is $Id$
             <Doc>
                 A string being displayed instead of the cube's name.
                 Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this cube is visible in the user-interface.
+                Default true.
             </Doc>
         </Attribute>
         <Attribute name="description" required="false">
@@ -499,6 +520,13 @@ Revision is $Id$
                 has the same name as its dimension.
             </Doc>
         </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this hierarchy is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
         <Attribute name="hasAll" type="Boolean" required="true">
             <Doc>
                 Whether this hierarchy has an 'all' member.
@@ -593,6 +621,13 @@ Revision is $Id$
             </Doc>
         </Attribute>
         <Attribute name="name"><Doc></Doc></Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this level is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
         <Attribute name="table" required="false">
             <Doc>
                 The name of the table that the column comes from. If
@@ -2023,9 +2058,15 @@ Revision is $Id$
     <Element class="Grant" type="SchemaGrant">
         <Doc>
             Grants (or denies) this role access to this schema.
-            <code>access</code> may be "all", "all_dimensions", or "none".
+            <code>access</code> may be "all", "all_dimensions", "custom"
+            or "none".
             If <code>access</code> is "all_dimensions", the role has access
             to all dimensions but still needs explicit access to cubes.
+            If <code>access</code> is "custom", no access will be inherited by
+            cubes for which no explicit rule is set.
+            If <code>access</code> is "all_dimensions", an implicut access is
+            given to all dimensions of the schema's cubes, provided the cube's
+            access attribute is either "custom" or "all".
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Schema, int)">mondrian.olap.Role#grant(mondrian.olap.Schema,int)</a>.
         </Doc>
         <Array name="cubeGrants" type="CubeGrant"/>
@@ -2034,7 +2075,10 @@ Revision is $Id$
     <Element class="Grant" type="CubeGrant">
         <Doc>
             Grants (or denies) this role access to a cube.
-            <code>access</code> may be "all" or "none".
+            <code>access</code> may be "all", "custom", or "none".
+            If <code>access</code> is "custom", no access will be inherited
+            by the dimensions of this cube, unless the parent SchemaGrant is
+            set to "ALL_DIMENSIONS".
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Cube, int)">mondrian.olap.Role#grant(mondrian.olap.Cube,int)</a>.
         </Doc>
         <Attribute name="cube" required="true">
@@ -2047,9 +2091,13 @@ Revision is $Id$
     <Element class="Grant" type="DimensionGrant">
         <Doc>
             Grants (or denies) this role access to a dimension.
-            <code>access</code> may be "all" or "none".
+            <code>access</code> may be "all", "custom" or "none".
             Note that a role is implicitly given access to a dimension when it
-            is given acess to a cube.
+            is given "ALL" acess to a cube.
+            If <code>access</code> is "custom", no access will be inherited
+            by the hierarchies of this dimension.
+            If the parent schema <code>access</code> is "ALL_DIMENSIONS",
+            this timension will inherit <code>access</code> "ALL".
             See also the "all_dimensions" option of the "SchemaGrant" element.
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">mondrian.olap.Role#grant(mondrian.olap.Dimension,int)</a>.
         </Doc>
@@ -2065,6 +2113,9 @@ Revision is $Id$
             If <code>access</code> is "custom", you may also specify the
             attributes <code>topLevel</code>, <code>bottomLevel</code>, and
             the member grants.
+            If <code>access</code> is "custom", the child levels of this
+            hierarchy will not inherit access rights from this hierarchy,
+            should there be no explicit rules defined for the said child level.
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)">mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)</a>.
         </Doc>
         <Attribute name="hierarchy" required="true">

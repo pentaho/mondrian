@@ -10,6 +10,7 @@
 package mondrian.olap4j;
 
 import mondrian.olap.Id;
+import mondrian.olap.OlapElement;
 import mondrian.olap.Role;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
@@ -123,17 +124,19 @@ class MondrianOlap4jCube implements Cube, Named {
     }
 
     public String getCaption() {
-        // todo: i81n
-        return cube.getCaption();
+        return cube.getLocalized(
+            OlapElement.LocalizedProperty.CAPTION,
+            olap4jSchema.getLocale());
     }
 
     public String getDescription() {
-        // todo: i81n
-        return cube.getDescription();
+        return cube.getLocalized(
+            OlapElement.LocalizedProperty.DESCRIPTION,
+            olap4jSchema.getLocale());
     }
 
     public boolean isVisible() {
-        return true;
+        return cube.isVisible();
     }
 
     public MondrianOlap4jMember lookupMember(

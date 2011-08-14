@@ -302,7 +302,7 @@ public class TypeTest extends TestCase {
     }
 
     private SchemaReader getSchemaReader() {
-        return testContext.getConnection().getSchemaReader();
+        return testContext.getConnection().getSchemaReader().withLocus();
     }
 
     private Cube getCubeWithName(String cubeName, Cube[] cubes) {

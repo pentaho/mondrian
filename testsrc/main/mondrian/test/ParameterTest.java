@@ -1116,7 +1116,7 @@ public class ParameterTest extends FoodMartTestCase {
      * Tests a schema property with a default value.
      */
     public void testSchemaProp() {
-        final TestContext tc = TestContext.create(
+        final TestContext tc = TestContext.instance().create(
             "<Parameter name=\"prop\" type=\"String\" "
             + "defaultValue=\" 'foo bar' \" />",
             null,
@@ -1129,7 +1129,7 @@ public class ParameterTest extends FoodMartTestCase {
      * Tests a schema property with a default value.
      */
     public void testSchemaPropDupFails() {
-        final TestContext tc = TestContext.create(
+        final TestContext tc = TestContext.instance().create(
             "<Parameter name=\"foo\" type=\"Numeric\" defaultValue=\"1\" />\n"
             + "<Parameter name=\"bar\" type=\"Numeric\" defaultValue=\"2\" />\n"
             + "<Parameter name=\"foo\" type=\"Numeric\" defaultValue=\"3\" />\n",
@@ -1144,7 +1144,7 @@ public class ParameterTest extends FoodMartTestCase {
     }
 
     public void testSchemaPropIllegalTypeFails() {
-        final TestContext tc = TestContext.create(
+        final TestContext tc = TestContext.instance().create(
             "<Parameter name=\"foo\" type=\"Bad type\" defaultValue=\"1\" />",
             null,
             null,
@@ -1159,7 +1159,7 @@ public class ParameterTest extends FoodMartTestCase {
     }
 
     public void testSchemaPropInvalidDefaultExpFails() {
-        final TestContext tc = TestContext.create(
+        final TestContext tc = TestContext.instance().create(
             "<Parameter name=\"Product Current Member\" type=\"Member\" defaultValue=\"[Product].DefaultMember.Children(2) \" />",
             null,
             null,
@@ -1176,7 +1176,7 @@ public class ParameterTest extends FoodMartTestCase {
      * are not available.
      */
     public void testSchemaPropContext() {
-        final TestContext tc = TestContext.create(
+        final TestContext tc = TestContext.instance().create(
             "<Parameter name=\"Customer Current Member\" type=\"Member\" defaultValue=\"[Customers].DefaultMember.Children.Item(2) \" />",
             null,
             null,

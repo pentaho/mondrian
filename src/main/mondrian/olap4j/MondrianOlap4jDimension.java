@@ -3,14 +3,16 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
 import mondrian.olap.DimensionType;
+import mondrian.olap.OlapElement;
 import mondrian.olap.Util;
+
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
 import org.olap4j.metadata.*;
@@ -50,7 +52,8 @@ class MondrianOlap4jDimension implements Dimension, Named {
         final MondrianOlap4jConnection olap4jConnection =
             olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
         final mondrian.olap.SchemaReader schemaReader =
-            olap4jConnection.getMondrianConnection2().getSchemaReader();
+            olap4jConnection.getMondrianConnection2().getSchemaReader()
+            .withLocus();
         for (mondrian.olap.Hierarchy hierarchy
             : schemaReader.getDimensionHierarchies(dimension))
         {
@@ -86,17 +89,19 @@ class MondrianOlap4jDimension implements Dimension, Named {
     }
 
     public String getCaption() {
-        // TODO: localize caption
-        return dimension.getCaption();
+        return dimension.getLocalized(
+            OlapElement.LocalizedProperty.CAPTION,
+            olap4jSchema.getLocale());
     }
 
     public String getDescription() {
-        // TODO: localize description
-        return dimension.getDescription();
+        return dimension.getLocalized(
+            OlapElement.LocalizedProperty.DESCRIPTION,
+            olap4jSchema.getLocale());
     }
 
     public boolean isVisible() {
-        return true;
+        return dimension.isVisible();
     }
 }
 

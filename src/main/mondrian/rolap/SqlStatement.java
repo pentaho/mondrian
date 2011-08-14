@@ -139,7 +139,7 @@ public class SqlStatement {
             }
 
             // Execute hook.
-            RolapUtil.ExecuteQueryHook hook = RolapUtil.threadHooks.get();
+            RolapUtil.ExecuteQueryHook hook = RolapUtil.threadHooks;
             if (hook != null) {
                 hook.onExecuteQuery(sql);
             }
@@ -154,6 +154,10 @@ public class SqlStatement {
             if (maxRows > 0) {
                 statement.setMaxRows(maxRows);
             }
+
+            // First make sure to register with the execution instance.
+            locus.execution.registerStatement(locus, statement);
+
             this.resultSet = statement.executeQuery(sql);
 
             // skip to first row specified in request

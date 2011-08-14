@@ -6,7 +6,6 @@
 // Copyright (C) 2008-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 */
 package mondrian.test;
 
@@ -92,7 +91,8 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     }
 
     public TestContext getTestContext() {
-        return TestContext.createSubstitutingCube("Sales", null, memberDefs);
+        return TestContext.instance().createSubstitutingCube(
+            "Sales", null, memberDefs);
     }
 
     public void testAllSolveOrderModesHandled()

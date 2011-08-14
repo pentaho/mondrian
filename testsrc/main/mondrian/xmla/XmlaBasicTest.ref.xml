@@ -238,6 +238,196 @@
 ]]>
         </Resource>
     </TestCase>
+    <TestCase name="testMDCubesLocale">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_TYPE" sql:field="CUBE_TYPE" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="CUBE_GUID" sql:field="CUBE_GUID" type="uuid"/>
+                                <xsd:element minOccurs="0" name="CREATED_ON" sql:field="CREATED_ON" type="xsd:dateTime"/>
+                                <xsd:element minOccurs="0" name="LAST_SCHEMA_UPDATE" sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
+                                <xsd:element minOccurs="0" name="SCHEMA_UPDATED_BY" sql:field="SCHEMA_UPDATED_BY" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="LAST_DATA_UPDATE" sql:field="LAST_DATA_UPDATE" type="xsd:dateTime"/>
+                                <xsd:element minOccurs="0" name="DATA_UPDATED_BY" sql:field="DATA_UPDATED_BY" type="xsd:string"/>
+                                <xsd:element name="IS_DRILLTHROUGH_ENABLED" sql:field="IS_DRILLTHROUGH_ENABLED" type="xsd:boolean"/>
+                                <xsd:element name="IS_WRITE_ENABLED" sql:field="IS_WRITE_ENABLED" type="xsd:boolean"/>
+                                <xsd:element name="IS_LINKABLE" sql:field="IS_LINKABLE" type="xsd:boolean"/>
+                                <xsd:element name="IS_SQL_ENABLED" sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="CUBE_CAPTION" sql:field="CUBE_CAPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
+                                <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+                                <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <CUBE_TYPE>CUBE</CUBE_TYPE>
+                        <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+                        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+                        <IS_LINKABLE>false</IS_LINKABLE>
+                        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+                        <CUBE_CAPTION>Verkaufen</CUBE_CAPTION>
+                        <DESCRIPTION>Cube Verkaufen</DESCRIPTION>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+        <RequestType>${request.type}</RequestType>
+        <Restrictions>
+          <RestrictionList>
+            <CUBE_NAME>${cube.name}</CUBE_NAME>
+          </RestrictionList>
+        </Restrictions>
+        <Properties>
+          <PropertyList>
+            <DataSourceInfo>${data.source.info}</DataSourceInfo>
+            <Catalog>${catalog}</Catalog>
+            <Format>${format}</Format>
+            <Content>${content}</Content>
+            <LocaleIdentifier>${locale}</LocaleIdentifier>
+          </PropertyList>
+        </Properties>
+    </Discover>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testMDCubesLcid">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_TYPE" sql:field="CUBE_TYPE" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="CUBE_GUID" sql:field="CUBE_GUID" type="uuid"/>
+                                <xsd:element minOccurs="0" name="CREATED_ON" sql:field="CREATED_ON" type="xsd:dateTime"/>
+                                <xsd:element minOccurs="0" name="LAST_SCHEMA_UPDATE" sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
+                                <xsd:element minOccurs="0" name="SCHEMA_UPDATED_BY" sql:field="SCHEMA_UPDATED_BY" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="LAST_DATA_UPDATE" sql:field="LAST_DATA_UPDATE" type="xsd:dateTime"/>
+                                <xsd:element minOccurs="0" name="DATA_UPDATED_BY" sql:field="DATA_UPDATED_BY" type="xsd:string"/>
+                                <xsd:element name="IS_DRILLTHROUGH_ENABLED" sql:field="IS_DRILLTHROUGH_ENABLED" type="xsd:boolean"/>
+                                <xsd:element name="IS_WRITE_ENABLED" sql:field="IS_WRITE_ENABLED" type="xsd:boolean"/>
+                                <xsd:element name="IS_LINKABLE" sql:field="IS_LINKABLE" type="xsd:boolean"/>
+                                <xsd:element name="IS_SQL_ENABLED" sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="CUBE_CAPTION" sql:field="CUBE_CAPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
+                                <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+                                <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME>Sales</CUBE_NAME>
+                        <CUBE_TYPE>CUBE</CUBE_TYPE>
+                        <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
+                        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+                        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+                        <IS_LINKABLE>false</IS_LINKABLE>
+                        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+                        <CUBE_CAPTION>Ventes</CUBE_CAPTION>
+                        <DESCRIPTION>Cube des ventes</DESCRIPTION>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+        <RequestType>${request.type}</RequestType>
+        <Restrictions>
+          <RestrictionList>
+            <CUBE_NAME>${cube.name}</CUBE_NAME>
+          </RestrictionList>
+        </Restrictions>
+        <Properties>
+          <PropertyList>
+            <DataSourceInfo>${data.source.info}</DataSourceInfo>
+            <Catalog>${catalog}</Catalog>
+            <Format>${format}</Format>
+            <Content>${content}</Content>
+            <LocaleIdentifier>${locale}</LocaleIdentifier>
+          </PropertyList>
+        </Properties>
+    </Discover>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
     <TestCase name="testMDCubesDeep">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
@@ -331,6 +521,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>0</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -390,6 +581,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>1</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -484,6 +676,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>2</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -612,6 +805,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>3</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -689,6 +883,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>4</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -766,6 +961,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>5</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -860,6 +1056,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>6</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -937,6 +1134,7 @@
                                         <IS_READWRITE>false</IS_READWRITE>
                                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                                         <HIERARCHY_ORDINAL>7</HIERARCHY_ORDINAL>
                                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                                         <PARENT_CHILD>true</PARENT_CHILD>
@@ -1143,6 +1341,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 0,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1202,6 +1401,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 1,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1296,6 +1496,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 2,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1424,6 +1625,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 3,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1501,6 +1703,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 4,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1578,6 +1781,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 5,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1672,6 +1876,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 6,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": false,
@@ -1749,6 +1954,7 @@
                   "IS_READWRITE": false,
                   "DIMENSION_UNIQUE_SETTINGS": 0,
                   "DIMENSION_IS_VISIBLE": true,
+                  "HIERARCHY_IS_VISIBLE": true,
                   "HIERARCHY_ORDINAL": 7,
                   "DIMENSION_IS_SHARED": true,
                   "PARENT_CHILD": true,
@@ -3261,7 +3467,7 @@
 ]]>
         </Resource>
     </TestCase>
-    <TestCase name="testMDimensions">
+    <TestCase name="testMDDimensions">
         <Resource name="response">
             <![CDATA[<?xml version="1.0"?>
 <SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
@@ -3306,6 +3512,108 @@
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Product</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>1561</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Product]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Product Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>26</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store Size in SQFT</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>22</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store Size in SQFT]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Size in SQFT Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store Type</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store Type</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>7</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store Type]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Type Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Time</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Time Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Warehouse</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Warehouse]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Warehouse</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>5</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Warehouse]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Warehouse Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
                     <row>
                         <CATALOG_NAME>FoodMart</CATALOG_NAME>
                         <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
@@ -4378,6 +4686,188 @@
     <RequestType>${request.type}</RequestType>
     <Restrictions>
       <RestrictionList>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>${format}</Format>
+        <Content>${content}</Content>
+      </PropertyList>
+    </Properties>
+    </Discover>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testMDDimensionsShared">
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:DiscoverResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+                                <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+                                <xsd:element name="DIMENSION_NAME" sql:field="DIMENSION_NAME" type="xsd:string"/>
+                                <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DIMENSION_GUID" sql:field="DIMENSION_GUID" type="uuid"/>
+                                <xsd:element name="DIMENSION_CAPTION" sql:field="DIMENSION_CAPTION" type="xsd:string"/>
+                                <xsd:element name="DIMENSION_ORDINAL" sql:field="DIMENSION_ORDINAL" type="xsd:unsignedInt"/>
+                                <xsd:element name="DIMENSION_TYPE" sql:field="DIMENSION_TYPE" type="xsd:short"/>
+                                <xsd:element name="DIMENSION_CARDINALITY" sql:field="DIMENSION_CARDINALITY" type="xsd:unsignedInt"/>
+                                <xsd:element name="DEFAULT_HIERARCHY" sql:field="DEFAULT_HIERARCHY" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="IS_VIRTUAL" sql:field="IS_VIRTUAL" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="IS_READWRITE" sql:field="IS_READWRITE" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
+                                <xsd:element minOccurs="0" name="DIMENSION_MASTER_UNIQUE_NAME" sql:field="DIMENSION_MASTER_UNIQUE_NAME" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+                                <xsd:element minOccurs="0" name="HIERARCHIES" sql:field="HIERARCHIES"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Product</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>1561</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Product]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Product Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>26</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store Size in SQFT</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>22</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store Size in SQFT]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Size in SQFT Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Store Type</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Store Type</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>7</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Store Type]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Store Type Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Time</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Time Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                    <row>
+                        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CUBE_NAME/>
+                        <DIMENSION_NAME>Warehouse</DIMENSION_NAME>
+                        <DIMENSION_UNIQUE_NAME>[Warehouse]</DIMENSION_UNIQUE_NAME>
+                        <DIMENSION_CAPTION>Warehouse</DIMENSION_CAPTION>
+                        <DIMENSION_ORDINAL>5</DIMENSION_ORDINAL>
+                        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+                        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+                        <DEFAULT_HIERARCHY>[Warehouse]</DEFAULT_HIERARCHY>
+                        <DESCRIPTION> Cube - Warehouse Dimension</DESCRIPTION>
+                        <IS_VIRTUAL>false</IS_VIRTUAL>
+                        <IS_READWRITE>false</IS_READWRITE>
+                        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+                        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:DiscoverResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+        <Resource name="request">
+            <![CDATA[
+<SOAP-ENV:Envelope
+    xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
+    SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+  <SOAP-ENV:Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis"
+        SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+    <RequestType>${request.type}</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CUBE_NAME>${cube.name}</CUBE_NAME>
       </RestrictionList>
     </Restrictions>
     <Properties>
@@ -8949,6 +9439,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                 <xsd:element name="IS_READWRITE" sql:field="IS_READWRITE" type="xsd:boolean"/>
                                 <xsd:element name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
                                 <xsd:element name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+                                <xsd:element name="HIERARCHY_IS_VISIBLE" sql:field="HIERARCHY_IS_VISIBLE" type="xsd:boolean"/>
                                 <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
                                 <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
                                 <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
@@ -8974,6 +9465,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>9</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -8996,6 +9488,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>10</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9018,6 +9511,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>11</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9040,6 +9534,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>12</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9061,6 +9556,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>0</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9083,6 +9579,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>6</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9105,6 +9602,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>7</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9127,6 +9625,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>8</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9149,6 +9648,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>2</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9171,6 +9671,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>3</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9193,6 +9694,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>1</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9214,6 +9716,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>4</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9236,6 +9739,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>5</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -9258,6 +9762,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>13</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
@@ -12541,7 +13046,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                     </row>
                     <row>
                         <PropertyName>LocaleIdentifier</PropertyName>
-                        <PropertyDescription>Use this to read or set the numeric locale identifier for this request. The default is provider-specific. For the complete hexadecimal list of language identifiers, search on "Language Identifiers" in the MSDN Library at http://www.msdn.microsoft.com.</PropertyDescription>
+                        <PropertyDescription>Use this to read or set the numeric locale identifier for this request. The default is provider-specific. For the complete hexadecimal list of language identifiers, search on "Language Identifiers" in the MSDN Library at http://www.msdn.microsoft.com. As an extension to the XMLA standard, Mondrian also allows locale codes as specified by ISO-639 and ISO-3166 and as used by Java; for example 'en-US'. </PropertyDescription>
                         <PropertyType>UnsignedInteger</PropertyType>
                         <PropertyAccessType>ReadWrite</PropertyAccessType>
                         <IsRequired>false</IsRequired>
@@ -13484,6 +13989,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                                 <xsd:element name="IS_READWRITE" sql:field="IS_READWRITE" type="xsd:boolean"/>
                                 <xsd:element name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
                                 <xsd:element name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+                                <xsd:element name="HIERARCHY_IS_VISIBLE" sql:field="HIERARCHY_IS_VISIBLE" type="xsd:boolean"/>
                                 <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
                                 <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
                                 <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
@@ -13509,6 +14015,7 @@ xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/"
                         <IS_READWRITE>false</IS_READWRITE>
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+                        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
                         <HIERARCHY_ORDINAL>12</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>

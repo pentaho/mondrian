@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
 
@@ -65,7 +66,7 @@ public class RolapConnection extends ConnectionBase {
     private final RolapSchema schema;
     private SchemaReader schemaReader;
     protected Role role;
-    private Locale locale = Locale.US;
+    private Locale locale = Locale.getDefault();
     private Scenario scenario;
 
     private static DataSourceResolver dataSourceResolver;
@@ -255,6 +256,7 @@ public class RolapConnection extends ConnectionBase {
             connectInfo.get(RolapConnectionProperties.Locale.name());
         if (localeString != null) {
             this.locale = Util.parseLocale(localeString);
+            assert locale != null;
         }
 
         this.schema = schema;
@@ -518,6 +520,9 @@ public class RolapConnection extends ConnectionBase {
     }
 
     public void setLocale(Locale locale) {
+        if (locale == null) {
+            throw new IllegalArgumentException("locale must not be null");
+        }
         this.locale = locale;
     }
 
@@ -572,6 +577,18 @@ public class RolapConnection extends ConnectionBase {
      *     the property file
      */
     public Result execute(final Execution execution) {
+        return
+            RolapResultShepherd
+                .shepherdExecution(
+                    execution,
+                    new Callable<Result>() {
+                        public Result call() throws Exception {
+                            return executeInternal(execution);
+                        }
+                    });
+    }
+
+    private Result executeInternal(final Execution execution) {
         final Statement statement = execution.getMondrianStatement();
         final Query query = statement.getQuery();
         final MemoryMonitor.Listener listener = new MemoryMonitor.Listener() {

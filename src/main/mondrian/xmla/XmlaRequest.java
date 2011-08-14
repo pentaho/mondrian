@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -59,6 +59,32 @@ public interface XmlaRequest {
      * EXECUTE method.
      */
     boolean isDrillThrough();
+
+    /**
+     * The username to use to open the underlying olap4j connection.
+     * Can be null.
+     */
+    String getUsername();
+
+    /**
+     * The password to use to open the underlying olap4j connection.
+     * Can be null.
+     */
+    String getPassword();
+
+    /**
+     * Returns the id of the session this request belongs to.
+     *
+     * <p>Not necessarily the same as the HTTP session: the SOAP request
+     * contains its own session information.</p>
+     *
+     * <p>The session id is used to retrieve existing olap connections. And
+     * username / password only need to be passed on the first request in a
+     * session.</p>
+     *
+     * @return Id of the session
+     */
+    String getSessionId();
 }
 
 // End XmlaRequest.java

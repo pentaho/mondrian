@@ -3,12 +3,11 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde
+// Copyright (C) 2005-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.xmla;
-
 
 /**
  * Constants for XML/A.
@@ -47,6 +46,8 @@ public interface XmlaConstants {
     public static final String NS_XMLA_EX =
         "urn:schemas-microsoft-com:xml-analysis:exception";
 
+    public static final String NS_SOAP_SECEXT =
+        "http://schemas.xmlsoap.org/ws/2002/04/secext";
 
     public static final String SOAP_PREFIX = "SOAP-ENV";
 
@@ -62,19 +63,21 @@ public interface XmlaConstants {
     public static final String XMLA_SESSION            = "Session";
     public static final String XMLA_END_SESSION        = "EndSession";
     public static final String XMLA_SESSION_ID         = "SessionId";
-
+    public static final String XMLA_SECURITY           = "Security";
 
     /*
      * Names of context keys known by both callbacks and Mondrian code.
      */
     // context key for role name storage
     public static final String CONTEXT_ROLE_NAME   = "role_name";
-    // context key for role storage
-    public static final String CONTEXT_ROLE   = "role";
     // context key for language (SOAP or JSON)
     public static final String CONTEXT_MIME_TYPE = "language";
     // context key for session id storage
     public static final String CONTEXT_XMLA_SESSION_ID   = "session_id";
+
+    // Username and password tokens
+    public static final String CONTEXT_XMLA_USERNAME = "username";
+    public static final String CONTEXT_XMLA_PASSWORD = "password";
 
     // context key for session state storage
     public static final String CONTEXT_XMLA_SESSION_STATE = "SessionState";

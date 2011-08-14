@@ -87,7 +87,7 @@ public class TestCalculatedMembers extends BatchTestCase {
      * cube with spaces in its name.
      */
     public void testCalculatedMemberInCubeWithSpace() {
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Warehouse and Sales",
             null,
             "<CalculatedMember name='Profit With Spaces'"
@@ -520,7 +520,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "  </CalculatedMember>\n"
             + "</Cube>";
 
-        TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null, s, null, null, null, null);
         testContext.assertQueryThrows(
             "select {[Measures].[With a [bracket] inside it]} on columns,\n"
@@ -741,7 +741,7 @@ public class TestCalculatedMembers extends BatchTestCase {
                 + "  </CalculatedMember>\n"
                 + "</Cube>";
 
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null, s, null, null, null, null);
         testContext.assertQueryReturns(
             "select {[Measures].[Apos in dq], [Measures].[Dq in dq], [Measures].[Apos in apos], [Measures].[Dq in apos], [Measures].[Colored Profit]} on columns,\n"
@@ -964,7 +964,7 @@ public class TestCalculatedMembers extends BatchTestCase {
     public void testCalcMemberCustomFormatterInSchema() {
         // calc member defined in schema
         String cubeName = "Sales";
-        TestContext testContext = TestContext.createSubstitutingCube(
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
             cubeName,
             null,
             "<CalculatedMember\n"
@@ -1001,8 +1001,8 @@ public class TestCalculatedMembers extends BatchTestCase {
     public void testCalcMemberCustomFormatterInSchemaNegative() {
         // calc member defined in schema
         String cubeName = "Sales";
-        TestContext testContext =
-            TestContext.createSubstitutingCube(
+        final TestContext testContext =
+            TestContext.instance().createSubstitutingCube(
                 cubeName,
                 null,
                 "  <CalculatedMember\n"
@@ -1026,8 +1026,8 @@ public class TestCalculatedMembers extends BatchTestCase {
     public void testStrToSetInCubeCalcMember() {
         // calc member defined in schema
         String cubeName = "Sales";
-        TestContext testContext =
-            TestContext.createSubstitutingCube(
+        final TestContext testContext =
+            TestContext.instance().createSubstitutingCube(
                 cubeName,
                 null,
                 "<CalculatedMember\n"
@@ -1537,7 +1537,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             // This test uses old-style [dimension.hierarchy] names.
             return;
         }
-        final TestContext testContext = TestContext.create(
+        final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"Store5\"> \n"
             + "  <Table name=\"store\"/> \n"

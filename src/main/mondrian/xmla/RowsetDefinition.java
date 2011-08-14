@@ -14,16 +14,19 @@ import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianServer;
 import mondrian.olap.Util;
 
+import mondrian.util.Composite;
 import org.olap4j.*;
+import org.olap4j.impl.ArrayNamedListImpl;
 import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.mdx.IdentifierSegment;
 import org.olap4j.metadata.*;
 import org.olap4j.metadata.Member.TreeOp;
 import org.olap4j.metadata.XmlaConstants;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -701,7 +704,6 @@ public enum RowsetDefinition {
      *      Default restriction is a value of 1.
      *
      * Not supported
-     *  HIERARCHY_IS_VISIBLE
      *  HIERARCHY_ORIGIN
      *  HIERARCHY_DISPLAY_FOLDER
      *  INSTANCE_SELECTION
@@ -727,6 +729,7 @@ public enum RowsetDefinition {
             MdschemaHierarchiesRowset.IsReadWrite,
             MdschemaHierarchiesRowset.DimensionUniqueSettings,
             MdschemaHierarchiesRowset.DimensionIsVisible,
+            MdschemaHierarchiesRowset.HierarchyIsVisible,
             MdschemaHierarchiesRowset.HierarchyOrdinal,
             MdschemaHierarchiesRowset.DimensionIsShared,
             MdschemaHierarchiesRowset.ParentChild,
@@ -1584,14 +1587,35 @@ public enum RowsetDefinition {
             XmlaResponse response, OlapConnection connection, List<Row> rows)
             throws XmlaException, SQLException
         {
-            final XmlaHandler.XmlaExtra extra = getExtra(connection);
-            for (Map<String, Object> ds : extra.getDataSources(connection)) {
+            if (needConnection()) {
+                final XmlaHandler.XmlaExtra extra = getExtra(connection);
+                for (Map<String, Object> ds : extra.getDataSources(connection))
+                {
+                    Row row = new Row();
+                    for (Column column : columns) {
+                        row.set(column.name, ds.get(column.name));
+                    }
+                    addRow(row, rows);
+                }
+            } else {
+                // using pre-configured discover datasources response
                 Row row = new Row();
+                Map<String, Object> map =
+                    this.handler.connectionFactory
+                        .getPreConfiguredDiscoverDatasourcesResponse();
                 for (Column column : columns) {
-                    row.set(column.name, ds.get(column.name));
+                    row.set(column.name, map.get(column.name));
                 }
                 addRow(row, rows);
             }
+        }
+
+        @Override
+        protected boolean needConnection() {
+            // If the olap connection factory has a pre configured response,
+            // we don't need to connect to find metadata. This is good.
+            return this.handler.connectionFactory
+                       .getPreConfiguredDiscoverDatasourcesResponse() == null;
         }
 
         protected void setProperty(
@@ -3858,7 +3882,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
-                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                for (Cube cube : filteredCubes(schema, cubeNameCond)) {
                     populateCube(connection, catalog, cube, rows);
                 }
             }
@@ -3945,7 +3969,7 @@ TODO: see above
             // Are these the levels with uniqueMembers == true?
             // How are they mapped to specific column numbers?
             row.set(DimensionUniqueSettings.name, 0);
-            row.set(DimensionIsVisible.name, true);
+            row.set(DimensionIsVisible.name, dimension.isVisible());
             if (deep) {
                 row.set(
                     Hierarchies.name,
@@ -4346,7 +4370,15 @@ TODO: see above
                 null,
                 Column.NOT_RESTRICTION,
                 Column.REQUIRED,
-                "Always returns true.");
+                "A Boolean that indicates whether the parent dimension is visible.");
+        private static final Column HierarchyIsVisible =
+            new Column(
+                "HIERARCHY_IS_VISIBLE",
+                Type.Boolean,
+                null,
+                Column.NOT_RESTRICTION,
+                Column.REQUIRED,
+                "A Boolean that indicates whether the hieararchy is visible.");
         private static final Column HierarchyOrdinal =
             new Column(
                 "HIERARCHY_ORDINAL",
@@ -4406,7 +4438,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
-                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                for (Cube cube : filteredCubes(schema, cubeNameCond)) {
                     populateCube(connection, catalog, cube, rows);
                 }
             }
@@ -4515,8 +4547,8 @@ TODO: see above
             // NOTE that SQL Server returns '0' not '1'.
             row.set(DimensionUniqueSettings.name, 0);
 
-            // always true
-            row.set(DimensionIsVisible.name, true);
+            row.set(DimensionIsVisible.name, dimension.isVisible());
+            row.set(HierarchyIsVisible.name, hierarchy.isVisible());
 
             row.set(HierarchyOrdinal.name, ordinal);
 
@@ -4758,7 +4790,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
-                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                for (Cube cube : filteredCubes(schema, cubeNameCond)) {
                     populateCube(connection, catalog, cube, rows);
                 }
             }
@@ -4874,8 +4906,7 @@ TODO: see above
                 uniqueSettings |= 1;
             }
             row.set(LevelUniqueSettings.name, uniqueSettings);
-
-            row.set(LevelIsVisible.name, true);
+            row.set(LevelIsVisible.name, level.isVisible());
             row.set(Description.name, desc);
             addRow(row, rows);
             return true;
@@ -5055,11 +5086,7 @@ TODO: see above
             StringBuilder buf = new StringBuilder(100);
 
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
-                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
-                    Dimension measuresDimension = cube.getDimensions().get(0);
-                    Hierarchy measuresHierarchy =
-                        measuresDimension.getHierarchies().get(0);
-
+                for (Cube cube : filteredCubes(schema, cubeNameCond)) {
                     buf.setLength(0);
 
                     int j = 0;
@@ -5081,22 +5108,20 @@ TODO: see above
                     String levelListStr = buf.toString();
 
                     List<Member> calcMembers = new ArrayList<Member>();
-                    for (Level level : measuresHierarchy.getLevels()) {
-                        for (Measure measure
-                            : filter(
-                                Util.<Measure>cast(level.getMembers()),
-                                measureNameCond,
-                                measureUnameCond))
-                        {
-                            if (measure.isCalculated()) {
-                                // Output calculated measures after stored
-                                // measures.
-                                calcMembers.add(measure);
-                            } else {
-                                populateMember(
-                                    connection, catalog,
-                                    measure, cube, levelListStr, rows);
-                            }
+                    for (Measure measure
+                        : filter(
+                            cube.getMeasures(),
+                            measureNameCond,
+                            measureUnameCond))
+                    {
+                        if (measure.isCalculated()) {
+                            // Output calculated measures after stored
+                            // measures.
+                            calcMembers.add(measure);
+                        } else {
+                            populateMember(
+                                connection, catalog,
+                                measure, cube, levelListStr, rows);
                         }
                     }
 
@@ -5393,7 +5418,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
-                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                for (Cube cube : filteredCubes(schema, cubeNameCond)) {
                     if (isRestricted(MemberUniqueName)) {
                         // NOTE: it is believed that if MEMBER_UNIQUE_NAME is
                         // a restriction, then none of the remaining possible
@@ -6039,7 +6064,10 @@ TODO: see above
         }
 
         private void populateMember(List<Row> rows) throws SQLException {
-            OlapConnection connection = handler.getConnection(request);
+            OlapConnection connection =
+                handler.getConnection(
+                    request,
+                    Collections.<String, String>emptyMap());
             for (Catalog catalog
                 : catIter(connection, catNameCond(), catalogCond))
             {
@@ -6053,7 +6081,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Schema schema : filter(catalog.getSchemas(), schemaNameCond)) {
-                for (Cube cube : filter(sortedCubes(schema), cubeNameCond)) {
+                for (Cube cube : filteredCubes(schema, cubeNameCond)) {
                     populateCube(catalog, cube, rows);
                 }
             }
@@ -6065,6 +6093,9 @@ TODO: see above
             List<Row> rows)
             throws XmlaException, SQLException
         {
+            if (cube instanceof SharedDimensionHolderCube) {
+                return;
+            }
             if (isRestricted(LevelUniqueName)) {
                 // Note: If the LEVEL_UNIQUE_NAME has been specified, then
                 // the dimension and hierarchy are specified implicitly.
@@ -6275,6 +6306,22 @@ TODO: see above
         );
     }
 
+    static Iterable<Cube> filteredCubes(
+        final Schema schema,
+        Util.Functor1<Boolean, Cube> cubeNameCond)
+        throws OlapException
+    {
+        final Iterable<Cube> iterable =
+            filter(sortedCubes(schema), cubeNameCond);
+        if (!cubeNameCond.apply(new SharedDimensionHolderCube(schema))) {
+            return iterable;
+        }
+        return Composite.of(
+            Collections.singletonList(
+                new SharedDimensionHolderCube(schema)),
+            iterable);
+    }
+
     private static String getHierarchyName(Hierarchy hierarchy) {
         String hierarchyName = hierarchy.getName();
         if (MondrianProperties.instance().SsasCompatibleNaming.get()
@@ -6386,6 +6433,106 @@ TODO: see above
 
         public boolean isDrillThrough() {
             return request.isDrillThrough();
+        }
+
+        public String getUsername() {
+            return request.getUsername();
+        }
+
+        public String getPassword() {
+            return request.getPassword();
+        }
+
+        public String getSessionId() {
+            return request.getSessionId();
+        }
+    }
+
+    /**
+     * Dummy implementation of {@link Cube} that holds all shared dimensions
+     * in a given schema. Less error-prone than requiring all generator code
+     * to cope with a null Cube.
+     */
+    private static class SharedDimensionHolderCube implements Cube {
+        private final Schema schema;
+
+        public SharedDimensionHolderCube(Schema schema) {
+            this.schema = schema;
+        }
+
+        public Schema getSchema() {
+            return schema;
+        }
+
+        public NamedList<Dimension> getDimensions() {
+            try {
+                return schema.getSharedDimensions();
+            } catch (OlapException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public NamedList<Hierarchy> getHierarchies() {
+            final NamedList<Hierarchy> hierarchyList =
+                new ArrayNamedListImpl<Hierarchy>() {
+                    protected String getName(Hierarchy hierarchy) {
+                        return hierarchy.getName();
+                    }
+                };
+            for (Dimension dimension : getDimensions()) {
+                hierarchyList.addAll(dimension.getHierarchies());
+            }
+            return hierarchyList;
+        }
+
+        public List<Measure> getMeasures() {
+            return Collections.emptyList();
+        }
+
+        public NamedList<NamedSet> getSets() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Collection<Locale> getSupportedLocales() {
+            throw new UnsupportedOperationException();
+        }
+
+        public Member lookupMember(List<IdentifierSegment> identifierSegments)
+            throws org.olap4j.OlapException
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public List<Member> lookupMembers(
+            Set<Member.TreeOp> treeOps,
+            List<IdentifierSegment> identifierSegments)
+            throws org.olap4j.OlapException
+        {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean isDrillThroughEnabled() {
+            return false;
+        }
+
+        public String getName() {
+            return "";
+        }
+
+        public String getUniqueName() {
+            return "";
+        }
+
+        public String getCaption() {
+            return "";
+        }
+
+        public String getDescription() {
+            return "";
+        }
+
+        public boolean isVisible() {
+            return false;
         }
     }
 }

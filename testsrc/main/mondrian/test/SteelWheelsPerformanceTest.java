@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2010 Julian Hyde
+// Copyright (C) 2009-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -37,40 +37,9 @@ public class SteelWheelsPerformanceTest extends TestCase {
      * different source for your FoodMart connection.
      */
     public TestContext getTestContext() {
-        return new SteelWheelsTestContext(TestContext.instance());
+        return SteelWheelsTestCase.createContext(TestContext.instance(), null);
     }
 
-    private static class SteelWheelsTestContext extends DelegatingTestContext
-    {
-        private SteelWheelsTestContext(TestContext testContext) {
-            super(testContext);
-        }
-
-        @Override
-        public Util.PropertyList getFoodMartConnectionProperties() {
-            final Util.PropertyList propertyList =
-                Util.parseConnectString(getDefaultConnectString());
-            // Assume we are talking to MySQL. Connect to 'sampledata'
-            // database, using usual credentials ('foodmart').
-            propertyList.put(
-                RolapConnectionProperties.Jdbc.name(),
-                Util.replace(
-                    propertyList.get(RolapConnectionProperties.Jdbc.name()),
-                    "/foodmart",
-                    "/steelwheels"));
-            propertyList.put(
-                RolapConnectionProperties.Catalog.name(),
-                Util.replace(
-                    propertyList.get(RolapConnectionProperties.Catalog.name()),
-                    "FoodMart.xml",
-                    "SteelWheels.mondrian.xml"));
-            return propertyList;
-        }
-
-        public String getDefaultCubeName() {
-            return "SteelWheelsSales";
-        }
-    }
     /**
      * This test execute a specially crafted query with
      * tons of filters and sort to test the performance

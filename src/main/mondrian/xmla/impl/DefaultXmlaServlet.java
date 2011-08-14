@@ -11,44 +11,69 @@ package mondrian.xmla.impl;
 
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
-import java.util.Map;
-import java.util.List;
+import java.nio.channels.*;
+import java.util.*;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import javax.servlet.*;
+import javax.servlet.http.*;
+import javax.xml.parsers.*;
 
 import mondrian.xmla.*;
+import mondrian.xmla.Enumeration;
 
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Element;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import org.olap4j.impl.Olap4jUtil;
+import org.w3c.dom.*;
+import org.xml.sax.*;
 
 /**
  * Default implementation of XML/A servlet.
  *
  * @author Gang Chen
+ * @version $Id$
  */
 public abstract class DefaultXmlaServlet extends XmlaServlet {
 
     protected static final String nl = System.getProperty("line.separator");
 
+    /**
+     * Servlet config parameter that determines whether the xmla servlet
+     * requires authenticated sessions.
+     */
+    private static final String REQUIRE_AUTHENTICATED_SESSIONS =
+        "requireAuthenticatedSessions";
+
+    /**
+     * Simba O2X for some reason attempts to create many new xmla sessions
+     * during the same user interactions. We can mitigate that by creating a
+     * session id which is a direct hash function of the credentials supplied
+     * and the remote host IP.
+     */
+    private static final String REUSE_SESSION_IDS = "reuseSessionIds";
+
     private DocumentBuilderFactory domFactory = null;
+
+    private boolean requireAuthenticatedSessions = false;
+    private boolean reuseSessionIds = false;
+
+    /**
+     * Session properties, keyed by session ID. Currently just username and
+     * password.
+     *
+     * <p>NOTE: There is no mechanism to remove entries from this map,
+     * so it will get larger if the server is up for a long time.</p>
+     */
+    private final Map<String, SessionInfo> sessionInfos =
+        new HashMap<String, SessionInfo>();
 
     public void init(ServletConfig servletConfig) throws ServletException {
         super.init(servletConfig);
-        domFactory = getDocumentBuilderFactory();
+        this.domFactory = getDocumentBuilderFactory();
+        this.requireAuthenticatedSessions =
+            Boolean.parseBoolean(
+                servletConfig.getInitParameter(REQUIRE_AUTHENTICATED_SESSIONS));
+        this.reuseSessionIds =
+            Boolean.parseBoolean(
+                servletConfig.getInitParameter(REUSE_SESSION_IDS));
     }
 
     protected DocumentBuilderFactory getDocumentBuilderFactory() {
@@ -186,17 +211,20 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
     }
 
     /**
-     * See if there is a "mustUnderstand" header element.
-     * If there is a BeginSession element, then generate a session id and
-     * add to context Map.
-     * <p>
-     * Excel 2000 and Excel XP generate both a BeginSession, Session and
-     * EndSession mustUnderstand==1
-     * in the "urn:schemas-microsoft-com:xml-analysis" namespace
-     * Header elements and a NamespaceCompatibility mustUnderstand==0
-     * in the "http://schemas.microsoft.com/analysisservices/2003/xmla"
-     * namespace. Here we handle only the session Header elements
+     * {@inheritDoc}
      *
+     * <p>See if there is a "mustUnderstand" header element.
+     * If there is a BeginSession element, then generate a session id and
+     * add to context Map.</p>
+     *
+     * <p>Excel 2000 and Excel XP generate both a BeginSession, Session and
+     * EndSession mustUnderstand=1
+     * in the "urn:schemas-microsoft-com:xml-analysis" namespace
+     * Header elements and a NamespaceCompatibility mustUnderstand=0
+     * in the "http://schemas.microsoft.com/analysisservices/2003/xmla"
+     * namespace. Here we handle only the session Header elements.
+     *
+     * <p>We also handle the Security element.</p>
      */
     protected void handleSoapHeader(
         HttpServletResponse response,
@@ -215,93 +243,165 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
 
             NodeList nlst = hdrElem.getChildNodes();
             int nlen = nlst.getLength();
+            boolean authenticatedSession = false;
+            boolean beginSession = false;
             for (int i = 0; i < nlen; i++) {
                 Node n = nlst.item(i);
-                if (n instanceof Element) {
-                    Element e = (Element) n;
+                if (!(n instanceof Element)) {
+                    continue;
+                }
+                Element e = (Element) n;
+                String localName = e.getLocalName();
 
-                    // does the Element have a mustUnderstand attribute
-                    Attr attr = e.getAttributeNode(SOAP_MUST_UNDERSTAND_ATTR);
-                    if (attr == null) {
-                        continue;
+                if (localName.equals(XMLA_SECURITY)
+                    && NS_SOAP_SECEXT.equals(e.getNamespaceURI()))
+                {
+                    // Example:
+                    //
+                    // <Security xmlns="http://schemas.xmlsoap.org/ws/2002/04/secext">
+                    //   <UsernameToken>
+                    //     <Username>MICHELE</Username>
+                    //     <Password Type="PasswordText">ROSSI</Password>
+                    //   </UsernameToken>
+                    // </Security>
+                    // <BeginSession mustUnderstand="1"
+                    //   xmlns="urn:schemas-microsoft-com:xml-analysis" />
+                    NodeList childNodes = e.getChildNodes();
+                    Element userNameToken = (Element) childNodes.item(1);
+                    NodeList userNamePassword = userNameToken.getChildNodes();
+                    Element username = (Element) userNamePassword.item(1);
+                    Element password = (Element) userNamePassword.item(3);
+                    String userNameStr =
+                        username.getChildNodes().item(0).getNodeValue();
+                    context.put(CONTEXT_XMLA_USERNAME, userNameStr);
+                    String passwordStr = "";
+                    if (password.getChildNodes().item(0) != null) {
+                        passwordStr =
+                            password.getChildNodes().item(0).getNodeValue();
+                        context.put(CONTEXT_XMLA_PASSWORD, passwordStr);
                     }
-                    // Is its value "1"
-                    String mustUnderstandValue = attr.getValue();
-                    if ((mustUnderstandValue == null)
-                        || (!mustUnderstandValue.equals("1")))
-                    {
-                        continue;
+                    // [MROSSI] TODO we'd need to inject the HttpServletRequest
+                    // into this method context.put("remote_host",
+                    // request.getRemoteHost());
+                    if ("".equals(passwordStr) || null == passwordStr) {
+                        LOGGER.error(
+                            "Security header for user [" + userNameStr
+                            + "] provided without password");
                     }
+                    authenticatedSession = true;
+                    continue;
+                }
 
-                    // We've got a mustUnderstand attribute
+                // Make sure Element has mustUnderstand=1 attribute.
+                Attr attr = e.getAttributeNode(SOAP_MUST_UNDERSTAND_ATTR);
+                boolean mustUnderstandValue =
+                    attr != null
+                    && attr.getValue() != null
+                    && attr.getValue().equals("1");
 
-                    // Is it an XMLA element
-                    if (! NS_XMLA.equals(e.getNamespaceURI())) {
-                        continue;
+                if (!mustUnderstandValue) {
+                    continue;
+                }
+
+                // Is it an XMLA element
+                if (!NS_XMLA.equals(e.getNamespaceURI())) {
+                    continue;
+                }
+                // So, an XMLA mustUnderstand-er
+                // Do we know what to do with it
+                // We understand:
+                //    BeginSession
+                //    Session
+                //    EndSession
+
+                String sessionIdStr;
+                if (localName.equals(XMLA_BEGIN_SESSION)) {
+                    // generate SessionId
+                    sessionIdStr = generateSessionId(context);
+
+                    context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
+                    context.put(
+                        CONTEXT_XMLA_SESSION_STATE,
+                        CONTEXT_XMLA_SESSION_STATE_BEGIN);
+
+                } else if (localName.equals(XMLA_SESSION)) {
+                    // extract the SessionId attrs value and put into
+                    // context
+                    sessionIdStr = getSessionId(e, context);
+
+                    context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
+                    context.put(
+                        CONTEXT_XMLA_SESSION_STATE,
+                        CONTEXT_XMLA_SESSION_STATE_WITHIN);
+
+                } else if (localName.equals(XMLA_END_SESSION)) {
+                    // extract the SessionId attrs value and put into
+                    // context
+                    sessionIdStr = getSessionId(e, context);
+
+                    SessionInfo sessionInfo =
+                        getSessionInfo(sessionIdStr);
+                    if (sessionInfo != null) {
+                        context.put(CONTEXT_XMLA_USERNAME, sessionInfo.user);
+                        context.put(
+                            CONTEXT_XMLA_PASSWORD, sessionInfo.password);
                     }
-                    // So, an XMLA mustUnderstand-er
-                    // Do we know what to do with it
-                    // We understand:
-                    //    BeginSession
-                    //    Session
-                    //    EndSession
+                    context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
+                    context.put(
+                        CONTEXT_XMLA_SESSION_STATE,
+                        CONTEXT_XMLA_SESSION_STATE_END);
 
-                    String sessionIdStr;
-                    String localName = e.getLocalName();
-                    if (localName.equals(XMLA_BEGIN_SESSION)) {
-                        // generate SessionId
+                    // remove session info
+                    removeSessionInfo(sessionIdStr);
+                } else {
+                    // error
+                    String msg =
+                        "Invalid XML/A message: Unknown "
+                        + "\"mustUnderstand\" XMLA Header element \""
+                        + localName
+                        + "\"";
+                    throw new XmlaException(
+                        MUST_UNDERSTAND_FAULT_FC,
+                        HSH_MUST_UNDERSTAND_CODE,
+                        HSH_MUST_UNDERSTAND_FAULT_FS,
+                        new RuntimeException(msg));
+                }
 
-                        sessionIdStr = generateSessionId(context);
+                StringBuilder buf = new StringBuilder(100);
+                buf.append("<Session ");
+                buf.append(XMLA_SESSION_ID);
+                buf.append("=\"");
+                buf.append(sessionIdStr);
+                buf.append("\" ");
+                buf.append("xmlns=\"");
+                buf.append(NS_XMLA);
+                buf.append("\" />");
+                bytes = buf.toString().getBytes(encoding);
 
-                        context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
-                        context.put(
-                            CONTEXT_XMLA_SESSION_STATE,
-                            CONTEXT_XMLA_SESSION_STATE_BEGIN);
+                if (authenticatedSession) {
+                    String username =
+                        (String) context.get(CONTEXT_XMLA_USERNAME);
+                    String password =
+                        (String) context.get(CONTEXT_XMLA_PASSWORD);
+                    String sessionId =
+                        (String) context.get(CONTEXT_XMLA_SESSION_ID);
 
-                    } else if (localName.equals(XMLA_SESSION)) {
-                        // extract the SessionId attrs value and put into
-                        // context
-                        sessionIdStr = getSessionId(e, context);
-
-                        context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
-                        context.put(
-                            CONTEXT_XMLA_SESSION_STATE,
-                            CONTEXT_XMLA_SESSION_STATE_WITHIN);
-
-                    } else if (localName.equals(XMLA_END_SESSION)) {
-                        // extract the SessionId attrs value and put into
-                        // context
-                        sessionIdStr = getSessionId(e, context);
-
-                        context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
-                        context.put(
-                            CONTEXT_XMLA_SESSION_STATE,
-                            CONTEXT_XMLA_SESSION_STATE_END);
-
-                    } else {
-                        // error
-                        String msg =
-                            "Invalid XML/A message: Unknown "
-                            + "\"mustUnderstand\" XMLA Header element \""
-                            + localName
-                            + "\"";
+                    LOGGER.debug(
+                        "New authenticated session; storing credentials ["
+                        + username + "/********] for session id ["
+                        + sessionId + "]");
+                    saveSessionInfo(
+                        username,
+                        password,
+                        sessionId);
+                } else {
+                    if (beginSession && requireAuthenticatedSessions) {
                         throw new XmlaException(
-                            MUST_UNDERSTAND_FAULT_FC,
-                            HSH_MUST_UNDERSTAND_CODE,
-                            HSH_MUST_UNDERSTAND_FAULT_FS,
-                            new RuntimeException(msg));
+                            XmlaConstants.CLIENT_FAULT_FC,
+                            XmlaConstants.CHH_AUTHORIZATION_CODE,
+                            XmlaConstants.CHH_AUTHORIZATION_FAULT_FS,
+                            new Exception("Session Credentials NOT PROVIDED"));
                     }
-
-                    StringBuilder buf = new StringBuilder(100);
-                    buf.append("<Session ");
-                    buf.append(XMLA_SESSION_ID);
-                    buf.append("=\"");
-                    buf.append(sessionIdStr);
-                    buf.append("\" ");
-                    buf.append("xmlns=\"");
-                    buf.append(NS_XMLA);
-                    buf.append("\" />");
-                    bytes = buf.toString().getBytes(encoding);
                 }
             }
             responseSoapParts[0] = bytes;
@@ -316,17 +416,56 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
         }
     }
 
+    private void removeSessionInfo(String sessionIdStr) {
+        synchronized (sessionInfos) {
+            sessionInfos.remove(sessionIdStr);
+        }
+    }
+
     protected String generateSessionId(Map<String, Object> context) {
-        List<XmlaRequestCallback> callbacks = getCallbacks();
-        if (callbacks.size() > 0) {
-            // get only the first callback if it exists
-            XmlaRequestCallback callback = callbacks.get(0);
-            return callback.generateSessionId(context);
+        for (XmlaRequestCallback callback : getCallbacks()) {
+            final String sessionId = callback.generateSessionId(context);
+            if (sessionId != null) {
+                return sessionId;
+            }
+        }
+        /*
+         * Fallback to the default session ID generation algorithm.
+         */
+        if (reuseSessionIds) {
+            // This is how we use the same session id (key to retrieve a
+            // connection) for requests with the same username coming from
+            // the same remote host. The password can't be part of the
+            // string because if you use Simba and you don't tick "save
+            // password" in the login dialog then Simba only sends the
+            // password with the first session that it opens - after which
+            // it sends something like the following:
+            //
+            // <Header>
+            //   <Security xmlns="http://schemas.xmlsoap.org/ws/2002/04/secext">
+            //        <UsernameToken>
+            //            <Username>michele</Username>
+            //            <Password Type="PasswordText"/>
+            //        </UsernameToken>
+            //    </Security>
+            //    <BeginSession
+            //      xmlns="urn:schemas-microsoft-com:xml-analysis"
+            //      mustUnderstand="1"/>
+            // </Header>
+            //
+            // Note the Password element with no value in it.
+            String sessionString =
+                "session_"
+                + context.get(CONTEXT_XMLA_USERNAME)
+                + "_"
+                + "_"
+                + context.get("remote_host");
+            return Long.toString(sessionString.hashCode(), 35);
         } else {
-            // what to do here, should Mondrian generate a Session Id?
-            // TODO: Maybe Mondrian ought to generate all Session Ids and
-            // not the callback.
-            return "";
+            // Generate a semi-random new session ID.
+            return Long.toString(
+                -17L * System.nanoTime() + 11L * System.currentTimeMillis(),
+                35);
         }
     }
 
@@ -364,7 +503,7 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
     {
         try {
             String encoding = response.getCharacterEncoding();
-            Element hdrElem = requestSoapParts[0];
+            Element hdrElem = requestSoapParts[0]; // not used
             Element bodyElem = requestSoapParts[1];
             Element[] dreqs =
                 XmlaUtil.filterChildElements(bodyElem, NS_XMLA, "Discover");
@@ -388,7 +527,12 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
             // use context variable 'role_name' as this request's XML/A role
             String roleName = (String) context.get(CONTEXT_ROLE_NAME);
 
-            XmlaRequest xmlaReq = new DefaultXmlaRequest(xmlaReqElem, roleName);
+            String username = (String) context.get(CONTEXT_XMLA_USERNAME);
+            String password = (String) context.get(CONTEXT_XMLA_PASSWORD);
+            String sessionId = (String) context.get(CONTEXT_XMLA_SESSION_ID);
+            XmlaRequest xmlaReq =
+                new DefaultXmlaRequest(
+                    xmlaReqElem, roleName, username, password, sessionId);
 
             // "ResponseMimeType" may be in the context if the "Accept" HTTP
             // header was specified. But override if the SOAP request has the
@@ -695,6 +839,63 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
         }
 
         responseSoapParts[1] = osBuf.toByteArray();
+    }
+
+    private SessionInfo getSessionInfo(String sessionId) {
+        SessionInfo sessionInfo;
+        synchronized (sessionInfos) {
+            sessionInfo = sessionInfos.get(sessionId);
+        }
+        if (sessionInfo == null) {
+            LOGGER.error(
+                "No login credentials for found for session [" + sessionId
+                + "]");
+        } else {
+            LOGGER.debug(
+                "Found existing credentials for session id ["
+                + sessionId + "], username=[" + sessionInfo.user + "]");
+        }
+        return sessionInfo;
+    }
+
+    private SessionInfo saveSessionInfo(
+        String username,
+        String password,
+        String sessionId)
+    {
+        synchronized (sessionInfos) {
+            SessionInfo sessionInfo = sessionInfos.get(sessionId);
+            if (sessionInfo != null
+                && Olap4jUtil.equal(sessionInfo.user, username))
+            {
+                // Overwrite the password, but only if it is non-empty.
+                // (Sometimes Simba sends the credentials object again
+                // but without a password.)
+                if (password != null && password.length() > 0) {
+                    sessionInfo =
+                        new SessionInfo(sessionId, username, password);
+                    sessionInfos.put(sessionId, sessionInfo);
+                }
+            } else {
+                // A credentials object was stored against the provided session
+                // ID but the username didn't match, so create a new holder.
+                sessionInfo = new SessionInfo(sessionId, username, password);
+                sessionInfos.put(sessionId, sessionInfo);
+            }
+            return sessionInfo;
+        }
+    }
+
+    private static class SessionInfo {
+        final String id;
+        final String user;
+        final String password;
+
+        public SessionInfo(String id, String user, String password) {
+            this.id = id;
+            this.user = user;
+            this.password = password;
+        }
     }
 }
 
