@@ -698,7 +698,11 @@ public class RolapHierarchy extends HierarchyBase {
             subRelation = getRelation();
         }
 
-        boolean tableAdded = query.addFrom(subRelation, null, failIfExists);
+        boolean tableAdded =
+            query.addFrom(
+            subRelation,
+            table != null ? table.getAlias() : null,
+            failIfExists);
         if (tableAdded && table != null) {
             RolapStar.Condition joinCondition = table.getJoinCondition();
             if (joinCondition != null) {
