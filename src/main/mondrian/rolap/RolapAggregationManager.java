@@ -14,6 +14,7 @@ package mondrian.rolap;
 
 import mondrian.rolap.agg.*;
 import mondrian.olap.*;
+import mondrian.olap.Id.Segment;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 
 import java.util.*;
@@ -720,7 +721,16 @@ public abstract class RolapAggregationManager {
                 if (member.isMeasure()) {
                     continue;
                 }
-                final RolapCubeMember rolapMember = (RolapCubeMember) member;
+                final RolapCubeMember rolapMember;
+                if (member instanceof RolapCubeMember) {
+                    rolapMember = (RolapCubeMember) member;
+                } else {
+                    rolapMember =
+                        (RolapCubeMember) baseCube.getSchemaReader()
+                            .getMemberByUniqueName(
+                                Util.parseIdentifier(member.getUniqueName()),
+                                true);
+                }
                 final RolapCubeLevel level = rolapMember.getLevel();
                 RolapStar.Column column = level.getBaseStarKeyColumn(baseCube);
 

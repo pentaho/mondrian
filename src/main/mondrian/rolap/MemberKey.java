@@ -12,6 +12,8 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Util;
+
 /**
  * <code>MemberKey</code> todo:
  *
@@ -32,14 +34,21 @@ class MemberKey {
             return false;
         }
         MemberKey other = (MemberKey) o;
-        return (other.parent == this.parent)
-            && other.value.equals(this.value);
+        return Util.equals(this.parent, other.parent)
+            && Util.equals(this.value, other.value);
     }
     // override Object
     public int hashCode() {
-        return ((parent == null)
-            ? 0
-            : parent.hashCode() << 16) ^ value.hashCode();
+        if (parent == null && value == null) {
+            return 0;
+        }
+        if (parent == null && value != null) {
+            return (value.hashCode() << 16);
+        }
+        if (parent != null && value == null) {
+            return (parent.hashCode() << 16);
+        }
+        return (parent.hashCode() << 16) ^ value.hashCode();
     }
 }
 

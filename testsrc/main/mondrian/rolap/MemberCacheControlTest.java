@@ -10,6 +10,9 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.CacheControl.MemberEditCommand;
+import mondrian.rolap.RolapSchema.Pool;
+import mondrian.rolap.agg.AggregationManager;
 import mondrian.test.*;
 
 import java.io.PrintWriter;
@@ -30,13 +33,8 @@ import java.util.*;
  * @since Jan 2008
  */
 public class MemberCacheControlTest extends FoodMartTestCase {
-    private final boolean rolapCubeMemberCacheEnabled =
-        MondrianProperties.instance().EnableRolapCubeMemberCache.get();
 
     // TODO: add multi-thread tests.
-    // TODO: test moveMember (execute source.children and target.children before
-    //       and after)
-    // TODO: test moveMember negaitve case previous parent not in correct level
     // TODO: test set properties negative: refer to invalid property
     // TODO: test set properties negative: set prop to invalid value
     // TODO: edit a different member not known to be in cache -- will it be
@@ -48,6 +46,19 @@ public class MemberCacheControlTest extends FoodMartTestCase {
     public MemberCacheControlTest(String name) {
         super(name);
     }
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        propSaver.set(
+            MondrianProperties.instance().EnableRolapCubeMemberCache,
+            false);
+        Pool.instance().clear();
+    };
+
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        Pool.instance().clear();
+    };
 
     // ~ Utility methods ------------------------------------------------------
 
@@ -260,9 +271,9 @@ public class MemberCacheControlTest extends FoodMartTestCase {
      * Tests that member operations fail if cache is enabled.
      */
     public void testMemberOpsFailIfCacheEnabled() {
-        if (!rolapCubeMemberCacheEnabled) {
-            return;
-        }
+        propSaver.set(
+            MondrianProperties.instance().EnableRolapCubeMemberCache,
+            true);
         final TestContext tc = getTestContext();
         final Connection conn = tc.getConnection();
         final CacheControl cc = conn.getCacheControl(null);
@@ -284,10 +295,6 @@ public class MemberCacheControlTest extends FoodMartTestCase {
      * Test that edits the properties of a single leaf Member.
      */
     public void testSetPropertyCommandOnLeafMember() {
-        // This feature is not supported if cache is enabled.
-        if (rolapCubeMemberCacheEnabled) {
-            return;
-        }
         final TestContext tc = getTestContext();
         final Connection conn = tc.getConnection();
         final DiffRepository dr = getDiffRepos();
@@ -343,10 +350,6 @@ public class MemberCacheControlTest extends FoodMartTestCase {
      * Dimension), but leaves grouping unchanged, so results not changed.
      */
     public void testSetPropertyCommandOnNonLeafMember() {
-        // This feature is not supported if cache is enabled.
-        if (rolapCubeMemberCacheEnabled) {
-            return;
-        }
         final TestContext tc = getTestContext();
         final Connection conn = tc.getConnection();
         final DiffRepository dr = getDiffRepos();
@@ -411,10 +414,6 @@ public class MemberCacheControlTest extends FoodMartTestCase {
     }
 
     public void testAddCommand() {
-        // This feature is not supported if cache is enabled.
-        if (rolapCubeMemberCacheEnabled) {
-            return;
-        }
         final TestContext tc = getTestContext();
         final Connection conn = tc.getConnection();
         final CacheControl cc = conn.getCacheControl(null);
@@ -435,6 +434,19 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                 berkeleyMember.getLevel().getChildLevel(),
                 "Store 987",
                 null);
+        final RolapBaseCubeMeasure unitSalesCubeMember =
+            (RolapBaseCubeMeasure) findMember(
+                tc, "Sales", "Measures", "Unit Sales");
+        final RolapCubeMember yearCubeMember =
+            (RolapCubeMember) findMember(
+                tc, "Sales", "Time", "Year", "1997");
+        final Member[] cacheRegionMembers =
+            new Member[] {
+                unitSalesCubeMember,
+                caCubeMember,
+                yearCubeMember
+            };
+
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
             "[Retail].[CA].[Alameda]\n"
@@ -448,6 +460,15 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         List<RolapMember> caChildren =
             memberCache.getChildrenFromCache(caMember, null);
         assertEquals(5, caChildren.size());
+
+        // Load cell data and check it is in cache
+        executeQuery(
+            "select {[Measures].[Unit Sales]} on columns, {[Retail].[CA]} on rows from [Sales]");
+        assertEquals(
+            Double.valueOf("74748"),
+            AggregationManager.instance()
+                .getCellFromCache(
+                    AggregationManager.makeRequest(cacheRegionMembers)));
 
         // Now tell the cache that [CA].[Berkeley] and
         // [CA].[Berkeley].[Store 987] are new.
@@ -457,74 +478,82 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                 cc.createAddCommand(store987Member));
         cc.execute(command);
 
-        // Make sure that the new members' parents have been removed from the
-        // cache.
-        caChildren =
-            memberCache.getChildrenFromCache(caMember, null);
-        assertNull(caChildren);
         final List<RolapMember> berkeleyChildren =
             memberCache.getChildrenFromCache(berkeleyMember, null);
-        assertNull(berkeleyChildren);
+        assertEquals(1, berkeleyChildren.size());
 
-        // 50% of the time run a query that will cause the root members to be
-        // in the cache. They may or may not be in the cache in a few lines.
-        final String msg;
-        if (new Random().nextBoolean()) {
-            tc.assertQueryReturns(
-                "select [Retail].Children on 0 from [Sales]",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Retail].[BC]}\n"
-                + "{[Retail].[CA]}\n"
-                + "{[Retail].[DF]}\n"
-                + "{[Retail].[Guerrero]}\n"
-                + "{[Retail].[Jalisco]}\n"
-                + "{[Retail].[OR]}\n"
-                + "{[Retail].[Veracruz]}\n"
-                + "{[Retail].[WA]}\n"
-                + "{[Retail].[Yucatan]}\n"
-                + "{[Retail].[Zacatecas]}\n"
-                + "Row #0: \n"
-                + "Row #0: 74,748\n"
-                + "Row #0: \n"
-                + "Row #0: \n"
-                + "Row #0: \n"
-                + "Row #0: 67,659\n"
-                + "Row #0: \n"
-                + "Row #0: 124,366\n"
-                + "Row #0: \n"
-                + "Row #0: \n");
-            msg = "ran query";
-        } else {
-            msg = "did not run query";
-        }
+        // test that cells have been removed
+        assertNull(
+            AggregationManager.instance().getCellFromCache(
+                AggregationManager.makeRequest(cacheRegionMembers)));
+
+        tc.assertAxisReturns(
+            "[Retail].[CA].Children",
+            "[Retail].[CA].[Alameda]\n"
+            + "[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[CA].[San Diego]\n"
+            + "[Retail].[CA].[San Francisco]\n"
+            + "[Retail].[CA].[Berkeley]");
+        tc.assertAxisReturns(
+            "[Retail].[CA].[Berkeley].Children",
+            "[Retail].[CA].[Berkeley].[Store 987]");
+
+        tc.assertQueryReturns(
+            "select [Retail].Children on 0 from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Retail].[BC]}\n"
+            + "{[Retail].[CA]}\n"
+            + "{[Retail].[DF]}\n"
+            + "{[Retail].[Guerrero]}\n"
+            + "{[Retail].[Jalisco]}\n"
+            + "{[Retail].[OR]}\n"
+            + "{[Retail].[Veracruz]}\n"
+            + "{[Retail].[WA]}\n"
+            + "{[Retail].[Yucatan]}\n"
+            + "{[Retail].[Zacatecas]}\n"
+            + "Row #0: \n"
+            + "Row #0: 74,748\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 67,659\n"
+            + "Row #0: \n"
+            + "Row #0: 124,366\n"
+            + "Row #0: \n"
+            + "Row #0: \n");
 
         List<RolapMember> rootChildren =
             memberCache.getChildrenFromCache(rootMember, null);
         if (rootChildren != null) { // might be null due to gc
             assertEquals(
-                msg + ", got " + rootChildren, 10, rootChildren.size());
+                10, rootChildren.size());
         }
-
-        // TODO test that cells have been removed
     }
 
     public void testDeleteCommand() {
-        // This feature is not supported if cache is enabled.
-        if (rolapCubeMemberCacheEnabled) {
-            return;
-        }
         final TestContext tc = getTestContext();
         final Connection conn = tc.getConnection();
         final CacheControl cc = conn.getCacheControl(null);
-        final RolapCubeMember alamedaCubeMember =
+        final RolapCubeMember sfCubeMember =
             (RolapCubeMember) findMember(
-                tc, "Sales", "Retail", "CA", "Alameda");
-        final RolapMember alamedaMember = alamedaCubeMember.member;
-        final RolapMember caMember = alamedaMember.getParentMember();
-        final RolapMember rootMember = caMember.getParentMember();
+                tc, "Sales", "Retail", "CA", "San Francisco");
+        final RolapMember caMember = sfCubeMember.member.getParentMember();
         final RolapHierarchy hierarchy = caMember.getHierarchy();
+        final RolapBaseCubeMeasure unitSalesCubeMember =
+            (RolapBaseCubeMeasure) findMember(
+                tc, "Sales", "Measures", "Unit Sales");
+        final RolapCubeMember yearCubeMember =
+            (RolapCubeMember) findMember(
+                tc, "Sales", "Time", "Year", "1997");
+        final Member[] cacheRegionMembers =
+            new Member[] {
+                unitSalesCubeMember,
+                sfCubeMember,
+                yearCubeMember
+            };
 
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
@@ -533,6 +562,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             + "[Retail].[CA].[Los Angeles]\n"
             + "[Retail].[CA].[San Diego]\n"
             + "[Retail].[CA].[San Francisco]");
+
         final MemberReader memberReader = hierarchy.getMemberReader();
         final MemberCache memberCache =
             ((SmartMemberReader) memberReader).getMemberCache();
@@ -540,26 +570,197 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             memberCache.getChildrenFromCache(caMember, null);
         assertEquals(5, caChildren.size());
 
-        // Now tell the cache that [CA].[Alameda] has been removed.
+        // Load cell data and check it is in cache
+        executeQuery(
+            "select {[Measures].[Unit Sales]} on columns, {[Retail].[CA].[Alameda]} on rows from [Sales]");
+        assertEquals(
+            Double.valueOf("2117"),
+            AggregationManager.instance()
+                .getCellFromCache(
+                    AggregationManager.makeRequest(cacheRegionMembers)));
+
+        // Now tell the cache that [CA].[San Francisco] has been removed.
         final CacheControl.MemberEditCommand command =
-            cc.createDeleteCommand(alamedaMember);
+            cc.createDeleteCommand(sfCubeMember);
         cc.execute(command);
 
-        // Make sure that the children of [CA] are either removed from the
-        // cache or reduced from 5 to 4.
-        caChildren =
-            memberCache.getChildrenFromCache(caMember, null);
-        if (caChildren != null) {
-            assertEquals(4, caChildren.size());
+        // Children of CA should be 4
+        assertEquals(
+            4,
+            memberCache.getChildrenFromCache(caMember, null).size());
+
+        // test that cells have been removed
+        assertNull(
+            AggregationManager.instance().getCellFromCache(
+                AggregationManager.makeRequest(cacheRegionMembers)));
+
+        // The list of children should be updated.
+        tc.assertAxisReturns(
+            "[Retail].[CA].Children",
+            "[Retail].[CA].[Alameda]\n"
+            + "[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[CA].[San Diego]");
+    }
+
+    public void testMoveCommand() {
+        final TestContext tc = getTestContext();
+        final Connection conn = tc.getConnection();
+        final CacheControl cc = conn.getCacheControl(null);
+        final RolapCubeMember caCubeMember =
+            (RolapCubeMember) findMember(tc, "Sales", "Retail", "CA");
+        final RolapMember caMember = caCubeMember.member;
+        final RolapHierarchy hierarchy = caMember.getHierarchy();
+        final MemberReader memberReader = hierarchy.getMemberReader();
+        final MemberCache memberCache =
+            ((SmartMemberReader) memberReader).getMemberCache();
+        final RolapMember alamedaMember =
+            (RolapMember) hierarchy.createMember(
+                caMember,
+                caMember.getLevel().getChildLevel(),
+                "Alameda",
+                null);
+        final RolapMember sfMember =
+            (RolapMember) hierarchy.createMember(
+                caMember,
+                caMember.getLevel().getChildLevel(),
+                "San Francisco",
+                null);
+        final RolapMember storeMember =
+            (RolapMember) hierarchy.createMember(
+                sfMember,
+                sfMember.getLevel().getChildLevel(),
+                "Store 14",
+                null);
+
+        // test axis contents
+        tc.assertAxisReturns(
+            "[Retail].[CA].Children",
+            "[Retail].[CA].[Alameda]\n"
+            + "[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[CA].[San Diego]\n"
+            + "[Retail].[CA].[San Francisco]");
+        tc.assertAxisReturns(
+            "[Retail].[CA].[Alameda].Children",
+            "[Retail].[CA].[Alameda].[HQ]");
+        tc.assertAxisReturns(
+            "[Retail].[CA].[San Francisco].Children",
+            "[Retail].[CA].[San Francisco].[Store 14]");
+
+        List<RolapMember> sfChildren =
+            memberCache.getChildrenFromCache(sfMember, null);
+        assertEquals(1, sfChildren.size());
+        List<RolapMember> alamedaChildren =
+            memberCache.getChildrenFromCache(alamedaMember, null);
+        assertEquals(1, alamedaChildren.size());
+        assertTrue(
+            storeMember.getParentMember().equals(sfMember));
+
+        // Now tell the cache that Store 14 moved to Alameda
+        final MemberEditCommand command =
+            cc.createMoveCommand(storeMember, alamedaMember);
+        cc.execute(command);
+
+        // The list of SF children should contain 0 elements
+        assertEquals(
+            0,
+            memberCache.getChildrenFromCache(sfMember, null).size());
+
+        // Check Alameda's children. It should be null as the parent's list
+        // should be cleared.
+        alamedaChildren =
+            memberCache.getChildrenFromCache(alamedaMember, null);
+        assertEquals(2, alamedaChildren.size());
+
+        // test axis contents
+        tc.assertAxisReturns(
+            "[Retail].[CA].[San Francisco].Children",
+            "");
+        tc.assertAxisReturns(
+            "[Retail].[CA].[Alameda].Children",
+            "[Retail].[CA].[Alameda].[HQ]\n"
+            + "[Retail].[CA].[Alameda].[Store 14]");
+
+        // Test parent object
+        assertTrue(
+            storeMember.getParentMember().equals(alamedaMember));
+    }
+
+    public void testMoveFailBadLevel() {
+        final TestContext tc = getTestContext();
+        final Connection conn = tc.getConnection();
+        final CacheControl cc = conn.getCacheControl(null);
+        final RolapCubeMember caCubeMember =
+            (RolapCubeMember) findMember(tc, "Sales", "Retail", "CA");
+        final RolapMember caMember = caCubeMember.member;
+        final RolapHierarchy hierarchy = caMember.getHierarchy();
+        final MemberReader memberReader = hierarchy.getMemberReader();
+        final MemberCache memberCache =
+            ((SmartMemberReader) memberReader).getMemberCache();
+        final RolapMember sfMember =
+            (RolapMember) hierarchy.createMember(
+                caMember,
+                caMember.getLevel().getChildLevel(),
+                "San Francisco",
+                null);
+        final RolapMember storeMember =
+            (RolapMember) hierarchy.createMember(
+                sfMember,
+                sfMember.getLevel().getChildLevel(),
+                "Store 14",
+                null);
+
+        // test axis contents
+        tc.assertAxisReturns(
+            "[Retail].[CA].Children",
+            "[Retail].[CA].[Alameda]\n"
+            + "[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[CA].[San Diego]\n"
+            + "[Retail].[CA].[San Francisco]");
+        tc.assertAxisReturns(
+            "[Retail].[CA].[San Francisco].Children",
+            "[Retail].[CA].[San Francisco].[Store 14]");
+
+        List<RolapMember> sfChildren =
+            memberCache.getChildrenFromCache(sfMember, null);
+        assertEquals(1, sfChildren.size());
+        assertTrue(
+            storeMember.getParentMember().equals(sfMember));
+
+        // Now tell the cache that Store 14 moved to CA
+        final MemberEditCommand command =
+            cc.createMoveCommand(storeMember, caMember);
+        try {
+            cc.execute(command);
+            fail("Should have failed due to improper level");
+        } catch (IllegalArgumentException e) {
+            assertEquals(
+                "new parent belongs to different level than old",
+                e.getMessage());
         }
 
-        List<RolapMember> rootChildren =
-            memberCache.getChildrenFromCache(rootMember, null);
-        if (rootChildren != null) {
-            assertEquals(10, rootChildren.size());
-        }
+        // The list of SF children should still contain 1 element
+        assertEquals(
+            1,
+            memberCache.getChildrenFromCache(sfMember, null).size());
 
-        // TODO test that cells have been removed
+        // test axis contents. should not have been modified
+        tc.assertAxisReturns(
+            "[Retail].[CA].[San Francisco].Children",
+            "[Retail].[CA].[San Francisco].[Store 14]");
+        tc.assertAxisReturns(
+            "[Retail].[CA].Children",
+            "[Retail].[CA].[Alameda]\n"
+            + "[Retail].[CA].[Beverly Hills]\n"
+            + "[Retail].[CA].[Los Angeles]\n"
+            + "[Retail].[CA].[San Diego]\n"
+            + "[Retail].[CA].[San Francisco]");
+
+        // Test parent object. should be the same
+        assertTrue(
+            storeMember.getParentMember().equals(sfMember));
     }
 
     /**
@@ -567,10 +768,6 @@ public class MemberCacheControlTest extends FoodMartTestCase {
      * add/delete/move members in parent-child hierarchies.
      */
     public void testAddCommandNegative() {
-        // This feature is not supported if cache is enabled.
-        if (rolapCubeMemberCacheEnabled) {
-            return;
-        }
         final TestContext tc = getTestContext();
         final Connection conn = tc.getConnection();
         final CacheControl cc = conn.getCacheControl(null);

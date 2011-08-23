@@ -307,23 +307,29 @@ encompasses the whole cube. To flush all cubes in the schema, use a loop:</p>
 
 <h4>4.1. Flushing the dimension cache<a name="Flushing_the_dimension_cache">&nbsp;</a></h4>
 
-<p>An application might also want to make modifications to a dimension table. Mondrian does not currently allow an application to control the cache of members, but we intend to do so in the future. Here are some notes which will allow this to be implemented.</p> 
+<p>The Cache Control API allows Mondrian integrators to modify the cache of dimension members. The main way that Mondrian caches dimensions in memory is via a cache of member children. That is to say, for a given member, the cache holds the list of all children of that member. If a dimension table row was inserted or deleted, or if its key attributes are updated, its parent's child list would need to be modified, and perhaps other ancestors too. For example, if a customer Zachary William is added in city Oakland, the children list of Oakland will need to be flushed. If Zachary is the first customer in Oakland, California's children list will need to be flushed to accommodate the new member Oakland.</p>
 
-<p>The main way that Mondrian caches dimensions in memory is via a cache of member children. That is to say, for a given member, the cache holds the list of all children of that member.</p>
+<p>To enable control of the dimensions cache via the Cache Control API, one must first set <code>mondrian.rolap.EnableRolapCubeMemberCache</code> to <code>false</code>.</p>
 
-<p>If a dimension table row was inserted or deleted, or if its key attributes are updated, its parent's child list would need to be modified, and perhaps other ancestors too. For example, if a customer Zachary William is added in city Oakland, the children list of Oakland will need to be flushed. If Zachary is the first customer in Oakland, California's children list will need to be flushed to accommodate the new member Oakland.</p>
+<p>The methods of the Cache Control API related to the dimensions cache are the following:</p>
 
-<p>There are a few other ways that members can be cached:<ul>
-
-<li>Each hierarchy has a list of root members, an 'all' member (which may or not be visible), and a default member (which may or may not be the 'all' member).</li>
-
-<li>Formulas defined against a cube may reference members.</li>
-
-<li>All other references to members are ephemeral: they are built up during the execution of a query, and are discarded when the query has finished executing and its result set is forgotten.</li>
-
+<p>
+<ul>
+<li>createMemberSet(Member, boolean)</li>
+<li>createMemberSet(boolean, Member, boolean, Member, boolean)</li>
+<li>createAddCommand(Member)</li>
+<li>createDeleteCommand(Member)</li>
+<li>createDeleteCommand(mondrian.olap.CacheControl.MemberSet)</li>
+<li>createCompoundCommand(java.util.List)</li>
+<li>createCompoundCommand(mondrian.olap.CacheControl.MemberEditCommand[])</li>
+<li>createSetPropertyCommand(Member, String, Object)</li>
+<li>createSetPropertyCommand(mondrian.olap.CacheControl.MemberSet,java.util.Map)</li>
+<li>flush(mondrian.olap.CacheControl.MemberSet)</li>
+<li>execute(mondrian.olap.CacheControl.MemberEditCommand)</li>
 </ul>
+</p>
 
-<p>Possible APIs might be <code>flushMember(Member, boolean children)</code> or <code>flushMembers(CellRegion)</code>.</p>
+<p>It is important to note that modifying the dimension cache will, as a side effect, also flush the corresponding regions within the cell cache.</p>
 
 <h4>4.2. Cache consistency<a name="Cache_consistency">&nbsp;</a></h4>
 
@@ -412,10 +418,10 @@ are all deprecated and are superseded by the CacheControl methods
 
 <hr noshade size="1"/>
 <p>
-    Author: Julian Hyde; last modified by Julian Hyde, March 2008.<br/>
+    Author: Julian Hyde; last modified by Luc Boudreau, August 2011.<br/>
     Version: $Id$
     (<a href="http://p4web.eigenbase.org/open/mondrian/doc/cache_control.html?ac=22">log</a>)<br/>
-    Copyright (C) 2006-2009 Julian Hyde
+    Copyright (C) 2006-2011 Julian Hyde and others
 </p>
 
 <br />

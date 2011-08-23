@@ -11,11 +11,17 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
 import mondrian.olap.CacheControl;
+import mondrian.olap.Id.Quoting;
 
 import javax.sql.DataSource;
 import java.util.*;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
 
 import org.eigenbase.util.property.BooleanProperty;
 
@@ -430,7 +436,9 @@ public class CacheControlImpl implements CacheControl {
         Member upperMember,
         boolean descendants)
     {
-        // TODO check that upperMember & lowerMember are in same Level
+        if (upperMember != null && lowerMember != null) {
+            assert upperMember.getLevel().equals(lowerMember.getLevel());
+        }
         if (lowerMember == null) {
             lowerInclusive = false;
         }
@@ -642,15 +650,78 @@ public class CacheControlImpl implements CacheControl {
                 + "property " + prop.getPath() + " is false");
         }
         synchronized (MEMBER_CACHE_LOCK) {
+            // Make sure that a Locus is in the Execution stack,
+            // since some operations might require DB access
+            Execution execution;
+            try {
+                execution =
+                    Locus.peek().execution;
+            } catch (EmptyStackException e) {
+                execution = Execution.NONE;
+            }
+            Locus.push(
+                new Locus(
+                    execution,
+                    "CacheControlImpl.execute",
+                    "when modifying the member cache."));
+            // Execute the command
             final List<CellRegion> cellRegionList =
                 new ArrayList<CellRegion>();
             ((MemberEditCommandPlus) cmd).execute(cellRegionList);
-            if (false) {
-                // TODO: Flushing regions currently fails with the error
-                // "Region of cells to be flushed must contain measures". This
-                // method should receive a cube (or cubes) whose measures to
-                // flush.
-                flushRegionList(cellRegionList);
+
+            // Flush the cells touched by the regions
+            for (CellRegion memberRegion : cellRegionList) {
+                // Iterate over the cubes, create a cross region with
+                // its measures, and flush the data cells.
+                // It is possible that some regions don't intersect
+                // with a cube. We will intercept the exceptions and
+                // skip to the next cube if necessary.
+                for (Cube cube
+                    : memberRegion.getDimensionality().get(0)
+                        .getSchema().getCubes())
+                {
+                    try {
+                        final List<CellRegionImpl> crossList =
+                            new ArrayList<CellRegionImpl>();
+                        crossList.add(
+                            (CellRegionImpl) createMeasuresRegion(cube));
+                        crossList.add((CellRegionImpl) memberRegion);
+                        final CellRegion crossRegion =
+                            new CrossjoinCellRegion(crossList);
+                        flush(crossRegion);
+                    } catch (UndeclaredThrowableException e) {
+                        if (e.getCause()
+                            instanceof InvocationTargetException)
+                        {
+                            final InvocationTargetException ite =
+                                (InvocationTargetException)e.getCause();
+                            if (ite.getTargetException()
+                                instanceof MondrianException)
+                            {
+                                final MondrianException me =
+                                    (MondrianException)
+                                        ite.getTargetException();
+                                if (me.getMessage()
+                                    .matches(
+                                        "^Mondrian Error:Member "
+                                        + "'\\[.*\\]' not found$"))
+                                {
+                                    continue;
+                                }
+                            }
+                        }
+                        throw new MondrianException(e);
+                    } catch (MondrianException e) {
+                        if (e.getMessage()
+                            .matches(
+                                "^Mondrian Error:Member "
+                                + "'\\[.*\\]' not found$"))
+                        {
+                            continue;
+                        }
+                        throw e;
+                    }
+                }
             }
         }
     }
@@ -1311,7 +1382,7 @@ public class CacheControlImpl implements CacheControl {
         extends MemberSetVisitorImpl
         implements MemberEditCommandPlus
     {
-        private final MemberSetPlus set;
+        private final MemberSetPlus set;;
         private List<CellRegion> cellRegionList;
 
         DeleteMemberCommand(MemberSetPlus set) {
@@ -1371,8 +1442,10 @@ public class CacheControlImpl implements CacheControl {
         }
 
         public void execute(final List<CellRegion> cellRegionList) {
-            deleteMember(member, member.getParentMember(), cellRegionList);
+            final RolapMember oldParent = member.getParentMember();
             ((RolapMemberBase) member).setParentMember(newParent);
+            deleteMember(member, oldParent, cellRegionList);
+            ((RolapMemberBase) member).setUniqueName(member.getKey());
             addMember(member, member.getParentMember(), cellRegionList);
         }
     }
@@ -1444,15 +1517,41 @@ public class CacheControlImpl implements CacheControl {
         RolapMember previousParent,
         List<CellRegion> cellRegionList)
     {
-        // Remove member from cache,
-        // and that will remove the parent's children list.
         final MemberCache memberCache = getMemberCache(member);
+        final MemberChildrenConstraint memberConstraint =
+            new ChildByNameConstraint(
+                new Id.Segment(member.getName(), Quoting.QUOTED));
+
+        // Remove the member from its parent's lists. First try the
+        // unconstrained cache.
+        List<RolapMember> childrenList =
+            memberCache.getChildrenFromCache(
+                previousParent,
+                DefaultMemberChildrenConstraint.instance());
+        if (childrenList != null) {
+            // A list existed before. Let's splice it.
+            childrenList.remove(member);
+            memberCache.putChildren(
+                previousParent,
+                DefaultMemberChildrenConstraint.instance(),
+                childrenList);
+        }
+
+        // Now make sure there is no constrained cache entry
+        // for this member's parent.
+        memberCache.putChildren(
+            previousParent,
+            memberConstraint,
+            null);
+
+        // Remove the member itself. The MemberCacheHelper takes care of
+        // removing the member's children as well.
         final Object key =
             memberCache.makeKey(previousParent, member.getKey());
         memberCache.removeMember(key);
 
-        // Cells for member and its ancestors are now invalid. It's sufficient
-        // to flush the member.
+        // Cells for member and its ancestors are now invalid.
+        // It's sufficient to flush the member.
         cellRegionList.add(createMemberRegion(member, true));
     }
 
@@ -1468,13 +1567,55 @@ public class CacheControlImpl implements CacheControl {
         final RolapMember parent,
         List<CellRegion> cellRegionList)
     {
-        // Parent's children are now invalid. Remove parent from cache,
-        // and that will remove the parent's children list. Children lists
-        // of its existing children can remain in cache.
         final MemberCache memberCache = getMemberCache(member);
-        final Object parentKey =
-            memberCache.makeKey(parent.getParentMember(), parent.getKey());
-        memberCache.removeMember(parentKey);
+        final MemberChildrenConstraint memberConstraint =
+            new ChildByNameConstraint(
+                new Id.Segment(member.getName(), Quoting.QUOTED));
+
+        // First check if there is already a list in cache
+        // constrained by the member name.
+        List<RolapMember> childrenList =
+            memberCache.getChildrenFromCache(
+                parent,
+                memberConstraint);
+        if (childrenList == null) {
+            // There was no constrained cache hit. Let's create one.
+            final List<RolapMember> constrainedList =
+                new ArrayList<RolapMember>();
+            constrainedList.add(member);
+            memberCache.putChildren(
+                parent,
+                memberConstraint,
+                constrainedList);
+        }
+
+        // Now check if an unconstrained cached list exists.
+        childrenList =
+            memberCache.getChildrenFromCache(
+                parent,
+                DefaultMemberChildrenConstraint.instance());
+        if (childrenList == null) {
+            // There was no unconstrained cache hit. Let's create one.
+            final List<RolapMember> unconstrainedList =
+                new ArrayList<RolapMember>();
+            unconstrainedList.add(member);
+            memberCache.putChildren(
+                parent,
+                DefaultMemberChildrenConstraint.instance(),
+                unconstrainedList);
+        } else {
+            // A list existed before. Let's append to it.
+            childrenList.add(member);
+            memberCache.putChildren(
+                parent,
+                DefaultMemberChildrenConstraint.instance(),
+                childrenList);
+        }
+
+        // Now add the member itself into cache
+        final Object memberKey =
+            memberCache.makeKey(member.getParentMember(), member.getKey());
+        memberCache.putMember(memberKey, member);
 
         // Cells for all of member's ancestors are now invalid. It's sufficient
         // to flush its parent.
@@ -1491,8 +1632,10 @@ public class CacheControlImpl implements CacheControl {
         RolapMember member,
         List<CellRegion> cellRegionList)
     {
-        // TODO
-
+        final MemberCache memberCache = getMemberCache(member);
+        final Object key =
+            memberCache.makeKey(member.getParentMember(), member.getKey());
+        memberCache.removeMember(key);
         cellRegionList.add(createMemberRegion(member, false));
     }
 }
