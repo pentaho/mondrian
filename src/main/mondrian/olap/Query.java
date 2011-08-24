@@ -1452,7 +1452,10 @@ public class Query extends QueryPart {
      * perform access control; all calculated members defined in a query are
      * visible to everyone.
      */
-    private static class QuerySchemaReader extends DelegatingSchemaReader {
+    private static class QuerySchemaReader
+        extends DelegatingSchemaReader
+        implements NameResolver.Namespace
+    {
         private final Query query;
 
         public QuerySchemaReader(SchemaReader cubeSchemaReader, Query query) {
@@ -1608,7 +1611,8 @@ public class Query extends QueryPart {
             return mdxElement;
         }
 
-        public OlapElement lookupCompound(
+        @Override
+        public OlapElement lookupCompoundInternal(
             OlapElement parent,
             List<Id.Segment> names,
             boolean failIfNotFound,
@@ -1645,7 +1649,7 @@ public class Query extends QueryPart {
                 }
             }
             // Then delegate to the next reader.
-            OlapElement olapElement = super.lookupCompound(
+            OlapElement olapElement = super.lookupCompoundInternal(
                 parent, names, failIfNotFound, category, matchType);
             if (olapElement instanceof Member) {
                 Member member = (Member) olapElement;
@@ -1692,6 +1696,37 @@ public class Query extends QueryPart {
 
             return super.getParameter(name);
         }
+
+        public OlapElement lookupChild(
+            OlapElement parent,
+            IdentifierSegment segment,
+            MatchType matchType)
+        {
+            // ignore matchType
+            return lookupChild(parent, segment);
+        }
+
+        public OlapElement lookupChild(
+            OlapElement parent,
+            IdentifierSegment segment)
+        {
+            // Only look for calculated members and named sets defined in the
+            // query.
+            for (Formula formula : query.getFormulas()) {
+                if (NameResolver.matches(formula, parent, segment)) {
+                    return formula.getElement();
+                }
+            }
+            return null;
+        }
+
+        public List<NameResolver.Namespace> getNamespaces() {
+            final List<NameResolver.Namespace> list =
+                new ArrayList<NameResolver.Namespace>();
+            list.add(this);
+            list.addAll(super.getNamespaces());
+            return list;
+        }
     }
 
     private static class ConnectionParameterImpl
@@ -1720,8 +1755,9 @@ public class Query extends QueryPart {
      * the majority of the code in {@link mondrian.olap.ValidatorImpl}, the
      * dependencies between Validator and Query are explicit.
      */
-    private class QueryValidator extends ValidatorImpl {
+    private static class QueryValidator extends ValidatorImpl {
         private final boolean alwaysResolveFunDef;
+        private Query query;
         private final SchemaReader schemaReader;
 
         /**
@@ -1737,6 +1773,7 @@ public class Query extends QueryPart {
         {
             super(functionTable);
             this.alwaysResolveFunDef = alwaysResolveFunDef;
+            this.query = query;
             this.schemaReader = new ScopedSchemaReader(this, true);
         }
 
@@ -1746,12 +1783,12 @@ public class Query extends QueryPart {
 
         protected void defineParameter(Parameter param) {
             final String name = param.getName();
-            parameters.add(param);
-            parametersByName.put(name, param);
+            query.parameters.add(param);
+            query.parametersByName.put(name, param);
         }
 
         public Query getQuery() {
-            return Query.this;
+            return query;
         }
 
         public boolean alwaysResolveFunDef() {
@@ -1769,7 +1806,10 @@ public class Query extends QueryPart {
      * visible. The scope is represented by the expression stack inside the
      * validator.
      */
-    private static class ScopedSchemaReader extends DelegatingSchemaReader {
+    private static class ScopedSchemaReader
+        extends DelegatingSchemaReader
+        implements NameResolver.Namespace
+    {
         private final QueryValidator queryValidator;
         private final boolean accessControlled;
 
@@ -1796,7 +1836,16 @@ public class Query extends QueryPart {
             return new ScopedSchemaReader(queryValidator, false);
         }
 
-        public OlapElement lookupCompound(
+        public List<NameResolver.Namespace> getNamespaces() {
+            final List<NameResolver.Namespace> list =
+                new ArrayList<NameResolver.Namespace>();
+            list.add(this);
+            list.addAll(super.getNamespaces());
+            return list;
+        }
+
+        @Override
+        public OlapElement lookupCompoundInternal(
             OlapElement parent,
             final List<Id.Segment> names,
             boolean failIfNotFound,
@@ -1813,8 +1862,29 @@ public class Query extends QueryPart {
                     return namedSet;
                 }
             }
-            return super.lookupCompound(
+            return super.lookupCompoundInternal(
                 parent, names, failIfNotFound, category, matchType);
+        }
+
+        public OlapElement lookupChild(
+            OlapElement parent,
+            IdentifierSegment segment,
+            MatchType matchType)
+        {
+            // ignore matchType
+            return lookupChild(parent, segment);
+        }
+
+        public OlapElement lookupChild(
+            OlapElement parent,
+            IdentifierSegment segment)
+        {
+            if (!(parent instanceof Cube)) {
+                return null;
+            }
+            return queryValidator.getQuery().lookupScopedNamedSet(
+                Collections.singletonList(Util.convert(segment)),
+                queryValidator.getScopeStack());
         }
     }
 

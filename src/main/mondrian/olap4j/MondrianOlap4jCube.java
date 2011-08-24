@@ -9,16 +9,18 @@
 */
 package mondrian.olap4j;
 
-import mondrian.olap.Id;
-import mondrian.olap.OlapElement;
-import mondrian.olap.Role;
-import mondrian.olap.SchemaReader;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 
 import org.olap4j.mdx.IdentifierSegment;
 import org.olap4j.metadata.*;
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
+import org.olap4j.metadata.Cube;
+import org.olap4j.metadata.Dimension;
+import org.olap4j.metadata.Hierarchy;
+import org.olap4j.metadata.Member;
+import org.olap4j.metadata.NamedSet;
+import org.olap4j.metadata.Schema;
 
 import java.util.*;
 
@@ -157,7 +159,7 @@ class MondrianOlap4jCube implements Cube, Named {
         final List<mondrian.olap.Id.Segment> segmentList =
             new ArrayList<mondrian.olap.Id.Segment>();
         for (IdentifierSegment namePart : nameParts) {
-            segmentList.add(fromOlap4j(namePart));
+            segmentList.add(Util.convert(namePart));
         }
         final mondrian.olap.Member member =
             schemaReader.getMemberByUniqueName(segmentList, false);
@@ -167,19 +169,6 @@ class MondrianOlap4jCube implements Cube, Named {
 
         return olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
             .olap4jConnection.toOlap4j(member);
-    }
-
-    private Id.Segment fromOlap4j(IdentifierSegment segment) {
-        switch (segment.getQuoting()) {
-        case KEY:
-            return new Id.Segment(segment.getName(), Id.Quoting.KEY);
-        case QUOTED:
-            return new Id.Segment(segment.getName(), Id.Quoting.QUOTED);
-        case UNQUOTED:
-            return new Id.Segment(segment.getName(), Id.Quoting.UNQUOTED);
-        default:
-            throw Util.unexpected(segment.getQuoting());
-        }
     }
 
     public List<Member> lookupMembers(

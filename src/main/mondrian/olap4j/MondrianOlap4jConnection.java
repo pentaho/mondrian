@@ -14,7 +14,6 @@ import mondrian.olap.*;
 import mondrian.olap.Member;
 import mondrian.rolap.*;
 
-import mondrian.util.*;
 import mondrian.xmla.XmlaHandler;
 import org.olap4j.Axis;
 import org.olap4j.Cell;
@@ -82,7 +81,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     final Factory factory;
     final MondrianOlap4jDriver driver;
-    private Locale locale;
     private String roleName;
     private boolean autoCommit;
     private boolean readOnly;
@@ -1013,23 +1011,11 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
             return list;
         }
 
-        private IdentifierNode toOlap4j(Id id) {
-            List<IdentifierSegment> list =
-                new ArrayList<IdentifierSegment>();
-            for (Id.Segment segment : id.getSegments()) {
-                list.add(
-                    new NameSegment(
-                        null,
-                        segment.name,
-                        toOlap4j(segment.quoting)));
-            }
+        private static IdentifierNode toOlap4j(Id id) {
+            List<IdentifierSegment> list = Util.toOlap4j(id.getSegments());
             return new IdentifierNode(
                 list.toArray(
                     new IdentifierSegment[list.size()]));
-        }
-
-        private Quoting toOlap4j(Id.Quoting quoting) {
-            return Quoting.valueOf(quoting.name());
         }
     }
 

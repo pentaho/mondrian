@@ -44,6 +44,7 @@ import org.apache.commons.vfs.*;
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
 import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.mdx.IdentifierSegment;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -1324,24 +1325,39 @@ public class RolapSchema implements Schema {
         final String calcMemberName,
         final String cubeName)
     {
-        List<Id.Segment> nameParts = Util.parseIdentifier(calcMemberName);
         for (final MondrianDef.Cube cube : xmlSchema.cubes) {
-            if (Util.equalName(cube.name, cubeName)) {
-                for (final MondrianDef.CalculatedMember calculatedMember
-                        : cube.calculatedMembers)
+            if (!Util.equalName(cube.name, cubeName)) {
+                continue;
+            }
+            for (MondrianDef.CalculatedMember xmlCalcMember
+                : cube.calculatedMembers)
+            {
+                // FIXME: Since fully-qualified names are not unique, we
+                // should compare unique names. Also, the logic assumes that
+                // CalculatedMember.dimension is not quoted (e.g. "Time")
+                // and CalculatedMember.hierarchy is quoted
+                // (e.g. "[Time].[Weekly]").
+                if (Util.equalName(
+                        calcMemberFqName(xmlCalcMember),
+                        calcMemberName))
                 {
-                    if (Util.equalName(
-                            calculatedMember.dimension, nameParts.get(0).name)
-                        && Util.equalName(
-                            calculatedMember.name,
-                            nameParts.get(nameParts.size() - 1).name))
-                    {
-                        return calculatedMember;
-                    }
+                    return xmlCalcMember;
                 }
             }
         }
         return null;
+    }
+
+    private String calcMemberFqName(MondrianDef.CalculatedMember xmlCalcMember)
+    {
+        if (xmlCalcMember.dimension != null) {
+            return Util.makeFqName(
+                Util.quoteMdxIdentifier(xmlCalcMember.dimension),
+                xmlCalcMember.name);
+        } else {
+            return Util.makeFqName(
+                xmlCalcMember.hierarchy, xmlCalcMember.name);
+        }
     }
 
     public List<RolapCube> getCubesWithStar(RolapStar star) {
@@ -1391,6 +1407,17 @@ public class RolapSchema implements Schema {
 
     public NamedSet getNamedSet(String name) {
         return mapNameToSet.get(name);
+    }
+
+    public NamedSet getNamedSet(IdentifierSegment segment) {
+        // FIXME: write a map that efficiently maps segment->value, taking
+        // into account case-sensitivity etc.
+        for (Map.Entry<String, NamedSet> entry : mapNameToSet.entrySet()) {
+            if (Util.matches(segment, entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     public Role lookupRole(final String role) {

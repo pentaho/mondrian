@@ -22,9 +22,14 @@ import mondrian.calc.*;
 import mondrian.server.Statement;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.impl.Scripts;
+
 import org.apache.log4j.Logger;
+
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
+
+import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.mdx.IdentifierSegment;
 
 import java.util.*;
 
@@ -687,14 +692,29 @@ public class RolapCube extends CubeBase {
         List<Formula> calcMemberList)
     {
         for (MondrianDef.CalculatedMember xmlCalcMember : xmlCalcMemberList) {
-            Dimension dimension =
-                lookupDimension(
-                    new Id.Segment(
-                        xmlCalcMember.dimension,
-                        Id.Quoting.UNQUOTED));
+            Hierarchy hierarchy = null;
+            if (xmlCalcMember.dimension != null) {
+                Dimension dimension =
+                    lookupDimension(
+                        new Id.Segment(
+                            xmlCalcMember.dimension,
+                            Id.Quoting.UNQUOTED));
+                if (dimension != null
+                    && dimension.getHierarchy() != null)
+                {
+                    hierarchy = dimension.getHierarchy();
+                }
+            } else if (xmlCalcMember.hierarchy != null) {
+                hierarchy =
+                    lookupHierarchy(
+                        new Id.Segment(
+                            xmlCalcMember.hierarchy,
+                            Id.Quoting.UNQUOTED),
+                        true);
+            }
             if (formula.getName().equals(xmlCalcMember.name)
-                && formula.getMdxMember().getDimension().getName().equals(
-                    dimension.getName()))
+                && formula.getMdxMember().getHierarchy().equals(
+                    hierarchy))
             {
                 calcMemberList.add(formula);
                 return true;
@@ -876,8 +896,9 @@ public class RolapCube extends CubeBase {
         buf.append("WITH").append(Util.nl);
 
         // Check the members individually, and generate SQL.
+        final Set<String> fqNames = new LinkedHashSet<String>();
         for (int i = 0; i < xmlCalcMembers.size(); i++) {
-            preCalcMember(xmlCalcMembers, i, buf, cube, errOnDups);
+            preCalcMember(xmlCalcMembers, i, buf, cube, errOnDups, fqNames);
         }
 
         // Check the named sets individually (for uniqueness) and generate SQL.
@@ -998,19 +1019,44 @@ public class RolapCube extends CubeBase {
         int j,
         StringBuilder buf,
         RolapCube cube,
-        boolean errOnDup)
+        boolean errOnDup,
+        Set<String> fqNames)
     {
         MondrianDef.CalculatedMember xmlCalcMember = xmlCalcMembers.get(j);
 
         // Lookup dimension
-        final Dimension dimension =
-            lookupDimension(
-                new Id.Segment(
-                    xmlCalcMember.dimension,
-                    Id.Quoting.UNQUOTED));
-        if (dimension == null) {
+        Hierarchy hierarchy = null;
+        String dimName = null;
+        if (xmlCalcMember.dimension != null) {
+            dimName = xmlCalcMember.dimension;
+            final Dimension dimension =
+                lookupDimension(
+                    new Id.Segment(
+                        xmlCalcMember.dimension,
+                        Id.Quoting.UNQUOTED));
+            if (dimension != null) {
+                hierarchy = dimension.getHierarchy();
+            }
+        } else if (xmlCalcMember.hierarchy != null) {
+            dimName = xmlCalcMember.hierarchy;
+            hierarchy = (Hierarchy)
+                getSchemaReader().lookupCompound(
+                    this,
+                    Util.parseIdentifier(dimName),
+                    false,
+                    Category.Hierarchy);
+        }
+        if (hierarchy == null) {
             throw MondrianResource.instance().CalcMemberHasBadDimension.ex(
-                xmlCalcMember.dimension, xmlCalcMember.name, getName());
+                dimName, xmlCalcMember.name, getName());
+        }
+
+        // Root of fully-qualified name.
+        String parentFqName;
+        if (xmlCalcMember.parent != null) {
+            parentFqName = xmlCalcMember.parent;
+        } else {
+            parentFqName = hierarchy.getUniqueNameSsas();
         }
 
         // If we're processing a virtual cube, it's possible that we've
@@ -1018,15 +1064,16 @@ public class RolapCube extends CubeBase {
         // referenced in another measure; in that case, remove it from the
         // list, since we'll add it back in later; otherwise, in the
         // non-virtual cube case, throw an exception
+        final String fqName = Util.makeFqName(parentFqName, xmlCalcMember.name);
         for (int i = 0; i < calculatedMemberList.size(); i++) {
             Formula formula = calculatedMemberList.get(i);
             if (formula.getName().equals(xmlCalcMember.name)
-                && formula.getMdxMember().getDimension().getName().equals(
-                    dimension.getName()))
+                && formula.getMdxMember().getHierarchy().equals(
+                    hierarchy))
             {
                 if (errOnDup) {
                     throw MondrianResource.instance().CalcMemberNotUnique.ex(
-                        Util.makeFqName(dimension, xmlCalcMember.name),
+                        fqName,
                         getName());
                 } else {
                     calculatedMemberList.remove(i);
@@ -1037,19 +1084,12 @@ public class RolapCube extends CubeBase {
 
         // Check this calc member doesn't clash with one earlier in this
         // batch.
-        for (int k = 0; k < j; k++) {
-            MondrianDef.CalculatedMember xmlCalcMember2 = xmlCalcMembers.get(k);
-            if (xmlCalcMember2.name.equals(xmlCalcMember.name)
-                && xmlCalcMember2.dimension.equals(xmlCalcMember.dimension))
-            {
-                throw MondrianResource.instance().CalcMemberNotUnique.ex(
-                    Util.makeFqName(dimension, xmlCalcMember.name),
-                    getName());
-            }
+        if (!fqNames.add(fqName)) {
+            throw MondrianResource.instance().CalcMemberNotUnique.ex(
+                fqName,
+                getName());
         }
 
-        final String memberUniqueName = Util.makeFqName(
-            dimension.getUniqueName(), xmlCalcMember.name);
         final MondrianDef.CalculatedMemberProperty[] xmlProperties =
                 xmlCalcMember.memberProperties;
         List<String> propNames = new ArrayList<String>();
@@ -1061,9 +1101,9 @@ public class RolapCube extends CubeBase {
             cube.measuresHierarchy.getMemberReader().getMemberCount();
 
         // Generate SQL.
-        assert memberUniqueName.startsWith("[");
+        assert fqName.startsWith("[");
         buf.append("MEMBER ")
-            .append(memberUniqueName)
+            .append(fqName)
             .append(Util.nl)
             .append("  AS ");
         Util.singleQuoteString(xmlCalcMember.getFormula(), buf);
@@ -2738,7 +2778,10 @@ public class RolapCube extends CubeBase {
      * (and hence includes calculated members defined in that cube) and also
      * applies the access-rights of a given role.
      */
-    private class RolapCubeSchemaReader extends RolapSchemaReader {
+    private class RolapCubeSchemaReader
+        extends RolapSchemaReader
+        implements NameResolver.Namespace
+    {
         public RolapCubeSchemaReader(Role role) {
             super(role, RolapCube.this.schema);
             assert role != null : "precondition: role != null";
@@ -2843,21 +2886,74 @@ public class RolapCube extends CubeBase {
         {
             Member member =
                 (Member) lookupCompound(
-                    RolapCube.this, uniqueNameParts,
-                    failIfNotFound, Category.Member,
+                    RolapCube.this,
+                    uniqueNameParts,
+                    failIfNotFound,
+                    Category.Member,
                     matchType);
-            if (!failIfNotFound && member == null) {
+            if (member == null) {
+                assert !failIfNotFound;
                 return null;
             }
             if (getRole().canAccess(member)) {
                 return member;
             } else {
+                if (failIfNotFound) {
+                    throw Util.newElementNotFoundException(
+                        Category.Member,
+                        new IdentifierNode(
+                            Util.toOlap4j(uniqueNameParts)));
+                }
                 return null;
             }
         }
 
         public Cube getCube() {
             return RolapCube.this;
+        }
+
+        public List<NameResolver.Namespace> getNamespaces() {
+            final List<NameResolver.Namespace> list =
+                new ArrayList<NameResolver.Namespace>();
+            list.add(this);
+            list.addAll(schema.getSchemaReader().getNamespaces());
+            return list;
+        }
+
+        public OlapElement lookupChild(
+            OlapElement parent,
+            IdentifierSegment segment,
+            MatchType matchType)
+        {
+            // ignore matchType
+            return lookupChild(parent, segment);
+        }
+
+        public OlapElement lookupChild(
+            OlapElement parent,
+            IdentifierSegment segment)
+        {
+            // Don't look for stored members, or look for dimensions,
+            // hierarchies, levels at all. Only look for calculated members
+            // and named sets defined against this cube.
+
+            // Look up calc member.
+            for (Formula formula : calculatedMemberList) {
+                if (NameResolver.matches(formula, parent, segment)) {
+                    return formula.getMdxMember();
+                }
+            }
+
+            // Look up named set.
+            if (parent == RolapCube.this) {
+                for (Formula formula : namedSetList) {
+                    if (Util.matches(segment, formula.getName())) {
+                        return formula.getNamedSet();
+                    }
+                }
+            }
+
+            return null;
         }
     }
 

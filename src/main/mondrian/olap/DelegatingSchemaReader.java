@@ -103,8 +103,8 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
 
     public Member getMemberByUniqueName(
         List<Id.Segment> uniqueNameParts,
-            boolean failIfNotFound,
-            MatchType matchType)
+        boolean failIfNotFound,
+        MatchType matchType)
     {
         return schemaReader.getMemberByUniqueName(
             uniqueNameParts, failIfNotFound, matchType);
@@ -118,7 +118,35 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
             parent, names, failIfNotFound, category, MatchType.EXACT);
     }
 
-    public OlapElement lookupCompound(
+    public final OlapElement lookupCompound(
+        OlapElement parent,
+        List<Id.Segment> names,
+        boolean failIfNotFound,
+        int category,
+        MatchType matchType)
+    {
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return new NameResolver().resolve(
+                parent,
+                Util.toOlap4j(names),
+                failIfNotFound,
+                category,
+                matchType,
+                getNamespaces());
+        }
+        return lookupCompoundInternal(
+            parent,
+            names,
+            failIfNotFound,
+            category,
+            matchType);
+    }
+
+    public List<NameResolver.Namespace> getNamespaces() {
+        return schemaReader.getNamespaces();
+    }
+
+    public OlapElement lookupCompoundInternal(
         OlapElement parent, List<Id.Segment> names,
         boolean failIfNotFound, int category, MatchType matchType)
     {

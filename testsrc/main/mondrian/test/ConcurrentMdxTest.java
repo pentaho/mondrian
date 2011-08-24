@@ -2,12 +2,10 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 */
-
 package mondrian.test;
 
 import mondrian.olap.MondrianProperties;
@@ -793,9 +791,9 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
             + "     '([Measures].[Store Sales]-[Measures].[Store Cost])/"
             + "([Measures].[Store Cost])',\n"
             + " FORMAT_STRING = '#.00%', SOLVE_ORDER = 1\n"
-            + " MEMBER [Time].[First Half 97] AS  '[Time].[1997].[Q1] +"
+            + " Member [Time].[Time].[First Half 97] AS  '[Time].[1997].[Q1] +"
             + " [Time].[1997].[Q2]'\n"
-            + " MEMBER [Time].[Second Half 97] AS '[Time].[1997].[Q3] +"
+            + " Member [Time].[Time].[Second Half 97] AS '[Time].[1997].[Q3] +"
             + " [Time].[1997].[Q4]'\n"
             + " SELECT {[Time].[First Half 97],\n"
             + "     [Time].[Second Half 97],\n"

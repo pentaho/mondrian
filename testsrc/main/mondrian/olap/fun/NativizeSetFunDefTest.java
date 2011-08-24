@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2010 Julian Hyde and others
+// Copyright (C) 2009-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1165,26 +1165,28 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "} ) on 0 from sales");
     }
 
-    public void DISABLED_testMultipleHeirarchyiesSsasTrue() {
+    public void testMultipleHierarchySsasTrue() {
         propSaver.set(
             MondrianProperties.instance().SsasCompatibleNaming, true);
         propSaver.set(
             MondrianProperties.instance().EnableNonEmptyOnAllAxis, false);
 
         // Ssas compatible: time.[weekly].[week]
-        // Known issue:
-        // this test will often fail if other tests in this class are
-        // executed first - cause is unknown as yet.
+        // Use fresh connection -- unique names are baked in when schema is
+        // loaded, depending the Ssas setting at that time.
         assertQueryIsReWritten(
-            "select nativizeSet(crossjoin( time.[weekly].[week].members, { gender.m })) on 0 "
+            getTestContext().withFreshConnection(),
+            "select nativizeSet(crossjoin(time.[week].members, { gender.m })) on 0 "
             + "from sales",
-            "with member [Time].[_Nativized_Member_Time_Weekly_Week_] as '[Time].DefaultMember'\n"
-            + "  set [_Nativized_Set_Time_Weekly_Week_] as '{[Time].[_Nativized_Member_Time_Weekly_Week_]}'\n"
+            "with member [Time].[Weekly].[_Nativized_Member_Time_Weekly_Week_] as '[Time].[Weekly].DefaultMember'\n"
+            + "  set [_Nativized_Set_Time_Weekly_Week_] as '{[Time].[Weekly].[_Nativized_Member_Time_Weekly_Week_]}'\n"
+            + "  member [Time].[_Nativized_Sentinel_Time_Year_] as '101010'\n"
+            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010'\n"
             + "select NativizeSet(Crossjoin([_Nativized_Set_Time_Weekly_Week_], {[Gender].[M]})) ON COLUMNS\n"
             + "from [Sales]\n");
     }
 
-    public void testMultipleHeirarchyiesSsasFalse() {
+    public void testMultipleHierarchySsasFalse() {
         propSaver.set(
             MondrianProperties.instance().SsasCompatibleNaming, false);
         propSaver.set(
@@ -1205,7 +1207,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     public void testComplexCrossjoinAggInMiddle() {
         checkNative(
             "WITH\n"
-            + "\tMEMBER [Time].[COG_OQP_USR_Aggregate(Time Values)] AS "
+            + "\tMEMBER [Time].[Time].[COG_OQP_USR_Aggregate(Time Values)] AS "
             + "'IIF([Measures].CURRENTMEMBER IS [Measures].[Unit Sales], ([Time].[1997], [Measures].[Unit Sales]), ([Time].[1997]))',\n"
             + "\tSOLVE_ORDER = 4 MEMBER [Store Type].[COG_OQP_INT_umg1] AS "
             + "'IIF([Measures].CURRENTMEMBER IS [Measures].[Unit Sales], ([Store Type].[COG_OQP_INT_m2], [Measures].[Unit Sales]), "
@@ -1501,8 +1503,16 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     private void assertQueryIsReWritten(
         final String query, final String expectedQuery)
     {
+        assertQueryIsReWritten(getTestContext(), query, expectedQuery);
+    }
+
+    private void assertQueryIsReWritten(
+        TestContext testContext,
+        final String query,
+        final String expectedQuery)
+    {
         String actualOutput =
-            getTestContext().getConnection().parseQuery(query).toString();
+            testContext.getConnection().parseQuery(query).toString();
         if (!Util.nl.equals("\n")) {
             actualOutput = actualOutput.replace(Util.nl, "\n");
         }

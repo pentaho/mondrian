@@ -7,8 +7,6 @@
 // Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 29 March, 2002
 */
 package mondrian.test;
 
@@ -1968,6 +1966,12 @@ public class TestContext {
             : (hierarchy.equals(dimension)
                 ? "[" + dimension + "]"
                 : "[" + dimension + "." + hierarchy + "]");
+    }
+
+    public static String levelName(
+        String dimension, String hierarchy, String level)
+    {
+        return hierarchyName(dimension, hierarchy) + ".[" + level + "]";
     }
 
     //~ Inner classes ----------------------------------------------------------

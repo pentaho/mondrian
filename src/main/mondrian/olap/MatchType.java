@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// Copyright (C) 2003-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -26,7 +26,11 @@ public enum MatchType {
     /** If no exact match, return the preceding member */
     BEFORE,
     /** If no exact match, return the next member */
-    AFTER;
+    AFTER,
+    /** Return the first child */
+    FIRST,
+    /** Return the last child */
+    LAST;
 
     /**
      * Return true if either Exact or Exact Schema value

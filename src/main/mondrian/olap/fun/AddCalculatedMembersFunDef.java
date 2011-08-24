@@ -65,22 +65,20 @@ class AddCalculatedMembersFunDef extends FunDefBase {
         Evaluator evaluator)
     {
         // Determine unique levels in the set
-        Map<Level, Object> levelMap = new HashMap<Level, Object>();
-        Dimension dim = null;
+        final Set<Level> levels = new LinkedHashSet<Level>();
+        Hierarchy hierarchy = null;
 
         for (Member member : memberList) {
-            if (dim == null) {
-                dim = member.getDimension();
-            } else if (dim != member.getDimension()) {
+            if (hierarchy == null) {
+                hierarchy = member.getHierarchy();
+            } else if (hierarchy != member.getHierarchy()) {
                 throw newEvalException(
                     this,
-                    "Only members from the same dimension are allowed in the "
-                    + "AddCalculatedMembers set: " + dim.toString()
-                    + " vs " + member.getDimension().toString());
+                    "Only members from the same hierarchy are allowed in the "
+                    + "AddCalculatedMembers set: " + hierarchy
+                    + " vs " + member.getHierarchy());
             }
-            if (!levelMap.containsKey(member.getLevel())) {
-                levelMap.put(member.getLevel(), null);
-            }
+            levels.add(member.getLevel());
         }
 
         // For each level, add the calculated members from both
@@ -88,13 +86,12 @@ class AddCalculatedMembersFunDef extends FunDefBase {
         List<Member> workingList = new ArrayList<Member>(memberList);
         final SchemaReader schemaReader =
                 evaluator.getQuery().getSchemaReader(true);
-        for (Level level : levelMap.keySet()) {
+        for (Level level : levels) {
             List<Member> calcMemberList =
                 schemaReader.getCalculatedMembers(level);
             workingList.addAll(calcMemberList);
         }
-        memberList = workingList;
-        return memberList;
+        return workingList;
     }
 
     private static class ResolverImpl extends MultiResolver {

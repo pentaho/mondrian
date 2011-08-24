@@ -1328,11 +1328,11 @@ Set [*METRIC_MEMBERS_Promotions] as 'Generate([*METRIC_CJ_SET], {[Promotions].Cu
 Set [*BASE_MEMBERS_Time] as '{}'
 Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
 Set [*METRIC_MEMBERS_Time] as 'Generate([*METRIC_CJ_SET], {[Time].[Time].CurrentMember})'
-Member [Time].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
+Member [Time].[Time].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
 Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],[Promotions].CurrentMember,[Time].[*CTX_METRIC_MEMBER_SEL~SUM])'
 Member [Measures].[*TOP_Unit Sales_SEL~SUM] as 'Rank([Promotions].CurrentMember,[*TOP_BOTTOM_SET])'
 Member [Promotions].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Filter([*METRIC_MEMBERS_Promotions],Not IsEmpty([Measures].[*Unit Sales_SEL~SUM])),[Measures].[*TOP_Unit Sales_SEL~SUM] <= 10))'
-Member [Time].[*FILTER_MEMBER] as 'Aggregate ([*METRIC_MEMBERS_Time])'
+Member [Time].[Time].[*FILTER_MEMBER] as 'Aggregate ([*METRIC_MEMBERS_Time])'
 Select
 [*BASE_MEMBERS_Measures] on columns,
 Non Empty Union({[Promotions].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Promotions].CurrentMember)})) on rows

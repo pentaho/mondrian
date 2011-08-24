@@ -527,10 +527,11 @@ public class NativizeSetFunDef extends FunDefBase {
 
         private Formula createDefaultMemberFormula(Level level) {
             Id memberId = createMemberId(level);
-            String defaultMember =
-                "[" + level.getDimension().getName() + "].DEFAULTMEMBER";
-            Exp memberExpr = query.getConnection()
-                .parseExpression(defaultMember);
+            Exp memberExpr =
+                new UnresolvedFunCall(
+                    "DEFAULTMEMBER",
+                    Syntax.Property,
+                    new Exp[] {hierarchyId(level)});
 
             LOGGER.debug(
                 "createLevelMembersFormulas memberId="
@@ -1511,27 +1512,30 @@ public class NativizeSetFunDef extends FunDefBase {
     }
 
     private static Id createSentinelId(Level level) {
-        return createId(
-            level.getDimension().getName(),
-            createMangledName(level, SENTINEL_PREFIX));
+        return hierarchyId(level)
+            .append(q(createMangledName(level, SENTINEL_PREFIX)));
     }
 
     private static Id createMemberId(Level level) {
-        return createId(
-            level.getDimension().getName(),
-            createMangledName(level, MEMBER_NAME_PREFIX));
+        return hierarchyId(level)
+            .append(q(createMangledName(level, MEMBER_NAME_PREFIX)));
     }
 
     private static Id createSetId(Level level) {
-        return createId(createMangledName(level, SET_NAME_PREFIX));
+        return new Id(
+            q(createMangledName(level, SET_NAME_PREFIX)));
     }
 
-    private static Id createId(String... names) {
-        ArrayList<Id.Segment> segments = new ArrayList<Id.Segment>();
-        for (String name : names) {
-            segments.add(new Id.Segment(name, Id.Quoting.QUOTED));
+    private static Id hierarchyId(Level level) {
+        Id id = new Id(q(level.getDimension().getName()));
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            id = id.append(q(level.getHierarchy().getName()));
         }
-        return new Id(segments);
+        return id;
+    }
+
+    private static Id.Segment q(String s) {
+        return new Id.Segment(s, Id.Quoting.QUOTED);
     }
 
     private static String createMangledName(Level level, String prefix) {

@@ -1426,7 +1426,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         // solve_order=1 says to aggregate [CA] and [OR] before computing their
         // sums
         assertQueryReturns(
-            "WITH MEMBER [Time].[1997 Q1 plus Q2] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q2]})', solve_order=1\n"
+            "WITH MEMBER [Time].[Time].[1997 Q1 plus Q2] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q2]})', solve_order=1\n"
             + "SELECT {[Measures].[Customer Count]} ON COLUMNS,\n"
             + "      {[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997 Q1 plus Q2]} ON ROWS\n"
             + "FROM Sales\n"
@@ -1450,7 +1450,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
      */
     public void testAggregateDistinctCount2() {
         assertQueryReturns(
-            "WITH MEMBER [Time].[1997 Q1 plus July] AS\n"
+            "WITH MEMBER [Time].[Time].[1997 Q1 plus July] AS\n"
             + " 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Customer Count]} ON COLUMNS,\n"
             + "      {[Time].[1997].[Q1],\n"
@@ -1489,7 +1489,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         assertQueryReturns(
             "WITH\n"
             + "  MEMBER [Promotion Media].[TV plus Radio] AS 'AGGREGATE({[Promotion Media].[TV], [Promotion Media].[Radio]})', solve_order=1\n"
-            + "  MEMBER [Time].[1997 Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n"
+            + "  MEMBER [Time].[Time].[1997 Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n"
             + "SELECT {[Promotion Media].[TV plus Radio],\n"
             + "        [Promotion Media].[TV],\n"
             + "        [Promotion Media].[Radio]} ON COLUMNS,\n"
@@ -1587,7 +1587,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         assertQuerySql(
             "WITH\n"
             + "  MEMBER [Promotion Media].[TV plus Radio] AS 'AGGREGATE({[Promotion Media].[TV], [Promotion Media].[Radio]})', solve_order=1\n"
-            + "  MEMBER [Time].[1997 Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n"
+            + "  MEMBER [Time].[Time].[1997 Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n"
             + "SELECT {[Promotion Media].[TV plus Radio],\n"
             + "        [Promotion Media].[TV],\n"
             + "        [Promotion Media].[Radio]} ON COLUMNS,\n"
@@ -1616,7 +1616,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         final String mdxQuery =
             "WITH\n"
             + "  MEMBER [Store].[CA plus USA] AS 'AGGREGATE({[Store].[USA].[CA], [Store].[USA]})', solve_order=1\n"
-            + "  MEMBER [Time].[Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n"
+            + "  MEMBER [Time].[Time].[Q1 plus July] AS 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7]})', solve_order=1\n"
             + "SELECT {[Measures].[Customer Count], [Measures].[Unit Sales]} ON COLUMNS,\n"
             + "      Union({[Store].[CA plus USA]} * {[Time].[Q1 plus July]}, "
             + "      Union({[Store].[USA].[CA]} * {[Time].[Q1 plus July]},"
@@ -1707,7 +1707,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             "WITH "
             + " MEMBER [Store].[Select Region] AS "
             + " 'AGGREGATE({[Store].[USA].[CA], [Store].[Mexico], [Store].[Canada], [Store].[USA].[OR]})', solve_order=1\n"
-            + " MEMBER [Time].[Select Time Period] AS "
+            + " MEMBER [Time].[Time].[Select Time Period] AS "
             + " 'AGGREGATE({[Time].[1997].[Q1], [Time].[1997].[Q3].[7], [Time].[1997].[Q4], [Time].[1997]})', solve_order=1\n"
             + "SELECT {[Measures].[Customer Count], [Measures].[Unit Sales]} ON COLUMNS,\n"
             + "      Union({[Store].[Select Region]} * {[Time].[Select Time Period]},"

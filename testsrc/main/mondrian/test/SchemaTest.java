@@ -2016,6 +2016,63 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     /**
+     * Test case for feature
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-960">MONDRIAN-960,
+     * "Ability to define non-measure calculated members in a cube under a
+     * specifc parent"</a>.
+     */
+    public void testCalcMemberInCube() {
+        final TestContext testContext =
+            TestContext.instance().createSubstitutingCube(
+                "Sales",
+                null,
+                null,
+                "<CalculatedMember\n"
+                + "      name='SF and LA'\n"
+                + "      hierarchy='[Store]'\n"
+                + "      parent='[Store].[USA].[CA]'>\n"
+                + "  <Formula>\n"
+                + "    [Store].[USA].[CA].[San Francisco]\n"
+                + "    + [Store].[USA].[CA].[Los Angeles]\n"
+                + "  </Formula>\n"
+                + "</CalculatedMember>",
+                null);
+
+        // Because there are no explicit stored measures, the default measure is
+        // the implicit stored measure, [Fact Count]. Stored measures, even
+        // non-visible ones, come before calculated measures.
+        testContext.assertQueryReturns(
+            "select {[Store].[USA].[CA].[SF and LA]} on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[USA].[CA].[SF and LA]}\n"
+            + "Row #0: 27,780\n");
+
+        // Now access the same member using a path that is not its unique name.
+        // Only works with new name resolver (if ssas = true).
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            testContext.assertQueryReturns(
+                "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Store].[USA].[CA].[SF and LA]}\n"
+                + "Row #0: 27,780\n");
+        }
+
+        // TODO: test where hierarchy & dimension both specified. should fail
+        // TODO: test where hierarchy is not uname of valid hierarchy. should
+        //   fail
+        // TODO: test where formula is invalid. should fail
+        // TODO: test where parent is invalid. should fail
+        // TODO: test where parent is not in same hierarchy as hierarchy. should
+        //   fail
+        // TODO: test where calc member has no formula (formula attribute or
+        //   embedded element); should fail
+    }
+
+    /**
      * this test triggers an exception out of the aggregate table manager
      */
     public void testAggTableSupportOfSharedDims() {
@@ -3706,7 +3763,11 @@ public class SchemaTest extends FoodMartTestCase {
             assertNotNull(dim);
             final Hierarchy hier = dim.getHierarchy();
             assertNotNull(hier);
-            assertEquals("Bar.Bacon", hier.getName());
+            assertEquals(
+                MondrianProperties.instance().SsasCompatibleNaming.get()
+                    ? "Bacon"
+                    : "Bar.Bacon",
+                hier.getName());
             assertTrue(testValue.equals(hier.isVisible()));
         }
     }
@@ -3742,7 +3803,11 @@ public class SchemaTest extends FoodMartTestCase {
             assertNotNull(dim);
             final Hierarchy hier = dim.getHierarchy();
             assertNotNull(hier);
-            assertEquals("Bar.Bacon", hier.getName());
+            assertEquals(
+                MondrianProperties.instance().SsasCompatibleNaming.get()
+                    ? "Bacon"
+                    : "Bar.Bacon",
+                hier.getName());
             final mondrian.olap.Level level = hier.getLevels()[0];
             assertEquals("Samosa", level.getName());
             assertTrue(testValue.equals(level.isVisible()));

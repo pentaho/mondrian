@@ -73,7 +73,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
         + "</CalculatedMember>"
         + "<CalculatedMember\n"
         + "    name=\"Total\"\n"
-        + "    dimension=\"Time\"\n"
+        + "    hierarchy=\"[Time].[Time]\"\n"
         + "    visible=\"false\"\n"
         + "    formula=\"AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})\">\n"
         + "  <CalculatedMemberProperty name=\"SOLVE_ORDER\" value=\"20\"/>\n"
@@ -463,7 +463,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     public void testAggregateMemberEvalAfterOtherMembersAbsolute() {
         final String mdx =
             "With\n"
-            + "member Time.Total1 as "
+            + "member Time.Time.Total1 as "
             + "'AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})' , SOLVE_ORDER=20 \n"
             + ", FORMAT_STRING='#,###'\n"
             + "member measures.[ratio1] as "
@@ -505,7 +505,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     public void testAggregateMemberEvalAfterOtherMembersScoped() {
         final String mdx =
             "With\n"
-            + "member Time.Total1 as "
+            + "member Time.Time.Total1 as "
             + "'AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})' , SOLVE_ORDER=20 \n"
             + ", FORMAT_STRING='#,###'\n"
             + "member measures.[ratio1] as "
@@ -554,7 +554,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     public void testConditionalAggregateMemberEvalAfterOtherMembersAbsolute() {
         final String mdx =
             "With\n"
-            + "member Time.Total1 as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, "
+            + "member Time.Time.Total1 as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, "
             + "AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]}))' , SOLVE_ORDER=20 \n"
             + "\n"
             + "member measures.[ratio1] as 'measures.[unit sales] / measures.[sales count]', "
@@ -595,7 +595,7 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     public void testConditionalAggregateMemberEvalAfterOtherMembersScoped() {
         final String mdx =
             "With\n"
-            + "member Time.Total1 as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, "
+            + "member Time.Time.Total1 as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, "
             + "AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]}))' , SOLVE_ORDER=20 \n"
             + "\n"
             + "member measures.[ratio1] as 'measures.[unit sales] / measures.[sales count]', "
@@ -643,9 +643,9 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     public void testStrToMemberReturningAggEvalAfterOtherMembersAbsolute() {
         final String mdx =
             "With\n"
-            + "member Time.StrTotal as 'AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})', "
+            + "member Time.Time.StrTotal as 'AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})', "
             + "SOLVE_ORDER=100\n"
-            + "member Time.Total as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, \n"
+            + "member Time.Time.Total as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, \n"
             + "StrToMember(\"[Time].[StrTotal]\"))' , SOLVE_ORDER=20 \n"
             + "member measures.[ratio1] as 'measures.[unit sales] / measures.[sales count]', "
             + "SOLVE_ORDER=10, FORMAT_STRING='#.##'\n"
@@ -681,9 +681,9 @@ public class SolveOrderScopeIsolationTest extends FoodMartTestCase {
     public void testStrToMemberReturningAggEvalAfterOtherMembersScoped() {
         final String mdx =
             "With\n"
-            + "member Time.StrTotal as 'AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})', "
+            + "member Time.Time.StrTotal as 'AGGREGATE({[Time].[1997].[Q1],[Time].[1997].[Q2]})', "
             + "SOLVE_ORDER=100\n"
-            + "member Time.Total as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, \n"
+            + "member Time.Time.Total as 'IIF(Measures.CURRENTMEMBER IS Measures.Profit, 1, \n"
             + "StrToMember(\"[Time].[StrTotal]\"))' , SOLVE_ORDER=20 \n"
             + "member measures.[ratio1] as 'measures.[unit sales] / measures.[sales count]', "
             + "SOLVE_ORDER=10, FORMAT_STRING='#.##'\n"
