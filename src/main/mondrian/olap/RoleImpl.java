@@ -4,23 +4,19 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, Oct 5, 2002
 */
-
 package mondrian.olap;
-
-import java.util.*;
 
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapCubeDimension;
 
+import java.util.*;
+
 /**
- * <code>RoleImpl</code> is Mondrian's default implementation for the
- * <code>Role</code> interface.
+ * Default implementation of the {@link Role} interface.
  *
  * @author jhyde, lucboudreau
  * @since Oct 5, 2002
@@ -630,9 +626,6 @@ public class RoleImpl implements Role {
                 m != null;
                 m = m.getParentMember())
             {
-                if (m.isAll()) {
-                    continue;
-                }
                 final Access parentAccess = memberGrants.get(m);
                 if (parentAccess == null) {
                     // No explicit rules for this parent

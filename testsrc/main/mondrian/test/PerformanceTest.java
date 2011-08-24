@@ -472,6 +472,59 @@ public class PerformanceTest extends FoodMartTestCase {
         printDuration("testBugMondrian843", start);
     }
 
+    /**
+     * Testcase for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-981">MONDRIAN-981,
+     * "Poor performance when >=2 hierarchies are access-controlled with
+     * rollupPolicy=partial"</a>.
+     */
+    public void testBugMondrian981() {
+        if (!LOGGER.isDebugEnabled()) {
+            // Too slow to run as part of standard regress until bug is fixed.
+        }
+        // To see the cartesian-product nature of this bug, try commenting out
+        // various of the following HierarchyGrants.
+        // The query runs in about 2s with no access-controlled hierarchies,
+        // then appromixately doubles as each is added (48s with 5 hierarchies).
+        final TestContext testContext =
+            TestContext.instance().create(
+                null, null, null, null, null,
+                "<Role name='Role1'>\n"
+                + "  <SchemaGrant access='none'>\n"
+                + "    <CubeGrant cube='Sales' access='all'>\n"
+                + "      <HierarchyGrant hierarchy='[Store Type]' access='custom' rollupPolicy='partial'>\n"
+                + "        <MemberGrant member='[Store Type].[All Store Types]' access='all'/>\n"
+                + "        <MemberGrant member='[Store Type].[Supermarket]' access='none'/>\n"
+                + "      </HierarchyGrant>\n"
+                + "      <HierarchyGrant hierarchy='[Customers]' access='custom' rollupPolicy='partial'>\n"
+                + "        <MemberGrant member='[Customers].[All Customers]' access='all'/>\n"
+                + "        <MemberGrant member='[Customers].[USA].[CA].[Los Angeles]' access='none'/>\n"
+                + "      </HierarchyGrant>\n"
+                + "      <HierarchyGrant hierarchy='[Product]' access='custom' rollupPolicy='partial'>\n"
+                + "        <MemberGrant member='[Product].[All Products]' access='all'/>\n"
+                + "        <MemberGrant member='[Product].[Drink]' access='none'/>\n"
+                + "      </HierarchyGrant>\n"
+                + "      <HierarchyGrant hierarchy='[Promotion Media]' access='custom' rollupPolicy='partial'>\n"
+                + "        <MemberGrant member='[Promotion Media].[All Media]' access='all'/>\n"
+                + "        <MemberGrant member='[Promotion Media].[TV]' access='none'/>\n"
+                + "      </HierarchyGrant>\n"
+                + "      <HierarchyGrant hierarchy='[Education Level]' access='custom' rollupPolicy='partial'>\n"
+                + "        <MemberGrant member='[Education Level].[All Education Levels]' access='all'/>\n"
+                + "        <MemberGrant member='[Education Level].[Graduate Degree]' access='none'/>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>\n");
+
+        testContext.withRole("Role1").assertQueryReturns(
+            "with member [Measures].[Foo] as\n"
+            + "Aggregate([Gender].Members * [Marital Status].Members * [Time].Members)\n"
+            + "select from [Sales] where [Measures].[Foo]",
+            "Axis #0:\n"
+            + "{[Measures].[Foo]}\n"
+            + "1,184,028");
+    }
+
     private static long printDuration(String desc, long t0) {
         final long t1 = System.currentTimeMillis();
         final long duration = t1 - t0;
