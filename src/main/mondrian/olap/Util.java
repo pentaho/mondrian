@@ -1992,6 +1992,69 @@ public class Util extends XOMUtil {
         return cast(Arrays.asList(a));
     }
 
+    public static List<IdentifierSegment> toOlap4j(
+        List<Id.Segment> segments)
+    {
+        List<IdentifierSegment> list =
+            new ArrayList<IdentifierSegment>();
+        for (Id.Segment segment : segments) {
+            list.add(toOlap4j(segment));
+        }
+        return list;
+    }
+
+    public static IdentifierSegment toOlap4j(Id.Segment segment) {
+        switch (segment.quoting) {
+        case KEY:
+            return new KeySegment(
+                new NameSegment(
+                    null,
+                    segment.name,
+                    Quoting.QUOTED));
+        default:
+            return new NameSegment(
+                null,
+                segment.name,
+                toOlap4j(segment.quoting));
+        }
+    }
+
+    public static Quoting toOlap4j(Id.Quoting quoting) {
+        return Quoting.valueOf(quoting.name());
+    }
+
+    // TODO: move to IdentifierSegment
+    public static boolean matches(IdentifierSegment segment, String name) {
+        switch (segment.getQuoting()) {
+        case KEY:
+            return false; // FIXME
+        case QUOTED:
+            return equalName(segment.getName(), name);
+        case UNQUOTED:
+            return segment.getName().equalsIgnoreCase(name);
+        default:
+            throw unexpected(segment.getQuoting());
+        }
+    }
+
+    public static RuntimeException newElementNotFoundException(
+        int category,
+        IdentifierNode identifierNode)
+    {
+        String type;
+        switch (category) {
+        case Category.Member:
+            return MondrianResource.instance().MemberNotFound.ex(
+                identifierNode.toString());
+        case Category.Unknown:
+            type = "Element";
+            break;
+        default:
+            type = Category.instance().getDescription(category);
+        }
+        return newError(type + " '" + identifierNode + "' not found");
+    }
+
     /**
      * Compares two integers using the same algorithm as
      * {@link Integer#compareTo(Integer)}.

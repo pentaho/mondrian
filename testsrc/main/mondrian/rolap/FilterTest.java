@@ -891,7 +891,7 @@ public class FilterTest extends BatchTestCase {
         checkNotNative(
             3,
             "with\n"
-            + "member [Time].[Date Range] as 'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q4]})'\n"
+            + "member [Time].[Time].[Date Range] as 'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q4]})'\n"
             + "select\n"
             + "{[Measures].[Unit Sales]} ON columns,\n"
             + "Filter ([Store].[Store State].members, [Measures].[Store Cost] > 100) ON rows\n"

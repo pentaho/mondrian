@@ -12,6 +12,8 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Util;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -46,15 +48,22 @@ class MemberKey {
             return false;
         }
         MemberKey other = (MemberKey) o;
-        return (other.parent == this.parent)
+        return Util.equals(this.parent, other.parent)
             && Arrays.equals(other.value, this.value);
     }
 
     // override Object
     public int hashCode() {
-        return ((parent == null)
-            ? 0
-            : parent.hashCode() << 16) ^ value.hashCode();
+        if (parent == null && value == null) {
+            return 0;
+        }
+        if (parent == null && value != null) {
+            return (value.hashCode() << 16);
+        }
+        if (parent != null && value == null) {
+            return (parent.hashCode() << 16);
+        }
+        return (parent.hashCode() << 16) ^ value.hashCode();
     }
 }
 

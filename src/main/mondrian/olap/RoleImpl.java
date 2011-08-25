@@ -7,21 +7,18 @@
 // Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, Oct 5, 2002
 */
 package mondrian.olap;
-
-import java.util.*;
 
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapCubeDimension;
 
+import java.util.*;
+
 /**
- * <code>RoleImpl</code> is Mondrian's default implementation for the
- * <code>Role</code> interface.
+ * Default implementation of the {@link Role} interface.
  *
- * @author jhyde
+ * @author jhyde, lucboudreau
  * @since Oct 5, 2002
  * @version $Id$
  */
@@ -378,14 +375,10 @@ public class RoleImpl implements Role {
     {
         // Check if this level is explicitly excluded by top/bototm
         // level restrictions.
-        if (hierarchyAccess.topLevel != null
-            && level.getDepth() < hierarchyAccess.topLevel.getDepth())
-        {
+        if (level.getDepth() < hierarchyAccess.topLevel.getDepth()) {
             return false;
         }
-        if (hierarchyAccess.bottomLevel != null
-            && level.getDepth() > hierarchyAccess.bottomLevel.getDepth())
-        {
+        if (level.getDepth() > hierarchyAccess.bottomLevel.getDepth()) {
             return false;
         }
         return true;
@@ -501,7 +494,15 @@ public class RoleImpl implements Role {
         private final Role role;
 
         /**
-         * Creates a <code>HierarchyAccessImpl</code>
+         * Creates a <code>HierarchyAccessImpl</code>.
+         * @param role A role this access belongs to.
+         * @param hierarchy A hierarchy this object describes.
+         * @param access The access granted to this role for this hierarchy.
+         * @param topLevel The top level to restrict the role to, or null to
+         * grant access up top the top level of the hierarchy parameter.
+         * @param bottomLevel The bottom level to restrict the role to, or null
+         * to grant access down to the bottom level of the hierarchy parameter.
+         * @param rollupPolicy The rollup policy to apply.
          */
         HierarchyAccessImpl(
             Role role,
@@ -511,14 +512,20 @@ public class RoleImpl implements Role {
             Level bottomLevel,
             RollupPolicy rollupPolicy)
         {
-            this.role = role;
+            assert role != null;
+            assert hierarchy != null;
             assert access != null;
+            assert rollupPolicy != null;
+            this.role = role;
             this.hierarchy = hierarchy;
             this.access = access;
-            this.topLevel = topLevel;
-            this.bottomLevel = bottomLevel;
-            assert rollupPolicy != null;
             this.rollupPolicy = rollupPolicy;
+            this.topLevel = topLevel == null
+                ? hierarchy.getLevels()[0]
+                : topLevel;
+            this.bottomLevel = bottomLevel == null
+                ? hierarchy.getLevels()[hierarchy.getLevels().length - 1]
+                : bottomLevel;
         }
 
         public HierarchyAccess clone() {
@@ -621,9 +628,6 @@ public class RoleImpl implements Role {
                 m != null;
                 m = m.getParentMember())
             {
-                if (m.isAll()) {
-                    continue;
-                }
                 final Access parentAccess = memberGrants.get(m);
                 if (parentAccess == null) {
                     // No explicit rules for this parent
@@ -648,8 +652,6 @@ public class RoleImpl implements Role {
             // member grants defined at this level but the member fits
             // those bounds, we give access.
             if (memberGrants.size() == 0
-                && (bottomLevel != null
-                || topLevel != null)
                 && checkLevelIsOkWithRestrictions(
                     this,
                     member.getLevel()))
@@ -660,24 +662,12 @@ public class RoleImpl implements Role {
             return Access.NONE;
         }
 
-        Level getTopLevel() {
-            return topLevel == null
-                ? hierarchy.getLevelList().get(0)
-                : topLevel;
-        }
-
         public final int getTopLevelDepth() {
-            return getTopLevel().getDepth();
-        }
-
-        Level getBottomLevel() {
-            return bottomLevel == null
-                ? Util.last(hierarchy.getLevelList())
-                : bottomLevel;
+            return topLevel.getDepth();
         }
 
         public final int getBottomLevelDepth() {
-            return getBottomLevel().getDepth();
+            return bottomLevel.getDepth();
         }
 
         public RollupPolicy getRollupPolicy() {

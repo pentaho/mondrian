@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,6 +25,8 @@ import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
 import org.olap4j.impl.NamedListImpl;
+import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.mdx.IdentifierSegment;
 import org.olap4j.metadata.NamedList;
 
 import java.util.*;
@@ -712,7 +714,10 @@ public class RolapCube extends CubeBase {
      * (and hence includes calculated members defined in that cube) and also
      * applies the access-rights of a given role.
      */
-    private class RolapCubeSchemaReader extends RolapSchemaReader {
+    private class RolapCubeSchemaReader
+        extends RolapSchemaReader
+        implements NameResolver.Namespace
+    {
         public RolapCubeSchemaReader(Role role) {
             super(role, RolapCube.this.schema);
             assert role != null : "precondition: role != null";
@@ -817,15 +822,24 @@ public class RolapCube extends CubeBase {
         {
             Member member =
                 (Member) lookupCompound(
-                    RolapCube.this, uniqueNameParts,
-                    failIfNotFound, Category.Member,
+                    RolapCube.this,
+                    uniqueNameParts,
+                    failIfNotFound,
+                    Category.Member,
                     matchType);
-            if (!failIfNotFound && member == null) {
+            if (member == null) {
+                assert !failIfNotFound;
                 return null;
             }
             if (getRole().canAccess(member)) {
                 return member;
             } else {
+                if (!failIfNotFound) {
+                    throw Util.newElementNotFoundException(
+                        Category.Member,
+                        new IdentifierNode(
+                            Util.toOlap4j(uniqueNameParts)));
+                }
                 return null;
             }
         }
@@ -833,6 +847,51 @@ public class RolapCube extends CubeBase {
         public Cube getCube() {
             return RolapCube.this;
         }
+
+        public List<NameResolver.Namespace> getNamespaces() {
+            final List<NameResolver.Namespace> list =
+                new ArrayList<NameResolver.Namespace>();
+            list.add(this);
+            list.addAll(schema.getSchemaReader().getNamespaces());
+            return list;
+        }
+
+        public OlapElement lookupChild(
+            OlapElement parent,
+            IdentifierSegment segment,
+            MatchType matchType)
+        {
+            // ignore matchType
+            return lookupChild(parent, segment);
+        }
+
+        public OlapElement lookupChild(
+            OlapElement parent,
+            IdentifierSegment segment)
+        {
+            // Don't look for stored members, or look for dimensions,
+            // hierarchies, levels at all. Only look for calculated members
+            // and named sets defined against this cube.
+
+            // Look up calc member.
+            for (Formula formula : calculatedMemberList) {
+                if (NameResolver.matches(formula, parent, segment)) {
+                    return formula.getMdxMember();
+                }
+            }
+
+            // Look up named set.
+            if (parent == RolapCube.this) {
+                for (Formula formula : namedSetList) {
+                    if (Util.matches(segment, formula.getName())) {
+                        return formula.getNamedSet();
+                    }
+                }
+            }
+
+            return null;
+        }
+
     }
 }
 

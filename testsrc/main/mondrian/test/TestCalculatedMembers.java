@@ -7,8 +7,6 @@
 // Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 5 October, 2002
 */
 package mondrian.test;
 
@@ -74,7 +72,8 @@ public class TestCalculatedMembers extends BatchTestCase {
         } catch (RuntimeException e) {
             final String msg = e.getMessage();
             if (!msg.equals(
-                    "Mondrian Error:Calculated member '[Measures].[Profit2]' "
+                    "Mondrian Error:Calculated member "
+                    + "'[Measures].[Measures].[Profit2]' "
                     + "already exists in cube 'Sales'"))
             {
                 throw e;
@@ -255,6 +254,62 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #2:\n"
             + "{[Time].[1997].[Q2]}\n"
             + "Row #0: $79,702.05\n");
+    }
+
+    public void testQueryCalcMemberOverridesShallowerStoredMember() {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            // functionality requires new name resolver
+            return;
+        }
+        // Does "[Time].[Time2].[1998]" resolve to
+        // the stored member "[Time].[Time2].[1998]"
+        // or the calculated member "[Time].[Time2].[1997].[1998]"?
+        // In SSAS, the calc member gets chosen, even though it is not as
+        // good a match.
+        assertQueryReturns(
+            "with member [Time].[Weekly].[1998].[1997] as 4\n"
+            + " select [Time].[Weekly].[1997] on 0\n"
+            + " from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[Weekly].[1998].[1997]}\n"
+            + "Row #0: 4\n");
+        // does not match if last segment is different
+        assertQueryReturns(
+            "with member [Time].[Weekly].[1998].[1997xxx] as 4\n"
+            + " select [Time].[Weekly].[1997] on 0\n"
+            + " from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[Weekly].[1997]}\n"
+            + "Row #0: 266,773\n");
+    }
+
+    /**
+     * If there are multiple calc members with the same name, the first is
+     * chosen, even if it is not the best match.
+     */
+    public void testEarlierCalcMember() {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            // functionality requires new name resolver
+            return;
+        }
+        // SSAS returns 2
+        assertQueryReturns(
+            "with\n"
+            + " member [Time].[Time].[1997].[Q1].[1999] as 1\n"
+            + " member [Time].[Time].[1997].[Q1].[1998] as 2\n"
+            + " member [Time].[Time].[1997].[Q2].[1998] as 3\n"
+            + " member [Time].[Time].[1997].[1998] as 4\n"
+            + " select [Time].[Time].[1998] on 0\n"
+            + " from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[1997].[Q1].[1998]}\n"
+            + "Row #0: 2\n");
     }
 
     public void _testWhole() {
@@ -772,7 +827,7 @@ public class TestCalculatedMembers extends BatchTestCase {
 
     public void testChildrenOfCalcMembers() {
         assertQueryReturns(
-            "with member [Time].[# Months Product Sold] as 'Count(Descendants([Time].[Time].LastSibling, [Time].[Month]), EXCLUDEEMPTY)'\n"
+            "with member [Time].[Time].[# Months Product Sold] as 'Count(Descendants([Time].[Time].LastSibling, [Time].[Month]), EXCLUDEEMPTY)'\n"
             + "select Crossjoin([Time].[# Months Product Sold].Children,\n"
             + "     [Store].[All Stores].Children) ON COLUMNS,\n"
             + "   [Product].[All Products].Children ON ROWS from [Sales] where [Measures].[Unit Sales]",
@@ -1661,7 +1716,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "    ([Measures].[Store Sales] / [Measures].[Unit Sales])\n"
             + "  set spark1 as\n"
             + "    ([Time].[1997].[Q1].[1] : [Time].[1997].[Q2].[4])\n"
-            + "  member [Time].[Past 4 months] as\n"
+            + "  member [Time].[Time].[Past 4 months] as\n"
             + "     Generate(\n"
             + "         [spark1],\n"
             + "         CAST(([Measures].CurrentMember + 0.0) AS String),\n"
@@ -1687,7 +1742,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "    solve_order = 1\n"
             + "  set spark1 as\n"
             + "    ([Time].[1997].[Q1].[1] : [Time].[1997].[Q2].[4])\n"
-            + "  member [Time].[Past 4 months] as\n"
+            + "  member [Time].[Time].[Past 4 months] as\n"
             + "     Generate(\n"
             + "         [spark1],\n"
             + "         CAST(([Measures].CurrentMember + 0.0) AS String),\n"
@@ -1705,6 +1760,71 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[Tom1]}\n"
             + "Row #0: 21628.0, 20957.0, 23706.0, 20179.0\n"
             + "Row #1: 2.10558951359349, 2.1023424154220547, 2.1104306926516494, 2.124894692502106\n");
+    }
+
+    /**
+     * Tests referring to a calc member by a name other than its canonical
+     * unique name.
+     */
+    public void testNonCanonical() {
+        // define without 'all', refer with 'all'
+        final String expected =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[USA].[Foo]}\n"
+            + "Row #0: 266,773\n";
+        assertQueryReturns(
+            "with member [Store].[USA].[Foo] as\n"
+            + " [Store].[USA] + [Store].[Canada].[BC]\n"
+            + "select [Store].[All Stores].[USA].[Foo] on 0\n"
+            + "from [Sales]",
+            expected);
+
+        // and vice versa: define without 'all', refer with 'all'
+        assertQueryReturns(
+            "with member [Store].[All Stores].[USA].[Foo] as\n"
+            + " [Store].[USA] + [Store].[Canada].[BC]\n"
+            + "select [Store].[USA].[Foo] on 0\n"
+            + "from [Sales]",
+            expected);
+    }
+
+    public void testCalcMemberParentOfCalcMember() {
+        // SSAS fails with "The X calculated member cannot be used as a parent
+        // of another calculated member."
+        assertQueryThrows(
+            "with member [Gender].[X] as 4\n"
+            + " member [Gender].[X].[Y] as 5\n"
+            + " select [Gender].[X].[Y] on 0\n"
+            + " from [Sales]",
+            "The '[Gender].[X]' calculated member cannot be used as a parent "
+            + "of another calculated member.");
+    }
+
+    public void testCalcMemberSameNameDifferentHierarchies() {
+        assertQueryReturns(
+            "with member [Gender].[X] as 4\n"
+            + " member [Marital Status].[X] as 5\n"
+            + " member [Promotion Media].[X] as 6\n"
+            + " select [Marital Status].[X] on 0\n"
+            + " from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Marital Status].[X]}\n"
+            + "Row #0: 5\n");
+    }
+
+    public void testCalcMemberTooDeep() {
+        // SSAS fails with "The X calculated member cannot be created because
+        // its parent is at the lowest level in the Gender hierarchy."
+        assertQueryThrows(
+            "with member [Gender].[M].[X] as 4\n"
+            + " select [Gender].[M].[X] on 0\n"
+            + " from [Sales]",
+            "The 'X' calculated member cannot be created because its parent is "
+            + "at the lowest level in the [Gender] hierarchy.");
     }
 }
 

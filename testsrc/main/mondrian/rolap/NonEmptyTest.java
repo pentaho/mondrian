@@ -47,6 +47,13 @@ public class NonEmptyTest extends BatchTestCase {
     SqlConstraintFactory scf = SqlConstraintFactory.instance();
     TestContext localTestContext;
 
+    private static final String STORE_TYPE_LEVEL =
+        TestContext.levelName("Store Type", "Store Type", "Store Type");
+
+    private static final String EDUCATION_LEVEL_LEVEL =
+        TestContext.levelName(
+            "Education Level", "Education Level", "Education Level");
+
     public NonEmptyTest() {
         super();
     }
@@ -94,7 +101,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testBugCantRestrictSlicerToCalcMember() throws Exception {
         TestContext ctx = getTestContext();
         ctx.assertQueryReturns(
-            "WITH MEMBER [Time].[Aggr] AS 'Aggregate({[Time].[1998].[Q1], [Time].[1998].[Q2]})' "
+            "WITH Member [Time].[Time].[Aggr] AS 'Aggregate({[Time].[1998].[Q1], [Time].[1998].[Q2]})' "
             + "SELECT {[Measures].[Store Sales]} ON COLUMNS, "
             + "NON EMPTY Order(TopCount([Customers].[Name].Members,3,[Measures].[Store Sales]),[Measures].[Store Sales],BASC) ON ROWS "
             + "FROM [Sales] "
@@ -132,8 +139,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "set [*TOP_SET] as 'Order(Generate([*NATIVE_CJ_SET], {[Product].CurrentMember}), ([Measures].[Unit Sales], [Customers].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM], [Time].[*CTX_MEMBER_SEL~AGG]), BDESC)' "
             + "set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members' "
             + "set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})' "
-            + "set [*METRIC_MEMBERS_Time] as 'Generate([*METRIC_CJ_SET], {[Time].CurrentMember})' "
-            + "set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].CurrentMember})' "
+            + "set [*METRIC_MEMBERS_Time] as 'Generate([*METRIC_CJ_SET], {[Time].[Time].CurrentMember})' "
+            + "set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})' "
             + "set [*BASE_MEMBERS_Customers] as '[Customers].[Name].Members' "
             + "set [*BASE_MEMBERS_Product] as '[Product].[Product Name].Members' "
             + "set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' "
@@ -147,8 +154,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "member [Customers].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Customers].[All Customers]})', SOLVE_ORDER = (- 101.0) "
             + "member [Education Level].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember}))', SOLVE_ORDER = (- 102.0) "
             + "member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})', SOLVE_ORDER = (- 102.0) "
-            + "member [Time].[*CTX_MEMBER_SEL~AGG] as 'Aggregate([*NATIVE_MEMBERS_Time])', SOLVE_ORDER = (- 402.0) "
-            + "member [Time].[*SLICER_MEMBER] as 'Aggregate([*METRIC_MEMBERS_Time])', SOLVE_ORDER = (- 400.0) "
+            + "member [Time].[Time].[*CTX_MEMBER_SEL~AGG] as 'Aggregate([*NATIVE_MEMBERS_Time])', SOLVE_ORDER = (- 402.0) "
+            + "member [Time].[Time].[*SLICER_MEMBER] as 'Aggregate([*METRIC_MEMBERS_Time])', SOLVE_ORDER = (- 400.0) "
             + "select Union(Crossjoin({[Education Level].[*TOTAL_MEMBER_SEL~SUM]}, [*BASE_MEMBERS_Measures]), Crossjoin([*SORTED_COL_AXIS], [*BASE_MEMBERS_Measures])) ON COLUMNS, "
             + "NON EMPTY Union(Crossjoin({[Product].[*TOTAL_MEMBER_SEL~SUM]}, {[Customers].[*DEFAULT_MEMBER]}), Union(Crossjoin(Generate([*METRIC_CJ_SET], {[Product].CurrentMember}), {[Customers].[*TOTAL_MEMBER_SEL~SUM]}), [*SORTED_ROW_AXIS])) ON ROWS "
             + "from [Sales] "
@@ -561,7 +568,7 @@ public class NonEmptyTest extends BatchTestCase {
         // Internal error: can not restrict SQL to calculated Members
         TestContext ctx = getTestContext();
         ctx.assertQueryReturns(
-            "with member [Time].[First Term] as 'Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})' "
+            "with member [Time].[Time].[First Term] as 'Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})' "
             + "select {[Measures].[Unit Sales]} ON COLUMNS, "
             + "TopCount([Product].[Product Subcategory].Members, 3, [Measures].[Unit Sales]) ON ROWS "
             + "from [Sales] "
@@ -767,7 +774,7 @@ public class NonEmptyTest extends BatchTestCase {
             0,
             20,
             "select non empty {CrossJoin({[Store].[Store Name].members}, "
-            + "                        {{[Store Type].[Store Type].members}})}"
+            + "                        {{" + STORE_TYPE_LEVEL + ".members}})}"
             + "                         on rows, "
             + "{[Measures].[Store Sqft]} on columns "
             + "from [Store]",
@@ -1433,7 +1440,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testCmInTopCount() {
         checkNotNative(
             1,
-            "with member [Time].[Jan] as  "
+            "with member [Time].[Time].[Jan] as  "
             + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
             + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
             + "NON EMPTY TopCount({[Time].[Jan]}, 2) ON rows from [Sales] ");
@@ -1445,7 +1452,7 @@ public class NonEmptyTest extends BatchTestCase {
     public void testCmInSlicer() {
         checkNotNative(
             3,
-            "with member [Time].[Jan] as  "
+            "with member [Time].[Time].[Jan] as  "
             + "'Aggregate({[Time].[1998].[Q1].[1], [Time].[1997].[Q1].[1]})'  "
             + "select NON EMPTY {[Measures].[Unit Sales]} ON columns,  "
             + "NON EMPTY [Product].Children ON rows from [Sales] "
@@ -2968,7 +2975,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "            crossjoin("
             + "                {[Product].[All Products].[Drink].[*SUBTOTAL_MEMBER_SEL~SUM], "
             + "                    [Product].[All Products].[Non-Consumable].[*SUBTOTAL_MEMBER_SEL~SUM]}, "
-            + "                [Education Level].[Education Level].Members), "
+            + "                " + EDUCATION_LEVEL_LEVEL + ".Members), "
             + "            {[Customers].[All Customers].[USA].[CA].[*SUBTOTAL_MEMBER_SEL~SUM], "
             + "                [Customers].[All Customers].[USA].[OR].[*SUBTOTAL_MEMBER_SEL~SUM], "
             + "                [Customers].[All Customers].[USA].[WA].[*SUBTOTAL_MEMBER_SEL~SUM]}), "
@@ -3048,7 +3055,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "        {[Customers].[All Customers].[Mexico].[*SUBTOTAL_MEMBER_SEL~SUM], "
             + "            [Customers].[All Customers].[Canada].[*SUBTOTAL_MEMBER_SEL~SUM], "
             + "            [Customers].[All Customers].[USA].[*SUBTOTAL_MEMBER_SEL~SUM]}, "
-            + "        [Education Level].[Education Level].Members) "
+            + "        " + EDUCATION_LEVEL_LEVEL + ".Members) "
             + "    on rows "
             + "from [Sales]");
     }
@@ -3164,7 +3171,7 @@ public class NonEmptyTest extends BatchTestCase {
             5,
             "select "
             + "{[Measures].[Unit Sales]} on columns, "
-            + "NonEmptyCrossJoin([Education Level].[Education Level].Members, "
+            + "NonEmptyCrossJoin(" + EDUCATION_LEVEL_LEVEL + ".Members, "
             + "{[Time].[1997].[Q1], [Time].[1998].[Q2]}) on rows from Sales");
     }
 
@@ -3183,7 +3190,7 @@ public class NonEmptyTest extends BatchTestCase {
             15, 15,
             "select "
             + "{[Measures].[Unit Sales]} on columns, "
-            + "NonEmptyCrossJoin([Education Level].[Education Level].Members, "
+            + "NonEmptyCrossJoin(" + EDUCATION_LEVEL_LEVEL + ".Members, "
             + "{[Time].[1997].[Q1], [Time].[1997].[Q2], [Time].[1997].[Q3], "
             + "[Time].[1998].[Q1], [Time].[1998].[Q2], [Time].[1998].[Q3]})"
             + "on rows from Sales");
@@ -3204,7 +3211,7 @@ public class NonEmptyTest extends BatchTestCase {
             10, 10,
             "select "
             + "{[Measures].[Unit Sales]} on columns, "
-            + "NonEmptyCrossJoin([Education Level].[Education Level].Members, "
+            + "NonEmptyCrossJoin(" + EDUCATION_LEVEL_LEVEL + ".Members, "
             + "{[Store].[All Stores].[USA].[CA].[Beverly Hills], "
             + "[Store].[All Stores].[USA].[CA].[San Francisco]}) "
             + "on rows from Sales");
@@ -3225,7 +3232,7 @@ public class NonEmptyTest extends BatchTestCase {
             10, 10,
             "select "
             + "{[Measures].[Unit Sales]} on columns, "
-            + "NonEmptyCrossJoin([Education Level].[Education Level].Members, "
+            + "NonEmptyCrossJoin(" + EDUCATION_LEVEL_LEVEL + ".Members, "
             + "{[Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6], "
             + "[Store].[All Stores].[USA].[WA].[Bellingham].[Store 2]}) "
             + "on rows from Sales");
@@ -3237,7 +3244,7 @@ public class NonEmptyTest extends BatchTestCase {
             10,
             "select "
             + "{[Measures].[Unit Sales]} on columns, "
-            + "NonEmptyCrossJoin([Education Level].[Education Level].Members, "
+            + "NonEmptyCrossJoin(" + EDUCATION_LEVEL_LEVEL + ".Members, "
             + "{[Product].[All Products].[Drink].[Alcoholic Beverages], "
             + "[Product].[All Products].[Food].[Breakfast Foods]}) "
             + "on rows from Sales");
@@ -3322,11 +3329,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "Set [*BASE_MEMBERS_Stores] as '{[Store].[USA].[CA], [Store].[USA].[WA]}' "
             + "Set [*GENERATED_MEMBERS_Stores] as "
             + "'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' "
-            + "Member [Time].[*SM_CTX_SEL] as 'Aggregate([*GENERATED_MEMBERS_Dates])' "
+            + "Member [Time].[Time].[*SM_CTX_SEL] as 'Aggregate([*GENERATED_MEMBERS_Dates])' "
             + "Member [Measures].[*SUMMARY_METRIC_0] as "
             + "'[Measures].[Unit Sales]/([Measures].[Unit Sales],[Time].[*SM_CTX_SEL])', "
             + "FORMAT_STRING = '0.00%' "
-            + "Member [Time].[*SUBTOTAL_MEMBER_SEL~SUM] as 'sum([*GENERATED_MEMBERS_Dates])' "
+            + "Member [Time].[Time].[*SUBTOTAL_MEMBER_SEL~SUM] as 'sum([*GENERATED_MEMBERS_Dates])' "
             + "Member [Store].[*SUBTOTAL_MEMBER_SEL~SUM] as "
             + "'sum(Filter([*GENERATED_MEMBERS_Stores], "
             + "([Measures].[Unit Sales], [Time].[*SUBTOTAL_MEMBER_SEL~SUM]) > 0.0))' "
@@ -3447,7 +3454,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' "
             + "Set [*METRIC_MEMBERS_Store] as 'Generate([*METRIC_CJ_SET], {[Store].CurrentMember})' "
             + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[Store Sales],[Measures].[Unit Sales]}' "
-            + "Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members' "
+            + "Set [*BASE_MEMBERS_Education Level] as '" + EDUCATION_LEVEL_LEVEL
+            + ".Members' "
             + "Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})' "
             + "Set [*METRIC_MEMBERS_Education Level] as 'Generate([*METRIC_CJ_SET], {[Education Level].CurrentMember})' "
             + "Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members' "
@@ -3480,7 +3488,7 @@ public class NonEmptyTest extends BatchTestCase {
             1,
             "With "
             + "Set BM_PRODUCT as '{[Product].[All Products].[Drink]}' "
-            + "Set BM_EDU as '[Education Level].[Education Level].Members' "
+            + "Set BM_EDU as '" + EDUCATION_LEVEL_LEVEL + ".Members' "
             + "Set BM_GENDER as '{[Gender].[Gender].[M]}' "
             + "Set NECJ_SET as 'NonEmptyCrossJoin(BM_GENDER, NonEmptyCrossJoin(BM_EDU,BM_PRODUCT))' "
             + "Set GM_PRODUCT as 'Generate(NECJ_SET, {[Product].CurrentMember})' "

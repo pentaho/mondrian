@@ -454,7 +454,7 @@ public class DrillThroughTest extends FoodMartTestCase {
     public void testDrillThroughBugMondrian180() {
         Result result = executeQuery(
             "with set [Date Range] as '{[Time].[1997].[Q1], [Time].[1997].[Q2]}'\n"
-            + "member [Time].[Date Range] as 'Aggregate([Date Range])'\n"
+            + "member [Time].[Time].[Date Range] as 'Aggregate([Date Range])'\n"
             + "select {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + "Hierarchize(Union(Union(Union({[Store].[All Stores]},"
             + " [Store].[All Stores].Children),"

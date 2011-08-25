@@ -7,11 +7,9 @@
 // Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 1 March, 2000
 */
-
 package mondrian.olap;
+
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.MemberExpr;
@@ -169,21 +167,22 @@ public class Formula extends QueryPart {
      */
     void createElement(Query q) {
         // first resolve the name, bit by bit
+        final List<Id.Segment> segments = id.getSegments();
         if (isMember) {
             if (mdxMember != null) {
                 return;
             }
             OlapElement mdxElement = q.getCube();
             final SchemaReader schemaReader = q.getSchemaReader(false);
-            for (int i = 0; i < id.getSegments().size(); i++) {
-                Id.Segment segment = id.getSegments().get(i);
+            for (int i = 0; i < segments.size(); i++) {
+                final Id.Segment segment = segments.get(i);
                 OlapElement parent = mdxElement;
                 mdxElement = null;
                 // The last segment of the id is the name of the calculated
                 // member so no need to look for a pre-existing child.  This
                 // avoids unnecessarily executing SQL and loading children into
                 // cache.
-                if (i != id.getSegments().size() - 1) {
+                if (i != segments.size() - 1) {
                     mdxElement = schemaReader.getElementChild(parent, segment);
                 }
 
@@ -191,25 +190,56 @@ public class Formula extends QueryPart {
                 // defining. We would only find one if the member is overriding
                 // a member at the cube or schema level, and we don't want to
                 // change that member's properties.
-                if (mdxElement == null || i == id.getSegments().size() - 1) {
+                if (mdxElement == null || i == segments.size() - 1) {
                     // this part of the name was not found... define it
                     Level level;
                     Member parentMember = null;
                     if (parent instanceof Member) {
                         parentMember = (Member) parent;
                         level = parentMember.getLevel().getChildLevel();
+                        if (level == null) {
+                            throw Util.newError(
+                                "The '"
+                                + segment.name
+                                + "' calculated member cannot be created "
+                                + "because its parent is at the lowest level "
+                                + "in the "
+                                + parentMember.getHierarchy().getUniqueName()
+                                + " hierarchy.");
+                        }
                     } else {
-                        Hierarchy hierarchy = parent.getHierarchy();
+                        final Hierarchy hierarchy;
+                        if (parent instanceof Dimension
+                            && MondrianProperties.instance()
+                                .SsasCompatibleNaming.get())
+                        {
+                            Dimension dimension = (Dimension) parent;
+                            if (dimension.getHierarchies().length == 1) {
+                                hierarchy = dimension.getHierarchies()[0];
+                            } else {
+                                hierarchy = null;
+                            }
+                        } else {
+                            hierarchy = parent.getHierarchy();
+                        }
                         if (hierarchy == null) {
                             throw MondrianResource.instance()
                                 .MdxCalculatedHierarchyError.ex(id.toString());
                         }
                         level = hierarchy.getLevelList().get(0);
                     }
+                    if (parentMember != null
+                        && parentMember.isCalculated())
+                    {
+                        throw Util.newError(
+                            "The '"
+                            + parent
+                            + "' calculated member cannot be used as a parent"
+                            + " of another calculated member.");
+                    }
                     Member mdxMember =
                         level.getHierarchy().createMember(
-                            parentMember, level, id.getSegments().get(i).name,
-                            this);
+                            parentMember, level, segment.name, this);
                     assert mdxMember != null;
                     mdxElement = mdxMember;
                 }
@@ -218,14 +248,14 @@ public class Formula extends QueryPart {
         } else {
             // don't need to tell query... it's already in query.formula
             Util.assertTrue(
-                id.getSegments().size() == 1,
+                segments.size() == 1,
                 "set names must not be compound");
             // Caption and description are initialized to null, and annotations
             // to the empty map. If named set is defined in the schema, we will
             // give these their true values later.
             mdxSet =
                 new SetBase(
-                    id.getSegments().get(0).name,
+                    segments.get(0).name,
                     null,
                     null,
                     exp,

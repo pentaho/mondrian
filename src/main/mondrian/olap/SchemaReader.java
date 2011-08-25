@@ -286,6 +286,28 @@ public interface SchemaReader {
         int category);
 
     /**
+     * Should only be called by implementations of
+     * {@link #lookupCompound(OlapElement, java.util.List, boolean, int, MatchType)}.
+     *
+     * @param parent Parent element to search in
+     * @param names Exploded compound name, such as {"Products",
+     *     "Product Department", "Produce"}
+     * @param failIfNotFound If the element is not found, determines whether
+     *      to return null or throw an error
+     * @param category Type of returned element, a {@link Category} value;
+     *      {@link Category#Unknown} if it doesn't matter.
+     * @param matchType indicates the match mode; if not specified, EXACT
+     * @return Found element
+
+    OlapElement lookupCompoundInternal(
+        OlapElement parent,
+        List<Id.Segment> names,
+        boolean failIfNotFound,
+        int category,
+        MatchType matchType);
+    */
+
+    /**
      * Looks up a calculated member by name. If the name is not found in the
      * current scope, returns null.
      */
@@ -490,6 +512,16 @@ public interface SchemaReader {
      * @return Schema reader that assigns a locus to each operation
      */
     SchemaReader withLocus();
+
+    /**
+     * Returns a list of namespaces to search when resolving elements by name.
+     *
+     * <p>For example, a schema reader from the perspective of a cube will
+     * return cube and schema namespaces.</p>
+     *
+     * @return List of namespaces
+     */
+    List<NameResolver.Namespace> getNamespaces();
 }
 
 // End SchemaReader.java

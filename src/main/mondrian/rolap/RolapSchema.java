@@ -10,7 +10,6 @@
 //
 // jhyde, 26 July, 2001
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -30,6 +29,7 @@ import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
 import org.olap4j.impl.UnmodifiableArrayList;
+import org.olap4j.mdx.IdentifierSegment;
 
 import javax.sql.DataSource;
 import java.lang.reflect.*;
@@ -471,28 +471,42 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         final String calcMemberName,
         final String cubeName)
     {
-        List<Id.Segment> nameParts = Util.parseIdentifier(calcMemberName);
         for (final MondrianDef.Cube cube
             : Util.filter(xmlSchema.children, MondrianDef.Cube.class))
         {
             if (!Util.equalName(cube.name, cubeName)) {
                 continue;
             }
-            for (MondrianDef.CalculatedMember calculatedMember
+            for (MondrianDef.CalculatedMember xmlCalcMember
                 : Util.filter(
                     cube.children, MondrianDef.CalculatedMember.class))
             {
+                // FIXME: Since fully-qualified names are not unique, we
+                // should compare unique names. Also, the logic assumes that
+                // CalculatedMember.dimension is not quoted (e.g. "Time")
+                // and CalculatedMember.hierarchy is quoted
+                // (e.g. "[Time].[Weekly]").
                 if (Util.equalName(
-                        calculatedMember.dimension, nameParts.get(0).name)
-                    && Util.equalName(
-                        calculatedMember.name,
-                        nameParts.get(nameParts.size() - 1).name))
+                        calcMemberFqName(xmlCalcMember),
+                        calcMemberName))
                 {
-                    return calculatedMember;
+                    return xmlCalcMember;
                 }
             }
         }
         return null;
+    }
+
+    private String calcMemberFqName(MondrianDef.CalculatedMember xmlCalcMember)
+    {
+        if (xmlCalcMember.dimension != null) {
+            return Util.makeFqName(
+                Util.quoteMdxIdentifier(xmlCalcMember.dimension),
+                xmlCalcMember.name);
+        } else {
+            return Util.makeFqName(
+                xmlCalcMember.hierarchy, xmlCalcMember.name);
+        }
     }
 
     /**
@@ -517,6 +531,17 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             }
         }
         return list;
+    }
+
+    public NamedSet getNamedSet(IdentifierSegment segment) {
+        // FIXME: write a map that efficiently maps segment->value, taking
+        // into account case-sensitivity etc.
+        for (Map.Entry<String, NamedSet> entry : mapNameToSet.entrySet()) {
+            if (Util.matches(segment, entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     /**

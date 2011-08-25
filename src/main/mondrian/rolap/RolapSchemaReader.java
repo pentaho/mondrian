@@ -11,12 +11,7 @@
 */
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 import javax.sql.DataSource;
 
 import mondrian.olap.*;
@@ -31,6 +26,7 @@ import mondrian.calc.impl.GenericCalc;
 
 import org.apache.log4j.Logger;
 import org.eigenbase.util.property.Property;
+import org.olap4j.mdx.IdentifierSegment;
 
 /**
  * A <code>RolapSchemaReader</code> allows you to read schema objects while
@@ -42,7 +38,8 @@ import org.eigenbase.util.property.Property;
  */
 public class RolapSchemaReader
     implements SchemaReader,
-        RolapNativeSet.SchemaReaderWithMemberReaderAvailable
+        RolapNativeSet.SchemaReaderWithMemberReaderAvailable,
+        NameResolver.Namespace
 {
     protected final Role role;
     private final Map<Hierarchy, MemberReader> hierarchyReaders =
@@ -396,7 +393,31 @@ public class RolapSchemaReader
             parent, names, failIfNotFound, category, MatchType.EXACT);
     }
 
-    public OlapElement lookupCompound(
+    public final OlapElement lookupCompound(
+        OlapElement parent,
+        List<Id.Segment> names,
+        boolean failIfNotFound,
+        int category,
+        MatchType matchType)
+    {
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return new NameResolver().resolve(
+                parent,
+                Util.toOlap4j(names),
+                failIfNotFound,
+                category,
+                matchType,
+                getNamespaces());
+        }
+        return lookupCompoundInternal(
+            parent,
+            names,
+            failIfNotFound,
+            category,
+            matchType);
+    }
+
+    public final OlapElement lookupCompoundInternal(
         OlapElement parent,
         List<Id.Segment> names,
         boolean failIfNotFound,
@@ -405,6 +426,38 @@ public class RolapSchemaReader
     {
         return Util.lookupCompound(
             this, parent, names, failIfNotFound, category, matchType);
+    }
+
+    public List<NameResolver.Namespace> getNamespaces() {
+        return Collections.<NameResolver.Namespace>singletonList(this);
+    }
+
+    public OlapElement lookupChild(
+        OlapElement parent,
+        IdentifierSegment segment)
+    {
+        return lookupChild(parent, segment, MatchType.EXACT);
+    }
+
+    public OlapElement lookupChild(
+        OlapElement parent,
+        IdentifierSegment segment,
+        MatchType matchType)
+    {
+        OlapElement element = getElementChild(
+            parent,
+            Util.convert(segment),
+            matchType);
+        if (element != null) {
+            return element;
+        }
+        if (parent instanceof Cube) {
+            // Named sets defined at the schema level do not, of course, belong
+            // to a cube. But if parent is a cube, this indicates that the name
+            // has not been qualified.
+            element = schema.getNamedSet(segment);
+        }
+        return element;
     }
 
     public Member lookupMemberChildByName(

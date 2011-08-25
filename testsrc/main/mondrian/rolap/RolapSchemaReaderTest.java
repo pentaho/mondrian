@@ -126,6 +126,8 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
     public void testGetCubeDimensions() {
         final String timeWeekly =
             TestContext.hierarchyName("Time", "Weekly");
+        final String timeTime =
+            TestContext.hierarchyName("Time", "Time");
         final TestContext testContext =
             TestContext.instance().create(
                 null, null, null, null, null,
@@ -133,7 +135,9 @@ public class RolapSchemaReaderTest extends FoodMartTestCase {
                 + "  <SchemaGrant access=\"none\">\n"
                 + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
                 + "      <DimensionGrant dimension=\"Store\" access=\"none\"/>\n"
-                + "      <HierarchyGrant hierarchy=\"Time\" access=\"none\"/>\n"
+                + "      <HierarchyGrant hierarchy=\""
+                + timeTime
+                + "\" access=\"none\"/>\n"
                 + "      <HierarchyGrant hierarchy=\""
                 + timeWeekly
                 + "\" access=\"all\"/>\n"

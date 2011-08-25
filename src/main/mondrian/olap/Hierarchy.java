@@ -4,13 +4,10 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 2 March, 1999
 */
-
 package mondrian.olap;
 
 import java.util.List;
@@ -18,6 +15,8 @@ import java.util.Map;
 
 /**
  * A <code>Hierarchy</code> is a set of members, organized into levels.
+ *
+ * @version $Id$
  */
 public interface Hierarchy extends OlapElement, Annotated {
     /**
@@ -76,6 +75,17 @@ public interface Hierarchy extends OlapElement, Annotated {
     Member createMember(
         Member parent, Level level, String name, Formula formula);
 
+    /**
+     * Returns the unique name of this hierarchy, always including the dimension
+     * name, e.g. "[Time].[Time]", regardless of whether
+     * {@link MondrianProperties#SsasCompatibleNaming} is enabled.
+     *
+     * @deprecated Will be removed in mondrian-4.0, when
+     * {@link #getUniqueName()} will have this behavior.
+     *
+     * @return Unique name of hierarchy.
+     */
+    String getUniqueNameSsas();
 }
 
 // End Hierarchy.java

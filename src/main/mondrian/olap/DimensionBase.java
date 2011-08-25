@@ -4,13 +4,10 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 6 August, 2001
 */
-
 package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
@@ -111,40 +108,26 @@ public abstract class DimensionBase
                 OlapElement oeLevel =
                     getHierarchy().lookupChild(schemaReader, s, matchType);
                 if (oeLevel != null) {
-                    oe = oeLevel; // level match overrides hierarchy match
+                    return oeLevel; // level match overrides hierarchy match
                 }
             }
+            return oe;
         } else {
             // New (SSAS-compatible) behavior. If there is no matching
             // hierarchy, find the first level with the given name.
-            if (oe == null) {
-                for (Hierarchy hierarchy
-                    : schemaReader.getDimensionHierarchies(this))
-                {
-                    oe = hierarchy.lookupChild(schemaReader, s, matchType);
-                    if (oe != null) {
-                        break;
-                    }
+            if (oe != null) {
+                return oe;
+            }
+            final List<Hierarchy> hierarchyList =
+                schemaReader.getDimensionHierarchies(this);
+            for (Hierarchy hierarchy : hierarchyList) {
+                oe = hierarchy.lookupChild(schemaReader, s, matchType);
+                if (oe != null) {
+                    return oe;
                 }
             }
+            return null;
         }
-
-        if (getLogger().isDebugEnabled()) {
-            StringBuilder buf = new StringBuilder(64);
-            buf.append("DimensionBase.lookupChild: ");
-            buf.append("name=");
-            buf.append(getName());
-            buf.append(", childname=");
-            buf.append(s);
-            if (oe == null) {
-                buf.append(" returning null");
-            } else {
-                buf.append(" returning elementname=").append(oe.getName());
-            }
-            getLogger().debug(buf.toString());
-        }
-
-        return oe;
     }
 
     public boolean isHighCardinality() {

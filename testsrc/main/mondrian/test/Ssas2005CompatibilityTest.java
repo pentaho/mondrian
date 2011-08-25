@@ -435,7 +435,70 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         assertQueryThrows(
             "select [Product].Members on 0\n"
             + "from [Warehouse and Sales]",
-            "The 'Product' dimension contains more than one hierarchy, therefore the hierarchy must be explicitly specified.");
+            "The 'Product' dimension contains more than one hierarchy, "
+            + "therefore the hierarchy must be explicitly specified.");
+    }
+
+    /**
+     * Tests that it is an error to define a calc member in a dimension
+     * with multiple hierarchies without specifying hierarchy.
+     * Based on {@link mondrian.test.BasicQueryTest#testHalfYears()}.
+     */
+    public void testCalcMemberAmbiguousHierarchy() {
+        String mdx =
+            "WITH MEMBER [Measures].[ProfitPercent] AS\n"
+            + "     '([Measures].[Store Sales]-[Measures].[Store Cost])/"
+            + "([Measures].[Store Cost])',\n"
+            + " FORMAT_STRING = '#.00%', SOLVE_ORDER = 1\n"
+            + " MEMBER [Time].[First Half 97] AS  '[Time].[1997].[Q1] + "
+            + "[Time].[1997].[Q2]'\n"
+            + " MEMBER [Time].[Second Half 97] AS '[Time].[1997].[Q3] + "
+            + "[Time].[1997].[Q4]'\n"
+            + " SELECT {[Time].[First Half 97],\n"
+            + "     [Time].[Second Half 97],\n"
+            + "     [Time].[1997].CHILDREN} ON COLUMNS,\n"
+            + " {[Store].[Store Country].[USA].CHILDREN} ON ROWS\n"
+            + " FROM [Sales]\n"
+            + " WHERE ([Measures].[ProfitPercent])";
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            TestContext.instance().assertQueryThrows(
+                mdx,
+                "Hierarchy for calculated member '[Time].[First Half 97]' not found");
+        } else {
+            TestContext.instance().assertQueryReturns(
+                mdx,
+                "Axis #0:\n"
+                + "{[Measures].[ProfitPercent]}\n"
+                + "Axis #1:\n"
+                + "{[Time].[First Half 97]}\n"
+                + "{[Time].[Second Half 97]}\n"
+                + "{[Time].[1997].[Q1]}\n"
+                + "{[Time].[1997].[Q2]}\n"
+                + "{[Time].[1997].[Q3]}\n"
+                + "{[Time].[1997].[Q4]}\n"
+                + "Axis #2:\n"
+                + "{[Store].[USA].[CA]}\n"
+                + "{[Store].[USA].[OR]}\n"
+                + "{[Store].[USA].[WA]}\n"
+                + "Row #0: 150.55%\n"
+                + "Row #0: 150.53%\n"
+                + "Row #0: 150.68%\n"
+                + "Row #0: 150.44%\n"
+                + "Row #0: 151.35%\n"
+                + "Row #0: 149.81%\n"
+                + "Row #1: 150.15%\n"
+                + "Row #1: 151.08%\n"
+                + "Row #1: 149.80%\n"
+                + "Row #1: 150.60%\n"
+                + "Row #1: 151.37%\n"
+                + "Row #1: 150.78%\n"
+                + "Row #2: 150.59%\n"
+                + "Row #2: 150.34%\n"
+                + "Row #2: 150.72%\n"
+                + "Row #2: 150.45%\n"
+                + "Row #2: 150.39%\n"
+                + "Row #2: 150.29%\n");
+        }
     }
 
     // TODO:
@@ -1534,6 +1597,34 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "[Customer Last Name].[Mack]\n"
             + "[Customer Last Name].[Mackin]\n"
             + "[Customer Last Name].[Maddalena]");
+    }
+
+    /**
+     * SSAS can resolve root members of a hierarchy even if not qualified
+     * by hierarchy, and even if the dimension has more than one hierarchy.
+     */
+    public void testRootMembers() {
+        // for member defined in the database
+        final String timeByWeek =
+            TestContext.hierarchyName("Time", "Time By Week");
+        assertExprReturns(
+            "[Time].[1997].Level.UniqueName",
+            timeByWeek + ".[Year2]");
+
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
+        // now for a calc member defined in a query
+        assertQueryReturns(
+            "with member [Time].[Time2].[Foo] as\n"
+            + "[Time].[Time2].[1997] + [Time].[Time2].[1997].[Q3]\n"
+            + "select [Time].[Foo] on 0\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time].[Time2].[Foo]}\n"
+            + "Row #0: 332,621\n");
     }
 
     /**

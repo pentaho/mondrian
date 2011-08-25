@@ -113,7 +113,7 @@ Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_ST
 Member [Measures].[*SUMMARY_MEASURE_1] as
     '[Measures].[Store Cost]/([Measures].[Store Cost],Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*TOTAL_MEMBER_SEL~SUM"))', FORMAT_STRING = '###0.00%', SOLVE_ORDER=50
 Member [Gender].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Gender])', SOLVE_ORDER=-102 
-Member [Time].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])', SOLVE_ORDER=-102 
+Member [Time].[Time].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])', SOLVE_ORDER=-102
 Member [Measures].[*Store Cost_SEL~SUM] as '([Measures].[Store Cost],[Product].CurrentMember,[Education Level].CurrentMember,[Gender].[*CTX_METRIC_MEMBER_SEL~SUM],[Time].[*CTX_METRIC_MEMBER_SEL~SUM])', SOLVE_ORDER=200 
 Member [Education Level].[*TOTAL_MEMBER_SEL~SUM] as 
     'Sum(Generate(Exists([*METRIC_CJ_SET], {[Product].CurrentMember}),
@@ -127,7 +127,7 @@ Member [Product].[Food].[*TOTAL_MEMBER_SEL~SUM] as
 Member [Product].[*TOTAL_MEMBER_SEL~SUM] as
     'Sum(Generate([*METRIC_CJ_SET],
                   {([Product].CurrentMember, [Education Level].CurrentMember)}))', SOLVE_ORDER=-100 
-Member [Time].[*FILTER_MEMBER] as 'Aggregate ([*METRIC_MEMBERS_Time])', SOLVE_ORDER=-200 
+Member [Time].[Time].[*FILTER_MEMBER] as 'Aggregate ([*METRIC_MEMBERS_Time])', SOLVE_ORDER=-200
 Select
 CrossJoin(Generate([*METRIC_CJ_SET], {([Gender].CurrentMember)}),[*BASE_MEMBERS_Measures]) on columns,
 Non Empty Union(

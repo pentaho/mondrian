@@ -2814,9 +2814,9 @@ public class FunctionTest extends FoodMartTestCase {
     public void testAggregate2() {
         assertQueryReturns(
             "WITH\n"
-            + "  MEMBER [Time].[1st Half Sales] AS 'Aggregate({Time.[1997].[Q1], Time.[1997].[Q2]})'\n"
-            + "  MEMBER [Time].[2nd Half Sales] AS 'Aggregate({Time.[1997].[Q3], Time.[1997].[Q4]})'\n"
-            + "  MEMBER [Time].[Difference] AS 'Time.[2nd Half Sales] - Time.[1st Half Sales]'\n"
+            + "  Member [Time].[Time].[1st Half Sales] AS 'Aggregate({Time.[1997].[Q1], Time.[1997].[Q2]})'\n"
+            + "  Member [Time].[Time].[2nd Half Sales] AS 'Aggregate({Time.[1997].[Q3], Time.[1997].[Q4]})'\n"
+            + "  Member [Time].[Time].[Difference] AS 'Time.[2nd Half Sales] - Time.[1st Half Sales]'\n"
             + "SELECT\n"
             + "   { [Store].[Store State].Members} ON COLUMNS,\n"
             + "   { Time.[1st Half Sales], Time.[2nd Half Sales], Time.[Difference]} ON ROWS\n"
@@ -2888,9 +2888,9 @@ public class FunctionTest extends FoodMartTestCase {
     public void testAggregate2AllMembers() {
         assertQueryReturns(
             "WITH\n"
-            + "  MEMBER [Time].[1st Half Sales] AS 'Aggregate({Time.[1997].[Q1], Time.[1997].[Q2]})'\n"
-            + "  MEMBER [Time].[2nd Half Sales] AS 'Aggregate({Time.[1997].[Q3], Time.[1997].[Q4]})'\n"
-            + "  MEMBER [Time].[Difference] AS 'Time.[2nd Half Sales] - Time.[1st Half Sales]'\n"
+            + "  Member [Time].[Time].[1st Half Sales] AS 'Aggregate({Time.[1997].[Q1], Time.[1997].[Q2]})'\n"
+            + "  Member [Time].[Time].[2nd Half Sales] AS 'Aggregate({Time.[1997].[Q3], Time.[1997].[Q4]})'\n"
+            + "  Member [Time].[Time].[Difference] AS 'Time.[2nd Half Sales] - Time.[1st Half Sales]'\n"
             + "SELECT\n"
             + "   { [Store].[Store State].AllMembers} ON COLUMNS,\n"
             + "   { Time.[1st Half Sales], Time.[2nd Half Sales], Time.[Difference]} ON ROWS\n"
@@ -2948,7 +2948,7 @@ public class FunctionTest extends FoodMartTestCase {
 
     public void testAggregateToSimulateCompoundSlicer() {
         assertQueryReturns(
-            "WITH MEMBER [Time].[1997 H1] as 'Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})'\n"
+            "WITH MEMBER [Time].[Time].[1997 H1] as 'Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})'\n"
             + "  MEMBER [Education Level].[College or higher] as 'Aggregate({[Education Level].[Bachelors Degree], [Education Level].[Graduate Degree]})'\n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns,\n"
             + "  {[Product].children} on rows\n"
@@ -3097,10 +3097,10 @@ public class FunctionTest extends FoodMartTestCase {
             + "    Iif("
             + TestContext.hierarchyName("Time", "Time")
             + ".CurrentMember.Name = 'Q2', 1, 0)\n"
-            + "  MEMBER [Time].[CountExc] AS\n"
+            + "  Member [Time].[Time].[CountExc] AS\n"
             + "    Count([Time].[1997].Children, EXCLUDEEMPTY),\n"
             + "    SOLVE_ORDER = 2\n"
-            + "  MEMBER [Time].[CountInc] AS\n"
+            + "  Member [Time].[Time].[CountInc] AS\n"
             + "    Count([Time].[1997].Children, INCLUDEEMPTY),\n"
             + "    SOLVE_ORDER = 2\n"
             + "SELECT {[Measures].[Foo],\n"
@@ -3242,9 +3242,9 @@ public class FunctionTest extends FoodMartTestCase {
     public void testMedian2() {
         assertQueryReturns(
             "WITH\n"
-            + "   MEMBER [Time].[1st Half Sales] AS 'Sum({[Time].[1997].[Q1], [Time].[1997].[Q2]})'\n"
-            + "   MEMBER [Time].[2nd Half Sales] AS 'Sum({[Time].[1997].[Q3], [Time].[1997].[Q4]})'\n"
-            + "   MEMBER [Time].[Median] AS 'Median(Time.[Time].Members)'\n"
+            + "   Member [Time].[Time].[1st Half Sales] AS 'Sum({[Time].[1997].[Q1], [Time].[1997].[Q2]})'\n"
+            + "   Member [Time].[Time].[2nd Half Sales] AS 'Sum({[Time].[1997].[Q3], [Time].[1997].[Q4]})'\n"
+            + "   Member [Time].[Time].[Median] AS 'Median(Time.[Time].Members)'\n"
             + "SELECT\n"
             + "   NON EMPTY { [Store].[Store Name].Members} ON COLUMNS,\n"
             + "   { [Time].[1st Half Sales], [Time].[2nd Half Sales], [Time].[Median]} ON ROWS\n"
@@ -11591,7 +11591,7 @@ Intel platforms):
 
     public void testFilterCalcSlicer() {
         assertQueryReturns(
-            "with member [Time].[Date Range] as \n"
+            "with member [Time].[Time].[Date Range] as \n"
             + "'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q3]})'\n"
             + "select\n"
             + "{[Measures].[Unit Sales],[Measures].[Store Cost],\n"
@@ -11611,7 +11611,7 @@ Intel platforms):
             + "Row #0: 76,151.59\n"
             + "Row #0: 190,776.88\n");
         assertQueryReturns(
-            "with member [Time].[Date Range] as \n"
+            "with member [Time].[Time].[Date Range] as \n"
             + "'Aggregate({[Time].[1997].[Q1]:[Time].[1997].[Q3]})'\n"
             + "select\n"
             + "{[Measures].[Unit Sales],[Measures].[Store Cost],\n"

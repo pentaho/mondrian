@@ -381,6 +381,14 @@ public class RolapUtil {
         MatchType matchType,
         boolean caseInsensitive)
     {
+        switch (matchType) {
+        case FIRST:
+            return members.get(0);
+        case LAST:
+            return members.get(members.size() - 1);
+        default:
+            // fall through
+        }
         // create a member corresponding to the member we're trying
         // to locate so we can use it to hierarchically compare against
         // the members array

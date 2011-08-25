@@ -254,7 +254,10 @@ public class RolapSchemaLoader {
                 RolapCube cube =
                     new RolapCube(
                         schema,
-                        xmlCube.name, xmlCube.visible, xmlCube.caption, xmlCube.description,
+                        xmlCube.name,
+                        xmlCube.visible,
+                        xmlCube.caption,
+                        xmlCube.description,
                         createAnnotationMap(xmlCube.getAnnotations()),
                         xmlSchema.measuresCaption);
                 validator.putXml(cube, xmlCube);

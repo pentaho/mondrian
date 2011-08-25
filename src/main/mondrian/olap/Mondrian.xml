@@ -1066,9 +1066,22 @@ Revision is $Id$
                 Equivalent to the Formula sub-element.
             </Doc>
         </Attribute>
-        <Attribute name="dimension" required="true">
+        <Attribute name="dimension" required="false">
             <Doc>
-                Name of the dimension which this member belongs to.
+                <p>Name of the dimension that this member belongs to.</p>
+                <p>Deprecated: use {@code hierarchy} attribute instead.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="hierarchy" required="false">
+            <Doc>
+                <p>Name of the hierarchy that this member belongs to.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="parent" required="false">
+            <Doc>
+                Fully-qualified name of the parent member.
+                If not specified, the member will be at the lowest level
+                (besides the 'all' level) in the hierarchy.
             </Doc>
         </Attribute>
         <Attribute name="visible" type="Boolean" required="false">

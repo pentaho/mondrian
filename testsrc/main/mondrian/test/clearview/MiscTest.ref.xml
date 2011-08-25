@@ -145,7 +145,7 @@ With
   Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
   Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
   Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-200
-  Member [Time].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Time])', SOLVE_ORDER=-200
+  Member [Time].[Time].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Time])', SOLVE_ORDER=-200
   Member [Education Level].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Education Level])', SOLVE_ORDER=-200
 Select
   [*BASE_MEMBERS_Measures] on columns,
@@ -189,7 +189,7 @@ With
   Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
   Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
   Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-200
-  Member [Time].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Time])', SOLVE_ORDER=-200
+  Member [Time].[Time].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Time])', SOLVE_ORDER=-200
   Member [Education Level].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Education Level])', SOLVE_ORDER=-200
 Select
   [*BASE_MEMBERS_Measures] on columns,

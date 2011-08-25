@@ -402,6 +402,7 @@ public class AggTableManager {
 
     private void deregisterTriggers(final MondrianProperties properties) {
         // Remove this AggTableManager's instance's triggers.
+        final Trigger[] triggers = this.triggers;
         if (triggers == null) {
             return;
         }

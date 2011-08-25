@@ -1297,7 +1297,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testSlicerWithCalculatedMembers() {
         assertSize(
-            "WITH MEMBER [Time].[1997].[H1] as ' Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})' \n"
+            "WITH Member [Time].[Time].[1997].[H1] as ' Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})' \n"
             + "  MEMBER [Measures].[Store Margin] as '[Measures].[Store Sales] - [Measures].[Store Cost]'\n"
             + "SELECT {[Gender].children} on columns,\n"
             + " filter({[Product].members}, [Gender].[F] > 10000) on rows\n"
@@ -1427,10 +1427,11 @@ public class BasicQueryTest extends FoodMartTestCase {
             "WITH\n"
             + "   MEMBER [Product].[ProdCalc] as '1', SOLVE_ORDER=1\n"
             + "   MEMBER [Measures].[MeasuresCalc] as '2', SOLVE_ORDER=2\n"
-            + "   MEMBER [Time].[TimeCalc] as '3', SOLVE_ORDER=3\n"
+            + "   Member [Time].[Time].[1997].[TimeCalc] as '3', SOLVE_ORDER=3\n"
             + "SELECT\n"
             + "   { [Product].[ProdCalc] } ON columns,\n"
-            + "   {([Time].[TimeCalc], [Measures].[MeasuresCalc])} ON rows\n"
+            + "   {([Time].[1997].[TimeCalc],\n"
+            + "     [Measures].[MeasuresCalc])} ON rows\n"
             + "FROM Sales",
 
             "Axis #0:\n"
@@ -1438,7 +1439,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Product].[ProdCalc]}\n"
             + "Axis #2:\n"
-            + "{[Time].[TimeCalc], [Measures].[MeasuresCalc]}\n"
+            + "{[Time].[1997].[TimeCalc], [Measures].[MeasuresCalc]}\n"
             + "Row #0: 3\n");
     }
 
@@ -1671,10 +1672,10 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "WITH MEMBER [Measures].[ProfitPercent] AS\n"
                 + "     '([Measures].[Store Sales]-[Measures].[Store Cost])/([Measures].[Store Cost])',\n"
                 + " FORMAT_STRING = '#.00%', SOLVE_ORDER = 1\n"
-                + " MEMBER [Time].[First Half 97] AS  '[Time].[1997].[Q1] + [Time].[1997].[Q2]'\n"
-                + " MEMBER [Time].[Second Half 97] AS '[Time].[1997].[Q3] + [Time].[1997].[Q4]'\n"
-                + " SELECT {[Time].[First Half 97],\n"
-                + "     [Time].[Second Half 97],\n"
+                + " Member [Time].[Time].[1997].[First Half] AS  '[Time].[1997].[Q1] + [Time].[1997].[Q2]'\n"
+                + " Member [Time].[Time].[1997].[Second Half] AS '[Time].[1997].[Q3] + [Time].[1997].[Q4]'\n"
+                + " SELECT {[Time].[1997].[First Half],\n"
+                + "     [Time].[1997].[Second Half],\n"
                 + "     [Time].[1997].CHILDREN} ON COLUMNS,\n"
                 + " {[Store].[Store Country].[USA].CHILDREN} ON ROWS\n"
                 + " FROM [Sales]\n"
@@ -1687,8 +1688,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "WITH MEMBER MEASURES.ProfitPercent AS\n"
                 + "     '([Measures].[Store Sales]-[Measures].[Store Cost])/([Measures].[Store Cost])',\n"
                 + " FORMAT_STRING = '#.00%', SOLVE_ORDER = 1\n"
-                + " MEMBER [Time].[First Half 97] AS  '[Time].[1997].[Q1] + [Time].[1997].[Q2]'\n"
-                + " MEMBER [Time].[Second Half 97] AS '[Time].[1997].[Q3] + [Time].[1997].[Q4]'\n"
+                + " Member [Time].[Time].[First Half 97] AS  '[Time].[1997].[Q1] + [Time].[1997].[Q2]'\n"
+                + " Member [Time].[Time].[Second Half 97] AS '[Time].[1997].[Q3] + [Time].[1997].[Q4]'\n"
                 + " SELECT {[Time].[First Half 97],\n"
                 + "     [Time].[Second Half 97],\n"
                 + "     [Time].[1997].CHILDREN} ON COLUMNS,\n"
@@ -4713,9 +4714,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void _testDateRange() {
         assertQueryReturns(
             // todo: implement "AddCalculatedMembers"
-            "WITH MEMBER [Time].[1997].[Six Month] AS\n"
+            "WITH Member [Time].[Time].[1997].[Six Month] AS\n"
             + "  'SUM([Time].[1]:[Time].[6])'\n"
-            + "MEMBER [Time].[1997].[Nine Month] AS\n"
+            + "Member [Time].[Time].[1997].[Nine Month] AS\n"
             + "  'SUM([Time].[1]:[Time].[9])'\n"
             + "SELECT AddCalculatedMembers([Time].[1997].Children) ON COLUMNS,\n"
             + "  [Product].Children ON ROWS\n"
@@ -5274,7 +5275,7 @@ public class BasicQueryTest extends FoodMartTestCase {
      */
     public void testHierDifferentKeyClass() {
         Result result = executeQuery(
-            "with member [Time].[1997].[Q1].[xxx] as\n"
+            "with member [Time].[Time].[1997].[Q1].[xxx] as\n"
             + "'Aggregate({[Time].[1997].[Q1].[1], [Time].[1997].[Q1].[2]})'\n"
             + "select {[Measures].[Unit Sales], [Measures].[Store Cost],\n"
             + "[Measures].[Store Sales]} ON columns,\n"
@@ -6364,9 +6365,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Set [*GENERATED_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0]}' "
             + "Set [*BASE_MEMBERS_Stores] as '{[Store].[USA].[CA], [Store].[USA].[WA], [Store].[USA].[OR]}' "
             + "Set [*GENERATED_MEMBERS_Stores] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})' "
-            + "Member [Time].[*SM_CTX_SEL] as 'Aggregate([*GENERATED_MEMBERS_Dates])' "
+            + "Member [Time].[Time].[*SM_CTX_SEL] as 'Aggregate([*GENERATED_MEMBERS_Dates])' "
             + "Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],[Time].[*SM_CTX_SEL])' "
-            + "Member [Time].[*SUBTOTAL_MEMBER_SEL~SUM] as 'sum([*GENERATED_MEMBERS_Dates])' "
+            + "Member [Time].[Time].[*SUBTOTAL_MEMBER_SEL~SUM] as 'sum([*GENERATED_MEMBERS_Dates])' "
             + "Member [Store].[*SUBTOTAL_MEMBER_SEL~SUM] as 'sum([*GENERATED_MEMBERS_Stores])' "
             + "select crossjoin({[Time].[*SUBTOTAL_MEMBER_SEL~SUM]}, {[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}) "
             + "on columns from [Sales]";
@@ -7323,7 +7324,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             TestContext.instance().getOlap4jConnection();
         final OlapStatement statement = connection.createStatement();
         final String mdx =
-            "with member [Time].[1997].[H1] as\n"
+            "with member [Time].[Time].[1997].[H1] as\n"
             + "    Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})\n"
             + "  member [Measures].[Store Margin] as\n"
             + "    [Measures].[Store Sales] - [Measures].[Store Cost],\n"
