@@ -26,7 +26,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.UndeclaredThrowableException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -414,7 +413,6 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
             olapConnection.getClass().getClassLoader(),
             new Class[] {OlapConnection.class},
             new InvocationHandler() {
-
                 public Object invoke(
                     Object proxy,
                     Method method,
@@ -422,9 +420,8 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
                     throws Throwable
                 {
                     if ("unwrap".equals(method.getName())
-                    		||
-                            OlapConnection.class.isAssignableFrom(
-                                    method.getDeclaringClass()))
+                        || OlapConnection.class
+                        .isAssignableFrom(method.getDeclaringClass()))
                     {
                         return method.invoke(olapConnection, args);
                     } else {

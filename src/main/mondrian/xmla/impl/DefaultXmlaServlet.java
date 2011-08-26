@@ -342,8 +342,8 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
                     if (sessionInfo != null) {
                         context.put(CONTEXT_XMLA_USERNAME, sessionInfo.user);
                         context.put(
-                        		CONTEXT_XMLA_PASSWORD,
-                        		sessionInfo.password);
+                            CONTEXT_XMLA_PASSWORD,
+                            sessionInfo.password);
                     }
 
                     context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
@@ -423,7 +423,6 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
 
 
     protected String generateSessionId(Map<String, Object> context) {
-
         for (XmlaRequestCallback callback : getCallbacks()) {
             final String sessionId = callback.generateSessionId(context);
             if (sessionId != null) {
@@ -434,13 +433,13 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
 
         // Generate a pseudo-random new session ID.
         return Long.toString(17L * System.nanoTime()
-        		+
-        		3L * System.currentTimeMillis(), 35);
+                +
+                3L * System.currentTimeMillis(), 35);
     }
 
 
     private static String getSessionIdFromRequest(Element e,
-    		Map<String, Object> context)
+            Map<String, Object> context)
         throws Exception
     {
         // extract the SessionId attrs value and put into context
@@ -826,15 +825,14 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
 
         if (sessionInfo == null) {
             LOGGER.error(
-            		"No login credentials for found for session ["
-            		+
-                    sessionId + "]");
+                "No login credentials for found for session ["+
+                sessionId + "]");
         } else {
             LOGGER.debug(
-            		"Found credentials for session id ["
-            		+ sessionId
-            		+ "], username=[" + sessionInfo.user
-                    + "] in servlet cache");
+                "Found credentials for session id ["
+                + sessionId
+                + "], username=[" + sessionInfo.user
+                + "] in servlet cache");
         }
         return sessionInfo;
     }
