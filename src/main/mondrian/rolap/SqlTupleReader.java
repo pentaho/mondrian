@@ -991,7 +991,8 @@ public class SqlTupleReader implements TupleReader {
                     hierarchy.addToFrom(sqlQuery, parentExp);
                 }
                 String parentSql = parentExp.getExpression(sqlQuery);
-                sqlQuery.addSelectGroupBy(parentSql, null);
+                sqlQuery.addSelectGroupBy(
+                    parentSql, currLevel.getInternalType());
                 if (whichSelect == WhichSelect.LAST
                     || whichSelect == WhichSelect.ONLY)
                 {

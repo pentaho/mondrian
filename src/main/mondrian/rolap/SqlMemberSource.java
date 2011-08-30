@@ -1121,7 +1121,7 @@ RME is this right
         sqlQuery.addWhere(condition.toString());
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String childId = level.getKeyExp().getExpression(sqlQuery);
-        sqlQuery.addSelectGroupBy(childId, null);
+        sqlQuery.addSelectGroupBy(childId, level.getInternalType());
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy, true, false, true);
@@ -1183,7 +1183,7 @@ RME is this right
 
         hierarchy.addToFrom(sqlQuery, level.getKeyExp());
         String childId = level.getKeyExp().getExpression(sqlQuery);
-        sqlQuery.addSelectGroupBy(childId, null);
+        sqlQuery.addSelectGroupBy(childId, level.getInternalType());
         hierarchy.addToFrom(sqlQuery, level.getOrdinalExp());
         String orderBy = level.getOrdinalExp().getExpression(sqlQuery);
         sqlQuery.addOrderBy(orderBy, true, false, true);
