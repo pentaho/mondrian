@@ -421,6 +421,58 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #5: 0\n"
             + "Row #6: 0\n");
     }
+
+    /**
+     * This tests MONDRIAN-626. A Parameter type of date or timestamp
+     * was causing an exception because those types were not implemented
+     * correctly.
+     */
+    public void testPropertyWithParameterOfTimestampType() throws Exception {
+        final TestContext testContext = getTestContext();
+        if (!testContext.databaseIsValid()) {
+            return;
+        }
+        TestContext context =
+            createContext(
+                getTestContext(),
+                "<Schema name=\"FooBar\">\n"
+                + "    <Cube name=\"Foo\">\n"
+                + "        <Table name=\"orderfact\"></Table>\n"
+                + "        <Dimension foreignKey=\"ORDERNUMBER\" name=\"Orders\">\n"
+                + "            <Hierarchy hasAll=\"true\" allMemberName=\"All Orders\" primaryKey=\"ORDERNUMBER\">\n"
+                + "                <Table name=\"orders\">\n"
+                + "                </Table>\n"
+                + "                <Level name=\"Order\" column=\"ORDERNUMBER\" type=\"Integer\" uniqueMembers=\"true\">\n"
+                + "                    <Property name=\"OrderDate\" column=\"ORDERDATE\" type=\"Timestamp\"/>\n"
+                + "                </Level>\n"
+                + "            </Hierarchy>\n"
+                + "        </Dimension>\n"
+                + "        <Dimension foreignKey=\"CUSTOMERNUMBER\" name=\"Customers\">\n"
+                + "            <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"CUSTOMERNUMBER\">\n"
+                + "                <Table name=\"customer_w_ter\">\n"
+                + "                </Table>\n"
+                + "                <Level name=\"Customer\" column=\"CUSTOMERNAME\" type=\"String\" uniqueMembers=\"true\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
+                + "                </Level>\n"
+                + "            </Hierarchy>\n"
+                + "        </Dimension>\n"
+                + "        <Measure name=\"Quantity\" column=\"QUANTITYORDERED\" formatString=\"#,###\" aggregator=\"sum\">\n"
+                + "        </Measure>\n"
+                + "        <Measure name=\"Sales\" column=\"TOTALPRICE\" formatString=\"#,###\" aggregator=\"sum\">\n"
+                + "        </Measure>\n"
+                + "    </Cube>\n"
+                + "</Schema>\n");
+        context.assertQueryReturns(
+            "with member [Measures].[Date] as 'Format([Orders].CurrentMember.Properties(\"OrderDate\"), \"yyyy-mm-dd\")'\n"
+            + "select {[Orders].[Order].[10421]} on rows,\n"
+            + "{[Measures].[Date]} on columns from [Foo]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Date]}\n"
+            + "Axis #2:\n"
+            + "{[Orders].[10421]}\n"
+            + "Row #0: 2005-05-29\n");
+    }
 }
 
 // End SteelWheelsSchemaTest.java

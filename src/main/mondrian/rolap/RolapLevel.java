@@ -439,8 +439,16 @@ public class RolapLevel extends LevelBase {
             return Property.Datatype.TYPE_STRING;
         } else if (type.equals("Numeric")) {
             return Property.Datatype.TYPE_NUMERIC;
+        } else if (type.equals("Integer")) {
+            return Property.Datatype.TYPE_NUMERIC;
         } else if (type.equals("Boolean")) {
             return Property.Datatype.TYPE_BOOLEAN;
+        } else if (type.equals("Timestamp")) {
+            return Property.Datatype.TYPE_TIMESTAMP;
+        } else if (type.equals("Time")) {
+            return Property.Datatype.TYPE_TIME;
+        } else if (type.equals("Date")) {
+            return Property.Datatype.TYPE_DATE;
         } else {
             throw Util.newError("Unknown property type '" + type + "'");
         }

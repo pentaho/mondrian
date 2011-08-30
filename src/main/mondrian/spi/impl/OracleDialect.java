@@ -12,7 +12,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the Oracle database.
@@ -124,6 +126,28 @@ public class OracleDialect extends JdbcDialectImpl {
         quoteStringLiteral(sb, suffixSb.toString());
         sb.append(")");
         return sb.toString();
+    }
+
+    public void quoteDateLiteral(StringBuilder buf, String value) {
+        Date date;
+        try {
+            /*
+             * The format of the 'value' parameter is not certain.
+             * Some JDBC drivers will return a timestamp even though
+             * we ask for a date (oracle is one of them). We must try to
+             * convert both formats.
+             */
+            date = Date.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            try {
+                date =
+                    new Date(Timestamp.valueOf(value).getTime());
+            } catch (IllegalArgumentException ex2) {
+                throw new NumberFormatException(
+                    "Illegal DATE literal:  " + value);
+            }
+        }
+        quoteDateLiteral(buf, value, date);
     }
 }
 

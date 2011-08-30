@@ -134,6 +134,10 @@ class PropertiesFunDef extends FunDefBase {
                     return Category.Numeric;
                 case TYPE_STRING:
                     return Category.String;
+                case TYPE_DATE:
+                case TYPE_TIME:
+                case TYPE_TIMESTAMP:
+                    return Category.DateTime;
                 default:
                     throw Util.badValue(property.getType());
                 }
