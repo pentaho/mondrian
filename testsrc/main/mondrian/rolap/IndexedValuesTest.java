@@ -10,7 +10,6 @@
 package mondrian.rolap;
 
 import mondrian.test.FoodMartTestCase;
-import mondrian.olap.*;
 
 /**
  * Test case for '&amp;[..]' capability in MDX identifiers.
@@ -28,35 +27,50 @@ public class IndexedValuesTest extends FoodMartTestCase {
     }
 
     public void testQueryWithIndex() {
-        final Connection conn = getConnection();
+        final String desiredResult =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Org Salary]}\n"
+            + "{[Measures].[Count]}\n"
+            + "Axis #2:\n"
+            + "{[Employees].[Sheri Nowmer]}\n"
+            + "Row #0: $39,431.67\n"
+            + "Row #0: 7,392\n";
 
         // Query using name
-        final String queryStr1 =
+        assertQueryReturns(
             "SELECT {[Measures].[Org Salary], [Measures].[Count]} "
             + "ON COLUMNS, "
             + "{[Employees].[Sheri Nowmer]} "
-            + "ON ROWS FROM [HR]";
-        final Query query1 = conn.parseQuery(queryStr1);
-        final Result result1 = conn.execute(query1);
+            + "ON ROWS FROM [HR]",
+            desiredResult);
 
-        // Query using key
-        final String queryStr2 =
+        // Query using key; expect same result.
+        assertQueryReturns(
             "SELECT {[Measures].[Org Salary], [Measures].[Count]} "
             + "ON COLUMNS, "
             + "{[Employees].&[1]} "
-            + "ON ROWS FROM [HR]";
-        final Query query2 = conn.parseQuery(queryStr2);
-        final Result result2 = conn.execute(query2);
+            + "ON ROWS FROM [HR]",
+            desiredResult);
 
-        // Results of two previous queries must be the same
-        assertEquals(
-            result2.getCell(new int[] {0, 0}).getValue(),
-            result1.getCell(new int[] {0, 0}).getValue());
-        assertEquals(
-            result2.getCell(new int[] {1, 0}).getValue(),
-            result1.getCell(new int[] {1, 0}).getValue());
+        // Cannot find members that are not at root of hierarchy.
+        // (We should fix this.)
+        assertQueryThrows(
+            "SELECT {[Measures].[Org Salary], [Measures].[Count]} "
+            + "ON COLUMNS, "
+            + "{[Employees].&[4]} "
+            + "ON ROWS FROM [HR]",
+            "MDX object '[Employees].&[4]' not found in cube 'HR'");
+
+        // "level.&key" syntax not supported
+        // (We should fix this.)
+        assertQueryThrows(
+            "SELECT [Measures] ON COLUMNS, "
+            + "{[Product].[Product Name].&[9]} "
+            + "ON ROWS FROM [Sales]",
+            "MDX object '[Employees].&[4]' not found in cube 'HR'");
     }
-
 }
 
 // End IndexedValuesTest.java
