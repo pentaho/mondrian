@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -49,7 +49,7 @@ import junit.framework.TestSuite;
  *                 &lt;dim&gt;[Education Level]&lt;/dim&gt;<br/>
  *                 &lt;dim&gt;[Marital Status]&lt;/dim&gt;<br/>
  *                 &lt;dim&gt;[Yearly Income]&lt;/dim&gt;<br/>
- *                 &lt;dim&gt;[Promotion Media]&lt;/dim&gt;<br/>
+ *                 &lt;dim&gt;[Promotion].[Media Type]&lt;/dim&gt;<br/>
  *                 &lt;dim&gt;[Gender]&lt;/dim&gt;<br/>
  *             &lt;/dimensions&gt;<br/>
  *             &lt;tuples&gt;<br/>
@@ -71,7 +71,7 @@ import junit.framework.TestSuite;
  * Status]&lt;/member&gt;<br/>
  *                     &lt;member&gt;[Yearly Income].[All Yearly
  * Incomes]&lt;/member&gt;<br/>
- *                     &lt;member&gt;[Promotion Media].[All
+ *                     &lt;member&gt;[Promotion].[Media Type].[All
  * Media]&lt;/member&gt;<br/>
  *                     &lt;member&gt;[Gender].[All Gender]&lt;/member&gt;<br/>
  *                 &lt;/tuple&gt;<br/>

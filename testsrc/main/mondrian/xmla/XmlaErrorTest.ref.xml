@@ -663,7 +663,7 @@ this is just junk
 DRILLTHROUGH MAXROWS -1000
 SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,
 {[Time].[1997]} ON 1,
-{[Product].[Drink]} ON 2
+{[Product].[Products].[Drink]} ON 2
 FROM Sales
         </Statement>
       </Command>
@@ -693,7 +693,7 @@ FROM Sales
 DRILLTHROUGH MAXROWS 1000 FIRSTROWSET -200
 SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,
 {[Time].[1997]} ON 1,
-{[Product].[Drink]} ON 2
+{[Product].[Products].[Drink]} ON 2
 FROM Sales
         </Statement>
       </Command>
@@ -722,7 +722,7 @@ FROM Sales
         <Statement>
 SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,
 {[Time].[1997]} ON 1,
-{[Product].[Drink]} ON 2
+{[Product].[Products].[Drink]} ON 2
 DRILLTHROUGH MAXROWS 1000 FIRSTROWSET 200
 FROM Sales
         </Statement>

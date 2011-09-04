@@ -16,7 +16,7 @@ FROM [Sales]</mdxQuery>
                 <dim>[Education Level]</dim>
                 <dim>[Marital Status]</dim>
                 <dim>[Yearly Income]</dim>
-                <dim>[Promotion Media]</dim>
+                <dim>[Promotion].[Media Type]</dim>
                 <dim>[Gender]</dim>
             </dimensions>
             <tuples>
@@ -24,13 +24,13 @@ FROM [Sales]</mdxQuery>
                     <member>[Measures].[Unit Sales]</member>
                     <member>[Time].[1997]</member>
                     <member>[Product].[All Products]</member>
-                    <member>[Store Type].[All Store Types]</member>
-                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Store].[Store Type].[All Store Types]</member>
+                    <member>[Promotion].[Promotions].[All Promotions]</member>
                     <member>[Customers].[All Customers]</member>
                     <member>[Education Level].[All Education Levels]</member>
                     <member>[Marital Status].[All Marital Status]</member>
                     <member>[Yearly Income].[All Yearly Incomes]</member>
-                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Promotion].[Media Type].[All Media]</member>
                     <member>[Gender].[All Gender]</member>
                 </tuple>
             </tuples>
@@ -41,16 +41,16 @@ FROM [Sales]</mdxQuery>
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores]</member>
+                    <member>[Store].[Stores].[All Stores]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Canada]</member>
+                    <member>[Store].[Stores].[Canada]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Mexico]</member>
+                    <member>[Store].[Stores].[Mexico]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA]</member>
+                    <member>[Store].[Stores].[USA]</member>
                 </tuple>
             </tuples>
         </columns>
@@ -60,70 +60,70 @@ FROM [Sales]</mdxQuery>
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store Size in SQFT].[Less Than 23000]</member>
+                    <member>[Store].[Store Size in SQFT].[Less Than 23000]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[#null]</member>
+                    <member>[Store].[Store Size in SQFT].[#null]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[20319]</member>
+                    <member>[Store].[Store Size in SQFT].[20319]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[21215]</member>
+                    <member>[Store].[Store Size in SQFT].[21215]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[22478]</member>
+                    <member>[Store].[Store Size in SQFT].[22478]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[23112]</member>
+                    <member>[Store].[Store Size in SQFT].[23112]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[23593]</member>
+                    <member>[Store].[Store Size in SQFT].[23593]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[23598]</member>
+                    <member>[Store].[Store Size in SQFT].[23598]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[23688]</member>
+                    <member>[Store].[Store Size in SQFT].[23688]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[23759]</member>
+                    <member>[Store].[Store Size in SQFT].[23759]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[24597]</member>
+                    <member>[Store].[Store Size in SQFT].[24597]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[27694]</member>
+                    <member>[Store].[Store Size in SQFT].[27694]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[28206]</member>
+                    <member>[Store].[Store Size in SQFT].[28206]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[30268]</member>
+                    <member>[Store].[Store Size in SQFT].[30268]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[30584]</member>
+                    <member>[Store].[Store Size in SQFT].[30584]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[30797]</member>
+                    <member>[Store].[Store Size in SQFT].[30797]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[33858]</member>
+                    <member>[Store].[Store Size in SQFT].[33858]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[34452]</member>
+                    <member>[Store].[Store Size in SQFT].[34452]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[34791]</member>
+                    <member>[Store].[Store Size in SQFT].[34791]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[36509]</member>
+                    <member>[Store].[Store Size in SQFT].[36509]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[38382]</member>
+                    <member>[Store].[Store Size in SQFT].[38382]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Size in SQFT].[39696]</member>
+                    <member>[Store].[Store Size in SQFT].[39696]</member>
                 </tuple>
             </tuples>
         </rows>

@@ -13,21 +13,21 @@
                 <dim>[Education Level]</dim>
                 <dim>[Marital Status]</dim>
                 <dim>[Yearly Income]</dim>
-                <dim>[Promotion Media]</dim>
+                <dim>[Promotion].[Media Type]</dim>
                 <dim>[Gender]</dim>
             </dimensions>
             <tuples>
                 <tuple>
                     <member>[Time].[1997]</member>
                     <member>[Product].[Non-Consumable]</member>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
-                    <member>[Store Type].[All Store Types]</member>
-                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Store].[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store].[Store Type].[All Store Types]</member>
+                    <member>[Promotion].[Promotions].[All Promotions]</member>
                     <member>[Customers].[All Customers]</member>
                     <member>[Education Level].[All Education Levels]</member>
                     <member>[Marital Status].[All Marital Status]</member>
                     <member>[Yearly Income].[All Yearly Incomes]</member>
-                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Promotion].[Media Type].[All Media]</member>
                     <member>[Gender].[All Gender]</member>
                 </tuple>
             </tuples>
@@ -48,79 +48,79 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[USA].[OR].[Salem].[Store 13]</member>
+                    <member>[Store].[Stores].[USA].[OR].[Salem].[Store 13]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Tacoma].[Store 17]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Tacoma].[Store 17]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[OR].[Portland].[Store 11]</member>
+                    <member>[Store].[Stores].[USA].[OR].[Portland].[Store 11]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[CA].[Los Angeles].[Store 7]</member>
+                    <member>[Store].[Stores].[USA].[CA].[Los Angeles].[Store 7]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[CA].[San Diego].[Store 24]</member>
+                    <member>[Store].[Stores].[USA].[CA].[San Diego].[Store 24]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Seattle].[Store 15]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Seattle].[Store 15]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Bremerton].[Store 3]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Bremerton].[Store 3]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Spokane].[Store 16]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Spokane].[Store 16]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[CA].[Beverly Hills].[Store 6]</member>
+                    <member>[Store].[Stores].[USA].[CA].[Beverly Hills].[Store 6]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Yakima].[Store 23]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Yakima].[Store 23]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Bellingham].[Store 2]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Bellingham].[Store 2]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Walla Walla].[Store 22]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Walla Walla].[Store 22]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[CA].[San Francisco].[Store 14]</member>
+                    <member>[Store].[Stores].[USA].[CA].[San Francisco].[Store 14]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Canada].[BC].[Vancouver].[Store 19]</member>
+                    <member>[Store].[Stores].[Canada].[BC].[Vancouver].[Store 19]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Canada].[BC].[Victoria].[Store 20]</member>
+                    <member>[Store].[Stores].[Canada].[BC].[Victoria].[Store 20]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Mexico].[DF].[Mexico City].[Store 9]</member>
+                    <member>[Store].[Stores].[Mexico].[DF].[Mexico City].[Store 9]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Mexico].[DF].[San Andres].[Store 21]</member>
+                    <member>[Store].[Stores].[Mexico].[DF].[San Andres].[Store 21]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Mexico].[Guerrero].[Acapulco].[Store 1]</member>
+                    <member>[Store].[Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Mexico].[Jalisco].[Guadalajara].[Store 5]</member>
+                    <member>[Store].[Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Mexico].[Veracruz].[Orizaba].[Store 10]</member>
+                    <member>[Store].[Stores].[Mexico].[Veracruz].[Orizaba].[Store 10]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Mexico].[Yucatan].[Merida].[Store 8]</member>
+                    <member>[Store].[Stores].[Mexico].[Yucatan].[Merida].[Store 8]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Mexico].[Zacatecas].[Camacho].[Store 4]</member>
+                    <member>[Store].[Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Mexico].[Zacatecas].[Hidalgo].[Store 12]</member>
+                    <member>[Store].[Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 12]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Mexico].[Zacatecas].[Hidalgo].[Store 18]</member>
+                    <member>[Store].[Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 18]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[CA].[Alameda].[HQ]</member>
+                    <member>[Store].[Stores].[USA].[CA].[Alameda].[HQ]</member>
                 </tuple>
             </tuples>
         </rows>

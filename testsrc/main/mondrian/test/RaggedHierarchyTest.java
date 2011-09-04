@@ -30,7 +30,7 @@ public class RaggedHierarchyTest extends FoodMartTestCase {
 
     public void testChildrenOfRoot() {
         assertRaggedReturns(
-            "[Store].children",
+            "[Store].[Stores].children",
             "[Store].[Canada]\n"
             + "[Store].[Israel]\n"
             + "[Store].[Mexico]\n"

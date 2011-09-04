@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -23,10 +23,10 @@ import javax.servlet.jsp.tagext.BodyTagSupport;
  * select
  *   {[Measures].[Unit Sales], [Measures].[Store Cost]} on columns,
  *   CrossJoin(
- *     { [Promotion Media].[Radio],
- *       [Promotion Media].[TV],
- *       [Promotion Media].[Sunday Paper],
- *       [Promotion Media].[Street Handout] },
+ *     { [Promotion].[Media Type].[Radio],
+ *       [Promotion].[Media Type].[TV],
+ *       [Promotion].[Media Type].[Sunday Paper],
+ *       [Promotion].[Media Type].[Street Handout] },
  *     [Product].[Drink].children) on rows
  * from Sales
  * where ([Time].[1997])

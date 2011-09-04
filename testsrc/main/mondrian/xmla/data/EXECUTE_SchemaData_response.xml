@@ -192,11 +192,11 @@
     <LNum name="[Product].[LEVEL_NUMBER]"/>
     <DisplayInfo name="[Product].[DISPLAY_INFO]"/></HierarchyInfo>
     <HierarchyInfo name="Promotion Media">
-    <UName name="[Promotion Media].[MEMBER_UNIQUE_NAME]"/>
-    <Caption name="[Promotion Media].[MEMBER_CAPTION]"/>
-    <LName name="[Promotion Media].[LEVEL_UNIQUE_NAME]"/>
-    <LNum name="[Promotion Media].[LEVEL_NUMBER]"/>
-    <DisplayInfo name="[Promotion Media].[DISPLAY_INFO]"/></HierarchyInfo>
+    <UName name="[Promotion].[Media Type].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Promotion].[Media Type].[MEMBER_CAPTION]"/>
+    <LName name="[Promotion].[Media Type].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Promotion].[Media Type].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Promotion].[Media Type].[DISPLAY_INFO]"/></HierarchyInfo>
     <HierarchyInfo name="Promotions">
     <UName name="[Promotions].[MEMBER_UNIQUE_NAME]"/>
     <Caption name="[Promotions].[MEMBER_CAPTION]"/>
@@ -1373,9 +1373,9 @@
     <LNum>0</LNum>
     <DisplayInfo>3</DisplayInfo></Member>
     <Member Hierarchy="Promotion Media">
-    <UName>[Promotion Media].[All Media]</UName>
+    <UName>[Promotion].[Media Type].[All Media]</UName>
     <Caption>All Media</Caption>
-    <LName>[Promotion Media].[(All)]</LName>
+    <LName>[Promotion].[Media Type].[(All)]</LName>
     <LNum>0</LNum>
     <DisplayInfo>14</DisplayInfo></Member>
     <Member Hierarchy="Promotions">

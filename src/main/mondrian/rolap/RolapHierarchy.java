@@ -91,11 +91,13 @@ public class RolapHierarchy extends HierarchyBase {
      * @param dimension Dimension this hierarchy belongs to
      * @param subName Name of hierarchy, or null if it is the same as the
      *     dimension
+     * @param uniqueName Unique name of hierarchy
      * @param hasAll Whether the dimension has an 'all' level
      */
     RolapHierarchy(
         RolapDimension dimension,
         String subName,
+        String uniqueName,
         boolean visible,
         String caption,
         String description,
@@ -103,7 +105,9 @@ public class RolapHierarchy extends HierarchyBase {
         RolapHierarchy closureFor,
         Map<String, Annotation> annotationMap)
     {
-        super(dimension, subName, visible, caption, description, hasAll);
+        super(
+            dimension, subName, uniqueName,
+            visible, caption, description, hasAll);
         this.annotationMap = annotationMap;
         this.closureFor = closureFor;
     }
@@ -642,7 +646,18 @@ public class RolapHierarchy extends HierarchyBase {
             Collections.<String, Annotation>emptyMap());
 
         // Create a peer hierarchy.
-        RolapHierarchy peerHier = peerDimension.newHierarchy(null, true, this);
+        RolapHierarchy peerHier =
+            new RolapHierarchy(
+                peerDimension,
+                null,
+                peerDimension.getUniqueName(),
+                peerDimension.isVisible(),
+                peerDimension.getCaption(),
+                peerDimension.getDescription(),
+                true,
+                this,
+                Collections.<String, Annotation>emptyMap());
+        peerDimension.addHierarchy(peerHier);
         peerHier.allMemberName = getAllMemberName();
         peerHier.allMember = (RolapMemberBase) getAllMember();
 

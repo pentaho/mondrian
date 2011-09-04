@@ -84,7 +84,7 @@ class MondrianOlap4jHierarchy implements Hierarchy, Named {
             olap4jConnection.getMondrianConnection().getSchemaReader()
                 .withLocus()
                 .getLevelMembers(
-                    hierarchy.getLevels()[0], true);
+                    hierarchy.getLevelList().get(0), true);
 
         return new AbstractNamedList<Member>() {
             protected String getName(Member member) {

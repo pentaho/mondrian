@@ -14,7 +14,7 @@ import mondrian.rolap.RolapConnection;
 import java.util.Stack;
 
 /**
- * Point of execution from which a service is invoked.
+ * Point of locus from which a service is invoked.
  *
  * @version $Id$
  */

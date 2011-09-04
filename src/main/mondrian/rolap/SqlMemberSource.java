@@ -622,6 +622,22 @@ class SqlMemberSource
             }
         }
 
+        if (level.attribute.nameExp != null) {
+            RolapSchema.PhysColumn nameExp = level.attribute.nameExp;
+            if (false) {
+                queryBuilder.addToFrom(nameExp);
+            }
+            String nameSql = nameExp.toSql();
+            int ordinal = layoutBuilder.lookup(nameSql);
+            if (ordinal < 0) {
+                final String alias =
+                    sqlQuery.addSelectGroupBy(
+                        nameSql, nameExp.getInternalType());
+                ordinal = layoutBuilder.register(nameSql, alias);
+            }
+            layoutBuilder.currentLevelLayout.nameOrdinal = ordinal;
+        }
+
         if (level.attribute.captionExp != null) {
             RolapSchema.PhysColumn captionExp = level.attribute.captionExp;
             if (false) {
@@ -1001,8 +1017,13 @@ class SqlMemberSource
         } else {
             rolapChildLevel = childLevel;
         }
+        final String name = String.valueOf(
+            getPooledValue(
+                stmt.getAccessors().get(layout.nameOrdinal).get()));
         RolapMemberBase member =
-            new RolapMemberBase(parentMember, rolapChildLevel, key);
+            new RolapMemberBase(
+                parentMember, rolapChildLevel, key,
+                name, Member.MemberType.REGULAR);
         if (layout.hasOrdinal) {
             member.setOrdinal(lastOrdinal++);
         }

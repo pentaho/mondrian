@@ -144,7 +144,7 @@ public abstract class ResultBase implements Result {
                 }
             }
         }
-        return hierarchy.getHierarchy().getDefaultMember();
+        return hierarchy.getDefaultMember();
     }
 
     public void close() {

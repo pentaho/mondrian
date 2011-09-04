@@ -69,22 +69,22 @@ Axis #1:
 {[Measures].[*CALCULATED_MEASURE_0]}
 {[Measures].[*CALCULATED_MEASURE_2]}
 Axis #2:
-{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q1].[1]}
-{[Time].[1997].[Q1].[2]}
-{[Time].[1997].[Q1].[3]}
-{[Time].[1997].[Q2].[4]}
-{[Time].[1997].[Q2].[5]}
-{[Time].[1997].[Q2].[6]}
-{[Time].[1997].[Q3].[7]}
-{[Time].[1997].[Q3].[8]}
-{[Time].[1997].[Q3].[9]}
-{[Time].[1997].[Q4].[10]}
-{[Time].[1997].[Q4].[11]}
-{[Time].[1997].[Q4].[12]}
+{[Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q1].[1]}
+{[Time].[Time].[1997].[Q1].[2]}
+{[Time].[Time].[1997].[Q1].[3]}
+{[Time].[Time].[1997].[Q2].[4]}
+{[Time].[Time].[1997].[Q2].[5]}
+{[Time].[Time].[1997].[Q2].[6]}
+{[Time].[Time].[1997].[Q3].[7]}
+{[Time].[Time].[1997].[Q3].[8]}
+{[Time].[Time].[1997].[Q3].[9]}
+{[Time].[Time].[1997].[Q4].[10]}
+{[Time].[Time].[1997].[Q4].[11]}
+{[Time].[Time].[1997].[Q4].[12]}
 Row #0: 55,752.24
 Row #0: 66,291
 Row #0: 8,410.23
@@ -580,12 +580,12 @@ Axis #1:
 {[Measures].[*CALCULATED_MEASURE_0]}
 {[Measures].[*CALCULATED_MEASURE_2]}
 Axis #2:
-{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q1].[1]}
-{[Time].[1997].[Q1].[2]}
-{[Time].[1997].[Q2].[4]}
-{[Time].[1997].[Q2].[5]}
+{[Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q1].[1]}
+{[Time].[Time].[1997].[Q1].[2]}
+{[Time].[Time].[1997].[Q2].[4]}
+{[Time].[Time].[1997].[Q2].[5]}
 Row #0: 35,778.16
 Row #0: 42,585
 Row #0: 8,402
@@ -697,14 +697,14 @@ Axis #1:
 {[Measures].[*CALCULATED_MEASURE_13]}
 {[Measures].[*CALCULATED_MEASURE_10]}
 Axis #2:
-{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q2].[4]}
-{[Time].[1997].[Q2].[5]}
-{[Time].[1997].[Q2].[6]}
-{[Time].[1997].[Q3].[7]}
-{[Time].[1997].[Q3].[8]}
-{[Time].[1997].[Q3].[9]}
+{[Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q2].[4]}
+{[Time].[Time].[1997].[Q2].[5]}
+{[Time].[Time].[1997].[Q2].[6]}
+{[Time].[Time].[1997].[Q3].[7]}
+{[Time].[Time].[1997].[Q3].[8]}
+{[Time].[Time].[1997].[Q3].[9]}
 Row #0: 52,964.22
 Row #0: 62,610
 Row #0: 0.85
@@ -883,38 +883,38 @@ Axis #1:
 {[Measures].[*CALCULATED_MEASURE_0]}
 {[Measures].[*CALCULATED_MEASURE_2]}
 Axis #2:
-{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~MIN]}
-{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~MIN]}
-{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~MIN]}
-{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~MIN]}
-{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~MAX]}
-{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~MAX]}
-{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~MAX]}
-{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~MAX]}
-{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~AVG]}
-{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~AVG]}
-{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~AVG]}
-{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~AVG]}
-{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q1].[1]}
-{[Time].[1997].[Q1].[2]}
-{[Time].[1997].[Q1].[3]}
-{[Time].[1997].[Q2].[4]}
-{[Time].[1997].[Q2].[5]}
-{[Time].[1997].[Q2].[6]}
-{[Time].[1997].[Q3].[7]}
-{[Time].[1997].[Q3].[8]}
-{[Time].[1997].[Q3].[9]}
-{[Time].[1997].[Q4].[10]}
-{[Time].[1997].[Q4].[11]}
-{[Time].[1997].[Q4].[12]}
+{[Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~MIN]}
+{[Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~MIN]}
+{[Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~MIN]}
+{[Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~MIN]}
+{[Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~MAX]}
+{[Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~MAX]}
+{[Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~MAX]}
+{[Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~MAX]}
+{[Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~AVG]}
+{[Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~AVG]}
+{[Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~AVG]}
+{[Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~AVG]}
+{[Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q1].[1]}
+{[Time].[Time].[1997].[Q1].[2]}
+{[Time].[Time].[1997].[Q1].[3]}
+{[Time].[Time].[1997].[Q2].[4]}
+{[Time].[Time].[1997].[Q2].[5]}
+{[Time].[Time].[1997].[Q2].[6]}
+{[Time].[Time].[1997].[Q3].[7]}
+{[Time].[Time].[1997].[Q3].[8]}
+{[Time].[Time].[1997].[Q3].[9]}
+{[Time].[Time].[1997].[Q4].[10]}
+{[Time].[Time].[1997].[Q4].[11]}
+{[Time].[Time].[1997].[Q4].[12]}
 Row #0: 17,599.67
 Row #0: 
 Row #0: 17,609.67
@@ -1121,26 +1121,26 @@ Axis #1:
 {[Measures].[*SUMMARY_MEASURE_6]}
 {[Measures].[*SUMMARY_MEASURE_3]}
 Axis #2:
-{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q1].[1]}
-{[Time].[1997].[Q1].[2]}
-{[Time].[1997].[Q1].[3]}
-{[Time].[1997].[Q2].[4]}
-{[Time].[1997].[Q2].[5]}
-{[Time].[1997].[Q2].[6]}
-{[Time].[1997].[Q3].[7]}
-{[Time].[1997].[Q3].[8]}
-{[Time].[1997].[Q3].[9]}
-{[Time].[1997].[Q4].[10]}
-{[Time].[1997].[Q4].[11]}
-{[Time].[1997].[Q4].[12]}
+{[Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q1].[1]}
+{[Time].[Time].[1997].[Q1].[2]}
+{[Time].[Time].[1997].[Q1].[3]}
+{[Time].[Time].[1997].[Q2].[4]}
+{[Time].[Time].[1997].[Q2].[5]}
+{[Time].[Time].[1997].[Q2].[6]}
+{[Time].[Time].[1997].[Q3].[7]}
+{[Time].[Time].[1997].[Q3].[8]}
+{[Time].[Time].[1997].[Q3].[9]}
+{[Time].[Time].[1997].[Q4].[10]}
+{[Time].[Time].[1997].[Q4].[11]}
+{[Time].[Time].[1997].[Q4].[12]}
 Row #0: 55,752
 Row #0: 65,752
 Row #0: 10,000
@@ -1354,26 +1354,26 @@ Axis #1:
 {[Measures].[*CALCULATED_MEASURE_2]}
 {[Measures].[*CALCULATED_MEASURE_3]}
 Axis #2:
-{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q1].[1]}
-{[Time].[1997].[Q1].[2]}
-{[Time].[1997].[Q1].[3]}
-{[Time].[1997].[Q2].[4]}
-{[Time].[1997].[Q2].[5]}
-{[Time].[1997].[Q2].[6]}
-{[Time].[1997].[Q3].[7]}
-{[Time].[1997].[Q3].[8]}
-{[Time].[1997].[Q3].[9]}
-{[Time].[1997].[Q4].[10]}
-{[Time].[1997].[Q4].[11]}
-{[Time].[1997].[Q4].[12]}
+{[Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q1].[1]}
+{[Time].[Time].[1997].[Q1].[2]}
+{[Time].[Time].[1997].[Q1].[3]}
+{[Time].[Time].[1997].[Q2].[4]}
+{[Time].[Time].[1997].[Q2].[5]}
+{[Time].[Time].[1997].[Q2].[6]}
+{[Time].[Time].[1997].[Q3].[7]}
+{[Time].[Time].[1997].[Q3].[8]}
+{[Time].[Time].[1997].[Q3].[9]}
+{[Time].[Time].[1997].[Q4].[10]}
+{[Time].[Time].[1997].[Q4].[11]}
+{[Time].[Time].[1997].[Q4].[12]}
 Row #0: 139,628
 Row #0: 149,628
 Row #0: 10,000
@@ -1535,26 +1535,26 @@ Axis #1:
 {[Measures].[*CALCULATED_MEASURE_5]}
 {[Measures].[*CALCULATED_MEASURE_6]}
 Axis #2:
-{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
-{[Time].[1997].[Q1].[1]}
-{[Time].[1997].[Q1].[2]}
-{[Time].[1997].[Q1].[3]}
-{[Time].[1997].[Q2].[4]}
-{[Time].[1997].[Q2].[5]}
-{[Time].[1997].[Q2].[6]}
-{[Time].[1997].[Q3].[7]}
-{[Time].[1997].[Q3].[8]}
-{[Time].[1997].[Q3].[9]}
-{[Time].[1997].[Q4].[10]}
-{[Time].[1997].[Q4].[11]}
-{[Time].[1997].[Q4].[12]}
+{[Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[Time].[1997].[Q1].[1]}
+{[Time].[Time].[1997].[Q1].[2]}
+{[Time].[Time].[1997].[Q1].[3]}
+{[Time].[Time].[1997].[Q2].[4]}
+{[Time].[Time].[1997].[Q2].[5]}
+{[Time].[Time].[1997].[Q2].[6]}
+{[Time].[Time].[1997].[Q3].[7]}
+{[Time].[Time].[1997].[Q3].[8]}
+{[Time].[Time].[1997].[Q3].[9]}
+{[Time].[Time].[1997].[Q4].[10]}
+{[Time].[Time].[1997].[Q4].[11]}
+{[Time].[Time].[1997].[Q4].[12]}
 Row #0: 139,628
 Row #0: 149,628
 Row #0: 129,628

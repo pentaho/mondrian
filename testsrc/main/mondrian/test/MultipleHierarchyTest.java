@@ -69,10 +69,10 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Foo]}\n"
             + "{[Measures].[Foo2]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1997].[Q1]}\n"
-            + "{[Time].[1997].[Q2]}\n"
-            + "{[Time].[1997].[Q3]}\n"
-            + "{[Time].[1997].[Q4]}\n"
+            + "{[Time].[Time].[1997].[Q1]}\n"
+            + "{[Time].[Time].[1997].[Q2]}\n"
+            + "{[Time].[Time].[1997].[Q3]}\n"
+            + "{[Time].[Time].[1997].[Q4]}\n"
             + "Row #0: 66,291\n"
             + "Row #0: [Time].[Weekly].[All Weeklys]\n"
             + "Row #0: [Time].[1997].[Q1]\n"
@@ -90,22 +90,22 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
     public void testMultipleMembersOfSameDimensionInSlicerFails() {
         assertQueryThrows(
             "select {[Measures].[Unit Sales]} on columns,\n"
-            + " {[Store].children} on rows\n"
+            + " {[Store].[Stores].children} on rows\n"
             + "from [Sales]\n"
             + "where ([Gender].[M], [Time].[1997], [Time].[1997].[Q1])",
-            "Tuple contains more than one member of hierarchy '[Time]'.");
+            "Tuple contains more than one member of hierarchy '[Time].[Time]'.");
     }
 
     public void testMembersOfHierarchiesInSameDimensionInSlicer() {
         assertQueryReturns(
             "select {[Measures].[Unit Sales]} on columns,\n"
-            + " {[Store].children} on rows\n"
+            + " {[Store].[Stores].children} on rows\n"
             + "from [Sales]\n"
             + "where ([Gender].[M], "
             + TestContext.hierarchyName("Time", "Weekly")
             + ".[1997], [Time].[1997].[Q1])",
             "Axis #0:\n"
-            + "{[Gender].[M], [Time].[Weekly].[1997], [Time].[1997].[Q1]}\n"
+            + "{[Customer].[Gender].[M], [Time].[Time].[Weekly].[1997], [Time].[1997].[Q1]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
@@ -131,8 +131,8 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Sales to Date]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1997].[Q2].[4]}\n"
-            + "{[Time].[1997].[Q2].[5]}\n"
+            + "{[Time].[Time].[1997].[Q2].[4]}\n"
+            + "{[Time].[Time].[1997].[Q2].[5]}\n"
             + "Row #0: 86,470\n"
             + "Row #1: 107,551\n");
 
@@ -227,7 +227,7 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             + "from [Sales]\n"
             + "where [Time].[1997] ",
             "Axis #0:\n"
-            + "{[Time].[1997]}\n"
+            + "{[Time].[Time].[1997]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Store Cost]}\n"

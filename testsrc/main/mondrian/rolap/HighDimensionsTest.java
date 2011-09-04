@@ -44,7 +44,7 @@ public class HighDimensionsTest extends FoodMartTestCase {
             "with set necj as "
             + "NonEmptyCrossJoin(NonEmptyCrossJoin("
             + "[Customers].[Name].members,[Store].[Store Name].members),"
-            + "[Product].[Product Name].members) "
+            + "[Product].[Products].[Product Name].members) "
             + "select {[Measures].[Unit Sales]} on columns,"
             + "tail(intersect(necj,necj,ALL),5) on rows from sales");
         final long t0 = System.currentTimeMillis();

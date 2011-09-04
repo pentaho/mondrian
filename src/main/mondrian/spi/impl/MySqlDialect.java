@@ -223,7 +223,9 @@ public class MySqlDialect extends JdbcDialectImpl {
         List<String[]> valueList)
     {
         return generateInlineGeneric(
-            columnNames, columnTypes, valueList, null, false);
+            columnNames, columnTypes, valueList,
+            valueList.isEmpty() ? "from (select 1) as t" : null,
+            false);
     }
 
     @Override

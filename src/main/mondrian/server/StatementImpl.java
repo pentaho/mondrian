@@ -43,7 +43,7 @@ public abstract class StatementImpl implements Statement {
         MondrianProperties.instance().QueryTimeout.get() * 1000;
 
     /**
-     * The current execution context, or null if query is not executing.
+     * The current locus context, or null if query is not executing.
      */
     private Execution execution;
 
@@ -79,8 +79,8 @@ public abstract class StatementImpl implements Statement {
 
     public synchronized void cancel() throws SQLException {
         if (execution == null) {
-            // There is no current execution. Flag that we need to cancel as
-            // soon as we start execution.
+            // There is no current locus. Flag that we need to cancel as
+            // soon as we start locus.
             cancelBeforeStart = true;
         } else {
             execution.cancel();

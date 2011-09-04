@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -45,14 +45,14 @@ class ResultComparator {
         NodeList slicerList = xmlRoot.getElementsByTagName("slicer");
 
         Cube cube = result.getQuery().getCube();
-        Dimension[] dims = cube.getDimensions();
         HashSet<String> defaultDimMembers = new HashSet<String>();
 
-        for (Dimension dim : dims) {
-            String uniqueName =
-                dim.getHierarchyList().get(0).getDefaultMember()
-                    .getUniqueName();
-            defaultDimMembers.add(uniqueName);
+        for (Dimension dim : cube.getDimensions()) {
+            for (Hierarchy hierarchy : dim.getHierarchyList()) {
+                String uniqueName =
+                    hierarchy.getDefaultMember().getUniqueName();
+                defaultDimMembers.add(uniqueName);
+            }
         }
 
         Axis slicerAxis = result.getSlicerAxis();
@@ -78,6 +78,7 @@ class ResultComparator {
         for (int idx = 0; idx < numMembers; idx++) {
             String expectedMemberName =
                 expectedTuple.item(idx).getFirstChild().getNodeValue();
+            expectedMemberName = foo(expectedMemberName);
             if (resultMembersContainsExpected(expectedMemberName, members)) {
                 seenMembers++;
             } else if (defaultDimMembers.contains(expectedMemberName)) {
@@ -90,6 +91,21 @@ class ResultComparator {
             "The query returned more slicer members than were expected",
             members.size(),
             seenMembers);
+    }
+
+    /**
+     * @see Util#deprecated(Object) TODO: upgrade ref logs and remove this
+     * hackery
+     */
+    private String foo(String expectedMemberName) {
+        return expectedMemberName
+            .replace("[Product].", "[Product].[Products].")
+            .replace("[Customers].", "[Customer].[Customers].")
+            .replace("[Marital Status].", "[Customer].[Marital Status].")
+            .replace("[Gender].", "[Customer].[Gender].")
+            .replace("[Education Level].", "[Customer].[Education Level].")
+            .replace("[Yearly Income].", "[Customer].[Yearly Income].")
+            .replace("[Time].", "[Time].[Time].");
     }
 
     private boolean resultMembersContainsExpected(
@@ -415,6 +431,7 @@ class ResultComparator {
             String resultName = resultTuple.get(idx).getUniqueName();
             String expectedName =
                 expectedMembers.item(idx).getFirstChild().getNodeValue();
+            expectedName = foo(expectedName);
 
             _assertEquals(message + " member " + idx, expectedName, resultName);
         }

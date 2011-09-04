@@ -10,7 +10,6 @@
 //
 // wgorman, 19 October 2007
 */
-
 package mondrian.rolap;
 
 import mondrian.mdx.HierarchyExpr;
@@ -50,6 +49,7 @@ public class RolapCubeMember
         super(member);
         this.parentCubeMember = parent;
         this.cubeLevel = cubeLevel;
+        assert cubeLevel != null;
         assert !member.isAll() || getClass() != RolapCubeMember.class
             : "all member should be its own subclass:" + member;
         assert !(member instanceof RolapStoredMeasure)

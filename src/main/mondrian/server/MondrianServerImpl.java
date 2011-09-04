@@ -215,6 +215,56 @@ class MondrianServerImpl
         // data source info.
         return null;
     }
+
+    public XmlaHandler.Request startRequest(
+        XmlaRequest request,
+        OlapConnection connection)
+    {
+        if (connection == null) {
+            // REVIEW: Use internal connection for auditing purposes?
+            return null;
+        }
+        try {
+            final RolapConnection mondrianConnection =
+                connection.unwrap(RolapConnection.class);
+            final Statement statement =
+                mondrianConnection.createDummyStatement();
+            Execution execution = new Execution(statement, 0);
+            execution.start();
+            final Locus locus =
+                new Locus(
+                    execution,
+                    "XMLA request",
+                    null);
+            Locus.push(locus);
+            return new MondrianServerXmlaRequest(locus);
+        } catch (SQLException e) {
+            // ignore
+            return null;
+        }
+    }
+
+    public void endRequest(XmlaHandler.Request request) {
+        if (request != null) {
+            final Locus locus = ((MondrianServerXmlaRequest) request).locus;
+            Locus.pop(locus);
+            locus.execution.end();
+        }
+    }
+
+    /**
+     * Allows XMLA requests to be tracked and audited somewhat similarly to
+     * statements.
+     */
+    private static class MondrianServerXmlaRequest
+        implements XmlaHandler.Request
+    {
+        final Locus locus;
+
+        public MondrianServerXmlaRequest(Locus locus) {
+            this.locus = locus;
+        }
+    }
 }
 
 // End MondrianServerImpl.java

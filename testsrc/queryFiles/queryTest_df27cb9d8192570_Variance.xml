@@ -13,21 +13,21 @@
                 <dim>[Education Level]</dim>
                 <dim>[Marital Status]</dim>
                 <dim>[Yearly Income]</dim>
-                <dim>[Promotion Media]</dim>
+                <dim>[Promotion].[Media Type]</dim>
                 <dim>[Gender]</dim>
             </dimensions>
             <tuples>
                 <tuple>
                     <member>[Measures].[Unit Sales]</member>
                     <member>[Product].[All Products]</member>
-                    <member>[Store].[All Stores]</member>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
-                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Store].[Stores].[All Stores]</member>
+                    <member>[Store].[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store].[Store Type].[All Store Types]</member>
                     <member>[Customers].[All Customers]</member>
                     <member>[Education Level].[All Education Levels]</member>
                     <member>[Marital Status].[All Marital Status]</member>
                     <member>[Yearly Income].[All Yearly Incomes]</member>
-                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Promotion].[Media Type].[All Media]</member>
                     <member>[Gender].[All Gender]</member>
                 </tuple>
             </tuples>
@@ -38,7 +38,7 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Promotions].[Var Store Sales]</member>
+                    <member>[Promotion].[Promotions].[Var Store Sales]</member>
                 </tuple>
             </tuples>
         </columns>

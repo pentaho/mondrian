@@ -21,6 +21,7 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.server.Statement;
+import mondrian.util.Bug;
 import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
@@ -52,7 +53,7 @@ public class RolapCube extends CubeBase {
     /**
      * List of calculated members.
      */
-    private final List<Formula> calculatedMemberList = new ArrayList<Formula>();
+    final List<Formula> calculatedMemberList = new ArrayList<Formula>();
 
     /**
      * Role-based cache of calculated members
@@ -127,7 +128,17 @@ public class RolapCube extends CubeBase {
                 DimensionType.MeasuresDimension,
                 Collections.<String, Annotation>emptyMap());
         RolapHierarchy measuresHierarchy =
-            measuresDimension.newHierarchy(null, false, null);
+            new RolapHierarchy(
+                measuresDimension,
+                null,
+                Util.quoteMdxIdentifier(Dimension.MEASURES_NAME),
+                measuresDimension.isVisible(),
+                measuresDimension.getCaption(),
+                measuresDimension.getDescription(),
+                false,
+                null,
+                Collections.<String, Annotation>emptyMap());
+        measuresDimension.addHierarchy(measuresHierarchy);
         measuresHierarchy.initMeasures();
         schemaLoader.initDimension(measuresDimension);
 
@@ -744,6 +755,14 @@ public class RolapCube extends CubeBase {
                 {
                     return formula.getMdxMember();
                 }
+                if (!Bug.BugMondrian960Fixed
+                    && Util.equalName(
+                        Query.getUniqueNameWithoutDimension(
+                            formula.getMdxMember()),
+                        uniqueName))
+                {
+                    return formula.getMdxMember();
+                }
             }
             return null;
         }
@@ -891,7 +910,6 @@ public class RolapCube extends CubeBase {
 
             return null;
         }
-
     }
 }
 

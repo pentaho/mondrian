@@ -182,7 +182,7 @@
         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
         <DATA_TYPE>5</DATA_TYPE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion].[Media Type].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Promotion Sales</MEASURE_NAME_SQL_COLUMN_NAME>
     </row>
     <row
@@ -200,7 +200,7 @@
         <NUMERIC_PRECISION>19</NUMERIC_PRECISION>
         <NUMERIC_SCALE>255</NUMERIC_SCALE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion].[Media Type].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Sales Count</MEASURE_NAME_SQL_COLUMN_NAME>
     </row>
     <row
@@ -218,7 +218,7 @@
         <NUMERIC_PRECISION>16</NUMERIC_PRECISION>
         <NUMERIC_SCALE>255</NUMERIC_SCALE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion].[Media Type].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Store Cost</MEASURE_NAME_SQL_COLUMN_NAME>
     </row>
     <row
@@ -236,7 +236,7 @@
         <NUMERIC_PRECISION>16</NUMERIC_PRECISION>
         <NUMERIC_SCALE>255</NUMERIC_SCALE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion].[Media Type].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Store Sales</MEASURE_NAME_SQL_COLUMN_NAME>
     </row>
     <row
@@ -254,7 +254,7 @@
         <NUMERIC_PRECISION>16</NUMERIC_PRECISION>
         <NUMERIC_SCALE>255</NUMERIC_SCALE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion].[Media Type].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Store Sales Net</MEASURE_NAME_SQL_COLUMN_NAME>
     </row>
     <row
@@ -272,7 +272,7 @@
         <NUMERIC_PRECISION>16</NUMERIC_PRECISION>
         <NUMERIC_SCALE>255</NUMERIC_SCALE>
         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion].[Media Type].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
         <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Unit Sales</MEASURE_NAME_SQL_COLUMN_NAME>
     </row>
   </root>

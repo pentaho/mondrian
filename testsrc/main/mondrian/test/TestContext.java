@@ -28,6 +28,7 @@ import mondrian.spi.DynamicSchemaProcessor;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
+import mondrian.util.Bug;
 import mondrian.util.DelegatingInvocationHandler;
 
 import javax.sql.DataSource;
@@ -38,7 +39,6 @@ import java.net.URL;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.lang.reflect.*;
 
 import org.olap4j.*;
 import org.olap4j.impl.CoordinateIterator;
@@ -83,22 +83,20 @@ public class TestContext {
         Pattern.compile("\r\n|\r|\n");
     private static final Pattern TabPattern = Pattern.compile("\t");
     private static final String[] AllHiers = {
+        "[Customer].[Customers]",
+        "[Customer].[Education Level]",
+        "[Customer].[Gender]",
+        "[Customer].[Marital Status]",
+        "[Customer].[Yearly Income]",
         "[Measures]",
-        "[Store]",
-        "[Store Size in SQFT]",
-        "[Store Type]",
-        "[Time]",
-        MondrianProperties.instance().SsasCompatibleNaming.get()
-            ? "[Time].[Weekly]"
-            : "[Time.Weekly]",
-        "[Product]",
-        "[Promotion Media]",
-        "[Promotions]",
-        "[Customers]",
-        "[Education Level]",
-        "[Gender]",
-        "[Marital Status]",
-        "[Yearly Income]"
+        "[Product].[Products]",
+        "[Promotion].[Media Type]",
+        "[Promotion].[Promotions]",
+        "[Store].[Stores]",
+        "[Store].[Store Size in SQFT]",
+        "[Store].[Store Type]",
+        "[Time].[Time]",
+        "[Time].[Weekly]",
     };
     private static String unadulteratedFoodMartSchema;
 
@@ -320,6 +318,10 @@ public class TestContext {
             int i =
                 s.indexOf(
                     "<Cube name=\"Sales\" defaultMeasure=\"Unit Sales\">");
+            if (i < 0) {
+                i = s.indexOf(
+                    "<Cube name='Sales' defaultMeasure='Unit Sales'>");
+            }
             s = s.substring(0, i)
                 + cubeDefs
                 + s.substring(i);
@@ -400,10 +402,11 @@ public class TestContext {
         String dimensionDefs,
         String measureDefs,
         String memberDefs,
-        String namedSetDefs)
+        String namedSetDefs, Map<String, String> stringStringMap)
     {
         String s = rawSchema;
 
+        final boolean v4 = s.contains("<PhysicalSchema");
         // Search for the <Cube> or <VirtualCube> element.
         int h = s.indexOf("<Cube name=\"" + cubeName + "\"");
         int end;
@@ -445,13 +448,27 @@ public class TestContext {
 
         // Add calculated member definitions, if specified.
         if (memberDefs != null) {
-            int i = s.indexOf("<CalculatedMember", h);
-            if (i < 0 || i > end) {
-                i = end;
+            int i = s.indexOf("<CalculatedMembers>", h);
+            if (i >= 0) {
+                i += "<CalculatedMembers>".length();
+                s = s.substring(0, i)
+                    + memberDefs
+                    + s.substring(i);
+            } else {
+                i = s.indexOf("<CalculatedMember", h);
+                if (i < 0 || i > end) {
+                    i = end;
+                }
+                if (v4) {
+                    memberDefs =
+                        "<CalculatedMembers>"
+                        + memberDefs
+                        + "</CalculatedMembers>";
+                }
+                s = s.substring(0, i)
+                    + memberDefs
+                    + s.substring(i);
             }
-            s = s.substring(0, i)
-                + memberDefs
-                + s.substring(i);
         }
 
         if (namedSetDefs != null) {
@@ -819,79 +836,104 @@ public class TestContext {
      * @return Expected result massaged for backwards compatibility
      */
     public String upgradeActual(String actual) {
+        String[] strings = {actual};
         if (true || !MondrianProperties.instance().SsasCompatibleNaming.get()) {
-            actual = Util.replace(
-                actual,
-                "[Time.Weekly]",
-                "[Time].[Weekly]");
-            actual = Util.replace(
-                actual,
+            foo(strings, "Time", "Weekly");
+            strings[0] = Util.replace(
+                strings[0],
                 "[All Time.Weeklys]",
                 "[All Weeklys]");
-            actual = Util.replace(
-                actual,
+            strings[0] = Util.replace(
+                strings[0],
                 "<HIERARCHY_NAME>Time.Weekly</HIERARCHY_NAME>",
                 "<HIERARCHY_NAME>Weekly</HIERARCHY_NAME>");
-            actual = Util.replace(
-                actual,
-                "[Time.Monthly]",
-                "[Time].[Monthly]");
-            actual = Util.replace(
-                actual,
-                "[Stores].[Store]",
-                "[Store]");
-            actual = Util.replace(
-                actual,
-                "[Customer].[Customers]",
-                "[Customers]");
-            actual = Util.replace(
-                actual,
-                "[Customer].[Marital Status]",
-                "[Marital Status]");
-
+            if (false) {
+            foo(strings, "Time", "Monthly");
+            foo2(strings, "Store", "Stores");
+            foo2(strings, "Customer", "Customers");
+            foo2(strings, "Customer", "Marital Status");
+            foo2(strings, "Customer", "Gender");
+            foo2(strings, "Store", "Store Type");
+            foo2(strings, "Product", "Products");
+            foo1(strings, "Promotion Media");
+            foo1(strings, "Time");
 
             // for a few tests in SchemaTest
-            actual = Util.replace(
-                actual,
-                "[Store.MyHierarchy]",
-                "[Store].[MyHierarchy]");
-            actual = Util.replace(
-                actual,
+            foo(strings, "Store", "MyHierarchy");
+            strings[0] = Util.replace(
+                strings[0],
                 "[All Store.MyHierarchys]",
                 "[All MyHierarchys]");
-            actual = Util.replace(
-                actual,
+            strings[0] = Util.replace(
+                strings[0],
                 "[Store2].[All Store2s]",
                 "[Store2].[Store].[All Stores]");
-            actual = Util.replace(
-                actual,
+            strings[0] = Util.replace(
+                strings[0],
                 "[Store Type 2.Store Type 2].[All Store Type 2.Store Type 2s]",
                 "[Store Type 2].[All Store Type 2s]");
-            actual = Util.replace(
-                actual,
-                "[TIME.CALENDAR]",
-                "[TIME].[CALENDAR]");
-            actual = Util.replace(
-                actual,
+            foo(strings, "TIME", "CALENDAR");
+            }
+            strings[0] = Util.replace(
+                strings[0],
                 "<Store>true</Store>",
                 "<Store>1</Store>");
-            actual = Util.replace(
-                actual,
+            strings[0] = Util.replace(
+                strings[0],
                 "<Employees>80000.0000</Employees>",
                 "<Employees>80000</Employees>");
         }
         if (true) {
             // mondrian-4
-            actual = Util.replace(
-                actual,
+            strings[0] = Util.replace(
+                strings[0],
                 "[Promotion.Media Type]",
-                "[Promotion Media]");
-            actual = Util.replace(
-                actual,
+                "[Promotion].[Media Type]");
+            strings[0] = Util.replace(
+                strings[0],
                 "[Promotion].[Media Type]",
-                "[Promotion Media]");
+                "[Promotion].[Media Type]");
+            if (false) {
+            strings[0] = Util.replace(
+                strings[0],
+                "[Product].[All Products].",
+                "[Product].[Products].");
+            }
         }
-        return actual;
+        return strings[0];
+    }
+
+    // converts "[dim.hier]" to "[dim].[hier]"
+    private static void foo(String[] strings, String dim, String hier)
+    {
+        strings[0] = Util.replace(
+            strings[0],
+            "[" + dim + "." + hier + "]",
+            "[" + dim + "].[" + hier + "]");
+    }
+
+    // converts "[dim].[hier]" to "[hier]"
+    private static void foo2(String[] strings, String dim, String hier)
+    {
+        strings[0] = Util.replace(
+            strings[0],
+            "[" + dim + "].[" + hier + "]",
+            "[" + hier + "]");
+    }
+
+    // converts "[hier].[hier]" to "[hier]"
+    private static void foo1(String[] strings, String hier)
+    {
+        foo2(strings, hier, hier);
+    }
+
+    public String upgradeExpected(String actual) {
+        String[] strings = {actual};
+        if (false)
+        strings[0] = strings[0].replaceAll(
+            "([^.])\\[Product\\]\\.",
+            "$1[Product].[Products].");
+        return strings[0];
     }
 
     /**
@@ -920,11 +962,11 @@ public class TestContext {
     public String upgradeQuery(String queryString) {
         if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
             String[] names = {
-                "[Gender]",
-                "[Education Level]",
-                "[Marital Status]",
-                "[Store Type]",
-                "[Yearly Income]",
+//                "[Gender]",
+//                "[Education Level]",
+//                "[Marital Status]",
+//                "[Store Type]",
+//                "[Yearly Income]",
             };
             for (String name : names) {
                 queryString = Util.replace(
@@ -936,13 +978,6 @@ public class TestContext {
                 queryString,
                 "[Time.Weekly].[All Time.Weeklys]",
                 "[Time].[Weekly].[All Weeklys]");
-        }
-        // New foodmart schema.
-        if (true) {
-            queryString = Util.replace(
-                queryString,
-                "[Promotion Media].[Media Type]",
-                "[Promotion].[Media Type].[Media Type]");
         }
         return queryString;
     }
@@ -1081,7 +1116,7 @@ public class TestContext {
         String resultString = toString(result);
         if (desiredResult != null) {
             assertEqualsVerbose(
-                desiredResult,
+                upgradeExpected(desiredResult),
                 upgradeActual(resultString));
         }
     }
@@ -1390,6 +1425,35 @@ public class TestContext {
     }
 
     /**
+     * Returns a test context based on a particular data set.
+     *
+     * @param dataSet Data set
+     * @return Test context based on given data set
+     */
+    public TestContext with(DataSet dataSet) {
+        switch (dataSet) {
+        case FOODMART:
+            return this;
+        case LEGACY_FOODMART:
+            final Util.PropertyList properties =
+                getConnectionProperties().clone();
+            final String catalog =
+                properties.get(RolapConnectionProperties.Catalog.name());
+            properties.put(
+                RolapConnectionProperties.Catalog.name(),
+                Util.replace(
+                    catalog,
+                    "NewFoodMart.xml",
+                    "FoodMart.xml"));
+            return withProperties(properties);
+        case STEELWHEELS:
+            return SteelWheelsTestCase.createContext(this, null);
+        default:
+            throw Util.unexpected(dataSet);
+        }
+    }
+
+    /**
      * Wrapper around a string that indicates that all line endings have been
      * converted to platform-specific line endings.
      *
@@ -1679,7 +1743,7 @@ public class TestContext {
      * Asserts that an MDX set-valued expression depends upon a given list of
      * dimensions.
      */
-    public void assertSetExprDependsOn(String expr, String dimList) {
+    public void assertSetExprDependsOn(String expr, Set<String> hierSet) {
         // Construct a query, and mine it for a parsed expression.
         // Use a fresh connection, because some tests define their own dims.
         final Connection connection = getConnection();
@@ -1691,28 +1755,29 @@ public class TestContext {
 
         // Build a list of the dimensions which the expression depends upon,
         // and check that it is as expected.
-        checkDependsOn(query, expression, dimList, false);
+        checkDependsOn(query, expression, hierSet, false);
     }
 
     /**
      * Asserts that an MDX member-valued depends upon a given list of
-     * dimensions.
+     * hierarchies.
      */
-    public void assertMemberExprDependsOn(String expr, String dimList) {
-        assertSetExprDependsOn("{" + expr + "}", dimList);
+    public void assertMemberExprDependsOn(String expr, Set<String> hierSet) {
+        assertSetExprDependsOn("{" + expr + "}", hierSet);
     }
 
     /**
      * Asserts that an MDX expression depends upon a given list of dimensions.
      */
-    public void assertExprDependsOn(String expr, String hierList) {
+    public void assertExprDependsOn(String expr, Set<String> hierSet) {
         // Construct a query, and mine it for a parsed expression.
         // Use a fresh connection, because some tests define their own dims.
         final Connection connection = getConnection();
         final String queryString =
             "WITH MEMBER [Measures].[Foo] AS "
             + Util.singleQuoteString(expr)
-            + " SELECT FROM [Sales]";
+            + " SELECT FROM "
+            + getDefaultCubeName();
         final Query query = connection.parseQuery(queryString);
         query.resolve();
         final Formula formula = query.getFormulas()[0];
@@ -1720,13 +1785,13 @@ public class TestContext {
 
         // Build a list of the dimensions which the expression depends upon,
         // and check that it is as expected.
-        checkDependsOn(query, expression, hierList, true);
+        checkDependsOn(query, expression, hierSet, true);
     }
 
     private void checkDependsOn(
         final Query query,
         final Exp expression,
-        String expectedHierList,
+        Set<String> expectedHierList,
         final boolean scalar)
     {
         final Calc calc =
@@ -1736,19 +1801,29 @@ public class TestContext {
                 scalar ? null : ResultStyle.ITERABLE);
         final List<RolapHierarchy> hierarchies =
             ((RolapCube) query.getCube()).getHierarchies();
-        StringBuilder buf = new StringBuilder("{");
-        int dependCount = 0;
+        final TreeSet<String> actualHierList = new TreeSet<String>();
         for (Hierarchy hierarchy : hierarchies) {
             if (calc.dependsOn(hierarchy)) {
-                if (dependCount++ > 0) {
-                    buf.append(", ");
-                }
-                buf.append(hierarchy.getUniqueName());
+                actualHierList.add(hierarchy.getUniqueName());
             }
         }
-        buf.append("}");
-        String actualHierList = buf.toString();
-        Assert.assertEquals(expectedHierList, actualHierList);
+        if (!Util.equals(expectedHierList, actualHierList)) {
+            String message =
+                "In expected but not actual: "
+                + minus(expectedHierList, actualHierList)
+                + "\n"
+                + "In actual but not expected: "
+                + minus(actualHierList, expectedHierList);
+            assertEqualsVerbose(
+                expectedHierList.toString(), actualHierList.toString(),
+                false, message);
+        }
+    }
+
+    private <T> Set<T> minus(Set<T> s1, Set<T> s2) {
+        final LinkedHashSet<T> set = new LinkedHashSet<T>(s1);
+        set.removeAll(s2);
+        return set;
     }
 
     /**
@@ -1800,6 +1875,8 @@ public class TestContext {
         properties.put(
             RolapConnectionProperties.CatalogContent.name(),
             catalogContent);
+        properties.remove(
+            RolapConnectionProperties.Catalog.name());
         return withProperties(properties);
     }
 
@@ -1902,11 +1979,45 @@ public class TestContext {
         final String memberDefs,
         final String namedSetDefs)
     {
+        return createSubstitutingCube(
+            cubeName,
+            dimensionDefs,
+            measureDefs,
+            memberDefs,
+            namedSetDefs,
+            Collections.<String, String>emptyMap());
+    }
+
+
+    /**
+     * Creates a TestContext, adding hierarchy and calculated member definitions
+     * to a cube definition.
+     *
+     * @param cubeName Name of a cube in the schema (cube must exist)
+     * @param dimensionDefs String defining dimensions, or null
+     * @param measureDefs String defining measures, or null
+     * @param memberDefs String defining calculated members, or null
+     * @param namedSetDefs String defining named set definitions, or null
+     * @param dimensionLinks Dimension links
+     * @return TestContext with modified cube defn
+     */
+    public final TestContext createSubstitutingCube(
+        final String cubeName,
+        final String dimensionDefs,
+        final String measureDefs,
+        final String memberDefs,
+        final String namedSetDefs,
+        Map<String, String> dimensionLinks)
+    {
         final String schema =
             substituteSchema(
                 getRawFoodMartSchema(),
-                cubeName, dimensionDefs,
-                measureDefs, memberDefs, namedSetDefs);
+                cubeName,
+                dimensionDefs,
+                measureDefs,
+                memberDefs,
+                namedSetDefs,
+                dimensionLinks);
         return withSchema(schema);
     }
 
@@ -1964,27 +2075,19 @@ public class TestContext {
     }
 
     /**
-     * Generates a string containing all dimensions except those given.
-     * Useful as an argument to {@link #assertExprDependsOn(String, String)}.
+     * Generates a string containing all dimensions except those given. Useful
+     * as an argument to {@link #assertExprDependsOn(String, java.util.Set)}.
      *
      * @return string containing all dimensions except those given
      */
-    public static String allHiersExcept(String ... hiers) {
+    public static Set<String> allHiersExcept(String ... hiers) {
         for (String hier : hiers) {
             assert contains(AllHiers, hier) : "unknown hierarchy " + hier;
         }
-        StringBuilder buf = new StringBuilder("{");
-        int j = 0;
-        for (String hier : AllHiers) {
-            if (!contains(hiers, hier)) {
-                if (j++ > 0) {
-                    buf.append(", ");
-                }
-                buf.append(hier);
-            }
-        }
-        buf.append("}");
-        return buf.toString();
+        final LinkedHashSet<String> result =
+            new LinkedHashSet<String>(Arrays.asList(AllHiers));
+        result.removeAll(Arrays.asList(hiers));
+        return result;
     }
 
     public static boolean contains(String[] a, String s) {
@@ -1996,7 +2099,7 @@ public class TestContext {
         return false;
     }
 
-    public static String allHiers() {
+    public static Set<String> allHiers() {
         return allHiersExcept();
     }
 
@@ -2246,6 +2349,12 @@ public class TestContext {
             }
             return s;
         }
+    }
+
+    enum DataSet {
+        FOODMART,
+        STEELWHEELS,
+        LEGACY_FOODMART
     }
 }
 

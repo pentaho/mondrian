@@ -9,6 +9,7 @@
 */
 package mondrian.test;
 
+import junit.framework.Assert;
 import org.apache.log4j.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.varia.LevelRangeFilter;
@@ -421,7 +422,7 @@ Test attribute Attribute@allMemberName.
             + "Axis #1:\n"
             + "{[Measures].[QuantumProfit]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[foo]}\n"
+            + "{[Customer].[Gender].[foo]}\n"
             + "Row #0: $7.52\n");
     }
 
@@ -590,15 +591,54 @@ Test attribute Attribute@allMemberName.
             + "{[Measures].[Fact Count]}\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[All Gender]}\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
+            + "{[Customer].[Gender].[All Gender]}\n"
+            + "{[Customer].[Gender].[F]}\n"
+            + "{[Customer].[Gender].[M]}\n"
             + "Row #0: 86,837\n"
             + "Row #0: 266,773\n"
             + "Row #1: 42,831\n"
             + "Row #1: 131,558\n"
             + "Row #2: 44,006\n"
             + "Row #2: 135,215\n");
+    }
+
+    public void testBadMeasure1() {
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
+            "Sales",
+            null,
+            "<Measure name='Bad Measure' aggregator='sum' formatString='Standard'/>\n");
+        Throwable throwable = null;
+        try {
+            testContext.assertSimpleQuery();
+        } catch (Throwable e) {
+            throwable = e;
+        }
+        // neither a source column or source expression specified
+        TestContext.checkThrowable(
+            throwable,
+            "must contain either a source column or a source expression, but not both");
+    }
+
+    public void testBadMeasure2() {
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
+            "Sales",
+            null,
+            "<Measure name='Bad Measure' aggregator='sum' formatString='Standard'>\n"
+            + "  <MeasureExpression>\n"
+            + "  <Arguments>\n"
+            + "    <Column name='unit_sales'/>\n"
+            + "  </Arguments>\n"
+            + "</Measure>");
+        Throwable throwable = null;
+        try {
+            testContext.assertSimpleQuery();
+        } catch (Throwable e) {
+            throwable = e;
+        }
+        // both a source column and source expression specified
+        TestContext.checkThrowable(
+            throwable,
+            "must contain either a source column or a source expression, but not both");
     }
 
     /**
@@ -917,7 +957,7 @@ Test attribute Attribute@allMemberName.
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Yearly Income2].[All Yearly Income2s], [Customers].[All Customers]}\n"
+            + "{[Yearly Income2].[All Yearly Income2s], [Customer].[Customers].[All Customers]}\n"
             + "Row #0: 266,773\n");
     }
 
@@ -1044,7 +1084,7 @@ Test attribute Attribute@allMemberName.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[USA].[South West]}\n"
+            + "{[Customer].[Customers].[USA].[South West]}\n"
             + "Axis #2:\n"
             + "{[Store].[MyHierarchy].[Mexico]}\n"
             + "Row #0: 51,298\n");
@@ -1110,7 +1150,7 @@ Test attribute Attribute@allMemberName.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[USA].[South West]}\n"
+            + "{[Customer].[Customers].[USA].[South West]}\n"
             + "Axis #2:\n"
             + "{[Store].[MyHierarchy].[USA].[South West]}\n"
             + "Row #0: 72,631\n");
@@ -1167,7 +1207,7 @@ Test attribute Attribute@allMemberName.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[USA].[South West]}\n"
+            + "{[Customer].[Customers].[USA].[South West]}\n"
             + "Axis #2:\n"
             + "{[Store].[USA].[South West]}\n"
             + "Row #0: 72,631\n");
@@ -1221,7 +1261,7 @@ Test attribute Attribute@allMemberName.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[USA].[South West]}\n"
+            + "{[Customer].[Customers].[USA].[South West]}\n"
             + "Axis #2:\n"
             + "{[Store].[USA].[South West]}\n"
             + "Row #0: 72,631\n");
@@ -1275,7 +1315,7 @@ Test attribute Attribute@allMemberName.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[USA].[South West]}\n"
+            + "{[Customer].[Customers].[USA].[South West]}\n"
             + "Axis #2:\n"
             + "{[Store].[USA].[South West]}\n"
             + "Row #0: 72,631\n");
@@ -1413,7 +1453,7 @@ Test attribute Attribute@allMemberName.
                 ? "{[Time2].[Time].[1997]}\n"
                 : "{[Time2].[1997]}\n")
             + "Axis #2:\n"
-            + "{[Time].[1997].[Q3]}\n"
+            + "{[Time].[Time].[1997].[Q3]}\n"
             + "Row #0: 16,266\n");
     }
 
@@ -1504,7 +1544,7 @@ Test attribute Attribute@allMemberName.
             + "Axis #1:\n"
             + "{[Store].[USA]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[Time].[1997].[Q1]}\n"
             + "Row #0: 66,291\n");
     }
 
@@ -1721,10 +1761,10 @@ Test attribute Attribute@allMemberName.
             + "From [Warehouse (based on view)]\n"
             + "where [Warehouse].[USA]",
             "Axis #0:\n"
-            + "{[Warehouse].[USA]}\n"
+            + "{[Warehouse].[Warehouses].[USA]}\n"
             + "Axis #1:\n"
-            + "{[Time].[1997]}\n"
-            + "{[Time].[1997].[Q3]}\n"
+            + "{[Time].[Time].[1997]}\n"
+            + "{[Time].[Time].[1997].[Q3]}\n"
             + "Axis #2:\n"
             + "{[Store].[USA].[CA]}\n"
             + "{[Store].[USA].[OR]}\n"
@@ -1779,12 +1819,12 @@ Test attribute Attribute@allMemberName.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store Type].[Deluxe Supermarket]}\n"
-            + "{[Store Type].[Gourmet Supermarket]}\n"
-            + "{[Store Type].[HeadQuarters]}\n"
-            + "{[Store Type].[Mid-Size Grocery]}\n"
-            + "{[Store Type].[Small Grocery]}\n"
-            + "{[Store Type].[Supermarket]}\n"
+            + "{[Store].[Store Type].[Deluxe Supermarket]}\n"
+            + "{[Store].[Store Type].[Gourmet Supermarket]}\n"
+            + "{[Store].[Store Type].[HeadQuarters]}\n"
+            + "{[Store].[Store Type].[Mid-Size Grocery]}\n"
+            + "{[Store].[Store Type].[Small Grocery]}\n"
+            + "{[Store].[Store Type].[Supermarket]}\n"
             + "Row #0: 146,045\n"
             + "Row #0: 47,447\n"
             + "Row #0: \n"
@@ -1849,7 +1889,7 @@ Test attribute Attribute@allMemberName.
             + "FROM [Sales]\n"
             + "WHERE ([Gender].[M])",
             "Axis #0:\n"
-            + "{[Gender].[M]}\n"
+            + "{[Customer].[Gender].[M]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Customer Count]}\n"
@@ -2188,19 +2228,19 @@ Test attribute Attribute@allMemberName.
             + "{[Measures].[Store Sales]}\n"
             + "{[Measures].[StoreType]}\n"
             + "Axis #2:\n"
-            + "{[Store2].[2], [Product].[All Products]}\n"
-            + "{[Store2].[3], [Product].[All Products]}\n"
-            + "{[Store2].[6], [Product].[All Products]}\n"
-            + "{[Store2].[7], [Product].[All Products]}\n"
-            + "{[Store2].[11], [Product].[All Products]}\n"
-            + "{[Store2].[13], [Product].[All Products]}\n"
-            + "{[Store2].[14], [Product].[All Products]}\n"
-            + "{[Store2].[15], [Product].[All Products]}\n"
-            + "{[Store2].[16], [Product].[All Products]}\n"
-            + "{[Store2].[17], [Product].[All Products]}\n"
-            + "{[Store2].[22], [Product].[All Products]}\n"
-            + "{[Store2].[23], [Product].[All Products]}\n"
-            + "{[Store2].[24], [Product].[All Products]}\n"
+            + "{[Store2].[2], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[3], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[6], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[7], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[11], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[13], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[14], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[15], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[16], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[17], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[22], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[23], [Product].[Products].[All Products]}\n"
+            + "{[Store2].[24], [Product].[Products].[All Products]}\n"
             + "Row #0: 4,739.23\n"
             + "Row #0: Small Grocery\n"
             + "Row #1: 52,896.30\n"
@@ -2245,11 +2285,11 @@ Test attribute Attribute@allMemberName.
             + "</Cube>",
             null, null, null, null);
         testContext.assertQueryReturns(
-            "select {[Promotion Media]} on columns from [OneDim]",
+            "select {[Promotion].[Media Type]} on columns from [OneDim]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Promotion Media].[All Media]}\n"
+            + "{[Promotion].[Media Type].[All Media]}\n"
             + "Row #0: 266,773\n");
     }
 
@@ -2268,9 +2308,9 @@ Test attribute Attribute@allMemberName.
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[Drink]}\n"
-            + "{[Product].[Food]}\n"
-            + "{[Product].[Non-Consumable]}\n"
+            + "{[Product].[Products].[Drink]}\n"
+            + "{[Product].[Products].[Food]}\n"
+            + "{[Product].[Products].[Non-Consumable]}\n"
             + "Row #0: 24,597\n"
             + "Row #0: 191,940\n"
             + "Row #0: 50,236\n");
@@ -2373,9 +2413,9 @@ Test attribute Attribute@allMemberName.
         // non-visible ones, come before calculated measures.
         testContext.assertQueryReturns(
             "select {[Measures]} on columns from [OneCalcMeasure]\n"
-            + "where [Promotion Media].[TV]",
+            + "where [Promotion].[Media Type].[TV]",
             "Axis #0:\n"
-            + "{[Promotion Media].[TV]}\n"
+            + "{[Promotion].[Media Type].[TV]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Fact Count]}\n"
             + "Row #0: 1,171\n");
@@ -2470,7 +2510,7 @@ Test attribute Attribute@allMemberName.
                 + "Axis #1:\n"
                 + "{[Time2].[1997]}\n"
                 + "Axis #2:\n"
-                + "{[Time].[1997].[Q3]}\n"
+                + "{[Time].[Time].[1997].[Q3]}\n"
                 + "Row #0: 16,266\n");
 
             MondrianProperties props = MondrianProperties.instance();
@@ -2943,6 +2983,55 @@ Test attribute Attribute@allMemberName.
             "Invalid value 'char' for attribute 'internalType' of element 'Level'. Valid values are: [int, double, Object, String, long]");
     }
 
+    public void testAllLevelName() {
+        TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales",
+            "<Dimension name='Gender4' table='customer' key='Name'>\n"
+            + "    <Attributes>\n"
+            + "        <Attribute name='Gender' keyColumn='gender'/>\n"
+            + "        <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name'/>\n"
+            + "    </Attributes>\n"
+            + "    <Hierarchies>\n"
+            + "        <Hierarchy name='Gender' allMemberName='All Gender' allLevelName='GenderLevel'>\n"
+            + "            <Level attribute='Gender'/>\n"
+            + "        </Hierarchy>\n"
+            + "    </Hierarchies>\n"
+            + "</Dimension>");
+        String mdx =
+            "select {[Gender4].[Gender].[All Gender]} on columns from Sales";
+        assertTrue(testContext.getSchemaWarnings().isEmpty());
+        Result result = testContext.executeQuery(mdx);
+        Axis axis0 = result.getAxes()[0];
+        Position pos0 = axis0.getPositions().get(0);
+        Member allGender = pos0.get(0);
+        String caption = allGender.getLevel().getName();
+        Assert.assertEquals(caption, "GenderLevel");
+    }
+
+    public void testAllMemberCaption() {
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
+            "Sales",
+            "<Dimension name='Gender3' table='customer' key='Name'>\n"
+            + "    <Attributes>\n"
+            + "        <Attribute name='Gender' keyColumn='gender'/>\n"
+            + "        <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name'/>\n"
+            + "    </Attributes>\n"
+            + "    <Hierarchies>\n"
+            + "        <Hierarchy name='Gender' allMemberName='All Gender' allMemberCaption='Frauen und Maenner'>\n"
+            + "            <Level attribute='Gender'/>\n"
+            + "        </Hierarchy>\n"
+            + "    </Hierarchies>\n"
+            + "</Dimension>");
+        String mdx = "select {[Gender3].[All Gender]} on columns from Sales";
+        assertTrue(testContext.getSchemaWarnings().isEmpty());
+        Result result = testContext.executeQuery(mdx);
+        Axis axis0 = result.getAxes()[0];
+        Position pos0 = axis0.getPositions().get(0);
+        Member allGender = pos0.get(0);
+        String caption = allGender.getCaption();
+        Assert.assertEquals(caption, "Frauen und Maenner");
+    }
+
     public void _testAttributeHierarchy() {
         // from email from peter tran dated 2008/9/8
         // TODO: schema syntax to create attribute hierarchy
@@ -3109,7 +3198,7 @@ Test attribute Attribute@allMemberName.
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[All Products], [Store].[USA].[CA]}\n"
+            + "{[Product].[Products].[All Products], [Store].[USA].[CA]}\n"
             + "Row #0: 74,748\n");
 
         // Now query the children of CA using the descendants function
@@ -3647,7 +3736,7 @@ Test attribute Attribute@allMemberName.
             + "</Schema>");
         testContext.assertQueryReturns(
             "select non empty {[Measures].[unitsales2], [Measures].[unitsales1]} on 0,\n"
-            + " non empty [Store].members on 1\n"
+            + " non empty [Store].[Stores].members on 1\n"
             + "from [virtual_cube]",
             "Axis #0:\n"
             + "{}\n"
@@ -4263,6 +4352,14 @@ Test attribute Attribute@allMemberName.
         // todo: declare key in inline table
 
         // todo: test that get error if key references invalid columns
+
+        // todo: test that get error if inline table does not have alias
+
+        // todo: test that get error if alias is not unique within schema
+
+        // todo: test that get error if column names are not unique
+
+        // todo: test that get error if define calc column in inline table
     }
 
     public void testCubeRequiresFactTable() {
@@ -4959,6 +5056,9 @@ Test attribute Attribute@allMemberName.
     // TODO: test that get error "Cannot convert schema: hierarchies in
     // dimension 'xx' do not have consistent primary keys" if primary keys are
     // different.
+
+    // TODO: test with repeating element, e.g.
+    //   <Cube><CalculatedMembers .../><CalculatedMEmbers ../>
 }
 
 // End SchemaTest.java

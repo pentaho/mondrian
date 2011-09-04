@@ -212,16 +212,20 @@ abstract class Rowset implements XmlaConstants {
         throws XmlaException
     {
         boolean ourConnection = false;
+        XmlaHandler.Request request1 = null;
         try {
             if (needConnection() && connection == null) {
                 connection = handler.getConnection(request, extraProperties);
                 ourConnection = true;
             }
+            request1 =
+                handler.connectionFactory.startRequest(request, connection);
             populateImpl(response, connection, rows);
         } catch (SQLException e) {
             // TODO:
             e.printStackTrace();
         } finally {
+            handler.connectionFactory.endRequest(request1);
             if (connection != null && ourConnection) {
                 try {
                     connection.close();

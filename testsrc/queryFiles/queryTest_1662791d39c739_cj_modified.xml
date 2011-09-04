@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>select {[Measures].[Store Sales], [Measures].[Unit Sales]} on columns,     {[Time].[Time].children * [Store].children} on rows from [Warehouse and Sales] </mdxQuery>
+    <mdxQuery>select {[Measures].[Store Sales], [Measures].[Unit Sales]} on columns,     {[Time].[Time].children * [Store].[Stores].children} on rows from [Warehouse and Sales] </mdxQuery>
     <dataResult>
         <columns>
             <dimensions>
@@ -23,51 +23,51 @@
             <tuples>
                 <tuple>
                     <member>[Time].[1997].[Q1]</member>
-                    <member>[Store].[Canada]</member>
+                    <member>[Store].[Stores].[Canada]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q1]</member>
-                    <member>[Store].[Mexico]</member>
+                    <member>[Store].[Stores].[Mexico]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q1]</member>
-                    <member>[Store].[USA]</member>
+                    <member>[Store].[Stores].[USA]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q2]</member>
-                    <member>[Store].[Canada]</member>
+                    <member>[Store].[Stores].[Canada]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q2]</member>
-                    <member>[Store].[Mexico]</member>
+                    <member>[Store].[Stores].[Mexico]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q2]</member>
-                    <member>[Store].[USA]</member>
+                    <member>[Store].[Stores].[USA]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q3]</member>
-                    <member>[Store].[Canada]</member>
+                    <member>[Store].[Stores].[Canada]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q3]</member>
-                    <member>[Store].[Mexico]</member>
+                    <member>[Store].[Stores].[Mexico]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q3]</member>
-                    <member>[Store].[USA]</member>
+                    <member>[Store].[Stores].[USA]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q4]</member>
-                    <member>[Store].[Canada]</member>
+                    <member>[Store].[Stores].[Canada]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q4]</member>
-                    <member>[Store].[Mexico]</member>
+                    <member>[Store].[Stores].[Mexico]</member>
                 </tuple>
                 <tuple>
                     <member>[Time].[1997].[Q4]</member>
-                    <member>[Store].[USA]</member>
+                    <member>[Store].[Stores].[USA]</member>
                 </tuple>
             </tuples>
         </rows>

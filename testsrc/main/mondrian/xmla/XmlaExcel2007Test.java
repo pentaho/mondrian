@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2010 Julian Hyde and others
+// Copyright (C) 2010-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -143,7 +143,7 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
      */
     public void testUniqueName() {
         assertQueryReturns(
-            "WITH MEMBER [Store].[XL_PT0] AS 'strtomember(\"[Store].[USA].[CA]\").UniqueName' SELECT {[Store].[XL_PT0]} ON 0 FROM \n"
+            "WITH MEMBER [Store].[Stores].[XL_PT0] AS 'strtomember(\"[Store].[USA].[CA]\").UniqueName' SELECT {[Store].[XL_PT0]} ON 0 FROM \n"
             + "[HR] CELL PROPERTIES VALUE ",
             "Axis #0:\n"
             + "{}\n"
@@ -151,7 +151,7 @@ public class XmlaExcel2007Test extends XmlaBaseTestCase {
             + "{[Store].[XL_PT0]}\n"
             + "Row #0: [Store].[USA].[CA]\n");
         assertQueryReturns(
-            "WITH MEMBER [Store].[XL_PT0] AS 'strtomember(\"[Store].[All Stores].[USA].[CA]\").UniqueName' SELECT {[Store].[XL_PT0]} ON 0 FROM \n"
+            "WITH MEMBER [Store].[Stores].[XL_PT0] AS 'strtomember(\"[Store].[All Stores].[USA].[CA]\").UniqueName' SELECT {[Store].[XL_PT0]} ON 0 FROM \n"
             + "[HR] CELL PROPERTIES VALUE ",
             "Axis #0:\n"
             + "{}\n"

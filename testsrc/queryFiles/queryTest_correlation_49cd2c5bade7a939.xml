@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
     <mdxQuery>with member [Measures].[Store Sales Q1 over All USA] as
-'CORRELATION([Store].[USA].children, ([Measures].[Store Sales], [Time].[1997].[Q1]), ([Measures].[Store Sales], [Store].currentmember))'
+'CORRELATION([Store].[USA].children, ([Measures].[Store Sales], [Time].[1997].[Q1]), ([Measures].[Store Sales], [Store].[Stores].currentmember))'
 select crossjoin({[Measures].[Store Sales Q1 over All USA]}, [Time].[1997].children) on columns,
     [Store].[USA].children on rows
 from [Sales]</mdxQuery>
@@ -16,20 +16,20 @@ from [Sales]</mdxQuery>
                 <dim>[Education Level]</dim>
                 <dim>[Marital Status]</dim>
                 <dim>[Yearly Income]</dim>
-                <dim>[Promotion Media]</dim>
+                <dim>[Promotion].[Media Type]</dim>
                 <dim>[Gender]</dim>
             </dimensions>
             <tuples>
                 <tuple>
                     <member>[Product].[All Products]</member>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
-                    <member>[Store Type].[All Store Types]</member>
-                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Store].[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store].[Store Type].[All Store Types]</member>
+                    <member>[Promotion].[Promotions].[All Promotions]</member>
                     <member>[Customers].[All Customers]</member>
                     <member>[Education Level].[All Education Levels]</member>
                     <member>[Marital Status].[All Marital Status]</member>
                     <member>[Yearly Income].[All Yearly Incomes]</member>
-                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Promotion].[Media Type].[All Media]</member>
                     <member>[Gender].[All Gender]</member>
                 </tuple>
             </tuples>
@@ -64,13 +64,13 @@ from [Sales]</mdxQuery>
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store].[Stores].[USA].[CA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store].[Stores].[USA].[OR]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store].[Stores].[USA].[WA]</member>
                 </tuple>
             </tuples>
         </rows>

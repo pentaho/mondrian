@@ -250,14 +250,14 @@ Axis #0:
 Axis #1:
 {[Measures].[*ZERO]}
 Axis #2:
-{[Product].[Non-Consumable].[Periodicals]}
-{[Product].[Non-Consumable].[Household]}
-{[Product].[Non-Consumable].[Health and Hygiene]}
-{[Product].[Non-Consumable].[Checkout]}
-{[Product].[Non-Consumable].[Carousel]}
-{[Product].[Drink].[Dairy]}
-{[Product].[Drink].[Beverages]}
-{[Product].[Drink].[Alcoholic Beverages]}
+{[Product].[Products].[Non-Consumable].[Periodicals]}
+{[Product].[Products].[Non-Consumable].[Household]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Products].[Non-Consumable].[Checkout]}
+{[Product].[Products].[Non-Consumable].[Carousel]}
+{[Product].[Products].[Drink].[Dairy]}
+{[Product].[Products].[Drink].[Beverages]}
+{[Product].[Products].[Drink].[Alcoholic Beverages]}
 Row #0: 0
 Row #1: 0
 Row #2: 0
@@ -281,7 +281,7 @@ With
 Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Yearly Income],[*BASE_MEMBERS_Education Level])'
 Set [*SORTED_COL_AXIS] as 'Order([*NATIVE_MEMBERS_Yearly Income],[Yearly Income].CurrentMember.OrderKey,BASC)'
 Set [*SORTED_ROW_AXIS] as 'Order([*NATIVE_MEMBERS_Education Level],([Yearly Income].[*TOTAL_MEMBER_SEL~SUM],[Measures].[*FORMATTED_MEASURE_0]),BASC)'
-Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Customer].[Education Level].CurrentMember})'
 Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
 Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
 Set [*BASE_MEMBERS_Yearly Income] as 'Filter([Yearly Income].[Yearly Income].Members,[Yearly Income].CurrentMember Not In {[Yearly Income].[$10K - $30K],[Yearly Income].[$50K - $70K]})'
@@ -290,10 +290,10 @@ Member [Yearly Income].[*TOTAL_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Yearly I
 Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
 Member [Yearly Income].[*TOTAL_MEMBER_SEL~MAX] as 'Max([*NATIVE_MEMBERS_Yearly Income])', SOLVE_ORDER=199
 Member [Education Level].[*TOTAL_MEMBER_SEL~MAX] as 'Max([*NATIVE_MEMBERS_Education Level])', SOLVE_ORDER=200
-Member [Education Level].[*TOTAL_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})', SOLVE_ORDER=-100
+Member [Education Level].[*TOTAL_MEMBER_SEL~SUM] as 'Sum({[Customer].[Education Level].[All Education Levels]})', SOLVE_ORDER=-100
 Select
 Union(CrossJoin({[Yearly Income].[*TOTAL_MEMBER_SEL~MAX]},[*BASE_MEMBERS_Measures]),Union(CrossJoin({[Yearly Income].[*TOTAL_MEMBER_SEL~SUM]},[*BASE_MEMBERS_Measures]),CrossJoin([*SORTED_COL_AXIS],[*BASE_MEMBERS_Measures]))) on columns,
-Non Empty Union({[Education Level].[*TOTAL_MEMBER_SEL~MAX]},Union({[Education Level].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS])) on rows
+Non Empty Union({[Customer].[Education Level].[*TOTAL_MEMBER_SEL~MAX]},Union({[Education Level].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS])) on rows
 From [Sales]    
 ]]>
         </Resource>
@@ -311,13 +311,13 @@ Axis #1:
 {[Yearly Income].[$70K - $90K], [Measures].[*FORMATTED_MEASURE_0]}
 {[Yearly Income].[$90K - $110K], [Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Education Level].[*TOTAL_MEMBER_SEL~MAX]}
-{[Education Level].[*TOTAL_MEMBER_SEL~SUM]}
-{[Education Level].[Graduate Degree]}
-{[Education Level].[Partial College]}
-{[Education Level].[Partial High School]}
-{[Education Level].[Bachelors Degree]}
-{[Education Level].[High School Degree]}
+{[Customer].[Education Level].[*TOTAL_MEMBER_SEL~MAX]}
+{[Customer].[Education Level].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customer].[Education Level].[Graduate Degree]}
+{[Customer].[Education Level].[Partial College]}
+{[Customer].[Education Level].[Partial High School]}
+{[Customer].[Education Level].[Bachelors Degree]}
+{[Customer].[Education Level].[High School Degree]}
 Row #0: 46,305
 Row #0: 61,645
 Row #0: 3,047
@@ -415,12 +415,12 @@ Axis #1:
 {[Customers].[USA].[OR], [Measures].[*FORMATTED_MEASURE_0]}
 {[Customers].[USA].[CA], [Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[Non-Consumable], [Gender].[F]}
-{[Product].[Non-Consumable], [Gender].[M]}
-{[Product].[Food], [Gender].[F]}
-{[Product].[Food], [Gender].[M]}
-{[Product].[Drink], [Gender].[M]}
-{[Product].[Drink], [Gender].[F]}
+{[Product].[Products].[Non-Consumable], [Gender].[F]}
+{[Product].[Products].[Non-Consumable], [Gender].[M]}
+{[Product].[Products].[Food], [Gender].[F]}
+{[Product].[Products].[Food], [Gender].[M]}
+{[Product].[Products].[Drink], [Gender].[M]}
+{[Product].[Products].[Drink], [Gender].[F]}
 Row #0: 2,206
 Row #0: 770
 Row #0: 457
@@ -479,61 +479,61 @@ Axis #0:
 Axis #1:
 {[Measures].[*ZERO]}
 Axis #2:
-{[Product].[Drink].[Dairy].[Dairy]}
-{[Product].[Drink].[Beverages].[Carbonated Beverages]}
-{[Product].[Drink].[Beverages].[Drinks]}
-{[Product].[Drink].[Beverages].[Hot Beverages]}
-{[Product].[Drink].[Beverages].[Pure Juice Beverages]}
-{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]}
-{[Product].[Food].[Starchy Foods].[Starchy Foods]}
-{[Product].[Food].[Snacks].[Candy]}
-{[Product].[Food].[Snack Foods].[Snack Foods]}
-{[Product].[Food].[Seafood].[Seafood]}
-{[Product].[Food].[Produce].[Fruit]}
-{[Product].[Food].[Produce].[Packaged Vegetables]}
-{[Product].[Food].[Produce].[Specialty]}
-{[Product].[Food].[Produce].[Vegetables]}
-{[Product].[Food].[Meat].[Meat]}
-{[Product].[Food].[Frozen Foods].[Breakfast Foods]}
-{[Product].[Food].[Frozen Foods].[Frozen Desserts]}
-{[Product].[Food].[Frozen Foods].[Frozen Entrees]}
-{[Product].[Food].[Frozen Foods].[Meat]}
-{[Product].[Food].[Frozen Foods].[Pizza]}
-{[Product].[Food].[Frozen Foods].[Vegetables]}
-{[Product].[Food].[Eggs].[Eggs]}
-{[Product].[Food].[Deli].[Meat]}
-{[Product].[Food].[Deli].[Side Dishes]}
-{[Product].[Food].[Dairy].[Dairy]}
-{[Product].[Food].[Canned Products].[Fruit]}
-{[Product].[Food].[Canned Foods].[Canned Anchovies]}
-{[Product].[Food].[Canned Foods].[Canned Clams]}
-{[Product].[Food].[Canned Foods].[Canned Oysters]}
-{[Product].[Food].[Canned Foods].[Canned Sardines]}
-{[Product].[Food].[Canned Foods].[Canned Shrimp]}
-{[Product].[Food].[Canned Foods].[Canned Soup]}
-{[Product].[Food].[Canned Foods].[Canned Tuna]}
-{[Product].[Food].[Canned Foods].[Vegetables]}
-{[Product].[Food].[Breakfast Foods].[Breakfast Foods]}
-{[Product].[Food].[Baking Goods].[Baking Goods]}
-{[Product].[Food].[Baking Goods].[Jams and Jellies]}
-{[Product].[Food].[Baked Goods].[Bread]}
-{[Product].[Non-Consumable].[Periodicals].[Magazines]}
-{[Product].[Non-Consumable].[Household].[Bathroom Products]}
-{[Product].[Non-Consumable].[Household].[Candles]}
-{[Product].[Non-Consumable].[Household].[Cleaning Supplies]}
-{[Product].[Non-Consumable].[Household].[Electrical]}
-{[Product].[Non-Consumable].[Household].[Hardware]}
-{[Product].[Non-Consumable].[Household].[Kitchen Products]}
-{[Product].[Non-Consumable].[Household].[Paper Products]}
-{[Product].[Non-Consumable].[Household].[Plastic Products]}
-{[Product].[Non-Consumable].[Health and Hygiene].[Bathroom Products]}
-{[Product].[Non-Consumable].[Health and Hygiene].[Cold Remedies]}
-{[Product].[Non-Consumable].[Health and Hygiene].[Decongestants]}
-{[Product].[Non-Consumable].[Health and Hygiene].[Hygiene]}
-{[Product].[Non-Consumable].[Health and Hygiene].[Pain Relievers]}
-{[Product].[Non-Consumable].[Checkout].[Hardware]}
-{[Product].[Non-Consumable].[Checkout].[Miscellaneous]}
-{[Product].[Non-Consumable].[Carousel].[Specialty]}
+{[Product].[Products].[Drink].[Dairy].[Dairy]}
+{[Product].[Products].[Drink].[Beverages].[Carbonated Beverages]}
+{[Product].[Products].[Drink].[Beverages].[Drinks]}
+{[Product].[Products].[Drink].[Beverages].[Hot Beverages]}
+{[Product].[Products].[Drink].[Beverages].[Pure Juice Beverages]}
+{[Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine]}
+{[Product].[Products].[Food].[Starchy Foods].[Starchy Foods]}
+{[Product].[Products].[Food].[Snacks].[Candy]}
+{[Product].[Products].[Food].[Snack Foods].[Snack Foods]}
+{[Product].[Products].[Food].[Seafood].[Seafood]}
+{[Product].[Products].[Food].[Produce].[Fruit]}
+{[Product].[Products].[Food].[Produce].[Packaged Vegetables]}
+{[Product].[Products].[Food].[Produce].[Specialty]}
+{[Product].[Products].[Food].[Produce].[Vegetables]}
+{[Product].[Products].[Food].[Meat].[Meat]}
+{[Product].[Products].[Food].[Frozen Foods].[Breakfast Foods]}
+{[Product].[Products].[Food].[Frozen Foods].[Frozen Desserts]}
+{[Product].[Products].[Food].[Frozen Foods].[Frozen Entrees]}
+{[Product].[Products].[Food].[Frozen Foods].[Meat]}
+{[Product].[Products].[Food].[Frozen Foods].[Pizza]}
+{[Product].[Products].[Food].[Frozen Foods].[Vegetables]}
+{[Product].[Products].[Food].[Eggs].[Eggs]}
+{[Product].[Products].[Food].[Deli].[Meat]}
+{[Product].[Products].[Food].[Deli].[Side Dishes]}
+{[Product].[Products].[Food].[Dairy].[Dairy]}
+{[Product].[Products].[Food].[Canned Products].[Fruit]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Anchovies]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Clams]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Oysters]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Sardines]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Shrimp]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Soup]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Tuna]}
+{[Product].[Products].[Food].[Canned Foods].[Vegetables]}
+{[Product].[Products].[Food].[Breakfast Foods].[Breakfast Foods]}
+{[Product].[Products].[Food].[Baking Goods].[Baking Goods]}
+{[Product].[Products].[Food].[Baking Goods].[Jams and Jellies]}
+{[Product].[Products].[Food].[Baked Goods].[Bread]}
+{[Product].[Products].[Non-Consumable].[Periodicals].[Magazines]}
+{[Product].[Products].[Non-Consumable].[Household].[Bathroom Products]}
+{[Product].[Products].[Non-Consumable].[Household].[Candles]}
+{[Product].[Products].[Non-Consumable].[Household].[Cleaning Supplies]}
+{[Product].[Products].[Non-Consumable].[Household].[Electrical]}
+{[Product].[Products].[Non-Consumable].[Household].[Hardware]}
+{[Product].[Products].[Non-Consumable].[Household].[Kitchen Products]}
+{[Product].[Products].[Non-Consumable].[Household].[Paper Products]}
+{[Product].[Products].[Non-Consumable].[Household].[Plastic Products]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene].[Cold Remedies]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene].[Decongestants]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene].[Hygiene]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers]}
+{[Product].[Products].[Non-Consumable].[Checkout].[Hardware]}
+{[Product].[Products].[Non-Consumable].[Checkout].[Miscellaneous]}
+{[Product].[Products].[Non-Consumable].[Carousel].[Specialty]}
 Row #0: 0
 Row #1: 0
 Row #2: 0
@@ -622,61 +622,61 @@ Axis #0:
 Axis #1:
 {[Measures].[*ZERO]}
 Axis #2:
-{[Product].[Drink].[Beverages].[Pure Juice Beverages]}
-{[Product].[Drink].[Beverages].[Hot Beverages]}
-{[Product].[Drink].[Beverages].[Drinks]}
-{[Product].[Drink].[Dairy].[Dairy]}
-{[Product].[Drink].[Beverages].[Carbonated Beverages]}
-{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]}
-{[Product].[Food].[Canned Foods].[Vegetables]}
-{[Product].[Food].[Frozen Foods].[Vegetables]}
-{[Product].[Food].[Produce].[Vegetables]}
-{[Product].[Food].[Starchy Foods].[Starchy Foods]}
-{[Product].[Food].[Produce].[Specialty]}
-{[Product].[Food].[Snack Foods].[Snack Foods]}
-{[Product].[Food].[Deli].[Side Dishes]}
-{[Product].[Food].[Seafood].[Seafood]}
-{[Product].[Food].[Frozen Foods].[Pizza]}
-{[Product].[Food].[Produce].[Packaged Vegetables]}
-{[Product].[Food].[Deli].[Meat]}
-{[Product].[Food].[Frozen Foods].[Meat]}
-{[Product].[Food].[Meat].[Meat]}
-{[Product].[Food].[Baking Goods].[Jams and Jellies]}
-{[Product].[Food].[Canned Products].[Fruit]}
-{[Product].[Food].[Produce].[Fruit]}
-{[Product].[Food].[Frozen Foods].[Frozen Entrees]}
-{[Product].[Food].[Frozen Foods].[Frozen Desserts]}
-{[Product].[Food].[Eggs].[Eggs]}
-{[Product].[Food].[Dairy].[Dairy]}
-{[Product].[Food].[Canned Foods].[Canned Tuna]}
-{[Product].[Food].[Canned Foods].[Canned Soup]}
-{[Product].[Food].[Canned Foods].[Canned Shrimp]}
-{[Product].[Food].[Canned Foods].[Canned Sardines]}
-{[Product].[Food].[Canned Foods].[Canned Oysters]}
-{[Product].[Food].[Canned Foods].[Canned Clams]}
-{[Product].[Food].[Canned Foods].[Canned Anchovies]}
-{[Product].[Food].[Snacks].[Candy]}
-{[Product].[Food].[Breakfast Foods].[Breakfast Foods]}
-{[Product].[Food].[Frozen Foods].[Breakfast Foods]}
-{[Product].[Food].[Baked Goods].[Bread]}
-{[Product].[Food].[Baking Goods].[Baking Goods]}
-{[Product].[Non-Consumable].[Carousel].[Specialty]}
-{[Product].[Non-Consumable].[Household].[Plastic Products]}
-{[Product].[Non-Consumable].[Household].[Paper Products]}
-{[Product].[Non-Consumable].[Health and Hygiene].[Pain Relievers]}
-{[Product].[Non-Consumable].[Checkout].[Miscellaneous]}
-{[Product].[Non-Consumable].[Periodicals].[Magazines]}
-{[Product].[Non-Consumable].[Household].[Kitchen Products]}
-{[Product].[Non-Consumable].[Health and Hygiene].[Hygiene]}
-{[Product].[Non-Consumable].[Checkout].[Hardware]}
-{[Product].[Non-Consumable].[Household].[Hardware]}
-{[Product].[Non-Consumable].[Household].[Electrical]}
-{[Product].[Non-Consumable].[Health and Hygiene].[Decongestants]}
-{[Product].[Non-Consumable].[Health and Hygiene].[Cold Remedies]}
-{[Product].[Non-Consumable].[Household].[Cleaning Supplies]}
-{[Product].[Non-Consumable].[Household].[Candles]}
-{[Product].[Non-Consumable].[Health and Hygiene].[Bathroom Products]}
-{[Product].[Non-Consumable].[Household].[Bathroom Products]}
+{[Product].[Products].[Drink].[Beverages].[Pure Juice Beverages]}
+{[Product].[Products].[Drink].[Beverages].[Hot Beverages]}
+{[Product].[Products].[Drink].[Beverages].[Drinks]}
+{[Product].[Products].[Drink].[Dairy].[Dairy]}
+{[Product].[Products].[Drink].[Beverages].[Carbonated Beverages]}
+{[Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine]}
+{[Product].[Products].[Food].[Canned Foods].[Vegetables]}
+{[Product].[Products].[Food].[Frozen Foods].[Vegetables]}
+{[Product].[Products].[Food].[Produce].[Vegetables]}
+{[Product].[Products].[Food].[Starchy Foods].[Starchy Foods]}
+{[Product].[Products].[Food].[Produce].[Specialty]}
+{[Product].[Products].[Food].[Snack Foods].[Snack Foods]}
+{[Product].[Products].[Food].[Deli].[Side Dishes]}
+{[Product].[Products].[Food].[Seafood].[Seafood]}
+{[Product].[Products].[Food].[Frozen Foods].[Pizza]}
+{[Product].[Products].[Food].[Produce].[Packaged Vegetables]}
+{[Product].[Products].[Food].[Deli].[Meat]}
+{[Product].[Products].[Food].[Frozen Foods].[Meat]}
+{[Product].[Products].[Food].[Meat].[Meat]}
+{[Product].[Products].[Food].[Baking Goods].[Jams and Jellies]}
+{[Product].[Products].[Food].[Canned Products].[Fruit]}
+{[Product].[Products].[Food].[Produce].[Fruit]}
+{[Product].[Products].[Food].[Frozen Foods].[Frozen Entrees]}
+{[Product].[Products].[Food].[Frozen Foods].[Frozen Desserts]}
+{[Product].[Products].[Food].[Eggs].[Eggs]}
+{[Product].[Products].[Food].[Dairy].[Dairy]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Tuna]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Soup]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Shrimp]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Sardines]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Oysters]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Clams]}
+{[Product].[Products].[Food].[Canned Foods].[Canned Anchovies]}
+{[Product].[Products].[Food].[Snacks].[Candy]}
+{[Product].[Products].[Food].[Breakfast Foods].[Breakfast Foods]}
+{[Product].[Products].[Food].[Frozen Foods].[Breakfast Foods]}
+{[Product].[Products].[Food].[Baked Goods].[Bread]}
+{[Product].[Products].[Food].[Baking Goods].[Baking Goods]}
+{[Product].[Products].[Non-Consumable].[Carousel].[Specialty]}
+{[Product].[Products].[Non-Consumable].[Household].[Plastic Products]}
+{[Product].[Products].[Non-Consumable].[Household].[Paper Products]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene].[Pain Relievers]}
+{[Product].[Products].[Non-Consumable].[Checkout].[Miscellaneous]}
+{[Product].[Products].[Non-Consumable].[Periodicals].[Magazines]}
+{[Product].[Products].[Non-Consumable].[Household].[Kitchen Products]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene].[Hygiene]}
+{[Product].[Products].[Non-Consumable].[Checkout].[Hardware]}
+{[Product].[Products].[Non-Consumable].[Household].[Hardware]}
+{[Product].[Products].[Non-Consumable].[Household].[Electrical]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene].[Decongestants]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene].[Cold Remedies]}
+{[Product].[Products].[Non-Consumable].[Household].[Cleaning Supplies]}
+{[Product].[Products].[Non-Consumable].[Household].[Candles]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene].[Bathroom Products]}
+{[Product].[Products].[Non-Consumable].[Household].[Bathroom Products]}
 Row #0: 0
 Row #1: 0
 Row #2: 0
@@ -765,9 +765,9 @@ Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 {[Measures].[*CALCULATED_MEASURE_1]}
 Axis #2:
-{[Product].[Food]}
-{[Product].[Non-Consumable]}
-{[Product].[Drink]}
+{[Product].[Products].[Food]}
+{[Product].[Products].[Non-Consumable]}
+{[Product].[Products].[Drink]}
 Row #0: 163,271
 Row #0: -163,271
 Row #1: 42,879
@@ -808,9 +808,9 @@ Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 {[Measures].[*SUMMARY_MEASURE_1]}
 Axis #2:
-{[Product].[Drink]}
-{[Product].[Non-Consumable]}
-{[Product].[Food]}
+{[Product].[Products].[Drink]}
+{[Product].[Products].[Non-Consumable]}
+{[Product].[Products].[Food]}
 Row #0: 19,477
 Row #0: 8.63%
 Row #1: 42,879
@@ -852,29 +852,29 @@ Axis #1:
 {[Measures].[*SUMMARY_MEASURE_1]}
 {[Measures].[*SUMMARY_MEASURE_3]}
 Axis #2:
-{[Product].[Food].[Starchy Foods]}
-{[Product].[Food].[Snacks]}
-{[Product].[Food].[Snack Foods]}
-{[Product].[Food].[Seafood]}
-{[Product].[Food].[Produce]}
-{[Product].[Non-Consumable].[Periodicals]}
-{[Product].[Food].[Meat]}
-{[Product].[Non-Consumable].[Household]}
-{[Product].[Non-Consumable].[Health and Hygiene]}
-{[Product].[Food].[Frozen Foods]}
-{[Product].[Food].[Eggs]}
-{[Product].[Food].[Deli]}
-{[Product].[Drink].[Dairy]}
-{[Product].[Food].[Dairy]}
-{[Product].[Non-Consumable].[Checkout]}
-{[Product].[Non-Consumable].[Carousel]}
-{[Product].[Food].[Canned Products]}
-{[Product].[Food].[Canned Foods]}
-{[Product].[Food].[Breakfast Foods]}
-{[Product].[Drink].[Beverages]}
-{[Product].[Food].[Baking Goods]}
-{[Product].[Food].[Baked Goods]}
-{[Product].[Drink].[Alcoholic Beverages]}
+{[Product].[Products].[Food].[Starchy Foods]}
+{[Product].[Products].[Food].[Snacks]}
+{[Product].[Products].[Food].[Snack Foods]}
+{[Product].[Products].[Food].[Seafood]}
+{[Product].[Products].[Food].[Produce]}
+{[Product].[Products].[Non-Consumable].[Periodicals]}
+{[Product].[Products].[Food].[Meat]}
+{[Product].[Products].[Non-Consumable].[Household]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Products].[Food].[Frozen Foods]}
+{[Product].[Products].[Food].[Eggs]}
+{[Product].[Products].[Food].[Deli]}
+{[Product].[Products].[Drink].[Dairy]}
+{[Product].[Products].[Food].[Dairy]}
+{[Product].[Products].[Non-Consumable].[Checkout]}
+{[Product].[Products].[Non-Consumable].[Carousel]}
+{[Product].[Products].[Food].[Canned Products]}
+{[Product].[Products].[Food].[Canned Foods]}
+{[Product].[Products].[Food].[Breakfast Foods]}
+{[Product].[Products].[Drink].[Beverages]}
+{[Product].[Products].[Food].[Baking Goods]}
+{[Product].[Products].[Food].[Baked Goods]}
+{[Product].[Products].[Drink].[Alcoholic Beverages]}
 Row #0: 4,706
 Row #0: 4,705.91
 Row #0: 2.09%
@@ -979,29 +979,29 @@ Axis #1:
 {[Measures].[*SUMMARY_MEASURE_1]}
 {[Measures].[*SUMMARY_MEASURE_3]}
 Axis #2:
-{[Product].[Food].[Produce]}
-{[Product].[Food].[Snack Foods]}
-{[Product].[Non-Consumable].[Household]}
-{[Product].[Food].[Frozen Foods]}
-{[Product].[Food].[Canned Foods]}
-{[Product].[Food].[Baking Goods]}
-{[Product].[Non-Consumable].[Health and Hygiene]}
-{[Product].[Food].[Dairy]}
-{[Product].[Drink].[Beverages]}
-{[Product].[Food].[Deli]}
-{[Product].[Food].[Baked Goods]}
-{[Product].[Food].[Snacks]}
-{[Product].[Drink].[Alcoholic Beverages]}
-{[Product].[Food].[Starchy Foods]}
-{[Product].[Food].[Eggs]}
-{[Product].[Non-Consumable].[Periodicals]}
-{[Product].[Drink].[Dairy]}
-{[Product].[Food].[Breakfast Foods]}
-{[Product].[Non-Consumable].[Checkout]}
-{[Product].[Food].[Seafood]}
-{[Product].[Food].[Meat]}
-{[Product].[Food].[Canned Products]}
-{[Product].[Non-Consumable].[Carousel]}
+{[Product].[Products].[Food].[Produce]}
+{[Product].[Products].[Food].[Snack Foods]}
+{[Product].[Products].[Non-Consumable].[Household]}
+{[Product].[Products].[Food].[Frozen Foods]}
+{[Product].[Products].[Food].[Canned Foods]}
+{[Product].[Products].[Food].[Baking Goods]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Products].[Food].[Dairy]}
+{[Product].[Products].[Drink].[Beverages]}
+{[Product].[Products].[Food].[Deli]}
+{[Product].[Products].[Food].[Baked Goods]}
+{[Product].[Products].[Food].[Snacks]}
+{[Product].[Products].[Drink].[Alcoholic Beverages]}
+{[Product].[Products].[Food].[Starchy Foods]}
+{[Product].[Products].[Food].[Eggs]}
+{[Product].[Products].[Non-Consumable].[Periodicals]}
+{[Product].[Products].[Drink].[Dairy]}
+{[Product].[Products].[Food].[Breakfast Foods]}
+{[Product].[Products].[Non-Consumable].[Checkout]}
+{[Product].[Products].[Food].[Seafood]}
+{[Product].[Products].[Food].[Meat]}
+{[Product].[Products].[Food].[Canned Products]}
+{[Product].[Products].[Non-Consumable].[Carousel]}
 Row #0: 32,831
 Row #0: 32,831.33
 Row #0: 14.55%
@@ -1117,16 +1117,16 @@ Axis #1:
 {[Measures].[*SUMMARY_MEASURE_9]}
 {[Measures].[*SUMMARY_MEASURE_2]}
 Axis #2:
-{[Product].[Non-Consumable].[*TOTAL_MEMBER_SEL~SUM]}
-{[Product].[Drink].[*TOTAL_MEMBER_SEL~SUM]}
-{[Product].[Non-Consumable].[Carousel]}
-{[Product].[Non-Consumable].[Checkout]}
-{[Product].[Non-Consumable].[Periodicals]}
-{[Product].[Non-Consumable].[Health and Hygiene]}
-{[Product].[Non-Consumable].[Household]}
-{[Product].[Drink].[Dairy]}
-{[Product].[Drink].[Alcoholic Beverages]}
-{[Product].[Drink].[Beverages]}
+{[Product].[Products].[Non-Consumable].[*TOTAL_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[*TOTAL_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[Carousel]}
+{[Product].[Products].[Non-Consumable].[Checkout]}
+{[Product].[Products].[Non-Consumable].[Periodicals]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Products].[Non-Consumable].[Household]}
+{[Product].[Products].[Drink].[Dairy]}
+{[Product].[Products].[Drink].[Alcoholic Beverages]}
+{[Product].[Products].[Drink].[Beverages]}
 Row #0: 42,879
 Row #0: 
 Row #0: 

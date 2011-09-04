@@ -241,7 +241,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[EmployeesNonClosure].[Sheri Nowmer].[Darren Stanz]}\n"
             + "{[EmployeesNonClosure].[Sheri Nowmer].[Donna Arnold]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1997]}\n"
+            + "{[Time].[Time].[1997]}\n"
             + "Row #0: $36,494.07\n"
             + "Row #0: \n"
             + "Row #0: \n"
@@ -939,7 +939,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Position].[All Position]}\n"
+            + "{[Employee].[Position].[All Position]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Employee Salary]}\n"
             + "Row #0: \n");

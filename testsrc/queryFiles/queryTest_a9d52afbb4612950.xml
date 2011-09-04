@@ -13,21 +13,21 @@
                 <dim>[Education Level]</dim>
                 <dim>[Marital Status]</dim>
                 <dim>[Yearly Income]</dim>
-                <dim>[Promotion Media]</dim>
+                <dim>[Promotion].[Media Type]</dim>
                 <dim>[Gender]</dim>
             </dimensions>
             <tuples>
                 <tuple>
                     <member>[Time].[1997].[Q3]</member>
                     <member>[Product].[Food]</member>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
-                    <member>[Store Type].[All Store Types]</member>
-                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Store].[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store].[Store Type].[All Store Types]</member>
+                    <member>[Promotion].[Promotions].[All Promotions]</member>
                     <member>[Customers].[All Customers]</member>
                     <member>[Education Level].[All Education Levels]</member>
                     <member>[Marital Status].[All Marital Status]</member>
                     <member>[Yearly Income].[All Yearly Incomes]</member>
-                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Promotion].[Media Type].[All Media]</member>
                     <member>[Gender].[All Gender]</member>
                 </tuple>
             </tuples>
@@ -48,40 +48,40 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[USA]</member>
+                    <member>[Store].[Stores].[USA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store].[Stores].[USA].[CA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store].[Stores].[USA].[OR]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[OR].[Salem]</member>
+                    <member>[Store].[Stores].[USA].[OR].[Salem]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[OR].[Salem].[Store 13]</member>
+                    <member>[Store].[Stores].[USA].[OR].[Salem].[Store 13]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store].[Stores].[USA].[WA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Bremerton]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Bremerton]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Bremerton].[Store 3]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Bremerton].[Store 3]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Spokane]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Spokane]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Spokane].[Store 16]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Spokane].[Store 16]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Tacoma]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Tacoma]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Tacoma].[Store 17]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Tacoma].[Store 17]</member>
                 </tuple>
             </tuples>
         </rows>

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2010 Julian Hyde and others
+// Copyright (C) 2010-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -70,6 +70,14 @@ public class RolapSchemaLoader {
 
     private static final Set<Access> memberAllowed =
         Olap4jUtil.enumSetOf(Access.NONE, Access.ALL);
+
+    private static final Map<String, Dialect.Datatype> DATATYPE_MAP =
+        new HashMap<String, Dialect.Datatype>();
+    static {
+        for (Dialect.Datatype datatype : Dialect.Datatype.values()) {
+            DATATYPE_MAP.put(datatype.name(), datatype);
+        }
+    }
 
     private RolapSchema schema;
     private PhysSchemaBuilder physSchemaBuilder;
@@ -339,7 +347,7 @@ public class RolapSchemaLoader {
             xmlPhysicalSchema.elements, MondrianDef.Relation.class))
         {
             final String alias = relation.getAlias();
-            final RolapSchema.PhysTable physTable;
+            final RolapSchema.PhysRelationImpl physTable;
             if (relation instanceof MondrianDef.Table) {
                 physTable =
                     registerTable(
@@ -354,12 +362,24 @@ public class RolapSchemaLoader {
             } else if (relation instanceof MondrianDef.InlineTable) {
                 MondrianDef.InlineTable inlineTable =
                     (MondrianDef.InlineTable) relation;
+                if (false) {
                 handler.warning(
                     "inline table in physical schema is not "
                     + "currently supported",
                     inlineTable,
                     null);
                 continue;
+                }
+                physTable =
+                    registerInlineTable(
+                        handler,
+                        dialect,
+                        schema,
+                        physSchema,
+                        skip,
+                        unresolvedColumnList,
+                        alias,
+                        inlineTable);
             } else {
                 handler.warning(
                     "Invalid element '" + relation.getName()
@@ -519,6 +539,39 @@ public class RolapSchemaLoader {
         return physSchema;
     }
 
+    private RolapSchema.PhysInlineTable registerInlineTable(
+        Handler handler,
+        Dialect dialect,
+        RolapSchema schema,
+        RolapSchema.PhysSchema physSchema,
+        Set<ElementDef> skip,
+        List<RolapSchema.UnresolvedColumn> unresolvedColumnList,
+        String alias,
+        MondrianDef.InlineTable inlineTable)
+    {
+        RolapSchema.PhysInlineTable physInlineTable =
+            new RolapSchema.PhysInlineTable(
+                physSchema,
+                alias);
+        for (MondrianDef.RealOrCalcColumnDef column
+            : inlineTable.getColumnDefs())
+        {
+            registerColumn(
+                handler,
+                dialect,
+                skip,
+                unresolvedColumnList,
+                alias,
+                physInlineTable,
+                inlineTable,
+                column);
+        }
+        registerKey(
+            handler, inlineTable.getKey(), unresolvedColumnList,
+            physInlineTable);
+        return physInlineTable;
+    }
+
     private RolapSchema.PhysTable registerTable(
         Handler handler,
         Dialect dialect,
@@ -554,58 +607,67 @@ public class RolapSchemaLoader {
         // Read columns from JDBC.
         physTable.ensurePopulated(schema, table);
 
-        final MondrianDef.Key xmlKey = table.getKey();
-        label:
-        if (xmlKey != null) {
-            String keyName = xmlKey.name;
-            if (keyName == null) {
-                keyName = "primary";
-            }
-            if (physTable.lookupKey(keyName) != null) {
-                handler.error(
-                    "Table has more than one key with name '" + keyName
-                    + "'",
-                    xmlKey,
-                    null);
-                break label;
-            }
-            final RolapSchema.PhysKey key =
-                physTable.addKey(
-                    keyName, new ArrayList<RolapSchema.PhysColumn>());
-            int i = 0;
-            for (MondrianDef.Column columnRef : xmlKey.columns) {
-                final int index = i++;
-                final RolapSchema.UnresolvedColumn unresolvedColumn =
-                    new RolapSchema.UnresolvedColumn(
-                        physTable,
-                        columnRef.table != null
-                            ? columnRef.table
-                            : physTable.alias,
-                        columnRef.name,
-                        columnRef)
-                    {
-                        public void onResolve(RolapSchema.PhysColumn column) {
-                            assert column != null;
-                            key.columnList.set(index, column);
-                        }
-
-                        public String getContext() {
-                            return ", in key of table '"
-                                + physTable.alias + "'";
-                        }
-                    };
-                key.columnList.add(unresolvedColumn);
-                unresolvedColumnList.add(unresolvedColumn);
-            }
-            if (key.columnList.size() != 1) {
-                handler.warning(
-                    "Key must have precisely one column; in table '"
-                    + physTable.alias + "'.",
-                    xmlKey,
-                    null);
-            }
-        }
+        registerKey(
+            handler, table.getKey(), unresolvedColumnList, physTable);
         return physTable;
+    }
+
+    private void registerKey(
+        Handler handler,
+        MondrianDef.Key xmlKey,
+        List<RolapSchema.UnresolvedColumn> unresolvedColumnList,
+        final RolapSchema.PhysRelationImpl physTable)
+    {
+        if (xmlKey == null) {
+            return;
+        }
+        String keyName = xmlKey.name;
+        if (keyName == null) {
+            keyName = "primary";
+        }
+        if (physTable.lookupKey(keyName) != null) {
+            handler.error(
+                "Table has more than one key with name '" + keyName
+                + "'",
+                xmlKey,
+                null);
+            return;
+        }
+        final RolapSchema.PhysKey key =
+            physTable.addKey(
+                keyName, new ArrayList<RolapSchema.PhysColumn>());
+        int i = 0;
+        for (MondrianDef.Column columnRef : xmlKey.columns) {
+            final int index = i++;
+            final RolapSchema.UnresolvedColumn unresolvedColumn =
+                new RolapSchema.UnresolvedColumn(
+                    physTable,
+                    columnRef.table != null
+                        ? columnRef.table
+                        : physTable.alias,
+                    columnRef.name,
+                    columnRef)
+                {
+                    public void onResolve(RolapSchema.PhysColumn column) {
+                        assert column != null;
+                        key.columnList.set(index, column);
+                    }
+
+                    public String getContext() {
+                        return ", in key of table '"
+                            + physTable.alias + "'";
+                    }
+                };
+            key.columnList.add(unresolvedColumn);
+            unresolvedColumnList.add(unresolvedColumn);
+        }
+        if (key.columnList.size() != 1) {
+            handler.warning(
+                "Key must have precisely one column; in table '"
+                + physTable.alias + "'.",
+                xmlKey,
+                null);
+        }
     }
 
     private void registerColumn(
@@ -614,11 +676,11 @@ public class RolapSchemaLoader {
         Set<ElementDef> skip,
         List<RolapSchema.UnresolvedColumn> unresolvedColumnList,
         String alias,
-        RolapSchema.PhysTable physTable,
-        MondrianDef.Table table,
+        RolapSchema.PhysRelationImpl physRelation,
+        MondrianDef.Relation table,
         MondrianDef.RealOrCalcColumnDef column)
     {
-        if (physTable.columnsByName.containsKey(column.name)) {
+        if (physRelation.columnsByName.containsKey(column.name)) {
             handler.warning(
                 "Duplicate column '" + column.name
                 + "' in table '" + alias + "'.",
@@ -627,6 +689,30 @@ public class RolapSchemaLoader {
             skip.add(column);
             return;
         }
+        if (physRelation instanceof RolapSchema.PhysInlineTable) {
+            RolapSchema.PhysInlineTable physInlineTable =
+                (RolapSchema.PhysInlineTable) physRelation;
+            if (column instanceof MondrianDef.CalculatedColumnDef) {
+                handler.warning(
+                    "Cannot define calculated column in inline table",
+                    column,
+                    null);
+            } else {
+                RolapSchema.PhysColumn physColumn =
+                    new RolapSchema.PhysRealColumn(
+                        physInlineTable,
+                        column.name,
+                        toType(column.type),
+                        toInternalType(column.internalType),
+                        -1);
+                physInlineTable.columnsByName.put(
+                    column.name,
+                    physColumn);
+            }
+            return;
+        }
+        final RolapSchema.PhysTable physTable =
+            (RolapSchema.PhysTable) physRelation;
         if (column instanceof MondrianDef.CalculatedColumnDef) {
             MondrianDef.CalculatedColumnDef calcColumnDef =
                 (MondrianDef.CalculatedColumnDef) column;
@@ -690,7 +776,7 @@ public class RolapSchemaLoader {
         } else {
             // Check that column exists; throw if not.
             RolapSchema.PhysColumn physColumn =
-                physTable.getColumn(
+                physRelation.getColumn(
                     column.name,
                     true);
             physColumn.setDatatype(
@@ -701,7 +787,7 @@ public class RolapSchemaLoader {
     }
 
     private Dialect.Datatype toType(String type) {
-        return Dialect.Datatype.Numeric; // TODO:
+        return DATATYPE_MAP.get(type);
     }
 
     /**
@@ -989,12 +1075,12 @@ public class RolapSchemaLoader {
         // (We cannot do this in the constructor,
         // because cannot parse the generated query,
         // because the schema has not been set in the cube at this point.)
-        List<Formula> formulaList = new ArrayList<Formula>();
         createCalcMembersAndNamedSets(
             xmlCube.getCalculatedMembers(),
             xmlCube.getNamedSets(),
             measureList,
-            formulaList,
+            cube.calculatedMemberList,
+            cube.namedSetList,
             cube,
             true);
 
@@ -1714,7 +1800,7 @@ public class RolapSchemaLoader {
         }
         final DimensionType dimensionType =
             xmlDimension.type == null
-                ? null
+                ? DimensionType.StandardDimension
                 : DimensionType.valueOf(xmlDimension.type);
         RolapDimension dimension =
             new RolapDimension(
@@ -1768,10 +1854,16 @@ public class RolapSchemaLoader {
 
         for (MondrianDef.Hierarchy xmlHierarchy : xmlDimension.getHierarchies())
         {
+            final String uniqueName =
+                xmlDimension.getHierarchies().size() == 1
+                && xmlHierarchy.name.equals(xmlDimension.name)
+                    ? dimension.getUniqueName()
+                    : Util.makeFqName(dimension, xmlHierarchy.name);
             RolapHierarchy hierarchy =
                 new RolapHierarchy(
                     dimension,
                     xmlHierarchy.name,
+                    uniqueName,
                     xmlHierarchy.visible,
                     xmlHierarchy.caption,
                     xmlHierarchy.description,
@@ -2687,7 +2779,10 @@ public class RolapSchemaLoader {
      * @param xmlCalcMembers XML objects representing members
      * @param xmlNamedSets Array of XML definition of named set
      * @param memberList Output list of {@link mondrian.olap.Member} objects
-     * @param formulaList Output list of {@link mondrian.olap.Formula} objects
+     * @param calculatedMemberList Output list of {@link mondrian.olap.Formula}
+     *   objects representing calculated members
+     * @param namedSetList Output list of {@link mondrian.olap.Formula} objects
+     *   representing named sets
      * @param cube the cube that the calculated members originate from
      * @param errOnDups throws an error if a duplicate member is found
      */
@@ -2695,7 +2790,8 @@ public class RolapSchemaLoader {
         List<MondrianDef.CalculatedMember> xmlCalcMembers,
         List<MondrianDef.NamedSet> xmlNamedSets,
         List<RolapMember> memberList,
-        List<Formula> formulaList,
+        List<Formula> calculatedMemberList,
+        List<Formula> namedSetList,
         RolapCube cube,
         boolean errOnDups)
     {
@@ -2715,11 +2811,11 @@ public class RolapSchemaLoader {
             == xmlCalcMembers.size() + xmlNamedSets.size());
         for (int i = 0; i < xmlCalcMembers.size(); i++) {
             postCalcMember(
-                xmlCalcMembers, formulaList, i, queryExp, memberList);
+                xmlCalcMembers, calculatedMemberList, i, queryExp, memberList);
         }
         for (int i = 0; i < xmlNamedSets.size(); i++) {
             postNamedSet(
-                xmlNamedSets, xmlCalcMembers.size(), i, queryExp, formulaList);
+                xmlNamedSets, xmlCalcMembers.size(), i, queryExp, namedSetList);
         }
     }
 
@@ -2741,9 +2837,11 @@ public class RolapSchemaLoader {
         buf.append("WITH").append(Util.nl);
 
         // Check the members individually, and generate SQL.
+        final Set<String> fqNames = new LinkedHashSet<String>();
         for (int i = 0; i < xmlCalcMembers.size(); i++) {
             preCalcMember(
-                xmlCalcMembers, calculatedMemberList, i, buf, cube, errOnDups);
+                xmlCalcMembers, calculatedMemberList, i, buf, cube, errOnDups,
+                fqNames);
         }
 
         // Check the named sets individually (for uniqueness) and generate SQL.
@@ -2874,16 +2972,44 @@ public class RolapSchemaLoader {
         int j,
         StringBuilder buf,
         RolapCube cube,
-        boolean errOnDup)
+        boolean errOnDup,
+        Set<String> fqNames)
     {
         MondrianDef.CalculatedMember xmlCalcMember = xmlCalcMembers.get(j);
 
-        // Lookup dimension
-        final Dimension dimension =
-            cube.dimensionList.get(xmlCalcMember.dimension);
-        if (dimension == null) {
+        // Lookup hierarchy
+        Hierarchy hierarchy = null;
+        String dimName = null;
+        if (xmlCalcMember.dimension != null) {
+            dimName = xmlCalcMember.dimension;
+            final Dimension dimension =
+                cube.lookupDimension(
+                    new Id.Segment(
+                        xmlCalcMember.dimension,
+                        Id.Quoting.UNQUOTED));
+            if (dimension != null) {
+                hierarchy = dimension.getHierarchy();
+            }
+        } else if (xmlCalcMember.hierarchy != null) {
+            dimName = xmlCalcMember.hierarchy;
+            hierarchy = (Hierarchy)
+                cube.getSchemaReader().lookupCompound(
+                    cube,
+                    Util.parseIdentifier(dimName),
+                    false,
+                    Category.Hierarchy);
+        }
+        if (hierarchy == null) {
             throw MondrianResource.instance().CalcMemberHasBadDimension.ex(
-                xmlCalcMember.dimension, xmlCalcMember.name, cube.getName());
+                dimName, xmlCalcMember.name, cube.getName());
+        }
+
+        // Root of fully-qualified name.
+        String parentFqName;
+        if (xmlCalcMember.parent != null) {
+            parentFqName = xmlCalcMember.parent;
+        } else {
+            parentFqName = hierarchy.getUniqueNameSsas();
         }
 
         // If we're processing a virtual cube, it's possible that we've
@@ -2891,15 +3017,16 @@ public class RolapSchemaLoader {
         // referenced in another measure; in that case, remove it from the
         // list, since we'll add it back in later; otherwise, in the
         // non-virtual cube case, throw an exception
+        final String fqName = Util.makeFqName(parentFqName, xmlCalcMember.name);
         for (int i = 0; i < calculatedMemberList.size(); i++) {
             Formula formula = calculatedMemberList.get(i);
             if (formula.getName().equals(xmlCalcMember.name)
-                && formula.getMdxMember().getDimension().getName().equals(
-                    dimension.getName()))
+                && formula.getMdxMember().getHierarchy().equals(
+                    hierarchy))
             {
                 if (errOnDup) {
                     throw MondrianResource.instance().CalcMemberNotUnique.ex(
-                        Util.makeFqName(dimension, xmlCalcMember.name),
+                        fqName,
                         cube.getName());
                 } else {
                     calculatedMemberList.remove(i);
@@ -2910,20 +3037,12 @@ public class RolapSchemaLoader {
 
         // Check this calc member doesn't clash with one earlier in this
         // batch.
-        for (int k = 0; k < j; k++) {
-            MondrianDef.CalculatedMember xmlCalcMember2 = xmlCalcMembers.get(k);
-            if (xmlCalcMember2.name.equals(xmlCalcMember.name)
-                && xmlCalcMember2.dimension.equals(xmlCalcMember.dimension))
-            {
-                throw MondrianResource.instance().CalcMemberNotUnique.ex(
-                    Util.makeFqName(dimension, xmlCalcMember.name),
-                    cube.getName());
-            }
+        if (!fqNames.add(fqName)) {
+            throw MondrianResource.instance().CalcMemberNotUnique.ex(
+                fqName,
+                cube.getName());
         }
 
-        final String memberUniqueName =
-            Util.makeFqName(
-                dimension.getUniqueName(), xmlCalcMember.name);
         final List<MondrianDef.CalculatedMemberProperty> xmlProperties =
             xmlCalcMember.getCalculatedMemberProperties();
         List<String> propNames = new ArrayList<String>();
@@ -2934,9 +3053,9 @@ public class RolapSchemaLoader {
         final int measureCount = cube.getMeasures().size();
 
         // Generate SQL.
-        assert memberUniqueName.startsWith("[");
+        assert fqName.startsWith("[");
         buf.append("MEMBER ")
-            .append(memberUniqueName)
+            .append(fqName)
             .append(Util.nl)
             .append("  AS ");
         String result;
@@ -3196,6 +3315,7 @@ public class RolapSchemaLoader {
             Collections.singletonList(xmlCalcMember),
             Collections.<MondrianDef.NamedSet>emptyList(),
             memberList,
+            new ArrayList<Formula>(),
             new ArrayList<Formula>(),
             cube,
             true);

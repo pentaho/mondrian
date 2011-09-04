@@ -3195,6 +3195,25 @@ public class XmlaHandler {
          * response
          */
         Map<String, Object> getPreConfiguredDiscoverDatasourcesResponse();
+
+        /**
+         * Called at the start of processing of a request.
+         *
+         * @param request XMLA Request
+         * @param connection Connection
+         */
+        Request startRequest(XmlaRequest request, OlapConnection connection);
+
+        /**
+         * Called at the end of processing of a request.
+         *
+         * @param request Request object returned by
+         * {@link #startRequest(XmlaRequest, org.olap4j.OlapConnection)}
+         */
+        void endRequest(Request request);
+    }
+
+    public interface Request {
     }
 }
 

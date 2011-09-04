@@ -44,7 +44,7 @@ public class CurrentDateMemberUdfTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1997]}\n"
+            + "{[Time].[Time].[1997]}\n"
             + "Row #0: $39,431.67\n");
     }
 }

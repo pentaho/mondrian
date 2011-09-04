@@ -52,6 +52,7 @@ public abstract class HierarchyBase
     protected HierarchyBase(
         Dimension dimension,
         String subName,
+        String uniqueName,
         boolean visible,
         String caption,
         String description,
@@ -79,28 +80,29 @@ public abstract class HierarchyBase
             this.name = subName;
             // e.g. "[Time].[Weekly]" for dimension "Time", hierarchy "Weekly";
             // "[Time]" for dimension "Time", hierarchy "Time".
-            this.uniqueName =
-                subName.equals(name)
-                    ? dimension.getUniqueName()
-                    : Util.makeFqName(dimension, this.name);
+//            this.uniqueName =
+//                subName.equals(name) && false
+//                    ? dimension.getUniqueName()
+//                    : Util.makeFqName(dimension, this.name);
         } else {
             this.subName = subName;
             if (this.subName != null) {
                 // e.g. "Time.Weekly"
                 this.name = name + "." + subName;
-                if (this.subName.equals(name)) {
-                    this.uniqueName = dimension.getUniqueName();
-                } else {
+//                if (this.subName.equals(name)) {
+//                    this.uniqueName = dimension.getUniqueName();
+//                } else {
                     // e.g. "[Time.Weekly]"
-                    this.uniqueName = Util.makeFqName(this.name);
-                }
+//                    this.uniqueName = Util.makeFqName(this.name);
+//                }
             } else {
                 // e.g. "Time"
                 this.name = name;
                 // e.g. "[Time]"
-                this.uniqueName = dimension.getUniqueName();
+//                this.uniqueName = dimension.getUniqueName();
             }
         }
+        this.uniqueName = uniqueName;
     }
 
     /**

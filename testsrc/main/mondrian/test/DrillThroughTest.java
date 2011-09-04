@@ -346,15 +346,15 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " [Measures].[Store Cost],"
             + " [Measures].[Store Sales]} ON COLUMNS, \n"
             + "Hierarchize(Union(Union(Crossjoin("
-            + "{[Promotion Media].[All Media]},"
+            + "{[Promotion].[Media Type].[All Media]},"
             + " {[Product].[All Products]}), \n"
-            + "Crossjoin({[Promotion Media].[All Media]},"
+            + "Crossjoin({[Promotion].[Media Type].[All Media]},"
             + " [Product].[All Products].Children)),"
-            + " Crossjoin({[Promotion Media].[All Media]},"
+            + " Crossjoin({[Promotion].[Media Type].[All Media]},"
             + " [Product].[All Products].[Drink].Children))) ON ROWS \n"
             + "from [Sales] where [Time].[1997].[Q4].[12]");
 
-        // [Promotion Media].[All Media], [Product].[All
+        // [Promotion].[Media Type].[All Media], [Product].[All
         // Products].[Drink].[Dairy], [Measures].[Store Cost]
         Cell cell = result.getCell(new int[]{0, 4});
 

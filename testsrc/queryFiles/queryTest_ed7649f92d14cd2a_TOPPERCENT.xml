@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>WITH MEMBER Measures.[Country Name] AS 'Ancestor(Store.CurrentMember, [Store Country]).Name' SELECT {Measures.[Country Name], Measures.[Unit Sales]} ON COLUMNS, GENERATE([Store Country].MEMBERS, TOPPERCENT(DESCENDANTS([Store].CURRENTMEMBER,[Store].[Store Name]),1,[Measures].[Unit Sales])) ON ROWS FROM [Sales]</mdxQuery>
+    <mdxQuery>WITH MEMBER Measures.[Country Name] AS 'Ancestor(Store.Stores.CurrentMember, [Store Country]).Name' SELECT {Measures.[Country Name], Measures.[Unit Sales]} ON COLUMNS, GENERATE([Store Country].MEMBERS, TOPPERCENT(DESCENDANTS([Store].[Stores].CURRENTMEMBER,[Store].[Store Name]),1,[Measures].[Unit Sales])) ON ROWS FROM [Sales]</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -13,21 +13,21 @@
                 <dim>[Education Level]</dim>
                 <dim>[Marital Status]</dim>
                 <dim>[Yearly Income]</dim>
-                <dim>[Promotion Media]</dim>
+                <dim>[Promotion].[Media Type]</dim>
                 <dim>[Gender]</dim>
             </dimensions>
             <tuples>
                 <tuple>
                     <member>[Time].[1997]</member>
                     <member>[Product].[All Products]</member>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
-                    <member>[Store Type].[All Store Types]</member>
-                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Store].[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store].[Store Type].[All Store Types]</member>
+                    <member>[Promotion].[Promotions].[All Promotions]</member>
                     <member>[Customers].[All Customers]</member>
                     <member>[Education Level].[All Education Levels]</member>
                     <member>[Marital Status].[All Marital Status]</member>
                     <member>[Yearly Income].[All Yearly Incomes]</member>
-                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Promotion].[Media Type].[All Media]</member>
                     <member>[Gender].[All Gender]</member>
                 </tuple>
             </tuples>
@@ -51,13 +51,13 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[Canada].[BC].[Vancouver].[Store 19]</member>
+                    <member>[Store].[Stores].[Canada].[BC].[Vancouver].[Store 19]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Mexico].[DF].[Mexico City].[Store 9]</member>
+                    <member>[Store].[Stores].[Mexico].[DF].[Mexico City].[Store 9]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[OR].[Salem].[Store 13]</member>
+                    <member>[Store].[Stores].[USA].[OR].[Salem].[Store 13]</member>
                 </tuple>
             </tuples>
         </rows>

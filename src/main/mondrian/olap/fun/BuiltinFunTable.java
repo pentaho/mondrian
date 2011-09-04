@@ -150,7 +150,7 @@ public class BuiltinFunTable extends FunTableImpl {
                     throw newEvalException(
                         this, "Index '" + n + "' out of bounds");
                 }
-                return levels.get(0);
+                return levels.get(n);
             }
         });
 

@@ -1782,13 +1782,19 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
          * Creates an inline table.
          *
          * @param physSchema Schema
-         * @param alias Name of table within schema
+         * @param alias Name of inline table within schema
          */
         PhysInlineTable(
             PhysSchema physSchema,
             String alias)
         {
             super(physSchema, alias);
+            assert alias != null;
+        }
+
+        @Override
+        public String toString() {
+            return alias;
         }
 
         public int hashCode() {

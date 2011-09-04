@@ -11,8 +11,8 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores]</member>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store].[Stores].[All Stores]</member>
+                    <member>[Store].[Store Size in SQFT].[All Store Size in SQFTs]</member>
                     <member>[Time].[1997]</member>
                     <member>[Warehouse].[All Warehouses]</member>
                 </tuple>
@@ -34,25 +34,25 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[Deluxe Supermarket]</member>
+                    <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[Gourmet Supermarket]</member>
+                    <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[HeadQuarters]</member>
+                    <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[Mid-Size Grocery]</member>
+                    <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[Small Grocery]</member>
+                    <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store Type].[Supermarket]</member>
+                    <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
             </tuples>
         </rows>

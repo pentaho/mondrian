@@ -90,7 +90,7 @@ public class RolapConnection extends ConnectionBase {
     /**
      * Creates a RolapConnection.
      *
-     * <p>Only {@link mondrian.rolap.RolapSchema.Pool#get} calls this with
+     * <p>Only {@link mondrian.rolap.RolapSchemaPool#get} calls this with
      * schema != null (to create a schema's internal connection).
      * Other uses retrieve a schema from the cache based upon
      * the <code>Catalog</code> property.
@@ -788,9 +788,17 @@ public class RolapConnection extends ConnectionBase {
      * @return new Scenario
      */
     public ScenarioImpl createScenario() {
-        final ScenarioImpl scenario = new ScenarioImpl();
-        scenario.register(schema);
-        return scenario;
+        return Locus.execute(
+            this,
+            "createScenario",
+            new Locus.Action<ScenarioImpl>() {
+                public ScenarioImpl execute() {
+                    final ScenarioImpl scenario = new ScenarioImpl();
+                    scenario.register(schema);
+                    return scenario;
+                }
+            }
+        );
     }
 
     /**

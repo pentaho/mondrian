@@ -87,7 +87,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[X]}\n"
+            + "{[Customer].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 5,581\n");
@@ -101,7 +101,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[X]}\n"
+            + "{[Customer].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 5,581\n");
@@ -116,7 +116,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[X]}\n"
+            + "{[Customer].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 2,716\n";
@@ -172,7 +172,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[X]}\n"
+            + "{[Customer].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 2,716\n";
@@ -229,7 +229,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[X]}\n"
+            + "{[Customer].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 1,389\n");
@@ -242,7 +242,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[X]}\n"
+            + "{[Customer].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 5,581\n");
@@ -257,13 +257,13 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Store].[USA].[CA]}\n"
             + "Axis #2:\n"
-            + "{[Measures].[Customer Count], [Gender].[M]}\n"
+            + "{[Measures].[Customer Count], [Customer].[Gender].[M]}\n"
             + "Row #0: 1,389\n");
     }
 
     public void testDistinctCountOnSetOfMembers() {
         assertQueryReturns(
-            "WITH MEMBER STORE.X as 'Aggregate({[STORE].[ALL STORES].[USA].[CA],"
+            "WITH MEMBER STORE.STORES.X as 'Aggregate({[STORE].[ALL STORES].[USA].[CA],"
             + "[STORE].[ALL STORES].[USA].[WA]})'"
             + "SELECT STORE.X  ON ROWS, "
             + "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n"
@@ -293,7 +293,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[X]}\n"
+            + "{[Warehouse].[Warehouses].[X]}\n"
             + "Row #0: \n";
         assertQueryReturns(mdx, expectedResult);
         props.IgnoreMeasureForNonJoiningDimension.set(true);
@@ -310,7 +310,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[X]}\n"
+            + "{[Customer].[Gender].[X]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 5,581\n");
@@ -329,7 +329,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[X]}\n"
+            + "{[Warehouse].[Warehouses].[X]}\n"
             + "Row #0: \n");
     }
 
@@ -344,7 +344,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[X]}\n"
+            + "{[Warehouse].[Warehouses].[X]}\n"
             + "Row #0: 5,581\n");
     }
 
@@ -360,7 +360,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[X]}\n"
+            + "{[Warehouse].[Warehouses].[X]}\n"
             + "Row #0: 5,581\n");
 
         assertQueryReturns(
@@ -374,7 +374,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[X]}\n"
+            + "{[Warehouse].[Warehouses].[X]}\n"
             + "Row #0: 5,581\n");
     }
 
@@ -390,7 +390,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[X]}\n"
+            + "{[Warehouse].[Warehouses].[X]}\n"
             + "Row #0: \n");
 
         assertQueryReturns(
@@ -404,7 +404,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[X]}\n"
+            + "{[Warehouse].[Warehouses].[X]}\n"
             + "Row #0: 5,581\n");
     }
 
@@ -422,7 +422,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Customer Count]}\n"
                 + "Axis #2:\n"
-                + "{[Product].[X]}\n"
+                + "{[Product].[Products].[X]}\n"
                 + "Row #0: 1,360\n";
         } else {
             result =
@@ -431,7 +431,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Customer Count]}\n"
                 + "Axis #2:\n"
-                + "{[Product].[X]}\n"
+                + "{[Product].[Products].[X]}\n"
                 + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: "
                 + "Aggregation is not supported over a list with more than 7 predicates (see property mondrian.rolap.maxConstraints)\n";
         }
@@ -675,13 +675,13 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         };
         assertQuerySql(
             "WITH \n"
-            + "SET [COG_OQP_INT_s2] AS 'CROSSJOIN({[Store].[Store].MEMBERS}, "
+            + "SET [COG_OQP_INT_s2] AS 'CROSSJOIN({[Store].[Stores].MEMBERS}, "
             + "{{[Gender].[Gender].MEMBERS}, "
             + "{([Gender].[COG_OQP_USR_Aggregate(Gender)])}})' \n"
-            + "SET [COG_OQP_INT_s1] AS 'CROSSJOIN({[Store].[Store].MEMBERS}, "
+            + "SET [COG_OQP_INT_s1] AS 'CROSSJOIN({[Store].[Stores].MEMBERS}, "
             + "{[Gender].[Gender].MEMBERS})' \n"
             + "\n"
-            + "MEMBER [Store].[COG_OQP_USR_Aggregate(Store)] AS '\n"
+            + "MEMBER [Store].[Stores].[COG_OQP_USR_Aggregate(Store)] AS '\n"
             + "AGGREGATE({COG_OQP_INT_s1})', SOLVE_ORDER = 4 \n"
             + "\n"
             + "MEMBER [Gender].[COG_OQP_USR_Aggregate(Gender)] AS '\n"
@@ -690,7 +690,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "\n"
             + "SELECT {[Measures].[Customer Count]} ON AXIS(0), \n"
             + "{[COG_OQP_INT_s2], HEAD({([Store].[COG_OQP_USR_Aggregate(Store)], "
-            + "[Gender].DEFAULTMEMBER)}, "
+            + "[Customer].[Gender].DEFAULTMEMBER)}, "
             + "IIF(COUNT([COG_OQP_INT_s1], INCLUDEEMPTY) > 0, 1, 0))} ON AXIS(1) \n"
             + "FROM [sales]",
             patterns);
@@ -702,7 +702,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         props.EnableGroupingSets.set(true);
         String mdxQueryWithFewMembers =
             "WITH "
-            + "MEMBER [Store].[COG_OQP_USR_Aggregate(Store)] AS "
+            + "MEMBER [Store].[Stores].[COG_OQP_USR_Aggregate(Store)] AS "
             + "'AGGREGATE({[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR],[Store].[All Stores].[USA].[WA]})', SOLVE_ORDER = 8"
             + "SELECT {[Measures].[Customer Count]} ON AXIS(0), "
             + "{[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR], [Store].[COG_OQP_USR_Aggregate(Store)]} "
@@ -781,7 +781,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         props.EnableGroupingSets.set(true);
         String mdxQueryWithFewMembers =
             "WITH "
-            + "MEMBER [Store].[COG_OQP_USR_Aggregate(Store)] AS "
+            + "MEMBER [Store].[Stores].[COG_OQP_USR_Aggregate(Store)] AS "
             + "'AGGREGATE({[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR]})', SOLVE_ORDER = 8"
             + "SELECT {[Measures].[Customer Count],[Measures].[Unit Sales]} ON AXIS(0), "
             + "{[Store].[All Stores].[USA].[CA], [Store].[All Stores].[USA].[OR], [Store].[COG_OQP_USR_Aggregate(Store)]} "
@@ -881,10 +881,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[All Gender]}\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
-            + "{[Gender].[COG_OQP_USR_Aggregate(Gender)]}\n"
+            + "{[Customer].[Gender].[All Gender]}\n"
+            + "{[Customer].[Gender].[F]}\n"
+            + "{[Customer].[Gender].[M]}\n"
+            + "{[Customer].[Gender].[COG_OQP_USR_Aggregate(Gender)]}\n"
             + "Row #0: 5,581\n"
             + "Row #1: 2,755\n"
             + "Row #2: 2,826\n"
@@ -925,7 +925,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[x]}\n"
+            + "{[Customer].[Gender].[x]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 5,581\n";
@@ -981,7 +981,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[High Quality],\n"
             + "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Red Wing],\n"
             + "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Sunset]} *\n"
-            + "{[Gender].[Gender].Members})'\n"
+            + "{[Customer].[Gender].[Gender].Members})'\n"
             + "SELECT {Product.Agg} on 0, {[Measures].[Customer Count]} on 1\n"
             + "from Sales\n"
             + "where [Time.Weekly].[1997]";
@@ -989,7 +989,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{[Time].[Weekly].[1997]}\n"
             + "Axis #1:\n"
-            + "{[Product].[Agg]}\n"
+            + "{[Product].[Products].[Agg]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 421\n";
@@ -1072,7 +1072,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[High Quality],\n"
             + "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Red Wing],\n"
             + "[Product].[All Products].[Non-Consumable].[Household].[Kitchen Products].[Pots and Pans].[Sunset]} *\n"
-            + "{[Gender].[Gender].Members}*"
+            + "{[Customer].[Gender].[Gender].Members}*"
             + "{[Store].[All Stores].[USA].[CA].[Alameda],\n"
             + "[Store].[All Stores].[USA].[CA].[Alameda].[HQ],\n"
             + "[Store].[All Stores].[USA].[CA].[Beverly Hills],\n"
@@ -1087,7 +1087,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[Agg]}\n"
+            + "{[Product].[Products].[Agg]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 189\n";
@@ -1303,8 +1303,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 + "{[Measures].[Customer Count]}\n"
                 + "{[Measures].[Unit Sales]}\n"
                 + "Axis #2:\n"
-                + "{[Gender].[AGG]}\n"
-                + "{[Gender].[AGG2]}\n"
+                + "{[Customer].[Gender].[AGG]}\n"
+                + "{[Customer].[Gender].[AGG2]}\n"
                 + "Row #0: 2,755\n"
                 + "Row #0: 131,558\n"
                 + "Row #1: 2,826\n"
@@ -1330,7 +1330,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Customer Count]}\n"
                 + "Axis #2:\n"
-                + "{[Gender].[AGG]}\n"
+                + "{[Customer].[Gender].[AGG]}\n"
                 + "Row #0: 5,581\n");
         } finally {
             props.EnableGroupingSets.set(useGroupingSets);
@@ -1366,9 +1366,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                     "Axis #0:\n"
                     + "{}\n"
                     + "Axis #1:\n"
-                    + "{[Customers].[USA]}\n"
-                    + "{[Customers].[USA].[OR]}\n"
-                    + "{[Customers].[USA].[WA]}\n"
+                    + "{[Customer].[Customers].[USA]}\n"
+                    + "{[Customer].[Customers].[USA].[OR]}\n"
+                    + "{[Customer].[Customers].[USA].[WA]}\n"
                     + "Axis #2:\n"
                     + "{[Measures].[Customer Count]}\n"
                     + "Row #0: 2,865\n"

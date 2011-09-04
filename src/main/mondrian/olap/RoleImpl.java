@@ -521,10 +521,10 @@ public class RoleImpl implements Role {
             this.access = access;
             this.rollupPolicy = rollupPolicy;
             this.topLevel = topLevel == null
-                ? hierarchy.getLevels()[0]
+                ? hierarchy.getLevelList().get(0)
                 : topLevel;
             this.bottomLevel = bottomLevel == null
-                ? hierarchy.getLevels()[hierarchy.getLevels().length - 1]
+                ? Util.last(hierarchy.getLevelList())
                 : bottomLevel;
         }
 

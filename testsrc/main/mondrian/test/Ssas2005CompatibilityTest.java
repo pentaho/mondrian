@@ -12,6 +12,7 @@ package mondrian.test;
 import java.sql.SQLException;
 
 import mondrian.olap.*;
+import mondrian.util.Bug;
 
 /**
  * Unit tests that check compatibility with Microsoft SQL Server Analysis
@@ -380,6 +381,15 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "from [Warehouse and Sales]");
     }
 
+    public void testDimensionDotMemberName() {
+        // Note that 'Product' is a dimension with multiple hierarchies
+        // but only one hierarchy has a member called 'All Products'.
+        // Works on SSAS 2005.
+        assertAxisReturns(
+            "[Product].[All Products].Children",
+            "xxx");
+    }
+
     public void testDimensionMembersOnSingleHierarchyDimension() {
         // [dimension].members for a dimension with one hierarchy
         // (and no attributes)
@@ -470,12 +480,12 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
                 "Axis #0:\n"
                 + "{[Measures].[ProfitPercent]}\n"
                 + "Axis #1:\n"
-                + "{[Time].[First Half 97]}\n"
-                + "{[Time].[Second Half 97]}\n"
-                + "{[Time].[1997].[Q1]}\n"
-                + "{[Time].[1997].[Q2]}\n"
-                + "{[Time].[1997].[Q3]}\n"
-                + "{[Time].[1997].[Q4]}\n"
+                + "{[Time].[Time].[First Half 97]}\n"
+                + "{[Time].[Time].[Second Half 97]}\n"
+                + "{[Time].[Time].[1997].[Q1]}\n"
+                + "{[Time].[Time].[1997].[Q2]}\n"
+                + "{[Time].[Time].[1997].[Q3]}\n"
+                + "{[Time].[Time].[1997].[Q4]}\n"
                 + "Axis #2:\n"
                 + "{[Store].[USA].[CA]}\n"
                 + "{[Store].[USA].[OR]}\n"
@@ -517,6 +527,10 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         runQ(
             "select {[Products]} on 0\n"
             + "from [Warehouse and Sales]");
+
+        // Relates to bug mondrian-960, because Measures only has one
+        // hierarchy.
+        Util.discard(Bug.BugMondrian960Fixed);
 
         // TODO: run this in SSAS
         // [Measures] is both a dimension and a hierarchy;
@@ -964,7 +978,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             "select [Store Type 2.Store Type 2].[Store Type].members ON columns "
             + "from [Sales] where [Time].[1997]",
             "Axis #0:\n"
-            + "{[Time].[1997]}\n"
+            + "{[Time].[Time].[1997]}\n"
             + "Axis #1:\n"
             + "{[Store Type 2].[Deluxe Supermarket]}\n"
             + "{[Store Type 2].[Gourmet Supermarket]}\n"
@@ -1625,6 +1639,18 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Time].[Time2].[Foo]}\n"
             + "Row #0: 332,621\n");
+    }
+
+    public void testUnqualifiedMeasures() {
+        assertQueryReturns(
+            "select from [Warehouse and Sales] where [Unit Sales]",
+            "xx");
+
+        // similarly for calc member defined in query
+        assertQueryReturns(
+            "with member [Measures].[Foo] as 1\n"
+            + "select from [Warehouse and Sales] where [Foo]",
+            "xx");
     }
 
     /**

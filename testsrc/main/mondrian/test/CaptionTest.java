@@ -54,7 +54,7 @@ public class CaptionTest extends TestCase {
                 .getConnection();
         String mdxQuery =
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS, "
-            + "{[Promotion Media].[All Media]} ON ROWS FROM [Sales]";
+            + "{[Promotion].[Media Type].[All Media]} ON ROWS FROM [Sales]";
         mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
         mondrian.olap.Result monResult = monConnection.execute(monQuery);
         Axis[] axes = monResult.getAxes();

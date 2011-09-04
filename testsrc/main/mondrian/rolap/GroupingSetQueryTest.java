@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2010 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -97,9 +97,9 @@ public class GroupingSetQueryTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Store Cost]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
-            + "{[Gender].[agg]}\n"
+            + "{[Customer].[Gender].[F]}\n"
+            + "{[Customer].[Gender].[M]}\n"
+            + "{[Customer].[Gender].[agg]}\n"
             + "Row #0: 111,777.48\n"
             + "Row #1: 113,849.75\n"
             + "Row #2: 225,627.23\n");
@@ -549,7 +549,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
      */
     public void testBug2004202() {
         assertQueryReturns(
-            "with member store.allbutwallawalla as\n"
+            "with member store.stores.lbutwallawalla as\n"
             + " 'aggregate(\n"
             + "    except(\n"
             + "        store.[store name].members,\n"

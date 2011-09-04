@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -36,9 +36,9 @@ public class NullMemberRepresentationTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Foo]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1997]}\n"
-            + "{[Time].[1997].[Q2]}\n"
-            + "{[Time].[1997].[Q2].[4]}\n"
+            + "{[Time].[Time].[1997]}\n"
+            + "{[Time].[Time].[1997].[Q2]}\n"
+            + "{[Time].[Time].[1997].[Q2].[4]}\n"
             + "Row #0: [Time].[1997].[Q4]\n"
             + "Row #1: [Time].[1997].[Q2].[6]\n"
             + "Row #2: [Time].["
@@ -61,7 +61,7 @@ public class NullMemberRepresentationTest extends FoodMartTestCase {
     public void testNullMemberWithCustomRepresentation() throws IOException {
         assertExprReturns(
             "[Gender].[All Gender].Parent.UniqueName",
-            "[Gender].[" + getNullMemberRepresentation() + "]");
+            "[Customer].[Gender].[" + getNullMemberRepresentation() + "]");
 
         assertExprReturns(
             "[Gender].[All Gender].Parent.Name", getNullMemberRepresentation());

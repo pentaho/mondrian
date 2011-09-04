@@ -72,6 +72,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         super(
             cubeDimension,
             subName,
+            rolapHierarchy.getUniqueName(),
             rolapHierarchy.isVisible(),
             caption,
             description,
@@ -87,10 +88,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
     void init1(RolapSchemaLoader schemaLoader, String memberReaderClass) {
         this.allMemberName = rolapHierarchy.getAllMemberName();
 
-        if (false)
-        this.nullLevel =
-            this.currentNullLevel =
-            new RolapCubeLevel(rolapHierarchy.nullLevel, this);
+        if (rolapHierarchy.nullLevel != null) {
+            this.nullLevel =
+                this.currentNullLevel =
+                new RolapCubeLevel(rolapHierarchy.nullLevel, this);
+        }
 
         // Compute whether the unique names of members of this hierarchy are
         // different from members of the underlying hierarchy. If so, compute
@@ -552,6 +554,12 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             List<RolapMember> children,
             MemberChildrenConstraint constraint)
         {
+            if (RolapCubeHierarchy.this.getDimension().isMeasures()) {
+                // Members of measures dimensions are not RolapCubeMembers.
+                rolapHierarchy.getMemberReader().getMemberChildren(
+                    parentMembers, children, constraint);
+                return;
+            }
             synchronized (cacheHelper) {
                 checkCacheStatus();
 

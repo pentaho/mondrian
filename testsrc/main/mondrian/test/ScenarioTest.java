@@ -9,7 +9,9 @@
 */
 package mondrian.test;
 
+import mondrian.olap.Util;
 import org.olap4j.*;
+import org.olap4j.impl.ArrayMap;
 
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -131,7 +133,7 @@ public class ScenarioTest extends FoodMartTestCase {
             TestContext.checkThrowable(
                 e,
                 "Cannot write to cell: one of the coordinates "
-                + "([Product].[FoodDrink]) is a calculated member");
+                + "([Product].[Products].[FoodDrink]) is a calculated member");
         }
     }
 
@@ -193,22 +195,7 @@ public class ScenarioTest extends FoodMartTestCase {
         // to cube definition, and [Scenario] dimension will appear. Also, need
         // more elegant way for users to create dimensions that only contain
         // calculated members.
-        final TestContext testContext =
-            TestContext.instance().createSubstitutingCube(
-                "Sales",
-                "<Dimension name='Scenario' foreignKey='time_id'>\n"
-                + "  <Hierarchy primaryKey='bar' hasAll='true'>\n"
-                + "    <InlineTable alias='foo'>\n"
-                + "      <ColumnDefs>\n"
-                + "        <ColumnDef name='bar' type='Numeric'/>\n"
-                + "      </ColumnDefs>\n"
-                + "      <Rows/>\n"
-                + "    </InlineTable>\n"
-                + "    <Level name='Scenario' column='bar' uniqueMembers='true'/>\n"
-                + "  </Hierarchy>\n"
-                + "</Dimension>",
-                "<Measure name='Atomic Cell Count' aggregator='count'/>")
-                .withScenario();
+        final TestContext testContext = getTestContext2();
         final OlapConnection connection = testContext.getOlap4jConnection();
         final Scenario scenario = connection.getScenario();
         String id = scenario.getId();
@@ -229,14 +216,14 @@ public class ScenarioTest extends FoodMartTestCase {
         testContext.assertQueryReturns(
             "select {[Measures].[Unit Sales]} on 0,\n"
             + "{[Product].[Drink]} on 1\n"
-            + "from [Sales]"
-            + "where [Scenario].[" + id + "]",
+            + "from [Sales]\n"
+            + "where [Scenario].[Scenario].[" + id + "]",
             "Axis #0:\n"
-            + "{[Scenario].[" + id + "]}\n"
+            + "{[Scenario].[Scenario].[" + id + "]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Drink]}\n"
+            + "{[Product].[Products].[Drink]}\n"
             + "Row #0: 23,597\n");
 
         testContext.assertQueryReturns(
@@ -252,18 +239,18 @@ public class ScenarioTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Drink]}\n"
-            + "{[Product].[Food]}\n"
-            + "{[Product].[Non-Consumable]}\n"
-            + "{[Product].[Drink].[Alcoholic Beverages]}\n"
-            + "{[Product].[Drink].[Beverages]}\n"
-            + "{[Product].[Drink].[Dairy]}\n"
-            + "{[Product].[Drink].[Beverages].[Carbonated Beverages].[Soda]}\n"
-            + "{[Product].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Excellent]}\n"
-            + "{[Product].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Fabulous]}\n"
-            + "{[Product].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Skinner]}\n"
-            + "{[Product].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Token]}\n"
-            + "{[Product].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Washington]}\n"
+            + "{[Product].[Products].[Drink]}\n"
+            + "{[Product].[Products].[Food]}\n"
+            + "{[Product].[Products].[Non-Consumable]}\n"
+            + "{[Product].[Products].[Drink].[Alcoholic Beverages]}\n"
+            + "{[Product].[Products].[Drink].[Beverages]}\n"
+            + "{[Product].[Products].[Drink].[Dairy]}\n"
+            + "{[Product].[Products].[Drink].[Beverages].[Carbonated Beverages].[Soda]}\n"
+            + "{[Product].[Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Excellent]}\n"
+            + "{[Product].[Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Fabulous]}\n"
+            + "{[Product].[Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Skinner]}\n"
+            + "{[Product].[Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Token]}\n"
+            + "{[Product].[Products].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Washington]}\n"
             + (allocationPolicy == AllocationPolicy.EQUAL_INCREMENT
                 ? "Row #0: 23,597\n"
                   + "Row #1: 191,940\n"
@@ -369,28 +356,40 @@ public class ScenarioTest extends FoodMartTestCase {
         assertEquals("24,597", value);
     }
 
+    public TestContext getTestContext2() {
+        return TestContext.instance().createSubstitutingCube(
+            "Sales",
+            "<Dimension name='Scenario' table='foo' key='Scenario'>\n"
+            + "  <Attributes>\n"
+            + "    <Attribute name='Scenario' keyColumn='bar'/>\n"
+            + "  </Attributes>\n"
+            + "  <Hierarchies>\n"
+            + "    <Hierarchy name='Scenario'>\n"
+            + "      <Level attribute='Scenario'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Hierarchies>\n"
+            + "</Dimension>",
+            null,
+            "<Measure name='Atomic Cell Count' aggregator='count'/>",
+            null,
+            ArrayMap.of(
+                "Sales",
+                "<RegularDimensionLink dimension='Scenario' "
+                + "foreignKeyColumn='time_id'/>",
+                "Warehouse",
+                "<RegularDimensionLink dimension='Scenario' "
+                + "foreignKeyColumn='time_id'/>"))
+            .withCube("[Sales]")
+            .withScenario();
+    }
+
     /**
      * Test case for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-815">MONDRIAN-815</a>,
      * "NPE from query if use a scenario and one of the cells is empty/null".
      */
     public void testBugMondrian815() throws SQLException {
-        final TestContext testContext =
-            TestContext.instance().createSubstitutingCube(
-                "Sales",
-                "<Dimension name='Scenario' foreignKey='time_id'>\n"
-                + "  <Hierarchy primaryKey='time_id' hasAll='true'>\n"
-                + "    <InlineTable alias='foo'>\n"
-                + "      <ColumnDefs>\n"
-                + "        <ColumnDef name='foo' type='Numeric'/>\n"
-                + "      </ColumnDefs>\n"
-                + "      <Rows/>\n"
-                + "    </InlineTable>\n"
-                + "    <Level name='Scenario' column='foo'/>\n"
-                + "  </Hierarchy>\n"
-                + "</Dimension>",
-                "<Measure name='Atomic Cell Count' aggregator='count'/>")
-                .withScenario();
+        final TestContext testContext = getTestContext2();
         final OlapConnection connection = testContext.getOlap4jConnection();
         final Scenario scenario = connection.createScenario();
         connection.setScenario(scenario);
@@ -409,16 +408,16 @@ public class ScenarioTest extends FoodMartTestCase {
         final CellSet cellSet = pstmt.executeQuery();
         TestContext.assertEqualsVerbose(
             "Axis #0:\n"
-            + "{[Customers].[USA].[CA].[San Francisco], [Time].[1997], "
+            + "{[Customer].[Customers].[USA].[CA].[San Francisco], [Time].[Time].[1997], "
             + scenarioUniqueName
             + "}\n"
             + "Axis #1:\n"
-            + "{[Gender].[All Gender]}\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
+            + "{[Customer].[Gender].[All Gender]}\n"
+            + "{[Customer].[Gender].[F]}\n"
+            + "{[Customer].[Gender].[M]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Drink].[Beverages]}\n"
-            + "{[Product].[Drink].[Alcoholic Beverages]}\n"
+            + "{[Product].[Products].[Drink].[Beverages]}\n"
+            + "{[Product].[Products].[Drink].[Alcoholic Beverages]}\n"
             + "Row #0: 2\n"
             + "Row #0: \n"
             + "Row #0: 2\n"
@@ -433,16 +432,16 @@ public class ScenarioTest extends FoodMartTestCase {
         final CellSet cellSet2 = pstmt.executeQuery();
         TestContext.assertEqualsVerbose(
             "Axis #0:\n"
-            + "{[Customers].[USA].[CA].[San Francisco], [Time].[1997], "
+            + "{[Customer].[Customers].[USA].[CA].[San Francisco], [Time].[Time].[1997], "
             + scenarioUniqueName
             + "}\n"
             + "Axis #1:\n"
-            + "{[Gender].[All Gender]}\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
+            + "{[Customer].[Gender].[All Gender]}\n"
+            + "{[Customer].[Gender].[F]}\n"
+            + "{[Customer].[Gender].[M]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Drink].[Alcoholic Beverages]}\n"
-            + "{[Product].[Drink].[Beverages]}\n"
+            + "{[Product].[Products].[Drink].[Alcoholic Beverages]}\n"
+            + "{[Product].[Products].[Drink].[Beverages]}\n"
             + "Row #0: 10\n"
             + "Row #0: 5\n"
             + "Row #0: 5\n"

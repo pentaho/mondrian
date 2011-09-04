@@ -41,7 +41,7 @@ public class QueryRunner extends Thread {
         // mdx sample #1
         "select\n"
         + "    {[Measures].[Unit Sales]} on columns,\n"
-        + "    order(except([Promotion Media].[Media Type].members,{[Promotion Media].[Media Type].[No Media]}),[Measures].[Unit Sales],DESC) on rows\n"
+        + "    order(except([Promotion].[Media Type].members,{[Promotion].[Media Type].[No Media]}),[Measures].[Unit Sales],DESC) on rows\n"
         + "from Sales",
 
         // mdx sample #2
@@ -191,7 +191,7 @@ public class QueryRunner extends Thread {
 
         // #18 bug: should allow dimension to be used as shorthand for member
         "select {[Measures].[Unit Sales]} on columns,\n"
-        + " {[Store], [Store].children} on rows\n"
+        + " {[Store], [Store].[Stores].children} on rows\n"
         + "from [Sales]",
 
         // #19 bug: should allow 'members(n)' (and do it efficiently)
@@ -208,7 +208,7 @@ public class QueryRunner extends Thread {
         + "    CrossJoin(\n"
         + "      [Gender].members,\n"
         + "      [Marital Status].members),\n"
-        + "   {[Store], [Store].children}) on rows\n"
+        + "   {[Store].[Stores], [Store].[Stores].children}) on rows\n"
         + "from [Sales]\n"
         + "where (\n"
         + " [Product].[Food],\n"

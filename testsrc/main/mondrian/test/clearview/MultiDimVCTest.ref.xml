@@ -29,18 +29,18 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[Drink], [Time].[1997].[Q1]}
-{[Product].[Drink], [Time].[1997].[Q2]}
-{[Product].[Drink], [Time].[1997].[Q3]}
-{[Product].[Drink], [Time].[1997].[Q4]}
-{[Product].[Food], [Time].[1997].[Q1]}
-{[Product].[Food], [Time].[1997].[Q2]}
-{[Product].[Food], [Time].[1997].[Q3]}
-{[Product].[Food], [Time].[1997].[Q4]}
-{[Product].[Non-Consumable], [Time].[1997].[Q1]}
-{[Product].[Non-Consumable], [Time].[1997].[Q2]}
-{[Product].[Non-Consumable], [Time].[1997].[Q3]}
-{[Product].[Non-Consumable], [Time].[1997].[Q4]}
+{[Product].[Products].[Drink], [Time].[1997].[Q1]}
+{[Product].[Products].[Drink], [Time].[1997].[Q2]}
+{[Product].[Products].[Drink], [Time].[1997].[Q3]}
+{[Product].[Products].[Drink], [Time].[1997].[Q4]}
+{[Product].[Products].[Food], [Time].[1997].[Q1]}
+{[Product].[Products].[Food], [Time].[1997].[Q2]}
+{[Product].[Products].[Food], [Time].[1997].[Q3]}
+{[Product].[Products].[Food], [Time].[1997].[Q4]}
+{[Product].[Products].[Non-Consumable], [Time].[1997].[Q1]}
+{[Product].[Products].[Non-Consumable], [Time].[1997].[Q2]}
+{[Product].[Products].[Non-Consumable], [Time].[1997].[Q3]}
+{[Product].[Products].[Non-Consumable], [Time].[1997].[Q4]}
 Row #0: 5,976
 Row #1: 5,895
 Row #2: 6,065
@@ -85,12 +85,12 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[Drink], [Time].[1997].[Q1]}
-{[Product].[Drink], [Time].[1997].[Q3]}
-{[Product].[Food], [Time].[1997].[Q1]}
-{[Product].[Food], [Time].[1997].[Q3]}
-{[Product].[Non-Consumable], [Time].[1997].[Q1]}
-{[Product].[Non-Consumable], [Time].[1997].[Q3]}
+{[Product].[Products].[Drink], [Time].[1997].[Q1]}
+{[Product].[Products].[Drink], [Time].[1997].[Q3]}
+{[Product].[Products].[Food], [Time].[1997].[Q1]}
+{[Product].[Products].[Food], [Time].[1997].[Q3]}
+{[Product].[Products].[Non-Consumable], [Time].[1997].[Q1]}
+{[Product].[Products].[Non-Consumable], [Time].[1997].[Q3]}
 Row #0: 5,976
 Row #1: 6,065
 Row #2: 47,809
@@ -129,10 +129,10 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[Drink], [Time].[1997].[Q1]}
-{[Product].[Drink], [Time].[1997].[Q2]}
-{[Product].[Drink], [Time].[1997].[Q3]}
-{[Product].[Drink], [Time].[1997].[Q4]}
+{[Product].[Products].[Drink], [Time].[1997].[Q1]}
+{[Product].[Products].[Drink], [Time].[1997].[Q2]}
+{[Product].[Products].[Drink], [Time].[1997].[Q3]}
+{[Product].[Products].[Drink], [Time].[1997].[Q4]}
 Row #0: 5,976
 Row #1: 5,895
 Row #2: 6,065
@@ -169,8 +169,8 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[Drink], [Time].[1997].[Q1]}
-{[Product].[Drink], [Time].[1997].[Q3]}
+{[Product].[Products].[Drink], [Time].[1997].[Q1]}
+{[Product].[Products].[Drink], [Time].[1997].[Q3]}
 Row #0: 5,976
 Row #1: 6,065
 ]]>
@@ -203,14 +203,14 @@ Where ([Product].[*FILTER_MEMBER])
         <Resource name="result">
             <![CDATA[
 Axis #0:
-{[Product].[*FILTER_MEMBER]}
+{[Product].[Products].[*FILTER_MEMBER]}
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Time].[1997].[Q1]}
-{[Time].[1997].[Q2]}
-{[Time].[1997].[Q3]}
-{[Time].[1997].[Q4]}
+{[Time].[Time].[1997].[Q1]}
+{[Time].[Time].[1997].[Q2]}
+{[Time].[Time].[1997].[Q3]}
+{[Time].[Time].[1997].[Q4]}
 Row #0: 5,976
 Row #1: 5,895
 Row #2: 6,065

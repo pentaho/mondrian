@@ -737,13 +737,6 @@ public class RolapResult extends ResultBase {
                 "coordinates should have dimension " + point.size());
         }
 
-        for (int i = 0; i < pos.length; i++) {
-            if (positionsHighCardinality.get(i)) {
-                executeBody(evaluator, statement.getQuery(), pos);
-                break;
-            }
-        }
-
         CellInfo ci = cellInfos.lookup(pos);
         if (ci.value == null) {
             for (int i = 0; i < pos.length; i++) {

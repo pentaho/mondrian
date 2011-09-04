@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2010 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -832,6 +832,7 @@ Util.deprecated("obsolete basecube parameter", false);
         }
 
         // add the selects for all levels to fetch
+        RolapSchema.SqlQueryBuilder queryBuilder = null;
         for (TargetBase target : targets) {
             // if we're going to be enumerating the values for this target,
             // then we don't need to generate sql for it
@@ -844,19 +845,22 @@ Util.deprecated("obsolete basecube parameter", false);
                         Util.last(
                             target.level.getHierarchy().getRolapLevelList());
                 }
-                final ColumnLayoutBuilder columnLayoutBuilder =
-                    new ColumnLayoutBuilder(
-                        startLevel.attribute.keyList);
+                if (queryBuilder == null) {
+                    ColumnLayoutBuilder columnLayoutBuilder =
+                        new ColumnLayoutBuilder(
+                            startLevel.attribute.keyList);
+                    queryBuilder = new RolapSchema.SqlQueryBuilder(
+                        sqlQuery, columnLayoutBuilder);
+                }
                 addLevelMemberSql(
-                    new RolapSchema.SqlQueryBuilder(
-                        sqlQuery, columnLayoutBuilder),
+                    queryBuilder,
                     target.getLevel(),
                     starSet,
                     selectOrdinal,
                     selectCount,
                     aggStar);
                 target.setColumnLayout(
-                    columnLayoutBuilder.toLayout());
+                    queryBuilder.layoutBuilder.toLayout());
             }
         }
 
@@ -1031,6 +1035,11 @@ Util.deprecated("obsolete basecube parameter", false);
                 levelLayoutBuilder.ordinalList.add(
                     queryBuilder.asasdasd(column, sgo));
             }
+
+            levelLayoutBuilder.nameOrdinal =
+                queryBuilder.asasdasd(
+                    attribute.nameExp,
+                    SqlMemberSource.Sgo.SELECT.maybeGroup(needsGroupBy));
 
             levelLayoutBuilder.captionOrdinal =
                 queryBuilder.asasdasd(
@@ -1374,6 +1383,7 @@ Util.deprecated("obsolete basecube parameter", false);
      */
     static class LevelLayoutBuilder {
         public List<Integer> keyOrdinalList = new ArrayList<Integer>();
+        public int nameOrdinal = -1;
         public List<Integer> ordinalList = new ArrayList<Integer>();
         public int captionOrdinal = -1;
         public boolean hasOrdinal;
@@ -1385,6 +1395,7 @@ Util.deprecated("obsolete basecube parameter", false);
         public LevelColumnLayout toLayout() {
             return new LevelColumnLayout(
                 toArray(keyOrdinalList),
+                nameOrdinal,
                 captionOrdinal,
                 hasOrdinal,
                 ordinalOrdinal,
@@ -1418,6 +1429,8 @@ Util.deprecated("obsolete basecube parameter", false);
         // column ordinals where the values of the level's key (possibly
         // compound) are found
         public final int[] keyOrdinals;
+        // column ordinal where the value of the level's name is found
+        public final int nameOrdinal;
         // column ordinals where the value of the level's caption is found,
         // or -1 if no caption
         public final int captionOrdinal;
@@ -1433,6 +1446,7 @@ Util.deprecated("obsolete basecube parameter", false);
 
         LevelColumnLayout(
             int[] keyOrdinals,
+            int nameOrdinal,
             int captionOrdinal,
             boolean hasOrdinal,
             int ordinalOrdinal,
@@ -1440,6 +1454,7 @@ Util.deprecated("obsolete basecube parameter", false);
             int[] parentOrdinals)
         {
             this.keyOrdinals = keyOrdinals;
+            this.nameOrdinal = nameOrdinal;
             this.captionOrdinal = captionOrdinal;
             this.hasOrdinal = hasOrdinal;
             this.ordinalOrdinal = ordinalOrdinal;

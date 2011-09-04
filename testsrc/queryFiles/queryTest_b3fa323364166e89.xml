@@ -11,8 +11,8 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
-                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Store].[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store].[Store Type].[All Store Types]</member>
                     <member>[Time].[1997]</member>
                     <member>[Warehouse].[All Warehouses]</member>
                 </tuple>
@@ -37,16 +37,16 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[USA]</member>
+                    <member>[Store].[Stores].[USA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store].[Stores].[USA].[CA]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store].[Stores].[USA].[OR]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store].[Stores].[USA].[WA]</member>
                 </tuple>
             </tuples>
         </rows>

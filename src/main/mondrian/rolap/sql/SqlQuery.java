@@ -337,6 +337,15 @@ public class SqlQuery {
                 /*table.getFilter()*/null,
                 table.getHintMap(),
                 failIfExists);
+        } else if (relation instanceof RolapSchema.PhysInlineTable) {
+            final RolapSchema.PhysInlineTable table =
+                (RolapSchema.PhysInlineTable) relation;
+            RolapSchema.PhysView physView =
+                RolapUtil.convertInlineTableToRelation(table, dialect);
+            return addFromQuery(
+                physView.getSqlString(),
+                table.getAlias(),
+                failIfExists);
 
             /*
         } else if (relation instanceof MondrianDef.Join) {

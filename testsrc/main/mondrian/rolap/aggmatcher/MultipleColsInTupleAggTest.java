@@ -50,7 +50,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
 
         String mdx2 =
             "select {[Measures].[Total]} on columns from [Fact] where "
-            + "{[Product].[Cat One].[Prod Cat One].[One]}";
+            + "{[Product].[Products].[Cat One].[Prod Cat One].[One]}";
         Result aresult = getCubeTestContext().executeQuery(mdx2);
         Object av = aresult.getCell(new int[]{0}).getValue();
 
@@ -88,7 +88,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Total]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Cat One].[Prod Cat One],"
+            + "{[Product].[Products].[Cat One].[Prod Cat One],"
             + " [Store].[All Stores]}\n"
             + "Row #0: 15\n");
     }
@@ -107,8 +107,8 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Total]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Cat One].[Prod Cat Two]}\n"
-            + "{[Product].[Cat One].[Prod Cat One]}\n"
+            + "{[Product].[Products].[Cat One].[Prod Cat Two]}\n"
+            + "{[Product].[Products].[Cat One].[Prod Cat One]}\n"
             + "Row #0: 18\n"
             + "Row #1: 15\n");
     }

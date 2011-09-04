@@ -27,7 +27,7 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[Drink]}
+{[Product].[Products].[Drink]}
 Row #0: 24,597
 ]]>
         </Resource>
@@ -59,7 +59,7 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[Food]}
+{[Product].[Products].[Food]}
 Row #0: 191,940
 ]]>
         </Resource>
@@ -91,8 +91,8 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[Drink]}
-{[Product].[Food]}
+{[Product].[Products].[Drink]}
+{[Product].[Products].[Food]}
 Row #0: 24,597
 Row #1: 191,940
 ]]>

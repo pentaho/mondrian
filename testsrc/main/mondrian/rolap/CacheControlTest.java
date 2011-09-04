@@ -101,44 +101,44 @@ public class CacheControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time].[1997]}\n"
-            + "{[Time].[1997].[Q1]}\n"
-            + "{[Time].[1997].[Q1].[1]}\n"
-            + "{[Time].[1997].[Q1].[2]}\n"
-            + "{[Time].[1997].[Q1].[3]}\n"
-            + "{[Time].[1997].[Q2]}\n"
-            + "{[Time].[1997].[Q2].[4]}\n"
-            + "{[Time].[1997].[Q2].[5]}\n"
-            + "{[Time].[1997].[Q2].[6]}\n"
-            + "{[Time].[1997].[Q3]}\n"
-            + "{[Time].[1997].[Q3].[7]}\n"
-            + "{[Time].[1997].[Q3].[8]}\n"
-            + "{[Time].[1997].[Q3].[9]}\n"
-            + "{[Time].[1997].[Q4]}\n"
-            + "{[Time].[1997].[Q4].[10]}\n"
-            + "{[Time].[1997].[Q4].[11]}\n"
-            + "{[Time].[1997].[Q4].[12]}\n"
-            + "{[Time].[1998]}\n"
-            + "{[Time].[1998].[Q1]}\n"
-            + "{[Time].[1998].[Q1].[1]}\n"
-            + "{[Time].[1998].[Q1].[2]}\n"
-            + "{[Time].[1998].[Q1].[3]}\n"
-            + "{[Time].[1998].[Q2]}\n"
-            + "{[Time].[1998].[Q2].[4]}\n"
-            + "{[Time].[1998].[Q2].[5]}\n"
-            + "{[Time].[1998].[Q2].[6]}\n"
-            + "{[Time].[1998].[Q3]}\n"
-            + "{[Time].[1998].[Q3].[7]}\n"
-            + "{[Time].[1998].[Q3].[8]}\n"
-            + "{[Time].[1998].[Q3].[9]}\n"
-            + "{[Time].[1998].[Q4]}\n"
-            + "{[Time].[1998].[Q4].[10]}\n"
-            + "{[Time].[1998].[Q4].[11]}\n"
-            + "{[Time].[1998].[Q4].[12]}\n"
+            + "{[Time].[Time].[1997]}\n"
+            + "{[Time].[Time].[1997].[Q1]}\n"
+            + "{[Time].[Time].[1997].[Q1].[1]}\n"
+            + "{[Time].[Time].[1997].[Q1].[2]}\n"
+            + "{[Time].[Time].[1997].[Q1].[3]}\n"
+            + "{[Time].[Time].[1997].[Q2]}\n"
+            + "{[Time].[Time].[1997].[Q2].[4]}\n"
+            + "{[Time].[Time].[1997].[Q2].[5]}\n"
+            + "{[Time].[Time].[1997].[Q2].[6]}\n"
+            + "{[Time].[Time].[1997].[Q3]}\n"
+            + "{[Time].[Time].[1997].[Q3].[7]}\n"
+            + "{[Time].[Time].[1997].[Q3].[8]}\n"
+            + "{[Time].[Time].[1997].[Q3].[9]}\n"
+            + "{[Time].[Time].[1997].[Q4]}\n"
+            + "{[Time].[Time].[1997].[Q4].[10]}\n"
+            + "{[Time].[Time].[1997].[Q4].[11]}\n"
+            + "{[Time].[Time].[1997].[Q4].[12]}\n"
+            + "{[Time].[Time].[1998]}\n"
+            + "{[Time].[Time].[1998].[Q1]}\n"
+            + "{[Time].[Time].[1998].[Q1].[1]}\n"
+            + "{[Time].[Time].[1998].[Q1].[2]}\n"
+            + "{[Time].[Time].[1998].[Q1].[3]}\n"
+            + "{[Time].[Time].[1998].[Q2]}\n"
+            + "{[Time].[Time].[1998].[Q2].[4]}\n"
+            + "{[Time].[Time].[1998].[Q2].[5]}\n"
+            + "{[Time].[Time].[1998].[Q2].[6]}\n"
+            + "{[Time].[Time].[1998].[Q3]}\n"
+            + "{[Time].[Time].[1998].[Q3].[7]}\n"
+            + "{[Time].[Time].[1998].[Q3].[8]}\n"
+            + "{[Time].[Time].[1998].[Q3].[9]}\n"
+            + "{[Time].[Time].[1998].[Q4]}\n"
+            + "{[Time].[Time].[1998].[Q4].[10]}\n"
+            + "{[Time].[Time].[1998].[Q4].[11]}\n"
+            + "{[Time].[Time].[1998].[Q4].[12]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Drink]}\n"
-            + "{[Product].[Food]}\n"
-            + "{[Product].[Non-Consumable]}\n"
+            + "{[Product].[Products].[Drink]}\n"
+            + "{[Product].[Products].[Food]}\n"
+            + "{[Product].[Products].[Non-Consumable]}\n"
             + "Row #0: 24,597\n"
             + "Row #0: 5,976\n"
             + "Row #0: 1,910\n"
@@ -278,12 +278,12 @@ public class CacheControlTest extends FoodMartTestCase {
         assertEquals(
             "Union("
             + "Crossjoin("
-            + "Member([Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), "
-            + "Member([Time].[1997].[Q1]), "
+            + "Member([Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), "
+            + "Member([Time].[Time].[1997].[Q1]), "
             + "Member([Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Sales Count], [Measures].[Customer Count], [Measures].[Promotion Sales])), "
             + "Crossjoin("
-            + "Member([Product].[Drink].[Dairy]), "
-            + "Member([Time].[1997].[Q1]), "
+            + "Member([Product].[Products].[Drink].[Dairy]), "
+            + "Member([Time].[Time].[1997].[Q1]), "
             + "Member([Measures].[Unit Sales], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Sales Count], [Measures].[Customer Count], [Measures].[Promotion Sales])))",
             normalizedRegion.toString());
     }
@@ -467,8 +467,8 @@ public class CacheControlTest extends FoodMartTestCase {
         final Connection connection = testContext.getConnection();
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
 
-        // Region consists of [Time].[1997].[Q1] and its children, and products
-        // [Beer] and [Dairy].
+        // Region consists of [Time].[Time].[1997].[Q1] and its children, and
+        // products [Beer] and [Dairy].
         final SchemaReader schemaReader =
             salesCube.getSchemaReader(null).withLocus();
         final Member memberQ1 = schemaReader.getMemberByUniqueName(
@@ -483,12 +483,13 @@ public class CacheControlTest extends FoodMartTestCase {
 
         final CacheControl.CellRegion regionTimeQ1 =
             cacheControl.createMemberRegion(memberQ1, true);
-        assertEquals("Member([Time].[1997].[Q1])", regionTimeQ1.toString());
+        assertEquals(
+            "Member([Time].[Time].[1997].[Q1])", regionTimeQ1.toString());
 
         final CacheControl.CellRegion regionProductBeer =
             cacheControl.createMemberRegion(memberBeer, false);
         assertEquals(
-            "Member([Product].[Drink]."
+            "Member([Product].[Products].[Drink]."
             + "[Alcoholic Beverages].[Beer and Wine].[Beer])",
             regionProductBeer.toString());
 
@@ -500,14 +501,14 @@ public class CacheControlTest extends FoodMartTestCase {
                 regionProductBeer,
                 regionProductDairy);
         assertEquals(
-            "Union(Member([Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), Member([Product].[Drink].[Dairy]))",
+            "Union(Member([Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), Member([Product].[Products].[Drink].[Dairy]))",
             regionProductUnion.toString());
 
         final CacheControl.CellRegion regionProductXTime =
             cacheControl.createCrossjoinRegion(
                 regionProductUnion, regionTimeQ1);
         assertEquals(
-            "Crossjoin(Union(Member([Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), Member([Product].[Drink].[Dairy])), Member([Time].[1997].[Q1]))",
+            "Crossjoin(Union(Member([Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer]), Member([Product].[Products].[Drink].[Dairy])), Member([Time].[Time].[1997].[Q1]))",
             regionProductXTime.toString());
 
         try {
@@ -528,7 +529,7 @@ public class CacheControlTest extends FoodMartTestCase {
 
     /**
      * Creates a cell region using a given {@link CacheControl}, containing
-     * only [Time].[1997].[Q1] * {Measures}.
+     * only [Time].[Time].[1997].[Q1] * {Measures}.
      *
      * @param testContext Test context
      * @param cacheControl Cache control
@@ -540,7 +541,7 @@ public class CacheControlTest extends FoodMartTestCase {
         final Connection connection = testContext.getConnection();
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
 
-        // Region consists of [Time].[1997].[Q1] and its children.
+        // Region consists of [Time].[Time].[1997].[Q1] and its children.
         final SchemaReader schemaReader =
             salesCube.getSchemaReader(null).withLocus();
         final Member memberQ1 = schemaReader.getMemberByUniqueName(
@@ -548,7 +549,8 @@ public class CacheControlTest extends FoodMartTestCase {
 
         final CacheControl.CellRegion regionTimeQ1 =
             cacheControl.createMemberRegion(memberQ1, true);
-        assertEquals("Member([Time].[1997].[Q1])", regionTimeQ1.toString());
+        assertEquals(
+            "Member([Time].[Time].[1997].[Q1])", regionTimeQ1.toString());
 
         final CacheControl.CellRegion measuresRegion =
             cacheControl.createMeasuresRegion(salesCube);
@@ -559,7 +561,7 @@ public class CacheControlTest extends FoodMartTestCase {
 
     /**
      * Creates a cell region using a given {@link CacheControl}, containing
-     * only [Time].[1997].[Q1] * {Measures}.
+     * only [Time].[Time].[1997].[Q1] * {Measures}.
      *
      * @param testContext Test context
      * @param cacheControl Cache control
@@ -571,7 +573,7 @@ public class CacheControlTest extends FoodMartTestCase {
         final Connection connection = testContext.getConnection();
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
 
-        // Region consists of [Time].[1997].[Q2].[4] and its children.
+        // Region consists of [Time].[Time].[1997].[Q2].[4] and its children.
         final SchemaReader schemaReader =
             salesCube.getSchemaReader(null).withLocus();
         final Member memberApril = schemaReader.getMemberByUniqueName(
@@ -581,7 +583,7 @@ public class CacheControlTest extends FoodMartTestCase {
             cacheControl.createMemberRegion(
                 true, memberApril, false, null, true);
         assertEquals(
-            "Range([Time].[1997].[Q2].[4] inclusive to null)",
+            "Range([Time].[Time].[1997].[Q2].[4] inclusive to null)",
             regionTimeApril.toString());
 
         final CacheControl.CellRegion measuresRegion =
@@ -593,7 +595,7 @@ public class CacheControlTest extends FoodMartTestCase {
 
     /**
      * Creates a cell region using a given {@link CacheControl}, containing
-     * only [Time].[1997] * {Measures}.
+     * only [Time].[Time].[1997] * {Measures}.
      *
      * @param testContext Test context
      * @param cacheControl Cache control
@@ -605,7 +607,7 @@ public class CacheControlTest extends FoodMartTestCase {
         final Connection connection = testContext.getConnection();
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
 
-        // Region consists of [Time].[1997] and its children.
+        // Region consists of [Time].[Time].[1997] and its children.
         final SchemaReader schemaReader = salesCube.getSchemaReader(null);
         final Member member1997 = schemaReader.getMemberByUniqueName(
             Id.Segment.toList("Time", "1997"), true);
@@ -613,7 +615,7 @@ public class CacheControlTest extends FoodMartTestCase {
         final CacheControl.CellRegion region1997 =
             cacheControl.createMemberRegion(member1997, true);
         assertEquals(
-            "Member([Time].[1997])",
+            "Member([Time].[Time].[1997])",
             region1997.toString());
 
         final CacheControl.CellRegion measuresRegion =
@@ -652,7 +654,7 @@ public class CacheControlTest extends FoodMartTestCase {
             cacheControl.createMemberRegion(
                 true, memberDrink, true, memberFood, true);
         assertEquals(
-            "Range([Product].[Drink] inclusive to [Product].[Food] inclusive)",
+            "Range([Product].[Products].[Drink] inclusive to [Product].[Products].[Food] inclusive)",
             regionProductFoodDrink.toString());
 
         final CacheControl.CellRegion regionFemale =
@@ -725,8 +727,8 @@ public class CacheControlTest extends FoodMartTestCase {
         assertNotNull(regionTimeXProduct);
         assertEquals(2, regionTimeXProduct.getDimensionality().size());
         assertEquals(
-            "Crossjoin(Member([Time].[1997].[Q1]), "
-            + "Member([Product].[Drink].[Alcoholic Beverages]."
+            "Crossjoin(Member([Time].[Time].[1997].[Q1]), "
+            + "Member([Product].[Products].[Drink].[Alcoholic Beverages]."
             + "[Beer and Wine]))",
             regionTimeXProduct.toString());
 
@@ -829,8 +831,8 @@ public class CacheControlTest extends FoodMartTestCase {
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
         final CacheControl cacheControl = new CacheControlImpl();
 
-        // Region consists of [Time].[1997].[Q1] and its children, and products
-        // [Beer] and [Dairy].
+        // Region consists of [Time].[Time].[1997].[Q1] and its children, and
+        // products [Beer] and [Dairy].
         final SchemaReader schemaReader =
             salesCube.getSchemaReader(null).withLocus();
         final Member memberQ1 = schemaReader.getMemberByUniqueName(
@@ -863,13 +865,13 @@ public class CacheControlTest extends FoodMartTestCase {
                 regionGenderFemale);
         assertEquals(
             "Crossjoin("
-            + "Member([Time].[1997].[Q1]), "
-            + "Member([Product].[Drink].[Alcoholic Beverages]."
+            + "Member([Time].[Time].[1997].[Q1]), "
+            + "Member([Product].[Products].[Drink].[Alcoholic Beverages]."
             + "[Beer and Wine].[Beer]), "
-            + "Member([Gender].[F]))",
+            + "Member([Customer].[Gender].[F]))",
             regionTimeXProductXGender.toString());
         assertEquals(
-            "[[Time], [Product], [Gender]]",
+            "[[Time], [Product], [Customer]]",
             regionTimeXProductXGender.getDimensionality().toString());
 
         // Three-way crossjoin, should be same as previous
@@ -880,13 +882,13 @@ public class CacheControlTest extends FoodMartTestCase {
                 regionGenderFemale);
         assertEquals(
             "Crossjoin("
-            + "Member([Time].[1997].[Q1]), "
-            + "Member([Product].[Drink].[Alcoholic Beverages]"
+            + "Member([Time].[Time].[1997].[Q1]), "
+            + "Member([Product].[Products].[Drink].[Alcoholic Beverages]"
             + ".[Beer and Wine].[Beer]), "
-            + "Member([Gender].[F]))",
+            + "Member([Customer].[Gender].[F]))",
             regionTimeXProductXGender2.toString());
         assertEquals(
-            "[[Time], [Product], [Gender]]",
+            "[[Time], [Product], [Customer]]",
             regionTimeXProductXGender2.getDimensionality().toString());
 
         // Compose a non crossjoin with a crossjoin
@@ -896,19 +898,19 @@ public class CacheControlTest extends FoodMartTestCase {
                 regionTimeXProduct);
         assertEquals(
             "Crossjoin("
-            + "Member([Gender].[F]), "
-            + "Member([Time].[1997].[Q1]), "
-            + "Member([Product].[Drink].[Alcoholic Beverages]"
+            + "Member([Customer].[Gender].[F]), "
+            + "Member([Time].[Time].[1997].[Q1]), "
+            + "Member([Product].[Products].[Drink].[Alcoholic Beverages]"
             + ".[Beer and Wine].[Beer]))",
             regionGenderXTimeXProduct.toString());
         assertEquals(
-            "[[Gender], [Time], [Product]]",
+            "[[Customer], [Time], [Product]]",
             regionGenderXTimeXProduct.getDimensionality().toString());
     }
 
     /**
      * Helper method, creates a region consisting of a single member, given its
-     * unique name (e.g. "[Gender].[F]").
+     * unique name (e.g. "[Customer].[Gender].[F]").
      */
     CacheControl.CellRegion memberRegion(String uniqueName) {
         final String[] names = uniqueName.split("\\.");
@@ -941,15 +943,15 @@ public class CacheControlTest extends FoodMartTestCase {
         //       Union(
         //          Crossjoin(
         //             [Gender].[F]
-        //             [Time].[1997].[Q1])
+        //             [Time].[Time].[1997].[Q1])
         //          Crossjoin(
         //             [Gender].[M]
-        //             [Time].[1997].[Q2]))
+        //             [Time].[Time].[1997].[Q2]))
         //    Crossjoin(
         //       Crossjoin(
         //          [Marital Status].[S],
         //          [Gender].[F])
-        //       [Time].[1997].[Q1])
+        //       [Time].[Time].[1997].[Q1])
         //
         final CacheControl cacheControl = new CacheControlImpl();
         final CacheControl.CellRegion region =
@@ -974,14 +976,14 @@ public class CacheControlTest extends FoodMartTestCase {
             + "Member([Marital Status].[S]), "
             + "Union("
             + "Crossjoin("
-            + "Member([Gender].[F]), "
-            + "Member([Time].[1997].[Q1])), "
-            + "Crossjoin(Member([Gender].[M]), "
-            + "Member([Time].[1997].[Q2])))), "
+            + "Member([Customer].[Gender].[F]), "
+            + "Member([Time].[Time].[1997].[Q1])), "
+            + "Crossjoin(Member([Customer].[Gender].[M]), "
+            + "Member([Time].[Time].[1997].[Q2])))), "
             + "Crossjoin("
             + "Member([Marital Status].[S]), "
-            + "Member([Gender].[F]), "
-            + "Member([Time].[1997].[Q1])))",
+            + "Member([Customer].[Gender].[F]), "
+            + "Member([Time].[Time].[1997].[Q1])))",
             region.toString());
 
         final CacheControl.CellRegion normalizedRegion =
@@ -989,9 +991,9 @@ public class CacheControlTest extends FoodMartTestCase {
                 (CacheControlImpl.CellRegionImpl) region);
         assertEquals(
             "Union("
-            + "Crossjoin(Member([Marital Status].[S]), Member([Gender].[F]), Member([Time].[1997].[Q1])), "
-            + "Crossjoin(Member([Marital Status].[S]), Member([Gender].[M]), Member([Time].[1997].[Q2])), "
-            + "Crossjoin(Member([Marital Status].[S]), Member([Gender].[F]), Member([Time].[1997].[Q1])))",
+            + "Crossjoin(Member([Marital Status].[S]), Member([Customer].[Gender].[F]), Member([Time].[Time].[1997].[Q1])), "
+            + "Crossjoin(Member([Marital Status].[S]), Member([Customer].[Gender].[M]), Member([Time].[Time].[1997].[Q2])), "
+            + "Crossjoin(Member([Marital Status].[S]), Member([Customer].[Gender].[F]), Member([Time].[Time].[1997].[Q1])))",
             normalizedRegion.toString());
     }
 

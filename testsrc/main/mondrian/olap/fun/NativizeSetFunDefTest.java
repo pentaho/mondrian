@@ -1281,7 +1281,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1997], [Gender].[F]}\n"
+            + "{[Time].[Time].[1997], [Customer].[Gender].[F]}\n"
             + "Row #0: 131,558\n");
     }
 
@@ -1335,8 +1335,8 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "  NON EMPTY "
             + "  NativizeSet("
             + "    Except("
-            + "      {[Promotion Media].[Promotion Media].Members},\n"
-            + "      {[Promotion Media].[Bulk Mail],[Promotion Media].[All Media].[Daily Paper]}"
+            + "      {[Promotion].[Media Type].Members},\n"
+            + "      {[Promotion].[Media Type].[Bulk Mail],[Promotion].[Media Type].[All Media].[Daily Paper]}"
             + "    )"
             + "  ) ON COLUMNS,"
             + "  NON EMPTY "
@@ -1373,7 +1373,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         checkNative(
             "select non empty NativizeSet("
             + "Crossjoin({[Store Type].[Store Type].members,[Store Type].[all store types]},"
-            + "{ [Promotion Media].[Media Type].members }"
+            + "{ [Promotion].[Media Type].members }"
             + ")) on 0 from sales");
     }
 

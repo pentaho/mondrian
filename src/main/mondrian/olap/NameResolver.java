@@ -80,11 +80,12 @@ public final class NameResolver {
         List<Namespace> namespaces)
     {
         OlapElement element = parent;
+        segmentLoop:
         for (final IdentifierSegment segment : segments) {
             assert element != null;
-            OlapElement child = null;
             for (Namespace namespace : namespaces) {
-                child = namespace.lookupChild(element, segment, matchType);
+                OlapElement child =
+                    namespace.lookupChild(element, segment, matchType);
                 if (child != null) {
                     switch (matchType) {
                     case EXACT:
@@ -101,13 +102,11 @@ public final class NameResolver {
                         }
                         break;
                     }
-                    break;
+                    element = child;
+                    continue segmentLoop;
                 }
             }
-            if (child == null) {
-                return null;
-            }
-            element = child;
+            return null;
         }
         return element;
     }
@@ -120,19 +119,17 @@ public final class NameResolver {
         List<Namespace> namespaces)
     {
         OlapElement element = parent;
+        segmentLoop:
         for (final IdentifierSegment segment : segments) {
             assert element != null;
-            OlapElement child = null;
             for (Namespace namespace : namespaces) {
-                child = namespace.lookupChild(element, segment);
+                OlapElement child = namespace.lookupChild(element, segment);
                 if (child != null) {
-                    break;
+                    element = child;
+                    continue segmentLoop;
                 }
             }
-            if (child == null) {
-                return null;
-            }
-            element = child;
+            return null;
         }
         return element;
     }

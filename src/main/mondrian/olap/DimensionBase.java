@@ -30,7 +30,7 @@ public abstract class DimensionBase
     protected final String uniqueName;
     protected final String description;
     protected final List<Hierarchy> hierarchyList = new ArrayList<Hierarchy>();
-    protected DimensionType dimensionType;
+    protected final DimensionType dimensionType;
 
     /**
      * Creates a DimensionBase.
@@ -51,6 +51,7 @@ public abstract class DimensionBase
         this.uniqueName = Util.makeFqName(name);
         this.description = description;
         this.dimensionType = dimensionType;
+        assert dimensionType != null;
     }
 
     public String getUniqueName() {

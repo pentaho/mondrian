@@ -51,7 +51,8 @@ public abstract class ListPredicate implements StarPredicate {
         hashValue = 0;
         // Ensure that columns are sorted by bit-key, for determinacy.
         final SortedSet<RolapSchema.PhysColumn> columnSet =
-            new TreeSet<RolapSchema.PhysColumn>(RolapSchema.PhysColumn.COMPARATOR);
+            new TreeSet<RolapSchema.PhysColumn>(
+                RolapSchema.PhysColumn.COMPARATOR);
         for (StarPredicate predicate : predicateList) {
             children.add(predicate);
             columnSet.addAll(predicate.getColumnList());

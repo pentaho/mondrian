@@ -99,10 +99,18 @@ public class CompatibilityTest extends FoodMartTestCase {
         checkAxis("[Measures].[Unit Sales]", "[mEaSuReS].[Unit Sales]");
         checkAxis("[Measures].[Unit Sales]", "[measures].[Unit Sales]");
 
-        checkAxis("[Customers].[All Customers]", "[Customers].[All Customers]");
-        checkAxis("[Customers].[All Customers]", "[CUSTOMERS].[All Customers]");
-        checkAxis("[Customers].[All Customers]", "[cUsToMeRs].[All Customers]");
-        checkAxis("[Customers].[All Customers]", "[customers].[All Customers]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
+            "[Customers].[All Customers]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
+            "[CUSTOMERS].[All Customers]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
+            "[cUsToMeRs].[All Customers]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
+            "[customers].[All Customers]");
     }
 
     /**
@@ -133,15 +141,23 @@ public class CompatibilityTest extends FoodMartTestCase {
         checkAxis("[Measures].[Profit]", "[Measures].[PROFIT]");
         checkAxis("[Measures].[Profit]", "[Measures].[profit]");
 
-        checkAxis("[Customers].[All Customers]", "[Customers].[All Customers]");
-        checkAxis("[Customers].[All Customers]", "[Customers].[ALL CUSTOMERS]");
-        checkAxis("[Customers].[All Customers]", "[Customers].[aLl CuStOmErS]");
-        checkAxis("[Customers].[All Customers]", "[Customers].[all customers]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
+            "[Customers].[All Customers]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
+            "[Customers].[ALL CUSTOMERS]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
+            "[Customers].[aLl CuStOmErS]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
+            "[Customers].[all customers]");
 
-        checkAxis("[Customers].[Mexico]", "[Customers].[Mexico]");
-        checkAxis("[Customers].[Mexico]", "[Customers].[MEXICO]");
-        checkAxis("[Customers].[Mexico]", "[Customers].[mExIcO]");
-        checkAxis("[Customers].[Mexico]", "[Customers].[mexico]");
+        checkAxis("[Customer].[Customers].[Mexico]", "[Customers].[Mexico]");
+        checkAxis("[Customer].[Customers].[Mexico]", "[Customers].[MEXICO]");
+        checkAxis("[Customer].[Customers].[Mexico]", "[Customers].[mExIcO]");
+        checkAxis("[Customer].[Customers].[Mexico]", "[Customers].[mexico]");
     }
 
     /**
@@ -187,7 +203,8 @@ public class CompatibilityTest extends FoodMartTestCase {
     private void checkSolveOrder(String keyword) {
         assertQueryReturns(
             "WITH\n"
-            + "   MEMBER [Store].[StoreCalc] as '0', " + keyword + "=0\n"
+            + "   MEMBER [Store].[Stores].[StoreCalc] as '0', "
+            + keyword + "=0\n"
             + "   MEMBER [Product].[ProdCalc] as '1', " + keyword + "=1\n"
             + "SELECT\n"
             + "   { [Product].[ProdCalc] } ON columns,\n"
@@ -213,16 +230,16 @@ public class CompatibilityTest extends FoodMartTestCase {
         checkAxis("[Measures].[Profit]", "[Measures].profit");
 
         checkAxis(
-            "[Customers].[Mexico]",
+            "[Customer].[Customers].[Mexico]",
             "[Customers].Mexico");
         checkAxis(
-            "[Customers].[Mexico]",
+            "[Customer].[Customers].[Mexico]",
             "[Customers].MEXICO");
         checkAxis(
-            "[Customers].[Mexico]",
+            "[Customer].[Customers].[Mexico]",
             "[Customers].mExIcO");
         checkAxis(
-            "[Customers].[Mexico]",
+            "[Customer].[Customers].[Mexico]",
             "[Customers].mexico");
     }
 
@@ -231,20 +248,22 @@ public class CompatibilityTest extends FoodMartTestCase {
      * Dim.Hier are accepted.
      */
     public void testHierarchyNames() {
-        checkAxis("[Customers].[All Customers]", "[Customers].[All Customers]");
         checkAxis(
-            "[Customers].[All Customers]",
+            "[Customer].[Customers].[All Customers]",
+            "[Customers].[All Customers]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
             "[Customers].[Customers].[All Customers]");
         checkAxis(
-            "[Customers].[All Customers]",
+            "[Customer].[Customers].[All Customers]",
             "Customers.[Customers].[All Customers]");
         checkAxis(
-            "[Customers].[All Customers]",
+            "[Customer].[Customers].[All Customers]",
             "[Customers].Customers.[All Customers]");
         if (false) {
             // don't know if this makes sense
             checkAxis(
-                "[Customers].[All Customers]",
+                "[Customer].[Customers].[All Customers]",
                 "[Customers.Customers].[All Customers]");
         }
     }

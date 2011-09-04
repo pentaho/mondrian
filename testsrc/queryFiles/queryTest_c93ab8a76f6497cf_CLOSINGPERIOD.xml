@@ -13,9 +13,9 @@
             <tuples>
                 <tuple>
                     <member>[Measures].[Store Invoice]</member>
-                    <member>[Store].[All Stores]</member>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
-                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Store].[Stores].[All Stores]</member>
+                    <member>[Store].[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store].[Store Type].[All Store Types]</member>
                     <member>[Warehouse].[All Warehouses]</member>
                 </tuple>
             </tuples>

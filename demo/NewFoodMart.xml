@@ -1,5 +1,5 @@
 <?xml version='1.0'?>
-<Schema name='NewFoodMart'>
+<Schema name='FoodMart'>
     <!--
     == $Id$
     == This software is subject to the terms of the Eclipse Public License v1.0
@@ -13,6 +13,26 @@
 
     <PhysicalSchema>
         <Table name='salary'/>
+        <Table name='department'>
+            <Key>
+                <Column name='department_id'/>
+            </Key>
+        </Table>
+        <Table name='employee'>
+            <Key>
+                <Column name='employee_id'/>
+            </Key>
+        </Table>
+        <Table name='position'>
+            <Key>
+                <Column name='position_id'/>
+            </Key>
+        </Table>
+        <Link source='position' target='employee'>
+            <ForeignKey>
+                <Column name='position_id'/>
+            </ForeignKey>
+        </Link>
         <Table name='promotion'>
             <Key>
                 <Column name='promotion_id'/>
@@ -23,6 +43,11 @@
                 <Column name='store_id'/>
             </Key>
         </Table>
+        <Link source='store' target='employee'>
+            <ForeignKey>
+                <Column name='store_id'/>
+            </ForeignKey>
+        </Link>
         <Table name='product'>
             <Key>
                 <Column name='product_id'/>
@@ -48,7 +73,7 @@
                 <Column name='customer_id'/>
             </Key>
             <ColumnDefs>
-                <CalculatedColumnDef name='full_name'>
+                <CalculatedColumnDef name='full_name' type='String'>
                     <ExpressionView>
                         <SQL dialect='oracle'>
                             <Column name='fname'/>  || ' ' || <Column name='lname'/>
@@ -115,10 +140,21 @@
                 <Column name='warehouse_id'/>
             </Key>
         </Table>
+
+        <!-- Dummy table for Scenario hanger dimension. -->
+        <InlineTable alias='foo'>
+          <ColumnDefs>
+            <ColumnDef name='bar' type='Numeric'/>
+          </ColumnDefs>
+          <Key>
+              <Column name='bar'/>
+          </Key>
+          <Rows/>
+        </InlineTable>
     </PhysicalSchema>
 
     <Dimensions>
-        <Dimension name='Stores' table='store' key='Store Id'>
+        <Dimension name='Store' table='store' key='Store Id'>
             <Attributes>
                 <Attribute name='Store Country'>
                     <Key>
@@ -150,7 +186,7 @@
             </Attributes>
 
             <Hierarchies>
-                <Hierarchy name='Store'>
+                <Hierarchy name='Stores' allMemberName='All Stores'>
                     <Level attribute='Store Country'/>
                     <Level attribute='Store State'/>
                     <Level attribute='Store City'/>
@@ -161,6 +197,9 @@
                 </Hierarchy>
                 <Hierarchy name='Store Size in SQFT'>
                     <Level attribute='Store Sqft'/>
+                </Hierarchy>
+                <Hierarchy name='Store Type'>
+                    <Level attribute='Store Type'/>
                 </Hierarchy>
             </Hierarchies>
         </Dimension>
@@ -197,9 +236,7 @@
                 </Attribute>
                 <Attribute name='Day' levelType='TimeDays'>
                     <Key>
-                        <Column name='the_year'/>
-                        <Column name='month_of_year'/>
-                        <Column name='day_of_month'/>
+                        <Column name='time_id'/>
                     </Key>
                     <Name>
                         <Column name='day_of_month'/>
@@ -219,14 +256,15 @@
             </Attributes>
 
             <Hierarchies>
-                <Hierarchy name='Time'>
+                <Hierarchy name='Time' hasAll='false'>
                     <Level attribute='Year'/>
                     <Level attribute='Quarter'/>
                     <Level attribute='Month'/>
                 </Hierarchy>
-                <Hierarchy name='Weekly'>
+                <Hierarchy name='Weekly' hasAll='true'>
                     <Level attribute='Year'/>
                     <Level attribute='Week'/>
+                    <Level attribute='Day'/>
                 </Hierarchy>
             </Hierarchies>
         </Dimension>
@@ -273,7 +311,7 @@
                         <Column name='brand_name'/>
                     </Key>
                     <Name>
-                        <Column table='product_class' name='product_subcategory'/>
+                        <Column name='brand_name'/>
                     </Name>
                 </Attribute>
                 <Attribute name='Product Name' table='product' keyColumn='product_name'/>
@@ -281,7 +319,7 @@
             </Attributes>
 
             <Hierarchies>
-                <Hierarchy name='Product'>
+                <Hierarchy name='Products' allMemberName='All Products'>
                     <Level attribute='Product Family'/>
                     <Level attribute='Product Department'/>
                     <Level attribute='Product Category'/>
@@ -310,7 +348,7 @@
             </Attributes>
 
             <Hierarchies>
-                <Hierarchy name='Warehouse'>
+                <Hierarchy name='Warehouses' allMemberName='All Warehouses'>
                     <Level attribute='Country'/>
                     <Level attribute='State Province'/>
                     <Level attribute='City'/>
@@ -323,35 +361,7 @@
     <Cube name='Sales' defaultMeasure='Unit Sales'>
         <Dimensions>
 
-            <!-- The following dimensions are for compatibility with old
-                 FoodMart. Will put them in a new schema at some point. -->
-            <Dimension name='Gender' table='customer' key='Name'>
-                <Attributes>
-                    <Attribute name='Gender' keyColumn='gender'/>
-                    <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name'/>
-                </Attributes>
-
-                <Hierarchies>
-                    <Hierarchy name='Gender' allMemberName='All Gender'>
-                        <Level attribute='Gender'/>
-                    </Hierarchy>
-                </Hierarchies>
-            </Dimension>
-
-            <Dimension name='Promotion Media' table='promotion' key='Promotion Id'>
-                <Attributes>
-                    <Attribute name='Promotion Id' keyColumn='promotion_id'/>
-                    <Attribute name='Media Type' keyColumn='media_type'/>
-                </Attributes>
-
-                <Hierarchies>
-                    <Hierarchy name='Promotion Media' allMemberName='All Media'>
-                    <Level attribute='Media Type'/>
-                    </Hierarchy>
-                </Hierarchies>
-            </Dimension>
-
-            <!-- End compatibility. -->
+            <Dimension source="Store"/>
 
             <Dimension name='Promotion' table='promotion' key='Promotion Id'>
                 <Attributes>
@@ -363,7 +373,7 @@
                     <Hierarchy name='Media Type' allMemberName='All Media'>
                         <Level attribute='Media Type'/>
                     </Hierarchy>
-                    <Hierarchy name='Promotions'>
+                    <Hierarchy name='Promotions' allMemberName='All Promotions'>
                         <Level attribute='Promotion Name'/>
                     </Hierarchy>
                 </Hierarchies>
@@ -399,7 +409,7 @@
                     <Hierarchy name='Education Level'>
                         <Level attribute='Education' name='Education Level'/>
                     </Hierarchy>
-                    <Hierarchy name='Gender'>
+                    <Hierarchy name='Gender' allMemberName='All Gender'>
                         <Level attribute='Gender'/>
                     </Hierarchy>
                     <Hierarchy name='Marital Status' allMemberName='All Marital Status'>
@@ -411,7 +421,132 @@
                 </Hierarchies>
             </Dimension>
 
-            <Dimension source="Stores"/>
+            <Dimension source="Time"/>
+            <Dimension source="Product"/>
+        </Dimensions>
+
+        <MeasureGroups>
+            <MeasureGroup name='Sales' table='sales_fact_1997'>
+                <Measures>
+                    <Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard'/>
+                    <Measure name='Store Cost' column='store_cost' aggregator='sum' formatString='#,###.00'/>
+                    <Measure name='Store Sales' column='store_sales' aggregator='sum' formatString='#,###.00'/>
+                    <Measure name='Sales Count' column='product_id' aggregator='count' formatString='#,###'/>
+                    <Measure name='Customer Count' column='customer_id' aggregator='distinct-count' formatString='#,###'/>
+                    <Measure name='Promotion Sales' column='promotion_sales' aggregator='sum' formatString='#,###.00' datatype='Numeric'/>
+                </Measures>
+                <Aggregates>
+                    <AggExclude name='agg_c_special_sales_fact_1997' />
+                    <AggExclude name='agg_lc_100_sales_fact_1997' />
+                    <AggExclude name='agg_lc_10_sales_fact_1997' />
+                    <AggExclude name='agg_pc_10_sales_fact_1997' />
+                    <AggName name='agg_c_special_sales_fact_1997'>
+                        <AggFactCount column='FACT_COUNT'/>
+                        <AggIgnoreColumn column='foo'/>
+                        <AggIgnoreColumn column='bar'/>
+                        <AggForeignKey factColumn='product_id' aggColumn='PRODUCT_ID' />
+                        <AggForeignKey factColumn='customer_id' aggColumn='CUSTOMER_ID' />
+                        <AggForeignKey factColumn='promotion_id' aggColumn='PROMOTION_ID' />
+                        <AggForeignKey factColumn='store_id' aggColumn='STORE_ID' />
+                        <AggMeasure name='[Measures].[Unit Sales]' column='UNIT_SALES_SUM' />
+                        <AggMeasure name='[Measures].[Store Cost]' column='STORE_COST_SUM' />
+                        <AggMeasure name='[Measures].[Store Sales]' column='STORE_SALES_SUM' />
+                        <AggLevel name='[Time].[Year]' column='TIME_YEAR' />
+                        <AggLevel name='[Time].[Quarter]' column='TIME_QUARTER' />
+                        <AggLevel name='[Time].[Month]' column='TIME_MONTH' />
+                    </AggName>
+                </Aggregates>
+                <DimensionLinks>
+                    <RegularDimensionLink dimension='Store' foreignKeyColumn='store_id'/>
+                    <RegularDimensionLink dimension='Time' foreignKeyColumn='time_id'/>
+                    <RegularDimensionLink dimension='Product' foreignKeyColumn='product_id'/>
+                    <RegularDimensionLink dimension='Promotion' foreignKeyColumn='promotion_id'/>
+                    <RegularDimensionLink dimension='Customer' foreignKeyColumn='customer_id'/>
+                </DimensionLinks>
+            </MeasureGroup>
+        </MeasureGroups>
+
+        <CalculatedMembers>
+            <CalculatedMember name='Profit' dimension='Measures'>
+            <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>
+                <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'/>
+            </CalculatedMember>
+            <CalculatedMember name='Profit Growth' dimension='Measures'
+                    formula='([Measures].[Profit] - [Measures].[Profit last Period]) / [Measures].[Profit last Period]'
+                    visible='true' caption='Gewinn-Wachstum'>
+                <CalculatedMemberProperty name='FORMAT_STRING' value='0.0%'/>
+            </CalculatedMember>
+            <CalculatedMember name='Profit last Period' dimension='Measures'
+                    formula='COALESCEEMPTY((Measures.[Profit], [Time].[Time].PREVMEMBER),    Measures.[Profit])'
+                    visible='false'>
+                <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'/>
+            </CalculatedMember>
+        </CalculatedMembers>
+    </Cube>
+
+    <Cube name='Warehouse and Sales' defaultMeasure='Unit Sales'>
+        <Dimensions>
+
+            <Dimension source="Store"/>
+
+            <Dimension name='Promotion' table='promotion' key='Promotion Id'>
+                <Attributes>
+                    <Attribute name='Promotion Id' keyColumn='promotion_id'/>
+                    <Attribute name='Media Type' keyColumn='media_type'/>
+                    <Attribute name='Promotion Name' keyColumn='promotion_name'/>
+                </Attributes>
+                <Hierarchies>
+                    <Hierarchy name='Media Type' allMemberName='All Media'>
+                        <Level attribute='Media Type'/>
+                    </Hierarchy>
+                    <Hierarchy name='Promotions' allMemberName='All Promotions'>
+                        <Level attribute='Promotion Name'/>
+                    </Hierarchy>
+                </Hierarchies>
+            </Dimension>
+
+            <Dimension name='Customer' table='customer' key='Name'>
+                <Attributes>
+                    <Attribute name='Country' keyColumn='country'/>
+                    <Attribute name='State Province' keyColumn='state_province'/>
+                    <Attribute name='City'>
+                        <Key>
+                            <Column name='state_province'/>
+                            <Column name='city'/>
+                        </Key>
+                        <Name>
+                            <Column name='city'/>
+                        </Name>
+                    </Attribute>
+                    <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name'/>
+                    <Attribute name='Gender' keyColumn='gender'/>
+                    <Attribute name='Marital Status' keyColumn='marital_status'/>
+                    <Attribute name='Education' keyColumn='education'/>
+                    <Attribute name='Yearly Income' keyColumn='yearly_income'/>
+                </Attributes>
+
+                <Hierarchies>
+                    <Hierarchy name='Customers' allMemberName='All Customers'>
+                        <Level attribute='Country'/>
+                        <Level attribute='State Province'/>
+                        <Level attribute='City'/>
+                        <Level attribute='Name'/>
+                    </Hierarchy>
+                    <Hierarchy name='Education Level'>
+                        <Level attribute='Education' name='Education Level'/>
+                    </Hierarchy>
+                    <Hierarchy name='Gender' allMemberName='All Gender'>
+                        <Level attribute='Gender'/>
+                    </Hierarchy>
+                    <Hierarchy name='Marital Status' allMemberName='All Marital Status'>
+                        <Level attribute='Marital Status'/>
+                    </Hierarchy>
+                    <Hierarchy name='Yearly Income'>
+                        <Level attribute='Yearly Income'/>
+                    </Hierarchy>
+                </Hierarchies>
+            </Dimension>
+
             <Dimension source="Time"/>
             <Dimension source="Product"/>
             <Dimension source="Warehouse"/>
@@ -449,13 +584,11 @@
                     </AggName>
                 </Aggregates>
                 <DimensionLinks>
-                    <RegularDimensionLink dimension='Stores' foreignKeyColumn='store_id'/>
+                    <RegularDimensionLink dimension='Store' foreignKeyColumn='store_id'/>
                     <RegularDimensionLink dimension='Time' foreignKeyColumn='time_id'/>
                     <RegularDimensionLink dimension='Product' foreignKeyColumn='product_id'/>
                     <RegularDimensionLink dimension='Promotion' foreignKeyColumn='promotion_id'/>
-                    <RegularDimensionLink dimension='Promotion Media' foreignKeyColumn='promotion_id'/>
                     <RegularDimensionLink dimension='Customer' foreignKeyColumn='customer_id'/>
-                    <RegularDimensionLink dimension='Gender' foreignKeyColumn='customer_id'/>
                 </DimensionLinks>
             </MeasureGroup>
 
@@ -470,7 +603,7 @@
                     <Measure name='Warehouse Profit' column='warehouse_profit' aggregator='sum' datatype='Numeric'/>
                 </Measures>
                 <DimensionLinks>
-                    <RegularDimensionLink dimension='Stores' foreignKeyColumn='store_id'/>
+                    <RegularDimensionLink dimension='Store' foreignKeyColumn='store_id'/>
                     <RegularDimensionLink dimension='Time' foreignKeyColumn='time_id'/>
                     <RegularDimensionLink dimension='Product' foreignKeyColumn='product_id'/>
                     <RegularDimensionLink dimension='Warehouse' foreignKeyColumn=''>
@@ -491,7 +624,6 @@
                     formula='COALESCEEMPTY((Measures.[Profit], [Time].[Time].PREVMEMBER),    Measures.[Profit])'
                     visible='false'>
                 <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'/>
-                <CalculatedMemberProperty name='MEMBER_ORDINAL' value='18'/>
             </CalculatedMember>
             <CalculatedMember name='Profit Growth' dimension='Measures'
                     formula='([Measures].[Profit] - [Measures].[Profit last Period]) / [Measures].[Profit last Period]'
@@ -516,16 +648,16 @@
         </NamedSets>
     </Cube>
 
-    <Cube name='HR' enabled='false'>
+    <Cube name='HR'>
         <Dimensions>
-            <Dimension name='Employee'>
+            <Dimension name='Employee' key='Employee Id'>
                 <Attributes>
                     <Attribute name='Employee Id' table='employee' keyColumn='employee_id' nameColumn='full_name' parent='Manager Id'/>
                     <Attribute name='Manager Id' table='employee' keyColumn='supervisor_id' nullValue='0'>
                         <Closure table='employee_closure' parentColumn='supervisor_id' childColumn='employee_id'/>
                     </Attribute>
                     <Attribute name='Store Id' table='employee' keyColumn='store_id'/>
-                    <Attribute name='Store Type' table='employee' keyColumn='store_type'/>
+                    <Attribute name='Store Type' table='store' keyColumn='store_type'/>
                     <Attribute name='Pay Type' table='position' keyColumn='pay_type'/>
                     <Attribute name='Management Role' table='position' keyColumn='management_role'/>
                     <Attribute name='Position Title' table='position'>
@@ -546,19 +678,22 @@
                     <Attribute name='Education Level' table='employee' keyColumn='education_level'/>
                 </Attributes>
                 <Hierarchies>
-                    <Hierarchy name='Employees'>
-                        <Level attribute='Employee'/>
+                    <Hierarchy name='Employees' allMemberName='All Employees'>
+                        <Level attribute='Employee Id'/>
                     </Hierarchy>
-                    <Hierarchy name='Position'>
+                    <Hierarchy name='Position' allMemberName='All Position'>
                         <Level attribute='Management Role'/>
                         <Level attribute='Position Title'/>
                     </Hierarchy>
                     <Hierarchy name='Store Type'>
                         <Level attribute='Store Type'/>
                     </Hierarchy>
+                    <Hierarchy name='Pay Type'>
+                        <Level attribute='Pay Type'/>
+                    </Hierarchy>
                 </Hierarchies>
             </Dimension>
-            <Dimension name='Department' key='Department Description'>
+            <Dimension name='Department' table='department' key='Department Description'>
                 <Attributes>
                     <Attribute name='Department Description' keyColumn='department_id'/>
                 </Attributes>
@@ -568,17 +703,15 @@
                     </Hierarchy>
                 </Hierarchies>
             </Dimension>
+            <Dimension source='Time'/>
+            <Dimension source='Store'/>
         </Dimensions>
 
         <MeasureGroups>
             <MeasureGroup name='HR' table='salary'>
                 <Measures>
                     <Measure name='Org Salary' column='salary_paid' aggregator='sum'
-                             formatString='Currency'>
-                        <Arguments>
-                            <Column name='salary_paid'/>
-                        </Arguments>
-                    </Measure>
+                             formatString='Currency'/>
                     <Measure name='Count' column='employee_id' aggregator='count'
                              formatString='#,#'/>
                     <Measure name='Number of Employees' column='employee_id'
@@ -588,7 +721,7 @@
                     <RegularDimensionLink dimension='Time' foreignKeyColumn='pay_date' attribute='date'/>
                     <RegularDimensionLink dimension='Department' foreignKeyColumn='department_id'/>
                     <RegularDimensionLink dimension='Employee' foreignKeyColumn='employee_id'/>
-                    <ReferenceDimensionLink dimension='Stores' viaDimension='Employee' viaAttribute='Store Id'/>
+                    <ReferenceDimensionLink dimension='Store' viaDimension='Employee' viaAttribute='Store Id'/>
                 </DimensionLinks>
             </MeasureGroup>
         </MeasureGroups>
@@ -608,7 +741,7 @@
 
     <Cube name='Warehouse' defaultMeasure='Unit Sales'>
         <Dimensions>
-            <Dimension source="Stores"/>
+            <Dimension source="Store"/>
             <Dimension source="Time"/>
             <Dimension source="Product"/>
             <Dimension source="Warehouse"/>
@@ -626,7 +759,7 @@
                     <Measure name='Warehouse Profit' column='warehouse_profit' aggregator='sum' datatype='Numeric'/>
                 </Measures>
                 <DimensionLinks>
-                    <RegularDimensionLink dimension='Stores' foreignKeyColumn='store_id'/>
+                    <RegularDimensionLink dimension='Store' foreignKeyColumn='store_id'/>
                     <RegularDimensionLink dimension='Time' foreignKeyColumn='time_id'/>
                     <RegularDimensionLink dimension='Product' foreignKeyColumn='product_id'/>
                     <RegularDimensionLink dimension='Warehouse' foreignKeyColumn=''>
@@ -639,29 +772,44 @@
         </MeasureGroups>
     </Cube>
 
-    <Roles>
-        <Role name='California manager'>
-            <SchemaGrant access='none'>
-                <CubeGrant cube='Sales' access='all'>
-                    <HierarchyGrant hierarchy='[Store]' access='custom'
-                                    topLevel='[Store].[Store Country]'>
-                        <MemberGrant member='[Store].[USA].[CA]' access='all'/>
-                        <MemberGrant member='[Store].[USA].[CA].[Los Angeles]' access='none'/>
-                    </HierarchyGrant>
-                    <HierarchyGrant hierarchy='[Customers]' access='custom'
-                                    topLevel='[Customers].[State Province]' bottomLevel='[Customers].[City]'>
-                        <MemberGrant member='[Customers].[USA].[CA]' access='all'/>
-                        <MemberGrant member='[Customers].[USA].[CA].[Los Angeles]' access='none'/>
-                    </HierarchyGrant>
-                    <HierarchyGrant hierarchy='[Gender]' access='none'/>
-                </CubeGrant>
-            </SchemaGrant>
-        </Role>
-        <Role name='No HR Cube'>
-            <SchemaGrant access='all'>
-                <CubeGrant cube='HR' access='none'/>
-            </SchemaGrant>
-        </Role>
-    </Roles>
+    <!--<Cube name='HR'>-->
+        <!--<Dimensions>-->
+            <!--<Dimension source='Time'/>-->
+        <!--</Dimensions>-->
+        <!--<MeasureGroups>-->
+            <!--<MeasureGroup name='HR' table='salary'>-->
+                <!--<Measures>-->
+                    <!--<Measure name='Org Salary' aggregator='sum' column='salary_paid'/>-->
+                <!--</Measures>-->
+                <!--<DimensionLinks>-->
+                    <!--<RegularDimensionLink dimension='Time' foreignKeyColumn='pay_date' attribute='Date'/>-->
+                <!--</DimensionLinks>-->
+            <!--</MeasureGroup>-->
+        <!--</MeasureGroups>-->
+    <!--</Cube>-->
+
+    <Role name='California manager'>
+        <SchemaGrant access='none'>
+            <CubeGrant cube='Sales' access='all'>
+                <HierarchyGrant hierarchy='[Stores]' access='custom'
+                                topLevel='[Stores].[Store Country]'>
+                    <MemberGrant member='[Stores].[USA].[CA]' access='all'/>
+                    <MemberGrant member='[Stores].[USA].[CA].[Los Angeles]' access='none'/>
+                </HierarchyGrant>
+                <HierarchyGrant hierarchy='[Customers]' access='custom'
+                                topLevel='[Customers].[State Province]' bottomLevel='[Customers].[City]'>
+                    <MemberGrant member='[Customers].[USA].[CA]' access='all'/>
+                    <MemberGrant member='[Customers].[USA].[CA].[Los Angeles]' access='none'/>
+                </HierarchyGrant>
+                <HierarchyGrant hierarchy='[Gender]' access='none'/>
+            </CubeGrant>
+        </SchemaGrant>
+    </Role>
+
+    <Role name='No HR Cube'>
+        <SchemaGrant access='all'>
+            <CubeGrant cube='HR' access='none'/>
+        </SchemaGrant>
+    </Role>
 
 </Schema>

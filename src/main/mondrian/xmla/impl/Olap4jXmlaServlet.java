@@ -13,6 +13,7 @@ import mondrian.olap.Util;
 import mondrian.util.Bug;
 import mondrian.xmla.XmlaHandler;
 
+import mondrian.xmla.XmlaRequest;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.DelegatingConnection;
 import org.apache.log4j.Logger;
@@ -324,6 +325,18 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
         public Map<String, Object> getPreConfiguredDiscoverDatasourcesResponse()
         {
             return discoverDatasourcesResponse;
+        }
+
+        public XmlaHandler.Request startRequest(
+            XmlaRequest request,
+            OlapConnection connection)
+        {
+            // This XMLA server implementation does not track requests.
+            return null;
+        }
+
+        public void endRequest(XmlaHandler.Request request) {
+            // This XMLA server implementation does not track requests.
         }
     }
 

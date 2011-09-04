@@ -12,7 +12,7 @@ With
   Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store],[*BASE_MEMBERS_Time])'
   Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*FORMATTED_MEASURE_1],[Measures].[*FORMATTED_MEASURE_2],[Measures].[*FORMATTED_MEASURE_3],[Measures].[*FORMATTED_MEASURE_4]}'
   Set [*BASE_MEMBERS_Store] as '{[Store].[USA].[CA]}'
-  Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})'
+  Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].[Stores].CurrentMember})'
   Set [*BASE_MEMBERS_Time] as '[Time].[Year].Members'
   Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
   Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
@@ -22,7 +22,7 @@ With
   Member [Measures].[*FORMATTED_MEASURE_4] as '[Measures].[Sales Count]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 
 Select
   [*BASE_MEMBERS_Measures] on columns,
-  Non Empty Generate([*NATIVE_CJ_SET], {([Store].CurrentMember,[Time].[Time].CurrentMember)}) on rows 
+  Non Empty Generate([*NATIVE_CJ_SET], {([Store].[Stores].CurrentMember,[Time].[Time].CurrentMember)}) on rows 
 From [Sales]
 ]]>
         </Resource>
@@ -100,9 +100,9 @@ Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 {[Measures].[*FORMATTED_MEASURE_1]}
 Axis #2:
-{[Product].[Drink], [Time].[1997]}
-{[Product].[Food], [Time].[1997]}
-{[Product].[Non-Consumable], [Time].[1997]}
+{[Product].[Products].[Drink], [Time].[1997]}
+{[Product].[Products].[Food], [Time].[1997]}
+{[Product].[Products].[Non-Consumable], [Time].[1997]}
 Row #0: 48,836
 Row #0: 24,597
 Row #1: 409,036

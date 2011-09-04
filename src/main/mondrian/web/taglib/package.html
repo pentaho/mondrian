@@ -30,10 +30,10 @@ Provides a tag library for embedding MDX queries in JSP pages.
 select
   {[Measures].[Unit Sales], [Measures].[Store Cost]} on columns,
   CrossJoin(
-    { [Promotion Media].[All Promotion Media].[Radio],
-      [Promotion Media].[All Promotion Media].[TV],
-      [Promotion Media].[All Promotion Media].[Sunday Paper],
-      [Promotion Media].[All Promotion Media].[Street Handout] },
+    { [Promotion].[Media Type].[All Promotion Media].[Radio],
+      [Promotion].[Media Type].[All Promotion Media].[TV],
+      [Promotion].[Media Type].[All Promotion Media].[Sunday Paper],
+      [Promotion].[Media Type].[All Promotion Media].[Street Handout] },
     [Product].[All Products].[Drink].children) on rows
 from Sales
 where ([Time].[1997])

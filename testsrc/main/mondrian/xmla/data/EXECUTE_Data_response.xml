@@ -87,15 +87,15 @@
                 <HierarchyInfo
                     name=Promotion Media>
                     <UName
-                        name=[Promotion Media].[MEMBER_UNIQUE_NAME]>
+                        name=[Promotion].[Media Type].[MEMBER_UNIQUE_NAME]>
                     <Caption
-                        name=[Promotion Media].[MEMBER_CAPTION]>
+                        name=[Promotion].[Media Type].[MEMBER_CAPTION]>
                     <LName
-                        name=[Promotion Media].[LEVEL_UNIQUE_NAME]>
+                        name=[Promotion].[Media Type].[LEVEL_UNIQUE_NAME]>
                     <LNum
-                        name=[Promotion Media].[LEVEL_NUMBER]>
+                        name=[Promotion].[Media Type].[LEVEL_NUMBER]>
                     <DisplayInfo
-                        name=[Promotion Media].[DISPLAY_INFO]>
+                        name=[Promotion].[Media Type].[DISPLAY_INFO]>
                 </HierarchyInfo>
                 <HierarchyInfo
                     name=Promotions>
@@ -1770,9 +1770,9 @@
                     </Member>
                     <Member
                         Hierarchy=Promotion Media>
-                        <UName>[Promotion Media].[All Media]</UName>
+                        <UName>[Promotion].[Media Type].[All Media]</UName>
                         <Caption>All Media</Caption>
-                        <LName>[Promotion Media].[(All)]</LName>
+                        <LName>[Promotion].[Media Type].[(All)]</LName>
                         <LNum>0</LNum>
                         <DisplayInfo>14</DisplayInfo>
                     </Member>

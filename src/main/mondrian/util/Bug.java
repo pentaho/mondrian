@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -231,6 +231,17 @@ public class Bug {
      */
     public static final boolean BugPartiallyQualifiedCalcMemberFixed =
         Util.deprecated(false, false);
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-960">MONDRIAN-960,
+     * "Ability to define non-measure calculated members in a cube under a
+     * specifc parent"</a> is fixed. The bug also gives problems resolving a
+     * measure, whose fq name is [Measures].[Measures].[Unit Sales], using the
+     * name [Measures].[Unit Sales].
+     */
+    public static final boolean BugMondrian960Fixed =
+        Util.deprecated(true, false);
 
     /**
      * Returns whether to avoid a test because the memory monitor may cause it

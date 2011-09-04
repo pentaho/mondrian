@@ -111,7 +111,7 @@ public class RolapCubeTest extends FoodMartTestCase {
             "[Measures].[Profit]",
             "[Measures].[Profit last Period]",
             "[Measures].[Profit Growth]",
-            "[Product].[~Missing]"
+            "[Product].[Products].[~Missing]"
         };
 
         TestContext testContext =
@@ -140,7 +140,7 @@ public class RolapCubeTest extends FoodMartTestCase {
         testGetCalculatedMembersReturnsOnlyAccessibleMembersForHierarchy()
     {
         String[] expectedCalculatedMembersFromProduct = {
-            "[Product].[~Missing]"
+            "[Product].[Products].[~Missing]"
         };
         TestContext testContext =
             createTestContextWithAdditionalMembersAndARole();
@@ -180,7 +180,7 @@ public class RolapCubeTest extends FoodMartTestCase {
 
     public void testGetCalculatedMembersReturnsOnlyAccessibleMembersForLevel() {
         String[] expectedCalculatedMembersFromProduct = new String[]{
-            "[Product].[~Missing]"
+            "[Product].[Products].[~Missing]"
         };
 
         TestContext testContext =

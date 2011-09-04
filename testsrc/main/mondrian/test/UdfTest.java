@@ -107,7 +107,7 @@ public class UdfTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Store Sqft]}\n"
             + "Axis #2:\n"
-            + "{[Store Type].[All Store Types]}\n"
+            + "{[Store].[Store Type].[All Store Types]}\n"
             + "Row #0: 571,596\n");
     }
 
@@ -123,12 +123,12 @@ public class UdfTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Sqft Plus One]}\n"
             + "Axis #2:\n"
-            + "{[Store Type].[Deluxe Supermarket]}\n"
-            + "{[Store Type].[Gourmet Supermarket]}\n"
-            + "{[Store Type].[HeadQuarters]}\n"
-            + "{[Store Type].[Mid-Size Grocery]}\n"
-            + "{[Store Type].[Small Grocery]}\n"
-            + "{[Store Type].[Supermarket]}\n"
+            + "{[Store].[Store Type].[Deluxe Supermarket]}\n"
+            + "{[Store].[Store Type].[Gourmet Supermarket]}\n"
+            + "{[Store].[Store Type].[HeadQuarters]}\n"
+            + "{[Store].[Store Type].[Mid-Size Grocery]}\n"
+            + "{[Store].[Store Type].[Small Grocery]}\n"
+            + "{[Store].[Store Type].[Supermarket]}\n"
             + "Row #0: 146,046\n"
             + "Row #1: 47,448\n"
             + "Row #2: \n"
@@ -153,31 +153,31 @@ public class UdfTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Last Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1997], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n"
-            + "{[Time].[1997], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n"
-            + "{[Time].[1997], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n"
-            + "{[Time].[1997], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n"
-            + "{[Time].[1997], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n"
-            + "{[Time].[1997].[Q1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n"
-            + "{[Time].[1997].[Q1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n"
-            + "{[Time].[1997].[Q1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n"
-            + "{[Time].[1997].[Q1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n"
-            + "{[Time].[1997].[Q1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n"
-            + "{[Time].[1997].[Q1].[1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n"
-            + "{[Time].[1997].[Q1].[1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n"
-            + "{[Time].[1997].[Q1].[1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n"
-            + "{[Time].[1997].[Q1].[1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n"
-            + "{[Time].[1997].[Q1].[1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n"
-            + "{[Time].[1997].[Q1].[2], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n"
-            + "{[Time].[1997].[Q1].[2], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n"
-            + "{[Time].[1997].[Q1].[2], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n"
-            + "{[Time].[1997].[Q1].[2], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n"
-            + "{[Time].[1997].[Q1].[2], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n"
-            + "{[Time].[1997].[Q1].[3], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n"
-            + "{[Time].[1997].[Q1].[3], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n"
-            + "{[Time].[1997].[Q1].[3], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n"
-            + "{[Time].[1997].[Q1].[3], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n"
-            + "{[Time].[1997].[Q1].[3], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n"
+            + "{[Time].[Time].[1997], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n"
+            + "{[Time].[Time].[1997], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n"
+            + "{[Time].[Time].[1997], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n"
+            + "{[Time].[Time].[1997], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n"
+            + "{[Time].[Time].[1997], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n"
+            + "{[Time].[Time].[1997].[Q1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n"
+            + "{[Time].[Time].[1997].[Q1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n"
+            + "{[Time].[Time].[1997].[Q1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n"
+            + "{[Time].[Time].[1997].[Q1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n"
+            + "{[Time].[Time].[1997].[Q1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n"
+            + "{[Time].[Time].[1997].[Q1].[1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n"
+            + "{[Time].[Time].[1997].[Q1].[1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n"
+            + "{[Time].[Time].[1997].[Q1].[1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n"
+            + "{[Time].[Time].[1997].[Q1].[1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n"
+            + "{[Time].[Time].[1997].[Q1].[1], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n"
+            + "{[Time].[Time].[1997].[Q1].[2], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n"
+            + "{[Time].[Time].[1997].[Q1].[2], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n"
+            + "{[Time].[Time].[1997].[Q1].[2], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n"
+            + "{[Time].[Time].[1997].[Q1].[2], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n"
+            + "{[Time].[Time].[1997].[Q1].[2], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n"
+            + "{[Time].[Time].[1997].[Q1].[3], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n"
+            + "{[Time].[Time].[1997].[Q1].[3], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl]}\n"
+            + "{[Time].[Time].[1997].[Q1].[3], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n"
+            + "{[Time].[Time].[1997].[Q1].[3], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n"
+            + "{[Time].[Time].[1997].[Q1].[3], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n"
             + "Row #0: 2\n"
             + "Row #1: 7\n"
             + "Row #2: 6\n"
@@ -226,7 +226,7 @@ public class UdfTest extends FoodMartTestCase {
             + "from [Sales]\n"
             + "where [Time].[Time].LastSibling",
             "Axis #0:\n"
-            + "{[Time].[1998]}\n"
+            + "{[Time].[Time].[1998]}\n"
             + "Axis #1:\n"
             + "Axis #2:\n");
     }
@@ -271,12 +271,12 @@ public class UdfTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[InverseNormal]}\n"
             + "Axis #2:\n"
-            + "{[Store Type].[Deluxe Supermarket]}\n"
-            + "{[Store Type].[Gourmet Supermarket]}\n"
-            + "{[Store Type].[HeadQuarters]}\n"
-            + "{[Store Type].[Mid-Size Grocery]}\n"
-            + "{[Store Type].[Small Grocery]}\n"
-            + "{[Store Type].[Supermarket]}\n"
+            + "{[Store].[Store Type].[Deluxe Supermarket]}\n"
+            + "{[Store].[Store Type].[Gourmet Supermarket]}\n"
+            + "{[Store].[Store Type].[HeadQuarters]}\n"
+            + "{[Store].[Store Type].[Mid-Size Grocery]}\n"
+            + "{[Store].[Store Type].[Small Grocery]}\n"
+            + "{[Store].[Store Type].[Supermarket]}\n"
             + "Row #0: 0.467\n"
             + "Row #1: 0.463\n"
             + "Row #2: \n"
@@ -330,7 +330,7 @@ public class UdfTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time].[1998].[Q4].[12]}\n"
+            + "{[Time].[Time].[1998].[Q4].[12]}\n"
             + "Row #0: \n");
     }
 
@@ -427,7 +427,7 @@ public class UdfTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[Time].[1997].[Q1]}\n"
             + "Row #0: 66,291\n");
     }
 
@@ -442,7 +442,7 @@ public class UdfTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time].[1997]}\n"
+            + "{[Time].[Time].[1997]}\n"
             + "Row #0: 266,773\n");
     }
 
@@ -457,7 +457,7 @@ public class UdfTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time].[1997].[Q2].[5]}\n"
+            + "{[Time].[Time].[1997].[Q2].[5]}\n"
             + "Row #0: 21,081\n");
     }
 
@@ -470,7 +470,7 @@ public class UdfTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time].[1998].[Q4].[11]}\n"
+            + "{[Time].[Time].[1998].[Q4].[11]}\n"
             + "Row #0: \n");
     }
 
@@ -488,10 +488,10 @@ public class UdfTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1998].[Q3].[9]}\n"
-            + "{[Time].[1998].[Q4].[10]}\n"
-            + "{[Time].[1998].[Q4].[11]}\n"
-            + "{[Time].[1998].[Q4].[12]}\n"
+            + "{[Time].[Time].[1998].[Q3].[9]}\n"
+            + "{[Time].[Time].[1998].[Q4].[10]}\n"
+            + "{[Time].[Time].[1998].[Q4].[11]}\n"
+            + "{[Time].[Time].[1998].[Q4].[12]}\n"
             + "Row #0: \n"
             + "Row #1: \n"
             + "Row #2: \n"
@@ -537,11 +537,11 @@ public class UdfTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Store Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store Type].[All Store Types]}\n"
-            + "{[Store Type].[Deluxe Supermarket]}\n"
-            + "{[Store Type].[Gourmet Supermarket]}\n"
-            + "{[Store Type].[HeadQuarters]}\n"
-            + "{[Store Type].[Supermarket]}\n"
+            + "{[Store].[Store Type].[All Store Types]}\n"
+            + "{[Store].[Store Type].[Deluxe Supermarket]}\n"
+            + "{[Store].[Store Type].[Gourmet Supermarket]}\n"
+            + "{[Store].[Store Type].[HeadQuarters]}\n"
+            + "{[Store].[Store Type].[Supermarket]}\n"
             + "Row #0: 565,238.13\n"
             + "Row #1: 162,062.24\n"
             + "Row #2: 45,750.24\n"
@@ -554,7 +554,7 @@ public class UdfTest extends FoodMartTestCase {
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS, "
             + "FILTER([Product].[Product Family].MEMBERS, "
             + "[Product].[Product Family].CurrentMember IN "
-            + "{[Product].[All Products].firstChild, "
+            + "{[Product].[Products].[All Products].firstChild, "
             + "[Product].[All Products].lastChild}) ON ROWS "
             + "FROM [Sales]",
             "Axis #0:\n"
@@ -562,8 +562,8 @@ public class UdfTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Drink]}\n"
-            + "{[Product].[Non-Consumable]}\n"
+            + "{[Product].[Products].[Drink]}\n"
+            + "{[Product].[Products].[Non-Consumable]}\n"
             + "Row #0: 24,597\n"
             + "Row #1: 50,236\n");
     }
@@ -573,7 +573,7 @@ public class UdfTest extends FoodMartTestCase {
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS, "
             + "FILTER([Product].[Product Family].MEMBERS, "
             + "[Product].[Product Family].CurrentMember NOT IN "
-            + "{[Product].[All Products].firstChild, "
+            + "{[Product].[Products].[All Products].firstChild, "
             + "[Product].[All Products].lastChild}) ON ROWS "
             + "FROM [Sales]",
             "Axis #0:\n"
@@ -581,7 +581,7 @@ public class UdfTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Food]}\n"
+            + "{[Product].[Products].[Food]}\n"
             + "Row #0: 191,940\n");
     }
 
@@ -731,7 +731,7 @@ public class UdfTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Test]}\n"
             + "Axis #2:\n"
-            + "{[Customers].[All Customers]}\n"
+            + "{[Customer].[Customers].[All Customers]}\n"
             + "Row #0: 409,035.59\n");
     }
 
@@ -746,7 +746,7 @@ public class UdfTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time].[1998].[Q4].[12]}\n"
+            + "{[Time].[Time].[1998].[Q4].[12]}\n"
             + "Row #0: \n");
     }
 
@@ -783,9 +783,9 @@ public class UdfTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[M]}\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[All Gender]}\n"
+            + "{[Customer].[Gender].[M]}\n"
+            + "{[Customer].[Gender].[F]}\n"
+            + "{[Customer].[Gender].[All Gender]}\n"
             + "Row #0: 135,215\n"
             + "Row #0: 131,558\n"
             + "Row #0: 266,773\n";

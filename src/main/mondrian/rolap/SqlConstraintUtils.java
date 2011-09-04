@@ -7,7 +7,7 @@
 // Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
- */
+*/
 package mondrian.rolap;
 
 import java.util.*;
@@ -620,7 +620,9 @@ public class SqlConstraintUtils {
                             AggStar.Table.Column aggColumn =
                                 aggStar.lookupColumn(bitPos);
                             AggStar.Table table = aggColumn.getTable();
-                            table.addToFrom(queryBuilder.sqlQuery, false,
+                            table.addToFrom(
+                                queryBuilder.sqlQuery,
+                                false,
                                 true);
                         } else {
                             column.getTable().addToFrom(
@@ -1225,7 +1227,8 @@ public class SqlConstraintUtils {
                         q = aggColumn.getExpression().toSql();
                     } else {
                         RolapStar.Table targetTable = column.getTable();
-                        targetTable.addToFrom(queryBuilder.sqlQuery, false, true);
+                        targetTable.addToFrom(
+                            queryBuilder.sqlQuery, false, true);
                         q = column.getExpression().toSql();
                     }
                 } else {
@@ -1234,7 +1237,8 @@ public class SqlConstraintUtils {
                     column = null;
                     queryBuilder.addToFrom(key);
                     if (measureGroup != null) {
-                        key.joinToStarRoot(queryBuilder.sqlQuery, measureGroup, null);
+                        key.joinToStarRoot(
+                            queryBuilder.sqlQuery, measureGroup, null);
                     } else {
 //                    level.getKeyPath().addToFrom(queryBuilder, false);
                     }

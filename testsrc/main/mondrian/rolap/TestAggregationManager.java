@@ -455,7 +455,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "'{[Product].[All Products].[Food],[Product].[All Products].[Drink]}' "
             + "Set [*GENERATED_MEMBERS_Product] as "
             + "'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' "
-            + "Member [Store].[*FILTER_MEMBER] as 'Aggregate ([*GENERATED_MEMBERS_Store])' "
+            + "Member [Store].[Stores].[*FILTER_MEMBER] as 'Aggregate ([*GENERATED_MEMBERS_Store])' "
             + "Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*GENERATED_MEMBERS_Product])' "
             + "Select {[Measures].[Store Sales]} on columns "
             + "From [Sales] "
@@ -945,9 +945,9 @@ public class TestAggregationManager extends BatchTestCase {
             "Axis #0:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #1:\n"
-            + "{[Time].[1997]}\n"
+            + "{[Time].[Time].[1997]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores], [Product].[All Products]}\n"
+            + "{[Store].[All Stores], [Product].[Products].[All Products]}\n"
             + "Row #0: 266,773\n");
     }
 
@@ -978,7 +978,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "from [Sales] "
             + "where [Store Type].[Store Type].[Small Grocery]",
             "Axis #0:\n"
-            + "{[Store Type].[Small Grocery]}\n"
+            + "{[Store].[Store Type].[Small Grocery]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n");
@@ -991,7 +991,7 @@ public class TestAggregationManager extends BatchTestCase {
      *  <p>Test also that expressions with only table alias difference do not
      *  share cardinality result.
      */
-    public void testColumnCadinalityCache() {
+    public void testColumnCardinalityCache() {
         String query1 =
             "select "
             + "NonEmptyCrossJoin("
@@ -1337,7 +1337,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Food].[Deli].[Meat], [Gender].[M]}\n"
+            + "{[Product].[Products].[Food].[Deli].[Meat], [Customer].[Gender].[M]}\n"
             + "Row #0: 4,705\n");
 
         Result result = testContext.executeQuery(query);
@@ -1362,8 +1362,8 @@ public class TestAggregationManager extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Food].[Deli].[Meat]}\n"
-            + "{[Product].[Food].[Deli].[Side Dishes]}\n"
+            + "{[Product].[Products].[Food].[Deli].[Meat]}\n"
+            + "{[Product].[Products].[Food].[Deli].[Side Dishes]}\n"
             + "Row #0: 4,728\n"
             + "Row #1: 1,262\n");
     }
@@ -1422,7 +1422,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[M], [Marital Status].[M]}\n"
+            + "{[Customer].[Gender].[M], [Customer].[Marital Status].[M]}\n"
             + "Row #0: 66,460\n");
 
         // This second query verifies that joined levels on aggregate tables
@@ -1462,7 +1462,7 @@ public class TestAggregationManager extends BatchTestCase {
         assertQueryReturns(
             query2,
             "Axis #0:\n"
-            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[Time].[1997].[Q1]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
@@ -1512,8 +1512,8 @@ public class TestAggregationManager extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
+            + "{[Customer].[Gender].[F]}\n"
+            + "{[Customer].[Gender].[M]}\n"
             + "Row #0: 131,558\n"
             + "Row #0: 135,215\n");
     }

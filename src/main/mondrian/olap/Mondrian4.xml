@@ -166,6 +166,10 @@ Revision is $Id$
         <Doc>Child element of a Table.</Doc>
     </Class>
 
+    <Class class="InlineTableElement">
+        <Doc>Child element of an InlineTable.</Doc>
+    </Class>
+
     <!-- Schema ========================================================== -->
     <Element type="Schema">
         <Doc>
@@ -579,7 +583,7 @@ Revision is $Id$
                 return children().only(MeasureGroups.EMPTY).toList();
             }
             public NamedList<CalculatedMember> getCalculatedMembers() {
-                return children().filterNamed(CalculatedMember.class);
+                return children().only(CalculatedMembers.EMPTY).toList();
             }
             public NamedList<NamedSet> getNamedSets() {
                 return children().filterNamed(NamedSet.class);
@@ -1609,16 +1613,50 @@ Revision is $Id$
 
     <Element type="InlineTable" class="Relation">
         <attribute name="alias" required="true"/>
+        <Array name="children" type="InlineTableElement">
+            <Doc>
+                Child elements of this Table.
+
+                <p>ColumnDefs (required):
+                    Array of columns of this table.
+                    Columns may be present only if the table is part of a
+                    PhysicalSchema. They may be regular or calculated.</p>
+
+                <p>Key (optional):
+                    Array of references to the columns that form the primary key
+                    of this table. </p>
+
+                <p>Rows (required):
+                    Rows in table. Maybe empty.</p>
+            </Doc>
+        </Array>
         <Object name="columnDefs" type="ColumnDefs" required="true"/>
         <Object name="rows" type="Rows" required="true"/>
         <Code><![CDATA[
             public String getAlias() {
                 return alias;
             }
+            private Children children() {
+                return new Children(
+                    InlineTableElement.class,
+                    children,
+                    ColumnDefs.class,
+                    Rows.class,
+                    Key.class);
+            }
+            public List<RealOrCalcColumnDef> getColumnDefs() {
+                return children().only(ColumnDefs.EMPTY).toList();
+            }
+            public List<Row> getRows() {
+                return children().only(Rows.EMPTY).toList();
+            }
+            public Key getKey() {
+                return children().singleton(Key.class);
+            }
         ]]></Code>
     </Element>
 
-    <Element type="ColumnDefs" class="TableElement">
+    <Element type="ColumnDefs" class="TableElement,InlineTableElement">
         <Doc>
             Holder for an array of RealOrCalcColumnDef elements.
         </Doc>
@@ -1688,7 +1726,7 @@ Revision is $Id$
         <Object name="expression" type="Expression" required="true"/>
     </Element>
 
-    <Element type="Rows">
+    <Element type="Rows" class="InlineTableElement">
         <Doc>
             Holder for an array of Row elements.
         </Doc>
@@ -1946,7 +1984,7 @@ Revision is $Id$
         <Array name="columns" type="Column"/>
     </Element>
 
-    <Element type="Key" class="Columns,TableElement,AttributeElement">
+    <Element type="Key" class="Columns,TableElement,InlineTableElement,AttributeElement">
         <Doc>
             Definition of the key of a dimension or table.
         </Doc>

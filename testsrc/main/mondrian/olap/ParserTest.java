@@ -158,9 +158,9 @@ public class ParserTest extends FoodMartTestCase {
             + "where [Marital Status].[S]",
             "with member [Measures].[Foo] as '123'\n"
             + "select {[Measures].Members} ON COLUMNS,\n"
-            + "  Crossjoin([Product].Members, {[Gender].Children}) ON ROWS\n"
+            + "  Crossjoin([Product].Members, {[Customer].[Gender].Children}) ON ROWS\n"
             + "from [Sales]\n"
-            + "where [Marital Status].[S]\n");
+            + "where [Customer].[Marital Status].[S]\n");
     }
 
     private void checkUnparse(String queryString, final String expected) {
@@ -430,7 +430,7 @@ public class ParserTest extends FoodMartTestCase {
         Connection connection = TestContext.instance().getConnection();
         Query query = connection.parseQuery(
             "select {[Measures].Members} on columns,\n"
-            + " {[Store].Members} on rows\n"
+            + " {[Store].[Stores].Members} on rows\n"
             + "from [Sales]\n"
             + "where ([Gender].[M])");
 
@@ -666,7 +666,7 @@ public class ParserTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[USA].[WA].[Yakima].[Store   23]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Yakima].[Store   23]}\n"
             + "Row #0: 11,491\n");
         assertQueryReturns(
             "With \n"
@@ -687,7 +687,7 @@ public class ParserTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*ZERO]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[WA].[Yakima].[Store   23]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Yakima].[Store   23]}\n"
             + "Row #0: 0\n");
         }
     }

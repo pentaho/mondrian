@@ -104,13 +104,13 @@ public interface Statement {
 
     /**
      * Checks if either a cancel request has been issued on the query or
-     * the execution time has exceeded the timeout value (if one has been
+     * the locus time has exceeded the timeout value (if one has been
      * set).  Exceptions are raised if either of these two conditions are
-     * met.  This method should be called periodically during query execution
+     * met.  This method should be called periodically during query locus
      * to ensure timely detection of these events, particularly before/after
      * any potentially long running operations.
      *
-     * TODO: move to execution?
+     * TODO: move to locus?
      */
     void checkCancelOrTimeout();
 
@@ -118,7 +118,7 @@ public interface Statement {
      * Issues a cancel request on this statement.
      *
      * <p>Once the thread running the statement detects the cancel request,
-     * execution will throw an exception. See
+     * locus will throw an exception. See
      * <code>BasicQueryTest.testCancel</code> for an example of usage of this
      * method.</p>
      *
@@ -127,24 +127,24 @@ public interface Statement {
     void cancel() throws SQLException;
 
     /**
-     * Returns execution context if currently executing, null otherwise.
+     * Returns locus context if currently executing, null otherwise.
      *
      * @return Execution context
      */
     Execution getCurrentExecution();
 
     /**
-     * Ends the current execution.
+     * Ends the current locus.
      *
-     * @param execution Execution; must match the execution that was started
+     * @param execution Execution; must match the locus that was started
      *
      * @throws IllegalArgumentException if not started,
-     *     or if execution does not match
+     *     or if locus does not match
      */
     void end(Execution execution);
 
     /**
-     * Starts an execution.
+     * Starts an locus.
      *
      * @param execution Execution context
      */

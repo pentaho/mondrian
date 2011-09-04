@@ -524,8 +524,10 @@ public class JdbcDialectImpl implements Dialect {
             }
             if (fromClause == null) {
                 fromClause = "where 1 = 0";
-            } else {
+            } else if (fromClause.contains(" where ")) {
                 fromClause += " and 1 = 0";
+            } else {
+                fromClause += " where 1 = 0";
             }
             return generateInlineGeneric(
                 columnNames,
@@ -566,7 +568,7 @@ public class JdbcDialectImpl implements Dialect {
                 quoteIdentifier(columnName, buf);
             }
             if (fromClause != null) {
-                buf.append(fromClause);
+                buf.append(" ").append(fromClause);
             }
         }
         return buf.toString();

@@ -321,6 +321,17 @@ way too noisy
                     // the "pre configured discover datasources" feature.
                     return null;
                 }
+
+                public XmlaHandler.Request startRequest(
+                    XmlaRequest request,
+                    OlapConnection connection)
+                {
+                    return null;
+                }
+
+                public void endRequest(XmlaHandler.Request request) {
+                    // nothing
+                }
             };
         final XmlaRequest request = new XmlaRequest() {
             public Method getMethod() {

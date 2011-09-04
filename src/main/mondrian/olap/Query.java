@@ -121,7 +121,7 @@ public class Query extends QueryPart {
     private boolean nativeCrossJoinVirtualCube;
 
     /**
-     * Contains a list of stars
+     * Contains a list of measure groups.
      */
     private List<RolapMeasureGroup> measureGroupList;
 
@@ -914,24 +914,6 @@ public class Query extends QueryPart {
     }
 
     /**
-     * Swaps the x- and y- axes.
-     * Does nothing if the number of axes != 2.
-     */
-    public void swapAxes() {
-        if (axes.length == 2) {
-            Exp e0 = axes[0].getSet();
-            boolean nonEmpty0 = axes[0].isNonEmpty();
-            Exp e1 = axes[1].getSet();
-            boolean nonEmpty1 = axes[1].isNonEmpty();
-            axes[1].setSet(e0);
-            axes[1].setNonEmpty(nonEmpty0);
-            axes[0].setSet(e1);
-            axes[0].setNonEmpty(nonEmpty1);
-            // showSubtotals ???
-        }
-    }
-
-    /**
      * Returns the parameters defined in this query.
      */
     public Parameter[] getParameters() {
@@ -972,6 +954,10 @@ public class Query extends QueryPart {
             if (Util.equalName(member.getUniqueName(), memberUniqueName)
                 || Util.equalName(
                     getUniqueNameWithoutAll(member),
+                    memberUniqueName)
+                || !Bug.BugMondrian960Fixed
+                && Util.equalName(
+                    getUniqueNameWithoutDimension(member),
                     memberUniqueName))
             {
                 return member;
@@ -980,7 +966,7 @@ public class Query extends QueryPart {
         return null;
     }
 
-    private String getUniqueNameWithoutAll(Member member) {
+    private static String getUniqueNameWithoutAll(Member member) {
         // build unique string
         Member parentMember = member.getParentMember();
         if ((parentMember != null) && !parentMember.isAll()) {
@@ -989,6 +975,26 @@ public class Query extends QueryPart {
                 member.getName());
         } else {
             return Util.makeFqName(member.getHierarchy(), member.getName());
+        }
+    }
+
+    // this method is a hack - remove when mondrian-960 fixed
+    public static String getUniqueNameWithoutDimension(Member member) {
+        assert !Bug.BugMondrian960Fixed;
+        // build unique string
+        Member parentMember = member.getParentMember();
+        if ((parentMember != null) && !parentMember.isAll()) {
+            return Util.makeFqName(
+                getUniqueNameWithoutAll(parentMember),
+                member.getName());
+        } else {
+            final Hierarchy hierarchy = member.getHierarchy();
+            if (hierarchy.getDimension().getName().equals(
+                    hierarchy.getDimension().getName()))
+            {
+                return Util.makeFqName(member.getDimension(), member.getName());
+            }
+            return Util.makeFqName(hierarchy, member.getName());
         }
     }
 
@@ -1201,7 +1207,10 @@ public class Query extends QueryPart {
         formula.rename(newName);
     }
 
-    List<Member> getDefinedMembers() {
+    // REVIEW: should we apply access control BEFORE resolving names?
+    // This method is used several times during name resolution and is
+    // inefficient.
+    private List<Member> getDefinedMembers() {
         List<Member> definedMembers = new ArrayList<Member>();
         for (final Formula formula : formulas) {
             if (formula.isMember()
@@ -1524,9 +1533,23 @@ public class Query extends QueryPart {
                 segment = nameParts.get(nameParts.size() - 1);
             }
             if (segment.matches(member.getName())) {
+                final String imploded =
+                    Util.implode(
+                        nameParts.subList(
+                            0,
+                            nameParts.size() - 1));
+                if (!Bug.BugMondrian960Fixed
+                    && member.getHierarchy().getName().equals(
+                        member.getDimension().getName())
+                    && Util.equalName(
+                        member.getDimension().getUniqueName(),
+                        imploded))
+                {
+                    return true;
+                }
                 return Util.equalName(
                     member.getHierarchy().getUniqueName(),
-                    Util.implode(nameParts.subList(0, nameParts.size() - 1)));
+                    imploded);
             } else if (member.isAll()) {
                 return Util.equalName(
                     member.getHierarchy().getUniqueName(),

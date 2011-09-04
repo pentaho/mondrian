@@ -13,10 +13,10 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[All Stores]</member>
-                    <member>[Pay Type].[All Pay Types]</member>
-                    <member>[Store Type].[All Store Types]</member>
-                    <member>[Position].[All Position]</member>
+                    <member>[Store].[Stores].[All Stores]</member>
+                    <member>[Employee].[Pay Type].[All Pay Types]</member>
+                    <member>[Store].[Store Type].[All Store Types]</member>
+                    <member>[Employee].[Position].[All Position]</member>
                     <member>[Department].[All Departments]</member>
                     <member>[Employees].[All Employees]</member>
                 </tuple>

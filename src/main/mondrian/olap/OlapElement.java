@@ -68,11 +68,11 @@ public interface OlapElement {
      *
      * <p>Example 2:
      * <blockquote><pre>
-     * order(except([Promotion Media].[Media Type].members,
-     *              {[Promotion Media].[Media Type].[No Media]}),
+     * order(except([Promotion].[Media Type].members,
+     *              {[Promotion].[Media Type].[No Media]}),
      *       [Measures].[Unit Sales], DESC)
      * </pre></blockquote>
-     * has dimension [Promotion Media].</p>
+     * has dimension [Promotion].</p>
      *
      * <p>Example 3:
      * <blockquote><pre>

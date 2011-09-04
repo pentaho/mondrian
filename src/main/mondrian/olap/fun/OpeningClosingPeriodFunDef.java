@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -113,17 +113,17 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
             break;
         }
 
-        // Make sure the member and the level come from the same dimension.
+        // Make sure the member and the level come from the same hierarchy.
         if (levelCalc != null) {
-            final Dimension memberDimension =
-                memberCalc.getType().getDimension();
-            final Dimension levelDimension = levelCalc.getType().getDimension();
-            if (!memberDimension.equals(levelDimension)) {
+            final Hierarchy memberHierarchy =
+                memberCalc.getType().getHierarchy();
+            final Hierarchy levelHierarchy = levelCalc.getType().getHierarchy();
+            if (!memberHierarchy.equals(levelHierarchy)) {
                 throw MondrianResource.instance()
                     .FunctionMbrAndLevelHierarchyMismatch.ex(
                         opening ? "OpeningPeriod" : "ClosingPeriod",
-                        levelDimension.getUniqueName(),
-                        memberDimension.getUniqueName());
+                        levelHierarchy.getUniqueName(),
+                        memberHierarchy.getUniqueName());
             }
         }
         return new AbstractMemberCalc(

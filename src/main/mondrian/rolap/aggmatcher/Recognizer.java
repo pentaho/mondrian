@@ -7,7 +7,6 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -471,6 +470,9 @@ abstract class Recognizer {
                 String dimName = dim.getName();
 
                 for (Hierarchy hierarchy : dim.getHierarchyList()) {
+                    if (true) {
+                        continue;
+                    }
                     HierarchyUsage[] hierarchyUsages = null; /*
                         cube.getUsages(hierarchy);*/
                     for (HierarchyUsage hierarchyUsage : hierarchyUsages) {

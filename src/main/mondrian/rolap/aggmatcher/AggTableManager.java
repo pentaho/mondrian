@@ -7,7 +7,6 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -273,7 +272,7 @@ public class AggTableManager {
                                 schema.getPhysicalSchema(),
                                 schemaName,
                                 name,
-                                null, // null alias
+                                name, // REVIEW: alias used to be null
                                 null); // don't know about table hints
                         AggStar aggStar =
                             AggStar.makeAggStar(

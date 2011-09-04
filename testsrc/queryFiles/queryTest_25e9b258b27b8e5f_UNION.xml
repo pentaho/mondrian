@@ -11,8 +11,8 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
-                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Store].[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store].[Store Type].[All Store Types]</member>
                     <member>[Time].[1997]</member>
                     <member>[Warehouse].[All Warehouses]</member>
                 </tuple>
@@ -34,28 +34,28 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Bellingham]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Bellingham]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Bremerton]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Bremerton]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Seattle]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Seattle]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Spokane]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Spokane]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Tacoma]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Tacoma]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Walla Walla]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Walla Walla]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[WA].[Yakima]</member>
+                    <member>[Store].[Stores].[USA].[WA].[Yakima]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA].[OR].[Portland]</member>
+                    <member>[Store].[Stores].[USA].[OR].[Portland]</member>
                 </tuple>
             </tuples>
         </rows>

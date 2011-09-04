@@ -4,13 +4,12 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
 // wgorman, 19 October 2007
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
@@ -60,7 +59,9 @@ class RolapAllCubeMember
         // called [Measures].[Foo] not [Measures].[Measures].[Foo]. We can
         // remove this code when we revisit the scheme to generate member unique
         // names.
-        if (getHierarchy().getName().equals(getDimension().getName())) {
+        if (getHierarchy().getName().equals(getDimension().getName())
+            && !MondrianProperties.instance().SsasCompatibleNaming.get())
+        {
             this.uniqueName = Util.makeFqName(getDimension(), name);
         } else {
             this.uniqueName = Util.makeFqName(getHierarchy(), name);

@@ -95,7 +95,7 @@ public class AccessControlTest extends FoodMartTestCase {
         role.makeImmutable();
         connection.setRole(role);
         context.assertAxisThrows(
-            "[Gender].children",
+            "[Customer].[Gender].children",
             "MDX object '[Gender]' not found in cube 'Sales'");
     }
 
@@ -163,7 +163,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "</Role>")
             .withRole("Role1");
         testContext.assertQueryThrows(
-            "select {[Store].Children} on 0 from [Sales]",
+            "select {[Store].[Stores].Children} on 0 from [Sales]",
             "Member '[Store].[USA].[Non Existent]' not found");
     }
 
@@ -295,7 +295,7 @@ public class AccessControlTest extends FoodMartTestCase {
         // the root element is All Customers
         getRestrictedTestContext().assertAxisReturns(
             "[Customers].defaultMember",
-            "[Customers].[Canada].[BC]");
+            "[Customer].[Customers].[Canada].[BC]");
     }
 
     public void testGrantHierarchy2() {
@@ -339,7 +339,7 @@ public class AccessControlTest extends FoodMartTestCase {
         final TestContext testContext = getRestrictedTestContext();
         testContext.assertAxisThrows("[Store].[All Stores]", "not found");
         testContext.assertAxisReturns(
-            "[Store].members",
+            "[Store].[Stores].members",
                 // note:
                 // no: [All Stores] -- above top level
                 // no: [Canada] -- not explicitly allowed
@@ -431,7 +431,7 @@ public class AccessControlTest extends FoodMartTestCase {
         // Analysis services doesn't allow aggregation within calculated
         // measures, so use the following query to generate the results:
         //
-        //   with member [Store].[SF LA] as
+        //   with member [Store].[Stores].[SF LA] as
         //     'Aggregate({[USA].[CA].[San Francisco], [Store].[USA].[CA].[Los
         //     Angeles]})'
         //   select {[Measures].[Unit Sales]} on columns,
@@ -447,12 +447,12 @@ public class AccessControlTest extends FoodMartTestCase {
             + "from Sales\n"
             + "where ([Marital Status].[S])",
             "Axis #0:\n"
-            + "{[Marital Status].[S]}\n"
+            + "{[Customer].[Marital Status].[S]}\n"
             + "Axis #1:\n"
             + "{[Measures].[California Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
+            + "{[Customer].[Gender].[F]}\n"
+            + "{[Customer].[Gender].[M]}\n"
             + "Row #0: 6,636\n"
             + "Row #1: 7,329\n");
     }
@@ -901,7 +901,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "        <MemberGrant member=\"[Customers].[USA].[CA]\" access=\"all\"/>\n"
                 + "        <MemberGrant member=\"[Customers].[USA].[CA].[San Francisco].[Gladys Evans]\" access=\"none\"/>\n"
                 + "      </HierarchyGrant>\n"
-                + "      <HierarchyGrant hierarchy=\"[Promotion Media]\" access=\"all\"/>\n"
+                + "      <HierarchyGrant hierarchy=\"[Promotion].[Media Type]\" access=\"all\"/>\n"
                 + "      <HierarchyGrant hierarchy=\"[Marital Status]\" access=\"none\"/>\n"
                 + "      <HierarchyGrant hierarchy=\"[Gender]\" access=\"none\"/>\n"
                 + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Store].[Store State]\"/>\n"
@@ -954,14 +954,14 @@ public class AccessControlTest extends FoodMartTestCase {
         // Hierarchy access:
         // Both can see [Customers] with Custom access
         // Both can see [Store], Role1 with Custom access, Role2 with All access
-        // Role1 can see [Promotion Media], Role2 cannot
+        // Role1 can see [Promotion].[Media Type], Role2 cannot
         // Neither can see [Marital Status]
         assertHierarchyAccess(
             connection, Access.CUSTOM, "Sales", "[Customers]");
         assertHierarchyAccess(
             connection, Access.ALL, "Sales", "[Store]");
         assertHierarchyAccess(
-            connection, Access.ALL, "Sales", "[Promotion Media]");
+            connection, Access.ALL, "Sales", "[Promotion].[Media Type]");
         assertHierarchyAccess(
             connection, Access.NONE, "Sales", "[Marital Status]");
 
@@ -999,20 +999,20 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[USA].[CA]}\n"
-            + "{[Customers].[USA].[OR]}\n"
-            + "{[Customers].[USA].[OR].[Albany]}\n"
-            + "{[Customers].[USA].[OR].[Beaverton]}\n"
-            + "{[Customers].[USA].[OR].[Corvallis]}\n"
-            + "{[Customers].[USA].[OR].[Lake Oswego]}\n"
-            + "{[Customers].[USA].[OR].[Lebanon]}\n"
-            + "{[Customers].[USA].[OR].[Milwaukie]}\n"
-            + "{[Customers].[USA].[OR].[Oregon City]}\n"
-            + "{[Customers].[USA].[OR].[Portland]}\n"
-            + "{[Customers].[USA].[OR].[Salem]}\n"
-            + "{[Customers].[USA].[OR].[W. Linn]}\n"
-            + "{[Customers].[USA].[OR].[Woodburn]}\n"
-            + "{[Customers].[USA].[WA]}\n"
+            + "{[Customer].[Customers].[USA].[CA]}\n"
+            + "{[Customer].[Customers].[USA].[OR]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[Albany]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[Beaverton]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[Corvallis]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[Lake Oswego]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[Lebanon]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[Milwaukie]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[Oregon City]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[Portland]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[Salem]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[W. Linn]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[Woodburn]}\n"
+            + "{[Customer].[Customers].[USA].[WA]}\n"
             + "Row #0: 74,748\n"
             + "Row #0: 67,659\n"
             + "Row #0: 6,806\n"
@@ -1044,10 +1044,10 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customers].[USA].[CA]}\n"
-            + "{[Customers].[USA].[OR]}\n"
-            + "{[Customers].[USA].[OR].[Portland]}\n"
-            + "{[Customers].[USA].[WA]}\n"
+            + "{[Customer].[Customers].[USA].[CA]}\n"
+            + "{[Customer].[Customers].[USA].[OR]}\n"
+            + "{[Customer].[Customers].[USA].[OR].[Portland]}\n"
+            + "{[Customer].[Customers].[USA].[WA]}\n"
             + "Row #0: 74,742\n"
             + "Row #0: 3,583\n"
             + "Row #0: 3,583\n"
@@ -1082,13 +1082,13 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[All Gender], [Product].[Drink]}\n"
+            + "{[Customer].[Gender].[All Gender], [Product].[Drink]}\n"
             + "Row #0: 24,597\n";
 
         final String mdx =
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
             + " Crossjoin({[Gender].[All Gender]}, "
-            + "[Product].Children) ON ROWS "
+            + "[Product].[Products].Children) ON ROWS "
             + "from [Sales]";
         testContext.assertQueryReturns(mdx, expected);
         checkQuery(testContext, mdx);
@@ -1098,7 +1098,7 @@ public class AccessControlTest extends FoodMartTestCase {
         final String mdx2 =
             "select {[Measures].[Unit Sales]} ON COLUMNS, "
             + "NON EMPTY Crossjoin({[Gender].[All Gender]}, "
-            + "[Product].[All Products].Children) ON ROWS "
+            + "[Product].[Products].Children) ON ROWS "
             + "from [Sales]";
         testContext.assertQueryReturns(mdx2, expected);
         checkQuery(testContext, mdx2);
@@ -1115,7 +1115,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
             + "      <HierarchyGrant hierarchy=\"[Product]\" access=\"custom\">\n"
-            + "        <MemberGrant member=\"[Product].[Drink]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Product].[Products].[Drink]\" access=\"all\"/>\n"
             + "      </HierarchyGrant>\n"
             + "    </CubeGrant>\n"
             + "  </SchemaGrant>\n"
@@ -1129,7 +1129,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[All Gender], [Product].[Drink]}\n"
+            + "{[Customer].[Gender].[All Gender], [Product].[Drink]}\n"
             + "Row #0: 24,597\n";
 
         final String mdx =
@@ -1172,7 +1172,7 @@ public class AccessControlTest extends FoodMartTestCase {
         testContext.assertQueryReturns(
             query,
             "Axis #0:\n"
-            + "{[Time].[1997]}\n"
+            + "{[Time].[Time].[1997]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
@@ -1198,7 +1198,7 @@ public class AccessControlTest extends FoodMartTestCase {
         goodmanContext(Role.RollupPolicy.FULL).assertQueryReturns(
             query,
             "Axis #0:\n"
-            + "{[Time].[1997]}\n"
+            + "{[Time].[Time].[1997]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
@@ -1224,7 +1224,7 @@ public class AccessControlTest extends FoodMartTestCase {
         goodmanContext(Role.RollupPolicy.HIDDEN).assertQueryReturns(
             query,
             "Axis #0:\n"
-            + "{[Time].[1997]}\n"
+            + "{[Time].[Time].[1997]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
@@ -1429,7 +1429,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Store Invoice], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[All Warehouses]}\n"
+            + "{[Warehouse].[Warehouses].[All Warehouses]}\n"
             + "Row #0: 4,042.96\n");
     }
 
@@ -1454,11 +1454,11 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products]}\n"
-            + "{[Store Size in SQFT].[20319], [Product].[All Products]}\n"
+            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Products].[All Products]}\n"
+            + "{[Store Size in SQFT].[Products].[20319], [Product].[All Products]}\n"
             + "Axis #2:\n"
-            + "{[Store Type].[All Store Types]}\n"
-            + "{[Store Type].[Supermarket]}\n"
+            + "{[Store].[Store Type].[All Store Types]}\n"
+            + "{[Store].[Store Type].[Supermarket]}\n"
             + "Row #0: 4,042.96\n"
             + "Row #0: 4,042.96\n"
             + "Row #1: 4,042.96\n"
@@ -1476,13 +1476,13 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products]}\n"
+            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Products].[All Products]}\n"
             + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Drink].[Dairy]}\n"
-            + "{[Store Size in SQFT].[20319], [Product].[All Products]}\n"
+            + "{[Store Size in SQFT].[20319], [Product].[Products].[All Products]}\n"
             + "{[Store Size in SQFT].[20319], [Product].[Food]}\n"
             + "Axis #2:\n"
-            + "{[Store Type].[All Store Types]}\n"
-            + "{[Store Type].[Supermarket]}\n"
+            + "{[Store].[Store Type].[All Store Types]}\n"
+            + "{[Store].[Store Type].[Supermarket]}\n"
             + "Row #0: 4,042.96\n"
             + "Row #0: 82.454\n"
             + "Row #0: 4,042.96\n"
@@ -1510,13 +1510,13 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products]}\n"
-            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[All Products]}\n"
-            + "{[Store Size in SQFT].[20319], [Product].[All Products]}\n"
+            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Products].[All Products]}\n"
+            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Products].[All Products]}\n"
+            + "{[Store Size in SQFT].[20319], [Product].[Products].[All Products]}\n"
             + "{[Store Size in SQFT].[20319], [Product].[Food]}\n"
             + "Axis #2:\n"
-            + "{[Store Type].[All Store Types]}\n"
-            + "{[Store Type].[Supermarket]}\n"
+            + "{[Store].[Store Type].[All Store Types]}\n"
+            + "{[Store].[Store Type].[Supermarket]}\n"
             + "Row #0: 4,042.96\n"
             + "Row #0: 4,042.96\n"
             + "Row #0: 4,042.96\n"
@@ -1541,22 +1541,22 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[All Products], [Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[All Products], [Store Type].[All Store Types], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[All Products], [Store Type].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[All Products], [Store Type].[Supermarket], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Drink].[Dairy], [Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Drink].[Dairy], [Store Type].[All Store Types], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Drink].[Dairy], [Store Type].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Drink].[Dairy], [Store Type].[Supermarket], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Food], [Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Food], [Store Type].[All Store Types], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Food], [Store Type].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Food], [Store Type].[Supermarket], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Food].[Eggs], [Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Food].[Eggs], [Store Type].[All Store Types], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Food].[Eggs], [Store Type].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Food].[Eggs], [Store Type].[Supermarket], [Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[All Products], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[All Products], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[All Products], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[All Products], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[Drink].[Dairy], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[Drink].[Dairy], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[Drink].[Dairy], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[Drink].[Dairy], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[Food], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[Food], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[Food], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[Food], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[Food].[Eggs], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[Food].[Eggs], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[Food].[Eggs], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[Food].[Eggs], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[20319]}\n"
             + "Row #0: 4,042.96\n"
             + "Row #0: 4,042.96\n"
             + "Row #0: 4,042.96\n"
@@ -1666,7 +1666,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "  </SchemaGrant>\n"
             + "</Role>").withRole("VCRole");
         testContext.assertQueryReturns(
-            "select [Store].Members on 0 from [Warehouse and Sales]",
+            "select [Store].[Stores].Members on 0 from [Warehouse and Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -1965,9 +1965,9 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Unit Sales]}\n"
                 + "Axis #2:\n"
-                + "{[Customers].[USA].[CA]}\n"
-                + "{[Customers].[USA].[CA].[Los Angeles]}\n"
-                + "{[Customers].[USA].[CA].[San Francisco]}\n"
+                + "{[Customer].[Customers].[USA].[CA]}\n"
+                + "{[Customer].[Customers].[USA].[CA].[Los Angeles]}\n"
+                + "{[Customer].[Customers].[USA].[CA].[San Francisco]}\n"
                 + "Row #0: 74,748\n"
                 + "Row #1: 2,009\n"
                 + "Row #2: 88\n");
@@ -2041,7 +2041,7 @@ public class AccessControlTest extends FoodMartTestCase {
 
     private void checkCalcMemberLevel(TestContext testContext) {
         Result result = testContext.executeQuery(
-            "with member [Store].[USA].[CA].[Foo] as\n"
+            "with member [Store].[Stores].[USA].[CA].[Foo] as\n"
             + " 1\n"
             + "select {[Measures].[Unit Sales]} on columns,\n"
             + "{[Store].[USA].[CA],\n"
@@ -2095,8 +2095,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Customers].[USA].[CA], [Store Type].[Supermarket]}\n"
-            + "{[Customers].[USA].[WA], [Store Type].[Supermarket]}\n"
+            + "{[Customer].[Customers].[USA].[CA], [Store].[Store Type].[Supermarket]}\n"
+            + "{[Customer].[Customers].[USA].[WA], [Store].[Store Type].[Supermarket]}\n"
             + "Row #0: 1,118\n"
             + "Row #1: 73,178\n");
     }

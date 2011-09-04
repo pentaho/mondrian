@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mdbTest>
-    <mdxQuery>select [Time].[Time].children on axis(0),     [Store].children on axis(1) from [Warehouse and Sales] where ([Measures].[Store Sales])</mdxQuery>
+    <mdxQuery>select [Time].[Time].children on axis(0),     [Store].[Stores].children on axis(1) from [Warehouse and Sales] where ([Measures].[Store Sales])</mdxQuery>
     <dataResult>
         <slicer>
             <dimensions>
@@ -37,13 +37,13 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Store].[Canada]</member>
+                    <member>[Store].[Stores].[Canada]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[Mexico]</member>
+                    <member>[Store].[Stores].[Mexico]</member>
                 </tuple>
                 <tuple>
-                    <member>[Store].[USA]</member>
+                    <member>[Store].[Stores].[USA]</member>
                 </tuple>
             </tuples>
         </rows>

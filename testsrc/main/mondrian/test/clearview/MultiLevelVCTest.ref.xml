@@ -31,11 +31,11 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Product].[*CTX_MEMBER_ALL~SUM]}
-{[Product].[Drink].[*CTX_MEMBER_ALL~SUM]}
-{[Product].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Drink].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Drink].[Beverages].[Hot Beverages].[Coffee].[BBB Best].[BBB Best Columbian Coffee]}
+{[Product].[Products].[*CTX_MEMBER_ALL~SUM]}
+{[Product].[Products].[Drink].[*CTX_MEMBER_ALL~SUM]}
+{[Product].[Products].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[Beverages].[Hot Beverages].[Coffee].[BBB Best].[BBB Best Columbian Coffee]}
 Row #0: 266,773
 Row #1: 24,597
 Row #2: 158
