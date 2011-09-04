@@ -937,6 +937,82 @@ public class DialectTest extends TestCase {
                     "(?i).*\\QBar\\E.*"));
         }
     }
+
+    public void testRegularExpressionSqlInjection() throws SQLException {
+        // bug mondrian-983
+        // We know that mysql's dialect can handle this regex
+        boolean couldTranslate =
+            checkRegex("(?i).*\\Qa\"\"); window.alert(\"\"woot');\\E.*");
+        switch (getDialect().getDatabaseProduct()) {
+        case MYSQL:
+            assertTrue(couldTranslate);
+            break;
+        }
+
+        // On mysql, this gives error:
+        //   Got error 'repetition-operator operand invalid' from regexp
+        //
+        // Ideally, we would detect that the regex cannot be translated to
+        // SQL (perhaps because it's not a valid java regex). Currently the
+        // database gives an error, and that's better than nothing.
+        Throwable throwable = null;
+        try {
+            couldTranslate =
+                checkRegex(
+                    "\"(?i).*\\Qa\"\"); window.alert(\"\"woot');\\E.*\"");
+        } catch (SQLException e) {
+            throwable = e;
+        }
+        switch (getDialect().getDatabaseProduct()) {
+        case MYSQL:
+            assertNotNull(throwable);
+            assertTrue(couldTranslate);
+            assertTrue(
+                throwable.getMessage().contains(
+                    "Got error 'repetition-operator operand invalid' from "
+                    + "regexp"));
+            break;
+        default:
+            // As far as we know, all other databases either handle this regex
+            // just fine or our dialect for that database refuses to translate
+            // the regex to SQL.
+            assertNull(throwable);
+        }
+
+        // Every dialect should refuse to translate an invalid regex.
+        couldTranslate = checkRegex("ab[cd");
+        assertFalse(couldTranslate);
+    }
+
+    /**
+     * Translates a regular expression into SQL and executes the query.
+     * Returns whether the dialect was able to translate the regex.
+     *
+     * @param regex Java regular expression string
+     * @return Whether dialect could translate regex to SQL.
+     * @throws SQLException on error
+     */
+    private boolean checkRegex(String regex) throws SQLException {
+        Dialect dialect = getDialect();
+        final String sqlRegex =
+            dialect.generateRegularExpression(
+                dialect.quoteIdentifier("customer", "fname"),
+                regex);
+        if (sqlRegex != null) {
+            String sql =
+                "select * from "
+                + dialect.quoteIdentifier("customer")
+                + " where "
+                + sqlRegex;
+            final ResultSet resultSet =
+                getConnection().createStatement().executeQuery(sql);
+            assertFalse(resultSet.next());
+            resultSet.close();
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 // End DialectTest.java

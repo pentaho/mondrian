@@ -9,12 +9,16 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Result;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
 
+/**
+ * Test case for pushing MDX filter conditions down to SQL.
+ *
+ * @version $Id$
+ */
 public class NativeFilterMatchingTest extends BatchTestCase {
     public void testPositiveMatching() throws Exception {
         final String sqlOracle =
@@ -131,5 +135,38 @@ public class NativeFilterMatchingTest extends BatchTestCase {
         final String resultString = TestContext.toString(result);
         assertFalse(resultString.contains("Jeanne"));
     }
+
+    /**
+     * <p>System test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-983">MONDRIAN-983,
+     * "Regression: Unable to execute MDX statement with native MATCHES"</a>.
+     *
+     * @see mondrian.test.DialectTest#testRegularExpressionSqlInjection()
+     */
+    public void testMatchBugMondrian983() {
+        assertQueryReturns(
+            "With\n"
+            + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))' \n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Product].CurrentMember.OrderKey,BASC,Ancestor([Product].CurrentMember,[Product].[Product Department]).OrderKey,BASC)' \n"
+            + "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' \n"
+            + "Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Category].Members,[Product].CurrentMember.Caption Matches (\"(?i).*\\Qa\"\"); window.alert(\"\"woot'');\\E.*\"))' \n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' \n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Product].currentMember)})' \n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]' \n"
+            + "Member [Product].[*TOTAL_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-100 \n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = 'Standard', SOLVE_ORDER=400 \n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns,\n"
+            + "Union({[Product].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS]) on rows\n"
+            + "From [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[*TOTAL_MEMBER_SEL~SUM]}\n"
+            + "Row #0: \n");
+    }
 }
+
 // End NativeFilterMatchingTest.java

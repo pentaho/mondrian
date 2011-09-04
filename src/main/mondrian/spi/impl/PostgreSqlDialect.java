@@ -12,6 +12,7 @@ import mondrian.olap.Util;
 import org.apache.log4j.Logger;
 
 import java.sql.*;
+import java.util.regex.*;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the PostgreSQL database.
@@ -139,13 +140,19 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
         return true;
     }
 
-    public String generateRegularExpression(String source, String javaRegExp) {
-        javaRegExp = javaRegExp.replace("\\Q", "");
-        javaRegExp = javaRegExp.replace("\\E", "");
+    public String generateRegularExpression(String source, String javaRegex) {
+        try {
+            Pattern.compile(javaRegex);
+        } catch (PatternSyntaxException e) {
+            // Not a valid Java regex. Too risky to continue.
+            return null;
+        }
+        javaRegex = javaRegex.replace("\\Q", "");
+        javaRegex = javaRegex.replace("\\E", "");
         final StringBuilder sb = new StringBuilder();
         sb.append(source);
         sb.append(" ~ ");
-        quoteStringLiteral(sb, javaRegExp);
+        quoteStringLiteral(sb, javaRegex);
         return sb.toString();
     }
 }
