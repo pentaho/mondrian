@@ -850,7 +850,7 @@ public class SqlConstraintUtils {
         } else {
             assert aggStar == null;
             RolapSchema.PhysExpr exp = level.getAttribute().nameExp;
-                datatype = exp.getDatatype();
+            datatype = exp.getDatatype();
             columnString = exp.toSql();
         }
 

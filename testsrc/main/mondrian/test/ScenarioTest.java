@@ -9,7 +9,7 @@
 */
 package mondrian.test;
 
-import mondrian.olap.Util;
+import mondrian.util.Bug;
 import org.olap4j.*;
 import org.olap4j.impl.ArrayMap;
 
@@ -219,7 +219,7 @@ public class ScenarioTest extends FoodMartTestCase {
             + "from [Sales]\n"
             + "where [Scenario].[Scenario].[" + id + "]",
             "Axis #0:\n"
-            + "{[Scenario].[Scenario].[" + id + "]}\n"
+            + "{[Scenario].[" + id + "]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
@@ -402,6 +402,10 @@ public class ScenarioTest extends FoodMartTestCase {
             + "from [Sales]\n"
             + "where ([Customers].[All Customers].[USA].[CA].[San Francisco],\n"
             + " [Time].[1997], " + scenarioUniqueName + ")");
+
+        if (!Bug.NpeInMakeChildMemberSql) {
+            return;
+        }
 
         // With bug MONDRIAN-815, got an NPE here, because cell (0, 1) has a
         // null value.

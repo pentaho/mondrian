@@ -5294,9 +5294,6 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testMemberUniqueNameOfNull() {
-        if (!Bug.InvalidKeyNullFixed) {
-            return;
-        }
         if (isDefaultNullMemberRepresentation()) {
             assertExprReturns(
                 "[Measures].[Unit Sales].FirstChild.UniqueName",

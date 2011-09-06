@@ -235,7 +235,7 @@ public final class ScenarioImpl implements Scenario {
         }
         final int savepoint = evaluator.savepoint();
         evaluator.setContext(
-            evaluator.getCube().getAtomicCellCountMeasure());
+            evaluator.getMeasureGroup().getAtomicCellCountMeasure());
         final Object o = evaluator.evaluateCurrent();
         evaluator.restore(savepoint);
         return ((Number) o).doubleValue();

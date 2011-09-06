@@ -2167,16 +2167,17 @@ public class RolapSchemaLoader {
             }
         }
 
-        final RolapAttribute attribute = new RolapAttribute(
-            xmlAttribute.name,
-            keyList,
-            nameExpr,
-            captionExpr,
-            orderByList,
-            memberFormatter,
-            xmlAttribute.nullValue,
-            levelType,
-            approxRowCount);
+        final RolapAttribute attribute =
+            new RolapAttribute(
+                xmlAttribute.name,
+                keyList,
+                nameExpr,
+                captionExpr,
+                orderByList,
+                memberFormatter,
+                xmlAttribute.nullValue,
+                levelType,
+                approxRowCount);
 
         validator.putXml(attribute, xmlAttribute);
         return attribute;

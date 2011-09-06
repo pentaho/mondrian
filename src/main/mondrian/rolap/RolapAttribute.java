@@ -80,6 +80,10 @@ public class RolapAttribute {
      * <p>An attribute ought to have a dimension, but a few important attributes
      * ('all', 'null', 'measures') don't. See if we can do without it.</p>
      *
+     * <p>Note that the name expression is required. If the user did not specify
+     * a name in the schema file, the name expression will be the same as the
+     * key expression. (Provided that the key has just one column.)</p>
+     *
      * @param name Name
      * @param keyList List of key columns
      * @param nameExp Name column
@@ -87,8 +91,8 @@ public class RolapAttribute {
      * @param orderByList Ordering columns
      * @param memberFormatter Formatter
      * @param nullValue Value used to represent null, e.g. "#null"
-     * @param levelType
-     * @param approxRowCount
+     * @param levelType Level type
+     * @param approxRowCount Approximate number of instances of this attribute
      */
     public RolapAttribute(
         String name,
@@ -102,13 +106,13 @@ public class RolapAttribute {
         int approxRowCount)
     {
         assert levelType != null;
+        assert name != null;
         switch (levelType)  {
         case NULL:
         case ALL:
             break;
         default:
             if (!name.equals("Measures")) {
-                assert name != null;
                 assert keyList != null;
                 assert nameExp != null;
             }

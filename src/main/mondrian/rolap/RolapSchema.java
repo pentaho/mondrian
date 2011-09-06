@@ -2714,6 +2714,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         public final SqlQuery sqlQuery;
         public final SqlTupleReader.ColumnLayoutBuilder layoutBuilder;
         private final Set<PhysRelation> relations = new HashSet<PhysRelation>();
+        private final BitSet orderBitset = new BitSet();
 
         /**
          * Creates a SqlQueryBuilder.
@@ -2783,9 +2784,17 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             if (column == null) {
                 return -1;
             }
-            String expString = column.toSql();
-            final int ordinal = layoutBuilder.lookup(expString);
+            final String expString = column.toSql();
+            int ordinal = layoutBuilder.lookup(expString);
             if (ordinal >= 0) {
+                switch (sgo) {
+                case SELECT_GROUP_ORDER:
+                case SELECT_ORDER:
+                    if (!orderBitset.get(ordinal)) {
+                        sqlQuery.addOrderBy(expString, true, false, true);
+                        orderBitset.set(ordinal);
+                    }
+                }
                 return ordinal;
             }
             addToFrom(column);
@@ -2810,7 +2819,14 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             default:
                 throw Util.unexpected(sgo);
             }
-            return layoutBuilder.register(expString, alias);
+            ordinal = layoutBuilder.register(expString, alias);
+            switch (sgo) {
+            case SELECT_GROUP_ORDER:
+            case SELECT_ORDER:
+                sqlQuery.addOrderBy(expString, true, false, true);
+                orderBitset.set(ordinal);
+            }
+            return ordinal;
         }
     }
 }

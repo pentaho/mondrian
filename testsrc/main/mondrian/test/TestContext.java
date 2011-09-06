@@ -28,7 +28,6 @@ import mondrian.spi.DynamicSchemaProcessor;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
-import mondrian.util.Bug;
 import mondrian.util.DelegatingInvocationHandler;
 
 import javax.sql.DataSource;
@@ -402,7 +401,8 @@ public class TestContext {
         String dimensionDefs,
         String measureDefs,
         String memberDefs,
-        String namedSetDefs, Map<String, String> stringStringMap)
+        String namedSetDefs,
+        Map<String, String> measureGroupContents)
     {
         String s = rawSchema;
 
@@ -1331,6 +1331,15 @@ public class TestContext {
                         connection.createScenario());
                 }
                 return connection;
+            }
+
+            @Override
+            public Connection getConnection() {
+                try {
+                    return getOlap4jConnection().unwrap(Connection.class);
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
         };
     }

@@ -980,13 +980,9 @@ class SqlMemberSource
         } else {
             rolapChildLevel = childLevel;
         }
-        final String name = String.valueOf(
-            getPooledValue(
-                stmt.getAccessors().get(layout.nameOrdinal).get()));
         RolapMemberBase member =
             new RolapMemberBase(
-                parentMember, rolapChildLevel, key,
-                name, Member.MemberType.REGULAR);
+                parentMember, rolapChildLevel, key);
         if (layout.hasOrdinal) {
             member.setOrdinal(lastOrdinal++);
         }
@@ -1014,9 +1010,11 @@ class SqlMemberSource
                 setOrderKey(member, orderKey);
             }
         }
-        member.setProperty(
-            Property.NAME.name,
-            String.valueOf(accessors.get(layout.nameOrdinal).get()));
+        if (layout.nameOrdinal != layout.keyOrdinals[0]) {
+            member.setProperty(
+                Property.NAME.name,
+                String.valueOf(accessors.get(layout.nameOrdinal).get()));
+        }
         int j = 0;
         for (RolapProperty property
             : childLevel.attribute.getExplicitProperties())
@@ -1057,13 +1055,13 @@ class SqlMemberSource
      *        or to the incoming object if either no cached object was found,
      *        or caching is disabled.
      */
-    private Object getPooledValue(Object incoming) {
+    private <T> T getPooledValue(T incoming) {
         if (valuePool == null) {
             return incoming;
         } else {
             Object ret = this.valuePool.get(incoming);
             if (ret != null) {
-                return ret;
+                return (T) ret;
             } else {
                 this.valuePool.put(incoming, incoming);
                 return incoming;

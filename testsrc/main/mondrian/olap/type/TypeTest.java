@@ -22,7 +22,6 @@ import java.util.ArrayList;
  * @version $Id$
  * @since Jan 17, 2008
  */
-
 public class TypeTest extends TestCase {
     TestContext testContext = null;
 
@@ -37,7 +36,7 @@ public class TypeTest extends TestCase {
         assertTrue(salesCube != null);
         Dimension customersDimension = null;
         for (Dimension dimension : salesCube.getDimensions()) {
-            if (dimension.getName().equals("Customers")) {
+            if (dimension.getName().equals("Customer")) {
                 customersDimension = dimension;
             }
         }
@@ -253,6 +252,7 @@ public class TypeTest extends TestCase {
     private Member getStoreChild() {
         List<Id.Segment> storeParts = new ArrayList<Id.Segment>();
         storeParts.add(new Id.Segment("Store", Id.Quoting.UNQUOTED));
+        storeParts.add(new Id.Segment("Stores", Id.Quoting.UNQUOTED));
         storeParts.add(new Id.Segment("All Stores", Id.Quoting.UNQUOTED));
         storeParts.add(new Id.Segment("USA", Id.Quoting.UNQUOTED));
         storeParts.add(new Id.Segment("CA", Id.Quoting.UNQUOTED));
@@ -263,7 +263,7 @@ public class TypeTest extends TestCase {
     private MemberType getMemberTypeHavingMaleChild(Member maleChild) {
         return new MemberType(
             maleChild.getDimension(),
-            maleChild.getDimension().getHierarchy(),
+            maleChild.getHierarchy(),
             maleChild.getLevel(),
             maleChild);
     }
@@ -271,14 +271,14 @@ public class TypeTest extends TestCase {
     private MemberType getMemberTypeHavingMeasureInIt(Member unitSalesMeasure) {
         return new MemberType(
             unitSalesMeasure.getDimension(),
-            unitSalesMeasure.getDimension().getHierarchy(),
-            unitSalesMeasure.getDimension().getHierarchy().getLevelList()
-                .get(0),
+            unitSalesMeasure.getHierarchy(),
+            unitSalesMeasure.getHierarchy().getLevelList().get(0),
             unitSalesMeasure);
     }
 
     private Member getMaleChild() {
         List<Id.Segment> genderParts = new ArrayList<Id.Segment>();
+        genderParts.add(new Id.Segment("Customer", Id.Quoting.UNQUOTED));
         genderParts.add(new Id.Segment("Gender", Id.Quoting.UNQUOTED));
         genderParts.add(new Id.Segment("M", Id.Quoting.UNQUOTED));
         return getSalesCubeSchemaReader().getMemberByUniqueName(
@@ -318,4 +318,3 @@ public class TypeTest extends TestCase {
 }
 
 // End TypeTest.java
-

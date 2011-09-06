@@ -333,11 +333,6 @@ public class Bug {
     public static final boolean VisualTotalsFixed = Enable;
 
     /**
-     * "invalid key #null for level [Store].[Store Size in SQFT].[Store Sqft]"
-     */
-    public static final boolean InvalidKeyNullFixed = Enable;
-
-    /**
      * "Needed to find exactly one path ... but found 0"
      */
     public static final boolean ZeroPathsFixed = Enable;

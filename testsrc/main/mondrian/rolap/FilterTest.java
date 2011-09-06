@@ -288,7 +288,7 @@ public class FilterTest extends BatchTestCase {
      * @throws Exception
      */
     public void testNotInFilterExcludeNullMember() throws Exception {
-        if (!Bug.InvalidKeyNullFixed) {
+        if (!Bug.ZeroPathsFixed) {
             return;
         }
         propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
