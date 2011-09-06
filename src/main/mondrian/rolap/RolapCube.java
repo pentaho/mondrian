@@ -139,7 +139,11 @@ public class RolapCube extends CubeBase {
                 null,
                 Collections.<String, Annotation>emptyMap());
         measuresDimension.addHierarchy(measuresHierarchy);
-        measuresHierarchy.initMeasures();
+        measuresHierarchy.initHierarchy(
+            schemaLoader,
+            null,
+            null,
+            null);
         schemaLoader.initDimension(measuresDimension);
 
         final RolapCubeDimension measuresCubeDimension =

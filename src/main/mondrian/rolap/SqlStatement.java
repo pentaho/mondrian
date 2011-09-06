@@ -451,7 +451,8 @@ public class SqlStatement {
     public List<Type> guessTypes() throws SQLException {
         final ResultSetMetaData metaData = resultSet.getMetaData();
         final int columnCount = metaData.getColumnCount();
-        assert this.types == null || this.types.size() == columnCount;
+        assert this.types == null || this.types.size() == columnCount
+            : "types " + types + " cardinality != column count " + columnCount;
         List<Type> types = new ArrayList<Type>();
         for (int i = 0; i < columnCount; i++) {
             final Type suggestedType =

@@ -5059,6 +5059,10 @@ Test attribute Attribute@allMemberName.
 
     // TODO: test with repeating element, e.g.
     //   <Cube><CalculatedMembers .../><CalculatedMEmbers ../>
+
+    // TODO: test that <Property attribute='foo'/>, attribute 'foo' must exist
+
+    // TODO: test that properties are unique within an attribute
 }
 
 // End SchemaTest.java

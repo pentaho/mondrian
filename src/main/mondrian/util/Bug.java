@@ -283,6 +283,64 @@ public class Bug {
             && !Logger.getLogger("mondrian.test.PerformanceTest")
                 .isDebugEnabled();
     }
+
+    // Mondrian 4 tasks
+
+    public final static boolean Enable = true;
+
+    /**
+     * Allow Dimension to have a PhysicalSchema. Graph used for that dimension
+     * will be union of that schema and the one in the schema. Otherwise it is
+     * not possible to define an InlineTable within a Dimension.
+     */
+    public static final boolean PhysSchemaInDimension = Enable;
+
+    /**
+     * Tests that call TestContext.createSubstitutingCube. 66 uses.
+     */
+    public static final boolean ModifiedSchema = Enable;
+
+    /**
+     * Cube [Store] not found
+     */
+    public static final boolean CubeStoreFeature = Enable;
+
+     /**
+     * Layout wrong cardinality (error 'invalid key ... for level')
+     */
+     public static final boolean LayoutWrongCardinalty = Enable;
+
+    /**
+     * NullPointerException in SqlMemberSource.makeChildMemberSql
+     */
+    public static final boolean NpeInMakeChildMemberSql = Enable;
+
+    /**
+     * Cube [Sales Ragged] not found
+     */
+    public static final boolean CubeRaggedFeature = Enable;
+
+    /**
+     * "Members ... are not equal, but compare returned 0"
+     */
+     public static final boolean MembersNotEqualFixed = Enable;
+
+    /**
+     * Visual totals:
+     *  NPE in RolapSchemaReader.getMemberChildren
+     *  or NPE in Key.isValid
+     */
+    public static final boolean VisualTotalsFixed = Enable;
+
+    /**
+     * "invalid key #null for level [Store].[Store Size in SQFT].[Store Sqft]"
+     */
+    public static final boolean InvalidKeyNullFixed = Enable;
+
+    /**
+     * "Needed to find exactly one path ... but found 0"
+     */
+    public static final boolean ZeroPathsFixed = Enable;
 }
 
 // End Bug.java

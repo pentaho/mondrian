@@ -46,31 +46,31 @@ Axis #1:
 {[Measures].[Sales as % of Cost]}
 {[Measures].[*SUMMARY_METRIC_0]}
 Axis #2:
-{[Product].[*CTX_MEMBER_SEL~MAX]}
-{[Product].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Drink].[Alcoholic Beverages]}
-{[Product].[Drink].[Beverages]}
-{[Product].[Drink].[Dairy]}
-{[Product].[Food].[Baked Goods]}
-{[Product].[Food].[Baking Goods]}
-{[Product].[Food].[Breakfast Foods]}
-{[Product].[Food].[Canned Foods]}
-{[Product].[Food].[Canned Products]}
-{[Product].[Food].[Dairy]}
-{[Product].[Food].[Deli]}
-{[Product].[Food].[Eggs]}
-{[Product].[Food].[Frozen Foods]}
-{[Product].[Food].[Meat]}
-{[Product].[Food].[Produce]}
-{[Product].[Food].[Seafood]}
-{[Product].[Food].[Snack Foods]}
-{[Product].[Food].[Snacks]}
-{[Product].[Food].[Starchy Foods]}
-{[Product].[Non-Consumable].[Carousel]}
-{[Product].[Non-Consumable].[Checkout]}
-{[Product].[Non-Consumable].[Health and Hygiene]}
-{[Product].[Non-Consumable].[Household]}
-{[Product].[Non-Consumable].[Periodicals]}
+{[Product].[Products].[*CTX_MEMBER_SEL~MAX]}
+{[Product].[Products].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[Alcoholic Beverages]}
+{[Product].[Products].[Drink].[Beverages]}
+{[Product].[Products].[Drink].[Dairy]}
+{[Product].[Products].[Food].[Baked Goods]}
+{[Product].[Products].[Food].[Baking Goods]}
+{[Product].[Products].[Food].[Breakfast Foods]}
+{[Product].[Products].[Food].[Canned Foods]}
+{[Product].[Products].[Food].[Canned Products]}
+{[Product].[Products].[Food].[Dairy]}
+{[Product].[Products].[Food].[Deli]}
+{[Product].[Products].[Food].[Eggs]}
+{[Product].[Products].[Food].[Frozen Foods]}
+{[Product].[Products].[Food].[Meat]}
+{[Product].[Products].[Food].[Produce]}
+{[Product].[Products].[Food].[Seafood]}
+{[Product].[Products].[Food].[Snack Foods]}
+{[Product].[Products].[Food].[Snacks]}
+{[Product].[Products].[Food].[Starchy Foods]}
+{[Product].[Products].[Non-Consumable].[Carousel]}
+{[Product].[Products].[Non-Consumable].[Checkout]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Products].[Non-Consumable].[Household]}
+{[Product].[Products].[Non-Consumable].[Periodicals]}
 Row #0: 151.8%
 Row #0: 23
 Row #1: 150.5%
@@ -157,7 +157,7 @@ Where ([Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*
         <Resource name="result">
             <![CDATA[
 Axis #0:
-{[Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER]}
+{[Product].[Products].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER]}
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
@@ -201,7 +201,7 @@ Where ([Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*
         <Resource name="result">
             <![CDATA[
 Axis #0:
-{[Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER]}
+{[Product].[Products].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER]}
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
@@ -235,8 +235,8 @@ Axis #0:
 Axis #1:
 {[Measures].[Unit Sales]}
 Axis #2:
-{[Product].[Food].[Baked Goods].[Bread].[Bagels]}
-{[Product].[Food].[Baked Goods].[Bread].[Muffins]}
+{[Product].[Products].[Food].[Baked Goods].[Bread].[Bagels]}
+{[Product].[Products].[Food].[Baked Goods].[Bread].[Muffins]}
 Row #0: 815
 Row #1: 3,497
 ]]>

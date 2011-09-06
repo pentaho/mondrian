@@ -14,6 +14,7 @@ import mondrian.rolap.sql.MemberListCrossJoinArg;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
+import mondrian.util.Bug;
 
 /**
  * Tests for Filter and native Filters.
@@ -287,6 +288,9 @@ public class FilterTest extends BatchTestCase {
      * @throws Exception
      */
     public void testNotInFilterExcludeNullMember() throws Exception {
+        if (!Bug.InvalidKeyNullFixed) {
+            return;
+        }
         propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
 

@@ -28,13 +28,17 @@ class RolapProperty extends Property {
     private final PropertyFormatter formatter;
     private final String caption;
 
+    final RolapAttribute owningAttribute;
     final RolapAttribute attribute;
 
     /**
      * Creates a RolapProperty.
      *
      * @param name Name of property
-     * @param attribute Attribute this property is based on; or null if it is
+     * @param owningAttribute Attribute that owns this property is based on; or
+     *    null if it is an intrinsic property of a level, e.g. level name
+     * @param sourceAttribute Attribute that provides the value of this
+     *    property; or null if it is
      *    an intrinsic property of a level, e.g. level name
      * @param type Datatype
      * @param formatter Formatter, or null
@@ -43,14 +47,16 @@ class RolapProperty extends Property {
      */
     RolapProperty(
         String name,
-        RolapAttribute attribute,
+        RolapAttribute owningAttribute,
+        RolapAttribute sourceAttribute,
         Datatype type,
         PropertyFormatter formatter,
         String caption,
         boolean internal)
     {
         super(name, type, -1, internal, false, false, null);
-        this.attribute = attribute;
+        this.owningAttribute = owningAttribute;
+        this.attribute = sourceAttribute;
         this.caption = caption;
         this.formatter = formatter;
     }

@@ -1814,17 +1814,45 @@ public class RolapSchemaLoader {
         validator.putXml(dimension, xmlDimension);
 
         // Load attributes before hierarchies, because levels refer to
-        // attributes.
+        // attributes. Likewise create attributes before properties.
         final RolapSchema.PhysRelation dimensionRelation =
             xmlDimension.table == null
                 ? null
                 : getPhysRelation(
                     xmlDimension.table, xmlDimension, "table");
+
+        List<RolapAttribute> attributeList = new ArrayList<RolapAttribute>();
         for (MondrianDef.Attribute xmlAttribute : xmlDimension.getAttributes())
         {
             RolapAttribute attribute =
-                createAttribute(xmlAttribute, dimensionRelation);
+                createAttribute(xmlAttribute, dimensionRelation, dimension);
             dimension.attributeMap.put(attribute.name, attribute);
+            attributeList.add(attribute);
+        }
+
+        // Attributes and parent-child links.
+        for (RolapAttribute attribute : attributeList) {
+            final MondrianDef.Attribute xmlAttribute =
+                validator.getXml(attribute, true);
+
+            if (xmlAttribute.parent != null) {
+                attribute.parentAttribute =
+                    dimension.attributeMap.get(xmlAttribute.parent);
+                if (attribute.parentAttribute == null) {
+                    getHandler().error(
+                        "Unknown parent attribute ''",
+                        xmlAttribute,
+                        "parent");
+                }
+            }
+
+            createProperties(
+                physSchemaBuilder,
+                dimension,
+                attribute,
+                dimensionRelation,
+                xmlAttribute,
+                attribute.getExplicitProperties());
         }
 
         // Check key.
@@ -2042,7 +2070,8 @@ public class RolapSchemaLoader {
 
     RolapAttribute createAttribute(
         MondrianDef.Attribute xmlAttribute,
-        RolapSchema.PhysRelation inheritedRelation)
+        RolapSchema.PhysRelation inheritedRelation,
+        RolapDimension dimension)
     {
         final RolapSchema.PhysRelation relation =
             last(
@@ -2146,9 +2175,9 @@ public class RolapSchemaLoader {
             orderByList,
             memberFormatter,
             xmlAttribute.nullValue,
-            false,
             levelType,
             approxRowCount);
+
         validator.putXml(attribute, xmlAttribute);
         return attribute;
     }
@@ -2405,32 +2434,39 @@ public class RolapSchemaLoader {
         return s1;
     }
 
-    private List<RolapProperty> createProperties(
+    private void createProperties(
         PhysSchemaBuilder physSchemaBuilder,
+        RolapDimension dimension,
         RolapAttribute attribute,
         RolapSchema.PhysRelation relation,
-        MondrianDef.Attribute xmlAttribute)
+        MondrianDef.Attribute xmlAttribute,
+        List<RolapProperty> propertyList)
     {
-        List<RolapProperty> list = new ArrayList<RolapProperty>();
-
-        // Add intrinsic property NAME.
-        // TODO: make key, parent etc. all properties
-        list.add(RolapLevel.NAME_PROPERTY);
-
         // Add defined properties. These are little more than usages of
         // attributes.
         for (MondrianDef.Property xmlProperty : xmlAttribute.getProperties()) {
-            final RolapProperty property = new RolapProperty(
-                xmlProperty.name,
-                attribute,
-                dialectToPropertyDatatype(attribute.getDatatype()),
-                makePropertyFormatter(xmlProperty),
-                xmlProperty.caption,
-                false);
+            final String name = first(xmlProperty.name, xmlProperty.attribute);
+            final RolapAttribute sourceAttribute =
+                dimension.attributeMap.get(xmlProperty.attribute);
+            if (sourceAttribute == null) {
+                getHandler().error(
+                    "Unknown attribute '" + xmlProperty.attribute + "'",
+                    xmlProperty,
+                    "attribute");
+                continue;
+            }
+            final RolapProperty property =
+                new RolapProperty(
+                    name,
+                    attribute,
+                    sourceAttribute,
+                    dialectToPropertyDatatype(sourceAttribute.getDatatype()),
+                    makePropertyFormatter(xmlProperty),
+                    xmlProperty.caption,
+                    false);
             validator.putXml(property, xmlProperty);
-            list.add(property);
+            propertyList.add(property);
         }
-        return list;
     }
 
     private static Property.Datatype dialectToPropertyDatatype(

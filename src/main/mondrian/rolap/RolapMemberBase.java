@@ -214,10 +214,9 @@ public class RolapMemberBase
             final RolapHierarchy hierarchy = getHierarchy();
             final Dimension dimension = hierarchy.getDimension();
             final RolapLevel level = getLevel();
-            if (dimension.getDimensionType() != null
-                && (dimension.getDimensionType().equals(
-                    DimensionType.MeasuresDimension)
-                && hierarchy.getName().equals(dimension.getName())))
+            if (dimension.getDimensionType()
+                == DimensionType.MeasuresDimension
+                && hierarchy.getName().equals(dimension.getName()))
             {
                 // Kludge to ensure that calc members are called
                 // [Measures].[Foo] not [Measures].[Measures].[Foo]. We can

@@ -13,9 +13,13 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.Level;
+import mondrian.olap.Member;
+import mondrian.olap.Property;
 import mondrian.spi.MemberFormatter;
 
 import org.apache.log4j.Logger;
+import org.olap4j.metadata.*;
 
 import java.util.*;
 
@@ -45,23 +49,24 @@ public class RolapLevel extends LevelBase {
 
     static final RolapProperty KEY_PROPERTY =
         new RolapProperty(
-            Property.KEY.name, null, Property.Datatype.TYPE_STRING, null, null,
-            true);
+            Property.KEY.name, null, null, Property.Datatype.TYPE_STRING, null,
+            null, true);
 
     static final RolapProperty NAME_PROPERTY =
         new RolapProperty(
-            Property.NAME.name, null, Property.Datatype.TYPE_STRING, null, null,
-            true);
+            Property.NAME.name, null, null, Property.Datatype.TYPE_STRING, null,
+            null, true);
 
     static final RolapProperty CAPTION_PROPERTY =
         new RolapProperty(
-            Property.CAPTION.name, null, Property.Datatype.TYPE_STRING, null,
-            null, true);
+            Property.CAPTION.name, null, null, Property.Datatype.TYPE_STRING,
+            null, null, true);
 
     // TODO: proper name
     static final RolapProperty ORDINAL_PROPERTY =
         new RolapProperty(
-            "$ordinal", null, Property.Datatype.TYPE_STRING, null, null, true);
+            "$ordinal", null, null, Property.Datatype.TYPE_STRING, null, null,
+            true);
 
     /**
      * Creates a level.
@@ -195,7 +200,7 @@ public class RolapLevel extends LevelBase {
     }
 
     public final boolean isAll() {
-        return attribute.all;
+        return attribute.levelType == org.olap4j.metadata.Level.Type.ALL;
     }
 
     public boolean areMembersUnique() {

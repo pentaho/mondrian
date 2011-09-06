@@ -11,6 +11,7 @@ package mondrian.util;
 
 import mondrian.olap.Util;
 
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -130,6 +131,51 @@ public class Pair <L, R>
         } else {
             return c1.compareTo(c2);
         }
+    }
+
+    /**
+     * Creates an iterable that iterates in parallel over a pair of iterables.
+     *
+     * @param i0 First iterable
+     * @param i1 Second iterable
+     * @param <K> Key type (element type of first iterable)
+     * @param <V> Value type (element type of second iterable)
+     * @return Iterable in over both iterables in parallel
+     */
+    public static <K, V> java.lang.Iterable<Pair<K, V>> of(
+        final Iterable<K> i0,
+        final Iterable<V> i1)
+    {
+        return new Iterable<Pair<K, V>>()
+        {
+            public Iterator<Pair<K, V>> iterator()
+            {
+                final Iterator<K> iterator0 = i0.iterator();
+                final Iterator<V> iterator1 = i1.iterator();
+
+                return new Iterator<Pair<K, V>>()
+                {
+                    public boolean hasNext()
+                    {
+                        final boolean hasNext0 = iterator0.hasNext();
+                        final boolean hasNext1 = iterator1.hasNext();
+                        assert hasNext0 == hasNext1;
+                        return hasNext0 && hasNext1;
+                    }
+
+                    public Pair<K, V> next()
+                    {
+                        return Pair.of(iterator0.next(), iterator1.next());
+                    }
+
+                    public void remove()
+                    {
+                        iterator0.remove();
+                        iterator1.remove();
+                    }
+                };
+            }
+        };
     }
 }
 

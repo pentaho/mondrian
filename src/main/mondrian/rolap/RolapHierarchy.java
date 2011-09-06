@@ -167,7 +167,28 @@ public class RolapHierarchy extends HierarchyBase {
                 RolapLevel.HideMemberCondition.Never,
                 Collections.<String, Annotation>emptyMap());
 
+        if (dimension.isMeasures()) {
+            levelList.add(
+                new RolapLevel(
+                    this,
+                    "MeasuresLevel",
+                    true,
+                    null,
+                    null,
+                    levelList.size(),
+                    MEASURES_ATTRIBUTE,
+                    RolapLevel.HideMemberCondition.Never,
+                    Collections.<String, Annotation>emptyMap()));
+            /*
+                for (RolapLevel level : levelList) {
+                    level.initLevel(null, null, false);
+                }
+                levels = levelList.toArray(new RolapLevel[levelList.size()]);
+                */
+        }
+
         if (this instanceof RolapCubeHierarchy) {
+            Util.deprecated("checked above", true);
             return;
         }
 
@@ -282,26 +303,6 @@ public class RolapHierarchy extends HierarchyBase {
 
     public Map<String, Annotation> getAnnotationMap() {
         return annotationMap;
-    }
-
-    void initMeasures() {
-        levelList.add(
-            new RolapLevel(
-                this,
-                "MeasuresLevel",
-                true,
-                null,
-                null,
-                levelList.size(),
-                MEASURES_ATTRIBUTE,
-                RolapLevel.HideMemberCondition.Never,
-                Collections.<String, Annotation>emptyMap()));
-        /*
-        for (RolapLevel level : levelList) {
-            level.initLevel(null, null, false);
-        }
-        levels = levelList.toArray(new RolapLevel[levelList.size()]);
-        */
     }
 
     @Override
@@ -1015,7 +1016,6 @@ public class RolapHierarchy extends HierarchyBase {
             Collections.<RolapSchema.PhysColumn>emptyList(),
             null,
             null,
-            true,
             org.olap4j.metadata.Level.Type.ALL,
             ALL_LEVEL_CARDINALITY);
 
@@ -1028,7 +1028,6 @@ public class RolapHierarchy extends HierarchyBase {
             Collections.<RolapSchema.PhysColumn>emptyList(),
             null,
             null,
-            false,
             org.olap4j.metadata.Level.Type.NULL,
             NULL_LEVEL_CARDINALITY);
 
@@ -1041,7 +1040,6 @@ public class RolapHierarchy extends HierarchyBase {
             Collections.<RolapSchema.PhysColumn>emptyList(),
             null,
             null,
-            false,
             org.olap4j.metadata.Level.Type.REGULAR,
             Integer.MIN_VALUE);
 }

@@ -13,6 +13,7 @@ package mondrian.test.clearview;
 import junit.framework.*;
 
 import mondrian.test.*;
+import mondrian.util.Bug;
 
 /**
  * <code>HangerDimensionTest</code> tests the extended syntax of Order
@@ -47,6 +48,9 @@ public class HangerDimensionTest extends ClearViewBase {
     }
 
     public static TestSuite suite() {
+        if (!Bug.PhysSchemaInDimension) {
+            return new TestSuite();
+        }
         return constructSuite(getDiffReposStatic(), HangerDimensionTest.class);
     }
 

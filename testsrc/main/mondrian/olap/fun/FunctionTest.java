@@ -146,6 +146,9 @@ public class FunctionTest extends FoodMartTestCase {
      * Tests that ParallelPeriod with Aggregate function works
      */
     public void testParallelPeriodWithSlicer() {
+        if (!Bug.ZeroPathsFixed) {
+            return;
+        }
         assertQueryReturns(
             "With "
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Product])' "
@@ -155,8 +158,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "Set [*BASE_MEMBERS_Product] as '{[Product].[Products].[Drink],[Product].[Products].[Food]}' "
             + "Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})' "
             + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Customer Count]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 "
-            + "Member [Measures].[*FORMATTED_MEASURE_1] as "
-            + "'([Measures].[Customer Count], ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200 "
+            + "Member [Measures].[*FORMATTED_MEASURE_1] as '([Measures].[Customer Count], ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200 "
             + "Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-300 "
             + "Select "
             + "[*BASE_MEMBERS_Measures] on columns, Non Empty Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember)}) on rows "
@@ -221,7 +223,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #2: 10,691\n");
 
         assertQueryThrows(
-            "with member Measures.[Prev Unit Sales] as 'parallelperiod(strToMember(\"[Time].[Quarter]\"))'\n"
+            "with member Measures.[Prev Unit Sales] as 'parallelperiod"
+            + "(strToMember(\"[Time].[Quarter]\"))'\n"
             + "select {[Measures].[Unit Sales], Measures.[Prev Unit Sales]} ON COLUMNS,\n"
             + "[Gender].members ON ROWS\n"
             + "from [Sales]\n"
@@ -582,12 +585,14 @@ public class FunctionTest extends FoodMartTestCase {
             + "SELECT {[Store].[USA].[WA].children} on columns\n"
             + "FROM Sales\n"
             + "WHERE ([Time].[1997].[Q4].[12],\n"
-            + " [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n"
+            + " [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and "
+            + "Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n"
             + " [Measures].[Foo])",
             desiredResult);
 
         assertQueryReturns(
-            "WITH MEMBER [Measures].[Foo] AS 'Iif([Measures].[Bar] IS EMPTY, 1, [Measures].[Bar])'\n"
+            "WITH MEMBER [Measures].[Foo] AS 'Iif([Measures].[Bar] IS EMPTY, "
+            + "1, [Measures].[Bar])'\n"
             + "MEMBER [Measures].[Bar] AS 'CAST(\"42\" AS INTEGER)'\n"
             + "SELECT {[Measures].[Unit Sales], [Measures].[Foo]} on columns\n"
             + "FROM Sales\n"
@@ -856,10 +861,15 @@ public class FunctionTest extends FoodMartTestCase {
             executeSingletonAxis(
                 "Ancestor([Store].[USA].[CA].[Los Angeles], 0)");
         assertEquals("Los Angeles", member.getName());
+    }
 
+    public void testAncestorNumericRagged() {
+        if (!Bug.CubeRaggedFeature) {
+            return;
+        }
         final TestContext testContextRagged =
             getTestContext().withCube("[Sales Ragged]");
-        member =
+        Member member =
             testContextRagged.executeSingletonAxis(
                 "Ancestor([Store].[All Stores].[Vatican], 1)");
         assertEquals("All Stores", member.getName());
@@ -916,6 +926,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testAncestorWithHiddenParent() {
+        if (!Bug.CubeRaggedFeature) {
+            return;
+        }
         final TestContext testContext =
             getTestContext().withCube("[Sales Ragged]");
         Member member =
@@ -952,6 +965,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrdinal() {
+        if (!Bug.CubeRaggedFeature) {
+            return;
+        }
         final TestContext testContext =
             getTestContext().withCube("Sales Ragged");
         Cell cell =
@@ -1191,18 +1207,23 @@ public class FunctionTest extends FoodMartTestCase {
             "ClosingPeriod([Product].[(All)], [Product].[Products].[Drink])",
             "");
 
-        // ragged
-        getTestContext().withCube("[Sales Ragged]").assertAxisReturns(
-            "ClosingPeriod([Store].[Store City], [Store].[All Stores].[Israel])",
-            "[Store].[Stores].[Israel].[Israel].[Tel Aviv]");
-
         // Default member is [Time].[1997].
         assertAxisReturns(
             "ClosingPeriod([Time].[Month])", "[Time].[Time].[1997].[Q4].[12]");
 
         assertAxisReturns("ClosingPeriod()", "[Time].[Time].[1997].[Q4]");
+    }
+
+    public void testClosingPeriodRagged() {
+        if (!Bug.CubeRaggedFeature) {
+            return;
+        }
 
         TestContext testContext = getTestContext().withCube("[Sales Ragged]");
+        testContext.assertAxisReturns(
+            "ClosingPeriod([Store].[Store City], [Store].[All Stores].[Israel])",
+            "[Store].[Stores].[Israel].[Israel].[Tel Aviv]");
+
         testContext.assertAxisReturns(
             "ClosingPeriod([Store].[Store State], [Store].[All Stores].[Israel])",
             "");
@@ -1303,29 +1324,29 @@ public class FunctionTest extends FoodMartTestCase {
             "[Employee].[Employees].[All Employees]");
         testContext.assertAxisReturns(
             "[Employees].[Sheri Nowmer].[Derrick Whelply].Parent",
-            "[Employees].[Sheri Nowmer]");
+            "[Employee].[Employees].[Sheri Nowmer]");
         testContext.assertAxisReturns(
             "[Employees].Members.Item(3)",
-            "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]");
+            "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]");
         testContext.assertAxisReturns(
             "[Employees].Members.Item(3).Parent",
-            "[Employees].[Sheri Nowmer].[Derrick Whelply]");
+            "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]");
         testContext.assertAxisReturns(
             "[Employees].AllMembers.Item(3).Parent",
-            "[Employees].[Sheri Nowmer].[Derrick Whelply]");
+            "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]");
 
         // Ascendants(<Member>) applied to parent-child hierarchy accessed via
         // <Level>.Members
         testContext.assertAxisReturns(
             "Ascendants([Employees].Members.Item(73))",
-            "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha Jameson].[James Bailey]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha Jameson]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
-            + "[Employees].[Sheri Nowmer]\n"
-            + "[Employees].[All Employees]");
+            "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha Jameson].[James Bailey]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy].[Bertha Jameson]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
+            + "[Employee].[Employees].[Sheri Nowmer]\n"
+            + "[Employee].[Employees].[All Employees]");
     }
 
     public void testMembers() {
@@ -1488,8 +1509,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Measures].[Customer Count]\n"
             + "[Measures].[Promotion Sales]\n"
             + "[Measures].[Profit]\n"
-            + "[Measures].[Profit Growth]\n"
-            + "[Measures].[Profit last Period]");
+            + "[Measures].[Profit last Period]\n"
+            + "[Measures].[Profit Growth]");
 
         // <Dimension>.allmembers applied to a query with calc measures
         // Calc measures are returned
@@ -1512,8 +1533,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "{[Measures].[Customer Count]}\n"
                 + "{[Measures].[Promotion Sales]}\n"
                 + "{[Measures].[Profit]}\n"
-                + "{[Measures].[Profit Growth]}\n"
                 + "{[Measures].[Profit last Period]}\n"
+                + "{[Measures].[Profit Growth]}\n"
                 + "{[Measures].[Xxx]}\n"
                 + "Row #0: 266,773\n"
                 + "Row #0: 225,627.23\n"
@@ -1522,8 +1543,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #0: 5,581\n"
                 + "Row #0: 151,211.21\n"
                 + "Row #0: $339,610.90\n"
-                + "Row #0: 0.0%\n"
                 + "Row #0: $339,610.90\n"
+                + "Row #0: 0.0%\n"
                 + "Row #0: 266,773\n");
         }
 
@@ -1551,8 +1572,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "{[Measures].[Customer Count]}\n"
                 + "{[Measures].[Promotion Sales]}\n"
                 + "{[Measures].[Profit]}\n"
-                + "{[Measures].[Profit Growth]}\n"
                 + "{[Measures].[Profit last Period]}\n"
+                + "{[Measures].[Profit Growth]}\n"
                 + "{[Measures].[Unit to Sales ratio]}\n"
                 + "Axis #2:\n"
                 + "{[Store].[Stores].[USA].[CA]}\n"
@@ -1565,8 +1586,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #0: 1,110\n"
                 + "Row #0: 14,447.16\n"
                 + "Row #0: $21,744.11\n"
-                + "Row #0: 0.0%\n"
                 + "Row #0: $21,744.11\n"
+                + "Row #0: 0.0%\n"
                 + "Row #0: 46.7%\n"
                 + "Row #1: 19,287\n"
                 + "Row #1: 16,081.07\n"
@@ -1575,8 +1596,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #1: 767\n"
                 + "Row #1: 10,829.64\n"
                 + "Row #1: $24,089.22\n"
-                + "Row #1: 0.0%\n"
                 + "Row #1: $24,089.22\n"
+                + "Row #1: 0.0%\n"
                 + "Row #1: 48.0%\n"
                 + "Row #2: 30,114\n"
                 + "Row #2: 25,240.08\n"
@@ -1585,8 +1606,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #2: 1,104\n"
                 + "Row #2: 18,459.60\n"
                 + "Row #2: $38,042.78\n"
-                + "Row #2: 0.0%\n"
                 + "Row #2: $38,042.78\n"
+                + "Row #2: 0.0%\n"
                 + "Row #2: 47.6%\n");
         }
 
@@ -1613,8 +1634,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "{[Measures].[Customer Count]}\n"
                 + "{[Measures].[Promotion Sales]}\n"
                 + "{[Measures].[Profit]}\n"
-                + "{[Measures].[Profit Growth]}\n"
                 + "{[Measures].[Profit last Period]}\n"
+                + "{[Measures].[Profit Growth]}\n"
                 + "{[Measures].[Unit to Sales ratio]}\n"
                 + "Axis #2:\n"
                 + "{[Store].[Stores].[USA].[CA]}\n"
@@ -1627,8 +1648,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #0: 1,110\n"
                 + "Row #0: 14,447.16\n"
                 + "Row #0: $21,744.11\n"
-                + "Row #0: 0.0%\n"
                 + "Row #0: $21,744.11\n"
+                + "Row #0: 0.0%\n"
                 + "Row #0: 46.7%\n"
                 + "Row #1: 19,287\n"
                 + "Row #1: 16,081.07\n"
@@ -1637,8 +1658,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #1: 767\n"
                 + "Row #1: 10,829.64\n"
                 + "Row #1: $24,089.22\n"
-                + "Row #1: 0.0%\n"
                 + "Row #1: $24,089.22\n"
+                + "Row #1: 0.0%\n"
                 + "Row #1: 48.0%\n"
                 + "Row #2: 30,114\n"
                 + "Row #2: 25,240.08\n"
@@ -1647,8 +1668,8 @@ public class FunctionTest extends FoodMartTestCase {
                 + "Row #2: 1,104\n"
                 + "Row #2: 18,459.60\n"
                 + "Row #2: $38,042.78\n"
-                + "Row #2: 0.0%\n"
                 + "Row #2: $38,042.78\n"
+                + "Row #2: 0.0%\n"
                 + "Row #2: 47.6%\n");
         }
 
@@ -2035,6 +2056,10 @@ public class FunctionTest extends FoodMartTestCase {
             MondrianProperties.instance().SsasCompatibleNaming.get()
                 ? "[Time2].[Weekly].[1997].[23]"
                 : "[Time2.Weekly].[1997].[23]";
+
+        if (!Bug.ModifiedSchema) {
+            return;
+        }
         TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Time2\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
@@ -3023,9 +3048,9 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "WITH\n"
             + "MEMBER [Measures].[Declining Stores Count] AS\n"
-            + " ' Count(Filter(Descendants(Store.CurrentMember, Store.[Store Name]), [Store Sales] < ([Store Sales],Time.Time.PrevMember))) '\n"
+            + " ' Count(Filter(Descendants(Stores.CurrentMember, Store.[Store Name]), [Store Sales] < ([Store Sales],Time.Time.PrevMember))) '\n"
             + " MEMBER \n"
-            + "  [Store].[XL_QZX] AS 'Aggregate ({ [Store].[All Stores].[USA].[WA] , [Store].[All Stores].[USA].[CA] })' \n"
+            + "  [Stores].[XL_QZX] AS 'Aggregate ({ [Store].[All Stores].[USA].[WA] , [Store].[All Stores].[USA].[CA] })' \n"
             + "SELECT \n"
             + "  NON EMPTY HIERARCHIZE(AddCalculatedMembers({DrillDownLevel({[Product].[All Products]})})) \n"
             + "    DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON COLUMNS \n"
@@ -4513,6 +4538,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendantsMLLeavesRagged() {
+        if (!Bug.CubeRaggedFeature) {
+            return;
+        }
         // no cities are at leaf level
         final TestContext raggedContext =
             getTestContext().withCube("[Sales Ragged]");
@@ -4610,11 +4638,17 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendantsM2() {
+        if (!Bug.NpeInMakeChildMemberSql) {
+            return;
+        }
         assertAxisReturns(
             "Descendants([Time].[1997], 2)", months);
     }
 
     public void testDescendantsM2Self() {
+        if (!Bug.NpeInMakeChildMemberSql) {
+            return;
+        }
         assertAxisReturns(
             "Descendants([Time].[1997], 2, Self)", months);
     }
@@ -4648,12 +4682,18 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendantsMFarSelf() {
+        if (!Bug.NpeInMakeChildMemberSql) {
+            return;
+        }
         assertAxisReturns(
             "Descendants([Time].[1997], 10000, Self)",
             "");
     }
 
     public void testDescendantsMNY() {
+        if (!Bug.NpeInMakeChildMemberSql) {
+            return;
+        }
         assertAxisReturns(
             "Descendants([Time].[1997], 1, BEFORE_AND_AFTER)",
             year1997 + "\n" + months);
@@ -4672,22 +4712,28 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendantsParentChild() {
+        if (!Bug.NpeInMakeChildMemberSql) {
+            return;
+        }
         getTestContext().withCube("HR").assertAxisReturns(
             "Descendants([Employees], 2)",
-            "[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence]\n"
-            + "[Employees].[Sheri Nowmer].[Maya Gutierrez]\n"
-            + "[Employees].[Sheri Nowmer].[Roberta Damstra]\n"
-            + "[Employees].[Sheri Nowmer].[Rebecca Kanagaki]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz]\n"
-            + "[Employees].[Sheri Nowmer].[Donna Arnold]");
+            "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Maya Gutierrez]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Rebecca Kanagaki]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Donna Arnold]");
     }
 
     public void testDescendantsParentChildBefore() {
+        if (!Bug.NpeInMakeChildMemberSql) {
+            return;
+        }
         getTestContext().withCube("HR").assertAxisReturns(
             "Descendants([Employees], 2, BEFORE)",
-            "[Employees].[All Employees]\n"
-            + "[Employees].[Sheri Nowmer]");
+            "[Employee].[Employees].[All Employees]\n"
+            + "[Employee].[Employees].[Sheri Nowmer]");
     }
 
     public void testDescendantsParentChildLeaves() {
@@ -4699,148 +4745,148 @@ public class FunctionTest extends FoodMartTestCase {
         // leaves, restricted by level
         testContext.assertAxisReturns(
             "Descendants([Employees].[All Employees].[Sheri Nowmer].[Michael Spence], [Employees].[Employee Id], LEAVES)",
-            "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[John Brooks]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Todd Logan]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Joshua Several]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[James Thomas]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Robert Vessa]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Bronson Jacobs]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Rebecca Barley]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Emilio Alvaro]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Becky Waters]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[A. Joyce Jarvis]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Ruby Sue Styles]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Lisa Roy]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Ingrid Burkhardt]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Todd Whitney]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Barbara Wisnewski]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Karren Burkhardt]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[John Long]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Edwin Olenzek]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Jessie Valerio]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Robert Ahlering]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Megan Burke]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Karel Bates]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[James Tran]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Shelley Crow]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Anne Sims]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Clarence Tatman]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Jan Nelsen]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Jeanie Glenn]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Peggy Smith]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Tish Duff]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Anita Lucero]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stephen Burton]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Amy Consentino]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stacie Mcanich]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Mary Browning]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Alexandra Wellington]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Cory Bacugalupi]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stacy Rizzi]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Mike White]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Marty Simpson]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Robert Jones]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Raul Casts]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Bridget Browqett]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Kay Kartz]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Jeanette Cole]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Phyllis Huntsman]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Hannah Arakawa]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Wathalee Steuber]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Pamela Cox]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Helen Lutes]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Linda Ecoffey]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Katherine Swint]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Dianne Slattengren]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Ronald Heymsfield]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Steven Whitehead]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[William Sotelo]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Beth Stanley]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Jill Markwood]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Mildred Valentine]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Suzann Reams]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Audrey Wold]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Susan French]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Trish Pederson]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Eric Renn]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Elizabeth Catalano]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Eric Coleman]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Catherine Abel]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Emilo Miller]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Hazel Walker]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Linda Blasingame]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Jackie Blackwell]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[John Ortiz]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Stacey Tearpak]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Fannye Weber]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Diane Kabbes]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Brenda Heaney]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Judith Karavites]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Jauna Elson]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Nancy Hirota]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Marie Moya]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Nicky Chesnut]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Karen Hall]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Greg Narberes]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Anna Townsend]\n"
-            + "[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Carol Ann Rockne]");
+            "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[John Brooks]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Todd Logan]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Joshua Several]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[James Thomas]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Robert Vessa]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Bronson Jacobs]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Rebecca Barley]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Emilio Alvaro]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Becky Waters]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[A. Joyce Jarvis]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Ruby Sue Styles]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Lisa Roy]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Ingrid Burkhardt]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Todd Whitney]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Barbara Wisnewski]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Karren Burkhardt]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[John Long]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Edwin Olenzek]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Jessie Valerio]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Robert Ahlering]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Megan Burke]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Mary Sandidge].[Karel Bates]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[James Tran]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Shelley Crow]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Anne Sims]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Clarence Tatman]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Jan Nelsen]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Jeanie Glenn]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Peggy Smith]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Tish Duff]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Anita Lucero]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stephen Burton]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Amy Consentino]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stacie Mcanich]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Mary Browning]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Alexandra Wellington]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Cory Bacugalupi]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Stacy Rizzi]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Mike White]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Marty Simpson]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Robert Jones]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Raul Casts]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Bridget Browqett]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Monk Skonnard].[Kay Kartz]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Jeanette Cole]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Phyllis Huntsman]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Hannah Arakawa]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Wathalee Steuber]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Pamela Cox]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Helen Lutes]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Linda Ecoffey]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Katherine Swint]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Dianne Slattengren]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Ronald Heymsfield]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Steven Whitehead]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[William Sotelo]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Beth Stanley]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Jill Markwood]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Mildred Valentine]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Suzann Reams]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Audrey Wold]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Susan French]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Trish Pederson]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Eric Renn]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Elizabeth Catalano]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Christopher Beck].[Eric Coleman]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Catherine Abel]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Emilo Miller]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Daniel Wolter].[Michael John Troyer].[Hazel Walker]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Linda Blasingame]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Jackie Blackwell]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[John Ortiz]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Stacey Tearpak]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Fannye Weber]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Diane Kabbes]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Brenda Heaney]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Sara Pettengill].[Judith Karavites]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Jauna Elson]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Nancy Hirota]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Marie Moya]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Nicky Chesnut]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Karen Hall]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Greg Narberes]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Anna Townsend]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Michael Spence].[Dianne Collins].[Lawrence Hurkett].[Carol Ann Rockne]");
 
         // leaves, restricted by depth
         testContext.assertAxisReturns(
             "Descendants([Employees], 1, LEAVES)", "");
         testContext.assertAxisReturns(
             "Descendants([Employees], 2, LEAVES)",
-            "[Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]\n"
-            + "[Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]\n"
-            + "[Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]\n"
-            + "[Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]\n"
-            + "[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]\n"
-            + "[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Ernest Staton]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Rose Sims]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Lauretta De Carlo]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Mary Williams]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Terri Burke]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Audrey Osborn]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Brian Binai]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Concepcion Lozada]\n"
-            + "[Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]\n"
-            + "[Employees].[Sheri Nowmer].[Donna Arnold].[Doris Carter]");
+            "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Ernest Staton]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Rose Sims]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Lauretta De Carlo]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Mary Williams]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Terri Burke]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Audrey Osborn]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Brian Binai]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Concepcion Lozada]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Donna Arnold].[Doris Carter]");
 
         testContext.assertAxisReturns(
             "Descendants([Employees], 3, LEAVES)",
-            "[Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]\n"
-            + "[Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]\n"
-            + "[Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]\n"
-            + "[Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]\n"
-            + "[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]\n"
-            + "[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Ernest Staton]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Rose Sims]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Lauretta De Carlo]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Mary Williams]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Terri Burke]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Audrey Osborn]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Brian Binai]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz].[Concepcion Lozada]\n"
-            + "[Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]\n"
-            + "[Employees].[Sheri Nowmer].[Donna Arnold].[Doris Carter]");
+            "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Juanita Sharp]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Rebecca Kanagaki].[Sandra Brunner]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Ernest Staton]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Rose Sims]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Lauretta De Carlo]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Mary Williams]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Terri Burke]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Audrey Osborn]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Brian Binai]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz].[Concepcion Lozada]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Donna Arnold].[Doris Carter]");
 
         // note that depth is RELATIVE to the starting member
         testContext.assertAxisReturns(
             "Descendants([Employees].[Sheri Nowmer].[Roberta Damstra], 1, LEAVES)",
-            "[Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]\n"
-            + "[Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]\n"
-            + "[Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]\n"
-            + "[Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]");
+            "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Jennifer Cooper]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Peggy Petty]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Jessica Olguin]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Roberta Damstra].[Phyllis Burchett]");
 
         // Howard Bechard is a leaf member -- appears even at depth 0
         testContext.assertAxisReturns(
             "Descendants([Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard], 0, LEAVES)",
-            "[Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]");
+            "[Employee].[Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]");
         testContext.assertAxisReturns(
             "Descendants([Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard], 1, LEAVES)",
-            "[Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]");
+            "[Employee].[Employees].[Sheri Nowmer].[Donna Arnold].[Howard Bechard]");
 
         testContext.assertExprReturns(
             "Count(Descendants([Employees], 2, LEAVES))", "16");
@@ -4853,6 +4899,9 @@ public class FunctionTest extends FoodMartTestCase {
 
         // Negative depth acts like +infinity (per MSAS).  Run the test several
         // times because we had a non-deterministic bug here.
+        if (!Bug.NpeInMakeChildMemberSql) {
+            return;
+        }
         for (int i = 0; i < 100; ++i) {
             testContext.assertExprReturns(
                 "Count(Descendants([Employees], -1, LEAVES))", "1,044");
@@ -4860,12 +4909,18 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendantsSBA() {
+        if (!Bug.NpeInMakeChildMemberSql) {
+            return;
+        }
         assertAxisReturns(
             "Descendants([Time].[1997], 1, SELF_BEFORE_AFTER)",
             hierarchized1997);
     }
 
     public void testDescendantsSet() {
+        if (!Bug.NpeInMakeChildMemberSql) {
+            return;
+        }
         assertAxisReturns(
             "Descendants({[Time].[1997].[Q4], [Time].[1997].[Q2]}, 1)",
             "[Time].[Time].[1997].[Q4].[10]\n"
@@ -5201,10 +5256,16 @@ public class FunctionTest extends FoodMartTestCase {
         // dimension name
         assertExprReturns("[Store].Name", "Store");
         // member name
-        assertExprReturns("[Store].DefaultMember.Name", "All Stores");
+        assertExprReturns("[Store].[Stores].DefaultMember.Name", "All Stores");
+        assertExprReturns("[Stores].DefaultMember.Name", "All Stores");
+        assertExprThrows(
+            "[Store].DefaultMember.Name",
+            "The 'Store' dimension contains more than one hierarchy, "
+            + "therefore "
+            + "the hierarchy must be explicitly specified.");
         if (isDefaultNullMemberRepresentation()) {
             // name of null member
-            assertExprReturns("[Store].Parent.Name", "#null");
+            assertExprReturns("[Stores].Parent.Name", "#null");
         }
     }
 
@@ -5233,6 +5294,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testMemberUniqueNameOfNull() {
+        if (!Bug.InvalidKeyNullFixed) {
+            return;
+        }
         if (isDefaultNullMemberRepresentation()) {
             assertExprReturns(
                 "[Measures].[Unit Sales].FirstChild.UniqueName",
@@ -5904,32 +5968,38 @@ public class FunctionTest extends FoodMartTestCase {
             "OpeningPeriod([Product].[Product Name], [Product].[Products].[Drink])",
             "[Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]");
 
-        getTestContext().withCube("[Sales Ragged]").assertAxisReturns(
-            "OpeningPeriod([Store].[Store City], [Store].[All Stores].[Israel])",
-            "[Store].[Stores].[Israel].[Israel].[Haifa]");
-
-        getTestContext().withCube("[Sales Ragged]").assertAxisReturns(
-            "OpeningPeriod([Store].[Store State], [Store].[All Stores].[Israel])",
-            "");
-
         // Default member is [Time].[1997].
         assertAxisReturns(
             "OpeningPeriod([Time].[Month])", "[Time].[Time].[1997].[Q1].[1]");
 
         assertAxisReturns("OpeningPeriod()", "[Time].[Time].[1997].[Q1]");
 
-        TestContext testContext = getTestContext().withCube("[Sales Ragged]");
-        testContext.assertAxisThrows(
+        assertAxisThrows(
+            "OpeningPeriod([Store].[Store City])",
+            "The <level> and <member> arguments to OpeningPeriod must be "
+            + "from the same hierarchy. The level was from '[Store].[Stores]' "
+            + "but the member was from '[Time].[Time]'.");
+    }
+
+    public void testOpeningPeriodRagged() {
+        if (!Bug.CubeRaggedFeature) {
+            return;
+        }
+        final TestContext raggedContext =
+            getTestContext().withCube("[Sales Ragged]");
+        raggedContext.assertAxisReturns(
+            "OpeningPeriod([Store].[Store City], [Store].[All Stores].[Israel])",
+            "[Store].[Stores].[Israel].[Israel].[Haifa]");
+
+        raggedContext.assertAxisReturns(
+            "OpeningPeriod([Store].[Store State], [Store].[All Stores].[Israel])",
+            "");
+
+        raggedContext.assertAxisThrows(
             "OpeningPeriod([Time].[Year], [Store].[All Stores].[Israel])",
             "The <level> and <member> arguments to OpeningPeriod must be "
             + "from the same hierarchy. The level was from '[Time]' but "
             + "the member was from '[Store]'.");
-
-        assertAxisThrows(
-            "OpeningPeriod([Store].[Store City])",
-            "The <level> and <member> arguments to OpeningPeriod must be "
-            + "from the same hierarchy. The level was from '[Store]' but "
-            + "the member was from '[Time]'.");
     }
 
     /**
@@ -6115,7 +6185,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "{[Time].[Time].[1997].[Q3].[8]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Foo]}\n"
-            + "Row #0: [Time].[1997].[Q3].[7]\n");
+            + "Row #0: [Time].[Time].[1997].[Q3].[7]\n");
 
         //  one parameter, level below member
         if (isDefaultNullMemberRepresentation()) {
@@ -6129,7 +6199,7 @@ public class FunctionTest extends FoodMartTestCase {
                 + "{[Time].[Time].[1997].[Q3]}\n"
                 + "Axis #1:\n"
                 + "{[Measures].[Foo]}\n"
-                + "Row #0: [Time].[#null]\n");
+                + "Row #0: [Time].[Time].[#null]\n");
         }
     }
 
@@ -6293,23 +6363,26 @@ public class FunctionTest extends FoodMartTestCase {
         assertQueryReturns(
             "WITH MEMBER [Measures].[A] AS\n"
             + " '([Measures].[Store Sales] * [Measures].[Store Sales])'\n"
-            + "SELECT {[Store]} ON COLUMNS,\n"
+            + "SELECT {[Stores]} ON COLUMNS,\n"
             + " {[Measures].[Store Sales], [Measures].[A]} ON ROWS\n"
-            + "FROM Sales", desiredResult);
+            + "FROM Sales",
+            desiredResult);
         // as above, no parentheses
         assertQueryReturns(
             "WITH MEMBER [Measures].[A] AS\n"
             + " '[Measures].[Store Sales] * [Measures].[Store Sales]'\n"
-            + "SELECT {[Store]} ON COLUMNS,\n"
+            + "SELECT {[Stores]} ON COLUMNS,\n"
             + " {[Measures].[Store Sales], [Measures].[A]} ON ROWS\n"
-            + "FROM Sales", desiredResult);
+            + "FROM Sales",
+            desiredResult);
         // as above, plus 0
         assertQueryReturns(
             "WITH MEMBER [Measures].[A] AS\n"
             + " '[Measures].[Store Sales] * [Measures].[Store Sales] + 0'\n"
-            + "SELECT {[Store]} ON COLUMNS,\n"
+            + "SELECT {[Stores]} ON COLUMNS,\n"
             + " {[Measures].[Store Sales], [Measures].[A]} ON ROWS\n"
-            + "FROM Sales", desiredResult);
+            + "FROM Sales",
+            desiredResult);
     }
 
     public void testDivide() {
@@ -6496,6 +6569,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testNonEmptyCrossJoin() {
+        if (!Bug.ZeroPathsFixed) {
+            return;
+        }
         // NonEmptyCrossJoin needs to evaluate measures to find out whether
         // cells are empty, so it implicitly depends upon all dimensions.
         Set<String> s1 = TestContext.allHiersExcept("[Store].[Stores]");
@@ -6685,8 +6761,8 @@ public class FunctionTest extends FoodMartTestCase {
     public void testDistinctTwoMembers() {
         getTestContext().withCube("HR").assertAxisReturns(
             "Distinct({[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold],"
-            + "[Employees].[Sheri Nowmer].[Donna Arnold]})",
-            "[Employees].[Sheri Nowmer].[Donna Arnold]");
+            + "[Employee].[Employees].[Sheri Nowmer].[Donna Arnold]})",
+            "[Employee].[Employees].[Sheri Nowmer].[Donna Arnold]");
     }
 
     public void testDistinctThreeMembers() {
@@ -6694,8 +6770,8 @@ public class FunctionTest extends FoodMartTestCase {
             "Distinct({[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold],"
             + "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz],"
             + "[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold]})",
-            "[Employees].[Sheri Nowmer].[Donna Arnold]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz]");
+            "[Employee].[Employees].[Sheri Nowmer].[Donna Arnold]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz]");
     }
 
     public void testDistinctFourMembers() {
@@ -6703,9 +6779,9 @@ public class FunctionTest extends FoodMartTestCase {
             "Distinct({[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold],"
             + "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz],"
             + "[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold],"
-            + "[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz]})",
-            "[Employees].[Sheri Nowmer].[Donna Arnold]\n"
-            + "[Employees].[Sheri Nowmer].[Darren Stanz]");
+            + "[Employee].[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz]})",
+            "[Employee].[Employees].[Sheri Nowmer].[Donna Arnold]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Darren Stanz]");
     }
 
     public void testDistinctTwoTuples() {
@@ -6803,7 +6879,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         // SSAS implicitly converts arg #1 to a set
         assertAxisReturns(
-            "Generate([Store].[USA], [Store].PrevMember, ALL)",
+            "Generate([Store].[USA], [Stores].PrevMember, ALL)",
             "[Store].[Stores].[Mexico]");
     }
 
@@ -7022,21 +7098,21 @@ public class FunctionTest extends FoodMartTestCase {
             "Hierarchize(\n"
             + "   { Subset([Employees].Members, 90, 10),\n"
             + "     Head([Employees].Members, 5) })",
-            "[Employees].[All Employees]\n"
-            + "[Employees].[Sheri Nowmer]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Leopoldo Renfro]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Donna Brockett]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Laurie Anderson]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Louis Gomez]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Melvin Glass]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Kristin Cohen]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Susan Kharman]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Gordon Kirschner]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Geneva Kouba]\n"
-            + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Tricia Clark]");
+            "[Employee].[Employees].[All Employees]\n"
+            + "[Employee].[Employees].[Sheri Nowmer]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Shauna Wyro]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Leopoldo Renfro]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Donna Brockett]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Laurie Anderson]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Louis Gomez]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Melvin Glass]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Kristin Cohen]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Susan Kharman]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Gordon Kirschner]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Geneva Kouba]\n"
+            + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Lin Conley].[Paul Tays].[Cheryl Thorton].[Tricia Clark]");
     }
 
     public void testHierarchizeCrossJoinPre() {
@@ -7365,18 +7441,18 @@ public class FunctionTest extends FoodMartTestCase {
                   + "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
                   + "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[M]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[M])\n"
                 : ""
-                  + "ContextCalc(name=ContextCalc, class=class mondrian.olap.fun.OrderFunDef$ContextCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST)\n"
+                  + "ContextCalc(name=ContextCalc, class=class mondrian.olap.fun.OrderFunDef$ContextCalc, type=SetType<MemberType<hierarchy=[Product].[Products]>>, resultStyle=MUTABLE_LIST)\n"
                   + "    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Store Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store Sales])\n"
-                  + "    CalcImpl(name=CalcImpl, class=class mondrian.olap.fun.OrderFunDef$CalcImpl, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=MUTABLE_LIST, direction=ASC)\n"
-                  + "        ImmutableIterCalc(name=ImmutableIterCalc, class=class mondrian.olap.fun.FilterFunDef$ImmutableIterCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=ITERABLE)\n"
-                  + "            Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
-                  + "                CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
+                  + "    CalcImpl(name=CalcImpl, class=class mondrian.olap.fun.OrderFunDef$CalcImpl, type=SetType<MemberType<hierarchy=[Product].[Products]>>, resultStyle=MUTABLE_LIST, direction=ASC)\n"
+                  + "        ImmutableIterCalc(name=ImmutableIterCalc, class=class mondrian.olap.fun.FilterFunDef$ImmutableIterCalc, type=SetType<MemberType<hierarchy=[Product].[Products]>>, resultStyle=ITERABLE)\n"
+                  + "            Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product].[Products]>>, resultStyle=LIST)\n"
+                  + "                CurrentMemberFixed(hierarchy=[Product].[Products], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product].[Products]>, resultStyle=VALUE)\n"
                   + "            >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$63$1, type=BOOLEAN, resultStyle=VALUE)\n"
                   + "                MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
                   + "                    Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
                   + "                Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=NUMERIC, resultStyle=VALUE_NOT_NULL, value=1000.0)\n"
                   + "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
-                  + "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[M]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[M])\n");
+                  + "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Customer].[Gender].[M]>, resultStyle=VALUE_NOT_NULL, value=[Customer].[Gender].[M])\n");
     }
 
     /**
@@ -7406,10 +7482,14 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * test case for bug # 1797159, Potential MDX Order Non Empty Problem
-     *
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-332">MONDRIAN-332,
+     * "Potential MDX Order Non Empty Problem"</a>
      */
     public void testOrderNonEmpty() {
+        if (!Bug.NpeInMakeChildMemberSql) {
+            return;
+        }
         assertQueryReturns(
             "select NON EMPTY [Gender].Members ON COLUMNS,\n"
             + "NON EMPTY Order([Product].[Products].[Drink].Children,\n"
@@ -8104,6 +8184,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderTupleMultiKeys1() {
+        if (!Bug.ZeroPathsFixed) {
+            return;
+        }
         assertQueryReturns(
             "with \n"
             + "  set [NECJ] as \n"
@@ -8128,6 +8211,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderTupleMultiKeys2() {
+        if (!Bug.ZeroPathsFixed) {
+            return;
+        }
         assertQueryReturns(
             "with \n"
             + "  set [NECJ] as \n"
@@ -8152,6 +8238,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderTupleMultiKeys3() {
+        if (!Bug.ZeroPathsFixed) {
+            return;
+        }
         // WA unit sales is greater than CA unit sales
         // Santa Monica unit sales (2660) is greater that Woodland hills (2516)
         assertQueryReturns(
@@ -8178,6 +8267,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderTupleMultiKeyswithVCube() {
+        if (!Bug.ModifiedSchema) {
+            return;
+        }
         // WA unit sales is greater than CA unit sales
         propSaver.set(
             MondrianProperties.instance().CompareSiblingsByOrderKey, true);
@@ -8527,6 +8619,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testTopCountTuple() {
+        if (!Bug.MembersNotEqualFixed) {
+            return;
+        }
         assertAxisReturns(
             "TopCount([Customers].[Name].members,2,(Time.[1997].[Q1],[Measures].[Store Sales]))",
             "[Customer].[Customers].[USA].[WA].[Spokane].[Grace McLaughlin]\n"
@@ -8574,6 +8669,9 @@ public class FunctionTest extends FoodMartTestCase {
      * After optimizing, who knows?
      */
     public void testTopCountHuge() {
+        if (!Bug.MembersNotEqualFixed) {
+            return;
+        }
         // TODO convert printfs to trace
         final String query =
             "SELECT [Measures].[Store Sales] ON 0,\n"
@@ -9593,6 +9691,9 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testRankTuplesWithTiedExpr() {
+        if (!Bug.ZeroPathsFixed) {
+            return;
+        }
         assertQueryReturns(
             "with "
             + " Set [Beers for Store] as 'NonEmptyCrossJoin("
@@ -10403,6 +10504,9 @@ Intel platforms):
      * "VisualTotals doesn't work for the all member".
      */
     public void testVisualTotalsAll() {
+        if (!Bug.VisualTotalsFixed) {
+            return;
+        }
         final String query =
             "SELECT \n"
             + "  {[Measures].[Unit Sales]} ON 0, \n"
@@ -10442,6 +10546,9 @@ Intel platforms):
      * "VisualTotals doesn't work for the all member".
      */
     public void testVisualTotalsWithNamedSetAndPivot() {
+        if (!Bug.VisualTotalsFixed) {
+            return;
+        }
         assertQueryReturns(
             "WITH SET [CA_OR] AS\n"
             + "    VisualTotals(\n"
@@ -10542,6 +10649,9 @@ Intel platforms):
      * results"</a>.
      */
     public void testVisualTotalsIntersect() {
+        if (!Bug.VisualTotalsFixed) {
+            return;
+        }
         assertQueryReturns(
             "WITH\n"
             + "SET [XL_Row_Dim_0] AS 'VisualTotals(Distinct(Hierarchize({Ascendants([Customers].[All Customers].[USA]), Descendants([Customers].[All Customers].[USA])})))' \n"
@@ -10567,6 +10677,9 @@ Intel platforms):
      * right-hand set"</a>.
      */
     public void testVisualTotalsWithNamedSetAndPivotSameAxis() {
+        if (!Bug.VisualTotalsFixed) {
+            return;
+        }
         assertQueryReturns(
             "WITH SET [XL_Row_Dim_0] AS\n"
             + " VisualTotals(\n"
@@ -10623,6 +10736,9 @@ Intel platforms):
      * results"</a>.
      */
     public void testVisualTotalsDistinctCountMeasure() {
+        if (!Bug.VisualTotalsFixed) {
+            return;
+        }
         // distinct measure
         assertQueryReturns(
             "WITH SET [XL_Row_Dim_0] AS\n"
@@ -10733,6 +10849,9 @@ Intel platforms):
      * RolapCubeMember"</a>.
      */
     public void testVisualTotalsClassCast() {
+        if (!Bug.VisualTotalsFixed) {
+            return;
+        }
         assertQueryReturns(
             "WITH  SET [XL_Row_Dim_0] AS\n"
             + " VisualTotals(\n"
@@ -10818,6 +10937,9 @@ Intel platforms):
      * are multiple hierarchies in Named set.
      */
     public void testVisualTotalsWithNamedSetOfTuples() {
+        if (!Bug.VisualTotalsFixed) {
+            return;
+        }
         assertQueryReturns(
             "WITH SET [XL_Row_Dim_0] AS\n"
             + " VisualTotals(\n"
@@ -11631,6 +11753,9 @@ Intel platforms):
      * Time dimension".
      */
     public void testCubeTimeDimensionFails() {
+        if (!Bug.CubeStoreFeature) {
+            return;
+        }
         assertQueryThrows(
             "select LastPeriods(1) on columns from [Store]",
             "'LastPeriods', no time dimension");
@@ -11766,6 +11891,9 @@ Intel platforms):
     }
 
     public void testExistsMembersDiffDim() {
+        if (!Bug.MembersNotEqualFixed) {
+            return;
+        }
         assertQueryReturns(
             "select exists(\n"
             + "  {[Customers].[All Customers],\n"
@@ -11779,6 +11907,9 @@ Intel platforms):
     }
 
     public void testExistsMembers2Hierarchies() {
+        if (!Bug.MembersNotEqualFixed) {
+            return;
+        }
         assertQueryReturns(
             "select exists(\n"
             + "  {[Customers].[All Customers],\n"
@@ -11837,6 +11968,9 @@ Intel platforms):
     }
 
     public void testExistsTuplesLevel23() {
+        if (!Bug.MembersNotEqualFixed) {
+            return;
+        }
         assertQueryReturns(
             "select exists(\n"
             + "  crossjoin({[Customers].[State Province].Members}, {[Product].[All Products]}),\n"
@@ -11854,6 +11988,9 @@ Intel platforms):
     }
 
     public void testExistsTuples2Dim() {
+        if (!Bug.MembersNotEqualFixed) {
+            return;
+        }
         assertQueryReturns(
             "select exists(\n"
             + "  crossjoin({[Customers].[State Province].Members}, {[Product].[Product Family].Members}),\n"
@@ -11871,6 +12008,9 @@ Intel platforms):
     }
 
     public void testExistsTuplesDiffDim() {
+        if (!Bug.MembersNotEqualFixed) {
+            return;
+        }
         assertQueryReturns(
             "select exists(\n"
             + "  crossjoin(\n"

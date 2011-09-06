@@ -1113,7 +1113,9 @@ Util.deprecated("obsolete basecube parameter", false);
                 }
             }
 
-            for (RolapProperty property : currLevel.attribute.getProperties()) {
+            for (RolapProperty property
+                : currLevel.attribute.getExplicitProperties())
+            {
                 // FIXME: For now assume that properties have a single-column
                 //    key and name etc. are the same.
                 assert property.attribute.keyList.size() == 1;

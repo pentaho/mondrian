@@ -13,9 +13,11 @@ import mondrian.olap.Property;
 import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 import mondrian.spi.MemberFormatter;
+import mondrian.util.CompositeList;
 import org.olap4j.metadata.Level;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -25,7 +27,12 @@ import java.util.List;
  * @author jhyde
  */
 public class RolapAttribute {
-//    public final RolapCubeDimension dimension;
+
+    // Add intrinsic property NAME.
+    // TODO: make key, parent etc. all properties
+    private static final List<RolapProperty> INTRINSIC_PROPERTIES =
+        Arrays.asList(
+            RolapLevel.NAME_PROPERTY);
 
     final String name;
 
@@ -60,8 +67,6 @@ public class RolapAttribute {
      */
     final String nullValue;
 
-    final boolean all;
-
     RolapAttribute parentAttribute;
 
     final org.olap4j.metadata.Level.Type levelType;
@@ -69,6 +74,22 @@ public class RolapAttribute {
 
     final MemberFormatter memberFormatter;
 
+    /**
+     * Creates an attribute.
+     *
+     * <p>An attribute ought to have a dimension, but a few important attributes
+     * ('all', 'null', 'measures') don't. See if we can do without it.</p>
+     *
+     * @param name Name
+     * @param keyList List of key columns
+     * @param nameExp Name column
+     * @param captionExp Caption column
+     * @param orderByList Ordering columns
+     * @param memberFormatter Formatter
+     * @param nullValue Value used to represent null, e.g. "#null"
+     * @param levelType
+     * @param approxRowCount
+     */
     public RolapAttribute(
         String name,
         List<RolapSchema.PhysColumn> keyList,
@@ -77,7 +98,6 @@ public class RolapAttribute {
         List<RolapSchema.PhysColumn> orderByList,
         MemberFormatter memberFormatter,
         String nullValue,
-        boolean all,
         Level.Type levelType,
         int approxRowCount)
     {
@@ -99,7 +119,6 @@ public class RolapAttribute {
         this.captionExp = captionExp;
         this.memberFormatter = memberFormatter;
         this.nullValue = nullValue;
-        this.all = all;
         this.levelType = levelType;
         this.approxRowCount = approxRowCount;
         if (orderByList != null) {
@@ -109,13 +128,14 @@ public class RolapAttribute {
         }
     }
 
-    void setParentExpr(RolapSchema.PhysExpr parentExpr)
-    {
-        assert !(all && parentExpr != null);
+    public List<RolapProperty> getExplicitProperties() {
+        return properties;
     }
 
     public List<RolapProperty> getProperties() {
-        return properties;
+        return CompositeList.of(
+            INTRINSIC_PROPERTIES,
+            properties);
     }
 
     public Property.Datatype getType() {
