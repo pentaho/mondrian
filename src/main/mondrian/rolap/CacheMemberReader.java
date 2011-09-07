@@ -18,6 +18,7 @@ import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.util.Pair;
 
 /**
  * <code>CacheMemberReader</code> implements {@link MemberReader} by reading
@@ -37,8 +38,12 @@ class CacheMemberReader implements MemberReader, MemberCache {
     /**
      * Looks up a member by its key. The key is an object if non-composite, a
      * list if composite.
+     *
+     * <p>REVIEW: Might be more memory efficient to have a two-level map (that
+     * is, a map for each level) rather than using Pair as a compound key. Also,
+     * we can use an IdentityHashMap for levels, which should be faster.</p>
      */
-    private final Map<Object, RolapMember> mapKeyToMember;
+    private final Map<Pair<RolapLevel, Object>, RolapMember> mapKeyToMember;
 
     CacheMemberReader(MemberSource source) {
         this.source = source;
@@ -46,7 +51,8 @@ class CacheMemberReader implements MemberReader, MemberCache {
             // we don't want the reader to write back to our cache
             Util.discard(source.setCache(this));
         }
-        this.mapKeyToMember = new HashMap<Object, RolapMember>();
+        this.mapKeyToMember =
+            new HashMap<Pair<RolapLevel, Object>, RolapMember>();
         this.members = source.getMembers();
         for (int i = 0; i < members.size(); i++) {
             RolapMember member = RolapUtil.strip(members.get(i));
@@ -79,26 +85,21 @@ class CacheMemberReader implements MemberReader, MemberCache {
     }
 
     // implement MemberCache
-    public Object makeKey(RolapMember parent, Object[] key) {
-        return key.length == 1 ? key[0] : Arrays.asList(key);
+    public RolapMember getMember(RolapLevel level, Object key) {
+        return mapKeyToMember.get(Pair.of(level, key));
+    }
+
+    public RolapMember getMember(
+        RolapLevel level,
+        Object key,
+        boolean mustCheckCacheStatus)
+    {
+        return mapKeyToMember.get(Pair.of(level, key));
     }
 
     // implement MemberCache
-    public Object makeKey(RolapMember parent, List<Object> key) {
-        return new MemberKey(parent, key);
-    }
-
-    // implement MemberCache
-    public RolapMember getMember(Object key) {
-        return mapKeyToMember.get(key);
-    }
-    public RolapMember getMember(Object key, boolean mustCheckCacheStatus) {
-        return mapKeyToMember.get(key);
-    }
-
-    // implement MemberCache
-    public Object putMember(Object key, RolapMember value) {
-        return mapKeyToMember.put(key, value);
+    public Object putMember(RolapLevel level, Object key, RolapMember value) {
+        return mapKeyToMember.put(Pair.of(level, key), value);
     }
 
     // don't need to implement this MemberCache method because we're never
@@ -117,12 +118,12 @@ class CacheMemberReader implements MemberReader, MemberCache {
         return false;
     }
 
-    public RolapMember removeMember(Object key)
+    public RolapMember removeMember(RolapLevel level, Object key)
     {
         throw new UnsupportedOperationException();
     }
 
-    public RolapMember removeMemberAndDescendants(Object key)
+    public RolapMember removeMemberAndDescendants(RolapLevel level, Object key)
     {
         throw new UnsupportedOperationException();
     }

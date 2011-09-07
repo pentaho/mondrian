@@ -321,11 +321,6 @@ public class Bug {
     public static final boolean CubeRaggedFeature = Enable;
 
     /**
-     * "Members ... are not equal, but compare returned 0"
-     */
-     public static final boolean MembersNotEqualFixed = Enable;
-
-    /**
      * Visual totals:
      *  NPE in RolapSchemaReader.getMemberChildren
      *  or NPE in Key.isValid

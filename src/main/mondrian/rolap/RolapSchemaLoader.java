@@ -60,10 +60,10 @@ public class RolapSchemaLoader {
             Access.CUSTOM);
 
     private static final Set<Access> cubeAllowed =
-        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL);
+        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL, Access.CUSTOM);
 
     private static final Set<Access> dimensionAllowed =
-        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL);
+        Olap4jUtil.enumSetOf(Access.NONE, Access.ALL, Access.CUSTOM);
 
     private static final Set<Access> hierarchyAllowed =
         Olap4jUtil.enumSetOf(Access.NONE, Access.ALL, Access.CUSTOM);

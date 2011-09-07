@@ -37,7 +37,7 @@ public class MemberCacheHelper implements MemberCache {
         mapMemberToChildren;
 
     /** a cache for all members to ensure uniqueness */
-    SmartCache<Object, RolapMember> mapKeyToMember;
+    SmartCache<Pair<RolapLevel, Object>, RolapMember> mapKeyToMember;
     RolapHierarchy rolapHierarchy;
     DataSourceChangeListener changeListener;
 
@@ -55,7 +55,7 @@ public class MemberCacheHelper implements MemberCache {
         this.mapLevelToMembers =
             new SmartMemberListCache<RolapLevel, List<RolapMember>>();
         this.mapKeyToMember =
-            new SoftSmartCache<Object, RolapMember>();
+            new SoftSmartCache<Pair<RolapLevel, Object>, RolapMember>();
         this.mapMemberToChildren =
             new SmartMemberListCache<RolapMember, List<RolapMember>>();
 
@@ -70,36 +70,30 @@ public class MemberCacheHelper implements MemberCache {
     // implement MemberCache
     // synchronization: Must synchronize, because uses mapKeyToMember
     public synchronized RolapMember getMember(
+        RolapLevel level,
         Object key,
         boolean mustCheckCacheStatus)
     {
         if (mustCheckCacheStatus) {
             checkCacheStatus();
         }
-        return mapKeyToMember.get(key);
+        return mapKeyToMember.get(Pair.of(level, key));
     }
 
 
     // implement MemberCache
     // synchronization: Must synchronize, because modifies mapKeyToMember
-    public synchronized Object putMember(Object key, RolapMember value) {
-        return mapKeyToMember.put(key, value);
+    public synchronized Object putMember(
+        RolapLevel level,
+        Object key,
+        RolapMember value)
+    {
+        return mapKeyToMember.put(Pair.of(level, key), value);
     }
 
     // implement MemberCache
-    public Object makeKey(RolapMember parent, Object[] key) {
-        return new MemberKey(parent, key);
-    }
-
-    // implement MemberCache
-    public Object makeKey(RolapMember parent, List<Object> key) {
-        return new MemberKey(parent, key);
-    }
-
-    // implement MemberCache
-    // synchronization: Must synchronize, because modifies mapKeyToMember
-    public synchronized RolapMember getMember(Object key) {
-        return getMember(key, true);
+    public final RolapMember getMember(RolapLevel level, Object key) {
+        return getMember(level, key, true);
     }
 
     public synchronized void checkCacheStatus() {
@@ -178,9 +172,9 @@ public class MemberCacheHelper implements MemberCache {
         return true;
     }
 
-    public synchronized RolapMember removeMember(Object key)
+    public synchronized RolapMember removeMember(RolapLevel level, Object key)
     {
-        RolapMember member = getMember(key);
+        RolapMember member = getMember(level, key);
         if (member == null) {
             // not in cache
             return null;
@@ -191,9 +185,8 @@ public class MemberCacheHelper implements MemberCache {
         // cache value is a list of RolapMember.
         // For each cache key whose level matches, remove from the list,
         // regardless of the constraint.
-        RolapLevel level = member.getLevel();
-        for (Map.Entry<Pair<RolapLevel, Object>,
-            List<RolapMember>> entry : mapLevelToMembers.getCache())
+        for (Map.Entry<Pair<RolapLevel, Object>, List<RolapMember>> entry
+            : mapLevelToMembers.getCache())
         {
             if (entry.getKey().left.equals(level)) {
                 List<RolapMember> peers = entry.getValue();
@@ -236,10 +229,13 @@ public class MemberCacheHelper implements MemberCache {
         }
 
         // drop it from the lookup-cache
-        return mapKeyToMember.put(key, null);
+        return mapKeyToMember.put(Pair.of(level, key), null);
     }
 
-    public synchronized RolapMember removeMemberAndDescendants(Object key) {
+    public RolapMember removeMemberAndDescendants(
+        RolapLevel level,
+        Object key)
+    {
         // Can use mapMemberToChildren recursively. No need to update inferior
         // lists of children. Do need to update inferior lists of level-peers.
         return null; // STUB

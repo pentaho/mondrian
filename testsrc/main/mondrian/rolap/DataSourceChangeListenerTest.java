@@ -85,7 +85,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
         smrch.mapMemberToChildren.setCache(
             new HardSmartCache<Pair<RolapMember, Object>, List<RolapMember>>());
-        smrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
+        smrch.mapKeyToMember =
+            new HardSmartCache<Pair<RolapLevel, Object>, RolapMember>();
 
         MemberCacheHelper rcsmrch =
             ((RolapCubeHierarchy.RolapCubeHierarchyMemberReader) smr)
@@ -94,7 +95,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
         rcsmrch.mapMemberToChildren.setCache(
             new HardSmartCache<Pair<RolapMember, Object>, List<RolapMember>>());
-        rcsmrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
+        rcsmrch.mapKeyToMember =
+            new HardSmartCache<Pair<RolapLevel, Object>, RolapMember>();
 
         SmartMemberReader ssmr = getSharedSmartMemberReader("Store");
         MemberCacheHelper ssmrch = (MemberCacheHelper)ssmr.getMemberCache();
@@ -102,7 +104,8 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             new HardSmartCache<Pair<RolapLevel, Object>, List<RolapMember>>());
         ssmrch.mapMemberToChildren.setCache(
             new HardSmartCache<Pair<RolapMember, Object>, List<RolapMember>>());
-        ssmrch.mapKeyToMember = new HardSmartCache<Object, RolapMember>();
+        ssmrch.mapKeyToMember =
+            new HardSmartCache<Pair<RolapLevel, Object>, RolapMember>();
 
 
         // Create a dummy DataSource which will throw a 'bomb' if it is asked

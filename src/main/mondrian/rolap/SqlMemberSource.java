@@ -939,7 +939,8 @@ class SqlMemberSource
                     captionValue = null;
                 }
                 Object key = keys.length == 1 ? keys[0] : keyList;
-                RolapMember member = cache.getMember(key, checkCacheStatus);
+                RolapMember member =
+                    cache.getMember(childLevel, key, checkCacheStatus);
                 checkCacheStatus = false; // only check the first time
                 if (member == null) {
                     Object keyClone = RolapMember.Key.create(keys);
@@ -983,6 +984,9 @@ class SqlMemberSource
         RolapMemberBase member =
             new RolapMemberBase(
                 parentMember, rolapChildLevel, key);
+        assert parentMember == null
+            || parentMember.getLevel().getDepth() == childLevel.getDepth() - 1
+            || childLevel.isParentChild();
         if (layout.hasOrdinal) {
             member.setOrdinal(lastOrdinal++);
         }
@@ -1024,7 +1028,7 @@ class SqlMemberSource
                 getPooledValue(
                     accessors.get(layout.propertyOrdinals[j++]).get()));
         }
-        cache.putMember(key, member);
+        cache.putMember(member.getLevel(), key, member);
         return member;
     }
 

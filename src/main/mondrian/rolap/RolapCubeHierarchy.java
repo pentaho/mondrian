@@ -680,14 +680,12 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
                 RolapCubeMember cubeMember;
                 if (enableCache) {
-                    Object cacheKey =
-                        rolapCubeCacheHelper.makeKey(
-                            parent, member.getKeyAsList());
+                    Object key = member.getKeyAsList();
                     cubeMember = (RolapCubeMember)
-                        rolapCubeCacheHelper.getMember(cacheKey, false);
+                        rolapCubeCacheHelper.getMember(level, key, false);
                     if (cubeMember == null) {
                         cubeMember = wrapMember(parent, member, level);
-                        rolapCubeCacheHelper.putMember(cacheKey, cubeMember);
+                        rolapCubeCacheHelper.putMember(level, key, cubeMember);
                     }
                 } else {
                     cubeMember = wrapMember(parent, member, level);

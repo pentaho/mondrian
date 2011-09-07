@@ -1483,7 +1483,8 @@ public class CacheControlImpl implements CacheControl {
             member = stripMember(member);
             final MemberCache memberCache = getMemberCache(member);
             final Object cacheKey = member.getKeyCompact();
-            final RolapMember cacheMember = memberCache.getMember(cacheKey);
+            final RolapMember cacheMember =
+                memberCache.getMember(member.getLevel(), cacheKey);
             if (cacheMember == null) {
                 return;
             }
@@ -1544,7 +1545,7 @@ public class CacheControlImpl implements CacheControl {
         // Remove the member itself. The MemberCacheHelper takes care of
         // removing the member's children as well.
         final Object key = member.getKeyCompact();
-        memberCache.removeMember(key);
+        memberCache.removeMember(member.getLevel(), key);
 
         // Cells for member and its ancestors are now invalid.
         // It's sufficient to flush the member.
@@ -1610,7 +1611,7 @@ public class CacheControlImpl implements CacheControl {
 
         // Now add the member itself into cache
         final Object memberKey = member.getKeyCompact();
-        memberCache.putMember(memberKey, member);
+        memberCache.putMember(member.getLevel(), memberKey, member);
 
         // Cells for all of member's ancestors are now invalid. It's sufficient
         // to flush its parent.
@@ -1629,7 +1630,7 @@ public class CacheControlImpl implements CacheControl {
     {
         final MemberCache memberCache = getMemberCache(member);
         final Object key = member.getKeyCompact();
-        memberCache.removeMember(key);
+        memberCache.removeMember(member.getLevel(), key);
         cellRegionList.add(createMemberRegion(member, false));
     }
 }

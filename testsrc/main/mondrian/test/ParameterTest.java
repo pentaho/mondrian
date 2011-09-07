@@ -1013,7 +1013,7 @@ public class ParameterTest extends FoodMartTestCase {
             mdx = query.toString();
             TestContext.assertEqualsVerbose(
                 "select {[Measures].[Unit Sales]} ON COLUMNS,\n"
-                + "  Parameter(\"Foo\", [Time], {[Time].[Time].[1997].[Q2].[5], [Time].[1997].[Q3]}, \"Foo\") ON ROWS\n"
+                + "  Parameter(\"Foo\", [Time], {[Time].[Time].[1997].[Q2].[5], [Time].[Time].[1997].[Q3]}, \"Foo\") ON ROWS\n"
                 + "from [Sales]\n",
                 mdx);
 

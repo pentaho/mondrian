@@ -6,13 +6,12 @@
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2007-2008 StrateBI
-// Copyright (C) 2008-2010 Julian Hyde and others
+// Copyright (C) 2008-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 */
-
 package mondrian.rolap;
+
 import mondrian.olap.Util;
 import mondrian.olap.Id;
 import mondrian.olap.Member;
@@ -22,11 +21,12 @@ import mondrian.rolap.sql.TupleConstraint;
 import mondrian.util.ConcatenableList;
 
 import java.util.*;
+
 import org.apache.log4j.Logger;
 
 /**
- * <code>NoCacheMemberReader</code> implements {@link MemberReader} but
- * without doing any kind of caching and avoiding to read all members.
+ * Implementation of {@link MemberReader} that
+ * does no caching and avoids reading all members.
  *
  * @author jlopez, lcanals
  * @since 06 October, 2007
@@ -57,12 +57,13 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     }
 
     // implementes MemberCache
-    public RolapMember removeMember(Object key) {
+    public RolapMember removeMember(RolapLevel level, Object key) {
         return null;
     }
 
     // implementes MemberCache
-    public RolapMember removeMemberAndDescendants(Object key) {
+    public RolapMember removeMemberAndDescendants(RolapLevel level, Object key)
+    {
         return null;
     }
 
@@ -76,33 +77,25 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         return false;
     }
 
-    // implement MemberCache
-    public Object makeKey(final RolapMember parent, final Object[] key) {
-        LOGGER.debug("Entering makeKey");
-        return new MemberKey(parent, key);
-    }
-
-    // implement MemberCache
-    public Object makeKey(final RolapMember parent, final List<Object> key) {
-        LOGGER.debug("Entering makeKey");
-        return new MemberKey(parent, key);
-    }
-
-    public synchronized RolapMember getMember(final Object key) {
-        return getMember(key, true);
+    public final RolapMember getMember(RolapLevel level, Object key) {
+        return getMember(level, key, true);
     }
 
     public RolapMember getMember(
-        final Object key,
-        final boolean mustCheckCacheStatus)
+        RolapLevel level,
+        Object key,
+        boolean mustCheckCacheStatus)
     {
         LOGGER.debug("Returning null member: no cache");
         return null;
     }
 
-
     // implement MemberCache
-    public Object putMember(final Object key, final RolapMember value) {
+    public Object putMember(
+        RolapLevel level,
+        final Object key,
+        final RolapMember value)
+    {
         LOGGER.debug("putMember void for no caching");
         return value;
     }
@@ -151,7 +144,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         final List<RolapMember> children)
     {
         MemberChildrenConstraint constraint =
-                sqlConstraintFactory.getMemberChildrenConstraint(null);
+            sqlConstraintFactory.getMemberChildrenConstraint(null);
         getMemberChildren(parentMember, children, constraint);
     }
 

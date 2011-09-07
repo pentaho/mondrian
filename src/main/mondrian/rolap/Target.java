@@ -95,7 +95,7 @@ public class Target extends TargetBase {
                 }
                 RolapMember parentMember = member;
                 Object key = keys.length == 1 ? keys[0] : keyList;
-                member = cache.getMember(key, checkCacheStatus);
+                member = cache.getMember(childLevel, key, checkCacheStatus);
                 checkCacheStatus = false; /* Only check the first time */
                 if (member == null) {
                     if (constraint instanceof

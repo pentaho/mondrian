@@ -39,9 +39,9 @@ public class NullMemberRepresentationTest extends FoodMartTestCase {
             + "{[Time].[Time].[1997]}\n"
             + "{[Time].[Time].[1997].[Q2]}\n"
             + "{[Time].[Time].[1997].[Q2].[4]}\n"
-            + "Row #0: [Time].[1997].[Q4]\n"
-            + "Row #1: [Time].[1997].[Q2].[6]\n"
-            + "Row #2: [Time].["
+            + "Row #0: [Time].[Time].[1997].[Q4]\n"
+            + "Row #1: [Time].[Time].[1997].[Q2].[6]\n"
+            + "Row #2: [Time].[Time].["
             + getNullMemberRepresentation()
             + "]\n"
             + "");
@@ -52,10 +52,10 @@ public class NullMemberRepresentationTest extends FoodMartTestCase {
     {
         assertExprReturns(
             "[Time].[1997].Children.Item(6).UniqueName",
-            "[Time].[" + getNullMemberRepresentation() + "]");
+            "[Time].[Time].[" + getNullMemberRepresentation() + "]");
         assertExprReturns(
             "[Time].[1997].Children.Item(-1).UniqueName",
-            "[Time].[" + getNullMemberRepresentation() + "]");
+            "[Time].[Time].[" + getNullMemberRepresentation() + "]");
     }
 
     public void testNullMemberWithCustomRepresentation() throws IOException {

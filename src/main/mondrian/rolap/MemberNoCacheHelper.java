@@ -11,12 +11,9 @@
 */
 package mondrian.rolap;
 
-import mondrian.rolap.cache.SmartCache;
-import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.spi.DataSourceChangeListener;
-import mondrian.olap.Util;
 
 import java.util.*;
 
@@ -35,6 +32,7 @@ public class MemberNoCacheHelper extends MemberCacheHelper {
 
     // implement MemberCache
     public RolapMember getMember(
+        RolapLevel level,
         Object key,
         boolean mustCheckCacheStatus)
     {
@@ -43,14 +41,8 @@ public class MemberNoCacheHelper extends MemberCacheHelper {
 
 
     // implement MemberCache
-    public Object putMember(Object key, RolapMember value) {
+    public Object putMember(RolapLevel level, Object key, RolapMember value) {
         return value;
-    }
-
-    // implement MemberCache
-    // synchronization: Must synchronize, because modifies mapKeyToMember
-    public synchronized RolapMember getMember(Object key) {
-        return getMember(key, true);
     }
 
     public void checkCacheStatus() {
@@ -103,11 +95,7 @@ public class MemberNoCacheHelper extends MemberCacheHelper {
         return true;
     }
 
-    public synchronized RolapMember removeMember(Object key) {
-        return null;
-    }
-
-    public synchronized RolapMember removeMemberAndDescendants(Object key) {
+    public synchronized RolapMember removeMember(RolapLevel level, Object key) {
         return null;
     }
 }

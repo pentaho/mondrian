@@ -1220,7 +1220,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
         assertEquals(
             "[Measures].[Unit Sales]",
-            cell.getContextMember(hierarchyMap.get("[Measures].[Measures]"))
+            cell.getContextMember(hierarchyMap.get("[Measures]"))
                 .getUniqueName());
         assertEquals(
             "[Time].[Time].[1997]",
@@ -5467,7 +5467,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "select {[Measures].[Unit Sales]} on columns,\n"
             + " {[Measures].[Store Sales]} on rows\n"
             + "from [Sales]",
-            "Hierarchy '[Measures].[Measures]' appears in more than one independent axis");
+            "Hierarchy '[Measures]' appears in more than one independent axis");
 
         // as part of a crossjoin
         assertQueryThrows(
@@ -5475,7 +5475,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + " CrossJoin({[Product].members},"
             + "           {[Measures].[Store Sales]}) on rows\n"
             + "from [Sales]",
-            "Hierarchy '[Measures].[Measures]' appears in more than one independent axis");
+            "Hierarchy '[Measures]' appears in more than one independent axis");
 
         // as part of a tuple
         assertQueryThrows(
@@ -5551,7 +5551,7 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Store Cost]}\n"
                 + "Axis #2:\n"
-                + "{[Store Size in SQFT].[#null]}\n"
+                + "{[Store].[Store Size in SQFT].[#null]}\n"
                 + "Row #0: 33,307.69\n");
         }
     }
@@ -5570,8 +5570,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Store Cost]}\n"
                 + "Axis #2:\n"
-                + "{[Store Size in SQFT].[#null]}\n"
-                + "{[Store Size in SQFT].[39696]}\n"
+                + "{[Store].[Store Size in SQFT].[#null]}\n"
+                + "{[Store].[Store Size in SQFT].[39696]}\n"
                 + "Row #0: 33,307.69\n"
                 + "Row #1: 21,121.96\n");
         }
@@ -6137,7 +6137,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testGetCaptionUsingMemberDotCaption() {
         assertQueryReturns(
-            "SELECT Filter(Store.allmembers, "
+            "SELECT Filter(Stores.allmembers, "
             + "[stores].currentMember.caption = \"USA\") on 0 FROM SALES",
             "Axis #0:\n"
             + "{}\n"
@@ -6148,7 +6148,7 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     public void testGetCaptionUsingMemberDotPropertiesCaption() {
         assertQueryReturns(
-            "SELECT Filter(Store.allmembers, "
+            "SELECT Filter(Stores.allmembers, "
             + "[stores].currentMember.properties(\"caption\") = \"USA\") "
             + "on 0 FROM SALES",
             "Axis #0:\n"

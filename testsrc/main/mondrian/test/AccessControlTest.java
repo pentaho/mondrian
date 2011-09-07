@@ -33,6 +33,7 @@ import mondrian.olap.RoleImpl;
 import mondrian.olap.Schema;
 import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
+import mondrian.util.Bug;
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
@@ -89,14 +90,14 @@ public class AccessControlTest extends FoodMartTestCase {
         final SchemaReader schemaReader = salesCube.getSchemaReader(role);
         Dimension genderDimension =
             (Dimension) schemaReader.lookupCompound(
-                salesCube, Id.Segment.toList("Gender"), true,
+                salesCube, Util.parseIdentifier("[Customer]"), true,
                 Category.Dimension);
         role.grant(genderDimension, Access.NONE);
         role.makeImmutable();
         connection.setRole(role);
         context.assertAxisThrows(
             "[Customer].[Gender].children",
-            "MDX object '[Gender]' not found in cube 'Sales'");
+            "MDX object '[Customer].[Gender]' not found in cube 'Sales'");
     }
 
     public void testRestrictMeasures() {
@@ -155,7 +156,7 @@ public class AccessControlTest extends FoodMartTestCase {
             "<Role name=\"Role1\">\n"
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
-            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Stores]\" access=\"custom\" rollupPolicy=\"partial\">\n"
             + "        <MemberGrant member=\"[Store].[USA].[Non Existent]\" access=\"all\"/>\n"
             + "      </HierarchyGrant>\n"
             + "    </CubeGrant>\n"
@@ -269,8 +270,9 @@ public class AccessControlTest extends FoodMartTestCase {
         // assert: can access USA (rule 3 - parent of allowed member San
         // Francisco)
         getRestrictedTestContext().assertAxisReturns(
-            "[Store].level.members",
-            "[Store].[Mexico]\n" + "[Store].[USA]");
+            "[Store].[Stores].level.members",
+            "[Store].[Stores].[Mexico]\n"
+            + "[Store].[Stores].[USA]");
     }
 
     public void testGrantHierarchy1aAllMembers() {
@@ -279,16 +281,17 @@ public class AccessControlTest extends FoodMartTestCase {
         // assert: can access USA (rule 3 - parent of allowed member San
         // Francisco)
         getRestrictedTestContext().assertAxisReturns(
-            "[Store].level.allmembers",
-            "[Store].[Mexico]\n" + "[Store].[USA]");
+            "[Store].[Stores].level.allmembers",
+            "[Store].[Stores].[Mexico]\n"
+            + "[Store].[Stores].[USA]");
     }
 
     public void testGrantHierarchy1b() {
         // can access Mexico (explicitly granted) which is the first accessible
         // one
         getRestrictedTestContext().assertAxisReturns(
-            "[Store].defaultMember",
-            "[Store].[Mexico]");
+            "[Store].[Stores].defaultMember",
+            "[Store].[Stores].[Mexico]");
     }
 
     public void testGrantHierarchy1c() {
@@ -303,14 +306,14 @@ public class AccessControlTest extends FoodMartTestCase {
         final TestContext testContext = getRestrictedTestContext();
         testContext.assertAxisReturns(
             "[Store].[USA].children",
-            "[Store].[USA].[CA]");
+            "[Store].[Stores].[USA].[CA]");
         testContext.assertAxisReturns(
             "[Store].[USA].children",
-            "[Store].[USA].[CA]");
+            "[Store].[Stores].[USA].[CA]");
         testContext.assertAxisReturns(
             "[Store].[USA].[CA].children",
-            "[Store].[USA].[CA].[Los Angeles]\n"
-            + "[Store].[USA].[CA].[San Francisco]");
+            "[Store].[Stores].[USA].[CA].[Los Angeles]\n"
+            + "[Store].[Stores].[USA].[CA].[San Francisco]");
     }
 
     public void testGrantHierarchy3() {
@@ -351,31 +354,31 @@ public class AccessControlTest extends FoodMartTestCase {
                 // no: [OR], [WA]
                 // yes: [San Francisco] -- explicitly allowed
                 // no: [San Diego]
-            "[Store].[Mexico]\n"
-            + "[Store].[Mexico].[Guerrero]\n"
-            + "[Store].[Mexico].[Guerrero].[Acapulco]\n"
-            + "[Store].[Mexico].[Guerrero].[Acapulco].[Store 1]\n"
-            + "[Store].[Mexico].[Jalisco]\n"
-            + "[Store].[Mexico].[Jalisco].[Guadalajara]\n"
-            + "[Store].[Mexico].[Jalisco].[Guadalajara].[Store 5]\n"
-            + "[Store].[Mexico].[Veracruz]\n"
-            + "[Store].[Mexico].[Veracruz].[Orizaba]\n"
-            + "[Store].[Mexico].[Veracruz].[Orizaba].[Store 10]\n"
-            + "[Store].[Mexico].[Yucatan]\n"
-            + "[Store].[Mexico].[Yucatan].[Merida]\n"
-            + "[Store].[Mexico].[Yucatan].[Merida].[Store 8]\n"
-            + "[Store].[Mexico].[Zacatecas]\n"
-            + "[Store].[Mexico].[Zacatecas].[Camacho]\n"
-            + "[Store].[Mexico].[Zacatecas].[Camacho].[Store 4]\n"
-            + "[Store].[Mexico].[Zacatecas].[Hidalgo]\n"
-            + "[Store].[Mexico].[Zacatecas].[Hidalgo].[Store 12]\n"
-            + "[Store].[Mexico].[Zacatecas].[Hidalgo].[Store 18]\n"
-            + "[Store].[USA]\n"
-            + "[Store].[USA].[CA]\n"
-            + "[Store].[USA].[CA].[Los Angeles]\n"
-            + "[Store].[USA].[CA].[Los Angeles].[Store 7]\n"
-            + "[Store].[USA].[CA].[San Francisco]\n"
-            + "[Store].[USA].[CA].[San Francisco].[Store 14]");
+            "[Store].[Stores].[Mexico]\n"
+            + "[Store].[Stores].[Mexico].[Guerrero]\n"
+            + "[Store].[Stores].[Mexico].[Guerrero].[Acapulco]\n"
+            + "[Store].[Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]\n"
+            + "[Store].[Stores].[Mexico].[Jalisco]\n"
+            + "[Store].[Stores].[Mexico].[Jalisco].[Guadalajara]\n"
+            + "[Store].[Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]\n"
+            + "[Store].[Stores].[Mexico].[Veracruz]\n"
+            + "[Store].[Stores].[Mexico].[Veracruz].[Orizaba]\n"
+            + "[Store].[Stores].[Mexico].[Veracruz].[Orizaba].[Store 10]\n"
+            + "[Store].[Stores].[Mexico].[Yucatan]\n"
+            + "[Store].[Stores].[Mexico].[Yucatan].[Merida]\n"
+            + "[Store].[Stores].[Mexico].[Yucatan].[Merida].[Store 8]\n"
+            + "[Store].[Stores].[Mexico].[Zacatecas]\n"
+            + "[Store].[Stores].[Mexico].[Zacatecas].[Camacho]\n"
+            + "[Store].[Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]\n"
+            + "[Store].[Stores].[Mexico].[Zacatecas].[Hidalgo]\n"
+            + "[Store].[Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 12]\n"
+            + "[Store].[Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 18]\n"
+            + "[Store].[Stores].[USA]\n"
+            + "[Store].[Stores].[USA].[CA]\n"
+            + "[Store].[Stores].[USA].[CA].[Los Angeles]\n"
+            + "[Store].[Stores].[USA].[CA].[Los Angeles].[Store 7]\n"
+            + "[Store].[Stores].[USA].[CA].[San Francisco]\n"
+            + "[Store].[Stores].[USA].[CA].[San Francisco].[Store 14]");
     }
 
     public void testGrantHierarchy6() {
@@ -469,8 +472,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA]}\n"
-            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
             + "Row #0: 266,773\n"
             + "Row #1: 74,748\n");
     }
@@ -539,7 +542,7 @@ public class AccessControlTest extends FoodMartTestCase {
         final SchemaReader schemaReader =
             salesCube.getSchemaReader(null).withLocus();
         Hierarchy storeHierarchy = salesCube.lookupHierarchy(
-            new Id.Segment("Store", Id.Quoting.UNQUOTED), false);
+            new Id.Segment("Stores", Id.Quoting.UNQUOTED), false);
         role.grant(schema, Access.ALL_DIMENSIONS);
         role.grant(salesCube, Access.ALL);
         Level nationLevel =
@@ -620,13 +623,13 @@ public class AccessControlTest extends FoodMartTestCase {
     private final TestContext rollupTestContext =
         TestContext.instance().create(
             null, null, null, null, null,
-            "<Role name=\"Role1\">\n"
-            + "  <SchemaGrant access=\"none\">\n"
-            + "    <CubeGrant cube=\"Sales\" access=\"custom\">\n"
-            + "      <DimensionGrant dimension=\"[Measures]\" access=\"all\"/>\n"
-            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">\n"
-            + "        <MemberGrant member=\"[Store].[USA]\" access=\"all\"/>\n"
-            + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"none\"/>\n"
+            "<Role name='Role1'>\n"
+            + "  <SchemaGrant access='none'>\n"
+            + "    <CubeGrant cube='Sales' access='custom'>\n"
+            + "      <DimensionGrant dimension='[Measures]' access='all'/>\n"
+            + "      <HierarchyGrant hierarchy='[Store].[Stores]' access='custom' rollupPolicy='partial'>\n"
+            + "        <MemberGrant member='[Store].[USA]' access='all'/>\n"
+            + "        <MemberGrant member='[Store].[USA].[CA]' access='none'/>\n"
             + "      </HierarchyGrant>\n"
             + "    </CubeGrant>\n"
             + "  </SchemaGrant>\n"
@@ -639,14 +642,14 @@ public class AccessControlTest extends FoodMartTestCase {
      */
     public void testRollupPolicyBasic() {
         rollupTestContext.assertQueryReturns(
-            "select {[Store].[USA], [Store].[USA].Children} on 0\n"
+            "select {[Stores].[USA], [Stores].[USA].Children} on 0\n"
             + "from [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[USA]}\n"
-            + "{[Store].[USA].[OR]}\n"
-            + "{[Store].[USA].[WA]}\n"
+            + "{[Store].[Stores].[USA]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
+            + "{[Store].[Stores].[USA].[WA]}\n"
             + "Row #0: 192,025\n"
             + "Row #0: 67,659\n"
             + "Row #0: 124,366\n");
@@ -669,7 +672,19 @@ public class AccessControlTest extends FoodMartTestCase {
      */
     public void testRollupPolicyAllAsDefault() {
         rollupTestContext.assertExprReturns(
-            "([Store])",
+            "([Store].[Stores])",
+            "192,025");
+        rollupTestContext.assertExprReturns(
+            "([Stores])",
+            "192,025");
+        rollupTestContext.assertExprReturns(
+            "([Store].[Stores].[All Stores])",
+            "192,025");
+        rollupTestContext.assertExprReturns(
+            "([Stores].[All Stores])",
+            "192,025");
+        rollupTestContext.assertExprReturns(
+            "([Store].[All Stores])",
             "192,025");
     }
 
@@ -703,19 +718,19 @@ public class AccessControlTest extends FoodMartTestCase {
         final TestContext testContext  =
             TestContext.instance().create(
                 null, null, null, null, null,
-                "<Role name=\"Role1\">\n"
-                + "  <SchemaGrant access=\"none\">\n"
-                + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
-                + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" rollupPolicy=\""
-                    + rollupPolicy
-                    + "\" bottomLevel=\"[Customers].[City]\">\n"
-                    + "        <MemberGrant member=\"[Customers].[USA]\" access=\"all\"/>\n"
-                    + "        <MemberGrant member=\"[Customers].[USA].[CA]\" access=\"all\"/>\n"
-                    + "        <MemberGrant member=\"[Customers].[USA].[CA].[Los Angeles]\" access=\"none\"/>\n"
-                    + "      </HierarchyGrant>\n"
-                    + "    </CubeGrant>\n"
-                    + "  </SchemaGrant>\n"
-                    + "</Role>")
+                "<Role name='Role1'>\n"
+                + "  <SchemaGrant access='none'>\n"
+                + "    <CubeGrant cube='Sales' access='all'>\n"
+                + "      <HierarchyGrant hierarchy='[Customer].[Customers]' access='custom' rollupPolicy='"
+                + rollupPolicy
+                + "' bottomLevel='[Customers].[City]'>\n"
+                + "        <MemberGrant member='[Customers].[USA]' access='all'/>\n"
+                + "        <MemberGrant member='[Customers].[USA].[CA]' access='all'/>\n"
+                + "        <MemberGrant member='[Customers].[USA].[CA].[Los Angeles]' access='none'/>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>")
                 .withRole("Role1");
         // All of the children of [San Francisco] are invisible, because [City]
         // is the bottom level, but that shouldn't affect the total.
@@ -860,7 +875,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "        <MemberGrant member=\"[Customers].[USA]\" access=\"all\"/>\n"
                 + "        <MemberGrant member=\"[Customers].[USA].[CA].[San Francisco].[Gladys Evans]\" access=\"none\"/>\n"
                 + "      </HierarchyGrant>\n"
-                + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\""
+                + "      <HierarchyGrant hierarchy=\"[Stores]\" access=\"custom\" rollupPolicy=\""
                 + policy
                 + "\">\n"
                 + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>\n"
@@ -904,7 +919,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "      <HierarchyGrant hierarchy=\"[Promotion].[Media Type]\" access=\"all\"/>\n"
                 + "      <HierarchyGrant hierarchy=\"[Marital Status]\" access=\"none\"/>\n"
                 + "      <HierarchyGrant hierarchy=\"[Gender]\" access=\"none\"/>\n"
-                + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Store].[Store State]\"/>\n"
+                + "      <HierarchyGrant hierarchy=\"[Stores]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Store].[Store State]\"/>\n"
                 + "    </CubeGrant>\n"
                 + "    <CubeGrant cube=\"Warehouse\" access=\"all\"/>\n"
                 + "  </SchemaGrant>\n"
@@ -918,7 +933,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "        <MemberGrant member=\"[Customers].[USA].[OR]\" access=\"none\"/>\n"
                 + "        <MemberGrant member=\"[Customers].[USA].[OR].[Portland]\" access=\"all\"/>\n"
                 + "      </HierarchyGrant>\n"
-                + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"all\" rollupPolicy=\"Hidden\"/>\n"
+                + "      <HierarchyGrant hierarchy=\"[Stores]\" access=\"all\" rollupPolicy=\"Hidden\"/>\n"
                 + "    </CubeGrant>\n"
                 + "  </SchemaGrant>\n"
                 + "</Role>\n");
@@ -959,7 +974,7 @@ public class AccessControlTest extends FoodMartTestCase {
         assertHierarchyAccess(
             connection, Access.CUSTOM, "Sales", "[Customers]");
         assertHierarchyAccess(
-            connection, Access.ALL, "Sales", "[Store]");
+            connection, Access.ALL, "Sales", "[Stores]");
         assertHierarchyAccess(
             connection, Access.ALL, "Sales", "[Promotion].[Media Type]");
         assertHierarchyAccess(
@@ -967,7 +982,7 @@ public class AccessControlTest extends FoodMartTestCase {
 
         // Rollup policy is the greater of Role1's partian and Role2's hidden
         final Role.HierarchyAccess hierarchyAccess =
-            getHierarchyAccess(connection, "Sales", "[Store]");
+            getHierarchyAccess(connection, "Sales", "[Stores]");
         assertEquals(
             Role.RollupPolicy.PARTIAL,
             hierarchyAccess.getRollupPolicy());
@@ -1082,7 +1097,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[All Gender], [Product].[Drink]}\n"
+            + "{[Customer].[Gender].[All Gender], [Product].[Products].[Drink]}\n"
             + "Row #0: 24,597\n";
 
         final String mdx =
@@ -1129,7 +1144,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[All Gender], [Product].[Drink]}\n"
+            + "{[Customer].[Gender].[All Gender], [Product].[Products].[Drink]}\n"
             + "Row #0: 24,597\n";
 
         final String mdx =
@@ -1176,15 +1191,15 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores]}\n"
-            + "{[Store].[USA]}\n"
-            + "{[Store].[USA].[CA]}\n"
-            + "{[Store].[USA].[CA].[Alameda]}\n"
-            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
-            + "{[Store].[USA].[CA].[Los Angeles]}\n"
-            + "{[Store].[USA].[CA].[San Diego]}\n"
-            + "{[Store].[USA].[CA].[San Francisco]}\n"
-            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[Stores].[All Stores]}\n"
+            + "{[Store].[Stores].[USA]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Alameda]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
             + "Row #0: 100,827\n"
             + "Row #1: 100,827\n"
             + "Row #2: 74,748\n"
@@ -1202,15 +1217,15 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores]}\n"
-            + "{[Store].[USA]}\n"
-            + "{[Store].[USA].[CA]}\n"
-            + "{[Store].[USA].[CA].[Alameda]}\n"
-            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
-            + "{[Store].[USA].[CA].[Los Angeles]}\n"
-            + "{[Store].[USA].[CA].[San Diego]}\n"
-            + "{[Store].[USA].[CA].[San Francisco]}\n"
-            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[Stores].[All Stores]}\n"
+            + "{[Store].[Stores].[USA]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Alameda]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
             + "Row #0: 266,773\n"
             + "Row #1: 266,773\n"
             + "Row #2: 74,748\n"
@@ -1228,15 +1243,15 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores]}\n"
-            + "{[Store].[USA]}\n"
-            + "{[Store].[USA].[CA]}\n"
-            + "{[Store].[USA].[CA].[Alameda]}\n"
-            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
-            + "{[Store].[USA].[CA].[Los Angeles]}\n"
-            + "{[Store].[USA].[CA].[San Diego]}\n"
-            + "{[Store].[USA].[CA].[San Francisco]}\n"
-            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[Stores].[All Stores]}\n"
+            + "{[Store].[Stores].[USA]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Alameda]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
             + "Row #0: \n"
             + "Row #1: \n"
             + "Row #2: 74,748\n"
@@ -1256,7 +1271,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 "<Role name=\"California manager\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
                 + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
-                + "      <HierarchyGrant hierarchy=\"[Store]\" rollupPolicy=\""
+                + "      <HierarchyGrant hierarchy=\"[Stores]\" rollupPolicy=\""
                 + policy.name().toLowerCase()
                 + "\" access=\"custom\">\n"
                 + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>\n"
@@ -1281,16 +1296,16 @@ public class AccessControlTest extends FoodMartTestCase {
                 "<Role name=\"California manager\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
                 + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
-                + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"none\" />\n"
+                + "      <HierarchyGrant hierarchy=\"[Stores]\" access=\"none\" />\n"
                 + "    </CubeGrant>\n"
                 + "    <CubeGrant cube=\"Sales Ragged\" access=\"all\">\n"
-                + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" />\n"
+                + "      <HierarchyGrant hierarchy=\"[Stores]\" access=\"custom\" />\n"
                 + "    </CubeGrant>\n"
                 + "  </SchemaGrant>\n"
                 + "</Role>")
                 .withRole("California manager");
         assertHierarchyAccess(
-            testContext.getConnection(), Access.NONE, "Sales", "Store");
+            testContext.getConnection(), Access.NONE, "Sales", "Stores");
         assertHierarchyAccess(
             testContext.getConnection(),
             Access.CUSTOM,
@@ -1310,7 +1325,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "            member=\"[Employees].[All Employees].[Sheri Nowmer].[Darren Stanz]\"\n"
             + "            access=\"all\"/>\n"
             + "      </HierarchyGrant>\n"
-            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\"\n"
+            + "      <HierarchyGrant hierarchy=\"[Stores]\" access=\"custom\"\n"
             + "                      rollupPolicy=\"partial\">\n"
             + "        <MemberGrant member=\"[Store].[All Stores].[USA].[CA]\" access=\"all\"/>\n"
             + "      </HierarchyGrant>\n"
@@ -1321,7 +1336,7 @@ public class AccessControlTest extends FoodMartTestCase {
 
         final String mdx = "select\n"
             + "  {[Measures].[Number of Employees]} on columns,\n"
-            + "  {[Store]} on rows\n"
+            + "  {[Stores]} on rows\n"
             + "from HR";
         testContext.assertQueryReturns(
             mdx,
@@ -1375,12 +1390,12 @@ public class AccessControlTest extends FoodMartTestCase {
             testContext.assertAxisReturns(
                 "Head([Employees].Members, 4),"
                 + "Tail([Employees].Members, 2)",
-                "[Employees].[All Employees]\n"
-                + "[Employees].[Sheri Nowmer]\n"
-                + "[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
-                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]\n"
-                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Ed Young].[Gregory Whiting].[Merrill Steel]\n"
-                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Ed Young].[Gregory Whiting].[Melissa Marple]");
+                "[Employee].[Employees].[All Employees]\n"
+                + "[Employee].[Employees].[Sheri Nowmer]\n"
+                + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
+                + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker]\n"
+                + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Ed Young].[Gregory Whiting].[Merrill Steel]\n"
+                + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Ed Young].[Gregory Whiting].[Melissa Marple]");
 
             // Leaf employee
             connection.setRole(
@@ -1391,13 +1406,13 @@ public class AccessControlTest extends FoodMartTestCase {
                 "7");
             testContext.assertAxisReturns(
                 "[Employees].Members",
-                "[Employees].[All Employees]\n"
-                + "[Employees].[Sheri Nowmer]\n"
-                + "[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
-                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges]\n"
-                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey]\n"
-                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey].[Shanay Steelman]\n"
-                + "[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey].[Shanay Steelman].[Ann Weyerhaeuser]");
+                "[Employee].[Employees].[All Employees]\n"
+                + "[Employee].[Employees].[Sheri Nowmer]\n"
+                + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
+                + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges]\n"
+                + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey]\n"
+                + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey].[Shanay Steelman]\n"
+                + "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Cody Goldey].[Shanay Steelman].[Ann Weyerhaeuser]");
         } finally {
             connection.setRole(savedRole);
         }
@@ -1427,7 +1442,7 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Measures].[Store Invoice], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Measures].[Store Invoice], [Store].[Store Size in SQFT].[All Store Size in SQFTs]}\n"
             + "Axis #2:\n"
             + "{[Warehouse].[Warehouses].[All Warehouses]}\n"
             + "Row #0: 4,042.96\n");
@@ -1454,8 +1469,8 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Products].[All Products]}\n"
-            + "{[Store Size in SQFT].[Products].[20319], [Product].[All Products]}\n"
+            + "{[Store].[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Products].[All Products]}\n"
+            + "{[Store].[Store Size in SQFT].[20319], [Product].[Products].[All Products]}\n"
             + "Axis #2:\n"
             + "{[Store].[Store Type].[All Store Types]}\n"
             + "{[Store].[Store Type].[Supermarket]}\n"
@@ -1476,10 +1491,10 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Products].[All Products]}\n"
-            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Drink].[Dairy]}\n"
-            + "{[Store Size in SQFT].[20319], [Product].[Products].[All Products]}\n"
-            + "{[Store Size in SQFT].[20319], [Product].[Food]}\n"
+            + "{[Store].[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Products].[All Products]}\n"
+            + "{[Store].[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Products].[Drink].[Dairy]}\n"
+            + "{[Store].[Store Size in SQFT].[20319], [Product].[Products].[All Products]}\n"
+            + "{[Store].[Store Size in SQFT].[20319], [Product].[Products].[Food]}\n"
             + "Axis #2:\n"
             + "{[Store].[Store Type].[All Store Types]}\n"
             + "{[Store].[Store Type].[Supermarket]}\n"
@@ -1652,7 +1667,7 @@ public class AccessControlTest extends FoodMartTestCase {
             "<Role name=\"VCRole\">\n"
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Warehouse and Sales\" access=\"all\">\n"
-            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Stores]\" access=\"custom\">\n"
             + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>\n"
             + "        <MemberGrant member=\"[Store].[USA].[CA].[Los Angeles]\" access=\"none\"/>\n"
             + "      </HierarchyGrant>\n"
@@ -1704,7 +1719,7 @@ public class AccessControlTest extends FoodMartTestCase {
             "<Role name=\"role2\">"
             + " <SchemaGrant access=\"none\">"
             + "  <CubeGrant cube=\"Sales\" access=\"all\">"
-            + "   <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">"
+            + "   <HierarchyGrant hierarchy=\"[Stores]\" access=\"custom\" rollupPolicy=\"partial\">"
             + "    <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>"
             + "    <MemberGrant member=\"[Store].[USA].[CA].[Los Angeles]\" access=\"none\"/>"
             + "   </HierarchyGrant>"
@@ -1728,12 +1743,12 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA]}\n"
+            + "{[Store].[Stores].[USA]}\n"
             + "Row #0: 49,085\n");
 
         final String secondBrokenMdx =
             "select [Measures].[Unit Sales] ON COLUMNS, "
-            + "Descendants([Store],[Store].[Store Name]) ON ROWS from [Sales]";
+            + "Descendants([Stores],[Store].[Store Name]) ON ROWS from [Sales]";
         checkQuery(testContext, secondBrokenMdx);
         testContext.assertQueryReturns(
             secondBrokenMdx,
@@ -1742,10 +1757,10 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[CA].[Alameda].[HQ]}\n"
-            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
-            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Alameda].[HQ]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
             + "Row #0: \n"
             + "Row #1: 21,333\n"
             + "Row #2: 25,635\n"
@@ -1987,7 +2002,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 "<Role name=\"Role1\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
                 + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
-                + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Store].[Store State]\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Stores]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Store].[Store State]\">\n"
                 + "      </HierarchyGrant>\n"
                 + "    </CubeGrant>\n"
                 + "  </SchemaGrant>\n"
@@ -2001,6 +2016,9 @@ public class AccessControlTest extends FoodMartTestCase {
      * a dimension with the same name.
      */
     public void testBugMondrian568() {
+        if (!Bug.CubeRaggedFeature) {
+            return;
+        }
         final TestContext testContext =
             TestContext.instance().create(
                 null, null, null, null, null,
@@ -2108,8 +2126,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Sales\" access=\"custom\">\n"
             + "      <DimensionGrant dimension=\"[Measures]\" access=\"all\" />\n"
-            + "      <DimensionGrant dimension=\"[Education Level]\" access=\"all\" />\n"
-            + "      <DimensionGrant dimension=\"[Gender]\" access=\"all\" />\n"
+            + "      <DimensionGrant dimension=\"[Customer]\" access=\"all\" />\n"
+            + "      <DimensionGrant dimension=\"[Promotion]\" access=\"all\" />\n"
             + "    </CubeGrant>\n"
             + "  </SchemaGrant>\n"
             + "</Role>\n"
@@ -2117,21 +2135,21 @@ public class AccessControlTest extends FoodMartTestCase {
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Sales\" access=\"custom\">\n"
             + "      <DimensionGrant dimension=\"[Measures]\" access=\"all\" />\n"
-            + "      <DimensionGrant dimension=\"[Education Level]\" access=\"all\" />\n"
-            + "      <DimensionGrant dimension=\"[Customers]\" access=\"none\" />\n"
+            + "      <DimensionGrant dimension=\"[Product]\" access=\"all\" />\n"
+            + "      <DimensionGrant dimension=\"[Customer]\" access=\"none\" />\n"
             + "    </CubeGrant>\n"
             + "  </SchemaGrant>\n"
             + "</Role>\n"
             + "<Role name=\"Role3\">\n"
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Sales\" access=\"custom\">\n"
-            + "      <DimensionGrant dimension=\"[Education Level]\" access=\"all\" />\n"
+            + "      <DimensionGrant dimension=\"[Product]\" access=\"all\" />\n"
             + "      <DimensionGrant dimension=\"[Measures]\" access=\"custom\" />\n"
             + "    </CubeGrant>\n"
             + "  </SchemaGrant>\n"
             + "</Role>\n");
         context.withRole("Role1").assertAxisReturns(
-            "[Education Level].Members",
+            "[Education].Members",
             "[Education Level].[All Education Levels]\n"
             + "[Education Level].[Bachelors Degree]\n"
             + "[Education Level].[Graduate Degree]\n"
@@ -2189,8 +2207,8 @@ public class AccessControlTest extends FoodMartTestCase {
             Hierarchy hierarchy = cube.lookupHierarchy(
                 new Id.Segment("Employees", Id.Quoting.QUOTED), false);
 
-            Level[] levels = hierarchy.getLevels();
-            Level topLevel = levels[1];
+            List<Level> levels = hierarchy.getLevelList();
+            Level topLevel = levels.get(1);
 
             role.grant(hierarchy, Access.CUSTOM, null, null, RollupPolicy.FULL);
             role.grant(hierarchy.getAllMember(), Access.NONE);

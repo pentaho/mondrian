@@ -8616,9 +8616,6 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testTopCountTuple() {
-        if (!Bug.MembersNotEqualFixed) {
-            return;
-        }
         assertAxisReturns(
             "TopCount([Customers].[Name].members,2,(Time.[1997].[Q1],[Measures].[Store Sales]))",
             "[Customer].[Customers].[USA].[WA].[Spokane].[Grace McLaughlin]\n"
@@ -8666,9 +8663,6 @@ public class FunctionTest extends FoodMartTestCase {
      * After optimizing, who knows?
      */
     public void testTopCountHuge() {
-        if (!Bug.MembersNotEqualFixed) {
-            return;
-        }
         // TODO convert printfs to trace
         final String query =
             "SELECT [Measures].[Store Sales] ON 0,\n"
@@ -11888,9 +11882,6 @@ Intel platforms):
     }
 
     public void testExistsMembersDiffDim() {
-        if (!Bug.MembersNotEqualFixed) {
-            return;
-        }
         assertQueryReturns(
             "select exists(\n"
             + "  {[Customers].[All Customers],\n"
@@ -11904,9 +11895,6 @@ Intel platforms):
     }
 
     public void testExistsMembers2Hierarchies() {
-        if (!Bug.MembersNotEqualFixed) {
-            return;
-        }
         assertQueryReturns(
             "select exists(\n"
             + "  {[Customers].[All Customers],\n"
@@ -11965,9 +11953,6 @@ Intel platforms):
     }
 
     public void testExistsTuplesLevel23() {
-        if (!Bug.MembersNotEqualFixed) {
-            return;
-        }
         assertQueryReturns(
             "select exists(\n"
             + "  crossjoin({[Customers].[State Province].Members}, {[Product].[All Products]}),\n"
@@ -11985,9 +11970,6 @@ Intel platforms):
     }
 
     public void testExistsTuples2Dim() {
-        if (!Bug.MembersNotEqualFixed) {
-            return;
-        }
         assertQueryReturns(
             "select exists(\n"
             + "  crossjoin({[Customers].[State Province].Members}, {[Product].[Product Family].Members}),\n"
@@ -11996,18 +11978,15 @@ Intel platforms):
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Customer].[Customers].[USA].[CA], [Product].[Drink]}\n"
-            + "{[Customer].[Customers].[USA].[OR], [Product].[Drink]}\n"
-            + "{[Customer].[Customers].[USA].[WA], [Product].[Drink]}\n"
+            + "{[Customer].[Customers].[USA].[CA], [Product].[Products].[Drink]}\n"
+            + "{[Customer].[Customers].[USA].[OR], [Product].[Products].[Drink]}\n"
+            + "{[Customer].[Customers].[USA].[WA], [Product].[Products].[Drink]}\n"
             + "Row #0: 7,102\n"
             + "Row #0: 6,106\n"
             + "Row #0: 11,389\n");
     }
 
     public void testExistsTuplesDiffDim() {
-        if (!Bug.MembersNotEqualFixed) {
-            return;
-        }
         assertQueryReturns(
             "select exists(\n"
             + "  crossjoin(\n"

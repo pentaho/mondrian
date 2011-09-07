@@ -293,7 +293,7 @@ public class CustomizedParserTest extends FoodMartTestCase {
         } catch (Throwable e) {
             checkErrorMsg(
                 e,
-                "Mondrian Error:Tuple contains more than one member of hierarchy '[Measures].[Measures]'.");
+                "Mondrian Error:Tuple contains more than one member of hierarchy '[Measures]'.");
         }
     }
 

@@ -202,9 +202,6 @@
                 <Hierarchy name='Store Size in SQFT'>
                     <Level attribute='Store Sqft'/>
                 </Hierarchy>
-                <Hierarchy name='Store Size in SQFT'>
-                    <Level attribute='Store Sqft'/>
-                </Hierarchy>
                 <Hierarchy name='Store Type'>
                     <Level attribute='Store Type'/>
                 </Hierarchy>

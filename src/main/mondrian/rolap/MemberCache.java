@@ -30,34 +30,40 @@ interface MemberCache {
     /**
      * Retrieves the {@link RolapMember} with a given key.
      *
-     * @param key cache key, created by {@link #makeKey}
+     * @param level Level
+     * @param key Member key
      * @return member with a given cache key
      */
-    RolapMember getMember(Object key);
+    RolapMember getMember(RolapLevel level, Object key);
 
     /**
      * Retrieves the {@link RolapMember} with a given key.
      *
-     * @param key cache key, created by {@link #makeKey}
+     * @param level Level
+     * @param key Member key
      * @param mustCheckCacheStatus If {@code true}, do not check cache status
      * @return member with a given cache key
      */
-    RolapMember getMember(Object key, boolean mustCheckCacheStatus);
+    RolapMember getMember(
+        RolapLevel level,
+        Object key,
+        boolean mustCheckCacheStatus);
 
     /**
      * Replaces the {@link RolapMember} with a given key and returns the
      * previous member if any.
      *
-     * @param key cache key, created by {@link #makeKey}
+     * @param level Level
+     * @param key Member key
      * @param member new member
      * @return Previous member with that key, or null.
      */
-    Object putMember(Object key, RolapMember member);
+    Object putMember(RolapLevel level, Object key, RolapMember member);
 
     /**
      * Returns whether the cache supports removing selected items. If it does,
-     * it is valid to call the {@link #removeMember(Object)} and
-     * {@link #removeMemberAndDescendants(Object)} methods.
+     * it is valid to call the {@link #removeMember(RolapLevel, Object)} and
+     * {@link #removeMemberAndDescendants(RolapLevel, Object)} methods.
      *
      * <p>REVIEW: remove isMutable and move removeMember and
      * removeMemberAndDescendants to new interface MutableMemberCache
@@ -71,20 +77,22 @@ interface MemberCache {
      * Returns the previous member with that key, or null.
      * Optional operation: see {@link #isMutable}.
      *
-     * @param key cache key, created by {@link #makeKey}
+     * @param level Level
+     * @param key Member key
      * @return previous member with that key, or null
      */
-    RolapMember removeMember(Object key);
+    RolapMember removeMember(RolapLevel level, Object key);
 
     /**
      * Removes the designated {@link RolapMember} and all its descendants.
      * Returns the previous member with that key, or null.
      * Optional operation: see {@link #isMutable}.
      *
-     * @param key cache key, created by {@link #makeKey}
+     * @param level Level
+     * @param key Member key
      * @return previous member with that key, or null
      */
-    RolapMember removeMemberAndDescendants(Object key);
+    RolapMember removeMemberAndDescendants(RolapLevel level, Object key);
 
     /**
      * Returns the children of <code>member</code> if they are currently in the

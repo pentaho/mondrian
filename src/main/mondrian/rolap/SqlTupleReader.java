@@ -185,7 +185,7 @@ public class SqlTupleReader implements TupleReader {
                             parentKeys.length == 1
                                 ? parentKeys[0]
                                 : Arrays.asList(parentKeys);
-                        parentMember = cache.getMember(parentKey);
+                        parentMember = cache.getMember(level, parentKey);
                         if (parentMember == null) {
                             LOGGER.warn(
                                 MondrianResource.instance()
@@ -213,7 +213,7 @@ public class SqlTupleReader implements TupleReader {
                     }
                     final List<Object> keyList = Arrays.asList(keys);
                     final Object key = keys.length == 1 ? keys[0] : keyList;
-                    member = cache.getMember(key, checkCacheStatus);
+                    member = cache.getMember(childLevel, key, checkCacheStatus);
                     checkCacheStatus = false; // only check the first time
                     if (member == null) {
                         if (constraint instanceof
