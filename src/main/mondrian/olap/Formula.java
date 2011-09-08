@@ -16,6 +16,7 @@ import mondrian.mdx.MemberExpr;
 import mondrian.mdx.MdxVisitor;
 import mondrian.mdx.MdxVisitorImpl;
 import mondrian.rolap.RolapCalculatedMember;
+import mondrian.rolap.RolapCubeHierarchy;
 
 import java.io.PrintWriter;
 import java.util.*;
@@ -542,11 +543,20 @@ public class Formula extends QueryPart {
         public Object visit(MemberExpr memberExpr) {
             Member member = memberExpr.getMember();
             returnFormula(member);
-            if (member.isCalculated()
-                    && member instanceof RolapCalculatedMember
-                    && !hasCyclicReference(memberExpr))
-            {
-                Formula formula = ((RolapCalculatedMember) member).getFormula();
+            xxx:
+            if (!hasCyclicReference(memberExpr) && member.isCalculated()) {
+                Formula formula;
+                if (member instanceof RolapCalculatedMember) {
+                    formula = ((RolapCalculatedMember) member).getFormula();
+                } else if (member instanceof
+                        RolapCubeHierarchy.RolapCubeCalculatedMeasure)
+                {
+                    formula =
+                        ((RolapCubeHierarchy.RolapCubeCalculatedMeasure) member)
+                            .getFormula();
+                } else {
+                    break xxx;
+                }
                 formula.accept(validator);
                 returnFormula(member);
             }
@@ -568,7 +578,7 @@ public class Formula extends QueryPart {
         private boolean hasCyclicReference(Exp expr, List<MemberExpr> expList) {
             if (expr instanceof MemberExpr) {
                 MemberExpr memberExpr = (MemberExpr) expr;
-                if (expList.contains(expr)) {
+                if (expList.contains(memberExpr)) {
                     return true;
                 }
                 expList.add(memberExpr);
@@ -583,22 +593,16 @@ public class Formula extends QueryPart {
             }
             if (expr instanceof FunCall) {
                 FunCall funCall = (FunCall) expr;
-                Exp[] exps = funCall.getArgs();
-                for (int i = 0; i < exps.length; i++) {
+                for (Exp argEXpr : funCall.getArgs()) {
                     if (hasCyclicReference(
-                            exps[i], cloneForEachBranch(expList)))
+                            argEXpr,
+                            new ArrayList<MemberExpr>(expList)))
                     {
                         return true;
                     }
                 }
             }
             return false;
-        }
-
-        private List<MemberExpr> cloneForEachBranch(List<MemberExpr> expList) {
-            ArrayList<MemberExpr> list = new ArrayList<MemberExpr>();
-            list.addAll(expList);
-            return list;
         }
 
         private void returnFormula(Member member) {

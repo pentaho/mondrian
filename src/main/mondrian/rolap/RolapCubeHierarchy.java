@@ -53,6 +53,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
     /**
      * Creates a RolapCubeHierarchy.
      *
+     * @param schemaLoader Schema loader
      * @param cubeDimension Dimension
      * @param rolapHierarchy Wrapped hierarchy
      * @param subName Name of hierarchy within dimension
@@ -1131,6 +1132,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
         public RolapResult.ValueFormatter getFormatter() {
             return calculatedMeasure.getFormatter();
+        }
+
+        public Formula getFormula() {
+            return calculatedMeasure.getFormula();
         }
     }
 }
