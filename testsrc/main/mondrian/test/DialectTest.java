@@ -942,7 +942,7 @@ public class DialectTest extends TestCase {
         // bug mondrian-983
         // We know that mysql's dialect can handle this regex
         boolean couldTranslate =
-            checkRegex("(?i).*\\Qa\"\"); window.alert(\"\"woot');\\E.*");
+            checkRegex("(?i).*\\Qa\"\"\\); window.alert(\"\"woot');\\E.*");
         switch (getDialect().getDatabaseProduct()) {
         case MYSQL:
             assertTrue(couldTranslate);
@@ -959,7 +959,7 @@ public class DialectTest extends TestCase {
         try {
             couldTranslate =
                 checkRegex(
-                    "\"(?i).*\\Qa\"\"); window.alert(\"\"woot');\\E.*\"");
+                    "\"(?i).*\\Qa\"\"\\); window.alert(\"\"woot');\\E.*\"");
         } catch (SQLException e) {
             throwable = e;
         }
