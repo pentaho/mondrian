@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.olap.DriverManager;
 import mondrian.olap4j.MondrianOlap4jDriver;
 import mondrian.rolap.*;
+import mondrian.spi.CatalogLocator;
 import mondrian.tui.XmlaSupport;
 import mondrian.xmla.*;
 import org.apache.log4j.Logger;
@@ -48,9 +49,14 @@ public class FileRepository implements Repository {
             "mondrian.server.DynamicContentFinder$executorService");
 
     private final ScheduledFuture<?> scheduledFuture;
+    private final CatalogLocator locator;
 
-    public FileRepository(RepositoryContentFinder repositoryContentFinder) {
+    public FileRepository(
+        RepositoryContentFinder repositoryContentFinder,
+        CatalogLocator locator)
+    {
         this.repositoryContentFinder = repositoryContentFinder;
+        this.locator = locator;
         assert repositoryContentFinder != null;
         scheduledFuture = executorService.scheduleWithFixedDelay(
             new Runnable() {
@@ -70,7 +76,7 @@ public class FileRepository implements Repository {
     {
         final List<Map<String, Object>> propsList =
             new ArrayList<Map<String, Object>>();
-        for (DatasourceInfo dsInfo : getServerInfo().datasourceMap.values()) {
+        for (DatabaseInfo dsInfo : getServerInfo().datasourceMap.values()) {
             propsList.add(dsInfo.properties);
         }
         return propsList;
@@ -78,18 +84,18 @@ public class FileRepository implements Repository {
 
     public OlapConnection getConnection(
         MondrianServer server,
-        String datasourceName,
+        String databaseName,
         String catalogName,
         String roleName,
         Properties props)
         throws SQLException
     {
         final ServerInfo serverInfo = getServerInfo();
-        final DatasourceInfo datasourceInfo;
-        if (datasourceName == null) {
+        final DatabaseInfo datasourceInfo;
+        if (databaseName == null) {
             if (serverInfo.datasourceMap.size() == 0) {
                 throw new OlapException(
-                    "No datasources configured on this server");
+                    "No databases configured on this server");
             }
             datasourceInfo =
                 serverInfo
@@ -99,17 +105,17 @@ public class FileRepository implements Repository {
                     .next();
         } else {
             datasourceInfo =
-                serverInfo.datasourceMap.get(datasourceName);
+                serverInfo.datasourceMap.get(databaseName);
         }
         if (datasourceInfo == null) {
-            throw Util.newError("unknown catalog '" + datasourceName + "'");
+            throw Util.newError("Unknown database '" + databaseName + "'");
         }
 
         final CatalogInfo catalogInfo;
         if (catalogName == null) {
             if (datasourceInfo.catalogMap.size() == 0) {
                 throw new OlapException(
-                    "No catalogs in the datasource named "
+                    "No catalogs in the database named "
                     + datasourceInfo.name);
             }
             catalogInfo =
@@ -123,7 +129,7 @@ public class FileRepository implements Repository {
                 datasourceInfo.catalogMap.get(catalogName);
         }
         if (catalogInfo == null) {
-            throw Util.newError("unknown schema '" + catalogName + "'");
+            throw Util.newError("Unknown catalog '" + catalogName + "'");
         }
         String connectString = catalogInfo.olap4jConnectString;
         final Properties properties = new Properties();
@@ -156,7 +162,6 @@ public class FileRepository implements Repository {
 
     private ServerInfo getServerInfo() {
         synchronized (SERVER_INFO_LOCK) {
-
             if (this.serverInfo != null) {
                 return this.serverInfo;
             }
@@ -185,17 +190,17 @@ public class FileRepository implements Repository {
                         xmlDataSource.providerType,
                         "AuthenticationMode",
                         xmlDataSource.authenticationMode);
-                final DatasourceInfo catalogInfo =
-                    new DatasourceInfo(
+                final DatabaseInfo databaseInfo =
+                    new DatabaseInfo(
                         xmlDataSource.name,
                         dsPropsMap);
                 serverInfo.datasourceMap.put(
                     xmlDataSource.name,
-                    catalogInfo);
+                    databaseInfo);
                 for (DataSourcesConfig.Catalog xmlCatalog
                     : xmlDataSource.catalogs.catalogs)
                 {
-                    if (catalogInfo.catalogMap.containsKey(xmlCatalog.name)) {
+                    if (databaseInfo.catalogMap.containsKey(xmlCatalog.name)) {
                         throw Util.newError(
                             "more than one DataSource object has name '"
                             + xmlCatalog.name + "'");
@@ -208,8 +213,8 @@ public class FileRepository implements Repository {
                     // string. If not, add it.
                     final Util.PropertyList connectProperties =
                         Util.parseConnectString(connectString);
-                    if (connectProperties.get(
-                        RolapConnectionProperties.Catalog.name()) == null)
+                    if (connectProperties
+                        .get(RolapConnectionProperties.Catalog.name()) == null)
                     {
                         connectString +=
                             ";"
@@ -217,13 +222,14 @@ public class FileRepository implements Repository {
                             + "="
                             + xmlCatalog.definition;
                     }
-                    final CatalogInfo schemaInfo =
+                    final CatalogInfo catalogInfo =
                         new CatalogInfo(
                             xmlCatalog.name,
-                            connectString);
-                    catalogInfo.catalogMap.put(
+                            connectString,
+                            locator);
+                    databaseInfo.catalogMap.put(
                         xmlCatalog.name,
-                        schemaInfo);
+                        catalogInfo);
                 }
             }
             this.serverInfo = serverInfo;
@@ -263,17 +269,17 @@ public class FileRepository implements Repository {
     }
 
     private static class ServerInfo {
-        private Map<String, DatasourceInfo> datasourceMap =
-            new HashMap<String, DatasourceInfo>();
+        private Map<String, DatabaseInfo> datasourceMap =
+            new HashMap<String, DatabaseInfo>();
     }
 
-    private static class DatasourceInfo {
+    private static class DatabaseInfo {
         private final String name;
         private final Map<String, Object> properties;
         private Map<String, CatalogInfo> catalogMap =
             new HashMap<String, CatalogInfo>();
 
-        DatasourceInfo(String name, Map<String, Object> properties) {
+        DatabaseInfo(String name, Map<String, Object> properties) {
             this.name = name;
             this.properties = properties;
         }
@@ -283,9 +289,15 @@ public class FileRepository implements Repository {
         private final String connectString;
         private RolapSchema rolapSchema; // populated on demand
         private final String olap4jConnectString;
+        private final CatalogLocator locator;
 
-        CatalogInfo(String name, String connectString) {
+        CatalogInfo(
+            String name,
+            String connectString,
+            CatalogLocator locator)
+        {
             this.connectString = connectString;
+            this.locator = locator;
             this.olap4jConnectString =
                 connectString.startsWith("jdbc:")
                     ? connectString
@@ -299,7 +311,7 @@ public class FileRepository implements Repository {
                     rolapConnection =
                         (RolapConnection)
                             DriverManager.getConnection(
-                                connectString, null);
+                                connectString, this.locator);
                     rolapSchema = rolapConnection.getSchema();
                 } finally {
                     if (rolapConnection != null) {

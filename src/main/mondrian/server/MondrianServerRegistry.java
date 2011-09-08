@@ -166,6 +166,9 @@ public class MondrianServerRegistry {
         RepositoryContentFinder contentFinder,
         CatalogLocator catalogLocator)
     {
+        if (catalogLocator == null) {
+            catalogLocator = new IdentityCatalogLocator();
+        }
         final Repository repository;
         if (contentFinder == null) {
             // NOTE: registry.staticServer is initialized by calling this
@@ -175,10 +178,7 @@ public class MondrianServerRegistry {
             }
             repository = new ImplicitRepository();
         } else {
-            repository = new FileRepository(contentFinder);
-        }
-        if (catalogLocator == null) {
-            catalogLocator = new IdentityCatalogLocator();
+            repository = new FileRepository(contentFinder, catalogLocator);
         }
         return new MondrianServerImpl(this, repository, catalogLocator);
     }

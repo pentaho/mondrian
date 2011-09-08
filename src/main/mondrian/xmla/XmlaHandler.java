@@ -141,15 +141,22 @@ public class XmlaHandler {
             props.put(JDBC_PASSWORD, request.getPassword());
         }
 
-        // [MROSSI] getConnection does not take a dataSourceInfo. I think
-        // it was a bug.
-        //
-        // String dataSourceInfo =
-        //   properties.get(PropertyDefinition.DataSourceInfo.name());
-        //
-        final String catalog =
-            request.getProperties().get(PropertyDefinition.Catalog.name());
-        return getConnection(catalog, null, request.getRoleName(), props);
+        final String databaseName =
+           request
+               .getProperties()
+                   .get(PropertyDefinition.DataSourceInfo.name());
+
+        final String catalogName =
+            request
+                .getProperties()
+                    .get(PropertyDefinition.Catalog.name());
+
+        return
+            getConnection(
+                databaseName,
+                catalogName,
+                request.getRoleName(),
+                props);
     }
 
     private enum SetType {

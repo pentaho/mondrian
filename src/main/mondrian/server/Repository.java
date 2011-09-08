@@ -19,9 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-/**
-* Callback by which a {@link mondrian.olap.MondrianServer} finds its catalogs
- * and schemas.
+ /**
+ * Callback by which a {@link mondrian.olap.MondrianServer} finds its
+ * databases, catalogs and schemas.
  *
  * <p>An important implementation is {@link ImplicitRepository}. This
  * encapsulates the behavior of embedded mondrian: there is no repository,
@@ -86,10 +86,21 @@ public interface Repository {
     List<Map<String, Object>> getDatabases(
         RolapConnection connection);
 
+    /**
+     * Returns an OlapConnection object.
+     * @param server The MondrianServer to use.
+     * @param databaseName The database name. Can be null.
+     * @param catalogName The catalog name. Can be null.
+     * @param roleName The role name. Can be null.
+     * @param props Additional connection properties.
+     * @return An opened olap connection.
+     * @throws SQLException If an error is encountered while
+     * creating the connection.
+     */
     OlapConnection getConnection(
         MondrianServer server,
+        String databaseName,
         String catalogName,
-        String schemaName,
         String roleName,
         Properties props)
         throws SQLException;
