@@ -10,9 +10,12 @@
 package mondrian.rolap;
 
 import mondrian.test.FoodMartTestCase;
+import mondrian.util.Bug;
 
 /**
  * Test case for '&amp;[..]' capability in MDX identifiers.
+ *
+ * @see Bug#BugMondrian485Fixed
  *
  * @author pierluiggi@users.sourceforge.net
  * @version $Id$
@@ -54,22 +57,25 @@ public class IndexedValuesTest extends FoodMartTestCase {
             + "ON ROWS FROM [HR]",
             desiredResult);
 
+        if (!Bug.BugMondrian485Fixed) {
+            return;
+        }
+
         // Cannot find members that are not at root of hierarchy.
         // (We should fix this.)
-        assertQueryThrows(
+        assertQueryReturns(
             "SELECT {[Measures].[Org Salary], [Measures].[Count]} "
             + "ON COLUMNS, "
             + "{[Employees].&[4]} "
             + "ON ROWS FROM [HR]",
-            "MDX object '[Employees].&[4]' not found in cube 'HR'");
+            "something");
 
-        // "level.&key" syntax not supported
-        // (We should fix this.)
-        assertQueryThrows(
+        // "level.&key" syntax
+        assertQueryReturns(
             "SELECT [Measures] ON COLUMNS, "
             + "{[Product].[Product Name].&[9]} "
             + "ON ROWS FROM [Sales]",
-            "MDX object '[Employees].&[4]' not found in cube 'HR'");
+            "something");
     }
 }
 

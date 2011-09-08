@@ -12,6 +12,7 @@ package mondrian.test;
 import java.sql.SQLException;
 
 import mondrian.olap.*;
+import mondrian.util.Bug;
 
 /**
  * Unit tests that check compatibility with Microsoft SQL Server Analysis
@@ -50,7 +51,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     /**
      * Keys as part of member names.
      */
-    public static final boolean KEY_IMPL = false;
+    public static final boolean KEY_IMPL = Bug.BugMondrian485Fixed;
 
     /**
      * Catch-all for tests that depend on something that hasn't been
