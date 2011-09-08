@@ -21,10 +21,7 @@ import org.olap4j.impl.Olap4jUtil;
 
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.*;
 
 /**
  * Implementation of {@link mondrian.server.Repository} that reads
@@ -39,12 +36,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Julian Hyde, Luc Boudreau
  */
 public class FileRepository implements Repository {
+    private final static Object SERVER_INFO_LOCK = new Object();
     private ServerInfo serverInfo;
     private final RepositoryContentFinder repositoryContentFinder;
 
     private static final Logger LOGGER = Logger.getLogger(MondrianServer.class);
-
-    private static AtomicInteger threadNumber = new AtomicInteger(0);
 
     private final static ScheduledExecutorService executorService =
         Util.getScheduledExecutorService(
@@ -59,7 +55,9 @@ public class FileRepository implements Repository {
         scheduledFuture = executorService.scheduleWithFixedDelay(
             new Runnable() {
                 public void run() {
-                    serverInfo = null;
+                    synchronized (SERVER_INFO_LOCK) {
+                        serverInfo = null;
+                    }
                 }
             },
             0,
@@ -156,70 +154,81 @@ public class FileRepository implements Repository {
         repositoryContentFinder.shutdown();
     }
 
-    private synchronized ServerInfo getServerInfo() {
-        if (serverInfo != null) {
+    private ServerInfo getServerInfo() {
+        synchronized (SERVER_INFO_LOCK) {
+
+            if (this.serverInfo != null) {
+                return this.serverInfo;
+            }
+
+            final String content = repositoryContentFinder.getContent();
+            DataSourcesConfig.DataSources xmlDataSources =
+                XmlaSupport.parseDataSources(content, LOGGER);
+            ServerInfo serverInfo = new ServerInfo();
+
+            for (DataSourcesConfig.DataSource xmlDataSource
+                : xmlDataSources.dataSources)
+            {
+                final Map<String, Object> dsPropsMap =
+                    Olap4jUtil.<String, Object>mapOf(
+                        "DataSourceName",
+                        xmlDataSource.getDataSourceName(),
+                        "DataSourceDescription",
+                        xmlDataSource.getDataSourceDescription(),
+                        "URL",
+                        xmlDataSource.getURL(),
+                        "DataSourceInfo",
+                        xmlDataSource.getDataSourceName(),
+                        "ProviderName",
+                        xmlDataSource.getProviderName(),
+                        "ProviderType",
+                        xmlDataSource.providerType,
+                        "AuthenticationMode",
+                        xmlDataSource.authenticationMode);
+                final DatasourceInfo catalogInfo =
+                    new DatasourceInfo(
+                        xmlDataSource.name,
+                        dsPropsMap);
+                serverInfo.datasourceMap.put(
+                    xmlDataSource.name,
+                    catalogInfo);
+                for (DataSourcesConfig.Catalog xmlCatalog
+                    : xmlDataSource.catalogs.catalogs)
+                {
+                    if (catalogInfo.catalogMap.containsKey(xmlCatalog.name)) {
+                        throw Util.newError(
+                            "more than one DataSource object has name '"
+                            + xmlCatalog.name + "'");
+                    }
+                    String connectString =
+                        xmlCatalog.dataSourceInfo != null
+                            ? xmlCatalog.dataSourceInfo
+                            : xmlDataSource.dataSourceInfo;
+                    // Check if the catalog is part of the connect
+                    // string. If not, add it.
+                    final Util.PropertyList connectProperties =
+                        Util.parseConnectString(connectString);
+                    if (connectProperties.get(
+                        RolapConnectionProperties.Catalog.name()) == null)
+                    {
+                        connectString +=
+                            ";"
+                            + RolapConnectionProperties.Catalog.name()
+                            + "="
+                            + xmlCatalog.definition;
+                    }
+                    final CatalogInfo schemaInfo =
+                        new CatalogInfo(
+                            xmlCatalog.name,
+                            connectString);
+                    catalogInfo.catalogMap.put(
+                        xmlCatalog.name,
+                        schemaInfo);
+                }
+            }
+            this.serverInfo = serverInfo;
             return serverInfo;
         }
-        final String content = repositoryContentFinder.getContent();
-        DataSourcesConfig.DataSources xmlDataSources =
-            XmlaSupport.parseDataSources(content, LOGGER);
-        serverInfo = new ServerInfo();
-
-        for (DataSourcesConfig.DataSource xmlDataSource
-            : xmlDataSources.dataSources)
-        {
-            final Map<String, Object> dsPropsMap =
-                Olap4jUtil.<String, Object>mapOf(
-                    "DataSourceName", xmlDataSource.getDataSourceName(),
-                    "DataSourceDescription", xmlDataSource
-                        .getDataSourceDescription(),
-                    "URL", xmlDataSource.getURL(),
-                    "DataSourceInfo", xmlDataSource.getDataSourceName(),
-                    "ProviderName", xmlDataSource.getProviderName(),
-                    "ProviderType", xmlDataSource.providerType,
-                    "AuthenticationMode", xmlDataSource.authenticationMode);
-            final DatasourceInfo catalogInfo =
-                new DatasourceInfo(
-                    xmlDataSource.name,
-                    dsPropsMap);
-            serverInfo.datasourceMap.put(
-                xmlDataSource.name,
-                catalogInfo);
-            for (DataSourcesConfig.Catalog xmlCatalog
-                    : xmlDataSource.catalogs.catalogs)
-            {
-                if (catalogInfo.catalogMap.containsKey(xmlCatalog.name)) {
-                    throw Util.newError(
-                        "more than one DataSource object has name '"
-                            + xmlCatalog.name + "'");
-                }
-                String connectString =
-                    xmlCatalog.dataSourceInfo != null
-                        ? xmlCatalog.dataSourceInfo
-                        : xmlDataSource.dataSourceInfo;
-                // Check if the catalog is part of the connect
-                // string. If not, add it.
-                final Util.PropertyList connectProperties =
-                    Util.parseConnectString(connectString);
-                if (connectProperties.get(
-                        RolapConnectionProperties.Catalog.name()) == null)
-                {
-                    connectString +=
-                        ";"
-                        + RolapConnectionProperties.Catalog.name()
-                        + "="
-                        + xmlCatalog.definition;
-                }
-                final CatalogInfo schemaInfo =
-                    new CatalogInfo(
-                        xmlCatalog.name,
-                        connectString);
-                catalogInfo.catalogMap.put(
-                    xmlCatalog.name,
-                    schemaInfo);
-            }
-        }
-        return serverInfo;
     }
 
     public List<String> getCatalogNames(
@@ -271,13 +280,11 @@ public class FileRepository implements Repository {
     }
 
     private static class CatalogInfo {
-        private final String name;
         private final String connectString;
         private RolapSchema rolapSchema; // populated on demand
         private final String olap4jConnectString;
 
         CatalogInfo(String name, String connectString) {
-            this.name = name;
             this.connectString = connectString;
             this.olap4jConnectString =
                 connectString.startsWith("jdbc:")
