@@ -197,8 +197,11 @@ class DescendantsFunDef extends FunDefBase {
         final boolean before,
         final boolean self,
         final boolean after,
-        final Evaluator context)
+        Evaluator context)
     {
+        if (!context.isNonEmpty()) {
+            context = null;
+        }
         List<Member> children = new ArrayList<Member>();
         children.add(member);
         for (int depth = 0;; ++depth) {

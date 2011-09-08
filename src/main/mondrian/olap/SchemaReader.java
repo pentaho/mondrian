@@ -141,7 +141,7 @@ public interface SchemaReader {
      * which is not empty in <code>context</code>.
      *
      * @param members Array of members
-     * @param context Evaluation context
+     * @param context Evaluation context for exists, or null
      * @return array of child members
      *
      * @pre members != null

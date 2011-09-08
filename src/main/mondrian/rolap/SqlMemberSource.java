@@ -565,7 +565,10 @@ class SqlMemberSource
                 starSet.getMeasureGroup().getPath(level.getDimension());
             for (RolapSchema.PhysHop hop : path.hopList) {
                 sqlQuery.addFrom(hop.relation, null, false);
-                sqlQuery.addWhere(hop.link.sql);
+                if (hop.link != null) {
+                    // first hop has no link (because no predecessor to join to)
+                    sqlQuery.addWhere(hop.link.sql);
+                }
             }
         }
 

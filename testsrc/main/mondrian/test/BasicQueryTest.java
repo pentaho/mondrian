@@ -3234,55 +3234,24 @@ public class BasicQueryTest extends FoodMartTestCase {
      * then no aggregate tables is be read in any event.
      */
     public void testCountDistinctAgg() {
-        boolean use_agg_orig = props.UseAggregates.get();
-        boolean do_caching_orig = props.DisableCaching.get();
-
         // turn off caching
-        props.DisableCaching.setString("true");
+        propSaver.set(props.DisableCaching, true);
 
-        assertQueryReturns(
-            "select {[Measures].[Unit Sales], [Measures].[Customer Count]} on rows,\n"
-            + "NON EMPTY {[Time].[1997].[Q1].[1]} ON COLUMNS\n"
-            + "from Sales",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Time].[Time].[1997].[Q1].[1]}\n"
-            + "Axis #2:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "{[Measures].[Customer Count]}\n"
-            + "Row #0: 21,628\n"
-            + "Row #1: 1,396\n");
-
-        if (use_agg_orig) {
-            props.UseAggregates.setString("false");
-        } else {
-            props.UseAggregates.setString("true");
-        }
-
-        assertQueryReturns(
-            "select {[Measures].[Unit Sales], [Measures].[Customer Count]} on rows,\n"
-            + "NON EMPTY {[Time].[1997].[Q1].[1]} ON COLUMNS\n"
-            + "from Sales",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Time].[Time].[1997].[Q1].[1]}\n"
-            + "Axis #2:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "{[Measures].[Customer Count]}\n"
-            + "Row #0: 21,628\n"
-            + "Row #1: 1,396\n");
-
-        if (use_agg_orig) {
-            props.UseAggregates.setString("true");
-        } else {
-            props.UseAggregates.setString("false");
-        }
-        if (do_caching_orig) {
-            props.DisableCaching.setString("true");
-        } else {
-            props.DisableCaching.setString("false");
+        for (boolean b : new boolean[]{false, true}) {
+            propSaver.set(props.UseAggregates, b);
+            assertQueryReturns(
+                "select {[Measures].[Unit Sales], [Measures].[Customer Count]} on rows,\n"
+                + "NON EMPTY {[Time].[1997].[Q1].[1]} ON COLUMNS\n"
+                + "from Sales",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Time].[Time].[1997].[Q1].[1]}\n"
+                + "Axis #2:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "{[Measures].[Customer Count]}\n"
+                + "Row #0: 21,628\n"
+                + "Row #1: 1,396\n");
         }
     }
 

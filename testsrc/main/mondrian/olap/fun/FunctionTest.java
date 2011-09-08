@@ -284,7 +284,7 @@ public class FunctionTest extends FoodMartTestCase {
         // Since Dimensions returns a Hierarchy, can apply CurrentMember.
         assertAxisReturns(
             "Dimensions(3).CurrentMember",
-            "[Store].[Store Size in SQFT].[All Store Size in SQFTs]");
+            "[Store].[Store Type].[All Store Types]");
     }
 
     public void testDimensionsString() {
@@ -4638,17 +4638,11 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendantsM2() {
-        if (!Bug.NpeInMakeChildMemberSql) {
-            return;
-        }
         assertAxisReturns(
             "Descendants([Time].[1997], 2)", months);
     }
 
     public void testDescendantsM2Self() {
-        if (!Bug.NpeInMakeChildMemberSql) {
-            return;
-        }
         assertAxisReturns(
             "Descendants([Time].[1997], 2, Self)", months);
     }
@@ -4682,18 +4676,12 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendantsMFarSelf() {
-        if (!Bug.NpeInMakeChildMemberSql) {
-            return;
-        }
         assertAxisReturns(
             "Descendants([Time].[1997], 10000, Self)",
             "");
     }
 
     public void testDescendantsMNY() {
-        if (!Bug.NpeInMakeChildMemberSql) {
-            return;
-        }
         assertAxisReturns(
             "Descendants([Time].[1997], 1, BEFORE_AND_AFTER)",
             year1997 + "\n" + months);
@@ -4712,9 +4700,6 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendantsParentChild() {
-        if (!Bug.NpeInMakeChildMemberSql) {
-            return;
-        }
         getTestContext().withCube("HR").assertAxisReturns(
             "Descendants([Employees], 2)",
             "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]\n"
@@ -4727,9 +4712,6 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendantsParentChildBefore() {
-        if (!Bug.NpeInMakeChildMemberSql) {
-            return;
-        }
         getTestContext().withCube("HR").assertAxisReturns(
             "Descendants([Employees], 2, BEFORE)",
             "[Employee].[Employees].[All Employees]\n"
@@ -4899,9 +4881,6 @@ public class FunctionTest extends FoodMartTestCase {
 
         // Negative depth acts like +infinity (per MSAS).  Run the test several
         // times because we had a non-deterministic bug here.
-        if (!Bug.NpeInMakeChildMemberSql) {
-            return;
-        }
         for (int i = 0; i < 100; ++i) {
             testContext.assertExprReturns(
                 "Count(Descendants([Employees], -1, LEAVES))", "1,044");
@@ -4909,18 +4888,12 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testDescendantsSBA() {
-        if (!Bug.NpeInMakeChildMemberSql) {
-            return;
-        }
         assertAxisReturns(
             "Descendants([Time].[1997], 1, SELF_BEFORE_AFTER)",
             hierarchized1997);
     }
 
     public void testDescendantsSet() {
-        if (!Bug.NpeInMakeChildMemberSql) {
-            return;
-        }
         assertAxisReturns(
             "Descendants({[Time].[1997].[Q4], [Time].[1997].[Q2]}, 1)",
             "[Time].[Time].[1997].[Q4].[10]\n"
@@ -7484,9 +7457,6 @@ public class FunctionTest extends FoodMartTestCase {
      * "Potential MDX Order Non Empty Problem"</a>
      */
     public void testOrderNonEmpty() {
-        if (!Bug.NpeInMakeChildMemberSql) {
-            return;
-        }
         assertQueryReturns(
             "select NON EMPTY [Gender].Members ON COLUMNS,\n"
             + "NON EMPTY Order([Product].[Products].[Drink].Children,\n"

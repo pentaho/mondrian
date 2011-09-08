@@ -9,6 +9,7 @@
 package mondrian.test;
 
 import mondrian.olap.MondrianProperties;
+
 /**
  * Runs specified set of MDX queries concurrently.
  * This Class is not added to the Main test suite.
@@ -20,7 +21,7 @@ import mondrian.olap.MondrianProperties;
  * @version $Id$
  */
 public class ConcurrentMdxTest extends FoodMartTestCase {
-    private MondrianProperties props;
+    private final MondrianProperties props = MondrianProperties.instance();
 
     static final QueryAndResult[] mdxQueries = new QueryAndResult[]{
         new QueryAndResult(
@@ -1233,9 +1234,9 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
     };
 
     public void testConcurrentValidatingQueriesInRandomOrder() {
-        props.DisableCaching.set(false);
-        props.UseAggregates.set(false);
-        props.ReadAggregates.set(false);
+        propSaver.set(props.DisableCaching, false);
+        propSaver.set(props.UseAggregates, false);
+        propSaver.set(props.ReadAggregates, false);
 
         FoodMartTestCase.QueryAndResult[] singleQuery = {mdxQueries[0]};
         assertTrue(
@@ -1264,7 +1265,7 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        props = MondrianProperties.instance();
     }
 }
+
 // End ConcurrentMdxTest.java

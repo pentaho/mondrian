@@ -50,7 +50,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         propSaver.set(
             MondrianProperties.instance().UseAggregates, true);
         propSaver.set(
-            MondrianProperties.instance().UseAggregates, true);
+            MondrianProperties.instance().ReadAggregates, true);
         checkNotNative(
             "with  member [gender].[agg] as"
             + "  'aggregate({[gender].[gender].members},[measures].[unit sales])'"

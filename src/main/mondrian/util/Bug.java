@@ -311,11 +311,6 @@ public class Bug {
      public static final boolean LayoutWrongCardinalty = Enable;
 
     /**
-     * NullPointerException in SqlMemberSource.makeChildMemberSql
-     */
-    public static final boolean NpeInMakeChildMemberSql = Enable;
-
-    /**
      * Cube [Sales Ragged] not found
      */
     public static final boolean CubeRaggedFeature = Enable;

@@ -403,10 +403,6 @@ public class ScenarioTest extends FoodMartTestCase {
             + "where ([Customers].[All Customers].[USA].[CA].[San Francisco],\n"
             + " [Time].[1997], " + scenarioUniqueName + ")");
 
-        if (!Bug.NpeInMakeChildMemberSql) {
-            return;
-        }
-
         // With bug MONDRIAN-815, got an NPE here, because cell (0, 1) has a
         // null value.
         final CellSet cellSet = pstmt.executeQuery();

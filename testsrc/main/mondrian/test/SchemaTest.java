@@ -45,6 +45,8 @@ import java.sql.SQLException;
  */
 public class SchemaTest extends FoodMartTestCase {
 
+    private final MondrianProperties props = MondrianProperties.instance();
+
     public SchemaTest(String name) {
         super(name);
     }
@@ -390,6 +392,8 @@ Test that get error if add a level to a time dimension whose type is not
 years, quarters etc.
 
 Test attribute Attribute@allMemberName.
+
+Test that get error if a dimension has more than one hierarchy with same name.
 
 === Obsolete ===
 
@@ -2482,68 +2486,46 @@ Test attribute Attribute@allMemberName.
      * this test triggers an exception out of the aggregate table manager
      */
     public void testAggTableSupportOfSharedDims() {
-        if (Bug.BugMondrian361Fixed) {
-            final TestContext testContext = TestContext.instance().create(
-                null,
-                "<Cube name=\"Sales Two Dimensions\">\n"
-                + "  <Table name=\"sales_fact_1997\"/>\n"
-                + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
-                + "  <DimensionUsage name=\"Time2\" source=\"Time\" foreignKey=\"product_id\"/>\n"
-                + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
-                + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" "
-                + "   formatString=\"Standard\"/>\n"
-                + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\""
-                + "   formatString=\"#,###.00\"/>\n"
-                + "</Cube>",
-                null,
-                null,
-                null,
-                null);
-
-            testContext.assertQueryReturns(
-                "select\n"
-                + " {[Time2].[1997]} on columns,\n"
-                + " {[Time].[1997].[Q3]} on rows\n"
-                + "From [Sales Two Dimensions]",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Time2].[1997]}\n"
-                + "Axis #2:\n"
-                + "{[Time].[Time].[1997].[Q3]}\n"
-                + "Row #0: 16,266\n");
-
-            MondrianProperties props = MondrianProperties.instance();
-            boolean currentUse = props.UseAggregates.get();
-            boolean currentRead = props.ReadAggregates.get();
-            boolean do_caching_orig = props.DisableCaching.get();
-
-            // turn off caching
-            props.DisableCaching.setString("true");
-
-            // re-read aggregates
-            props.UseAggregates.setString("true");
-            props.ReadAggregates.setString("false");
-            props.ReadAggregates.setString("true");
-
-            if (currentRead) {
-                props.ReadAggregates.setString("true");
-            } else {
-                props.ReadAggregates.setString("false");
-            }
-            if (currentUse) {
-                props.UseAggregates.setString("true");
-            } else {
-                props.UseAggregates.setString("false");
-            }
-            if (do_caching_orig) {
-                props.DisableCaching.setString("true");
-            } else {
-                props.DisableCaching.setString("false");
-            }
-            // force reloading of aggregates, which currently throws an
-            // exception
+        if (!Bug.BugMondrian361Fixed) {
+            return;
         }
+        final TestContext testContext = TestContext.instance().create(
+            null,
+            "<Cube name=\"Sales Two Dimensions\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "  <DimensionUsage name=\"Time2\" source=\"Time\" foreignKey=\"product_id\"/>\n"
+            + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" "
+            + "   formatString=\"Standard\"/>\n"
+            + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\""
+            + "   formatString=\"#,###.00\"/>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+
+        testContext.assertQueryReturns(
+            "select\n"
+            + " {[Time2].[1997]} on columns,\n"
+            + " {[Time].[1997].[Q3]} on rows\n"
+            + "From [Sales Two Dimensions]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Time2].[1997]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[Time].[1997].[Q3]}\n"
+            + "Row #0: 16,266\n");
+
+        // turn off caching
+        propSaver.set(props.DisableCaching, true);
+
+        // re-read aggregates
+        propSaver.set(props.UseAggregates, true);
+        propSaver.set(props.ReadAggregates, false);
+        propSaver.set(props.ReadAggregates, true);
     }
 
     /**

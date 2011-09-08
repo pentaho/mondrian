@@ -9,7 +9,6 @@
 */
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Result;
 
 /**
@@ -38,10 +37,8 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
             return;
         }
 
-        MondrianProperties props = MondrianProperties.instance();
-
         // get value without aggregates
-        props.UseAggregates.setString("false");
+        propSaver.set(props.UseAggregates, false);
 
         String mdx =
             "select {[Measures].[Total]} on columns from [Fact]";
@@ -56,7 +53,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
 
         // unless there is a way to flush the cache,
         // I'm skeptical about these results
-        props.UseAggregates.setString("true");
+        propSaver.set(props.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();

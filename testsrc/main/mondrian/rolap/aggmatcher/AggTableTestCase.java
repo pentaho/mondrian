@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,15 +25,14 @@ import mondrian.olap.MondrianProperties;
 public abstract class AggTableTestCase extends CsvDBTestCase {
 
     private static final String DIRECTORY =
-                            "testsrc/main/mondrian/rolap/aggmatcher";
+        "testsrc/main/mondrian/rolap/aggmatcher";
 
-    private boolean currentUse;
-    private boolean currentRead;
-    private boolean do_caching_orig;
+    protected final MondrianProperties props = MondrianProperties.instance();
 
     public AggTableTestCase() {
         super();
     }
+
     public AggTableTestCase(String name) {
         super(name);
     }
@@ -41,42 +40,13 @@ public abstract class AggTableTestCase extends CsvDBTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        // store current property values
-        MondrianProperties props = MondrianProperties.instance();
-        this.currentUse = props.UseAggregates.get();
-        this.currentRead = props.ReadAggregates.get();
-        this.do_caching_orig = props.DisableCaching.get();
-
         // turn off caching
-        props.DisableCaching.setString("true");
-
-
+        propSaver.set(props.DisableCaching, true);
 
         // re-read aggregates
-        props.UseAggregates.setString("true");
-        props.ReadAggregates.setString("false");
-        props.ReadAggregates.setString("true");
-    }
-    protected void tearDown() throws Exception {
-        // reset property values
-        MondrianProperties props = MondrianProperties.instance();
-        if (this.currentRead) {
-            props.ReadAggregates.setString("true");
-        } else {
-            props.ReadAggregates.setString("false");
-        }
-        if (this.currentUse) {
-            props.UseAggregates.setString("true");
-        } else {
-            props.UseAggregates.setString("false");
-        }
-        if (this.do_caching_orig) {
-            props.DisableCaching.setString("true");
-        } else {
-            props.DisableCaching.setString("false");
-        }
-
-        super.tearDown();
+        propSaver.set(props.UseAggregates, true);
+        propSaver.set(props.ReadAggregates, false);
+        propSaver.set(props.ReadAggregates, true);
     }
 
     protected String getDirectoryName() {

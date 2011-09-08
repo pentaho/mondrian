@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -32,6 +32,7 @@ import mondrian.test.FoodMartTestCase;
  * @version $Id$
  */
 public class AggGenTest extends FoodMartTestCase {
+    private final MondrianProperties props = MondrianProperties.instance();
 
     public AggGenTest(String name) {
         super(name);
@@ -47,17 +48,14 @@ public class AggGenTest extends FoodMartTestCase {
         logger.addAppender(myAppender);
         propSaver.setAtLeast(logger, Level.DEBUG);
 
-        final String trueValue = "true";
-
         // This modifies the MondrianProperties for the whole of the
         // test run
 
-        MondrianProperties props = MondrianProperties.instance();
         // If run in Ant and with mondrian.jar, please comment out this line:
-        props.AggregateRules.setString("DefaultRules.xml");
-        props.UseAggregates.setString(trueValue);
-        props.ReadAggregates.setString(trueValue);
-        props.GenerateAggregateSql.setString(trueValue);
+        propSaver.set(props.AggregateRules, "DefaultRules.xml");
+        propSaver.set(props.UseAggregates, true);
+        propSaver.set(props.ReadAggregates, true);
+        propSaver.set(props.GenerateAggregateSql, true);
 
         final RolapConnection rolapConn = (RolapConnection) getConnection();
         Query query =

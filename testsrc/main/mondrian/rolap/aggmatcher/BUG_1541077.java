@@ -3,13 +3,12 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2009 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.Result;
 
 /**
@@ -37,17 +36,15 @@ public class BUG_1541077 extends AggTableTestCase {
             return;
         }
 
-        MondrianProperties props = MondrianProperties.instance();
-
         // get value without aggregates
-        props.UseAggregates.setString("false");
+        propSaver.set(props.UseAggregates, false);
 
         String mdx =
             "select {[Measures].[Store Count]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
-        props.UseAggregates.setString("true");
+        propSaver.set(props.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
@@ -60,17 +57,15 @@ public class BUG_1541077 extends AggTableTestCase {
             return;
         }
 
-        MondrianProperties props = MondrianProperties.instance();
-
         // get value without aggregates
-        props.UseAggregates.setString("false");
+        propSaver.set(props.UseAggregates, false);
 
         String mdx =
             "select {[Measures].[Sales Count]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
-        props.UseAggregates.setString("true");
+        propSaver.set(props.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
@@ -83,17 +78,15 @@ public class BUG_1541077 extends AggTableTestCase {
             return;
         }
 
-        MondrianProperties props = MondrianProperties.instance();
-
         // get value without aggregates
-        props.UseAggregates.setString("false");
+        propSaver.set(props.UseAggregates, false);
 
         String mdx =
             "select {[Measures].[Total Amount]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
-        props.UseAggregates.setString("true");
+        propSaver.set(props.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
@@ -106,10 +99,8 @@ public class BUG_1541077 extends AggTableTestCase {
             return;
         }
 
-        MondrianProperties props = MondrianProperties.instance();
-
         // get value without aggregates
-        props.UseAggregates.setString("false");
+        propSaver.set(props.UseAggregates, false);
 
         String mdx = "select {[Measures].[Avg Amount]} on columns from Cheques";
 
@@ -117,7 +108,7 @@ public class BUG_1541077 extends AggTableTestCase {
         Object v = result.getCell(new int[]{0}).getFormattedValue();
 
         // get value with aggregates
-        props.UseAggregates.setString("true");
+        propSaver.set(props.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getFormattedValue();
