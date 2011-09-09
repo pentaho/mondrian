@@ -14,7 +14,7 @@
                     <member>[Store].[Stores].[All Stores]</member>
                     <member>[Store].[Store Size in SQFT].[All Store Size in SQFTs]</member>
                     <member>[Time].[1997]</member>
-                    <member>[Warehouse].[All Warehouses]</member>
+                    <member>[Warehouse].[Warehouses].[All Warehouses]</member>
                 </tuple>
             </tuples>
         </slicer>

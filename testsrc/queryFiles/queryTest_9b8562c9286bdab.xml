@@ -35,62 +35,62 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>

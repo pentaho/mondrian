@@ -39,27 +39,27 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Measures].[Store Invoice]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Measures].[Supply Time]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Measures].[Store Invoice]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Measures].[Supply Time]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Measures].[Store Invoice]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Measures].[Supply Time]</member>
                 </tuple>
             </tuples>

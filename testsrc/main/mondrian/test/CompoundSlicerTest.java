@@ -614,14 +614,15 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[CA], [Product].[Food], [Time].[Time].[1997].[Q1]}\n"
-            + "{[Store].[USA].[CA], [Product].[Drink], [Time].[Time].[1997].[Q2].[4]}\n"
-            + "{[Store].[USA].[OR].[Portland], [Product].[Food], [Time].[Time].[1997].[Q1]}\n"
-            + "{[Store].[USA].[OR].[Portland], [Product].[Drink], [Time].[Time].[1997].[Q2].[4]}\n"
+            + "{[Store].[Stores].[USA].[CA], [Product].[Products].[Food], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Store].[Stores].[USA].[CA], [Product].[Products].[Drink], [Time].[Time].[1997].[Q2].[4]}\n"
+            + "{[Store].[Stores].[USA].[OR].[Portland], [Product].[Products].[Food], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Store].[Stores].[USA].[OR].[Portland], [Product].[Products].[Drink], [Time].[Time].[1997].[Q2].[4]}\n"
             + "Row #0: 1,069\n"
             + "Row #1: 155\n"
             + "Row #2: 332\n"
             + "Row #3: 48\n");
+
         // The figures look reasonable, because:
         //  332 + 48 = 380 > 352
         //  1069 + 155 = 1224 > 1175

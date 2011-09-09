@@ -14,9 +14,9 @@
 Axis #1:
 {[Measures].[Unit Sales]}
 Axis #2:
-{[Product].[Products].[Products].[Drink]}
-{[Product].[Products].[Products].[Food]}
-{[Product].[Products].[Products].[Non-Consumable]}
+{[Product].[Products].[Drink]}
+{[Product].[Products].[Food]}
+{[Product].[Products].[Non-Consumable]}
 Row #0: 24,597
 Row #1: 191,940
 Row #2: 50,236
@@ -38,9 +38,9 @@ Row #2: 50,236
 Axis #1:
 {[Measures].[Tom O'Neil]}
 Axis #2:
-{[Product].[Products].[Products].[Drink]}
-{[Product].[Products].[Products].[Food]}
-{[Product].[Products].[Products].[Non-Consumable]}
+{[Product].[Products].[Drink]}
+{[Product].[Products].[Food]}
+{[Product].[Products].[Non-Consumable]}
 Row #0: 24,597
 Row #1: 191,940
 Row #2: 50,236

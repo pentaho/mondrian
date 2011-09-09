@@ -182,7 +182,8 @@ public class MemberTuplePredicate implements StarPredicate {
         LE("<="),
         GT(">"),
         GE(">="),
-        EQ("=");
+        EQ("="),
+        ISNULL("IS NULL");
 
         private final String op;
         private final List<RelOp> singletonList;
@@ -286,7 +287,7 @@ public class MemberTuplePredicate implements StarPredicate {
                     buf.append(" and ");
                 }
                 toSql(
-                    dialect, buf, relOps.get(i).getOp(), values.get(i),
+                    dialect, buf, relOps.get(i), values.get(i),
                     columns.get(i));
             }
         }
@@ -294,15 +295,24 @@ public class MemberTuplePredicate implements StarPredicate {
         private void toSql(
             Dialect dialect,
             StringBuilder buf,
-            String relOp,
+            RelOp relOp,
             Object value,
             RolapSchema.PhysColumn column)
         {
+            if (value == RolapUtil.sqlNullValue) {
+                relOp = RelOp.ISNULL;
+            }
             buf.append(column.toSql());
-            buf.append(' ');
-            buf.append(relOp);
-            buf.append(' ');
-            dialect.quote(buf, value, column.getDatatype());
+            switch (relOp) {
+            case ISNULL:
+                buf.append(" IS NULL");
+                return;
+            default:
+                buf.append(' ');
+                buf.append(relOp.getOp());
+                buf.append(' ');
+                dialect.quote(buf, value, column.getDatatype());
+            }
         }
     }
 

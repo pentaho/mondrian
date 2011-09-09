@@ -25,8 +25,6 @@ import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
 
-import org.olap4j.impl.UnmodifiableArrayList;
-
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -148,7 +146,7 @@ public class SqlTupleReader implements TupleReader {
                 for (int i = 0; i <= levelDepth; i++) {
                     RolapLevel childLevel = levels[i];
                     final LevelColumnLayout layout =
-                        columnLayout.levelLayoutList.get(i);
+                        columnLayout.levelLayoutMap.get(childLevel);
                     if (childLevel.isAll()) {
                         member = memberBuilder.allMember();
                         continue;
@@ -199,8 +197,9 @@ public class SqlTupleReader implements TupleReader {
                         int keyOrdinal = layout.keyOrdinals[j];
                         Object value = accessors.get(keyOrdinal).get();
                         if (value == null) {
-                            keys = null;
-                            break;
+//                            keys = null;
+//                            break;
+                            value = RolapUtil.sqlNullValue;
                         }
                         keys[j] = value;
                     }
@@ -831,27 +830,59 @@ Util.deprecated("obsolete basecube parameter", false);
             aggStar = null;
         }
 
-        // add the selects for all levels to fetch
-        RolapSchema.SqlQueryBuilder queryBuilder = null;
+        // Find targets whose members are not enumerated.
+        // if we're going to be enumerating the values for this target,
+        // then we don't need to generate sql for it.
+        List<TargetBase> unevaluatedTargets = new ArrayList<TargetBase>();
+
+        // Distinct dimensions. (In case two or more levels come from the same
+        // dimension, e.g. [Customer].[Gender] and [Customer].[Marital Status].)
+        final Set<RolapDimension> dimensions =
+            new LinkedHashSet<RolapDimension>();
+
         for (TargetBase target : targets) {
-            // if we're going to be enumerating the values for this target,
-            // then we don't need to generate sql for it
             if (target.getSrcMembers() == null) {
-                RolapLevel startLevel = target.level;
-                if (MondrianProperties.instance()
+                unevaluatedTargets.add(target);
+                dimensions.add(target.level.getDimension());
+            }
+        }
+
+        // add the selects for all levels to fetch
+        if (!unevaluatedTargets.isEmpty()) {
+            ColumnLayoutBuilder columnLayoutBuilder =
+                new ColumnLayoutBuilder(
+                    Collections.<List<RolapSchema.PhysColumn>>emptyList());
+            RolapSchema.SqlQueryBuilder queryBuilder =
+                new RolapSchema.SqlQueryBuilder(
+                    sqlQuery, columnLayoutBuilder);
+
+            if (measureGroup != null) {
+                for (RolapDimension dimension : dimensions) {
+                    // Join each dimension to the measure group's fact table.
+                    final RolapSchema.PhysPath path =
+                        measureGroup.getPath(dimension);
+                    for (RolapSchema.PhysHop hop : path.hopList) {
+                        if (hop.link != null) {
+                            queryBuilder.sqlQuery.addWhere(hop.link.sql);
+                        }
+                        queryBuilder.addRelation(hop.relation, false);
+                    }
+                }
+            } else if (MondrianProperties.instance()
                     .FilterChildlessSnowflakeMembers.get())
-                {
-                    startLevel =
-                        Util.last(
-                            target.level.getHierarchy().getRolapLevelList());
+            {
+                // start at lowest level of each dimension
+                for (RolapDimension dimension : dimensions) {
+                    queryBuilder.addListToFrom(dimension.keyAttribute.keyList);
                 }
-                if (queryBuilder == null) {
-                    ColumnLayoutBuilder columnLayoutBuilder =
-                        new ColumnLayoutBuilder(
-                            startLevel.attribute.keyList);
-                    queryBuilder = new RolapSchema.SqlQueryBuilder(
-                        sqlQuery, columnLayoutBuilder);
+            } else {
+                // start at target level
+                for (TargetBase target : unevaluatedTargets) {
+                    queryBuilder.addListToFrom(target.level.attribute.keyList);
                 }
+            }
+
+            for (TargetBase target : unevaluatedTargets) {
                 addLevelMemberSql(
                     queryBuilder,
                     target.getLevel(),
@@ -1304,21 +1335,22 @@ Util.deprecated("obsolete basecube parameter", false);
     static class ColumnLayoutBuilder {
         private final List<String> exprList = new ArrayList<String>();
         private final List<String> aliasList = new ArrayList<String>();
-        private final List<LevelLayoutBuilder> levelLayoutList =
-            new ArrayList<LevelLayoutBuilder>();
+        private final Map<RolapLevel, LevelLayoutBuilder> levelLayoutMap =
+            new IdentityHashMap<RolapLevel, LevelLayoutBuilder>();
         LevelLayoutBuilder currentLevelLayout;
         final List<SqlStatement.Type> types =
             new ArrayList<SqlStatement.Type>();
-        final List<RolapSchema.PhysColumn> keyList;
+        final List<List<RolapSchema.PhysColumn>> keyListList;
 
         /**
          * Creates a ColumnLayoutBuilder.
          *
-         * @param keyList Key of starting point for query; other attributes
+         * @param keyListList Key of starting point for query; other attributes
          *   will be joined to this
          */
-        ColumnLayoutBuilder(List<RolapSchema.PhysColumn> keyList) {
-            this.keyList = keyList;
+        ColumnLayoutBuilder(List<List<RolapSchema.PhysColumn>> keyListList) {
+            this.keyListList = keyListList;
+            assert keyListList != null;
         }
 
         /**
@@ -1347,17 +1379,20 @@ Util.deprecated("obsolete basecube parameter", false);
         }
 
         public ColumnLayout toLayout() {
-            return new ColumnLayout(convert(levelLayoutList));
+            return new ColumnLayout(convert(levelLayoutMap.values()));
         }
 
-        private List<LevelColumnLayout> convert(
-            List<LevelLayoutBuilder> builders)
+        private Map<RolapLevel, LevelColumnLayout> convert(
+            Collection<LevelLayoutBuilder> builders)
         {
-            List<LevelColumnLayout> list = new ArrayList<LevelColumnLayout>();
+            final Map<RolapLevel, LevelColumnLayout> map =
+                new IdentityHashMap<RolapLevel, LevelColumnLayout>();
             for (LevelLayoutBuilder builder : builders) {
-                list.add(convert(builder));
+                if (builder != null) {
+                    map.put(builder.level, convert(builder));
+                }
             }
-            return list;
+            return map;
         }
 
         private LevelColumnLayout convert(LevelLayoutBuilder builder) {
@@ -1365,14 +1400,10 @@ Util.deprecated("obsolete basecube parameter", false);
         }
 
         public LevelLayoutBuilder createLayoutFor(RolapLevel level) {
-            int depth = level.getDepth();
-            while (levelLayoutList.size() <= depth) {
-                levelLayoutList.add(null);
-            }
-            LevelLayoutBuilder builder = levelLayoutList.get(depth);
+            LevelLayoutBuilder builder = levelLayoutMap.get(level);
             if (builder == null) {
-                builder = new LevelLayoutBuilder();
-                levelLayoutList.set(depth, builder);
+                builder = new LevelLayoutBuilder(level);
+                levelLayoutMap.put(level, builder);
             }
             currentLevelLayout = builder;
             return builder;
@@ -1393,6 +1424,11 @@ Util.deprecated("obsolete basecube parameter", false);
         final List<Integer> propertyOrdinalList = new ArrayList<Integer>();
         private final List<Integer> parentOrdinalList =
             new ArrayList<Integer>();
+        public final RolapLevel level;
+
+        public LevelLayoutBuilder(RolapLevel level) {
+            this.level = level;
+        }
 
         public LevelColumnLayout toLayout() {
             return new LevelColumnLayout(
@@ -1418,12 +1454,12 @@ Util.deprecated("obsolete basecube parameter", false);
      * Description of where to find attributes within each row.
      */
     static class ColumnLayout {
-        final List<LevelColumnLayout> levelLayoutList;
+        final Map<RolapLevel, LevelColumnLayout> levelLayoutMap;
 
         public ColumnLayout(
-            final List<LevelColumnLayout> levelLayoutList)
+            final Map<RolapLevel, LevelColumnLayout> levelLayoutMap)
         {
-            this.levelLayoutList = UnmodifiableArrayList.of(levelLayoutList);
+            this.levelLayoutMap = levelLayoutMap;
         }
     }
 

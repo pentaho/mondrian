@@ -257,16 +257,16 @@ public class FilterTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[#null]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[20319]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[21215]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[22478]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[23598]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[23688]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[27694]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[28206]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[30268]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[33858]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[#null]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[20319]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[21215]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[22478]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[23598]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[23688]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[27694]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[28206]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[30268]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[33858]}\n"
             + "Row #0: 1,153\n"
             + "Row #1: 563\n"
             + "Row #2: 906\n"
@@ -285,12 +285,9 @@ public class FilterTest extends BatchTestCase {
      * Test that if Null member is explicitly excluded, then the native filter
      * SQL should filter out null members.
      *
-     * @throws Exception
+     * @throws Exception on error
      */
     public void testNotInFilterExcludeNullMember() throws Exception {
-        if (!Bug.ZeroPathsFixed) {
-            return;
-        }
         propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
 
@@ -317,15 +314,15 @@ public class FilterTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[20319]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[21215]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[22478]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[23598]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[23688]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[27694]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[28206]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[30268]}\n"
-            + "{[Customer].[Customers].[USA], [Store Size in SQFT].[33858]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[20319]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[21215]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[22478]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[23598]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[23688]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[27694]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[28206]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[30268]}\n"
+            + "{[Customer].[Customers].[USA], [Store].[Store Size in SQFT].[33858]}\n"
             + "Row #0: 563\n"
             + "Row #1: 906\n"
             + "Row #2: 296\n"
@@ -813,6 +810,9 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testNonNativeFilterWithNullMeasure() {
+        if (!Bug.CubeStoreFeature) {
+            return;
+        }
         propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, false);
         checkNotNative(
@@ -857,6 +857,9 @@ public class FilterTest extends BatchTestCase {
     }
 
     public void testNativeFilterWithNullMeasure() {
+        if (!Bug.CubeStoreFeature) {
+            return;
+        }
         // Currently this behaves differently from the non-native evaluation.
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
         propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
@@ -919,6 +922,9 @@ public class FilterTest extends BatchTestCase {
      * evaluated.
      */
     public void testNativeFilterNonEmpty() {
+        if (!Bug.CubeStoreFeature) {
+            return;
+        }
         propSaver.set(MondrianProperties.instance().ExpandNonNative, false);
         propSaver.set(MondrianProperties.instance().EnableNativeFilter, true);
 
@@ -946,6 +952,9 @@ public class FilterTest extends BatchTestCase {
      * filter"</a>.
      */
     public void testBugMondrian706() {
+        if (!Bug.CubeStoreFeature) {
+            return;
+        }
         propSaver.set(
             MondrianProperties.instance().UseAggregates,
             false);

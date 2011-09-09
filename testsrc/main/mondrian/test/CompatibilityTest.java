@@ -122,10 +122,18 @@ public class CompatibilityTest extends FoodMartTestCase {
         checkAxis("[Measures].[Unit Sales]", "mEaSuReS.[Unit Sales]");
         checkAxis("[Measures].[Unit Sales]", "measures.[Unit Sales]");
 
-        checkAxis("[Customers].[All Customers]", "Customers.[All Customers]");
-        checkAxis("[Customers].[All Customers]", "CUSTOMERS.[All Customers]");
-        checkAxis("[Customers].[All Customers]", "cUsToMeRs.[All Customers]");
-        checkAxis("[Customers].[All Customers]", "customers.[All Customers]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
+            "Customers.[All Customers]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
+            "CUSTOMERS.[All Customers]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
+            "cUsToMeRs.[All Customers]");
+        checkAxis(
+            "[Customer].[Customers].[All Customers]",
+            "customers.[All Customers]");
     }
 
     /**
@@ -214,9 +222,9 @@ public class CompatibilityTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[ProdCalc]}\n"
+            + "{[Product].[Products].[ProdCalc]}\n"
             + "Axis #2:\n"
-            + "{[Store].[StoreCalc]}\n"
+            + "{[Store].[Stores].[StoreCalc]}\n"
             + "Row #0: 1\n");
     }
 
@@ -253,13 +261,13 @@ public class CompatibilityTest extends FoodMartTestCase {
             "[Customers].[All Customers]");
         checkAxis(
             "[Customer].[Customers].[All Customers]",
-            "[Customers].[Customers].[All Customers]");
+            "[Customer].[Customers].[All Customers]");
         checkAxis(
             "[Customer].[Customers].[All Customers]",
-            "Customers.[Customers].[All Customers]");
+            "Customer.[Customers].[All Customers]");
         checkAxis(
             "[Customer].[Customers].[All Customers]",
-            "[Customers].Customers.[All Customers]");
+            "[Customer].Customers.[All Customers]");
         if (false) {
             // don't know if this makes sense
             checkAxis(
@@ -558,19 +566,21 @@ public class CompatibilityTest extends FoodMartTestCase {
 
     private void assertAxisWithDimensionPrefix(boolean prefixNeeded) {
         props.NeedDimensionPrefix.set(prefixNeeded);
-        assertAxisReturns("[Gender].[M]", "[Gender].[M]");
-        assertAxisReturns("[Gender].[All Gender].[M]", "[Gender].[M]");
-        assertAxisReturns("[Store].[USA]", "[Store].[USA]");
-        assertAxisReturns("[Store].[All Stores].[USA]", "[Store].[USA]");
+        assertAxisReturns("[Gender].[M]", "[Customer].[Gender].[M]");
+        assertAxisReturns(
+            "[Gender].[All Gender].[M]", "[Customer].[Gender].[M]");
+        assertAxisReturns("[Store].[USA]", "[Store].[Stores].[USA]");
+        assertAxisReturns(
+            "[Store].[All Stores].[USA]", "[Store].[Stores].[USA]");
         props.NeedDimensionPrefix.set(originalNeedDimensionPrefix);
     }
 
     public void testWithNoDimensionPrefix() {
         props.NeedDimensionPrefix.set(false);
-        assertAxisReturns("{[M]}", "[Gender].[M]");
-        assertAxisReturns("{M}", "[Gender].[M]");
-        assertAxisReturns("{[USA].[CA]}", "[Store].[USA].[CA]");
-        assertAxisReturns("{USA.CA}", "[Store].[USA].[CA]");
+        assertAxisReturns("{[M]}", "[Customer].[Gender].[M]");
+        assertAxisReturns("{M}", "[Customer].[Gender].[M]");
+        assertAxisReturns("{[USA].[CA]}", "[Store].[Stores].[USA].[CA]");
+        assertAxisReturns("{USA.CA}", "[Store].[Stores].[USA].[CA]");
         props.NeedDimensionPrefix.set(true);
         assertAxisThrows(
             "{[M]}",

@@ -389,7 +389,8 @@ public class SqlConstraintUtils {
         final RolapSchema.SqlQueryBuilder queryBuilder =
             new RolapSchema.SqlQueryBuilder(
                 sqlQuery,
-                new SqlTupleReader.ColumnLayoutBuilder(null));
+                new SqlTupleReader.ColumnLayoutBuilder(
+                    Collections.<List<RolapSchema.PhysColumn>>emptyList()));
         if (crossJoin
             && true /* TODO: !memberLevel.isUnique() */
             && !membersAreCrossProduct(members))

@@ -9,7 +9,6 @@
 */
 package mondrian.test;
 
-import junit.framework.Assert;
 import mondrian.olap.MondrianProperties;
 
 /**
@@ -34,7 +33,7 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             // [Time.Weekly] has an 'all' member, but [Time] does not.
             assertAxisReturns(
                 "{[Time].[Time].CurrentMember}",
-                "[Time].[1997]");
+                "[Time].[Time].[1997]");
             assertAxisReturns(
                 "{[Time].[Weekly].CurrentMember}",
                 "[Time].[Weekly].[All Weeklys]");
@@ -75,16 +74,16 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             + "{[Time].[Time].[1997].[Q4]}\n"
             + "Row #0: 66,291\n"
             + "Row #0: [Time].[Weekly].[All Weeklys]\n"
-            + "Row #0: [Time].[1997].[Q1]\n"
+            + "Row #0: [Time].[Time].[1997].[Q1]\n"
             + "Row #1: 62,610\n"
             + "Row #1: [Time].[Weekly].[All Weeklys]\n"
-            + "Row #1: [Time].[1997].[Q2]\n"
+            + "Row #1: [Time].[Time].[1997].[Q2]\n"
             + "Row #2: 65,848\n"
             + "Row #2: [Time].[Weekly].[All Weeklys]\n"
-            + "Row #2: [Time].[1997].[Q3]\n"
+            + "Row #2: [Time].[Time].[1997].[Q3]\n"
             + "Row #3: 72,024\n"
             + "Row #3: [Time].[Weekly].[All Weeklys]\n"
-            + "Row #3: [Time].[1997].[Q4]\n");
+            + "Row #3: [Time].[Time].[1997].[Q4]\n");
     }
 
     public void testMultipleMembersOfSameDimensionInSlicerFails() {
@@ -105,13 +104,13 @@ public class MultipleHierarchyTest extends FoodMartTestCase {
             + TestContext.hierarchyName("Time", "Weekly")
             + ".[1997], [Time].[1997].[Q1])",
             "Axis #0:\n"
-            + "{[Customer].[Gender].[M], [Time].[Time].[Weekly].[1997], [Time].[1997].[Q1]}\n"
+            + "{[Customer].[Gender].[M], [Time].[Weekly].[1997], [Time].[Time].[1997].[Q1]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Canada]}\n"
-            + "{[Store].[Mexico]}\n"
-            + "{[Store].[USA]}\n"
+            + "{[Store].[Stores].[Canada]}\n"
+            + "{[Store].[Stores].[Mexico]}\n"
+            + "{[Store].[Stores].[USA]}\n"
             + "Row #0: \n"
             + "Row #1: \n"
             + "Row #2: 33,381\n");

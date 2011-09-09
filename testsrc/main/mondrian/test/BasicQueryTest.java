@@ -1057,7 +1057,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "FROM [Sales]"
             + "WHERE ([Marital Status].[S], " + timeWeekly + ".[1997].[20])",
             "Axis #0:\n"
-            + "{[Marital Status].[S], [Time].[Weekly].[1997].[20]}\n"
+            + "{[Customer].[Marital Status].[S], [Time].[Weekly].[1997].[20]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
@@ -2857,6 +2857,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * visible' but is still correctly returned from [Measures].Members.
      */
     public void testStoreCube() {
+        if (!Bug.CubeStoreFeature) {
+            return;
+        }
         assertQueryReturns(
             "select {[Measures].members} on columns,\n"
             + " {[Store Type].members} on rows\n"
@@ -3318,36 +3321,36 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Store].[Store Size in SQFT].[All Store Size in SQFTs]}\n"
 
             // null is at the start in order under DBMSs that sort null low
             + (!nullsSortHigh
-                ? "{[Store Size in SQFT].[#null]}\n"
+                ? "{[Store].[Store Size in SQFT].[#null]}\n"
                 : "")
-            + "{[Store Size in SQFT].[20319]}\n"
-            + "{[Store Size in SQFT].[21215]}\n"
-            + "{[Store Size in SQFT].[22478]}\n"
-            + "{[Store Size in SQFT].[23112]}\n"
-            + "{[Store Size in SQFT].[23593]}\n"
-            + "{[Store Size in SQFT].[23598]}\n"
-            + "{[Store Size in SQFT].[23688]}\n"
-            + "{[Store Size in SQFT].[23759]}\n"
-            + "{[Store Size in SQFT].[24597]}\n"
-            + "{[Store Size in SQFT].[27694]}\n"
-            + "{[Store Size in SQFT].[28206]}\n"
-            + "{[Store Size in SQFT].[30268]}\n"
-            + "{[Store Size in SQFT].[30584]}\n"
-            + "{[Store Size in SQFT].[30797]}\n"
-            + "{[Store Size in SQFT].[33858]}\n"
-            + "{[Store Size in SQFT].[34452]}\n"
-            + "{[Store Size in SQFT].[34791]}\n"
-            + "{[Store Size in SQFT].[36509]}\n"
-            + "{[Store Size in SQFT].[38382]}\n"
-            + "{[Store Size in SQFT].[39696]}\n"
+            + "{[Store].[Store Size in SQFT].[20319]}\n"
+            + "{[Store].[Store Size in SQFT].[21215]}\n"
+            + "{[Store].[Store Size in SQFT].[22478]}\n"
+            + "{[Store].[Store Size in SQFT].[23112]}\n"
+            + "{[Store].[Store Size in SQFT].[23593]}\n"
+            + "{[Store].[Store Size in SQFT].[23598]}\n"
+            + "{[Store].[Store Size in SQFT].[23688]}\n"
+            + "{[Store].[Store Size in SQFT].[23759]}\n"
+            + "{[Store].[Store Size in SQFT].[24597]}\n"
+            + "{[Store].[Store Size in SQFT].[27694]}\n"
+            + "{[Store].[Store Size in SQFT].[28206]}\n"
+            + "{[Store].[Store Size in SQFT].[30268]}\n"
+            + "{[Store].[Store Size in SQFT].[30584]}\n"
+            + "{[Store].[Store Size in SQFT].[30797]}\n"
+            + "{[Store].[Store Size in SQFT].[33858]}\n"
+            + "{[Store].[Store Size in SQFT].[34452]}\n"
+            + "{[Store].[Store Size in SQFT].[34791]}\n"
+            + "{[Store].[Store Size in SQFT].[36509]}\n"
+            + "{[Store].[Store Size in SQFT].[38382]}\n"
+            + "{[Store].[Store Size in SQFT].[39696]}\n"
 
             // null is at the end in order for DBMSs that sort nulls high
             + (nullsSortHigh
-               ? "{[Store Size in SQFT].[#null]}\n"
+               ? "{[Store].[Store Size in SQFT].[#null]}\n"
                : "")
             + "Row #" + row++ + ": 266,773\n"
             + (!nullsSortHigh ? "Row #" + row++ + ": 39,329\n" : "")

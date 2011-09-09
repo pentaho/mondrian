@@ -1280,38 +1280,6 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         /**
          * Adds to a list the hops necessary to go from one relation to another.
          *
-         * @param pathBuilder Path builder to which to add path
-         * @param prevRelation Relation to start at
-         * @param nextRelation Relation to jump to
-         *
-         * @throws PhysSchemaException if there is not a unique path
-         */
-        private void addHopsBetween(
-            PhysPathBuilder pathBuilder,
-            PhysRelation prevRelation,
-            PhysRelation nextRelation)
-            throws PhysSchemaException
-        {
-            if (prevRelation == nextRelation) {
-                return;
-            }
-            final List<List<PhysLink>> pathList =
-                graph.findAllPaths(prevRelation, nextRelation);
-            if (pathList.size() != 1) {
-                throw new PhysSchemaException(
-                    "Needed to find exactly one path from " + prevRelation
-                    + " to " + nextRelation + ", but found "
-                    + pathList.size() + " (" + pathList + ")");
-            }
-            final List<PhysLink> path = pathList.get(0);
-            for (PhysLink link : path) {
-                pathBuilder.add(link, link.sourceKey.relation, true);
-            }
-        }
-
-        /**
-         * Adds to a list the hops necessary to go from one relation to another.
-         *
          *
          * @param pathBuilder Path builder to which to add path
          * @param prevRelation Relation to start at
@@ -1332,18 +1300,9 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             if (nextRelations.size() == 0) {
                 throw new IllegalArgumentException("nextRelations is empty");
             }
-            final Iterator<PhysRelation> iterator = nextRelations.iterator();
-            final PhysRelation nextRelation = iterator.next();
             if (directed) {
-                final List<List<PhysLink>> pathList =
-                    graph.findAllPaths(prevRelation, nextRelation);
-                if (pathList.size() != 1) {
-                    throw new PhysSchemaException(
-                        "Needed to find exactly one path from " + prevRelation
-                        + " to " + nextRelation + ", but found "
-                        + pathList.size() + " (" + pathList + ")");
-                }
-                final List<PhysLink> path = pathList.get(0);
+                final List<PhysLink> path =
+                    findUniquePath(prevRelation, nextRelations);
                 for (PhysLink link : path) {
                     if (nextRelations.contains(link.targetRelation)) {
                         break;
@@ -1351,15 +1310,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                     pathBuilder.add(link, link.sourceKey.relation, true);
                 }
             } else {
-                List<List<Pair<PhysLink, Boolean>>> pathList =
-                    graph.findAllPathsUndirected(prevRelation, nextRelation);
-                if (pathList.size() != 1) {
-                    throw new PhysSchemaException(
-                        "Needed to find exactly one path from " + prevRelation
-                        + " to " + nextRelation + ", but found "
-                        + pathList.size() + " (" + pathList + ")");
-                }
-                final List<Pair<PhysLink, Boolean>> path = pathList.get(0);
+                List<Pair<PhysLink, Boolean>> path =
+                    findUniquePathUndirected(prevRelation, nextRelations);
                 for (Pair<PhysLink, Boolean> pair : path) {
                     final PhysLink link = pair.left;
                     final boolean forward = pair.right;
@@ -1377,6 +1329,56 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                     pathBuilder.add(link, sourceRelation, forward);
                 }
             }
+        }
+
+        private List<PhysLink> findUniquePath(
+            PhysRelation prevRelation,
+            Set<PhysRelation> nextRelations)
+            throws PhysSchemaException
+        {
+            for (PhysRelation nextRelation : nextRelations) {
+                final List<List<PhysLink>> pathList =
+                    graph.findAllPaths(prevRelation, nextRelation);
+                switch (pathList.size()) {
+                case 0:
+                    continue;
+                case 1:
+                    return pathList.get(0);
+                default:
+                    throw new PhysSchemaException(
+                        "Needed to find exactly one path from " + prevRelation
+                        + " to " + nextRelation + ", but found "
+                        + pathList.size() + " (" + pathList + ")");
+                }
+            }
+            throw new PhysSchemaException(
+                "Could not find a path from " + prevRelation
+                + " to any of " + nextRelations);
+        }
+
+        private List<Pair<PhysLink, Boolean>> findUniquePathUndirected(
+            PhysRelation prevRelation,
+            Set<PhysRelation> nextRelations)
+            throws PhysSchemaException
+        {
+            for (PhysRelation nextRelation : nextRelations) {
+                List<List<Pair<PhysLink, Boolean>>> pathList =
+                    graph.findAllPathsUndirected(prevRelation, nextRelation);
+                switch (pathList.size()) {
+                case 0:
+                    continue;
+                case 1:
+                    return pathList.get(0);
+                default:
+                    throw new PhysSchemaException(
+                        "Needed to find exactly one path from " + prevRelation
+                        + " to " + nextRelation + ", but found "
+                        + pathList.size() + " (" + pathList + ")");
+                }
+            }
+            throw new PhysSchemaException(
+                "Could not find a path from " + prevRelation
+                + " to any of " + nextRelations);
         }
 
         /**
@@ -2713,7 +2715,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     public static class SqlQueryBuilder {
         public final SqlQuery sqlQuery;
         public final SqlTupleReader.ColumnLayoutBuilder layoutBuilder;
-        private final Set<PhysRelation> relations = new HashSet<PhysRelation>();
+        private final Set<PhysRelation> relations =
+            new LinkedHashSet<PhysRelation>();
         private final BitSet orderBitset = new BitSet();
 
         /**
@@ -2729,10 +2732,14 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             this.sqlQuery = sqlQuery;
             this.layoutBuilder = layoutBuilder;
 
-            if (layoutBuilder.keyList != null) {
-                for (PhysColumn column : layoutBuilder.keyList) {
-                    addToFrom(column);
-                }
+            for (List<PhysColumn> keyList : layoutBuilder.keyListList) {
+                addListToFrom(keyList);
+            }
+        }
+
+        public final void addListToFrom(List<? extends PhysExpr> exprList) {
+            for (PhysExpr expr : exprList) {
+                addToFrom(expr);
             }
         }
 
@@ -2747,7 +2754,11 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             );
         }
 
-        private void addRelation(PhysRelation relation) {
+        final void addRelation(PhysRelation relation) {
+            addRelation(relation, true);
+        }
+
+        void addRelation(PhysRelation relation, boolean autoLink) {
             if (relations.contains(relation)) {
                 return;
             }
@@ -2755,19 +2766,21 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                 relation,
                 relation.getAlias(),
                 false);
-            if (!relations.isEmpty()) {
-                try {
-                    final PhysPath path =
-                        relation.getSchema().getGraph().findPath(
-                            relation, relations, false);
-                    path.addToFrom(sqlQuery, false);
-                    for (PhysHop hop : path.hopList) {
-                        relations.add(hop.relation);
+            if (autoLink) {
+                if (!relations.isEmpty()) {
+                    try {
+                        final PhysPath path =
+                            relation.getSchema().getGraph().findPath(
+                                relation, relations, false);
+                        path.addToFrom(sqlQuery, false);
+                        for (PhysHop hop : path.hopList) {
+                            relations.add(hop.relation);
+                        }
+                    } catch (PhysSchemaException e) {
+                        throw Util.newInternal(
+                            e,
+                            "While adding relation " + relation + " to query");
                     }
-                } catch (PhysSchemaException e) {
-                    throw Util.newInternal(
-                        e,
-                        "While adding relation " + relation + " to query");
                 }
             }
             relations.add(relation);

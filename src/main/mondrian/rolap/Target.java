@@ -75,7 +75,7 @@ public class Target extends TargetBase {
                     continue;
                 }
                 SqlTupleReader.LevelColumnLayout layout =
-                    columnLayout.levelLayoutList.get(i);
+                    columnLayout.levelLayoutMap.get(childLevel);
 
                 Object[] keys = new Object[layout.keyOrdinals.length];
                 for (int j = 0, n = layout.keyOrdinals.length; j < n; j++) {

@@ -254,8 +254,8 @@ class SqlMemberSource
     private List<RolapMember> getMembers(DataSource dataSource) {
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
             new SqlTupleReader.ColumnLayoutBuilder(
-                hierarchy.levelList.get(hierarchy.levelList.size() - 1)
-                    .attribute.keyList);
+                Collections.singletonList(
+                    Util.last(hierarchy.levelList).attribute.keyList));
         String sql = makeKeysSql(dataSource, layoutBuilder);
         List<SqlStatement.Type> types = layoutBuilder.types;
         SqlStatement stmt =
@@ -296,7 +296,7 @@ class SqlMemberSource
                         continue;
                     }
                     final SqlTupleReader.LevelColumnLayout levelLayout =
-                        columnLayout.levelLayoutList.get(level.getDepth());
+                        columnLayout.levelLayoutMap.get(level);
                     // TODO: pre-allocate these, one per level; remember to
                     // clone list (using Flat2List or Flat3List if appropriate)
                     final Object[] keyValues =
@@ -879,7 +879,8 @@ class SqlMemberSource
         RolapLevel childLevel;
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
             new SqlTupleReader.ColumnLayoutBuilder(
-                parentLevel.attribute.keyList);
+                Collections.singletonList(
+                    parentLevel.attribute.keyList));
         if (parentLevel.isParentChild()) {
             sql = makeChildMemberSqlPC(parentMember, layoutBuilder);
             parentChild = true;
@@ -917,7 +918,7 @@ class SqlMemberSource
             final SqlTupleReader.ColumnLayout fullLayout =
                 layoutBuilder.toLayout();
             final SqlTupleReader.LevelColumnLayout layout =
-                fullLayout.levelLayoutList.get(childLevel.getDepth());
+                fullLayout.levelLayoutMap.get(childLevel);
             while (resultSet.next()) {
                 ++stmt.rowCount;
                 if (limit > 0 && limit < stmt.rowCount) {

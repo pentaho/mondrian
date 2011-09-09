@@ -51,25 +51,25 @@ Axis #1:
 {[Measures].[Store Cost]}
 {[Measures].[*SUMMARY_METRIC_0]}
 Axis #2:
-{[Product].[Products].[*SUBTOTAL_MEMBER_SEL~SUM], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}
-{[Product].[Products].[Drink], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable], [Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}
-{[Product].[Products].[Drink], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Drink], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Drink], [Education Level].[High School Degree]}
-{[Product].[Products].[Drink], [Education Level].[Partial College]}
-{[Product].[Products].[Drink], [Education Level].[Partial High School]}
-{[Product].[Products].[Food], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food], [Education Level].[High School Degree]}
-{[Product].[Products].[Food], [Education Level].[Partial College]}
-{[Product].[Products].[Food], [Education Level].[Partial High School]}
-{[Product].[Products].[Non-Consumable], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Non-Consumable], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Non-Consumable], [Education Level].[High School Degree]}
-{[Product].[Products].[Non-Consumable], [Education Level].[Partial College]}
-{[Product].[Products].[Non-Consumable], [Education Level].[Partial High School]}
+{[Product].[Products].[*SUBTOTAL_MEMBER_SEL~SUM], [Customer].[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink], [Customer].[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food], [Customer].[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable], [Customer].[Education Level].[*SUBTOTAL_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Drink], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Drink], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Drink], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Drink], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Non-Consumable], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Non-Consumable], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Non-Consumable], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Non-Consumable], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Non-Consumable], [Customer].[Education Level].[Partial High School]}
 Row #0: 266,773
 Row #0: 225,627.23
 Row #0: 

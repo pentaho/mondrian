@@ -146,7 +146,7 @@ public class FunctionTest extends FoodMartTestCase {
      * Tests that ParallelPeriod with Aggregate function works
      */
     public void testParallelPeriodWithSlicer() {
-        if (!Bug.ZeroPathsFixed) {
+        if (!Bug.BaseStarKeyColumnFixed) {
             return;
         }
         assertQueryReturns(
@@ -6539,9 +6539,6 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testNonEmptyCrossJoin() {
-        if (!Bug.ZeroPathsFixed) {
-            return;
-        }
         // NonEmptyCrossJoin needs to evaluate measures to find out whether
         // cells are empty, so it implicitly depends upon all dimensions.
         Set<String> s1 = TestContext.allHiersExcept("[Store].[Stores]");
@@ -6552,39 +6549,37 @@ public class FunctionTest extends FoodMartTestCase {
             "NonEmptyCrossJoin("
             + "[Customers].[All Customers].[USA].[CA].Children, "
             + "[Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].Children)",
-            "{[Customer].[Customers].[USA].[CA].[Bellflower], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Downey], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Glendale], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Glendale], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Grossmont], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Imperial Beach], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[La Jolla], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Lincoln Acres], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Lincoln Acres], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Long Beach], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Los Angeles], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Newport Beach], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Pomona], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Pomona], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[San Gabriel], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[West Covina], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[West Covina], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Woodland Hills], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}");
+            "{[Customer].[Customers].[USA].[CA].[Bellflower], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Downey], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Glendale], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Glendale], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Grossmont], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Imperial Beach], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[La Jolla], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Lincoln Acres], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Lincoln Acres], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Long Beach], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Los Angeles], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Newport Beach], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Pomona], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Pomona], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[San Gabriel], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[West Covina], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[West Covina], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Light Beer]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Woodland Hills], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good].[Good Imported Beer]}");
 
         // empty set
         assertAxisReturns(
-            "NonEmptyCrossJoin({Gender.Parent}, {Store.Parent})", "");
+            "NonEmptyCrossJoin({Gender.Parent}, {Stores.Parent})", "");
         assertAxisReturns(
-            "NonEmptyCrossJoin({Store.Parent}, Gender.Children)", "");
-        assertAxisReturns("NonEmptyCrossJoin(Store.Members, {})", "");
+            "NonEmptyCrossJoin({Stores.Parent}, Gender.Children)", "");
+        assertAxisReturns("NonEmptyCrossJoin(Stores.Members, {})", "");
 
         // same dimension twice
-        // todo: should throw
-        if (false) {
-            assertAxisThrows(
-                "NonEmptyCrossJoin({Store.[USA]}, {Store.[USA].[CA]})",
-                "xxx");
-        }
+        assertAxisThrows(
+            "NonEmptyCrossJoin({Store.[USA]}, {Store.[USA].[CA]})",
+            "Tuple contains more than one member of hierarchy "
+            + "'[Store].[Stores]'.");
     }
 
 
@@ -8151,9 +8146,6 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderTupleMultiKeys1() {
-        if (!Bug.ZeroPathsFixed) {
-            return;
-        }
         assertQueryReturns(
             "with \n"
             + "  set [NECJ] as \n"
@@ -8178,9 +8170,6 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderTupleMultiKeys2() {
-        if (!Bug.ZeroPathsFixed) {
-            return;
-        }
         assertQueryReturns(
             "with \n"
             + "  set [NECJ] as \n"
@@ -8205,7 +8194,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderTupleMultiKeys3() {
-        if (!Bug.ZeroPathsFixed) {
+        if (!Bug.BaseStarKeyColumnFixed) {
             return;
         }
         // WA unit sales is greater than CA unit sales
@@ -9652,9 +9641,6 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testRankTuplesWithTiedExpr() {
-        if (!Bug.ZeroPathsFixed) {
-            return;
-        }
         assertQueryReturns(
             "with "
             + " Set [Beers for Store] as 'NonEmptyCrossJoin("

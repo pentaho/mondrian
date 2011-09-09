@@ -35,1052 +35,1052 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Canada]</member>
+                    <member>[Warehouse].[Warehouses].[Canada]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Warehouse].[Warehouses].[Mexico]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Canada].[BC]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[DF]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Guerrero]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Jalisco]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Veracruz]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Yucatan]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[Mexico].[Zacatecas]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[CA]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[OR]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[All Store Types]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Deluxe Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Gourmet Supermarket]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[HeadQuarters]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Mid-Size Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Small Grocery]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Store].[Stores].[USA].[WA]</member>
                     <member>[Store].[Store Type].[Supermarket]</member>
                 </tuple>

@@ -40,70 +40,70 @@ From [Sales]
 Axis #0:
 {}
 Axis #1:
-{[Store].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
-{[Store].[USA].[CA], [Measures].[Unit Sales]}
+{[Store].[Stores].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Store].[Stores].[USA].[CA], [Measures].[Unit Sales]}
 Axis #2:
-{[Product].[Products].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Drink].[Alcoholic Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Drink].[Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Deli], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Produce], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Drink].[Alcoholic Beverages], [Education Level].[High School Degree]}
-{[Product].[Products].[Drink].[Alcoholic Beverages], [Education Level].[Partial High School]}
-{[Product].[Products].[Drink].[Beverages], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Drink].[Beverages], [Education Level].[High School Degree]}
-{[Product].[Products].[Drink].[Beverages], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Deli], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Deli], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Deli], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Produce], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[Partial High School]}
-{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Education Level].[High School Degree]}
-{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Education Level].[Partial High School]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[High School Degree]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[Partial College]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[Partial High School]}
+{[Product].[Products].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[Alcoholic Beverages], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[Beverages], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[Alcoholic Beverages], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Drink].[Alcoholic Beverages], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Drink].[Beverages], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Drink].[Beverages], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Drink].[Beverages], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[Partial High School]}
 Row #0: 74,748
 Row #0: 74,748
 Row #1: 1,209
@@ -270,48 +270,48 @@ From [Sales]
 Axis #0:
 {}
 Axis #1:
-{[Store].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
-{[Store].[USA].[CA], [Measures].[Unit Sales]}
+{[Store].[Stores].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Store].[Stores].[USA].[CA], [Measures].[Unit Sales]}
 Axis #2:
-{[Product].[Products].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Produce], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Produce], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[High School Degree]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[Partial College]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[Partial High School]}
+{[Product].[Products].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[Partial High School]}
 Row #0: 45,275
 Row #0: 45,275
 Row #1: 5,799
@@ -437,103 +437,103 @@ From [Sales]
 Axis #0:
 {}
 Axis #1:
-{[Store].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
-{[Store].[USA].[CA], [Measures].[Unit Sales]}
+{[Store].[Stores].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Store].[Stores].[USA].[CA], [Measures].[Unit Sales]}
 Axis #2:
-{[Product].[Products].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Breakfast Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Canned Products], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Deli], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Eggs], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Meat], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Produce], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Seafood], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Starchy Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Breakfast Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Breakfast Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Breakfast Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Breakfast Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Breakfast Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Canned Products], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Canned Products], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Canned Products], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Canned Products], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Canned Products], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Deli], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Deli], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Deli], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Deli], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Deli], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Eggs], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Eggs], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Eggs], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Eggs], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Eggs], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Meat], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Meat], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Meat], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Meat], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Meat], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Produce], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Seafood], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Seafood], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Seafood], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Seafood], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Seafood], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Starchy Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Starchy Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Starchy Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Starchy Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Starchy Foods], [Education Level].[Partial High School]}
+{[Product].[Products].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Breakfast Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Canned Products], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Eggs], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Meat], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Seafood], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Starchy Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Breakfast Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Breakfast Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Breakfast Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Breakfast Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Breakfast Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Canned Products], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Canned Products], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Canned Products], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Canned Products], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Canned Products], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Eggs], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Eggs], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Eggs], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Eggs], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Eggs], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Meat], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Meat], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Meat], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Meat], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Meat], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Seafood], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Seafood], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Seafood], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Seafood], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Seafood], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Starchy Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Starchy Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Starchy Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Starchy Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Starchy Foods], [Customer].[Education Level].[Partial High School]}
 Row #0: 53,656
 Row #0: 53,656
 Row #1: 2,150
@@ -759,151 +759,151 @@ From [Sales]
 Axis #0:
 {}
 Axis #1:
-{[Store].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
-{[Store].[USA].[CA], [Measures].[Unit Sales]}
+{[Store].[Stores].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Store].[Stores].[USA].[CA], [Measures].[Unit Sales]}
 Axis #2:
-{[Product].[Products].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Drink].[Alcoholic Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Drink].[Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Drink].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Breakfast Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Canned Products], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Deli], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Eggs], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Meat], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Produce], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Seafood], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[Starchy Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable].[Carousel], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable].[Checkout], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable].[Periodicals], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
-{[Product].[Products].[Drink].[Alcoholic Beverages], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Drink].[Alcoholic Beverages], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Drink].[Alcoholic Beverages], [Education Level].[High School Degree]}
-{[Product].[Products].[Drink].[Alcoholic Beverages], [Education Level].[Partial College]}
-{[Product].[Products].[Drink].[Alcoholic Beverages], [Education Level].[Partial High School]}
-{[Product].[Products].[Drink].[Beverages], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Drink].[Beverages], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Drink].[Beverages], [Education Level].[High School Degree]}
-{[Product].[Products].[Drink].[Beverages], [Education Level].[Partial College]}
-{[Product].[Products].[Drink].[Beverages], [Education Level].[Partial High School]}
-{[Product].[Products].[Drink].[Dairy], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Drink].[Dairy], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Drink].[Dairy], [Education Level].[High School Degree]}
-{[Product].[Products].[Drink].[Dairy], [Education Level].[Partial College]}
-{[Product].[Products].[Drink].[Dairy], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Baked Goods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Baking Goods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Breakfast Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Breakfast Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Breakfast Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Breakfast Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Breakfast Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Canned Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Canned Products], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Canned Products], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Canned Products], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Canned Products], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Canned Products], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Dairy], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Deli], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Deli], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Deli], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Deli], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Deli], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Eggs], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Eggs], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Eggs], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Eggs], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Eggs], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Frozen Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Meat], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Meat], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Meat], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Meat], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Meat], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Produce], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Produce], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Seafood], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Seafood], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Seafood], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Seafood], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Seafood], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Snack Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Snacks], [Education Level].[Partial High School]}
-{[Product].[Products].[Food].[Starchy Foods], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Food].[Starchy Foods], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Food].[Starchy Foods], [Education Level].[High School Degree]}
-{[Product].[Products].[Food].[Starchy Foods], [Education Level].[Partial College]}
-{[Product].[Products].[Food].[Starchy Foods], [Education Level].[Partial High School]}
-{[Product].[Products].[Non-Consumable].[Carousel], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Non-Consumable].[Carousel], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Non-Consumable].[Carousel], [Education Level].[High School Degree]}
-{[Product].[Products].[Non-Consumable].[Carousel], [Education Level].[Partial College]}
-{[Product].[Products].[Non-Consumable].[Carousel], [Education Level].[Partial High School]}
-{[Product].[Products].[Non-Consumable].[Checkout], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Non-Consumable].[Checkout], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Non-Consumable].[Checkout], [Education Level].[High School Degree]}
-{[Product].[Products].[Non-Consumable].[Checkout], [Education Level].[Partial College]}
-{[Product].[Products].[Non-Consumable].[Checkout], [Education Level].[Partial High School]}
-{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Education Level].[High School Degree]}
-{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Education Level].[Partial College]}
-{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Education Level].[Partial High School]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[High School Degree]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[Partial College]}
-{[Product].[Products].[Non-Consumable].[Household], [Education Level].[Partial High School]}
-{[Product].[Products].[Non-Consumable].[Periodicals], [Education Level].[Bachelors Degree]}
-{[Product].[Products].[Non-Consumable].[Periodicals], [Education Level].[Graduate Degree]}
-{[Product].[Products].[Non-Consumable].[Periodicals], [Education Level].[High School Degree]}
-{[Product].[Products].[Non-Consumable].[Periodicals], [Education Level].[Partial College]}
-{[Product].[Products].[Non-Consumable].[Periodicals], [Education Level].[Partial High School]}
+{[Product].[Products].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[Alcoholic Beverages], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[Beverages], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[Dairy], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Breakfast Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Canned Products], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Eggs], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Meat], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Seafood], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[Starchy Foods], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[Carousel], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[Checkout], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[Periodicals], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Food].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Products].[Drink].[Alcoholic Beverages], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Drink].[Alcoholic Beverages], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Drink].[Alcoholic Beverages], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Drink].[Alcoholic Beverages], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Drink].[Alcoholic Beverages], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Drink].[Beverages], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Drink].[Beverages], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Drink].[Beverages], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Drink].[Beverages], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Drink].[Beverages], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Drink].[Dairy], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Drink].[Dairy], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Drink].[Dairy], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Drink].[Dairy], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Drink].[Dairy], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Baking Goods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Breakfast Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Breakfast Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Breakfast Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Breakfast Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Breakfast Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Canned Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Canned Products], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Canned Products], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Canned Products], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Canned Products], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Canned Products], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Dairy], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Deli], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Eggs], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Eggs], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Eggs], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Eggs], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Eggs], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Frozen Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Meat], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Meat], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Meat], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Meat], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Meat], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Produce], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Seafood], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Seafood], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Seafood], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Seafood], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Seafood], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Snack Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Snacks], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Food].[Starchy Foods], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Food].[Starchy Foods], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Food].[Starchy Foods], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Food].[Starchy Foods], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Food].[Starchy Foods], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Non-Consumable].[Carousel], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Non-Consumable].[Carousel], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Non-Consumable].[Carousel], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Non-Consumable].[Carousel], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Non-Consumable].[Carousel], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Non-Consumable].[Checkout], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Non-Consumable].[Checkout], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Non-Consumable].[Checkout], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Non-Consumable].[Checkout], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Non-Consumable].[Checkout], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Non-Consumable].[Health and Hygiene], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Non-Consumable].[Household], [Customer].[Education Level].[Partial High School]}
+{[Product].[Products].[Non-Consumable].[Periodicals], [Customer].[Education Level].[Bachelors Degree]}
+{[Product].[Products].[Non-Consumable].[Periodicals], [Customer].[Education Level].[Graduate Degree]}
+{[Product].[Products].[Non-Consumable].[Periodicals], [Customer].[Education Level].[High School Degree]}
+{[Product].[Products].[Non-Consumable].[Periodicals], [Customer].[Education Level].[Partial College]}
+{[Product].[Products].[Non-Consumable].[Periodicals], [Customer].[Education Level].[Partial High School]}
 Row #0: 74,748
 Row #0: 74,748
 Row #1: 1,936
@@ -1641,18 +1641,18 @@ Axis #0:
 Axis #1:
 {[Measures].[Unit Sales]}
 Axis #2:
-{[Customer].[Education Level].[Bachelors Degree], [Product].[Drink]}
-{[Customer].[Education Level].[Bachelors Degree], [Product].[Food]}
-{[Customer].[Education Level].[Bachelors Degree], [Product].[Non-Consumable]}
-{[Customer].[Education Level].[High School Degree], [Product].[Drink]}
-{[Customer].[Education Level].[High School Degree], [Product].[Food]}
-{[Customer].[Education Level].[High School Degree], [Product].[Non-Consumable]}
-{[Customer].[Education Level].[Partial College], [Product].[Drink]}
-{[Customer].[Education Level].[Partial College], [Product].[Food]}
-{[Customer].[Education Level].[Partial College], [Product].[Non-Consumable]}
-{[Customer].[Education Level].[Partial High School], [Product].[Drink]}
-{[Customer].[Education Level].[Partial High School], [Product].[Food]}
-{[Customer].[Education Level].[Partial High School], [Product].[Non-Consumable]}
+{[Customer].[Education Level].[Bachelors Degree], [Product].[Products].[Drink]}
+{[Customer].[Education Level].[Bachelors Degree], [Product].[Products].[Food]}
+{[Customer].[Education Level].[Bachelors Degree], [Product].[Products].[Non-Consumable]}
+{[Customer].[Education Level].[High School Degree], [Product].[Products].[Drink]}
+{[Customer].[Education Level].[High School Degree], [Product].[Products].[Food]}
+{[Customer].[Education Level].[High School Degree], [Product].[Products].[Non-Consumable]}
+{[Customer].[Education Level].[Partial College], [Product].[Products].[Drink]}
+{[Customer].[Education Level].[Partial College], [Product].[Products].[Food]}
+{[Customer].[Education Level].[Partial College], [Product].[Products].[Non-Consumable]}
+{[Customer].[Education Level].[Partial High School], [Product].[Products].[Drink]}
+{[Customer].[Education Level].[Partial High School], [Product].[Products].[Food]}
+{[Customer].[Education Level].[Partial High School], [Product].[Products].[Non-Consumable]}
 Row #0: 6,423
 Row #1: 49,365
 Row #2: 13,051
@@ -1706,15 +1706,15 @@ From [Sales]
 Axis #0:
 {}
 Axis #1:
-{[Store].[USA], [Measures].[Store Sales]}
-{[Store].[USA], [Measures].[Unit Sales]}
+{[Store].[Stores].[USA], [Measures].[Store Sales]}
+{[Store].[Stores].[USA], [Measures].[Unit Sales]}
 Axis #2:
-{[Customer].[Education Level].[High School Degree], [Product].[Drink]}
-{[Customer].[Education Level].[High School Degree], [Product].[Food]}
-{[Customer].[Education Level].[High School Degree], [Product].[Non-Consumable]}
-{[Customer].[Education Level].[Partial High School], [Product].[Drink]}
-{[Customer].[Education Level].[Partial High School], [Product].[Food]}
-{[Customer].[Education Level].[Partial High School], [Product].[Non-Consumable]}
+{[Customer].[Education Level].[High School Degree], [Product].[Products].[Drink]}
+{[Customer].[Education Level].[High School Degree], [Product].[Products].[Food]}
+{[Customer].[Education Level].[High School Degree], [Product].[Products].[Non-Consumable]}
+{[Customer].[Education Level].[Partial High School], [Product].[Products].[Drink]}
+{[Customer].[Education Level].[Partial High School], [Product].[Products].[Food]}
+{[Customer].[Education Level].[Partial High School], [Product].[Products].[Non-Consumable]}
 Row #0: 14,331.23
 Row #0: 7,226
 Row #1: 120,685.82

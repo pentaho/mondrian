@@ -157,12 +157,12 @@ Where ([Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*
         <Resource name="result">
             <![CDATA[
 Axis #0:
-{[Product].[Products].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER]}
+{[Product].[Products].[*FILTER_MEMBER], [Time].[Time].[*FILTER_MEMBER], [Customer].[Education Level].[*FILTER_MEMBER]}
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Gender].[F]}
-{[Gender].[M]}
+{[Customer].[Gender].[F]}
+{[Customer].[Gender].[M]}
 Row #0: 37,895
 Row #1: 40,498
 ]]>
@@ -201,12 +201,12 @@ Where ([Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*
         <Resource name="result">
             <![CDATA[
 Axis #0:
-{[Product].[Products].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER]}
+{[Product].[Products].[*FILTER_MEMBER], [Time].[Time].[*FILTER_MEMBER], [Customer].[Education Level].[*FILTER_MEMBER]}
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Gender].[F]}
-{[Gender].[M]}
+{[Customer].[Gender].[F]}
+{[Customer].[Gender].[M]}
 Row #0: 38,023
 Row #1: 40,576
 ]]>

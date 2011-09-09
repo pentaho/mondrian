@@ -39,11 +39,11 @@
             </dimensions>
             <tuples>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Measures].[Store Invoice]</member>
                 </tuple>
                 <tuple>
-                    <member>[Warehouse].[USA]</member>
+                    <member>[Warehouse].[Warehouses].[USA]</member>
                     <member>[Measures].[Supply Time]</member>
                 </tuple>
             </tuples>

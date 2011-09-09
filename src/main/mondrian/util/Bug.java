@@ -286,7 +286,7 @@ public class Bug {
 
     // Mondrian 4 tasks
 
-    public final static boolean Enable = true;
+    private static final boolean Enable = true;
 
     /**
      * Allow Dimension to have a PhysicalSchema. Graph used for that dimension
@@ -323,9 +323,9 @@ public class Bug {
     public static final boolean VisualTotalsFixed = Enable;
 
     /**
-     * "Needed to find exactly one path ... but found 0"
+     * UnsupportedOperationException in getBaseStarKeyColumn
      */
-    public static final boolean ZeroPathsFixed = Enable;
+    public static final boolean BaseStarKeyColumnFixed = Enable;
 }
 
 // End Bug.java

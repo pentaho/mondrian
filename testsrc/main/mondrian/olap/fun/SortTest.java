@@ -63,7 +63,7 @@ public class SortTest extends FoodMartTestCase
             + "       [Measures].[Unit Sales])))) '\n"
             + "select \n"
             + "    {[Measures].[Foo]} on columns, \n"
-            + "    order(except([Promotion].[Media Type].members,{[Promotion].[Media Type].[No Media]}),[Measures].[Foo],DESC) on rows\n"
+            + "    order(except([Promotion].[Media Type].[Media Type].members,{[Promotion].[Media Type].[No Media]}),[Measures].[Foo],DESC) on rows\n"
             + "from Sales",
             "Axis #0:\n"
             + "{}\n"
@@ -111,7 +111,7 @@ public class SortTest extends FoodMartTestCase
             + "      Rank([Promotion].[Media Type].CurrentMember, [Promotion].[Media Type].Members, [Measures].[Foo]) '\n"
             + "select\n"
             + "    {[Measures].[Foo], [Measures].[R]} on columns, \n"
-            + "    order([Promotion].[Media Type].members,[Measures].[Foo]) on rows\n"
+            + "    order([Promotion].[Media Type].[Media Type].members,[Measures].[Foo]) on rows\n"
             + "from Sales",
             "Axis #0:\n"
             + "{}\n"

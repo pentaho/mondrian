@@ -28,7 +28,7 @@
 Axis #1:
 {[Measures].[Unit Sales]}
 Axis #2:
-{[Store].[USA].[CA].[San Francisco].[Store 14]}
+{[Store].[Stores].[USA].[CA].[San Francisco].[Store 14]}
 Row #0: 2,117
 ]]>
         </Resource>
