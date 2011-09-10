@@ -98,7 +98,13 @@ public class RoleImpl implements Role {
 
     public Access getAccess(Schema schema) {
         assert schema != null;
-        return toAccess(schemaGrants.get(schema));
+        final Access schemaAccess = schemaGrants.get(schema);
+        if (schemaAccess == null) {
+            // No specific rules means full access.
+            return Access.CUSTOM;
+        } else {
+            return schemaAccess;
+        }
     }
 
     /**
@@ -182,7 +188,26 @@ public class RoleImpl implements Role {
         assert dimension != null;
         // Check for explicit rules.
         Access access = dimensionGrants.get(dimension);
-        if (access != null) {
+        if (access == Access.CUSTOM) {
+            // For legacy reasons, if there are no accessible hierarchies
+            // and the dimension has an access level of custom, we deny.
+            // TODO Remove for Mondrian 4.0
+            boolean canAccess = false;
+            for (Hierarchy hierarchy : dimension.getHierarchies()) {
+                final HierarchyAccessImpl hierarchyAccess =
+                    hierarchyGrants.get(hierarchy);
+                if (hierarchyAccess != null
+                    && hierarchyAccess.access != Access.NONE)
+                {
+                    canAccess = true;
+                }
+            }
+            if (canAccess) {
+                return Access.CUSTOM;
+            } else {
+                return Access.NONE;
+            }
+        } else if (access != null) {
             return access;
         }
         // Check if this dimension inherits the cube's access rights.
@@ -619,6 +644,11 @@ public class RoleImpl implements Role {
             // Check for explicit grant
             if (access == Access.ALL || access == Access.CUSTOM) {
                 return access;
+            }
+            // Check if the member is out of the bounds
+            // defined by topLevel and bottomLevel
+            if (!checkLevelIsOkWithRestrictions(this, member.getLevel())) {
+                return Access.NONE;
             }
             // Nothing was explicitly defined for this member.
             // Check for grants on its parents

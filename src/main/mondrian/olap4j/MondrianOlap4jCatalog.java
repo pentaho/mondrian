@@ -9,12 +9,11 @@
 */
 package mondrian.olap4j;
 
+import mondrian.olap.Access;
 import mondrian.rolap.RolapSchema;
-import org.olap4j.metadata.Catalog;
-import org.olap4j.metadata.Database;
-import org.olap4j.metadata.NamedList;
-import org.olap4j.metadata.Schema;
+import org.olap4j.metadata.*;
 import org.olap4j.OlapDatabaseMetaData;
+import org.olap4j.OlapException;
 import org.olap4j.impl.*;
 
 import java.util.Map;
@@ -32,7 +31,6 @@ class MondrianOlap4jCatalog implements Catalog, Named {
     final String name;
     final Map<String, RolapSchema> schemaMap;
     final MondrianOlap4jDatabase olap4jDatabase;
-    private final NamedList<MondrianOlap4jSchema> olap4jSchemaList;
 
     MondrianOlap4jCatalog(
         MondrianOlap4jDatabaseMetaData olap4jDatabaseMetaData,
@@ -45,11 +43,10 @@ class MondrianOlap4jCatalog implements Catalog, Named {
         this.name = name;
         this.olap4jDatabase = database;
         this.schemaMap = schemaMap;
-        this.olap4jSchemaList =
-            new NamedListImpl<MondrianOlap4jSchema>();
+        // Make sure to register the schemas.
         for (Map.Entry<String, RolapSchema> entry : schemaMap.entrySet()) {
             String schemaName = entry.getKey();
-            mondrian.olap.Schema schema = entry.getValue();
+            final mondrian.olap.Schema schema = entry.getValue();
             if (schemaName == null) {
                 schemaName = schema.getName();
             }
@@ -58,12 +55,32 @@ class MondrianOlap4jCatalog implements Catalog, Named {
                     this, schemaName, schema);
             olap4jDatabaseMetaData.olap4jConnection.schemaMap.put(
                 schema, olap4jSchema);
-            olap4jSchemaList.add(olap4jSchema);
         }
     }
 
-    public NamedList<Schema> getSchemas() {
-        return Olap4jUtil.cast(olap4jSchemaList);
+    public NamedList<Schema> getSchemas() throws OlapException {
+        final NamedList<MondrianOlap4jSchema> list =
+            new NamedListImpl<MondrianOlap4jSchema>();
+        for (Map.Entry<String, RolapSchema> entry : schemaMap.entrySet()) {
+            String schemaName = entry.getKey();
+            final mondrian.olap.Schema schema = entry.getValue();
+            final MondrianOlap4jConnection oConn =
+                ((MondrianOlap4jConnection)olap4jDatabase
+                    .getOlapConnection());
+            if (oConn
+                .getMondrianConnection().getRole().getAccess(schema)
+                != Access.NONE)
+            {
+                if (schemaName == null) {
+                    schemaName = schema.getName();
+                }
+                MondrianOlap4jSchema olap4jSchema =
+                    new MondrianOlap4jSchema(
+                        this, schemaName, schema);
+                list.add(olap4jSchema);
+            }
+        }
+        return Olap4jUtil.cast(list);
     }
 
     public String getName() {

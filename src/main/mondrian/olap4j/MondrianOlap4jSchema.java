@@ -10,15 +10,13 @@
 package mondrian.olap4j;
 
 import org.olap4j.metadata.*;
-import org.olap4j.metadata.Cube;
-import org.olap4j.metadata.Dimension;
-import org.olap4j.metadata.Schema;
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
 
 import java.util.*;
 
 import mondrian.olap.Hierarchy;
+import mondrian.olap.Role;
 
 /**
  * Implementation of {@link org.olap4j.metadata.Schema}
@@ -64,7 +62,10 @@ class MondrianOlap4jSchema implements Schema, Named {
             new NamedListImpl<MondrianOlap4jCube>();
         final MondrianOlap4jConnection olap4jConnection =
             olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
-        for (mondrian.olap.Cube cube : schema.getCubes()) {
+        for (mondrian.olap.Cube cube
+            : olap4jConnection.getMondrianConnection()
+                .getSchemaReader().getCubes())
+        {
             list.add(olap4jConnection.toOlap4j(cube));
         }
         return Olap4jUtil.cast(list);
@@ -84,9 +85,12 @@ class MondrianOlap4jSchema implements Schema, Named {
                     }
                 }
             );
+        final Role role = olap4jConnection.getMondrianConnection().getRole();
         for (Hierarchy hierarchy : schema.getSharedHierarchies()) {
-            dimensions.add(
-                olap4jConnection.toOlap4j(hierarchy.getDimension()));
+            if (role.canAccess(hierarchy)) {
+                dimensions.add(
+                    olap4jConnection.toOlap4j(hierarchy.getDimension()));
+            }
         }
         mondrian.util.Bug.olap4jUpgrade("use NamedListImpl(Collection)");
         NamedList<MondrianOlap4jDimension> list =
