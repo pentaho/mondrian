@@ -353,45 +353,41 @@ public class SchemaTreeCellRenderer
                 invalidFlag, workbench.getResourceConverter().getString(
                     "common.memberFormatter.title",
                     "Member Formatter"));
-            // TODO Get a specific icon for formatters.
             super.setIcon(
                 new ImageIcon(
                     myClassLoader.getResource(
                         workbench.getResourceConverter().getGUIReference(
-                            "expression"))));
+                            "format"))));
         } else if (value instanceof MondrianGuiDef.CellFormatter) {
             setText(
                 invalidFlag, workbench.getResourceConverter().getString(
                     "common.cellFormatter.title",
                     "Cell Formatter"));
-            // TODO Get a specific icon for formatters.
             super.setIcon(
                 new ImageIcon(
                     myClassLoader.getResource(
                         workbench.getResourceConverter().getGUIReference(
-                            "expression"))));
+                            "format"))));
         } else if (value instanceof MondrianGuiDef.PropertyFormatter) {
             setText(
                 invalidFlag, workbench.getResourceConverter().getString(
                     "common.propertyFormatter.title",
                     "Property Formatter"));
-            // TODO Get a specific icon for formatters.
             super.setIcon(
                 new ImageIcon(
                     myClassLoader.getResource(
                         workbench.getResourceConverter().getGUIReference(
-                            "expression"))));
+                            "format"))));
         } else if (value instanceof MondrianGuiDef.Script) {
             setText(
                 invalidFlag, workbench.getResourceConverter().getString(
                     "common.script.title",
                     "Script"));
-            // TODO Get a specific icon for scripts.
             super.setIcon(
                 new ImageIcon(
                     myClassLoader.getResource(
                         workbench.getResourceConverter().getGUIReference(
-                            "annotations"))));
+                            "script"))));
         } else if (value instanceof MondrianGuiDef.Role) {
             setText(invalidFlag, ((MondrianGuiDef.Role) value).name);
             super.setIcon(
