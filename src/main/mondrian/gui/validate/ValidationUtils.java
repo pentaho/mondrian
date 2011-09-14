@@ -584,10 +584,42 @@ public class ValidationUtils {
                 if (isEmpty(udf.name)) {
                     return nameMustBeSet;
                 }
-                if (isEmpty(udf.className)) {
+                if (isEmpty(udf.className)
+                    && udf.script == null)
+                {
                     return messages.getString(
-                        "schemaTreeCellRenderer.classNameMustBeSet.alert",
+                        "Either a Class Name or a Script are required",
                         "Class name must be set");
+                }
+            } else if (value instanceof MondrianGuiDef.MemberFormatter) {
+                final MondrianGuiDef.MemberFormatter f =
+                    (MondrianGuiDef.MemberFormatter) value;
+                if (isEmpty(f.className)
+                    && f.script == null)
+                {
+                    return messages.getString(
+                        "schemaTreeCellRenderer.classNameOrScriptRequired.alert",
+                        "Either a Class Name or a Script are required");
+                }
+            } else if (value instanceof MondrianGuiDef.CellFormatter) {
+                final MondrianGuiDef.CellFormatter f =
+                    (MondrianGuiDef.CellFormatter) value;
+                if (isEmpty(f.className)
+                    && f.script == null)
+                {
+                    return messages.getString(
+                        "schemaTreeCellRenderer.classNameOrScriptRequired.alert",
+                        "Either a Class Name or a Script are required");
+                }
+            } else if (value instanceof MondrianGuiDef.PropertyFormatter) {
+                final MondrianGuiDef.PropertyFormatter f =
+                    (MondrianGuiDef.PropertyFormatter) value;
+                if (isEmpty(f.className)
+                    && f.script == null)
+                {
+                    return messages.getString(
+                        "schemaTreeCellRenderer.classNameOrScriptRequired.alert",
+                        "Either a Class Name or a Script are required");
                 }
             } else if (value instanceof MondrianGuiDef.CalculatedMember) {
                 final MondrianGuiDef.CalculatedMember calculatedMember =

@@ -138,6 +138,13 @@
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this dimension is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
         <Attribute name="description" required="false">
             <Doc>
                 Description of this dimension.
@@ -192,6 +199,13 @@
             <Doc>
                 A string being displayed instead of the cube's name.
                 Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this cube is visible in the user-interface.
+                Default true.
             </Doc>
         </Attribute>
         <Attribute name="description" required="false">
@@ -286,6 +300,13 @@
             <Doc>
                 A string being displayed instead of the cube's name.
                 Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this cube is visible in the user-interface.
+                Default true.
             </Doc>
         </Attribute>
         <Attribute name="description" required="false">
@@ -517,6 +538,13 @@
                 has the same name as its dimension.
             </Doc>
         </Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this hierarchy is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
         <Attribute name="hasAll" type="Boolean" required="true">
             <Doc>
                 Whether this hierarchy has an 'all' member.
@@ -624,6 +652,13 @@
             </Doc>
         </Attribute>
         <Attribute name="name"><Doc></Doc></Attribute>
+        <Attribute name="visible" type="Boolean"
+            required="false" default="true">
+            <Doc>
+                Whether this level is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
         <Attribute name="table" required="false">
             <Doc>
                 The name of the table that the column comes from. If
@@ -684,6 +719,24 @@
             <Value>Time</Value>
             <Value>Timestamp</Value>
         </Attribute>
+        <Attribute name="internalType" required="false">
+            <Doc>
+                Indicates the Java type that Mondrian uses to store this
+                level's key column. It also determines the JDBC method that
+                Mondrian will call to retrieve the column; for example, if the
+                Java type is 'int', Mondrian will call 'ResultSet.getInt(int)'.
+
+                <p/>Usually this attribute is not needed, because Mondrian can
+                choose a sensible type based on the type of the database
+                column.
+
+                <p/>Allowable values are: 'int', 'long', 'Object', 'String'.
+            </Doc>
+            <Value>int</Value>
+            <Value>long</Value>
+            <Value>Object</Value>
+            <Value>String</Value>
+        </Attribute>
         <Attribute name="uniqueMembers" type="Boolean" default="false">
             <Doc>
                 Whether members are unique across all parents. For
@@ -696,9 +749,13 @@
                 Whether this is a regular or a time-related level.
                 The value makes a difference to time-related functions
                 such as YTD (year-to-date).
+
+                <p>The "TimeHalfYear" value is deprecated and will be removed
+                 in mondrian-4.0; use "TimeHalfYears" instead.</p>
             </Doc>
             <Value>Regular</Value>
             <Value>TimeYears</Value>
+            <Value>TimeHalfYears</Value>
             <Value>TimeHalfYear</Value>
             <Value>TimeQuarters</Value>
             <Value>TimeMonths</Value>
@@ -731,7 +788,11 @@
         <Attribute name="formatter" required="false">
             <Doc>
                 Name of a formatter class for the member labels being displayed.
-                The class must implement the mondrian.olap.MemberFormatter interface.
+                The class must implement the mondrian.spi.MemberFormatter
+                interface.
+
+                <p>This attribute is deprecated. Please use a nested
+                MemberFormatter element.</p>
             </Doc>
         </Attribute>
         <Attribute name="caption" required="false">
@@ -766,6 +827,12 @@
                 specified, the level's key is used.
             </Doc>
         </Object>
+        <Object name="captionExp" type="CaptionExpression" required="false">
+            <Doc>
+                The SQL expression used to populate this level's caption. If not
+                specified, the level's name is used.
+            </Doc>
+        </Object>
         <Object name="ordinalExp" type="OrdinalExpression" required="false">
             <Doc>
                 The SQL expression used to populate this level's ordinal.
@@ -775,6 +842,11 @@
             <Doc>
                 The SQL expression used to join to the parent member in a
                 parent-child hierarchy.
+            </Doc>
+        </Object>
+        <Object name="memberFormatter" type="MemberFormatter" required="false">
+            <Doc>
+                Member formatter.
             </Doc>
         </Object>
         <Object name="closure" type="Closure" required="false"/>
@@ -801,7 +873,9 @@
             }
 
             public Expression getCaptionExp() {
-                if (captionColumn != null) {
+                if (captionExp != null) {
+                    return captionExp;
+                } else if (captionColumn != null) {
                     return new Column(table, captionColumn);
                 } else {
                     return null;
@@ -871,10 +945,14 @@
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
-                Name of a formatter class for the appropriate property value
-                being displayed.
-                The class must implement the mondrian.olap.PropertyFormatter
-                interface.
+                <p>Name of a formatter class for the appropriate property value
+                being displayed.</p>
+
+                <p>The class must implement the mondrian.spi.PropertyFormatter
+                interface.</p>
+
+                <p>This attribute is deprecated. Please use a nested
+                PropertyFormatter element.</p>
             </Doc>
         </Attribute>
         <Attribute name="caption" required="false">
@@ -898,6 +976,11 @@
                 databases, such as MySQL.
             </Doc>
         </Attribute>
+        <Object name="propertyFormatter" type="PropertyFormatter" required="false">
+            <Doc>
+                Property formatter.
+            </Doc>
+        </Object>
     </Element>
 
     <Element type="Measure">
@@ -954,8 +1037,14 @@
         </Attribute>
         <Attribute name="formatter" required="false">
             <Doc>
-                Name of a formatter class for the appropriate cell being displayed.
-                The class must implement the mondrian.olap.CellFormatter interface.
+                <p>Name of a formatter class for the appropriate cell being
+                displayed.</p>
+
+                <p>The class must implement the
+                mondrian.spi.CellFormatter interface.</p>
+
+                <p>This attribute is deprecated. Please use a nested
+                CellFormatter element.</p>
             </Doc>
         </Attribute>
         <Attribute name="caption" required="false">
@@ -983,6 +1072,11 @@
             <Doc>
                 The SQL expression used to calculate a measure.
                 Must be specified if a source column is not specified.
+            </Doc>
+        </Object>
+        <Object name="cellFormatter" type="CellFormatter" required="false">
+            <Doc>
+                Cell formatter.
             </Doc>
         </Object>
         <Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
@@ -1018,9 +1112,22 @@
                 Equivalent to the Formula sub-element.
             </Doc>
         </Attribute>
-        <Attribute name="dimension" required="true">
+        <Attribute name="dimension" required="false">
             <Doc>
-                Name of the dimension which this member belongs to.
+                <p>Name of the dimension that this member belongs to.</p>
+                <p>Deprecated: use {@code hierarchy} attribute instead.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="hierarchy" required="false">
+            <Doc>
+                <p>Name of the hierarchy that this member belongs to.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="parent" required="false">
+            <Doc>
+                Fully-qualified name of the parent member.
+                If not specified, the member will be at the lowest level
+                (besides the 'all' level) in the hierarchy.
             </Doc>
         </Attribute>
         <Attribute name="visible" type="Boolean" required="false">
@@ -1035,6 +1142,11 @@
         <Object name="formulaElement" type="Formula" required="false">
             <Doc>
                 MDX expression which gives the value of this member.
+            </Doc>
+        </Object>
+        <Object name="cellFormatter" type="CellFormatter" required="false">
+            <Doc>
+                Cell formatter.
             </Doc>
         </Object>
         <Array name="memberProperties" type="CalculatedMemberProperty" min="0"/>
@@ -1235,6 +1347,28 @@
                 sql.dialect = dialect;
                 sql.cdata = code;
                 selects[selects.length - 1] = sql;
+            }
+
+            public boolean equals(Object o) {
+                if (o instanceof View) {
+                    View that = (View) o;
+                    if (!this.alias.equals(that.alias)) {
+                        return false;
+                    }
+                    if (this.selects == null || that.selects == null || this.selects.length != that.selects.length) {
+                        return false;
+                    }
+                    for (int i = 0; i &lt; selects.length; i++) {
+                        if (!Util.equals(this.selects[i].dialect, that.selects[i].dialect)
+                            || !Util.equals(this.selects[i].cdata, that.selects[i].cdata))
+                        {
+                            return false;
+                        }
+                    }
+                    return true;
+                } else {
+                    return false;
+                }
             }
             </Code>
     </Element>
@@ -1669,9 +1803,21 @@
                 The Table name of a Specific aggregate table.
             </Doc>
         </Attribute>
+        <Attribute name="approxRowCount" required="false">
+            <Doc>
+                The estimated number of rows in this aggregation
+                table. Setting this property improves the
+                performance of the aggregation optimizer and
+                prevents it from issuing a 'select count(*)'
+                query over the aggregation table.
+            </Doc>
+        </Attribute>
         <Code>
             public String getNameAttribute() {
                 return name;
+            }
+            public String getApproxRowCountAttribute() {
+                return approxRowCount;
             }
         </Code>
     </Element>
@@ -1957,9 +2103,15 @@
     <Element class="Grant" type="SchemaGrant">
         <Doc>
             Grants (or denies) this role access to this schema.
-            <code>access</code> may be "all", "all_dimensions", or "none".
+            <code>access</code> may be "all", "all_dimensions", "custom"
+            or "none".
             If <code>access</code> is "all_dimensions", the role has access
             to all dimensions but still needs explicit access to cubes.
+            If <code>access</code> is "custom", no access will be inherited by
+            cubes for which no explicit rule is set.
+            If <code>access</code> is "all_dimensions", an implicut access is
+            given to all dimensions of the schema's cubes, provided the cube's
+            access attribute is either "custom" or "all".
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Schema, int)">mondrian.olap.Role#grant(mondrian.olap.Schema,int)</a>.
         </Doc>
         <Array name="cubeGrants" type="CubeGrant"/>
@@ -1968,7 +2120,10 @@
     <Element class="Grant" type="CubeGrant">
         <Doc>
             Grants (or denies) this role access to a cube.
-            <code>access</code> may be "all" or "none".
+            <code>access</code> may be "all", "custom", or "none".
+            If <code>access</code> is "custom", no access will be inherited
+            by the dimensions of this cube, unless the parent SchemaGrant is
+            set to "ALL_DIMENSIONS".
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Cube, int)">mondrian.olap.Role#grant(mondrian.olap.Cube,int)</a>.
         </Doc>
         <Attribute name="cube" required="true">
@@ -1981,9 +2136,13 @@
     <Element class="Grant" type="DimensionGrant">
         <Doc>
             Grants (or denies) this role access to a dimension.
-            <code>access</code> may be "all" or "none".
+            <code>access</code> may be "all", "custom" or "none".
             Note that a role is implicitly given access to a dimension when it
-            is given acess to a cube.
+            is given "ALL" acess to a cube.
+            If <code>access</code> is "custom", no access will be inherited
+            by the hierarchies of this dimension.
+            If the parent schema <code>access</code> is "ALL_DIMENSIONS",
+            this timension will inherit <code>access</code> "ALL".
             See also the "all_dimensions" option of the "SchemaGrant" element.
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Dimension, int)">mondrian.olap.Role#grant(mondrian.olap.Dimension,int)</a>.
         </Doc>
@@ -1999,6 +2158,9 @@
             If <code>access</code> is "custom", you may also specify the
             attributes <code>topLevel</code>, <code>bottomLevel</code>, and
             the member grants.
+            If <code>access</code> is "custom", the child levels of this
+            hierarchy will not inherit access rights from this hierarchy,
+            should there be no explicit rules defined for the said child level.
             See <a href="api/mondrian/olap/Role.html#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)">mondrian.olap.Role#grant(mondrian.olap.Hierarchy, int, mondrian.olap.Level)</a>.
         </Doc>
         <Attribute name="hierarchy" required="true">
@@ -2070,13 +2232,21 @@
         <Attribute name="name" required="true">
             <Doc>Name with which the user-defined function will be referenced in MDX expressions.</Doc>
         </Attribute>
-        <Attribute name="className" required="true">
+        <Attribute name="className" required="false">
             <Doc>
                 Name of the class which implemenets this user-defined function.
                 Must implement the <code>mondrian.spi.UserDefinedFunction</code>
                 interface.
             </Doc>
         </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this user-defined function.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
     </Element>
 
     <Element type="Parameter">
@@ -2139,6 +2309,106 @@
             </Doc>
         </Attribute>
         <CData/>
+    </Element>
+
+    <Element type="Script">
+        <Doc>
+            Script fragment to implement an SPI such as user-defined function,
+            member formatter, cell formatter.
+        </Doc>
+        <Attribute name="language" required="false" default="JavaScript">
+            <Doc>
+                The language of the script. Must be a supported scripting
+                language in the current JVM. See
+                {@link javax.script.ScriptEngineManager}.
+                Default value is 'JavaScript'.
+            </Doc>
+        </Attribute>
+        <CData/>
+    </Element>
+
+    <Element type="CellFormatter">
+        <Doc>
+            Plugin that formats the values of cells.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/CellFormatter.html">mondrian.spi.CellFormatter</a>,
+            or by a script.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this cell formatter.
+                Must implement the <code>mondrian.spi.CellFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this cell formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="MemberFormatter">
+        <Doc>
+            Plugin that formats members.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/MemberFormatter.html">mondrian.spi.MemberFormatter</a>,
+            or by a script.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this member formatter.
+                Must implement the <code>mondrian.spi.MemberFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this member formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
+    </Element>
+
+    <Element type="PropertyFormatter">
+        <Doc>
+            Plugin that formats properties.
+            It must be implemented by a Java
+            class which implements the interface
+            <a href="api/mondrian/spi/PropertyFormatter.html">mondrian.spi.PropertyFormatter</a>,
+            or by a script.
+        </Doc>
+        <Attribute name="className" required="false">
+            <Doc>
+                Name of the class which implemenets this property formatter.
+                Must implement the <code>mondrian.spi.PropertyFormatter</code>
+                interface.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Attribute>
+        <Object name="script" required="false" type="Script">
+            <Doc>
+                Script to implement this property formatter.
+
+                <p>Either the "Script" element or the "className" attribute
+                must be specified.</p>
+            </Doc>
+        </Object>
     </Element>
 </Model>
 

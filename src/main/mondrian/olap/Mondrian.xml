@@ -701,6 +701,10 @@ Revision is $Id$
 
                 <p/>Allowable values are: 'int', 'long', 'Object', 'String'.
             </Doc>
+            <Value>int</Value>
+            <Value>long</Value>
+            <Value>Object</Value>
+            <Value>String</Value>
         </Attribute>
         <Attribute name="uniqueMembers" type="Boolean" default="false">
             <Doc>

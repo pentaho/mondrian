@@ -222,6 +222,20 @@ public class SchemaPropertyCellRenderer
                 tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
                 tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
                 return tableRenderer;
+            } else if (value.getClass()
+                    == MondrianGuiDef.OrdinalExpression.class)
+            {
+                SchemaPropertyCellRenderer spcr =
+                    new SchemaPropertyCellRenderer(workbench);
+                tableRenderer.setDefaultRenderer(Object.class, spcr);
+                PropertyTableModel ptm = new PropertyTableModel(
+                    workbench,
+                    ((MondrianGuiDef.CaptionExpression) value).expressions[0],
+                    SchemaExplorer.DEF_SQL);
+                tableRenderer.setModel(ptm);
+                tableRenderer.getColumnModel().getColumn(0).setMaxWidth(100);
+                tableRenderer.getColumnModel().getColumn(0).setMinWidth(100);
+                return tableRenderer;
             } else if (value.getClass() == MondrianGuiDef.Formula.class) {
                 SchemaPropertyCellRenderer spcr =
                     new SchemaPropertyCellRenderer(workbench);

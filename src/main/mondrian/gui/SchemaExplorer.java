@@ -526,6 +526,42 @@ public class SchemaExplorer
                 addUserDefinedFunction(e);
             }
         };
+        addScript = new AbstractAction(
+            getResourceConverter().getString(
+                "schemaExplorer.addScript.title",
+                "Add Script"))
+        {
+            public void actionPerformed(ActionEvent e) {
+                addScript(e);
+            }
+        };
+        addCellFormatter = new AbstractAction(
+            getResourceConverter().getString(
+                "schemaExplorer.addCellFormatter.title",
+                "Add Cell Formatter"))
+        {
+            public void actionPerformed(ActionEvent e) {
+                addCellFormatter(e);
+            }
+        };
+        addPropertyFormatter = new AbstractAction(
+            getResourceConverter().getString(
+                "schemaExplorer.addPropertyFormatter.title",
+                "Add Property Formatter"))
+        {
+            public void actionPerformed(ActionEvent e) {
+                addPropertyFormatter(e);
+            }
+        };
+        addMemberFormatter = new AbstractAction(
+            getResourceConverter().getString(
+                "schemaExplorer.addMemberFormatter.title",
+                "Add Member Formatter"))
+        {
+            public void actionPerformed(ActionEvent e) {
+                addMemberFormatter(e);
+            }
+        };
         addRole = new AbstractAction(
             getResourceConverter().getString(
                 "schemaExplorer.addRole.title", "Add Role"))
@@ -633,6 +669,15 @@ public class SchemaExplorer
         {
             public void actionPerformed(ActionEvent e) {
                 addOrdinalExp(e);
+            }
+        };
+        addCaptionExp = new AbstractAction(
+            getResourceConverter().getString(
+                "schemaExplorer.addCaptionExpression.title",
+                "Add Caption Expression"))
+        {
+            public void actionPerformed(ActionEvent e) {
+                addCaptionExp(e);
             }
         };
         addParentExp = new AbstractAction(
@@ -2278,6 +2323,11 @@ public class SchemaExplorer
                             ((MondrianGuiDef.Level) grandparent).ordinalExp =
                                 null;
                         } else if (parent
+                            instanceof MondrianGuiDef.CaptionExpression)
+                        {
+                            ((MondrianGuiDef.Level) grandparent).captionExp =
+                                null;
+                        } else if (parent
                             instanceof MondrianGuiDef.ParentExpression)
                         {
                             ((MondrianGuiDef.Level) grandparent).parentExp =
@@ -3273,6 +3323,238 @@ public class SchemaExplorer
         setTableCellFocus(0);
     }
 
+    protected void addScript(ActionEvent evt) {
+        TreePath tpath = null;
+        Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
+        if (tpath != null) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
+                parentIndex--)
+            {
+                Object p = tpath.getPathComponent(parentIndex);
+                if (p instanceof MondrianGuiDef.UserDefinedFunction
+                    || p instanceof MondrianGuiDef.MemberFormatter
+                    || p instanceof MondrianGuiDef.CellFormatter
+                    || p instanceof MondrianGuiDef.PropertyFormatter)
+                {
+                    path = p;
+                    break;
+                }
+            }
+        }
+        if (path == null) {
+            JOptionPane.showMessageDialog(
+                this, getResourceConverter().getString(
+                    "schemaExplorer.userDefinedFunctionOrFormatterNotSelected.alert",
+                    "User Defined Function or Formatter not selected."),
+                alert,
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        final MondrianGuiDef.Script script = new MondrianGuiDef.Script();
+
+        if (path instanceof MondrianGuiDef.UserDefinedFunction) {
+            final MondrianGuiDef.UserDefinedFunction parent =
+                (MondrianGuiDef.UserDefinedFunction) path;
+            parent.script = script;
+        } else if (path instanceof MondrianGuiDef.CellFormatter) {
+            final MondrianGuiDef.CellFormatter parent =
+                (MondrianGuiDef.CellFormatter) path;
+            parent.script = script;
+        } else if (path instanceof MondrianGuiDef.MemberFormatter) {
+            final MondrianGuiDef.MemberFormatter parent =
+                (MondrianGuiDef.MemberFormatter) path;
+            parent.script = script;
+        } else if (path instanceof MondrianGuiDef.PropertyFormatter) {
+            final MondrianGuiDef.PropertyFormatter parent =
+                (MondrianGuiDef.PropertyFormatter) path;
+            parent.script = script;
+        }
+
+        Object[] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
+            parentPathObjs[i] = tpath.getPathComponent(i);
+        }
+        TreePath parentPath = new TreePath(parentPathObjs);
+        tree.setSelectionPath(parentPath.pathByAddingChild(script));
+
+        refreshTree(tree.getSelectionPath());
+        setTableCellFocus(0);
+    }
+
+    protected void addCellFormatter(ActionEvent evt) {
+        TreePath tpath = null;
+        Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
+        if (tpath != null) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
+                parentIndex--)
+            {
+                Object p = tpath.getPathComponent(parentIndex);
+                if (p instanceof MondrianGuiDef.Measure
+                    || p instanceof MondrianGuiDef.CalculatedMember)
+                {
+                    path = p;
+                    break;
+                }
+            }
+        }
+        if (path == null) {
+            JOptionPane.showMessageDialog(
+                this, getResourceConverter().getString(
+                    "schemaExplorer.measureOrCalculatedMemberNotSelected.alert",
+                    "Measure or Calculated Member not selected."),
+                alert,
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        final MondrianGuiDef.CellFormatter formatter =
+            new MondrianGuiDef.CellFormatter();
+
+        if (path instanceof MondrianGuiDef.Measure) {
+            final MondrianGuiDef.Measure parent =
+                (MondrianGuiDef.Measure) path;
+            parent.cellFormatter = formatter;
+        } else if (path instanceof MondrianGuiDef.CalculatedMember) {
+            final MondrianGuiDef.CalculatedMember parent =
+                (MondrianGuiDef.CalculatedMember) path;
+            parent.cellFormatter = formatter;
+        }
+
+        Object[] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
+            parentPathObjs[i] = tpath.getPathComponent(i);
+        }
+        TreePath parentPath = new TreePath(parentPathObjs);
+        tree.setSelectionPath(parentPath.pathByAddingChild(formatter));
+
+        refreshTree(tree.getSelectionPath());
+        setTableCellFocus(0);
+    }
+
+    protected void addMemberFormatter(ActionEvent evt) {
+        TreePath tpath = null;
+        Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
+        if (tpath != null) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
+                parentIndex--)
+            {
+                Object p = tpath.getPathComponent(parentIndex);
+                if (p instanceof MondrianGuiDef.Level) {
+                    path = p;
+                    break;
+                }
+            }
+        }
+        if (path == null) {
+            JOptionPane.showMessageDialog(
+                this, getResourceConverter().getString(
+                    "schemaExplorer.levelNotSelected.alert",
+                    "Level not selected."),
+                alert,
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        final MondrianGuiDef.MemberFormatter formatter =
+            new MondrianGuiDef.MemberFormatter();
+
+        final MondrianGuiDef.Level parent =
+            (MondrianGuiDef.Level) path;
+        parent.memberFormatter = formatter;
+
+        Object[] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
+            parentPathObjs[i] = tpath.getPathComponent(i);
+        }
+        TreePath parentPath = new TreePath(parentPathObjs);
+        tree.setSelectionPath(parentPath.pathByAddingChild(formatter));
+
+        refreshTree(tree.getSelectionPath());
+        setTableCellFocus(0);
+    }
+
+    protected void addPropertyFormatter(ActionEvent evt) {
+        TreePath tpath = null;
+        Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
+        if (tpath != null) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
+                parentIndex--)
+            {
+                Object p = tpath.getPathComponent(parentIndex);
+                if (p instanceof MondrianGuiDef.Property) {
+                    path = p;
+                    break;
+                }
+            }
+        }
+        if (path == null) {
+            JOptionPane.showMessageDialog(
+                this, getResourceConverter().getString(
+                    "schemaExplorer.propertyNotSelected.alert",
+                    "Property not selected."),
+                alert,
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        final MondrianGuiDef.PropertyFormatter formatter =
+            new MondrianGuiDef.PropertyFormatter();
+
+        final MondrianGuiDef.Property parent =
+            (MondrianGuiDef.Property) path;
+        parent.propertyFormatter = formatter;
+
+        Object[] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
+            parentPathObjs[i] = tpath.getPathComponent(i);
+        }
+        TreePath parentPath = new TreePath(parentPathObjs);
+        tree.setSelectionPath(parentPath.pathByAddingChild(formatter));
+
+        refreshTree(tree.getSelectionPath());
+        setTableCellFocus(0);
+    }
 
     protected void addKeyExp(ActionEvent evt) {
         TreePath tpath = null;
@@ -3429,6 +3711,59 @@ public class SchemaExplorer
         }
         TreePath parentPath = new TreePath(parentPathObjs);
         tree.setSelectionPath(parentPath.pathByAddingChild(ordinalExp));
+
+        refreshTree(tree.getSelectionPath());
+    }
+
+    protected void addCaptionExp(ActionEvent evt) {
+        TreePath tpath = null;
+        Object path = null;
+        if (evt.getSource() instanceof Component
+            && ((Component)evt.getSource())
+                .getParent() instanceof CustomJPopupMenu)
+        {
+            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
+                    .getParent()).getPath();
+        } else {
+            tpath = tree.getSelectionPath();
+        }
+        int parentIndex = -1;
+        if (tpath != null) {
+            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
+                parentIndex--)
+            {
+                final Object p = tpath.getPathComponent(parentIndex);
+                if (p instanceof MondrianGuiDef.Level) {
+                    path = p;
+                    break;
+                }
+            }
+        }
+        if (!(path instanceof MondrianGuiDef.Level)) {
+            JOptionPane.showMessageDialog(
+                this, getResourceConverter().getString(
+                    "schemaExplorer.levelNotSelected.alert",
+                    "Level not selected."),
+                    alert, JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        MondrianGuiDef.Level level = (MondrianGuiDef.Level) path;
+
+        MondrianGuiDef.CaptionExpression captionExp =
+            new MondrianGuiDef.CaptionExpression();
+        captionExp.expressions = new MondrianGuiDef.SQL[1];    // min 1
+        captionExp.expressions[0] = new MondrianGuiDef.SQL();
+        captionExp.expressions[0].dialect = "generic";
+        captionExp.expressions[0].cdata = "";
+        level.captionExp = captionExp;
+
+        Object[] parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
+            parentPathObjs[i] = tpath.getPathComponent(i);
+        }
+        TreePath parentPath = new TreePath(parentPathObjs);
+        tree.setSelectionPath(parentPath.pathByAddingChild(captionExp));
 
         refreshTree(tree.getSelectionPath());
     }
@@ -4302,6 +4637,42 @@ public class SchemaExplorer
                     elementName,
                     parentName));
             ((MondrianGuiDef.UserDefinedFunction) o).displayXML(pxml, 0);
+        } else if (o instanceof MondrianGuiDef.Script) {
+            pNames = DEF_SCRIPT;
+            targetLabel.setText(
+                getResourceConverter().getFormattedString(
+                    "schemaExplorer.scriptForElement.title",
+                    "Script for {0} {1}",
+                    elementName,
+                    parentName));
+            ((MondrianGuiDef.Script) o).displayXML(pxml, 0);
+        } else if (o instanceof MondrianGuiDef.CellFormatter) {
+            pNames = DEF_FORMATTER;
+            targetLabel.setText(
+                getResourceConverter().getFormattedString(
+                    "schemaExplorer.cellFormatterForElement.title",
+                    "Cell Formatter for {0} {1}",
+                    elementName,
+                    parentName));
+            ((MondrianGuiDef.CellFormatter) o).displayXML(pxml, 0);
+        } else if (o instanceof MondrianGuiDef.PropertyFormatter) {
+            pNames = DEF_FORMATTER;
+            targetLabel.setText(
+                getResourceConverter().getFormattedString(
+                    "schemaExplorer.propertyFormatterForElement.title",
+                    "Property Formatter for {0} {1}",
+                    elementName,
+                    parentName));
+            ((MondrianGuiDef.PropertyFormatter) o).displayXML(pxml, 0);
+        } else if (o instanceof MondrianGuiDef.MemberFormatter) {
+            pNames = DEF_FORMATTER;
+            targetLabel.setText(
+                getResourceConverter().getFormattedString(
+                    "schemaExplorer.memberFormatterForElement.title",
+                    "Member Formatter for {0} {1}",
+                    elementName,
+                    parentName));
+            ((MondrianGuiDef.MemberFormatter) o).displayXML(pxml, 0);
         } else if (o instanceof MondrianGuiDef.MemberReaderParameter) {
             pNames = DEF_PARAMETER;
             targetLabel.setText(
@@ -4739,6 +5110,12 @@ public class SchemaExplorer
                         } else {
                             addOrdinalExp.setEnabled(false);
                         }
+                        jPopupMenu.add(addCaptionExp);
+                        if (level.captionExp == null) {
+                            addCaptionExp.setEnabled(true);
+                        } else {
+                            addCaptionExp.setEnabled(false);
+                        }
                         jPopupMenu.add(addParentExp);
                         if (level.parentExp == null) {
                             addParentExp.setEnabled(true);
@@ -4757,6 +5134,14 @@ public class SchemaExplorer
                         } else {
                             addAnnotations.setEnabled(false);
                         }
+                        jPopupMenu.add(addMemberFormatter);
+                        if (((MondrianGuiDef.Level) pathSelected)
+                            .memberFormatter == null)
+                        {
+                            addMemberFormatter.setEnabled(true);
+                        } else {
+                            addMemberFormatter.setEnabled(false);
+                        }
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
                     } else if (pathSelected
@@ -4765,6 +5150,8 @@ public class SchemaExplorer
                                instanceof MondrianGuiDef.NameExpression
                                || pathSelected
                                instanceof MondrianGuiDef.OrdinalExpression
+                               || pathSelected
+                               instanceof MondrianGuiDef.CaptionExpression
                                || pathSelected
                                instanceof MondrianGuiDef.ParentExpression
                                || pathSelected
@@ -4810,6 +5197,14 @@ public class SchemaExplorer
                         } else {
                             addAnnotations.setEnabled(false);
                         }
+                        jPopupMenu.add(addCellFormatter);
+                        if (((MondrianGuiDef.Measure) pathSelected)
+                            .cellFormatter == null)
+                        {
+                            addCellFormatter.setEnabled(true);
+                        } else {
+                            addCellFormatter.setEnabled(false);
+                        }
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
                     } else if (pathSelected
@@ -4852,6 +5247,14 @@ public class SchemaExplorer
                             addAnnotations.setEnabled(true);
                         } else {
                             addAnnotations.setEnabled(false);
+                        }
+                        jPopupMenu.add(addCellFormatter);
+                        if (((MondrianGuiDef.CalculatedMember) pathSelected)
+                            .cellFormatter == null)
+                        {
+                            addCellFormatter.setEnabled(true);
+                        } else {
+                            addCellFormatter.setEnabled(false);
                         }
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
@@ -4952,6 +5355,31 @@ public class SchemaExplorer
                         jPopupMenu.add(addAnnotation);
                         jPopupMenu.add(jSeparator1);
                         jPopupMenu.add(delete);
+                    } else if (pathSelected
+                        instanceof MondrianGuiDef.UserDefinedFunction)
+                    {
+                        jPopupMenu.add(addScript);
+                        jPopupMenu.add(delete);
+                    } else if (pathSelected
+                        instanceof MondrianGuiDef.Property)
+                    {
+                        jPopupMenu.add(addPropertyFormatter);
+                        jPopupMenu.add(delete);
+                    } else if (pathSelected
+                        instanceof MondrianGuiDef.CellFormatter)
+                    {
+                        jPopupMenu.add(addScript);
+                        jPopupMenu.add(delete);
+                    } else if (pathSelected
+                        instanceof MondrianGuiDef.MemberFormatter)
+                    {
+                        jPopupMenu.add(addScript);
+                        jPopupMenu.add(delete);
+                    } else if (pathSelected
+                        instanceof MondrianGuiDef.PropertyFormatter)
+                    {
+                        jPopupMenu.add(addScript);
+                        jPopupMenu.add(delete);
                     } else {
                         jPopupMenu.add(delete);
                     } /* else {
@@ -4965,7 +5393,7 @@ public class SchemaExplorer
 
     static final String[] DEF_DEFAULT = {};
     static final String[] DEF_VIRTUAL_CUBE = {"name", "description", "caption",
-        "enabled"};
+        "enabled", "visible"};
     static final String[] DEF_VIRTUAL_CUBE_MEASURE = {
         "name", "cubeName", "visible"};
     static final String[] DEF_VIRTUAL_CUBE_DIMENSION = {
@@ -4973,7 +5401,8 @@ public class SchemaExplorer
     static final String[] DEF_VIEW = {"alias"};
     static final String[] DEF_TABLE = {"schema", "name", "alias"};
     static final String[] DEF_AGG_FACT_COUNT = {"column"};
-    static final String[] DEF_AGG_NAME = {"name", "ignorecase"};
+    static final String[] DEF_AGG_NAME = {
+        "name", "ignorecase", "approxRowCount"};
     static final String[] DEF_AGG_PATTERN = {"pattern", "ignorecase"};
     static final String[] DEF_AGG_EXCLUDE = {"pattern", "name", "ignorecase"};
     static final String[] DEF_AGG_IGNORE_COLUMN = {"column"};
@@ -5009,9 +5438,11 @@ public class SchemaExplorer
         "description",
         "caption",
         "dimension",
+        "hierarchy",
+        "parent",
         "visible",
         "formula | formulaElement.cdata",
-        "formatString"
+        "formatString",
     };
     static final String[] DEF_FORMULA = {"cdata"};
     static final String[] DEF_CALCULATED_MEMBER_PROPERTY = {
@@ -5019,6 +5450,8 @@ public class SchemaExplorer
     static final String[] DEF_NAMED_SET = {"name", "description", "formula",
         "caption"};
     static final String[] DEF_USER_DEFINED_FUNCTION = {"name", "className"};
+
+    static final String[] DEF_SCRIPT = {"language", "cdata"};
 
     static final String[] DEF_LEVEL = {
         "name",
@@ -5030,13 +5463,15 @@ public class SchemaExplorer
         "nullParentValue",
         "ordinalColumn",
         "type",
+        "internalType",
         "uniqueMembers",
         "levelType",
         "hideMemberIf",
         "approxRowCount",
         "caption",
         "captionColumn",
-        "formatter"
+        "formatter",
+        "visible"
     };
     static final String[] DEF_JOIN = {
         "leftAlias", "leftKey", "rightAlias", "rightKey"};
@@ -5051,15 +5486,18 @@ public class SchemaExplorer
         "memberReaderClass",
         "primaryKeyTable",
         "primaryKey",
-        "caption"
+        "caption",
+        "visible"
     };
+    static final String[] DEF_FORMATTER = {"className"};
     static final String[] DEF_EXPRESSION_VIEW = {};
     static final String[] DEF_DIMENSION_USAGE = {
-        "name", "foreignKey", "source", "level", "usagePrefix", "caption"};
+        "name", "foreignKey", "source", "level",
+        "usagePrefix", "caption", "visible"};
     static final String[] DEF_DIMENSION = {
         "name", "description", "foreignKey", "type", "usagePrefix", "caption"};
     static final String[] DEF_CUBE = {"name", "description", "caption",
-        "cache", "enabled"};
+        "cache", "enabled", "visible"};
     static final String[] DEF_ROLE = {"name"};
     static final String[] DEF_SCHEMA_GRANT = {"access"};
     static final String[] DEF_CUBE_GRANT = {"access", "cube"};
@@ -5145,6 +5583,7 @@ public class SchemaExplorer
     private AbstractAction addHierarchy;
     private AbstractAction addNamedSet;
     private AbstractAction addUserDefinedFunction;
+    private AbstractAction addScript;
     private AbstractAction addCalculatedMember;
 
     private AbstractAction addMeasure;
@@ -5155,6 +5594,7 @@ public class SchemaExplorer
     private AbstractAction addKeyExp;
     private AbstractAction addNameExp;
     private AbstractAction addOrdinalExp;
+    private AbstractAction addCaptionExp;
     private AbstractAction addParentExp;
     //private AbstractAction addRelation;
     private AbstractAction addTable;
@@ -5177,6 +5617,10 @@ public class SchemaExplorer
     private AbstractAction addVirtualCube;
     private AbstractAction addVirtualCubeDimension;
     private AbstractAction addVirtualCubeMeasure;
+
+    private AbstractAction addCellFormatter;
+    private AbstractAction addMemberFormatter;
+    private AbstractAction addPropertyFormatter;
 
     private AbstractAction delete;
 

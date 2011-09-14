@@ -78,6 +78,11 @@ public class SchemaTreeModel extends DefaultTreeModel {
             return new CompositeList<Object>(
                 Arrays.asList((Object[]) d.hierarchies),
                 ifList(d.annotations));
+        } else if (parent instanceof MondrianGuiDef.UserDefinedFunction) {
+            MondrianGuiDef.UserDefinedFunction udf =
+                (MondrianGuiDef.UserDefinedFunction) parent;
+            return new CompositeList<Object>(
+                ifList(udf.script));
         } else if (parent instanceof MondrianGuiDef.ExpressionView) {
             MondrianGuiDef.ExpressionView ev =
                 (MondrianGuiDef.ExpressionView) parent;
@@ -101,22 +106,46 @@ public class SchemaTreeModel extends DefaultTreeModel {
                 ifList(level.keyExp),
                 ifList(level.nameExp),
                 ifList(level.ordinalExp),
+                ifList(level.captionExp),
                 ifList(level.parentExp),
                 ifList(level.closure),
+                ifList(level.memberFormatter),
                 ifList(level.annotations));
+        } else if (parent instanceof MondrianGuiDef.CellFormatter) {
+            MondrianGuiDef.CellFormatter f =
+                (MondrianGuiDef.CellFormatter) parent;
+            return new CompositeList<Object>(
+                ifList(f.script));
+        } else if (parent instanceof MondrianGuiDef.MemberFormatter) {
+            MondrianGuiDef.MemberFormatter f =
+                (MondrianGuiDef.MemberFormatter) parent;
+            return new CompositeList<Object>(
+                ifList(f.script));
+        } else if (parent instanceof MondrianGuiDef.PropertyFormatter) {
+            MondrianGuiDef.PropertyFormatter f =
+                (MondrianGuiDef.PropertyFormatter) parent;
+            return new CompositeList<Object>(
+                ifList(f.script));
+        } else if (parent instanceof MondrianGuiDef.Property) {
+            MondrianGuiDef.Property property =
+                (MondrianGuiDef.Property) parent;
+            return new CompositeList<Object>(
+                ifList(property.propertyFormatter));
         } else if (parent instanceof MondrianGuiDef.CalculatedMember) {
             MondrianGuiDef.CalculatedMember c =
                 (MondrianGuiDef.CalculatedMember) parent;
             return new CompositeList<Object>(
                 ifList(c.formulaElement),
                 arrayList(c.memberProperties),
-                ifList(c.annotations));
+                ifList(c.annotations),
+                ifList(c.cellFormatter));
         } else if (parent instanceof MondrianGuiDef.Measure) {
             MondrianGuiDef.Measure m = (MondrianGuiDef.Measure) parent;
             return new CompositeList<Object>(
                 ifList(m.measureExp),
                 arrayList(m.memberProperties),
-                ifList(m.annotations));
+                ifList(m.annotations),
+                ifList(m.cellFormatter));
         } else if (parent instanceof MondrianGuiDef.NamedSet) {
             MondrianGuiDef.NamedSet m = (MondrianGuiDef.NamedSet) parent;
             return new CompositeList<Object>(

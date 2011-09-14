@@ -136,6 +136,16 @@ public class SchemaTreeCellRenderer
                 workbench.getResourceConverter().getString(
                     "common.ordinalExpression.title",
                     "Ordinal Expression"));
+        } else if (value instanceof MondrianGuiDef.CaptionExpression) {
+            super.setIcon(
+                new ImageIcon(
+                    myClassLoader.getResource(
+                        workbench
+                            .getResourceConverter().getGUIReference("name"))));
+            setText(
+                workbench.getResourceConverter().getString(
+                    "common.captionExpression.title",
+                    "Caption Expression"));
         } else if (value instanceof MondrianGuiDef.ParentExpression) {
             super.setIcon(
                 new ImageIcon(
@@ -338,6 +348,50 @@ public class SchemaTreeCellRenderer
                     myClassLoader.getResource(
                         workbench.getResourceConverter().getGUIReference(
                             "userDefinedFunction"))));
+        } else if (value instanceof MondrianGuiDef.MemberFormatter) {
+            setText(
+                invalidFlag, workbench.getResourceConverter().getString(
+                    "common.memberFormatter.title",
+                    "Member Formatter"));
+            // TODO Get a specific icon for formatters.
+            super.setIcon(
+                new ImageIcon(
+                    myClassLoader.getResource(
+                        workbench.getResourceConverter().getGUIReference(
+                            "expression"))));
+        } else if (value instanceof MondrianGuiDef.CellFormatter) {
+            setText(
+                invalidFlag, workbench.getResourceConverter().getString(
+                    "common.cellFormatter.title",
+                    "Cell Formatter"));
+            // TODO Get a specific icon for formatters.
+            super.setIcon(
+                new ImageIcon(
+                    myClassLoader.getResource(
+                        workbench.getResourceConverter().getGUIReference(
+                            "expression"))));
+        } else if (value instanceof MondrianGuiDef.PropertyFormatter) {
+            setText(
+                invalidFlag, workbench.getResourceConverter().getString(
+                    "common.propertyFormatter.title",
+                    "Property Formatter"));
+            // TODO Get a specific icon for formatters.
+            super.setIcon(
+                new ImageIcon(
+                    myClassLoader.getResource(
+                        workbench.getResourceConverter().getGUIReference(
+                            "expression"))));
+        } else if (value instanceof MondrianGuiDef.Script) {
+            setText(
+                invalidFlag, workbench.getResourceConverter().getString(
+                    "common.script.title",
+                    "Script"));
+            // TODO Get a specific icon for scripts.
+            super.setIcon(
+                new ImageIcon(
+                    myClassLoader.getResource(
+                        workbench.getResourceConverter().getGUIReference(
+                            "annotations"))));
         } else if (value instanceof MondrianGuiDef.Role) {
             setText(invalidFlag, ((MondrianGuiDef.Role) value).name);
             super.setIcon(
