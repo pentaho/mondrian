@@ -2571,7 +2571,7 @@ public class SchemaTest extends FoodMartTestCase {
             + "  </Dimension>\n");
         testContext.assertQueryThrows(
             "select {[Big numbers].members} on 0 from [Sales]",
-            "Invalid value 'char' for attribute 'internalType' of element 'Level'. Valid values are: [int, double, Object, String, long]");
+            "In Schema: In Cube: In Dimension: In Hierarchy: In Level: Value 'char' of attribute 'internalType' has illegal value 'char'.  Legal values: {int, long, Object, String}");
     }
 
     public void _testAttributeHierarchy() {
