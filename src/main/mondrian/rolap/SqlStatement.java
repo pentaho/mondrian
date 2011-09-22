@@ -199,6 +199,10 @@ public class SqlStatement {
             } catch (SQLException e2) {
                 // ignore
             }
+            if (haveSemaphore) {
+                haveSemaphore = false;
+                querySemaphore.leave();
+            }
             throw handle(e);
         } finally {
             RolapUtil.SQL_LOGGER.debug(currId + ": " + status);
