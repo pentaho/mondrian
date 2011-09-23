@@ -14,8 +14,10 @@ package mondrian.rolap.agg;
 
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.StarColumnPredicate;
+import mondrian.rolap.SqlStatement.Type;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
 
@@ -107,10 +109,10 @@ class AggQuerySpec {
         return segment0.axes[i].getPredicate();
     }
 
-    public String generateSqlQuery() {
+    public Pair<String, List<Type>> generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
         generateSql(sqlQuery);
-        return sqlQuery.toString();
+        return sqlQuery.toSqlAndTypes();
     }
 
     private void addGroupingSets(SqlQuery sqlQuery) {
