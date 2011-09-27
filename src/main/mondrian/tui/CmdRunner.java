@@ -754,7 +754,7 @@ public class CmdRunner {
         return MondrianProperties.instance().TestConnectString.get();
     }
     protected static String getJdbcURLProperty() {
-        return MondrianProperties.instance().TestJdbcURL.get();
+        return MondrianProperties.instance().FoodmartJdbcURL.get();
     }
 
     protected static String getJdbcUserProperty() {

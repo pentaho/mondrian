@@ -940,6 +940,10 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.INFOBRIGHT;
         } else if (upperProductName.equals("MYSQL")) {
             return DatabaseProduct.MYSQL;
+        } else if (upperProductName.equals("VERTICA")) {
+            return DatabaseProduct.VERTICA;
+        } else if (upperProductName.equals("VECTORWISE")) {
+            return DatabaseProduct.VECTORWISE;
         } else if (productName.startsWith("HP Neoview")) {
             return DatabaseProduct.NEOVIEW;
         } else if (upperProductName.indexOf("SYBASE") >= 0
@@ -954,6 +958,8 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.HSQLDB;
         } else if (upperProductName.indexOf("VERTICA") >= 0) {
             return DatabaseProduct.VERTICA;
+        } else if (upperProductName.indexOf("VECTORWISE") >= 0) {
+            return DatabaseProduct.VECTORWISE;
         } else {
             return DatabaseProduct.UNKNOWN;
         }

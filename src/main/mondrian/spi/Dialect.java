@@ -788,7 +788,8 @@ public interface Dialect {
         SQLSTREAM,
         SYBASE,
         TERADATA,
-        VERTICA;
+        VERTICA,
+        VECTORWISE;
 
         /**
          * Return the root of the family of products this database product

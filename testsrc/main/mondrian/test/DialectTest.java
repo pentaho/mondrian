@@ -181,6 +181,8 @@ public class DialectTest extends TestCase {
                 ".*Syntax error: expected something between the word 'customer_id' and ','\\..*",
                 // netezza
                 "(?s).*ERROR:  Function 'COUNT', number of parameters greater than the maximum \\(1\\).*",
+                // Vertica
+                "ERROR: function count\\(int, int\\) does not exist, or permission is denied for count\\(int, int\\)",
             };
             assertQueryFails(sql, errs);
         }
@@ -405,6 +407,8 @@ public class DialectTest extends TestCase {
                 // Greenplum / Postgres
                 "ERROR: ORDER BY on a UNION/INTERSECT/EXCEPT result must be on "
                 + "one of the result columns.*",
+                // Vectorwise
+                "Parse error in StringBuffer at line 0, column 525\\: \\<missing\\>\\.",
             };
             assertQueryFails(sql, errs);
         }
@@ -468,6 +472,8 @@ public class DialectTest extends TestCase {
                 NEOVIEW_SYNTAX_ERROR,
                 // netezza
                 "(?s).*found \"SETS\" \\(at char 135\\) expecting `EXCEPT' or `FOR' or `INTERSECT' or `ORDER' or `UNION'.*",
+                // Vertica
+                "line 3, There is no such function as \\'grouping\\'\\.",
             };
             assertQueryFails(sql, errs);
         }
@@ -874,6 +880,8 @@ public class DialectTest extends TestCase {
                 // Greenplum
                 "ERROR: column \"time_by_day.the_month\" must appear in the "
                 + "GROUP BY clause or be used in an aggregate function",
+                // Vectorwise
+                "line 1, The columns in the SELECT clause must be contained in the GROUP BY clause\\."
             };
             assertQueryFails(sql, errs);
         }
@@ -902,6 +910,8 @@ public class DialectTest extends TestCase {
             String[] errs = {
                 // mysql
                 "Unknown column 'customer\\.fname' in 'having clause'",
+                // vectorwise
+                "No conversion defined for result data type\\.",
             };
             assertQueryFails(sb.toString(), errs);
         }

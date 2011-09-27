@@ -3143,6 +3143,8 @@ public class MondrianFoodMartLoader {
             case TERADATA:
             case INGRES:
             case NEOVIEW:
+            case VECTORWISE:
+            case VERTICA:
                 if (trimmedValue.equals("true")) {
                     return "1";
                 } else if (trimmedValue.equals("false")) {
