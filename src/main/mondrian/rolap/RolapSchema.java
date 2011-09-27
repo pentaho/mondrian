@@ -10,7 +10,6 @@
 //
 // jhyde, 26 July, 2001
 */
-
 package mondrian.rolap;
 
 import java.io.*;
@@ -990,6 +989,11 @@ public class RolapSchema implements Schema {
                         clazz.getConstructor();
                     final DynamicSchemaProcessor dynProc = ctor.newInstance();
                     catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
+
+                    // Use the content of the catalog to find the schema.
+                    // Previously we'd use the key, but we didn't include
+                    // DynamicSchemaProcessor, and that would give false hits.
+                    key = catalogStr;
                 } catch (Exception e) {
                     throw Util.newError(
                         e,
