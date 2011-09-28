@@ -1379,7 +1379,6 @@ public class CacheControlImpl implements CacheControl {
             }
         }
 
-        @Override
         public void commit() {
             for (MemberEditCommandPlus command : commandList) {
                 command.commit();
@@ -1418,7 +1417,6 @@ public class CacheControlImpl implements CacheControl {
                 deleteMember(member, member.getParentMember(), cellRegionList);
         }
 
-        @Override
         public void commit() {
             try {
                 callable.call();
@@ -1449,7 +1447,6 @@ public class CacheControlImpl implements CacheControl {
                 addMember(member, member.getParentMember(), cellRegionList);
         }
 
-        @Override
         public void commit() {
             try {
                 callable.call();
@@ -1484,7 +1481,6 @@ public class CacheControlImpl implements CacheControl {
                 addMember(member, newParent, cellRegionList);
         }
 
-        @Override
         public void commit() {
             try {
                 ((RolapMemberBase) member).setParentMember(newParent);
@@ -1531,7 +1527,6 @@ public class CacheControlImpl implements CacheControl {
             members.add(member);
         }
 
-        @Override
         public void commit() {
             for (RolapMember member : members) {
                 // Change member's properties.
@@ -1636,7 +1631,6 @@ public class CacheControlImpl implements CacheControl {
         cellRegionList.add(createMemberRegion(parent, false));
 
         return new Callable<Boolean>() {
-            @Override
             public Boolean call() throws Exception {
                 final MemberCache memberCache = getMemberCache(member);
                 final MemberChildrenConstraint memberConstraint =
