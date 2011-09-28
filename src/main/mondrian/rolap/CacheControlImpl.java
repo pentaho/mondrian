@@ -19,6 +19,7 @@ import mondrian.olap.Id.Quoting;
 
 import javax.sql.DataSource;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -723,6 +724,8 @@ public class CacheControlImpl implements CacheControl {
                     }
                 }
             }
+            // Apply it all.
+            ((MemberEditCommandPlus) cmd).commit();
         }
     }
 
@@ -1020,6 +1023,8 @@ public class CacheControlImpl implements CacheControl {
          * are invalidated by this action
          */
         void execute(final List<CellRegion> cellRegionList);
+
+        void commit();
     }
 
     /**
@@ -1373,6 +1378,13 @@ public class CacheControlImpl implements CacheControl {
                 command.execute(cellRegionList);
             }
         }
+
+        @Override
+        public void commit() {
+            for (MemberEditCommandPlus command : commandList) {
+                command.commit();
+            }
+        }
     }
 
     /**
@@ -1384,6 +1396,7 @@ public class CacheControlImpl implements CacheControl {
     {
         private final MemberSetPlus set;;
         private List<CellRegion> cellRegionList;
+        private Callable<Boolean> callable;
 
         DeleteMemberCommand(MemberSetPlus set) {
             this.set = set;
@@ -1401,7 +1414,17 @@ public class CacheControlImpl implements CacheControl {
         }
 
         public void visit(RolapMember member) {
-            deleteMember(member, member.getParentMember(), cellRegionList);
+            this.callable =
+                deleteMember(member, member.getParentMember(), cellRegionList);
+        }
+
+        @Override
+        public void commit() {
+            try {
+                callable.call();
+            } catch (Exception e) {
+                throw new MondrianException(e);
+            }
         }
     }
 
@@ -1410,6 +1433,7 @@ public class CacheControlImpl implements CacheControl {
      */
     private class AddMemberCommand implements MemberEditCommandPlus {
         private final RolapMember member;
+        private Callable<Boolean> callable;
 
         public AddMemberCommand(RolapMember member) {
             assert member != null;
@@ -1421,7 +1445,17 @@ public class CacheControlImpl implements CacheControl {
         }
 
         public void execute(List<CellRegion> cellRegionList) {
-            addMember(member, member.getParentMember(), cellRegionList);
+            this.callable =
+                addMember(member, member.getParentMember(), cellRegionList);
+        }
+
+        @Override
+        public void commit() {
+            try {
+                callable.call();
+            } catch (Exception e) {
+                throw new MondrianException(e);
+            }
         }
     }
 
@@ -1431,6 +1465,8 @@ public class CacheControlImpl implements CacheControl {
     private class MoveMemberCommand implements MemberEditCommandPlus {
         private final RolapMember member;
         private final RolapMember newParent;
+        private Callable<Boolean> callable1;
+        private Callable<Boolean> callable2;
 
         MoveMemberCommand(RolapMember member, RolapMember newParent) {
             this.member = member;
@@ -1442,11 +1478,22 @@ public class CacheControlImpl implements CacheControl {
         }
 
         public void execute(final List<CellRegion> cellRegionList) {
-            final RolapMember oldParent = member.getParentMember();
-            ((RolapMemberBase) member).setParentMember(newParent);
-            deleteMember(member, oldParent, cellRegionList);
-            ((RolapMemberBase) member).setUniqueName(member.getKey());
-            addMember(member, member.getParentMember(), cellRegionList);
+            this.callable1 =
+                deleteMember(member, member.getParentMember(), cellRegionList);
+            this.callable2 =
+                addMember(member, newParent, cellRegionList);
+        }
+
+        @Override
+        public void commit() {
+            try {
+                ((RolapMemberBase) member).setParentMember(newParent);
+                callable1.call();
+                ((RolapMemberBase) member).setUniqueName(member.getKey());
+                callable2.call();
+            } catch (Exception e) {
+                throw new MondrianException(e);
+            }
         }
     }
 
@@ -1459,6 +1506,8 @@ public class CacheControlImpl implements CacheControl {
     {
         final MemberSetPlus memberSet;
         final Map<String, Object> propertyValues;
+        final List<RolapMember> members =
+            new ArrayList<RolapMember>();
 
         ChangeMemberPropsCommand(
             MemberSetPlus memberSet,
@@ -1479,19 +1528,28 @@ public class CacheControlImpl implements CacheControl {
         }
 
         public void visit(RolapMember member) {
-            // Change member's properties.
-            member = stripMember(member);
-            final MemberCache memberCache = getMemberCache(member);
-            final Object cacheKey =
-                memberCache.makeKey(
-                    member.getParentMember(),
-                    member.getKey());
-            final RolapMember cacheMember = memberCache.getMember(cacheKey);
-            if (cacheMember == null) {
-                return;
-            }
-            for (Map.Entry<String, Object> entry : propertyValues.entrySet()) {
-                cacheMember.setProperty(entry.getKey(), entry.getValue());
+            members.add(member);
+        }
+
+        @Override
+        public void commit() {
+            for (RolapMember member : members) {
+                // Change member's properties.
+                member = stripMember(member);
+                final MemberCache memberCache = getMemberCache(member);
+                final Object cacheKey =
+                    memberCache.makeKey(
+                        member.getParentMember(),
+                        member.getKey());
+                final RolapMember cacheMember = memberCache.getMember(cacheKey);
+                if (cacheMember == null) {
+                    return;
+                }
+                for (Map.Entry<String, Object> entry
+                    : propertyValues.entrySet())
+                {
+                    cacheMember.setProperty(entry.getKey(), entry.getValue());
+                }
             }
         }
     }
@@ -1512,47 +1570,53 @@ public class CacheControlImpl implements CacheControl {
         }
     }
 
-    private void deleteMember(
+    private Callable<Boolean> deleteMember(
         final RolapMember member,
-        RolapMember previousParent,
+        final RolapMember previousParent,
         List<CellRegion> cellRegionList)
     {
-        final MemberCache memberCache = getMemberCache(member);
-        final MemberChildrenConstraint memberConstraint =
-            new ChildByNameConstraint(
-                new Id.Segment(member.getName(), Quoting.QUOTED));
-
-        // Remove the member from its parent's lists. First try the
-        // unconstrained cache.
-        List<RolapMember> childrenList =
-            memberCache.getChildrenFromCache(
-                previousParent,
-                DefaultMemberChildrenConstraint.instance());
-        if (childrenList != null) {
-            // A list existed before. Let's splice it.
-            childrenList.remove(member);
-            memberCache.putChildren(
-                previousParent,
-                DefaultMemberChildrenConstraint.instance(),
-                childrenList);
-        }
-
-        // Now make sure there is no constrained cache entry
-        // for this member's parent.
-        memberCache.putChildren(
-            previousParent,
-            memberConstraint,
-            null);
-
-        // Remove the member itself. The MemberCacheHelper takes care of
-        // removing the member's children as well.
-        final Object key =
-            memberCache.makeKey(previousParent, member.getKey());
-        memberCache.removeMember(key);
-
         // Cells for member and its ancestors are now invalid.
         // It's sufficient to flush the member.
         cellRegionList.add(createMemberRegion(member, true));
+
+        return new Callable<Boolean>() {
+            public Boolean call() throws Exception {
+                final MemberCache memberCache = getMemberCache(member);
+                final MemberChildrenConstraint memberConstraint =
+                    new ChildByNameConstraint(
+                        new Id.Segment(member.getName(), Quoting.QUOTED));
+
+                // Remove the member from its parent's lists. First try the
+                // unconstrained cache.
+                List<RolapMember> childrenList =
+                    memberCache.getChildrenFromCache(
+                        previousParent,
+                        DefaultMemberChildrenConstraint.instance());
+                if (childrenList != null) {
+                    // A list existed before. Let's splice it.
+                    childrenList.remove(member);
+                    memberCache.putChildren(
+                        previousParent,
+                        DefaultMemberChildrenConstraint.instance(),
+                        childrenList);
+                }
+
+                // Now make sure there is no constrained cache entry
+                // for this member's parent.
+                memberCache.putChildren(
+                    previousParent,
+                    memberConstraint,
+                    null);
+
+                // Remove the member itself. The MemberCacheHelper takes care of
+                // removing the member's children as well.
+                final Object key =
+                    memberCache.makeKey(previousParent, member.getKey());
+                memberCache.removeMember(key);
+
+                return true;
+            }
+        };
     }
 
     /**
@@ -1562,64 +1626,73 @@ public class CacheControlImpl implements CacheControl {
      * @param parent Member's parent (generally equals member.getParentMember)
      * @param cellRegionList List of cell regions to be flushed
      */
-    private void addMember(
+    private Callable<Boolean> addMember(
         final RolapMember member,
         final RolapMember parent,
         List<CellRegion> cellRegionList)
     {
-        final MemberCache memberCache = getMemberCache(member);
-        final MemberChildrenConstraint memberConstraint =
-            new ChildByNameConstraint(
-                new Id.Segment(member.getName(), Quoting.QUOTED));
-
-        // First check if there is already a list in cache
-        // constrained by the member name.
-        List<RolapMember> childrenList =
-            memberCache.getChildrenFromCache(
-                parent,
-                memberConstraint);
-        if (childrenList == null) {
-            // There was no constrained cache hit. Let's create one.
-            final List<RolapMember> constrainedList =
-                new ArrayList<RolapMember>();
-            constrainedList.add(member);
-            memberCache.putChildren(
-                parent,
-                memberConstraint,
-                constrainedList);
-        }
-
-        // Now check if an unconstrained cached list exists.
-        childrenList =
-            memberCache.getChildrenFromCache(
-                parent,
-                DefaultMemberChildrenConstraint.instance());
-        if (childrenList == null) {
-            // There was no unconstrained cache hit. Let's create one.
-            final List<RolapMember> unconstrainedList =
-                new ArrayList<RolapMember>();
-            unconstrainedList.add(member);
-            memberCache.putChildren(
-                parent,
-                DefaultMemberChildrenConstraint.instance(),
-                unconstrainedList);
-        } else {
-            // A list existed before. Let's append to it.
-            childrenList.add(member);
-            memberCache.putChildren(
-                parent,
-                DefaultMemberChildrenConstraint.instance(),
-                childrenList);
-        }
-
-        // Now add the member itself into cache
-        final Object memberKey =
-            memberCache.makeKey(member.getParentMember(), member.getKey());
-        memberCache.putMember(memberKey, member);
-
         // Cells for all of member's ancestors are now invalid. It's sufficient
         // to flush its parent.
         cellRegionList.add(createMemberRegion(parent, false));
+
+        return new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                final MemberCache memberCache = getMemberCache(member);
+                final MemberChildrenConstraint memberConstraint =
+                    new ChildByNameConstraint(
+                        new Id.Segment(member.getName(), Quoting.QUOTED));
+
+                // First check if there is already a list in cache
+                // constrained by the member name.
+                List<RolapMember> childrenList =
+                    memberCache.getChildrenFromCache(
+                        parent,
+                        memberConstraint);
+                if (childrenList == null) {
+                    // There was no constrained cache hit. Let's create one.
+                    final List<RolapMember> constrainedList =
+                        new ArrayList<RolapMember>();
+                    constrainedList.add(member);
+                    memberCache.putChildren(
+                        parent,
+                        memberConstraint,
+                        constrainedList);
+                }
+
+                // Now check if an unconstrained cached list exists.
+                childrenList =
+                    memberCache.getChildrenFromCache(
+                        parent,
+                        DefaultMemberChildrenConstraint.instance());
+                if (childrenList == null) {
+                    // There was no unconstrained cache hit. Let's create one.
+                    final List<RolapMember> unconstrainedList =
+                        new ArrayList<RolapMember>();
+                    unconstrainedList.add(member);
+                    memberCache.putChildren(
+                        parent,
+                        DefaultMemberChildrenConstraint.instance(),
+                        unconstrainedList);
+                } else {
+                    // A list existed before. Let's append to it.
+                    childrenList.add(member);
+                    memberCache.putChildren(
+                        parent,
+                        DefaultMemberChildrenConstraint.instance(),
+                        childrenList);
+                }
+
+                // Now add the member itself into cache
+                final Object memberKey =
+                    memberCache.makeKey(
+                        member.getParentMember(),
+                        member.getKey());
+                memberCache.putMember(memberKey, member);
+
+                return true;
+            }
+        };
     }
 
     /**

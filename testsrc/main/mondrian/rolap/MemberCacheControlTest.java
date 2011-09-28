@@ -735,10 +735,10 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         try {
             cc.execute(command);
             fail("Should have failed due to improper level");
-        } catch (IllegalArgumentException e) {
+        } catch (MondrianException e) {
             assertEquals(
                 "new parent belongs to different level than old",
-                e.getMessage());
+                e.getCause().getMessage());
         }
 
         // The list of SF children should still contain 1 element
