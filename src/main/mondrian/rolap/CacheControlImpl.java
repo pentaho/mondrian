@@ -1652,6 +1652,16 @@ public class CacheControlImpl implements CacheControl {
                         parent,
                         memberConstraint,
                         constrainedList);
+                } else {
+                    // A list existed before. Let's append to it.
+                    if (childrenList.isEmpty()) {
+                        childrenList = new ArrayList<RolapMember>();
+                    }
+                    childrenList.add(member);
+                    memberCache.putChildren(
+                        parent,
+                        memberConstraint,
+                        childrenList);
                 }
 
                 // Now check if an unconstrained cached list exists.
