@@ -975,7 +975,11 @@ public class SqlTupleReader implements TupleReader {
                 int bitPos = starColumn.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 String q = aggColumn.generateExprString(sqlQuery);
-                sqlQuery.addSelectGroupBy(q, starColumn.getInternalType());
+                if (needsGroupBy) {
+                    sqlQuery.addSelectGroupBy(q, starColumn.getInternalType());
+                } else {
+                    sqlQuery.addSelect(q, starColumn.getInternalType());
+                }
                 sqlQuery.addOrderBy(q, true, false, true);
                 aggColumn.getTable().addToFrom(sqlQuery, false, true);
                 continue;
@@ -1023,16 +1027,10 @@ public class SqlTupleReader implements TupleReader {
 
             if (captionSql != null) {
                 alias = sqlQuery.addSelect(captionSql, null);
-                if (needsGroupBy) {
-                    sqlQuery.addGroupBy(captionSql, alias);
-                }
             }
 
             if (!ordinalSql.equals(keySql)) {
                 alias = sqlQuery.addSelect(ordinalSql, null);
-                if (needsGroupBy) {
-                    sqlQuery.addGroupBy(ordinalSql, alias);
-                }
             }
 
             constraint.addLevelConstraint(

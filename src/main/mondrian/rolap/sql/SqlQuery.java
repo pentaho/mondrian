@@ -490,7 +490,7 @@ public class SqlQuery {
         final String expression,
         SqlStatement.Type type)
     {
-        final String alias = addSelect(expression, type, null);
+        final String alias = addSelect(expression, type);
         addGroupBy(expression, alias);
         return alias;
     }
