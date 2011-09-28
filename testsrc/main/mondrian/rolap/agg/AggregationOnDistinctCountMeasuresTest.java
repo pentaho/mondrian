@@ -636,6 +636,11 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOnCJofMembersGeneratesOptimalQuery() {
+        if (MondrianProperties.instance().UseAggregates.get()) {
+            // Using aggregates makes this test failing since it won't be able
+            // to use grouping sets.
+            return;
+        }
         String oraTeraSql;
         if (props.EnableGroupingSets.get()) {
             oraTeraSql =

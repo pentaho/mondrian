@@ -15,6 +15,7 @@ import java.util.List;
 import mondrian.olap.*;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.StringType;
+import mondrian.rolap.RolapStar.Column;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.mdx.DimensionExpr;
@@ -278,15 +279,50 @@ public class RolapNativeSql {
                 // We must use, in order of priority,
                 //  - caption requested: caption->name->key
                 //  - name requested: name->key
-                String sourceExp = useCaption
+                MondrianDef.Expression expression = useCaption
                 ? rolapLevel.captionExp == null
                         ? rolapLevel.nameExp == null
-                            ? rolapLevel.keyExp.getExpression(sqlQuery)
-                            : rolapLevel.nameExp.getExpression(sqlQuery)
-                        : rolapLevel.captionExp.getExpression(sqlQuery)
+                            ? rolapLevel.keyExp
+                            : rolapLevel.nameExp
+                        : rolapLevel.captionExp
                     : rolapLevel.nameExp == null
-                        ? rolapLevel.keyExp.getExpression(sqlQuery)
-                        : rolapLevel.nameExp.getExpression(sqlQuery);
+                        ? rolapLevel.keyExp
+                        : rolapLevel.nameExp;
+                /*
+                 * If an aggregation table is used, it might be more efficient
+                 * to use only the aggregate table and not the hierarchy table.
+                 * Try to lookup the column bit key. If that fails, we will
+                 * link the aggregate table to the hierarchy table. If no
+                 * aggregate table is used, we can use the column expression
+                 * directly.
+                 */
+                String sourceExp;
+                if (aggStar != null
+                    && rolapLevel instanceof RolapCubeLevel
+                    && expression == rolapLevel.keyExp)
+                {
+                    int bitPos =
+                        ((RolapCubeLevel)rolapLevel).getStarKeyColumn()
+                            .getBitPosition();
+                    mondrian.rolap.aggmatcher.AggStar.Table.Column col =
+                        aggStar.lookupColumn(bitPos);
+                    if (col != null) {
+                        sourceExp = col.generateExprString(sqlQuery);
+                    } else {
+                        // Make sure the level table is part of the query.
+                        rolapLevel.getHierarchy().addToFrom(
+                            sqlQuery,
+                            expression);
+                        sourceExp = expression.getExpression(sqlQuery);
+                    }
+                } else if (aggStar != null) {
+                    // Make sure the level table is part of the query.
+                    rolapLevel.getHierarchy().addToFrom(sqlQuery, expression);
+                    sourceExp = expression.getExpression(sqlQuery);
+                } else {
+                    sourceExp = expression.getExpression(sqlQuery);
+                }
+
                 // The dialect might require the use of the alias rather
                 // then the column exp.
                 if (dialect.requiresHavingAlias()) {
