@@ -1040,7 +1040,6 @@ public class CacheControlImpl implements CacheControl {
             // nothing
         }
 
-        @Override
         public void visit(EmptyCellRegion region) {
             // nothing
         }
