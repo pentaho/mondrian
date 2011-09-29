@@ -74,7 +74,7 @@ public class MondrianOlap4jDriver implements Driver {
     /**
      * Creates a MondrianOlap4jDriver.
      */
-    MondrianOlap4jDriver() {
+    public MondrianOlap4jDriver() {
         this.factory = createFactory();
     }
 
