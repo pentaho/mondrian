@@ -137,15 +137,32 @@ public class CacheControlImpl implements CacheControl {
     }
 
     public CellRegion createMeasuresRegion(Cube cube) {
-        final Dimension measuresDimension = cube.getDimensions()[0];
+        Dimension measuresDimension = null;
+        for (Dimension dim : cube.getDimensions()) {
+            if (dim.isMeasures()) {
+                measuresDimension = dim;
+                break;
+            }
+        }
+        if (measuresDimension == null) {
+            throw new MondrianException(
+                "No measures dimension found for cube "
+                + cube.getName());
+        }
         final List<Member> measures =
-            cube.getSchemaReader(null).getLevelMembers(
+            cube.getSchemaReader(null).withLocus().getLevelMembers(
                 measuresDimension.getHierarchy().getLevels()[0],
                 false);
+        if (measures.size() == 0) {
+            return new EmptyCellRegion();
+        }
         return new MemberCellRegion(measures, false);
     }
 
     public void flush(CellRegion region) {
+        if (region instanceof EmptyCellRegion) {
+            return;
+        }
         final List<Dimension> dimensionality = region.getDimensionality();
         boolean found = false;
         for (Dimension dimension : dimensionality) {
@@ -154,7 +171,8 @@ public class CacheControlImpl implements CacheControl {
                 break;
             }
         }
-        if (!found) {
+        if (!found)
+        {
             throw MondrianResource.instance().CacheFlushRegionMustContainMembers
                 .ex();
         }
@@ -677,50 +695,54 @@ public class CacheControlImpl implements CacheControl {
                 // It is possible that some regions don't intersect
                 // with a cube. We will intercept the exceptions and
                 // skip to the next cube if necessary.
-                for (Cube cube
-                    : memberRegion.getDimensionality().get(0)
-                        .getSchema().getCubes())
-                {
-                    try {
-                        final List<CellRegionImpl> crossList =
-                            new ArrayList<CellRegionImpl>();
-                        crossList.add(
-                            (CellRegionImpl) createMeasuresRegion(cube));
-                        crossList.add((CellRegionImpl) memberRegion);
-                        final CellRegion crossRegion =
-                            new CrossjoinCellRegion(crossList);
-                        flush(crossRegion);
-                    } catch (UndeclaredThrowableException e) {
-                        if (e.getCause()
-                            instanceof InvocationTargetException)
-                        {
-                            final InvocationTargetException ite =
-                                (InvocationTargetException)e.getCause();
-                            if (ite.getTargetException()
-                                instanceof MondrianException)
+                final List<Dimension> dimensions =
+                    memberRegion.getDimensionality();
+                if (dimensions.size() > 0) {
+                    for (Cube cube
+                        : dimensions.get(0)
+                            .getSchema().getCubes())
+                    {
+                        try {
+                            final List<CellRegionImpl> crossList =
+                                new ArrayList<CellRegionImpl>();
+                            crossList.add(
+                                (CellRegionImpl) createMeasuresRegion(cube));
+                            crossList.add((CellRegionImpl) memberRegion);
+                            final CellRegion crossRegion =
+                                new CrossjoinCellRegion(crossList);
+                            flush(crossRegion);
+                        } catch (UndeclaredThrowableException e) {
+                            if (e.getCause()
+                                instanceof InvocationTargetException)
                             {
-                                final MondrianException me =
-                                    (MondrianException)
-                                        ite.getTargetException();
-                                if (me.getMessage()
-                                    .matches(
-                                        "^Mondrian Error:Member "
-                                        + "'\\[.*\\]' not found$"))
+                                final InvocationTargetException ite =
+                                    (InvocationTargetException)e.getCause();
+                                if (ite.getTargetException()
+                                    instanceof MondrianException)
                                 {
-                                    continue;
+                                    final MondrianException me =
+                                        (MondrianException)
+                                            ite.getTargetException();
+                                    if (me.getMessage()
+                                        .matches(
+                                            "^Mondrian Error:Member "
+                                            + "'\\[.*\\]' not found$"))
+                                    {
+                                        continue;
+                                    }
                                 }
                             }
+                            throw new MondrianException(e);
+                        } catch (MondrianException e) {
+                            if (e.getMessage()
+                                .matches(
+                                    "^Mondrian Error:Member "
+                                    + "'\\[.*\\]' not found$"))
+                            {
+                                continue;
+                            }
+                            throw e;
                         }
-                        throw new MondrianException(e);
-                    } catch (MondrianException e) {
-                        if (e.getMessage()
-                            .matches(
-                                "^Mondrian Error:Member "
-                                + "'\\[.*\\]' not found$"))
-                        {
-                            continue;
-                        }
-                        throw e;
                     }
                 }
             }
@@ -769,6 +791,18 @@ public class CacheControlImpl implements CacheControl {
 
         public List<Member> getMemberList() {
             return memberList;
+        }
+    }
+
+    /**
+     * An empty cell region.
+     */
+    static class EmptyCellRegion implements CellRegionImpl {
+        public void accept(CellRegionVisitor visitor) {
+            visitor.visit(this);
+        }
+        public List<Dimension> getDimensionality() {
+            return Collections.emptyList();
         }
     }
 
@@ -975,6 +1009,7 @@ public class CacheControlImpl implements CacheControl {
         void visit(MemberRangeCellRegion region);
         void visit(UnionCellRegion region);
         void visit(CrossjoinCellRegion region);
+        void visit(EmptyCellRegion region);
     }
 
     private static class FoundOne extends RuntimeException {
@@ -1002,6 +1037,11 @@ public class CacheControlImpl implements CacheControl {
         }
 
         public void visit(CrossjoinCellRegion region) {
+            // nothing
+        }
+
+        @Override
+        public void visit(EmptyCellRegion region) {
             // nothing
         }
     }

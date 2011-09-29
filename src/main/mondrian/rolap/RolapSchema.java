@@ -23,6 +23,7 @@ import java.util.*;
 import javax.sql.DataSource;
 
 import mondrian.olap.*;
+import mondrian.olap.CacheControl.CellRegion;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.NumericType;
@@ -341,8 +342,9 @@ public class RolapSchema implements Schema {
         final CacheControl cacheControl =
             AggregationManager.instance().getCacheControl(null);
         for (Cube cube : getCubes()) {
-            cacheControl.flush(
-                cacheControl.createMeasuresRegion(cube));
+            CellRegion cr =
+                cacheControl.createMeasuresRegion(cube);
+            cacheControl.flush(cr);
         }
         if (aggTableManager != null) {
             aggTableManager.finalCleanUp();

@@ -389,8 +389,6 @@ public interface CacheControl {
      *
      * <p>Flushing the schema cache will flush all aggregations and segments
      * associated to it as well.
-     *
-     * @param schema Schema
      */
     void flushSchema(
         final String catalogUrl,
@@ -404,8 +402,6 @@ public interface CacheControl {
      *
      * <p>Flushing the schema cache will flush all aggregations and segments
      * associated to it as well.
-     *
-     * @param schema Schema
      */
     void flushSchema(
         String catalogUrl,
