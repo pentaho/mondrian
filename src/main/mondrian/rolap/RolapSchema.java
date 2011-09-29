@@ -29,6 +29,7 @@ import mondrian.olap.type.NumericType;
 import mondrian.olap.type.StringType;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.spi.*;
@@ -337,6 +338,12 @@ public class RolapSchema implements Schema {
     }
 
     protected void finalCleanUp() {
+        final CacheControl cacheControl =
+            AggregationManager.instance().getCacheControl(null);
+        for (Cube cube : getCubes()) {
+            cacheControl.flush(
+                cacheControl.createMeasuresRegion(cube));
+        }
         if (aggTableManager != null) {
             aggTableManager.finalCleanUp();
             aggTableManager = null;

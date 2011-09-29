@@ -376,17 +376,37 @@ public interface CacheControl {
      *
      * <p>This cache is referenced only when creating a new connection, so
      * existing connections will continue to use the same schema definition.
+     *
+     * <p>Flushing the schema cache will flush all aggregations and segments
+     * associated to it as well.
      */
     void flushSchemaCache();
 
-    // todo: document
+    /**
+     * Flushes the given Schema instance from the pool. It resolves the
+     * schema to flush by using its catalog URL, connection key and
+     * JDBC username.
+     *
+     * <p>Flushing the schema cache will flush all aggregations and segments
+     * associated to it as well.
+     *
+     * @param schema Schema
+     */
     void flushSchema(
         final String catalogUrl,
         final String connectionKey,
         final String jdbcUser,
         String dataSourceStr);
 
-    // todo: document
+    /**
+     * Flushes the given Schema instance from the pool. It resolves the
+     * schema to flush by using its catalog URL and DataSource object.
+     *
+     * <p>Flushing the schema cache will flush all aggregations and segments
+     * associated to it as well.
+     *
+     * @param schema Schema
+     */
     void flushSchema(
         String catalogUrl,
         DataSource dataSource);
@@ -394,10 +414,12 @@ public interface CacheControl {
     /**
      * Flushes the given Schema instance from the pool
      *
+     * <p>Flushing the schema cache will flush all aggregations and segments
+     * associated to it as well.
+     *
      * @param schema Schema
      */
     void flushSchema(Schema schema);
-
 
     /** a region of cells in the cell cache */
     public interface CellRegion {
