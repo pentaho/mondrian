@@ -3347,10 +3347,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      */
     public void testCountDistinctAgg() {
         boolean use_agg_orig = props.UseAggregates.get();
-        boolean do_caching_orig = props.DisableCaching.get();
 
         // turn off caching
-        props.DisableCaching.setString("true");
+        propSaver.set(props.DisableCaching, true);
 
         assertQueryReturns(
             "select {[Measures].[Unit Sales], [Measures].[Customer Count]} on rows,\n"
@@ -3367,9 +3366,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #1: 1,396\n");
 
         if (use_agg_orig) {
-            props.UseAggregates.setString("false");
+            propSaver.set(props.UseAggregates, false);
         } else {
-            props.UseAggregates.setString("true");
+            propSaver.set(props.UseAggregates, true);
         }
 
         assertQueryReturns(
@@ -3385,17 +3384,6 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Measures].[Customer Count]}\n"
             + "Row #0: 21,628\n"
             + "Row #1: 1,396\n");
-
-        if (use_agg_orig) {
-            props.UseAggregates.setString("true");
-        } else {
-            props.UseAggregates.setString("false");
-        }
-        if (do_caching_orig) {
-            props.DisableCaching.setString("true");
-        } else {
-            props.DisableCaching.setString("false");
-        }
     }
 
     /**
@@ -5909,48 +5897,48 @@ public class BasicQueryTest extends FoodMartTestCase {
 
         // Now set property
 
-        boolean savedInvalidProp = props.IgnoreInvalidMembersDuringQuery.get();
-        String savedAlertProp = props.AlertNativeEvaluationUnsupported.get();
-        try {
-            props.IgnoreInvalidMembersDuringQuery.set(true);
-            assertQueryReturns(
-                mdx,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Time].[1997].[Q1]}\n"
-                + "Row #0: 66,291\n");
+        propSaver.set(
+            props.IgnoreInvalidMembersDuringQuery,
+            true);
 
-            // Illegal member in slicer
-            assertQueryReturns(
-                mdx3,
-                "Axis #0:\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Row #0: \n");
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "Row #0: 66,291\n");
 
-            // Verify that invalid members in query do NOT prevent
-            // usage of native NECJ (LER-5165).
-            props.AlertNativeEvaluationUnsupported.set("ERROR");
-            assertQueryReturns(
-                mdx2,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Time].[1997].[Q1], [Customers].[USA].[CA]}\n"
-                + "{[Time].[1997].[Q1], [Customers].[USA].[OR]}\n"
-                + "{[Time].[1997].[Q1], [Customers].[USA].[WA]}\n"
-                + "Row #0: 16,890\n"
-                + "Row #1: 19,287\n"
-                + "Row #2: 30,114\n");
-        } finally {
-            props.IgnoreInvalidMembersDuringQuery.set(savedInvalidProp);
-            props.AlertNativeEvaluationUnsupported.set(savedAlertProp);
-        }
+        // Illegal member in slicer
+        assertQueryReturns(
+            mdx3,
+            "Axis #0:\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: \n");
+
+        // Verify that invalid members in query do NOT prevent
+        // usage of native NECJ (LER-5165).
+
+        propSaver.set(
+            props.AlertNativeEvaluationUnsupported,
+            "ERROR");
+
+        assertQueryReturns(
+            mdx2,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1], [Customers].[USA].[CA]}\n"
+            + "{[Time].[1997].[Q1], [Customers].[USA].[OR]}\n"
+            + "{[Time].[1997].[Q1], [Customers].[USA].[WA]}\n"
+            + "Row #0: 16,890\n"
+            + "Row #1: 19,287\n"
+            + "Row #2: 30,114\n");
     }
 
     public void testMemberOrdinalCaching() {
@@ -6123,15 +6111,11 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "  {[Product].members} ON ROWS\n"
             + "FROM [Sales]";
         Throwable throwable = null;
-        int origTimeout = props.QueryTimeout.get();
+        propSaver.set(props.QueryTimeout, 2);
         try {
-            props.QueryTimeout.set(2);
             tc.executeQuery(query);
         } catch (Throwable ex) {
             throwable = ex;
-        } finally {
-            // reset the timeout back to the original value
-            props.QueryTimeout.set(origTimeout);
         }
         TestContext.checkThrowable(
             throwable, "Query timeout of 2 seconds reached");
@@ -6314,25 +6298,23 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "select crossjoin({[Time].[*SUBTOTAL_MEMBER_SEL~SUM]}, {[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}) "
             + "on columns from [Sales]";
 
+        propSaver.set(props.IterationLimit, 11);
+
         Throwable throwable = null;
-        int origLimit = props.IterationLimit.get();
         try {
-            props.IterationLimit.set(11);
             Connection connection = getConnection();
             Query query = connection.parseQuery(queryString);
             query.setResultStyle(ResultStyle.LIST);
             connection.execute(query);
         } catch (Throwable ex) {
             throwable = ex;
-        } finally {
-            // reset the timeout back to the original value
-            props.IterationLimit.set(origLimit);
         }
 
         TestContext.checkThrowable(
             throwable, "Number of iterations exceeded limit of 11");
 
         // make sure the query runs without the limit set
+        propSaver.reset();
         executeQuery(queryString);
     }
 
@@ -6922,31 +6904,24 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testEmptyAggregationListDueToFilterDoesNotThrowException() {
-        boolean ignoreMeasureForNonJoiningDimension =
-            props.IgnoreMeasureForNonJoiningDimension.get();
-        props.IgnoreMeasureForNonJoiningDimension.set(true);
-        try {
-            assertQueryReturns(
-                "WITH \n"
-                + "MEMBER [GENDER].[AGG] "
-                + "AS 'AGGREGATE(FILTER([S1], (NOT ISEMPTY([MEASURES].[STORE SALES]))))' "
-                + "SET [S1] "
-                + "AS 'CROSSJOIN({[GENDER].[GENDER].MEMBERS},{[STORE].[CANADA].CHILDREN})' "
-                + "SELECT\n"
-                + "{[MEASURES].[STORE SALES]} ON COLUMNS,\n"
-                + "{[GENDER].[AGG]} ON ROWS\n"
-                + "FROM [WAREHOUSE AND SALES]",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Store Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Gender].[AGG]}\n"
-                + "Row #0: \n");
-        } finally {
-            props.IgnoreMeasureForNonJoiningDimension.set(
-                ignoreMeasureForNonJoiningDimension);
-        }
+        propSaver.set(props.IgnoreMeasureForNonJoiningDimension, true);
+        assertQueryReturns(
+            "WITH \n"
+            + "MEMBER [GENDER].[AGG] "
+            + "AS 'AGGREGATE(FILTER([S1], (NOT ISEMPTY([MEASURES].[STORE SALES]))))' "
+            + "SET [S1] "
+            + "AS 'CROSSJOIN({[GENDER].[GENDER].MEMBERS},{[STORE].[CANADA].CHILDREN})' "
+            + "SELECT\n"
+            + "{[MEASURES].[STORE SALES]} ON COLUMNS,\n"
+            + "{[GENDER].[AGG]} ON ROWS\n"
+            + "FROM [WAREHOUSE AND SALES]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[AGG]}\n"
+            + "Row #0: \n");
     }
 
     /**

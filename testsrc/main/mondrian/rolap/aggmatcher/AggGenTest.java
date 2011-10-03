@@ -47,17 +47,15 @@ public class AggGenTest extends FoodMartTestCase {
         logger.addAppender(myAppender);
         propSaver.setAtLeast(logger, Level.DEBUG);
 
-        final String trueValue = "true";
-
         // This modifies the MondrianProperties for the whole of the
         // test run
 
         MondrianProperties props = MondrianProperties.instance();
         // If run in Ant and with mondrian.jar, please comment out this line:
-        props.AggregateRules.setString("DefaultRules.xml");
-        props.UseAggregates.setString(trueValue);
-        props.ReadAggregates.setString(trueValue);
-        props.GenerateAggregateSql.setString(trueValue);
+        propSaver.set(props.AggregateRules, "DefaultRules.xml");
+        propSaver.set(props.UseAggregates, true);
+        propSaver.set(props.ReadAggregates, true);
+        propSaver.set(props.GenerateAggregateSql, true);
 
         final RolapConnection rolapConn = (RolapConnection) getConnection();
         Query query =

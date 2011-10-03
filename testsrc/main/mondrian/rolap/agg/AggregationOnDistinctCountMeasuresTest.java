@@ -278,9 +278,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testDistinctCountOnTuplesWithSomeNonJoiningDimensions() {
-        boolean orginalPropertyValue =
-            props.IgnoreMeasureForNonJoiningDimension.get();
-        props.IgnoreMeasureForNonJoiningDimension.set(false);
+        propSaver.set(
+            props.IgnoreMeasureForNonJoiningDimension, false);
         String mdx =
             "WITH MEMBER WAREHOUSE.X as 'Aggregate({WAREHOUSE.[STATE PROVINCE].MEMBERS}*"
             + "{[Gender].Members})'"
@@ -296,9 +295,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "{[Warehouse].[X]}\n"
             + "Row #0: \n";
         assertQueryReturns(mdx, expectedResult);
-        props.IgnoreMeasureForNonJoiningDimension.set(true);
+        propSaver.set(
+            props.IgnoreMeasureForNonJoiningDimension, true);
         assertQueryReturns(mdx, expectedResult);
-        props.IgnoreMeasureForNonJoiningDimension.set(orginalPropertyValue);
     }
 
     public void testAggregationListOptimizationForChildren() {

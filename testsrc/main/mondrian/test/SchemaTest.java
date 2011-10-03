@@ -2108,33 +2108,15 @@ public class SchemaTest extends FoodMartTestCase {
                 + "Row #0: 16,266\n");
 
             MondrianProperties props = MondrianProperties.instance();
-            boolean currentUse = props.UseAggregates.get();
-            boolean currentRead = props.ReadAggregates.get();
-            boolean do_caching_orig = props.DisableCaching.get();
 
             // turn off caching
-            props.DisableCaching.setString("true");
+            propSaver.set(props.DisableCaching, true);
 
             // re-read aggregates
-            props.UseAggregates.setString("true");
-            props.ReadAggregates.setString("false");
-            props.ReadAggregates.setString("true");
+            propSaver.set(props.UseAggregates, true);
+            propSaver.set(props.ReadAggregates, false);
+            propSaver.set(props.ReadAggregates, true);
 
-            if (currentRead) {
-                props.ReadAggregates.setString("true");
-            } else {
-                props.ReadAggregates.setString("false");
-            }
-            if (currentUse) {
-                props.UseAggregates.setString("true");
-            } else {
-                props.UseAggregates.setString("false");
-            }
-            if (do_caching_orig) {
-                props.DisableCaching.setString("true");
-            } else {
-                props.DisableCaching.setString("false");
-            }
             // force reloading of aggregates, which currently throws an
             // exception
         }

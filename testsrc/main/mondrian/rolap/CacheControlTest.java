@@ -299,12 +299,14 @@ public class CacheControlTest extends FoodMartTestCase {
         flushCache();
 
         // Make sure MaxConstraint is high enough
-        int origMaxConstraints =
-            MondrianProperties.instance().MaxConstraints.get();
         int minConstraints = 3;
 
-        if (origMaxConstraints < minConstraints) {
-            MondrianProperties.instance().MaxConstraints.set(minConstraints);
+        if (MondrianProperties.instance().MaxConstraints.get()
+            < minConstraints)
+        {
+            propSaver.set(
+                MondrianProperties.instance().MaxConstraints,
+                minConstraints);
         }
 
         // Execute a query, to bring data into the cache.
@@ -332,8 +334,6 @@ public class CacheControlTest extends FoodMartTestCase {
         cacheControl.printCacheState(pw, region);
         pw.flush();
         assertCacheStateEquals("output2", "${output2}", sw.toString());
-
-        MondrianProperties.instance().MaxConstraints.set(origMaxConstraints);
     }
 
     /**

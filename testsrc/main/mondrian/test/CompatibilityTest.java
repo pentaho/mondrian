@@ -538,21 +538,26 @@ public class CompatibilityTest extends FoodMartTestCase {
     }
 
     private void assertAxisWithDimensionPrefix(boolean prefixNeeded) {
-        props.NeedDimensionPrefix.set(prefixNeeded);
+        propSaver.set(
+            props.NeedDimensionPrefix,
+            prefixNeeded);
         assertAxisReturns("[Gender].[M]", "[Gender].[M]");
         assertAxisReturns("[Gender].[All Gender].[M]", "[Gender].[M]");
         assertAxisReturns("[Store].[USA]", "[Store].[USA]");
         assertAxisReturns("[Store].[All Stores].[USA]", "[Store].[USA]");
-        props.NeedDimensionPrefix.set(originalNeedDimensionPrefix);
     }
 
     public void testWithNoDimensionPrefix() {
-        props.NeedDimensionPrefix.set(false);
+        propSaver.set(
+            props.NeedDimensionPrefix,
+            false);
         assertAxisReturns("{[M]}", "[Gender].[M]");
         assertAxisReturns("{M}", "[Gender].[M]");
         assertAxisReturns("{[USA].[CA]}", "[Store].[USA].[CA]");
         assertAxisReturns("{USA.CA}", "[Store].[USA].[CA]");
-        props.NeedDimensionPrefix.set(true);
+        propSaver.set(
+            props.NeedDimensionPrefix,
+            true);
         assertAxisThrows(
             "{[M]}",
             "Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
@@ -565,7 +570,6 @@ public class CompatibilityTest extends FoodMartTestCase {
         assertAxisThrows(
             "{USA.CA}",
             "Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
-        props.NeedDimensionPrefix.set(originalNeedDimensionPrefix);
     }
 }
 

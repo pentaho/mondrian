@@ -494,6 +494,7 @@ public class BatchTestCase extends FoodMartTestCase {
     }
 
     protected String dialectize(Dialect.DatabaseProduct d, String sql) {
+        sql = sql.replaceAll("\r\n", "\n");
         switch (d) {
         case ORACLE:
             return sql.replaceAll(" =as= ", " ");

@@ -16,8 +16,6 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
-import org.eigenbase.util.property.*;
-import org.eigenbase.util.property.Property;
 
 import java.util.*;
 
@@ -38,24 +36,6 @@ public class FastBatchingCellReader implements CellReader {
 
     private static final Logger LOGGER =
         Logger.getLogger(FastBatchingCellReader.class);
-
-    /**
-     * This static variable controls the generation of aggregate table sql.
-     */
-    private static boolean generateAggregateSql =
-        MondrianProperties.instance().GenerateAggregateSql.get();
-
-    static {
-        // Trigger is used to lookup and change the value of the
-        // variable that controls generating aggregate table sql.
-        // Using a trigger means we don't have to look up the property eveytime.
-        MondrianProperties.instance().GenerateAggregateSql.addTrigger(
-            new TriggerBase(true) {
-                public void execute(Property property, String value) {
-                    generateAggregateSql = property.booleanValue();
-                }
-            });
-    }
 
     private final RolapCube cube;
     private final Map<AggregationKey, Batch> batches;
@@ -429,7 +409,7 @@ public class FastBatchingCellReader implements CellReader {
         final void loadAggregation(
             GroupingSetsCollector groupingSetsCollector)
         {
-            if (generateAggregateSql) {
+            if (MondrianProperties.instance().GenerateAggregateSql.get()) {
                 generateAggregateSql();
             }
             final StarColumnPredicate[] predicates = initPredicates();

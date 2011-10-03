@@ -12,6 +12,7 @@
 package mondrian.test;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.rolap.agg.AggregationManager;
 
 /**
  * Test ignoring of measure when unrelated Dimension is in
@@ -25,25 +26,15 @@ import mondrian.olap.MondrianProperties;
 public class IgnoreMeasureForNonJoiningDimensionInAggregationTest
     extends FoodMartTestCase
 {
-    // TODO: use propSaver to restore property values
-    boolean originalNonEmptyFlag;
-    boolean originalEliminateUnrelatedDimensions;
-    private final MondrianProperties prop = MondrianProperties.instance();
-
     protected void setUp() throws Exception {
         super.setUp();
-        originalNonEmptyFlag = prop.EnableNonEmptyOnAllAxis.get();
-        originalEliminateUnrelatedDimensions =
-            prop.IgnoreMeasureForNonJoiningDimension.get();
-        prop.EnableNonEmptyOnAllAxis.set(true);
-        prop.IgnoreMeasureForNonJoiningDimension.set(true);
-    }
-
-    protected void tearDown() throws Exception {
-        prop.EnableNonEmptyOnAllAxis.set(originalNonEmptyFlag);
-        prop.IgnoreMeasureForNonJoiningDimension.set(
-            originalEliminateUnrelatedDimensions);
-        super.tearDown();
+        propSaver.set(
+            MondrianProperties.instance().EnableNonEmptyOnAllAxis,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().IgnoreMeasureForNonJoiningDimension,
+            true);
+        AggregationManager.instance().getCacheControl(null).flushSchemaCache();
     }
 
     public void testNoTotalsForCompdMeasureWithComponentsHavingNonJoiningDims()
@@ -94,7 +85,9 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest
             + "{[Warehouse].[AggSP1]}\n"
             + "Row #0: 196,770.89\n"
             + "Row #1: 196,770.89\n");
-        prop.IgnoreMeasureForNonJoiningDimension.set(false);
+        propSaver.set(
+            MondrianProperties.instance().IgnoreMeasureForNonJoiningDimension,
+            false);
         assertQueryReturns(
             query,
             "Axis #0:\n"

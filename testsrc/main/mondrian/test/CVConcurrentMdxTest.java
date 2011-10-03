@@ -46,9 +46,9 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
     }
 
     public void testConcurrentQueriesInRandomOrder() {
-        props.DisableCaching.set(false);
-        props.UseAggregates.set(false);
-        props.ReadAggregates.set(false);
+        propSaver.set(props.UseAggregates, false);
+        propSaver.set(props.ReadAggregates, false);
+        propSaver.set(props.DisableCaching, false);
 
         // test partially filled aggregation cache
         // add test classes
@@ -75,9 +75,9 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
     }
 
     public void testConcurrentQueriesInRandomOrderOnVirtualCube() {
-        props.DisableCaching.set(false);
-        props.UseAggregates.set(false);
-        props.ReadAggregates.set(false);
+        propSaver.set(props.UseAggregates, false);
+        propSaver.set(props.ReadAggregates, false);
+        propSaver.set(props.DisableCaching, false);
 
         // test partially filled aggregation cache
         // add test classes
@@ -104,9 +104,9 @@ public class CVConcurrentMdxTest extends FoodMartTestCase {
     }
 
     public void testConcurrentCVQueriesInRandomOrder() {
-        props.DisableCaching.set(false);
-        props.UseAggregates.set(false);
-        props.ReadAggregates.set(false);
+        propSaver.set(props.UseAggregates, false);
+        propSaver.set(props.ReadAggregates, false);
+        propSaver.set(props.DisableCaching, false);
 
         // test partially filled aggregation cache
         // add test classes

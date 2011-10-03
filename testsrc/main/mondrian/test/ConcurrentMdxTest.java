@@ -1233,9 +1233,9 @@ public class ConcurrentMdxTest extends FoodMartTestCase {
     };
 
     public void testConcurrentValidatingQueriesInRandomOrder() {
-        props.DisableCaching.set(false);
-        props.UseAggregates.set(false);
-        props.ReadAggregates.set(false);
+        propSaver.set(props.UseAggregates, false);
+        propSaver.set(props.ReadAggregates, false);
+        propSaver.set(props.DisableCaching, false);
 
         FoodMartTestCase.QueryAndResult[] singleQuery = {mdxQueries[0]};
         assertTrue(

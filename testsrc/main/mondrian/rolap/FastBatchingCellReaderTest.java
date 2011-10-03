@@ -106,56 +106,52 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnSupportedDB() {
-        boolean oldValue =
-            MondrianProperties.instance().EnableGroupingSets.get();
-        MondrianProperties.instance().EnableGroupingSets.set(true);
+        propSaver.set(
+            MondrianProperties.instance().EnableGroupingSets,
+            true);
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube) {
             boolean doesDBSupportGroupingSets() {
                 return true;
             }
         };
         assertTrue(fbcr.shouldUseGroupingFunction());
-        MondrianProperties.instance().EnableGroupingSets.set(oldValue);
     }
 
     public void testShouldUseGroupingFunctionOnPropertyTrueAndOnNonSupportedDB()
     {
-        boolean oldValue =
-            MondrianProperties.instance().EnableGroupingSets.get();
-        MondrianProperties.instance().EnableGroupingSets.set(true);
+        propSaver.set(
+            MondrianProperties.instance().EnableGroupingSets,
+            true);
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube) {
             boolean doesDBSupportGroupingSets() {
                 return false;
             }
         };
         assertFalse(fbcr.shouldUseGroupingFunction());
-        MondrianProperties.instance().EnableGroupingSets.set(oldValue);
     }
 
     public void testShouldUseGroupingFunctionOnPropertyFalseOnSupportedDB() {
-        boolean oldValue =
-            MondrianProperties.instance().EnableGroupingSets.get();
-        MondrianProperties.instance().EnableGroupingSets.set(false);
+        propSaver.set(
+            MondrianProperties.instance().EnableGroupingSets,
+            false);
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube) {
             boolean doesDBSupportGroupingSets() {
                 return true;
             }
         };
         assertFalse(fbcr.shouldUseGroupingFunction());
-        MondrianProperties.instance().EnableGroupingSets.set(oldValue);
     }
 
     public void testShouldUseGroupingFunctionOnPropertyFalseOnNonSupportedDB() {
-        boolean oldValue =
-            MondrianProperties.instance().EnableGroupingSets.get();
-        MondrianProperties.instance().EnableGroupingSets.set(false);
+        propSaver.set(
+            MondrianProperties.instance().EnableGroupingSets,
+            false);
         FastBatchingCellReader fbcr = new FastBatchingCellReader(salesCube) {
             boolean doesDBSupportGroupingSets() {
                 return false;
             }
         };
         assertFalse(fbcr.shouldUseGroupingFunction());
-        MondrianProperties.instance().EnableGroupingSets.set(oldValue);
     }
 
     public void testDoesDBSupportGroupingSets() {

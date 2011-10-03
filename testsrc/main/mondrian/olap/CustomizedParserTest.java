@@ -197,14 +197,15 @@ public class CustomizedParserTest extends FoodMartTestCase {
             getCustomizedFunctionTable(functionNameSet);
 
         MondrianProperties properties = MondrianProperties.instance();
-        boolean oldIgnoreInvalidMembers =
-            properties.IgnoreInvalidMembers.get();
-        boolean oldIgnoreInvalidMembersDuringQuery =
-            properties.IgnoreInvalidMembersDuringQuery.get();
+
+        propSaver.set(
+            properties.IgnoreInvalidMembers,
+            true);
+        propSaver.set(
+            properties.IgnoreInvalidMembersDuringQuery,
+            true);
 
         try {
-            properties.IgnoreInvalidMembers.set(true);
-            properties.IgnoreInvalidMembersDuringQuery.set(true);
             Query q = getParsedQueryForExpr(
                 cftab,
                 "'[Measures].[Store Cost] + [Measures].[Unit Salese]'",
@@ -215,9 +216,6 @@ public class CustomizedParserTest extends FoodMartTestCase {
                 "Expected error does not occur when strictValidation is set:"
                 + strictValidation);
         } catch (Throwable e) {
-            properties.IgnoreInvalidMembers.set(oldIgnoreInvalidMembers);
-            properties.IgnoreInvalidMembersDuringQuery.set(
-                oldIgnoreInvalidMembersDuringQuery);
             if (strictValidation) {
                 checkErrorMsg(
                     e,

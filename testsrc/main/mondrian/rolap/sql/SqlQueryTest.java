@@ -96,7 +96,9 @@ public class SqlQueryTest extends BatchTestCase {
             }
             assertEquals(
                 dialectize(dialect.getDatabaseProduct(), expected),
-                sqlQuery.toString());
+                dialectize(
+                    sqlQuery.getDialect().getDatabaseProduct(),
+                    sqlQuery.toString()));
         }
     }
 
@@ -173,7 +175,9 @@ public class SqlQueryTest extends BatchTestCase {
 
             assertEquals(
                 dialectize(dialect.getDatabaseProduct(), trigger),
-                query.toString());
+                dialectize(
+                    query.getDialect().getDatabaseProduct(),
+                    query.toString()));
         }
 
         // Print warning message that no pattern was specified for the current
@@ -416,7 +420,9 @@ public class SqlQueryTest extends BatchTestCase {
             }
             assertEquals(
                 dialectize(dialect.getDatabaseProduct(), expected),
-                sqlQuery.toString());
+                dialectize(
+                    sqlQuery.getDialect().getDatabaseProduct(),
+                    sqlQuery.toString()));
         }
     }
 
@@ -477,7 +483,9 @@ public class SqlQueryTest extends BatchTestCase {
             }
             assertEquals(
                 dialectize(dialect.getDatabaseProduct(), expected),
-                sqlQuery.toString());
+                dialectize(
+                    sqlQuery.getDialect().getDatabaseProduct(),
+                    sqlQuery.toString()));
         }
     }
 
