@@ -15,6 +15,7 @@ Linux|Darwin) PS=: ;;
 esac
 
 export CP="lib/mondrian.jar"
+export CP="${CP}${PS}lib/olap4j.jar"
 export CP="${CP}${PS}lib/log4j.jar"
 export CP="${CP}${PS}lib/commons-logging.jar"
 export CP="${CP}${PS}lib/eigenbase-properties.jar"
@@ -44,8 +45,12 @@ error() {
 }
 
 oracle() {
-    #export ORACLE_HOME=G:/oracle/product/10.1.0/Db_1
-    java -cp "${CP}${PS}${ORACLE_HOME}/jdbc/lib/ojdbc14.jar" \
+    # Assume ORACLE_HOME is set, e.g.:
+    #  export ORACLE_HOME=G:/oracle/product/10.1.0/Db_1
+    # For JDBC driver, try 'ojdbc6.jar' on JDK1.6;
+    # try 'ojdbc5.jar' on JDK1.5;
+    # try 'ojdbc14.jar' on JDK1.4 or Oracle 10 and earlier.
+    java -cp "${CP}${PS}${ORACLE_HOME}/jdbc/lib/ojdbc6.jar" \
          mondrian.test.loader.MondrianFoodMartLoader \
          -verbose -aggregates -tables -data -indexes \
          -jdbcDrivers=oracle.jdbc.OracleDriver \
@@ -56,7 +61,7 @@ oracle() {
 # Load into Oracle, creating dimension tables first, then trickling data into
 # fact tables.
 oracleTrickle() {
-    java -cp "${CP}${PS}${ORACLE_HOME}/jdbc/lib/ojdbc14.jar" \
+    java -cp "${CP}${PS}${ORACLE_HOME}/jdbc/lib/ojdbc6.jar" \
          mondrian.test.loader.MondrianFoodMartLoader \
          -verbose -tables -indexes -data -exclude=sales_fact_1997 \
          -jdbcDrivers=oracle.jdbc.OracleDriver \
@@ -64,7 +69,7 @@ oracleTrickle() {
          -outputJdbcURL="jdbc:oracle:thin:slurpmart/slurpmart@//localhost:1521/XE"
 
     # Write 10 rows each second into the sales fact table.
-    java -cp "${CP}${PS}${ORACLE_HOME}/jdbc/lib/ojdbc14.jar" \
+    java -cp "${CP}${PS}${ORACLE_HOME}/jdbc/lib/ojdbc6.jar" \
          mondrian.test.loader.MondrianFoodMartLoader \
          -verbose -tables -indexes -data -pauseMillis=100 -include=sales_fact_1997 \
          -jdbcDrivers=oracle.jdbc.OracleDriver \
