@@ -2215,6 +2215,10 @@ public class SchemaExplorer
                 JOptionPane.WARNING_MESSAGE);
             return;
         }
+        delete(tpath);
+    }
+
+    void delete(TreePath tpath) {
         Object child = tpath.getLastPathComponent(); // to be deleted
         Object nextSibling = null;
         Object prevSibling = null;
@@ -5640,7 +5644,7 @@ public class SchemaExplorer
     private JLabel validStatusLabel;
     private JLabel targetLabel2;
     private JLabel validStatusLabel2;
-    private JTree tree;
+    JTree tree;
     private JSplitPane jSplitPane1;
 
     private JButton addDimensionButton;
