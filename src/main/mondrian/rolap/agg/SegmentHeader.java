@@ -69,7 +69,6 @@ public class SegmentHeader implements Serializable {
 
     /**
      * Base constructor for segment headers.
-     * @see #forSegment(Segment)
      * @param schemaName The name of the schema which this
      * header belongs to.
      * @param cubeName The name of the cube this segment belongs to.
@@ -93,7 +92,6 @@ public class SegmentHeader implements Serializable {
     }
     /**
      * Base constructor for segment headers.
-     * @see #forSegment(Segment)
      * @param schemaName The name of the schema which this
      * header belongs to.
      * @param cubeName The name of the cube this segment belongs to.

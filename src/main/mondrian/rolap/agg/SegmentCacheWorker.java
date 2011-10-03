@@ -301,7 +301,7 @@ public final class SegmentCacheWorker {
      * <p>To adjust timeout values, set the
      * {@link MondrianProperties#SegmentCacheWriteTimeout} property.
      *
-     * @param header A region to flush from the segment cache.
+     * @param region A region to flush from the segment cache.
      */
     public static void flush(ConstrainedColumn[] region) {
         initCache();
