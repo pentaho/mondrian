@@ -101,6 +101,13 @@ public class RolapCacheRegion {
     public Collection<StarPredicate> getPredicates() {
         return predicates.values();
     }
+
+    /**
+     * Returns the list of all column predicates.
+     */
+    public Collection<StarColumnPredicate> getColumnPredicates() {
+        return columnPredicates.values();
+    }
 }
 
 // End RolapCacheRegion.java

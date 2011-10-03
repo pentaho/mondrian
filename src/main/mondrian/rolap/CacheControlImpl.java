@@ -171,8 +171,7 @@ public class CacheControlImpl implements CacheControl {
                 break;
             }
         }
-        if (!found)
-        {
+        if (!found) {
             throw MondrianResource.instance().CacheFlushRegionMustContainMembers
                 .ex();
         }

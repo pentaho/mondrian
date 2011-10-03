@@ -16,6 +16,7 @@ import java.util.concurrent.Future;
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.agg.SegmentBody;
 import mondrian.rolap.agg.SegmentHeader;
+import mondrian.rolap.agg.SegmentHeader.ConstrainedColumn;
 
 /**
  * SPI definition of the segments cache.
@@ -43,12 +44,6 @@ import mondrian.rolap.agg.SegmentHeader;
  * <p>Implementations must provide a default empty constructor.
  * Segment caches are instantiated as a singleton but can be
  * hot swapped by modifying {@link MondrianProperties#SegmentCache}.
- *
- * <p>Implementations will get a termination signal through
- * {@link SegmentCache#tearDown()} but Mondrian will relinquish
- * control of the termination thread and will not be listening
- * to thrown any exceptions encountered while the tearing down
- * operation is taking place..
  *
  * @see MondrianProperties#SegmentCache
  * @author LBoudreau
@@ -98,6 +93,14 @@ public interface SegmentCache {
      * false otherwise.
      */
     Future<Boolean> remove(SegmentHeader header);
+
+    /**
+     * Flushes a dimensionality region from the cache.
+     * @param region The region to flush.
+     * @return True if the operation succeeded,
+     * false otherwise.
+     */
+    Future<Boolean> flush(ConstrainedColumn[] region);
 
     /**
      * Tear down and clean up the cache.
