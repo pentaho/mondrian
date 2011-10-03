@@ -622,6 +622,10 @@ public class AggStar {
                 pw.print("): ");
                 pw.print(generateExprString(sqlQuery));
             }
+
+            public SqlStatement.Type getInternalType() {
+                return null;
+            }
         }
 
         /**
@@ -657,6 +661,11 @@ public class AggStar {
                 super(name, expression, starColumn.getDatatype(), bitPosition);
                 this.starColumn = starColumn;
                 AggStar.this.levelBitKey.set(bitPosition);
+            }
+
+            @Override
+            public SqlStatement.Type getInternalType() {
+                return starColumn.getInternalType();
             }
         }
 

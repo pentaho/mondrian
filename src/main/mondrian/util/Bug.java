@@ -210,6 +210,14 @@ public class Bug {
     public static final boolean BugMondrian687Fixed = false;
 
     /**
+     * Whether bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-747">
+     * MONDRIAN-747, "When joining a shared dimension into a cube at a level
+     * other than its leaf level, Mondrian gives wrong results"</a> is fixed.
+     */
+    public static final boolean BugMondrian747Fixed = false;
+
+    /**
      * Whether
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-759"> MONDRIAN-759, "use
      * dynamic parameters and PreparedStatement for frequently executed SQL
