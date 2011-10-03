@@ -9,6 +9,7 @@
 */
 package mondrian.test;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.spi.Dialect;
 
 /**
@@ -231,6 +232,17 @@ public class InlineTableTest extends FoodMartTestCase {
             null,
             null,
             null);
+
+        // With grouping sets, mondrian will join fact table to the inline
+        // dimension table, them sum to compute the 'all' value. That semi-joins
+        // away too many fact table rows, and the 'all' value comes out too low
+        // (zero, in fact). It causes a test exception, but is valid mondrian
+        // behavior. (Behavior is unspecified if schema does not have
+        // referential integrity.)
+        if (MondrianProperties.instance().EnableGroupingSets.get()) {
+            return;
+        }
+
         // Access & Oracle return date literals as timestamp values, which
         // results in extra fields when converted to a string.
         final String extra;

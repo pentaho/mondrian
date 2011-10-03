@@ -3256,6 +3256,14 @@ public class SchemaTest extends FoodMartTestCase {
             + "    </VirtualCubeMeasure> \n"
             + "  </VirtualCube> \n"
             + "</Schema>");
+
+        if (!Bug.BugMondrian747Fixed
+            && MondrianProperties.instance().EnableGroupingSets.get())
+        {
+            // With grouping sets enabled, MONDRIAN-747 behavior is even worse.
+            return;
+        }
+
         // [Store].[All Stores] and [Store].[USA] should be 266,773. A higher
         // value would indicate that there is a cartesian product going on --
         // because "store_state" is not unique in "store" table.
