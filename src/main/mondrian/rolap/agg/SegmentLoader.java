@@ -89,11 +89,13 @@ public class SegmentLoader {
         // First check for cached segments.
         // This method will remove all the segments it fetched from
         // the cache from the groupingSets list.
-        loadSegmentsFromCache(groupingSets, pinnedSegments);
+        loadSegmentsFromCache(
+            groupingSets, compoundPredicateList, pinnedSegments);
 
         // Now try to load the segments from a rollup
         // operation of other segments.
-        loadSegmentsFromCacheRollup(groupingSets, pinnedSegments);
+        loadSegmentsFromCacheRollup(
+            groupingSets, compoundPredicateList, pinnedSegments);
 
         // Now check if there are segments left which were not
         // loaded from the cache.
@@ -151,6 +153,7 @@ public class SegmentLoader {
 
                 cacheSegmentData(
                     groupingSets,
+                    compoundPredicateList,
                     axisValueSets,
                     axisContainsNull);
             } catch (SQLException e) {
@@ -175,18 +178,21 @@ public class SegmentLoader {
      */
     private void loadSegmentsFromCache(
         List<GroupingSet> groupingSets,
+        List<StarPredicate> compoundPredicateList,
         RolapAggregationManager.PinSet pinnedSegments)
     {
         if (!SegmentCacheWorker.isCacheEnabled()) {
             return;
         }
+        final List<GroupingSet> gsToRemove =
+            new ArrayList<GroupingSet>();
         for (GroupingSet groupingSet : groupingSets) {
             final List<Segment> segmentsToRemove =
                 new ArrayList<Segment>();
 
             for (Segment segment : groupingSet.getSegments()) {
                 final SegmentHeader sh =
-                    SegmentHeader.forSegment(segment);
+                    SegmentHeader.forSegment(segment, compoundPredicateList);
 
                 if (SegmentCacheWorker.contains(sh)) {
                     final SegmentBody sb =
@@ -209,7 +215,11 @@ public class SegmentLoader {
                 }
             }
             groupingSet.getSegments().removeAll(segmentsToRemove);
+            if (groupingSet.getSegments().size() == 0) {
+                gsToRemove.add(groupingSet);
+            }
         }
+        groupingSets.removeAll(gsToRemove);
     }
 
     /**
@@ -221,18 +231,21 @@ public class SegmentLoader {
      */
     private void loadSegmentsFromCacheRollup(
         List<GroupingSet> groupingSets,
+        List<StarPredicate> compoundPredicateList,
         RolapAggregationManager.PinSet pinnedSegments)
     {
         if (!SegmentCacheWorker.isCacheEnabled()) {
             return;
         }
+        List<GroupingSet> gsToRemove =
+            new ArrayList<GroupingSet>();
         for (final GroupingSet groupingSet : groupingSets) {
             Iterator<Segment> iterator = groupingSet.getSegments().iterator();
             segLoop:
             while (iterator.hasNext()) {
                 final Segment segRef = iterator.next();
                 final SegmentHeader headerRef =
-                    SegmentHeader.forSegment(segRef);
+                    SegmentHeader.forSegment(segRef, compoundPredicateList);
 
                 /*
                  * First step is to build a set of segments which have the
@@ -369,7 +382,11 @@ public class SegmentLoader {
                 // Remove this segment from the list of segments to load.
                 iterator.remove();
             }
+            if (groupingSet.getSegments().size() == 0) {
+                gsToRemove.add(groupingSet);
+            }
         }
+        groupingSets.removeAll(gsToRemove);
     }
 
     private SegmentHeader analyzeCombo(
@@ -407,6 +424,7 @@ public class SegmentLoader {
      */
     void cacheSegmentData(
         List<GroupingSet> groupingSets,
+        List<StarPredicate> compoundPredicates,
         SortedSet<Comparable<?>>[] axisValueSets,
         boolean[] nullAxisFlags)
     {
@@ -416,7 +434,7 @@ public class SegmentLoader {
         for (final GroupingSet groupingSet : groupingSets) {
             for (Segment segment : groupingSet.getSegments()) {
                 final SegmentHeader sh =
-                    SegmentHeader.forSegment(segment);
+                    SegmentHeader.forSegment(segment, compoundPredicates);
                 final SegmentBody sb =
                     segment.getData().createSegmentBody(
                         axisValueSets,
