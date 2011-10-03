@@ -74,6 +74,10 @@ public class DelegatingTupleList extends AbstractTupleList
             public int size() {
                 return list.size();
             }
+
+            public Member set(int index, Member element) {
+                return list.get(column).set(index, element);
+            };
         };
     }
 
@@ -112,8 +116,16 @@ public class DelegatingTupleList extends AbstractTupleList
                         public int size() {
                             return destIndices.length;
                         }
+
+                        public Member set(int column, Member element) {
+                            return list.get(index).set(index, element);
+                        };
                     };
                 }
+
+                public List<Member> set(int index, List<Member> element) {
+                    return list.set(index, element);
+                };
 
                 public int size() {
                     return list.size();
