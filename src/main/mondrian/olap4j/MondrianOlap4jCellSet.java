@@ -269,7 +269,9 @@ abstract class MondrianOlap4jCellSet
             printWriter.close();
             profileHandler.explain(stringWriter.toString(), getQueryTiming());
         }
-        this.result.close();
+        if (this.result != null) {
+            this.result.close();
+        }
     }
 
     public boolean wasNull() throws SQLException {
