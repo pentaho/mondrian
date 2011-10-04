@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2010 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -124,7 +124,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 + "grouping(\"customer\".\"gender\") as \"g0\" "
                 + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
                 + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "group by grouping sets ((\"customer\".\"gender\"),())",
+                + "group by grouping sets ((\"customer\".\"gender\"), ())",
                 26)
         };
 
@@ -306,7 +306,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 + "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\", grouping(\"customer\".\"gender\") as \"g0\" "
                 + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
                 + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "group by grouping sets ((\"customer\".\"gender\"),())",
+                + "group by grouping sets ((\"customer\".\"gender\"), ())",
                 26)
         };
         assertRequestSql(
@@ -369,7 +369,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 + "grouping(\"customer\".\"gender\") as \"g0\" "
                 + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
                 + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "group by grouping sets ((\"customer\".\"gender\"),())",
+                + "group by grouping sets ((\"customer\".\"gender\"), ())",
                 26),
 
             new SqlPattern(
@@ -436,7 +436,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 + "from \"time_by_day\" =as= \"time_by_day\", \"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\" "
                 + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 "
                 + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "group by grouping sets ((\"time_by_day\".\"the_year\",\"customer\".\"gender\"),(\"time_by_day\".\"the_year\"))",
+                + "group by grouping sets ((\"time_by_day\".\"the_year\", \"customer\".\"gender\"), (\"time_by_day\".\"the_year\"))",
             150)
         };
 

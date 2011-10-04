@@ -77,22 +77,19 @@ public class SqlQueryTest extends BatchTestCase {
                 expected =
                     "select c1 as \"c0\", c2 as \"c1\", grouping(gf0) as \"g0\" "
                     + "from \"s\".\"t1\" =as= \"t1alias\" where a=b "
-                    + "group by grouping sets ((gs1,gs2,gs3))";
+                    + "group by grouping sets ((gs1, gs2, gs3))";
             } else {
                 expected =
-                    "select " + lineSep
-                    + "    c1 as \"c0\", " + lineSep
-                    + "    c2 as \"c1\"" + lineSep
-                    + "    , grouping(gf0) as \"g0\"" + lineSep
-                    + "from " + lineSep
+                    "select" + lineSep
+                    + "    c1 as \"c0\"," + lineSep
+                    + "    c2 as \"c1\"," + lineSep
+                    + "    grouping(gf0) as \"g0\"" + lineSep
+                    + "from" + lineSep
                     + "    \"s\".\"t1\" =as= \"t1alias\"" + lineSep
-                    + "where " + lineSep
+                    + "where" + lineSep
                     + "    a=b" + lineSep
-                    + " group by grouping sets ((" + lineSep
-                    + "    gs1," + lineSep
-                    + "    gs2," + lineSep
-                    + "    gs3" + lineSep
-                    + "))";
+                    + "group by grouping sets (" + lineSep
+                    + "    (gs1, gs2, gs3))";
             }
             assertEquals(
                 dialectize(dialect.getDatabaseProduct(), expected),
@@ -398,25 +395,23 @@ public class SqlQueryTest extends BatchTestCase {
             String expected;
             if (b) {
                 expected =
-                    "select \n"
-                    + "    c1 as \"c0\", \n"
-                    + "    c2 as \"c1\"\n"
-                    + "    , grouping(g1) as \"g0\"\n"
-                    + "    , grouping(g2) as \"g1\"\n"
-                    + "from \n"
+                    "select\n"
+                    + "    c1 as \"c0\",\n"
+                    + "    c2 as \"c1\",\n"
+                    + "    grouping(g1) as \"g0\",\n"
+                    + "    grouping(g2) as \"g1\"\n"
+                    + "from\n"
                     + "    \"s\".\"t1\" =as= \"t1alias\"\n"
-                    + "where \n"
+                    + "where\n"
                     + "    a=b\n"
-                    + " group by grouping sets ((),(\n"
-                    + "    gs1,\n"
-                    + "    gs2,\n"
-                    + "    gs3\n"
-                    + "))";
+                    + "group by grouping sets (\n"
+                    + "    (),\n"
+                    + "    (gs1, gs2, gs3))";
             } else {
                 expected =
                     "select c1 as \"c0\", c2 as \"c1\", grouping(g1) as \"g0\", "
                     + "grouping(g2) as \"g1\" from \"s\".\"t1\" =as= \"t1alias\" where a=b "
-                    + "group by grouping sets ((),(gs1,gs2,gs3))";
+                    + "group by grouping sets ((), (gs1, gs2, gs3))";
             }
             assertEquals(
                 dialectize(dialect.getDatabaseProduct(), expected),
@@ -454,32 +449,27 @@ public class SqlQueryTest extends BatchTestCase {
             String expected;
             if (b) {
                 expected =
-                    "select \n"
-                    + "    c0 as \"c0\", \n"
-                    + "    c1 as \"c1\", \n"
-                    + "    c2 as \"c2\", \n"
-                    + "    m1 as \"m1\"\n"
-                    + "    , grouping(c0) as \"g0\"\n"
-                    + "    , grouping(c1) as \"g1\"\n"
-                    + "    , grouping(c2) as \"g2\"\n"
-                    + "from \n"
+                    "select\n"
+                    + "    c0 as \"c0\",\n"
+                    + "    c1 as \"c1\",\n"
+                    + "    c2 as \"c2\",\n"
+                    + "    m1 as \"m1\",\n"
+                    + "    grouping(c0) as \"g0\",\n"
+                    + "    grouping(c1) as \"g1\",\n"
+                    + "    grouping(c2) as \"g2\"\n"
+                    + "from\n"
                     + "    \"s\".\"t1\" =as= \"t1alias\"\n"
-                    + "where \n"
+                    + "where\n"
                     + "    a=b\n"
-                    + " group by grouping sets ((\n"
-                    + "    c0,\n"
-                    + "    c1,\n"
-                    + "    c2\n"
-                    + "),(\n"
-                    + "    c1,\n"
-                    + "    c2\n"
-                    + "))";
+                    + "group by grouping sets (\n"
+                    + "    (c0, c1, c2),\n"
+                    + "    (c1, c2))";
             } else {
                 expected =
                     "select c0 as \"c0\", c1 as \"c1\", c2 as \"c2\", m1 as \"m1\", "
                     + "grouping(c0) as \"g0\", grouping(c1) as \"g1\", grouping(c2) as \"g2\" "
                     + "from \"s\".\"t1\" =as= \"t1alias\" where a=b "
-                    + "group by grouping sets ((c0,c1,c2),(c1,c2))";
+                    + "group by grouping sets ((c0, c1, c2), (c1, c2))";
             }
             assertEquals(
                 dialectize(dialect.getDatabaseProduct(), expected),
