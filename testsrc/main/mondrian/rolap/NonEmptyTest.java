@@ -1897,7 +1897,7 @@ public class NonEmptyTest extends BatchTestCase {
             + " or (\"store\".\"store_state\" = 'WA' and \"store\".\"store_city\" = 'Tacoma')) "
             + "and (\"product_class\".\"product_family\" = 'Food') "
             + "group by \"store\".\"store_country\", \"store\".\"store_state\", \"store\".\"store_city\", \"product_class\".\"product_family\" "
-            + "order by \"store\".\"store_country\" ASC, \"store\".\"store_state\" ASC, \"store\".\"store_city\" ASC, \"product_class\".\"product_family\" ASC";
+            + "order by CASE WHEN \"store\".\"store_country\" IS NULL THEN 1 ELSE 0 END, \"store\".\"store_country\" ASC, CASE WHEN \"store\".\"store_state\" IS NULL THEN 1 ELSE 0 END, \"store\".\"store_state\" ASC, CASE WHEN \"store\".\"store_city\" IS NULL THEN 1 ELSE 0 END, \"store\".\"store_city\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
             "select "
@@ -2011,8 +2011,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "((\"warehouse\".\"wa_address1\" = '5617 Saclan Terrace' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"warehouse_name\" = 'Arnold and Sons') "
             + "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"warehouse_name\" = 'Jones International')) "
             + "and (\"product_class\".\"product_family\" = 'Food') group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", "
-            + "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, "
-            + "\"warehouse\".\"wa_address1\" ASC, \"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
+            + "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
+            + "order by CASE WHEN \"warehouse\".\"wa_address3\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address3\" ASC, CASE WHEN \"warehouse\".\"wa_address2\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address2\" ASC, CASE WHEN \"warehouse\".\"wa_address1\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address1\" ASC, CASE WHEN \"warehouse\".\"warehouse_name\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_name\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
             "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`wa_address1` as `c2`, `warehouse`.`warehouse_name` as `c3`, "
@@ -2101,8 +2101,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"warehouse_fax\" = '971-555-6213' and \"warehouse\".\"warehouse_name\" = 'Jones International')) "
             + "and (\"product_class\".\"product_family\" = 'Food') "
             + "group by \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
-            + "order by \"warehouse\".\"warehouse_fax\" ASC, \"warehouse\".\"wa_address1\" ASC, "
-            + "\"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
+            + "order by CASE WHEN \"warehouse\".\"warehouse_fax\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_fax\" ASC, CASE WHEN \"warehouse\".\"wa_address1\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address1\" ASC, CASE WHEN \"warehouse\".\"warehouse_name\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_name\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
             "select `warehouse`.`warehouse_fax` as `c0`, `warehouse`.`wa_address1` as `c1`, "
@@ -2195,8 +2194,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "\"warehouse\".\"wa_address2\" is null and \"warehouse\".\"wa_address3\" is null) and "
             + "(\"product_class\".\"product_family\" = 'Food') "
             + "group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" "
-            + "order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, \"warehouse\".\"warehouse_fax\" ASC, "
-            + "\"product_class\".\"product_family\" ASC";
+            + "order by CASE WHEN \"warehouse\".\"wa_address3\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address3\" ASC, CASE WHEN \"warehouse\".\"wa_address2\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address2\" ASC, CASE WHEN \"warehouse\".\"warehouse_fax\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_fax\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
             "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`warehouse_fax` as `c2`, "
