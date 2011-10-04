@@ -110,14 +110,13 @@ public class SqlQueryTest extends BatchTestCase {
             + " FORCE INDEX (myIndex)"
             + " where a=b";
         String formattedMysql =
-            "select " + "\n"
-            + "    c1 as `c0`, " + "\n"
-            + "    c2 as `c1`" + "\n"
-            + "from " + "\n"
-            + "    `s`.`t1` as `t1alias`"
-            + " FORCE INDEX (myIndex)" + "\n"
-            + "where " + "\n"
-            + "    a=b" + "\n";
+            "select\n"
+            + "    c1 as `c0`,\n"
+            + "    c2 as `c1`\n"
+            + "from\n"
+            + "    `s`.`t1` as `t1alias` FORCE INDEX (myIndex)\n"
+            + "where\n"
+            + "    a=b";
 
         SqlPattern[] unformattedSqlPatterns = {
             new SqlPattern(
