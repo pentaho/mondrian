@@ -355,11 +355,13 @@ public class SqlStatement {
             scale = metaData.getScale(i + 1);
             if (precision == 0
                 && (scale == 0 || scale == -127)
-                && typeName.equals("NUMBER"))
+                && (typeName.equalsIgnoreCase("NUMBER")
+                    || (typeName.equalsIgnoreCase("NUMERIC"))))
             {
-                // In Oracle, the NUMBER datatype with no precision or scale
-                // (not NUMBER(p) or NUMBER(p, s)) means floating point. Some
-                // drivers represent this with sacle 0, others scale -127.
+                // In Oracle and Greenplum the NUMBER/NUMERIC datatype with no
+                // precision or scale (not NUMBER(p) or NUMBER(p, s)) means
+                // floating point. Some drivers represent this with scale 0,
+                // others scale -127.
                 //
                 // There is a further problem. In GROUPING SETS queries, Oracle
                 // loosens the type of columns compared to mere GROUP BY
