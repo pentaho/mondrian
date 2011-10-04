@@ -4346,6 +4346,11 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testNonUniformNestedMeasureConstraintsGetOptimized() {
+        if (MondrianProperties.instance().UseAggregates.get()) {
+            // This test can't work with aggregates becaused
+            // the aggregate table doesn't include member properties.
+            return;
+        }
         String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
             + "member [Measures].[unit sales Female] as '([Measures].[Unit Sales],[Gender].[Gender].[F])' "
@@ -4356,35 +4361,32 @@ public class NonEmptyTest extends BatchTestCase {
             + "from Sales";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
-            MondrianProperties.instance().UseAggregates.get()
-                ? "select \"customer\".\"country\" as \"c0\","
-                    + "\"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"agg_l_03_sales_fact_1997\" \"agg_l_03_sales_fact_1997\" where \"agg_l_03_sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" in ('M', 'F')) group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST"
-                : "select \"customer\".\"country\" as \"c0\", "
-                + "\"customer\".\"state_province\" as \"c1\", "
-                + "\"customer\".\"city\" as \"c2\", "
-                + "\"customer\".\"customer_id\" as \"c3\", "
-                + "\"fname\" || ' ' || \"lname\" as \"c4\", "
-                + "\"fname\" || ' ' || \"lname\" as \"c5\", "
-                + "\"customer\".\"gender\" as \"c6\", "
-                + "\"customer\".\"marital_status\" as \"c7\", "
-                + "\"customer\".\"education\" as \"c8\", "
-                + "\"customer\".\"yearly_income\" as \"c9\" "
-                + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
-                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "and (\"customer\".\"gender\" in ('M', 'F')) "
-                + "group by \"customer\".\"country\", "
-                + "\"customer\".\"state_province\", "
-                + "\"customer\".\"city\", "
-                + "\"customer\".\"customer_id\", "
-                + "\"fname\" || ' ' || \"lname\", "
-                + "\"customer\".\"gender\", "
-                + "\"customer\".\"marital_status\", "
-                + "\"customer\".\"education\", "
-                + "\"customer\".\"yearly_income\" "
-                + "order by \"customer\".\"country\" ASC NULLS LAST,"
-                + " \"customer\".\"state_province\" ASC NULLS LAST,"
-                + " \"customer\".\"city\" ASC NULLS LAST, "
-                + "\"fname\" || ' ' || \"lname\" ASC NULLS LAST",
+            "select \"customer\".\"country\" as \"c0\", "
+            + "\"customer\".\"state_province\" as \"c1\", "
+            + "\"customer\".\"city\" as \"c2\", "
+            + "\"customer\".\"customer_id\" as \"c3\", "
+            + "\"fname\" || ' ' || \"lname\" as \"c4\", "
+            + "\"fname\" || ' ' || \"lname\" as \"c5\", "
+            + "\"customer\".\"gender\" as \"c6\", "
+            + "\"customer\".\"marital_status\" as \"c7\", "
+            + "\"customer\".\"education\" as \"c8\", "
+            + "\"customer\".\"yearly_income\" as \"c9\" "
+            + "from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" "
+            + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+            + "and (\"customer\".\"gender\" in ('M', 'F')) "
+            + "group by \"customer\".\"country\", "
+            + "\"customer\".\"state_province\", "
+            + "\"customer\".\"city\", "
+            + "\"customer\".\"customer_id\", "
+            + "\"fname\" || ' ' || \"lname\", "
+            + "\"customer\".\"gender\", "
+            + "\"customer\".\"marital_status\", "
+            + "\"customer\".\"education\", "
+            + "\"customer\".\"yearly_income\" "
+            + "order by \"customer\".\"country\" ASC NULLS LAST,"
+            + " \"customer\".\"state_province\" ASC NULLS LAST,"
+            + " \"customer\".\"city\" ASC NULLS LAST, "
+            + "\"fname\" || ' ' || \"lname\" ASC NULLS LAST",
             852);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }

@@ -1283,7 +1283,7 @@ public class TestAggregationManager extends BatchTestCase {
         + "          uniqueMembers=\"true\"/>\n"
         + "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
         + "          uniqueMembers=\"false\"/>\n"
-        + "      <Level name=\"Product Category\" table=\"product_class\" captionColumn=\"product_department\" column=\"product_category\"\n"
+        + "      <Level name=\"Product Category\" table=\"product_class\" captionColumn=\"product_family\" column=\"product_category\"\n"
         + "          uniqueMembers=\"false\"/>\n"
         + "      <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
         + "          uniqueMembers=\"false\"/>\n"
@@ -1321,11 +1321,11 @@ public class TestAggregationManager extends BatchTestCase {
         // first check that the sql is generated correctly
 
         SqlPattern[] patterns = {
-                new SqlPattern(
-                    ACCESS_MYSQL,
-                    "select `agg_g_ms_pcat_sales_fact_1997`.`product_family` as `c0`, `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c1`, `product_class`.`product_category` as `c2`, `product_class`.`product_department` as `c3`, `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c4` from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997`, `product_class` as `product_class` where `product_class`.`product_category` = `agg_g_ms_pcat_sales_fact_1997`.`product_category` and (`agg_g_ms_pcat_sales_fact_1997`.`product_category` = 'Meat' and `agg_g_ms_pcat_sales_fact_1997`.`product_department` = 'Deli' and `agg_g_ms_pcat_sales_fact_1997`.`product_family` = 'Food') and (`agg_g_ms_pcat_sales_fact_1997`.`gender` = 'M') group by `agg_g_ms_pcat_sales_fact_1997`.`product_family`, `agg_g_ms_pcat_sales_fact_1997`.`product_department`, `product_class`.`product_category`, `agg_g_ms_pcat_sales_fact_1997`.`gender` order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_family`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_family` ASC, ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_department`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_department` ASC, ISNULL(`product_class`.`product_category`) ASC, `product_class`.`product_category` ASC, ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
-                    null)
-            };
+            new SqlPattern(
+                ACCESS_MYSQL,
+                "select `agg_g_ms_pcat_sales_fact_1997`.`product_family` as `c0`, `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c1`, `product_class`.`product_category` as `c2`, `product_class`.`product_family` as `c3`, `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c4` from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997`, `product_class` as `product_class` where `product_class`.`product_category` = `agg_g_ms_pcat_sales_fact_1997`.`product_category` and (`agg_g_ms_pcat_sales_fact_1997`.`product_category` = 'Meat' and `agg_g_ms_pcat_sales_fact_1997`.`product_department` = 'Deli' and `agg_g_ms_pcat_sales_fact_1997`.`product_family` = 'Food') and (`agg_g_ms_pcat_sales_fact_1997`.`gender` = 'M') group by `agg_g_ms_pcat_sales_fact_1997`.`product_family`, `agg_g_ms_pcat_sales_fact_1997`.`product_department`, `product_class`.`product_category`, `product_class`.`product_family`, `agg_g_ms_pcat_sales_fact_1997`.`gender` order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_family`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_family` ASC, ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_department`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_department` ASC, ISNULL(`product_class`.`product_category`) ASC, `product_class`.`product_category` ASC, ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
+                null)
+        };
 
         assertQuerySqlOrNot(
             testContext, query, patterns, false, false, false);
@@ -1341,12 +1341,12 @@ public class TestAggregationManager extends BatchTestCase {
             + "Row #0: 4,705\n");
 
         Result result = testContext.executeQuery(query);
-        // this verifies that the caption for meat is deli
+        // this verifies that the caption for meat is Food
         assertEquals(
             "Meat",
             result.getAxes()[1].getPositions().get(0).get(0).getName());
         assertEquals(
-            "Deli",
+            "Food",
             result.getAxes()[1].getPositions().get(0).get(0).getCaption());
 
         // Test children
