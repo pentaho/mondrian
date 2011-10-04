@@ -372,9 +372,8 @@ public class FilterTest extends BatchTestCase {
             + "not((\"time_by_day\".\"the_year\" = 1997 and \"time_by_day\".\"quarter\" "
             + "= 'Q1') or (\"time_by_day\".\"the_year\" = 1998 and "
             + "\"time_by_day\".\"quarter\" = 'Q3')))) group by \"customer\".\"country\", "
-            + "\"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\" order by "
-            + "\"customer\".\"country\" ASC, \"time_by_day\".\"the_year\" ASC, "
-            + "\"time_by_day\".\"quarter\" ASC";
+            + "\"time_by_day\".\"the_year\", \"time_by_day\".\"quarter\" "
+            + "order by CASE WHEN \"customer\".\"country\" IS NULL THEN 1 ELSE 0 END, \"customer\".\"country\" ASC, CASE WHEN \"time_by_day\".\"the_year\" IS NULL THEN 1 ELSE 0 END, \"time_by_day\".\"the_year\" ASC, CASE WHEN \"time_by_day\".\"quarter\" IS NULL THEN 1 ELSE 0 END, \"time_by_day\".\"quarter\" ASC";
 
         String necjSqlMySql =
             "select `customer`.`country` as `c0`, `time_by_day`.`the_year` as `c1`, "
@@ -437,8 +436,8 @@ public class FilterTest extends BatchTestCase {
             + "(\"time_by_day\".\"quarter\" is null)) or (not "
             + "(\"time_by_day\".\"the_year\" = 1997) or (\"time_by_day\".\"the_year\" is "
             + "null))) group by \"customer\".\"country\", \"time_by_day\".\"the_year\", "
-            + "\"time_by_day\".\"quarter\" order by \"customer\".\"country\" ASC, "
-            + "\"time_by_day\".\"the_year\" ASC, \"time_by_day\".\"quarter\" ASC";
+            + "\"time_by_day\".\"quarter\" "
+            + "order by CASE WHEN \"customer\".\"country\" IS NULL THEN 1 ELSE 0 END, \"customer\".\"country\" ASC, CASE WHEN \"time_by_day\".\"the_year\" IS NULL THEN 1 ELSE 0 END, \"time_by_day\".\"the_year\" ASC, CASE WHEN \"time_by_day\".\"quarter\" IS NULL THEN 1 ELSE 0 END, \"time_by_day\".\"quarter\" ASC";
 
         String necjSqlMySql =
             "select `customer`.`country` as `c0`, `time_by_day`.`the_year` as "
