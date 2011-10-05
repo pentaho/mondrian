@@ -498,6 +498,8 @@ public class BatchTestCase extends FoodMartTestCase {
         switch (d) {
         case ORACLE:
             return sql.replaceAll(" =as= ", " ");
+        case GREENPLUM:
+        case POSTGRESQL:
         case TERADATA:
             return sql.replaceAll(" =as= ", " as ");
         case DERBY:

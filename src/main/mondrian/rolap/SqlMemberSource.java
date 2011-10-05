@@ -638,7 +638,7 @@ RME is this right
                 hierarchy.addToFrom(sqlQuery, exp);
             }
             final String s = exp.getExpression(sqlQuery);
-            String alias = sqlQuery.addSelect(s, null, null);
+            String alias = sqlQuery.addSelect(s, null);
             // Some dialects allow us to eliminate properties from the
             // group by that are functionally dependent on the level value
             if (!sqlQuery.getDialect().allowsSelectNotInGroupBy()

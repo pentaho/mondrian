@@ -54,12 +54,20 @@ public class GreenplumDialect extends PostgreSqlDialect {
         return true;
     }
 
-    public boolean allowsCountDistinct() {
+    public boolean requiresGroupByAlias() {
+        return true;
+    }
+
+    public boolean requiresAliasForFromQuery() {
         return false;
     }
 
-    public boolean allowsFromQuery() {
+    public boolean allowsCountDistinct() {
         return true;
+    }
+
+    public boolean allowsFromQuery() {
+        return false;
     }
 
     public DatabaseProduct getDatabaseProduct() {

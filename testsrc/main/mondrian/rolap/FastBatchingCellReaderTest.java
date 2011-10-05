@@ -167,6 +167,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         case DB2:
         case DB2_AS400:
         case DB2_OLD_AS400:
+        case GREENPLUM:
             assertTrue(fbcr.doesDBSupportGroupingSets());
             break;
         default:
@@ -1206,6 +1207,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         case NETEZZA:
             // Netezza gives an "ERROR:  Correlated Subplan expressions not
             // supported"
+        case GREENPLUM:
+            // Greenplum says 'Does not support yet that query'
             return;
         }
 
