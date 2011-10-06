@@ -9,18 +9,18 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.SegmentHeader.ConstrainedColumn;
-import mondrian.olap.*;
+import mondrian.server.Locus;
+import mondrian.util.CombiningGenerator;
+import mondrian.util.Pair;
 
 import java.io.Serializable;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-import mondrian.server.Locus;
-import mondrian.util.CombiningGenerator;
-import mondrian.util.Pair;
 import org.apache.log4j.Logger;
 
 /**
@@ -292,7 +292,7 @@ public class SegmentLoader {
                 // First get a list of all columns that we can turn
                 // into wildcards.
                 Set<ConstrainedColumn> columnsToTurnWildcard =
-                    new HashSet<ConstrainedColumn>();
+                    new LinkedHashSet<ConstrainedColumn>();
                 for (ConstrainedColumn cc
                     : headerRef.getConstrainedColumns())
                 {
@@ -318,20 +318,18 @@ public class SegmentLoader {
                     continue segLoop;
                 }
 
-                /*
-                 * Now we create a list of all the possible combinations
-                 * of columns being turned into wildcards and search if
-                 * that matches a segment from the caches.
-                 */
-                Set<Set<ConstrainedColumn>> combinations =
-                    CombiningGenerator.generate(columnsToTurnWildcard, 1);
-
-                // Now try each of these combinations and see if they match
-                // one of the segments we found. We will analyze the
-                //combinations by distributing the load across threads.
+                // Now we create a list of all the possible combinations
+                // of columns being turned into wildcards and search if
+                // that matches a segment from the caches. We will analyze the
+                // combinations by distributing the load across threads.
                 List<Callable<SegmentHeader>> comboTasks =
                     new ArrayList<Callable<SegmentHeader>>();
-                for (final Set<ConstrainedColumn> combo : combinations) {
+                for (final List<ConstrainedColumn> combo
+                    : CombiningGenerator.of(columnsToTurnWildcard))
+                {
+                    if (combo.size() < 1) {
+                        continue;
+                    }
                     comboTasks.add(
                         new Callable<SegmentHeader>() {
                             public SegmentHeader call() throws Exception {
@@ -391,7 +389,7 @@ public class SegmentLoader {
 
     private SegmentHeader analyzeCombo(
         final SegmentHeader headerRef,
-        Set<SegmentHeader.ConstrainedColumn> comb,
+        List<ConstrainedColumn> comb,
         Set<SegmentHeader> matchingSegments)
     {
         List<ConstrainedColumn> newColValues =

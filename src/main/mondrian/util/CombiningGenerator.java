@@ -3,127 +3,119 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011 Julian Hyde and others
+// Copyright (C) 2011-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 */
-
 package mondrian.util;
 
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
-
-import mondrian.olap.Util;
 
 /**
- * Combining generator is a utility class that takes a list
- * of objects and creates each and every possible combination
- * of those objects.
+ * A list that, given a collection of elements, contains every possible
+ * combination of those objects (also known as the
+ * <a href="http://en.wikipedia.org/wiki/Power_set">power set</a> of those
+ * objects).
+ *
  * @author LBoudreau
+ * @author jhyde
  */
-public class CombiningGenerator {
+public class CombiningGenerator<E> extends AbstractList<List<E>> {
 
-    private final static ExecutorService executor =
-        Util.getExecutorService(
-            4,
-            "mondrian.util.CombiningGenerator$ExecutorThread");
-    /**
-     * Generates all combinations of a list of objects.
-     * @param seed The list of objects to combine.
-     * @return A set of all possible combinations.
-     */
-    public static <E> Set<Set<E>> generate(Collection<E> seed)
-    {
-        return generate(seed, 1);
-    }
+    private final E[] elements;
+    private final int size;
 
     /**
-     * Generates all combinations of a list of objects.
-     * @param seed The list of objects to combine.
-     * @param minLength The minimum number of elements
-     * per combination in order for a combination
-     * to be valid.
-     * @return A set of all possible combinations.
+     * Creates a CombiningGenerator.
+     *
+     * @param elements Elements to iterate over
      */
-    public static <E> Set<Set<E>> generate(
-        Collection<E> seed,
-        int minLength)
-    {
-        final Set<Set<E>> result =
-            Collections.synchronizedSet(
-                new HashSet<Set<E>>());
-        final List<FutureTask<Boolean>> tasks =
-            Collections.synchronizedList(
-                new ArrayList<FutureTask<Boolean>>());
-        final List<E> seedList =
-            Collections.synchronizedList(
-                new ArrayList<E>());
-        final AtomicInteger countLatch =
-            new AtomicInteger(1);
+    public CombiningGenerator(Collection<E> elements) {
+        //noinspection unchecked
+        this.elements = (E[]) elements.toArray(new Object[elements.size()]);
+        if (elements.size() > 31) {
+            // No point having a list with more than 2^31 elements; you can't
+            // address it using a java (signed) int value. I suppose you could
+            // have an iterator that is larger... but it would take a long time
+            // to iterate it.
+            throw new IllegalArgumentException("too many elements");
+        }
+        size = 1 << this.elements.length;
+    }
 
-        seedList.addAll(seed);
+    /**
+     * Creates a CombiningGenerator, inferring the type from the argument.
+     *
+     * @param elements Elements to iterate over
+     * @param <T> Element type
+     * @return Combing generator containing the power set
+     */
+    public static <T> CombiningGenerator<T> of(Collection<T> elements) {
+        return new CombiningGenerator<T>(elements);
+    }
 
-        generateRecursive(countLatch, tasks, seedList, result, minLength);
-
-        while (true) {
-            if (countLatch.get() == 0) {
-                return result;
+    @Override
+    public List<E> get(final int index) {
+        final int size = Integer.bitCount(index);
+        return new AbstractList<E>() {
+            public E get(int index1) {
+                if (index1 < 0 || index1 >= size) {
+                    throw new IndexOutOfBoundsException();
+                }
+                int i = nth(index1, index);
+                return elements[i];
             }
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                // no op .
+
+            public int size() {
+                return size;
             }
+        };
+    }
+
+    /**
+     * Returns the position of the {@code seek}th bit set in {@code b}.
+     * For example,
+     * nth(0, 1) returns 0;
+     * nth(0, 2) returns 1;
+     * nth(0, 4) returns 2;
+     * nth(7, 255) returns 7.
+     *
+     * <p>Careful. If there are not that many bits set, this method never
+     * returns.</p>
+     *
+     * @param seek Bit to seek
+     * @param b Integer in which to seek bits
+     * @return Ordinal of the given set bit
+     */
+    private static int nth(int seek, int b) {
+        int i = 0, c = 0;
+        for (;;) {
+            if ((b & 1) == 1) {
+                if (c++ == seek) {
+                    return i;
+                }
+            }
+            ++i;
+            b >>= 1;
         }
     }
 
-    private static <E> void generateRecursive(
-        final AtomicInteger countLatch,
-        final List<FutureTask<Boolean>> tasks,
-        final List<E> seed,
-        final Set<Set<E>> combined,
-        final int minLength)
-    {
-        if (seed.size() < minLength) {
-            countLatch.getAndDecrement();
-            return;
-        }
-        combined.add(new HashSet<E>(seed));
-        if (seed.size() == 1) {
-            combined.add(new HashSet<E>(seed));
-            countLatch.getAndDecrement();
-            return;
-        }
-        for (int i = 0; i < seed.size(); i++) {
-            final int position = i;
-            final FutureTask<Boolean> task = new FutureTask<Boolean>(
-                new Callable<Boolean>() {
-                    public Boolean call() throws Exception {
-                        List<E> subList =
-                            new ArrayList<E>(seed.subList(0, position));
-                        subList.addAll(
-                            seed.subList(position + 1, seed.size()));
-                        generateRecursive(
-                            countLatch, tasks, subList, combined, minLength);
-                        return true;
-                    }
-                });
-            countLatch.getAndIncrement();
-            tasks.add(task);
-            executor.execute(task);
-        }
-        countLatch.getAndDecrement();
+    public int size() {
+        return size;
     }
 
+    /**
+     * Ad hoc test. See also UtilTest.testCombiningGenerator.
+     *
+     * @param args ignored
+     */
     public static void main(String[] args) {
-        List<Object> seed = new ArrayList<Object>();
+        List<String> seed = new ArrayList<String>();
         for (int i = 0; i < 8; i++) {
             seed.add(String.valueOf(i));
         }
-        Set<Set<Object>> result = CombiningGenerator.generate(seed, 1);
-        for (Set<Object> i : result) {
+        List<List<String>> result = new CombiningGenerator<String>(seed);
+        for (List<String> i : result) {
             for (Object o : i) {
                 System.out.print("|");
                 System.out.print(String.valueOf(o));
@@ -132,4 +124,5 @@ public class CombiningGenerator {
         }
     }
 }
+
 // End CombiningGenerator.java
