@@ -53,12 +53,33 @@ class RolapResultShepherd {
     private static final List<Pair<FutureTask<Result>, Execution>> tasks =
         new CopyOnWriteArrayList<Pair<FutureTask<Result>,Execution>>();
 
+    static {
+        Runtime.getRuntime().addShutdownHook(
+            new Thread(
+                new Runnable() {
+                    public void run() {
+                        for (Pair<FutureTask<Result>, Execution> task
+                            : tasks)
+                        {
+                            if (task.right.isCancelOrTimeout()) {
+                                task.left.cancel(true);
+                                task.right.cleanStatements();
+                            }
+                        }
+                        executor.shutdownNow();
+                    }
+                }));
+    }
+
     /*
      * Fire up the shepherd thread.
      */
     static {
         executor.execute(
             new Runnable() {
+                private final int delay =
+                    MondrianProperties.instance()
+                        .RolapConnectionShepherdThreadPollingInterval.get();
                 public void run() {
                     while (true) {
                         for (Pair<FutureTask<Result>, Execution> task
@@ -76,11 +97,10 @@ class RolapResultShepherd {
                             }
                         }
                         try {
-                            Thread.sleep(
-                                MondrianProperties.instance()
-                                .RolapConnectionShepherdThreadPollingInterval
-                                .get());
+                            Thread.sleep(delay);
                         } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            executor.shutdownNow();
                             return;
                         }
                     }
@@ -124,6 +144,9 @@ class RolapResultShepherd {
             executor.execute(task);
             return task.get();
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             // Let the Execution throw whatever it wants to, this way the
             // API contract is respected. The program should in most cases
             // stop here as most exceptions will originate from the Execution
