@@ -17,7 +17,8 @@ import java.sql.Driver;
 import mondrian.util.*;
 
 /**
- * Tests for methods in {@link mondrian.olap.Util}.
+ * Tests for methods in {@link mondrian.olap.Util} and, sometimes, classes in
+ * the {@code mondrian.util} package.
  *
  * @version $Id$
  */
@@ -1026,6 +1027,9 @@ public class UtilTestCase extends TestCase {
         assertEquals("en_GB", Util.lcidToLocale((short) 2057).toString());
     }
 
+    /**
+     * Unit test for {@link CombiningGenerator}.
+     */
     public void testCombiningGenerator() {
         assertEquals(
             1,
@@ -1072,7 +1076,7 @@ public class UtilTestCase extends TestCase {
         // Check that can iterate over 2^20 (~ 1m) elements in reasonable time.
         i = 0;
         for (List<String> xx
-            : CombiningGenerator.of(Collections.nCopies( 20, "x")))
+            : CombiningGenerator.of(Collections.nCopies(20, "x")))
         {
             Util.discard(xx);
             i++;
