@@ -190,7 +190,7 @@ class SqlMemberSource
             return sqlQuery.toString();
         }
         if (!sqlQuery.getDialect().allowsFromQuery()) {
-            String columnList = "";
+            List<String> columnList = new ArrayList<String>();
             int columnCount = 0;
             for (int i = levelDepth; i >= 0; i--) {
                 RolapLevel level2 = levels[i];
@@ -199,36 +199,13 @@ class SqlMemberSource
                 }
                 if (columnCount > 0) {
                     if (sqlQuery.getDialect().allowsCompoundCountDistinct()) {
-                        columnList += ", ";
+                        // no op.
                     } else if (true) {
                         // for databases where both SELECT-in-FROM and
                         // COUNT DISTINCT do not work, we do not
                         // generate any count and do the count
                         // distinct "manually".
                         mustCount[0] = true;
-                    } else if (sqlQuery.getDialect().getDatabaseProduct()
-                        == Dialect.DatabaseProduct.SYBASE)
-                    {
-                        // "select count(distinct convert(varchar, c1) +
-                        // convert(varchar, c2)) from table"
-                        if (columnCount == 1) {
-                            // Conversion to varchar is expensive, so we only
-                            // do it when we know we are dealing with a
-                            // compound key.
-                            columnList = "convert(varchar, " + columnList + ")";
-                        }
-                        columnList += " + ";
-                    } else {
-                        // Apparently this database allows neither
-                        // SELECT-in-FROM nor compound COUNT DISTINCT. I don't
-                        // know any database where this happens. If you receive
-                        // this error, try a workaround similar to the Sybase
-                        // workaround above.
-                        throw Util.newInternal(
-                            "Cannot generate query to count members of level '"
-                            + level.getUniqueName()
-                            + "': database supports neither SELECT-in-FROM nor "
-                            + "compound COUNT DISTINCT");
                     }
                 }
                 hierarchy.addToFrom(sqlQuery, level2.getKeyExp());
@@ -241,7 +218,7 @@ class SqlMemberSource
                 {
                     keyExp = "convert(varchar, " + columnList + ")";
                 }
-                columnList += keyExp;
+                columnList.add(keyExp);
 
                 if (level2.isUnique()) {
                     break; // no further qualification needed
@@ -249,11 +226,21 @@ class SqlMemberSource
                 ++columnCount;
             }
             if (mustCount[0]) {
-                sqlQuery.addSelect(columnList, null);
-                sqlQuery.addOrderBy(columnList, true, false, true);
+                for (String colDef : columnList) {
+                    sqlQuery.addSelect(colDef, null);
+                    sqlQuery.addOrderBy(colDef, true, false, true);
+                }
             } else {
+                int i = 0;
+                StringBuilder sb = new StringBuilder();
+                for (String colDef : columnList) {
+                    if (i > 0) {
+                        sb.append(", ");
+                    }
+                    sb.append(colDef);
+                }
                 sqlQuery.addSelect(
-                    "count(DISTINCT " + columnList + ")", null);
+                    "count(DISTINCT " + sb.toString() + ")", null);
             }
             return sqlQuery.toString();
 
