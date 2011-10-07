@@ -143,27 +143,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 // very slow.  May want to revisit this if someone
                 // improves the algorithm.
             } else {
-                // If members of this hierarchy are controlled by a role which
-                // enforces a rollup policy of partial, we cannot safely
-                // optimize the tuples list as it might end up rolling up to
-                // the parent while not all children are actually accessible.
-                boolean canOptimize = true;
-                loop:
-                for (List<Member> tupleMembers : tupleList) {
-                    for (Member member : tupleMembers) {
-                        final RollupPolicy policy =
-                            evaluator.getSchemaReader().getRole()
-                                .getAccessDetails(member.getHierarchy())
-                                    .getRollupPolicy();
-                        if (policy == RollupPolicy.PARTIAL) {
-                            canOptimize = false;
-                            break loop;
-                        }
-                    }
-                }
-                if (canOptimize) {
-                    tupleList = optimizeTupleList(evaluator, tupleList);
-                }
+                tupleList = optimizeTupleList(evaluator, tupleList);
             }
 
             // Can't aggregate distinct-count values in the same way
@@ -179,10 +159,42 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             return evaluator2.evaluateCurrent();
         }
 
+        /**
+         * Analyzes a list of tuples and determines if the list can
+         * be safely optimized. If a member of the tuple list is on
+         * a hierarchy for which a rollup policy of PARTIAL is set,
+         * it is not safe to optimize that list.
+         */
+        private static boolean canOptimize(
+            Evaluator evaluator,
+            TupleList tupleList)
+        {
+            // If members of this hierarchy are controlled by a role which
+            // enforces a rollup policy of partial, we cannot safely
+            // optimize the tuples list as it might end up rolling up to
+            // the parent while not all children are actually accessible.
+            for (List<Member> tupleMembers : tupleList) {
+                for (Member member : tupleMembers) {
+                    final RollupPolicy policy =
+                        evaluator.getSchemaReader().getRole()
+                            .getAccessDetails(member.getHierarchy())
+                                .getRollupPolicy();
+                    if (policy == RollupPolicy.PARTIAL) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
         public static TupleList optimizeTupleList(
             Evaluator evaluator,
             TupleList tupleList)
         {
+            if (!canOptimize(evaluator, tupleList)) {
+                return tupleList;
+            }
+
             // FIXME: We remove overlapping tuple entries only to pass
             // AggregationOnDistinctCountMeasuresTest
             // .testOptimizeListWithTuplesOfLength3 on Access. Without
