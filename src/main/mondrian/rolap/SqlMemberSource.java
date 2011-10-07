@@ -133,7 +133,7 @@ class SqlMemberSource
                     boolean isEqual = true;
                     for (int i = 0; i < nColumns; i++) {
                         String colStr = resultSet.getString(i + 1);
-                        if (!colStr.equals(colStrings[i])) {
+                        if (!Util.equals(colStr, colStrings[i])) {
                             isEqual = false;
                         }
                         colStrings[i] = colStr;
@@ -227,8 +227,10 @@ class SqlMemberSource
             }
             if (mustCount[0]) {
                 for (String colDef : columnList) {
-                    sqlQuery.addSelect(colDef, null);
-                    sqlQuery.addOrderBy(colDef, true, false, true);
+                    final String exp =
+                        sqlQuery.getDialect().generateCountExpression(colDef);
+                    sqlQuery.addSelect(exp, null);
+                    sqlQuery.addOrderBy(exp, true, false, true);
                 }
             } else {
                 int i = 0;
@@ -237,7 +239,9 @@ class SqlMemberSource
                     if (i > 0) {
                         sb.append(", ");
                     }
-                    sb.append(colDef);
+                    sb.append(
+                        sqlQuery.getDialect()
+                            .generateCountExpression(colDef));
                 }
                 sqlQuery.addSelect(
                     "count(DISTINCT " + sb.toString() + ")", null);

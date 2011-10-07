@@ -74,6 +74,10 @@ public class GreenplumDialect extends PostgreSqlDialect {
         return DatabaseProduct.GREENPLUM;
     }
 
+    public String generateCountExpression(String exp) {
+        return caseWhenElse( exp + " ISNULL", "'0'", "TEXT(" + exp + ")");
+    }
+
     public boolean allowsRegularExpressionInWhereClause() {
         // Support for regexp was added in GP 3.2+
         if (productVersion.compareTo("3.2") >= 0) {

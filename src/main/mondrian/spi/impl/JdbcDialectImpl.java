@@ -869,6 +869,10 @@ public class JdbcDialectImpl implements Dialect {
         return false;
     }
 
+    public String generateCountExpression(String exp) {
+        return exp;
+    }
+
     public String generateRegularExpression(
         String source,
         String javaRegExp)
