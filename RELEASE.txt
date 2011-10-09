@@ -4,9 +4,12 @@ Mondrian 3.2.1.13885 production release notes
 Introduction
 ------------
 
-Mondrian 3.2.1.13885 is a patch release version of the leading
-open-source OLAP engine. To find out more about mondrian, go
-to http://mondrian.pentaho.com.
+Mondrian 3.3.0 introduces many new features, optimizations and
+bug fixes to the previous release. There are a few potentially
+disruptive changes introduced in this release. We strongly
+recommend reading these release notes carefully.
+
+To find out more about mondrian, go to http://mondrian.pentaho.com.
 
 Contents
 --------
@@ -32,28 +35,48 @@ For further installation instructions, see
 http://mondrian.pentaho.com/documentation/installation.php
 or the included file doc/installation.html.
 
-* Note that the below is not a complete list of changes
-  in 3.2, we still need to compile a list before the branch 
-  took place that includes changes that were not placed into
-  3.1 but were available in trunk
-
 Main functionality in this release
 ----------------------------------
- - Improved native performance
- - olap4j drill through support
- - Improved XMLA support
- - Greenplum Dialect
- - Improved parameter support
+ - Improved native performance.
+ - Support for olap4j 1.0.
+ - XMLA now supports roles and access controls, as well as
+   a major refactoring to allow the XMLA servlet to run on top
+   of any olap4j compliant driver.
+ - Improved Greenplum support.
+ - Improved member cache control.
+ - Introduces the Hive dialect.
+ - Introduces scripted user defined functions and formatters.
+ - Introduces the SegmentCache SPI.
+ - Introduces the EXPLAIN PLAN query.
 
-API changes from 3.1 to 3.2
+API changes from 3.2.to 3.3
 ---------------------------
- - Changed RolapMember to an interface
- - The getUniqueName() on Member no longer includes the all
-   member.
- - Upgraded to olap4j-0.9.7.309
+ - Added OlapElement.isVisible().
+ - Dialect now includes:
+     o allowsJoinOn()
+     o allowsRegularExpressionInWhereClause()
+     o generateRegularExpression()
+     o requiresHavingAlias()
+     o generateCountExpression()
+ - Dialect removes:
+     o getNullCollation()
+ - Upgraded to olap4j-1.0.0.445
+ - Introduction of:
+     o SegmentCache
+     o PropertyFormatter
+     o MemberFormatter
+     o CellFormatter
 
 See CHANGES.txt for a list of all source code changes
 since the previous release.
+
+Bugs and feature requests fixed for 3.3.0
+----------------------------------------------------------
+
+A complete list of the changes included in this release is available
+at the following URL.
+
+http://jira.pentaho.com/secure/IssueNavigator.jspa?requestId=11075
 
 Bugs and feature requests fixed for 3.2.1.13885
 ----------------------------------------------------------
