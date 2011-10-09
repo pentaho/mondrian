@@ -1,4 +1,4 @@
-Mondrian 3.2.1.13885 production release notes
+Mondrian 3.3.0 production release notes
 =============================================
 
 Introduction
