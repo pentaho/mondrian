@@ -1,10 +1,10 @@
-Mondrian 3.3.0 production release notes
+Mondrian 3.3.0.14680 production release notes
 =============================================
 
 Introduction
 ------------
 
-Mondrian 3.3.0 introduces many new features, optimizations and
+Mondrian 3.3.0.14680 introduces many new features, optimizations and
 bug fixes to the previous release. There are a few potentially
 disruptive changes introduced in this release. We strongly
 recommend reading these release notes carefully.
@@ -70,7 +70,7 @@ API changes from 3.2.to 3.3
 See CHANGES.txt for a list of all source code changes
 since the previous release.
 
-Bugs and feature requests fixed for 3.3.0
+Bugs and feature requests fixed for 3.3.0.14680
 ----------------------------------------------------------
 
 A complete list of the changes included in this release is available
