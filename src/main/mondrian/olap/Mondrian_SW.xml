@@ -1415,6 +1415,9 @@
             <Value>luciddb</Value>
             <Value>vertica</Value>
             <Value>neoview</Value>
+            <Value>greenplum</Value>
+            <Value>vectorwise</Value>
+            <Value>hive</Value>
         </Attribute>
         <CData/>
         <Code><![CDATA[
