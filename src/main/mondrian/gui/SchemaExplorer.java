@@ -1241,6 +1241,7 @@ public class SchemaExplorer
                 schema.cubes);
         cube.cache = Boolean.TRUE;
         cube.enabled = Boolean.TRUE;
+        cube.visible = Boolean.TRUE;
         NodeDef[] temp = schema.cubes;
         schema.cubes = new MondrianGuiDef.Cube[temp.length + 1];
         for (int _i = 0; _i < temp.length; _i++) {
@@ -2449,6 +2450,7 @@ public class SchemaExplorer
 
         MondrianGuiDef.Dimension dimension = new MondrianGuiDef.Dimension();
         dimension.name = "";
+        dimension.visible = Boolean.TRUE;
         dimension.type = "StandardDimension";    // default dimension type
         dimension.hierarchies = new MondrianGuiDef.Hierarchy[1];
         dimension.hierarchies[0] = new MondrianGuiDef.Hierarchy();
@@ -2456,6 +2458,7 @@ public class SchemaExplorer
             getResourceConverter().getString(
                 "schemaExplorer.newHierarchyInTree.title",
                 "New Hierarchy 0");
+        dimension.hierarchies[0].visible = Boolean.TRUE;
         dimension.hierarchies[0].hasAll = true;
         dimension.hierarchies[0].levels = new MondrianGuiDef.Level[0];
         dimension.hierarchies[0].memberReaderParameters =
@@ -2745,6 +2748,7 @@ public class SchemaExplorer
         MondrianGuiDef.DimensionUsage dimension =
             new MondrianGuiDef.DimensionUsage();
         dimension.name = "";
+        dimension.visible = Boolean.TRUE;
         dimension.name =
             getNewName(
                 getResourceConverter().getString(
@@ -3224,6 +3228,7 @@ public class SchemaExplorer
 
         MondrianGuiDef.Level level = new MondrianGuiDef.Level();
         level.uniqueMembers = false;
+        level.visible = Boolean.TRUE;
         level.name = "";
         level.properties = new MondrianGuiDef.Property[0];
         level.name =
@@ -4096,6 +4101,7 @@ public class SchemaExplorer
 
         hierarchy.name = "";
         hierarchy.hasAll = Boolean.TRUE; //new Boolean(false);
+        hierarchy.visible = Boolean.TRUE;
         hierarchy.levels = new MondrianGuiDef.Level[0];
         hierarchy.memberReaderParameters =
             new MondrianGuiDef.MemberReaderParameter[0];
