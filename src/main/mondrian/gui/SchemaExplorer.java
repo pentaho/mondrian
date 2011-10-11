@@ -5431,10 +5431,10 @@ public class SchemaExplorer
         "aggregator",
         "column",
         "formatString",
-        "visible",
         "datatype",
         "formatter",
-        "caption"
+        "caption",
+        "visible"
     };
 
     static final String[] DEF_CALCULATED_MEMBER = {
@@ -5499,7 +5499,8 @@ public class SchemaExplorer
         "name", "foreignKey", "source", "level",
         "usagePrefix", "caption", "visible"};
     static final String[] DEF_DIMENSION = {
-        "name", "description", "foreignKey", "type", "usagePrefix", "caption"};
+        "name", "description", "foreignKey", "type",
+        "usagePrefix", "caption", "visible"};
     static final String[] DEF_CUBE = {"name", "description", "caption",
         "cache", "enabled", "visible"};
     static final String[] DEF_ROLE = {"name"};
