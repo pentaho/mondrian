@@ -105,6 +105,16 @@ class CacheMemberReader implements MemberReader, MemberCache {
         throw new UnsupportedOperationException();
     }
 
+    // don't need to implement this MemberCache method because we're never
+    // used in a context where it is needed
+    public void putChildren(
+        RolapLevel level,
+        TupleConstraint constraint,
+        List<RolapMember> children)
+    {
+        throw new UnsupportedOperationException();
+    }
+
     // this cache is immutable
     public boolean isMutable()
     {

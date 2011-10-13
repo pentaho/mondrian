@@ -35,6 +35,8 @@ import mondrian.util.UnsupportedList;
  */
 public class RolapCubeHierarchy extends RolapHierarchy {
 
+    private final boolean cachingEnabled =
+        MondrianProperties.instance().EnableRolapCubeMemberCache.get();
     private final RolapCubeDimension cubeDimension;
     private final RolapHierarchy rolapHierarchy;
     private final RolapCubeLevel currentNullLevel;
@@ -164,7 +166,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             this.removePrefixLength = rolapHierarchy.getUniqueName().length();
         }
 
-        if (cubeDimension.isHighCardinality()) {
+        if (cubeDimension.isHighCardinality() || !cachingEnabled) {
             this.reader = new NoCacheRolapCubeHierarchyMemberReader();
         } else {
             this.reader = new CacheRolapCubeHierarchyMemberReader();

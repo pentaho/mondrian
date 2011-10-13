@@ -106,14 +106,20 @@ public class MemberCacheHelper implements MemberCache {
     }
 
     /**
-     * ???
-     *
-     * @param level
-     * @param constraint
-     * @param members
+     * Deprecated in favor of
+     * {@link #putChildren(RolapLevel, TupleConstraint, List)}
      */
     // synchronization: Must synchronize, because modifies mapKeyToMember
+    @Deprecated
     public synchronized void putLevelMembersInCache(
+        RolapLevel level,
+        TupleConstraint constraint,
+        List<RolapMember> members)
+    {
+        putChildren(level, constraint, members);
+    }
+
+    public synchronized void putChildren(
         RolapLevel level,
         TupleConstraint constraint,
         List<RolapMember> members)

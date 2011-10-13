@@ -1621,7 +1621,7 @@ public class CacheControlImpl implements CacheControl {
 
                 // Remove the member from its parent's lists. First try the
                 // unconstrained cache.
-                List<RolapMember> childrenList =
+                final List<RolapMember> childrenList =
                     memberCache.getChildrenFromCache(
                         previousParent,
                         DefaultMemberChildrenConstraint.instance());
@@ -1640,6 +1640,20 @@ public class CacheControlImpl implements CacheControl {
                     previousParent,
                     memberConstraint,
                     null);
+
+                // Let's update the level members cache.
+                final List<RolapMember> levelMembers =
+                    memberCache
+                        .getLevelMembersFromCache(
+                            member.getLevel(),
+                            DefaultTupleConstraint.instance());
+                if (levelMembers != null) {
+                    levelMembers.remove(member);
+                    memberCache.putChildren(
+                        member.getLevel(),
+                        DefaultTupleConstraint.instance(),
+                        childrenList);
+                }
 
                 // Remove the member itself. The MemberCacheHelper takes care of
                 // removing the member's children as well.
@@ -1675,23 +1689,17 @@ public class CacheControlImpl implements CacheControl {
                     new ChildByNameConstraint(
                         new Id.Segment(member.getName(), Quoting.QUOTED));
 
-                // First check if there is already a list in cache
-                // constrained by the member name.
+                // Check if there is already a list in cache
+                // constrained by a wildcard.
                 List<RolapMember> childrenList =
                     memberCache.getChildrenFromCache(
                         parent,
-                        memberConstraint);
+                        DefaultMemberChildrenConstraint.instance());
                 if (childrenList == null) {
-                    // There was no constrained cache hit. Let's create one.
-                    final List<RolapMember> constrainedList =
-                        new ArrayList<RolapMember>();
-                    constrainedList.add(member);
-                    memberCache.putChildren(
-                        parent,
-                        memberConstraint,
-                        constrainedList);
+                    // There was no cached list. We can ignore.
                 } else {
-                    // A list existed before. Let's append to it.
+                    // A list existed before. We can save a SQL query.
+                    // Might be immutable. Let's append to it.
                     if (childrenList.isEmpty()) {
                         childrenList = new ArrayList<RolapMember>();
                     }
@@ -1702,27 +1710,19 @@ public class CacheControlImpl implements CacheControl {
                         childrenList);
                 }
 
-                // Now check if an unconstrained cached list exists.
-                childrenList =
-                    memberCache.getChildrenFromCache(
-                        parent,
-                        DefaultMemberChildrenConstraint.instance());
-                if (childrenList == null) {
-                    // There was no unconstrained cache hit. Let's create one.
-                    final List<RolapMember> unconstrainedList =
-                        new ArrayList<RolapMember>();
-                    unconstrainedList.add(member);
+                final List<RolapMember> levelMembers =
+                    memberCache
+                        .getLevelMembersFromCache(
+                            member.getLevel(),
+                            DefaultTupleConstraint.instance());
+                if (levelMembers != null) {
+                    // There was already a cached list.
+                    // Let's append to it.
+                    levelMembers.add(member);
                     memberCache.putChildren(
-                        parent,
-                        DefaultMemberChildrenConstraint.instance(),
-                        unconstrainedList);
-                } else {
-                    // A list existed before. Let's append to it.
-                    childrenList.add(member);
-                    memberCache.putChildren(
-                        parent,
-                        DefaultMemberChildrenConstraint.instance(),
-                        childrenList);
+                        member.getLevel(),
+                        DefaultTupleConstraint.instance(),
+                        levelMembers);
                 }
 
                 // Now add the member itself into cache
