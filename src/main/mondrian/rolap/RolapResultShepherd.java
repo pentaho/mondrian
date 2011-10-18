@@ -53,24 +53,6 @@ class RolapResultShepherd {
     private static final List<Pair<FutureTask<Result>, Execution>> tasks =
         new CopyOnWriteArrayList<Pair<FutureTask<Result>,Execution>>();
 
-    static {
-        Runtime.getRuntime().addShutdownHook(
-            new Thread(
-                new Runnable() {
-                    public void run() {
-                        for (Pair<FutureTask<Result>, Execution> task
-                            : tasks)
-                        {
-                            if (task.right.isCancelOrTimeout()) {
-                                task.left.cancel(true);
-                                task.right.cleanStatements();
-                            }
-                        }
-                        executor.shutdownNow();
-                    }
-                }));
-    }
-
     /*
      * Fire up the shepherd thread.
      */
