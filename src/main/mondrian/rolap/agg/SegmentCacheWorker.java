@@ -42,7 +42,9 @@ public final class SegmentCacheWorker {
         // mondrian properties.
         final String cacheName =
             MondrianProperties.instance().SegmentCache.get();
-        setCache(cacheName);
+        if (cacheName != null) {
+            setCache(cacheName);
+        }
 
         if (segmentCache == null) {
             // There was a property defined. We use this one
