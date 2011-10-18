@@ -82,7 +82,6 @@ class RolapResultShepherd {
                             Thread.sleep(delay);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
-                            executor.shutdownNow();
                             return;
                         }
                     }
