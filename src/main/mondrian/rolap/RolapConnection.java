@@ -590,6 +590,14 @@ public class RolapConnection extends ConnectionBase {
 
     private Result executeInternal(final Execution execution) {
         final Statement statement = execution.getMondrianStatement();
+        // Cleanup any previous executions still running
+        synchronized (statement) {
+            final Execution previousExecution =
+                statement.getCurrentExecution();
+            if (previousExecution != null) {
+                statement.end(previousExecution);
+            }
+        }
         final Query query = statement.getQuery();
         final MemoryMonitor.Listener listener = new MemoryMonitor.Listener() {
             public void memoryUsageNotification(long used, long max) {
@@ -639,7 +647,17 @@ public class RolapConnection extends ConnectionBase {
             // query has been punted
             throw e;
         } catch (Exception e) {
-            statement.end(execution);
+            try {
+                statement.end(execution);
+            } catch (Exception e1) {
+                /*
+                 * We can safely ignore that cleanup exception.
+                 * If an error is encountered here, it means that
+                 * one was already encountered at statement.start()
+                 * above and the exception we will throw after the
+                 * cleanup is the same as the original one.
+                 */
+            }
             String queryString;
             try {
                 queryString = Util.unparse(query);

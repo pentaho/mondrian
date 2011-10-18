@@ -27,6 +27,11 @@ import mondrian.calc.ResultStyle;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.*;
+import java.sql.DriverManager;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 import java.util.*;
 
@@ -7352,6 +7357,37 @@ public class BasicQueryTest extends FoodMartTestCase {
                 e,
                 "MDX object '[Measures].[Store Margin]' not found in cube 'Sales'");
         }
+    }
+
+    /**
+     * This is a test for MONDRIAN-1014. Executing a statement
+     * twice concurrently would fail because the statement wasn't
+     * cleaning up properly its execution context.
+     */
+    public void testConcurrentStatementRun() throws Exception {
+        final OlapConnection olapConnection =
+            TestContext.instance().getOlap4jConnection();
+
+        final ExecutorService es =
+            Executors.newCachedThreadPool();
+
+        final OlapStatement stmt = olapConnection.createStatement();
+
+        es.submit(
+            new Callable<CellSet>() {
+                public CellSet call() throws Exception {
+                    return stmt.executeOlapQuery(
+                        "select {Crossjoin([Store].Members, [Customers].Members)} on columns from [Sales]");
+                }
+            });
+
+        es.submit(
+            new Callable<CellSet>() {
+                public CellSet call() throws Exception {
+                    return stmt.executeOlapQuery(
+                        "select {Crossjoin([Store].Members, [Customers].Members)} on columns from [Sales]");
+                }
+            }).get();
     }
 }
 
