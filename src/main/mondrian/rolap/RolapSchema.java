@@ -1714,6 +1714,14 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         return changeListener;
     }
 
+    /**
+     * Returns the checksum of this schema. Returns
+     * <code>null</code> {@link RolapConnectionProperties#UseContentChecksum}
+     * is set to false.
+     */
+    public String getChecksum() {
+        return md5Bytes;
+    }
 
     /**
      * Connection for purposes of parsing and validation. Careful! It won't

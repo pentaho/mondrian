@@ -19,11 +19,9 @@ import java.util.Map;
 import mondrian.olap.Util;
 import mondrian.rolap.BitKey;
 import mondrian.rolap.RolapCacheRegion;
-import mondrian.rolap.RolapStar;
 import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.StarPredicate;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.spi.impl.JdbcDialectImpl;
 
 /**
  * SegmentHeaders are the key objects used to retrieve the segments
@@ -66,6 +64,7 @@ public class SegmentHeader implements Serializable {
     private final int hashCode;
     private byte[] uniqueID = null;
     private String description = null;
+    private final String schemaChecksum;
 
     /**
      * Base constructor for segment headers.
@@ -79,6 +78,7 @@ public class SegmentHeader implements Serializable {
      */
     public SegmentHeader(
         String schemaName,
+        String schemaChecksum,
         String cubeName,
         String measureName,
         ConstrainedColumn[] constrainedColumns,
@@ -86,7 +86,7 @@ public class SegmentHeader implements Serializable {
         BitKey constrainedColsBitKey)
     {
         this(
-            schemaName, cubeName, measureName,
+            schemaName, schemaChecksum, cubeName, measureName,
             constrainedColumns, new String[0],
             rolapStarFactTableName, constrainedColsBitKey);
     }
@@ -102,6 +102,7 @@ public class SegmentHeader implements Serializable {
      */
     public SegmentHeader(
         String schemaName,
+        String schemaChecksum,
         String cubeName,
         String measureName,
         ConstrainedColumn[] constrainedColumns,
@@ -111,6 +112,7 @@ public class SegmentHeader implements Serializable {
     {
         this.constrainedColumns = constrainedColumns;
         this.schemaName = schemaName;
+        this.schemaChecksum = schemaChecksum;
         this.cubeName = cubeName;
         this.measureName = measureName;
         this.compoundPredicates = compoundPredicates;
@@ -122,6 +124,7 @@ public class SegmentHeader implements Serializable {
         // deterministic order (alpha...)
         int hash = 42;
         hash = Util.hash(hash, schemaName);
+        hash = Util.hash(hash, schemaChecksum);
         hash = Util.hash(hash, cubeName);
         hash = Util.hash(hash, measureName);
         for (ConstrainedColumn col : this.constrainedColumns) {
@@ -205,6 +208,7 @@ public class SegmentHeader implements Serializable {
         return
             new SegmentHeader(
                 segment.measure.getStar().getSchema().getName(),
+                segment.measure.getStar().getSchema().getChecksum(),
                 segment.measure.getCubeName(),
                 segment.measure.getName(),
                 cc,
@@ -232,6 +236,7 @@ public class SegmentHeader implements Serializable {
         return
             new SegmentHeader(
                 schemaName,
+                schemaChecksum,
                 cubeName,
                 measureName,
                 colsToAdd.values()
@@ -419,6 +424,7 @@ public class SegmentHeader implements Serializable {
         if (this.uniqueID == null) {
             StringBuilder hashSB = new StringBuilder();
             hashSB.append(this.schemaName);
+            hashSB.append(this.schemaChecksum);
             hashSB.append(this.cubeName);
             hashSB.append(this.measureName);
             for (ConstrainedColumn c : constrainedColumns) {
@@ -451,7 +457,9 @@ public class SegmentHeader implements Serializable {
             descriptionSB.append("*Segment Header\n");
             descriptionSB.append("Schema:[");
             descriptionSB.append(this.schemaName);
-            descriptionSB.append("}\nCube:[");
+            descriptionSB.append("]\nChecksum:[");
+            descriptionSB.append(this.schemaChecksum);
+            descriptionSB.append("]\nCube:[");
             descriptionSB.append(this.cubeName);
             descriptionSB.append("]\nMeasure:[");
             descriptionSB.append(this.measureName);
