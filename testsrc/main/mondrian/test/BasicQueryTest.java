@@ -32,6 +32,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.regex.Pattern;
 import java.util.*;
 
@@ -7369,7 +7370,17 @@ public class BasicQueryTest extends FoodMartTestCase {
             TestContext.instance().getOlap4jConnection();
 
         final ExecutorService es =
-            Executors.newCachedThreadPool();
+            Executors.newCachedThreadPool(
+                new ThreadFactory() {
+                    public Thread newThread(Runnable r) {
+                        final Thread thread =
+                            Executors.defaultThreadFactory().newThread(r);
+                        thread.setName(
+                            "mondrian.test.BasicQueryTest.testConcurrentStatementRun");
+                        thread.setDaemon(true);
+                        return thread;
+                    }
+                });
 
         final OlapStatement stmt = olapConnection.createStatement();
 
@@ -7381,6 +7392,9 @@ public class BasicQueryTest extends FoodMartTestCase {
                 }
             });
 
+        // Give some time to the first query so it enters a "running" state.
+        Thread.sleep(1000);
+
         es.submit(
             new Callable<CellSet>() {
                 public CellSet call() throws Exception {
@@ -7388,6 +7402,8 @@ public class BasicQueryTest extends FoodMartTestCase {
                         "select {Crossjoin([Store].Members, [Customers].Members)} on columns from [Sales]");
                 }
             }).get();
+
+        es.shutdownNow();
     }
 }
 

@@ -64,5 +64,10 @@ public class SegmentCacheTest extends BasicQueryTest {
         assertQueryReturns(query, result);
         assertQueryReturns(query2, result2);
     }
+    public void testDisableCache() {
+        assertTrue(SegmentCacheWorker.isCacheEnabled());
+        propSaver.reset();
+        assertFalse(SegmentCacheWorker.isCacheEnabled());
+    }
 }
 // End SegmentCacheTest.java
