@@ -38,11 +38,13 @@ public final class SegmentCacheWorker {
 
     // Always call prior to using segmentCache
     private synchronized static void initCache() {
+        boolean segmentCacheFound = false;
         // First try to get the segmentcache impl class from
         // mondrian properties.
         final String cacheName =
             MondrianProperties.instance().SegmentCache.get();
         if (cacheName != null) {
+            segmentCacheFound = true;
             setCache(cacheName);
         }
 
@@ -55,8 +57,14 @@ public final class SegmentCacheWorker {
                 serviceDiscovery.getImplementor();
             if (implementors.size() > 0) {
                 // The contract is to use the first implementation found.
+                segmentCacheFound = true;
                 setCache(implementors.get(0).getName());
             }
+        }
+
+        if (!segmentCacheFound) {
+            // No cache were found. Let's disable it.
+            setCache(null);
         }
     }
 
