@@ -18,20 +18,18 @@ import mondrian.olap.fun.ParameterFunDef;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
-import mondrian.server.Statement;
+import mondrian.server.*;
 import mondrian.spi.ProfileHandler;
 import mondrian.util.ArrayStack;
 
-import java.io.*;
-import java.sql.SQLException;
-import java.util.*;
+import org.apache.commons.collections.collection.CompositeCollection;
 
 import org.olap4j.impl.IdentifierParser;
-
-import org.apache.commons.collections.collection.CompositeCollection;
 import org.olap4j.mdx.IdentifierSegment;
+
+import java.io.PrintWriter;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * <code>Query</code> is an MDX query.
@@ -149,6 +147,7 @@ public class Query extends QueryPart {
      */
     private final List<ScopedNamedSet> scopedNamedSets =
         new ArrayList<ScopedNamedSet>();
+    private boolean ownStatement;
 
     /**
      * Creates a Query.
@@ -386,7 +385,11 @@ public class Query extends QueryPart {
      * @deprecated This method will be removed in mondrian-4.0
      */
     public void checkCancelOrTimeout() {
-        statement.checkCancelOrTimeout();
+        final Execution execution0 = statement.getCurrentExecution();
+        if (execution0 == null) {
+            return;
+        }
+        execution0.checkCancelOrTimeout();
     }
 
     /**
@@ -1255,43 +1258,35 @@ public class Query extends QueryPart {
         boolean scalar,
         ResultStyle resultStyle)
     {
-        final Statement statement =
-            ((ConnectionBase) getConnection()).createDummyStatement();
-        try {
-            statement.setQuery(this);
-            Evaluator evaluator = RolapEvaluator.create(statement);
-            final Validator validator = createValidator();
-            List<ResultStyle> resultStyleList;
-            resultStyleList =
-                Collections.singletonList(
-                    resultStyle != null ? resultStyle : this.resultStyle);
-            final ExpCompiler compiler =
-                createCompiler(
-                    evaluator, validator, resultStyleList);
-            if (scalar) {
-                return compiler.compileScalar(exp, false);
-            } else {
-                return compiler.compile(exp);
-            }
-        } finally {
-            statement.close();
+        // REVIEW: Set query on a connection's shared internal statement is
+        // not re-entrant.
+        statement.setQuery(this);
+        Evaluator evaluator = RolapEvaluator.create(statement);
+        final Validator validator = createValidator();
+        List<ResultStyle> resultStyleList;
+        resultStyleList =
+            Collections.singletonList(
+                resultStyle != null ? resultStyle : this.resultStyle);
+        final ExpCompiler compiler =
+            createCompiler(
+                evaluator, validator, resultStyleList);
+        if (scalar) {
+            return compiler.compileScalar(exp, false);
+        } else {
+            return compiler.compile(exp);
         }
     }
 
     public ExpCompiler createCompiler() {
-        final Statement statement =
-            ((ConnectionBase) getConnection()).createDummyStatement();
-        try {
-            statement.setQuery(this);
-            Evaluator evaluator = RolapEvaluator.create(statement);
-            Validator validator = createValidator();
-            return createCompiler(
-                evaluator,
-                validator,
-                Collections.singletonList(resultStyle));
-        } finally {
-            statement.close();
-        }
+        // REVIEW: Set query on a connection's shared internal statement is
+        // not re-entrant.
+        statement.setQuery(this);
+        Evaluator evaluator = RolapEvaluator.create(statement);
+        Validator validator = createValidator();
+        return createCompiler(
+            evaluator,
+            validator,
+            Collections.singletonList(resultStyle));
     }
 
     private ExpCompiler createCompiler(
@@ -1433,15 +1428,26 @@ public class Query extends QueryPart {
      *
      * <p>This method is idempotent.
      *
-     * @deprecated Call {@code Query.getStatement().close()}. This method
-     * will be removed in mondrian-4.0.
+     * @deprecated This method will be removed in mondrian-4.0.
      */
     public void close() {
-        statement.close();
+        if (ownStatement) {
+            statement.close();
+        }
     }
 
     public Statement getStatement() {
         return statement;
+    }
+
+    /**
+     * Sets that the query owns its statement; therefore it will need to
+     * close it when the query is closed.
+     *
+     * @param ownStatement Whether the statement belongs to the query
+     */
+    public void setOwnStatement(boolean ownStatement) {
+        this.ownStatement = ownStatement;
     }
 
     /**

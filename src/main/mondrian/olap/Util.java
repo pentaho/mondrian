@@ -12,30 +12,31 @@
 */
 package mondrian.olap;
 
-import org.apache.commons.vfs.*;
-import org.apache.commons.vfs.provider.http.HttpFileObject;
-import org.apache.log4j.Logger;
-import org.eigenbase.xom.XOMUtil;
-
-import java.io.*;
-import java.net.*;
-import java.security.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.regex.*;
-import java.math.*;
-import java.lang.reflect.*;
-
+import mondrian.mdx.*;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapCubeDimension;
 import mondrian.spi.UserDefinedFunction;
-import mondrian.mdx.*;
 import mondrian.util.*;
 
+import org.apache.commons.vfs.*;
+import org.apache.commons.vfs.provider.http.HttpFileObject;
+import org.apache.log4j.Logger;
+
+import org.eigenbase.xom.XOMUtil;
+
 import org.olap4j.mdx.*;
+
+import java.io.*;
+import java.lang.reflect.*;
+import java.math.BigDecimal;
+import java.net.*;
+import java.security.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.regex.*;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.
@@ -2667,6 +2668,10 @@ public class Util extends XOMUtil {
 
     /**
      * Returns the cumulative amount of time spent accessing the database.
+     *
+     * @deprecated Use {@link mondrian.server.monitor.Monitor#getServer()} and
+     *  {@link mondrian.server.monitor.ServerInfo#sqlStatementExecuteNanos};
+     *  will be removed in 4.0.
      */
     public static long dbTimeMillis() {
         return databaseMillis;
@@ -2674,6 +2679,8 @@ public class Util extends XOMUtil {
 
     /**
      * Adds to the cumulative amount of time spent accessing the database.
+     *
+     * @deprecated Will be removed in 4.0.
      */
     public static void addDatabaseTime(long millis) {
         databaseMillis += millis;
@@ -2684,6 +2691,8 @@ public class Util extends XOMUtil {
      * Use this method to figure out how long an operation took: call this
      * method before an operation and after an operation, and the difference
      * is the amount of non-database time spent.
+     *
+     * @deprecated Will be removed in 4.0.
      */
     public static long nonDbTimeMillis() {
         final long systemMillis = System.currentTimeMillis();

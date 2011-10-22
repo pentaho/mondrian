@@ -11,6 +11,7 @@ package mondrian.util;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.spi.Dialect;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -211,26 +212,33 @@ public class Bug {
 
     /**
      * Whether bug
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-747">
-     * MONDRIAN-747, "When joining a shared dimension into a cube at a level
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-747">bug MONDRIAN-747,
+     * "When joining a shared dimension into a cube at a level
      * other than its leaf level, Mondrian gives wrong results"</a> is fixed.
      */
     public static final boolean BugMondrian747Fixed = false;
 
     /**
      * Whether
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-759"> MONDRIAN-759, "use
-     * dynamic parameters and PreparedStatement for frequently executed SQL
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-759">bug MONDRIAN-759,
+     * "use dynamic parameters and PreparedStatement for frequently executed SQL
      * patterns"</a> is fixed.
      */
     public static final boolean BugMondrian759Fixed = false;
 
     /**
      * Whether
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-785"> MONDRIAN-785,
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-785">bug MONDRIAN-785,
      * "Native evaluation does not respect ordering"</a> is fixed.
      */
     public static final boolean BugMondrian785Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1001">bug MONDRIAN-1001,
+     * "Tests disabled due to property trigger issues"</a> is fixed.
+     */
+    public static final boolean BugMondrian1001Fixed = false;
 
     /**
      * Whether RolapCubeMember and RolapMember have been fully segregated; any

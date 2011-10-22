@@ -10,15 +10,14 @@
 //
 // jhyde, 30 August, 2001
 */
-
 package mondrian.rolap.agg;
 
 import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.rolap.SqlStatement.Type;
 import mondrian.rolap.aggmatcher.AggStar;
-
 import mondrian.util.Pair;
+
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -73,6 +72,7 @@ public class AggregationManager extends RolapAggregationManager {
      * Called by FastBatchingCellReader.loadAggregation where the
      * RolapStar creates an Aggregation if needed.
      *
+     * @param cellRequestCount Number of missed cells that led to this request
      * @param measures Measures to load
      * @param columns this is the CellRequest's constrained columns
      * @param aggregationKey this is the CellRequest's constraint key
@@ -81,6 +81,7 @@ public class AggregationManager extends RolapAggregationManager {
      * @param groupingSetsCollector grouping sets collector
      */
     public void loadAggregation(
+        int cellRequestCount,
         RolapStar.Measure[] measures,
         RolapStar.Column[] columns,
         AggregationKey aggregationKey,
@@ -96,7 +97,7 @@ public class AggregationManager extends RolapAggregationManager {
         // for Oracle: prevent an IN-clause with more than 1000 elements
         predicates = aggregation.optimizePredicates(columns, predicates);
         aggregation.load(
-            columns, measures, predicates, pinnedSegments,
+            cellRequestCount, columns, measures, predicates, pinnedSegments,
             groupingSetsCollector);
     }
 

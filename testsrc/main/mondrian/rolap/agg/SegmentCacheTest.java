@@ -26,18 +26,21 @@ public class SegmentCacheTest extends BasicQueryTest {
         propSaver.set(
             MondrianProperties.instance().DisableCaching,
             true);
-        AggregationManager.instance()
-            .getCacheControl(null).flushSchemaCache();
+        AggregationManager.instance() .getCacheControl(null, null)
+            .flushSchemaCache();
         propSaver.set(
             MondrianProperties.instance().SegmentCache,
             MockSegmentCache.class.getName());
     }
+
     @Override
     protected void tearDown() throws Exception {
         propSaver.reset();
-        AggregationManager.instance().getCacheControl(null).flushSchemaCache();
+        AggregationManager.instance().getCacheControl(null, null)
+            .flushSchemaCache();
         super.tearDown();
     }
+
     public void testCompoundPredicatesCollision() {
         String query =
             "SELECT [Gender].[All Gender] ON 0, [MEASURES].[CUSTOMER COUNT] ON 1 FROM SALES";

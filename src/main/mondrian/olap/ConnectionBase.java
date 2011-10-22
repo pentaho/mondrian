@@ -14,16 +14,11 @@ package mondrian.olap;
 
 import mondrian.parser.*;
 import mondrian.resource.MondrianResource;
-
-import mondrian.rolap.RolapConnection;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.Statement;
-import mondrian.server.StatementImpl;
-import mondrian.spi.ProfileHandler;
-import org.apache.log4j.Logger;
 
-import java.sql.SQLException;
+import org.apache.log4j.Logger;
 
 /**
  * <code>ConnectionBase</code> implements some of the methods in
@@ -59,44 +54,10 @@ public abstract class ConnectionBase implements Connection {
         return s;
     }
 
-    public QueryPart parseStatement(String query) {
-        final Statement statement = createDummyStatement();
-        final Locus locus =
-            new Locus(
-                new Execution(statement, 0),
-                "Parse/validate MDX statement",
-                null);
-        Locus.push(locus);
-        try {
-            return parseStatement(statement, query, null, false);
-        } finally {
-            Locus.pop(locus);
-            statement.close();
-        }
-    }
-
-    public Statement createDummyStatement() {
-        return new StatementImpl() {
-            public void close() {
-            }
-
-            public RolapConnection getMondrianConnection() {
-                return (RolapConnection) ConnectionBase.this;
-            }
-        };
-    }
+    public abstract Statement getInternalStatement();
 
     public Query parseQuery(String query) {
         return (Query) parseStatement(query);
-    }
-
-    public Query parseQuery(String query, boolean load) {
-        Statement statement = createDummyStatement();
-        try {
-            return (Query) parseStatement(statement, query, null, false);
-        } finally {
-            statement.close();
-        }
     }
 
     /**
@@ -145,32 +106,11 @@ public abstract class ConnectionBase implements Connection {
         }
     }
 
-    private MdxParserValidator createParser() {
+    protected MdxParserValidator createParser() {
         return true
             ? new JavaccParserValidatorImpl()
             : new MdxParserValidatorImpl();
     }
-
-    public Exp parseExpression(String expr) {
-        boolean debug = false;
-        if (getLogger().isDebugEnabled()) {
-            //debug = true;
-            getLogger().debug(
-                Util.nl
-                + expr);
-        }
-        final Statement statement = createDummyStatement();
-        try {
-            MdxParserValidator parser = createParser();
-            final FunTable funTable = getSchema().getFunTable();
-            return parser.parseExpression(statement, expr, debug, funTable);
-        } catch (Throwable exception) {
-            throw MondrianResource.instance().FailedToParseQuery.ex(
-                expr,
-                exception);
-        }
-    }
-
 }
 
 // End ConnectionBase.java

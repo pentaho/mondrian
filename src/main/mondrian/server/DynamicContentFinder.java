@@ -183,7 +183,8 @@ public class DynamicContentFinder
     protected void flushCatalog(String catalogName) {
         for (RolapSchema schema : RolapSchema.getRolapSchemas()) {
             if (schema.getName().equals(catalogName)) {
-                new CacheControlImpl().flushSchema(schema);
+                schema.getInternalConnection().getCacheControl(null)
+                    .flushSchema(schema);
             }
         }
     }

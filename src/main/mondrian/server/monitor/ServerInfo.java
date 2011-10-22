@@ -1,0 +1,170 @@
+/*
+// $Id$
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+// Copyright (C) 2011-2011 Julian Hyde
+// All Rights Reserved.
+*/
+package mondrian.server.monitor;
+
+/**
+ * Information about a Mondrian server.
+ *
+ * @version $Id$
+ */
+public class ServerInfo extends Info {
+    public final int connectionStartCount;
+    public final int connectionEndCount;
+    public final int statementStartCount;
+    public final int statementEndCount;
+    public final int sqlStatementStartCount;
+    public final int sqlStatementExecuteCount;
+    public final int sqlStatementEndCount;
+
+    /**
+     * Cumulative number of rows fetched from SQL statements.
+     */
+    public final long sqlStatementRowFetchCount;
+
+    /**
+     * Cumulative time spent executing SQL statements.
+     */
+    public final long sqlStatementExecuteNanos;
+
+    /**
+     * Total, over all SQL statements that are fetching cells into cache, of
+     * the number of requested cells that will be satisfied by those SQL
+     * statements. Note that a given SQL statement may round out the predicates
+     * and bring back a few more cells than it was asked for.
+     */
+    public final int sqlStatementCellRequestCount;
+    public final int cellCacheRequestCount;
+    public final int cellCacheHitCount;
+    public final int cellCacheMissCount;
+    public final int cellCachePendingCount;
+    public final int executeStartCount;
+    public final int executeEndCount;
+    public final long jvmHeapBytesUsed;
+    public final long jvmHeapBytesCommitted;
+    public final long jvmHeapBytesMax;
+
+    /**
+     * The number of segments currently in cache.
+     */
+    public final int segmentCount;
+
+    /**
+     * The number of segments that have been created since the server started.
+     */
+    public final int segmentCreateCount;
+
+    /**
+     * The number of aggregates currently in cache.
+     */
+    public final int aggregateCount;
+
+    /**
+     * The number of cells currently in cache.
+     */
+    public final int cellCount;
+
+    /**
+     * The sum of the dimensionality of every cells currently in cache.
+     *
+     * <p>For example, each cell in the segment (State={CA, TX} * Year={2011})
+     * has two coordinates.</p>
+     *
+     * <p>From this, we can compute the average dimensionality of segments
+     * in cache, weighted by the number of cells. It gives an idea of the
+     * memory overhead for segment axes.</p>
+     */
+    public final int cellCoordinateCount;
+
+    public ServerInfo(
+        int connectionStartCount,
+        int connectionEndCount,
+        int statementStartCount,
+        int statementEndCount,
+        int sqlStatementStartCount,
+        int sqlStatementExecuteCount,
+        int sqlStatementEndCount,
+        long sqlStatementRowFetchCount,
+        long sqlStatementExecuteNanos,
+        int sqlStatementCellRequestCount,
+        int cellCacheHitCount,
+        int cellCacheRequestCount,
+        int cellCacheMissCount,
+        int cellCachePendingCount,
+        int executeStartCount,
+        int executeEndCount,
+        long jvmHeapBytesUsed,
+        long jvmHeapBytesCommitted,
+        long jvmHeapBytesMax,
+        int segmentCount,
+        int segmentCreateCount,
+        int aggregateCount,
+        int cellCount,
+        int cellCoordinateCount)
+    {
+        this.connectionStartCount = connectionStartCount;
+        this.connectionEndCount = connectionEndCount;
+        this.statementStartCount = statementStartCount;
+        this.statementEndCount = statementEndCount;
+        this.sqlStatementStartCount = sqlStatementStartCount;
+        this.sqlStatementExecuteCount = sqlStatementExecuteCount;
+        this.sqlStatementEndCount = sqlStatementEndCount;
+        this.sqlStatementRowFetchCount = sqlStatementRowFetchCount;
+        this.sqlStatementExecuteNanos = sqlStatementExecuteNanos;
+        this.sqlStatementCellRequestCount = sqlStatementCellRequestCount;
+        this.cellCacheRequestCount = cellCacheRequestCount;
+        this.cellCacheHitCount = cellCacheHitCount;
+        this.cellCacheMissCount = cellCacheMissCount;
+        this.cellCachePendingCount = cellCachePendingCount;
+        this.executeStartCount = executeStartCount;
+        this.executeEndCount = executeEndCount;
+        this.jvmHeapBytesUsed = jvmHeapBytesUsed;
+        this.jvmHeapBytesCommitted = jvmHeapBytesCommitted;
+        this.jvmHeapBytesMax = jvmHeapBytesMax;
+        this.segmentCount = segmentCount;
+        this.segmentCreateCount = segmentCreateCount;
+        this.aggregateCount = aggregateCount;
+        this.cellCount = cellCount;
+        this.cellCoordinateCount = cellCoordinateCount;
+    }
+
+    public int cellCacheMissCount() {
+        return cellCacheRequestCount - cellCacheHitCount;
+    }
+
+    /**
+     * @return number of SQL statements currently executing
+     */
+    public int sqlStatementCurrentlyOpenCount() {
+        return sqlStatementStartCount - sqlStatementEndCount;
+    }
+
+    /**
+     * @return number of statements currently executing
+     */
+    public int statementCurrentlyExecutingCount() {
+        return executeStartCount - executeEndCount;
+    }
+
+    /**
+     * @return number of statements currently open
+     */
+    public int statementCurrentlyOpenCount() {
+        return statementStartCount - statementEndCount;
+    }
+
+    /**
+     * @return number of connections currently open
+     */
+    public int connectionCurrentlyOpenCount() {
+        return connectionStartCount - connectionEndCount;
+    }
+}
+
+// End ServerInfo.java

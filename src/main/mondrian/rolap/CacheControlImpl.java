@@ -10,21 +10,20 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.Id.Quoting;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
-import mondrian.olap.CacheControl;
-import mondrian.olap.Id.Quoting;
 
-import javax.sql.DataSource;
-import java.util.*;
-import java.util.concurrent.Callable;
+import org.eigenbase.util.property.BooleanProperty;
+
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
-
-import org.eigenbase.util.property.BooleanProperty;
+import java.util.*;
+import java.util.concurrent.Callable;
+import javax.sql.DataSource;
 
 /**
  * Implementation of {@link CacheControl} API.
@@ -34,6 +33,7 @@ import org.eigenbase.util.property.BooleanProperty;
  * @since Sep 27, 2006
  */
 public class CacheControlImpl implements CacheControl {
+    private final RolapConnection connection;
 
     /**
      * Object to lock before making changes to the member cache.
@@ -48,6 +48,16 @@ public class CacheControlImpl implements CacheControl {
      * mondrian.
      */
     private static final Object MEMBER_CACHE_LOCK = new Object();
+
+    /**
+     * Creates a CacheControlImpl.
+     *
+     * @param connection Connection
+     */
+    public CacheControlImpl(RolapConnection connection) {
+        super();
+        this.connection = connection;
+    }
 
     // cell cache control
     public CellRegion createMemberRegion(Member member, boolean descendants) {
@@ -669,84 +679,91 @@ public class CacheControlImpl implements CacheControl {
         }
         synchronized (MEMBER_CACHE_LOCK) {
             // Make sure that a Locus is in the Execution stack,
-            // since some operations might require DB access
+            // since some operations might require DB access.
             Execution execution;
             try {
                 execution =
                     Locus.peek().execution;
             } catch (EmptyStackException e) {
-                execution = Execution.NONE;
+                if (connection == null) {
+                    throw new IllegalArgumentException("Connection required");
+                }
+                execution = new Execution(connection.getInternalStatement(), 0);
             }
-            Locus.push(
-                new Locus(
-                    execution,
-                    "CacheControlImpl.execute",
-                    "when modifying the member cache."));
-            // Execute the command
-            final List<CellRegion> cellRegionList =
-                new ArrayList<CellRegion>();
-            ((MemberEditCommandPlus) cmd).execute(cellRegionList);
+            final Locus locus = new Locus(
+                execution,
+                "CacheControlImpl.execute",
+                "when modifying the member cache.");
+            Locus.push(locus);
+            try {
+                // Execute the command
+                final List<CellRegion> cellRegionList =
+                    new ArrayList<CellRegion>();
+                ((MemberEditCommandPlus) cmd).execute(cellRegionList);
 
-            // Flush the cells touched by the regions
-            for (CellRegion memberRegion : cellRegionList) {
-                // Iterate over the cubes, create a cross region with
-                // its measures, and flush the data cells.
-                // It is possible that some regions don't intersect
-                // with a cube. We will intercept the exceptions and
-                // skip to the next cube if necessary.
-                final List<Dimension> dimensions =
-                    memberRegion.getDimensionality();
-                if (dimensions.size() > 0) {
-                    for (Cube cube
-                        : dimensions.get(0)
-                            .getSchema().getCubes())
-                    {
-                        try {
-                            final List<CellRegionImpl> crossList =
-                                new ArrayList<CellRegionImpl>();
-                            crossList.add(
-                                (CellRegionImpl) createMeasuresRegion(cube));
-                            crossList.add((CellRegionImpl) memberRegion);
-                            final CellRegion crossRegion =
-                                new CrossjoinCellRegion(crossList);
-                            flush(crossRegion);
-                        } catch (UndeclaredThrowableException e) {
-                            if (e.getCause()
-                                instanceof InvocationTargetException)
-                            {
-                                final InvocationTargetException ite =
-                                    (InvocationTargetException)e.getCause();
-                                if (ite.getTargetException()
-                                    instanceof MondrianException)
+                // Flush the cells touched by the regions
+                for (CellRegion memberRegion : cellRegionList) {
+                    // Iterate over the cubes, create a cross region with
+                    // its measures, and flush the data cells.
+                    // It is possible that some regions don't intersect
+                    // with a cube. We will intercept the exceptions and
+                    // skip to the next cube if necessary.
+                    final List<Dimension> dimensions =
+                        memberRegion.getDimensionality();
+                    if (dimensions.size() > 0) {
+                        for (Cube cube
+                            : dimensions.get(0) .getSchema().getCubes())
+                        {
+                            try {
+                                final List<CellRegionImpl> crossList =
+                                    new ArrayList<CellRegionImpl>();
+                                crossList.add(
+                                    (CellRegionImpl)
+                                        createMeasuresRegion(cube));
+                                crossList.add((CellRegionImpl) memberRegion);
+                                final CellRegion crossRegion =
+                                    new CrossjoinCellRegion(crossList);
+                                flush(crossRegion);
+                            } catch (UndeclaredThrowableException e) {
+                                if (e.getCause()
+                                    instanceof InvocationTargetException)
                                 {
-                                    final MondrianException me =
-                                        (MondrianException)
-                                            ite.getTargetException();
-                                    if (me.getMessage()
-                                        .matches(
-                                            "^Mondrian Error:Member "
-                                            + "'\\[.*\\]' not found$"))
+                                    final InvocationTargetException ite =
+                                        (InvocationTargetException)e.getCause();
+                                    if (ite.getTargetException()
+                                        instanceof MondrianException)
                                     {
-                                        continue;
+                                        final MondrianException me =
+                                            (MondrianException)
+                                                ite.getTargetException();
+                                        if (me.getMessage()
+                                            .matches(
+                                                "^Mondrian Error:Member "
+                                                + "'\\[.*\\]' not found$"))
+                                        {
+                                            continue;
+                                        }
                                     }
                                 }
+                                throw new MondrianException(e);
+                            } catch (MondrianException e) {
+                                if (e.getMessage()
+                                    .matches(
+                                        "^Mondrian Error:Member "
+                                        + "'\\[.*\\]' not found$"))
+                                {
+                                    continue;
+                                }
+                                throw e;
                             }
-                            throw new MondrianException(e);
-                        } catch (MondrianException e) {
-                            if (e.getMessage()
-                                .matches(
-                                    "^Mondrian Error:Member "
-                                    + "'\\[.*\\]' not found$"))
-                            {
-                                continue;
-                            }
-                            throw e;
                         }
                     }
                 }
+                // Apply it all.
+                ((MemberEditCommandPlus) cmd).commit();
+            } finally {
+                Locus.pop(locus);
             }
-            // Apply it all.
-            ((MemberEditCommandPlus) cmd).commit();
         }
     }
 

@@ -24,13 +24,15 @@ import mondrian.rolap.agg.MemberColumnPredicate;
 import mondrian.rolap.agg.OrPredicate;
 import mondrian.server.*;
 import mondrian.server.Statement;
+import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.Dialect;
+
+import org.apache.log4j.Logger;
+
+import org.olap4j.*;
 
 import java.sql.*;
 import java.util.*;
-
-import org.apache.log4j.Logger;
-import org.olap4j.*;
 
 /**
  * <code>RolapCell</code> implements {@link mondrian.olap.Cell} within a
@@ -142,7 +144,8 @@ public class RolapCell implements Cell {
             return -1;
         }
         RolapConnection connection =
-            (RolapConnection) result.getQuery().getConnection();
+            result.getExecution().getMondrianStatement()
+                .getMondrianConnection();
         final String sql =
             aggMan.getDrillThroughSql(
                 cellRequest,
@@ -154,7 +157,7 @@ public class RolapCell implements Cell {
                 connection.getDataSource(),
                 sql,
                 new Locus(
-                    new Execution(connection.createDummyStatement(), 0),
+                    new Execution(connection.getInternalStatement(), 0),
                     "RolapCell.getDrillThroughCount",
                     "Error while counting drill-through"));
         try {
@@ -467,10 +470,11 @@ public class RolapCell implements Cell {
                 null,
                 maxRowCount,
                 firstRowOrdinal,
-                new Locus(
+                new SqlStatement.StatementLocus(
                     execution,
                     "RolapCell.drillThrough",
-                    "Error in drill through"),
+                    "Error in drill through",
+                    SqlStatementEvent.Purpose.DRILL_THROUGH, 0),
                 resultSetType,
                 resultSetConcurrency);
     }
@@ -592,7 +596,8 @@ public class RolapCell implements Cell {
         }
         double doubleNewValue = ((Number) newValue).doubleValue();
         ((ScenarioImpl) scenario).setCellValue(
-            result.getQuery().getConnection(),
+            result.getExecution().getMondrianStatement()
+                .getMondrianConnection(),
             Arrays.asList(members),
             doubleNewValue,
             doubleCurrentValue,

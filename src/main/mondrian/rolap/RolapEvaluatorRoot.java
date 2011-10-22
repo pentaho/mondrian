@@ -9,8 +9,8 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.*;
 import mondrian.calc.*;
+import mondrian.olap.*;
 import mondrian.server.Execution;
 import mondrian.server.Statement;
 import mondrian.spi.Dialect;
@@ -84,7 +84,7 @@ class RolapEvaluatorRoot {
         this.statement = statement;
         this.query = statement.getQuery();
         this.cube = (RolapCube) query.getCube();
-        this.connection = (RolapConnection) query.getConnection();
+        this.connection = statement.getMondrianConnection();
         this.schemaReader = query.getSchemaReader(true);
         this.queryStartTime = new Date();
         List<RolapMember> list = new ArrayList<RolapMember>();

@@ -16,6 +16,7 @@ import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.StatementImpl;
 import mondrian.util.Pair;
+
 import org.olap4j.*;
 import org.olap4j.mdx.*;
 
@@ -131,6 +132,7 @@ class MondrianOlap4jStatement
     public synchronized void close() {
         if (!closed) {
             closed = true;
+            olap4jConnection.mondrianServer.removeStatement(this);
             if (openCellSet != null) {
                 MondrianOlap4jCellSet c = openCellSet;
                 openCellSet = null;

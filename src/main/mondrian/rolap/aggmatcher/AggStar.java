@@ -10,20 +10,21 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
-import mondrian.resource.MondrianResource;
 import mondrian.recorder.MessageRecorder;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.spi.Dialect;
+
 import org.apache.log4j.Logger;
 
-import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.*;
 import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * Aggregate table version of a RolapStar for a fact table.
@@ -1328,7 +1329,10 @@ public class AggStar {
                     dataSource,
                     query.toString(),
                     new Locus(
-                        Execution.NONE,
+                        new Execution(
+                            star.getSchema().getInternalConnection()
+                                .getInternalStatement(),
+                            0),
                         "AggStar.FactTable.makeNumberOfRows",
                         "Counting rows in aggregate table"));
             try {

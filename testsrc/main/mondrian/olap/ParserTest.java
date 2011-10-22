@@ -9,18 +9,18 @@
 */
 package mondrian.olap;
 
+import mondrian.mdx.QueryPrintWriter;
+import mondrian.mdx.UnresolvedFunCall;
+import mondrian.olap.fun.BuiltinFunTable;
 import mondrian.parser.JavaccParserValidatorImpl;
+import mondrian.parser.MdxParserValidator;
 import mondrian.server.Statement;
 import mondrian.test.FoodMartTestCase;
-import mondrian.olap.fun.BuiltinFunTable;
-import mondrian.mdx.UnresolvedFunCall;
-import mondrian.mdx.QueryPrintWriter;
-import mondrian.parser.MdxParserValidator;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
 
-import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.List;
 
 /**
@@ -398,7 +398,7 @@ public class ParserTest extends FoodMartTestCase {
                 + " * [Measures].[Store Sales])");
 
         final Statement statement =
-            ((ConnectionBase) getConnection()).createDummyStatement();
+            ((ConnectionBase) getConnection()).getInternalStatement();
         try {
             final QueryPart query =
                 p.parseInternal(

@@ -9,6 +9,7 @@
 */
 package mondrian.server;
 
+import mondrian.olap.MondrianServer;
 import mondrian.rolap.RolapConnection;
 
 import java.util.Stack;
@@ -68,7 +69,7 @@ public class Locus {
         String component,
         Action<T> action)
     {
-        final Statement statement = connection.createDummyStatement();
+        final Statement statement = connection.getInternalStatement();
         final Execution execution = new Execution(statement, 0);
         return execute(execution, component, action);
     }
@@ -89,6 +90,10 @@ public class Locus {
         } finally {
             Locus.pop(locus);
         }
+    }
+
+    public final MondrianServer getServer() {
+        return execution.statement.getMondrianConnection().getServer();
     }
 
     public interface Action<T> {

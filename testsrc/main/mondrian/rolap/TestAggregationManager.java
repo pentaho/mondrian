@@ -17,9 +17,10 @@ import mondrian.rolap.agg.*;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.Statement;
-import mondrian.test.TestContext;
-import mondrian.test.SqlPattern;
 import mondrian.spi.Dialect;
+import mondrian.test.SqlPattern;
+import mondrian.test.TestContext;
+
 import org.olap4j.impl.Olap4jUtil;
 
 import java.util.*;
@@ -38,14 +39,15 @@ public class TestAggregationManager extends BatchTestCase {
             Dialect.DatabaseProduct.MYSQL);
 
     private Locus locus;
+    private Execution execution;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         final Statement statement =
             ((RolapConnection) getTestContext().getConnection())
-                .createDummyStatement();
-        final Execution execution = new Execution(statement, 0);
+                .getInternalStatement();
+        execution = new Execution(statement, 0);
         locus = new Locus(execution, "TestAggregationManager", null);
         Locus.push(locus);
     }
@@ -70,9 +72,9 @@ public class TestAggregationManager extends BatchTestCase {
         Object value = aggMan.getCellFromCache(request);
         assertNull(value); // before load, the cell is not found
         FastBatchingCellReader fbcr =
-                new FastBatchingCellReader(getCube("Sales"));
+            new FastBatchingCellReader(execution, getCube("Sales"));
         fbcr.recordCellRequest(request);
-        fbcr.loadAggregations(null);
+        fbcr.loadAggregations();
         value = aggMan.getCellFromCache(request); // after load, cell is found
         assertTrue(value instanceof Number);
         assertEquals(131558, ((Number) value).intValue());
@@ -85,11 +87,11 @@ public class TestAggregationManager extends BatchTestCase {
                 "customer", "gender", "F");
         final RolapAggregationManager aggMan = AggregationManager.instance();
         FastBatchingCellReader fbcr =
-            new FastBatchingCellReader(getCube("Sales"));
+            new FastBatchingCellReader(execution, getCube("Sales"));
         Object value = aggMan.getCellFromCache(request);
         assertNull(value); // before load, the cell is not found
         fbcr.recordCellRequest(request);
-        fbcr.loadAggregations(null);
+        fbcr.loadAggregations();
         value = aggMan.getCellFromCache(request); // after load, cell is found
         assertTrue(value instanceof Number);
         assertEquals(2755, ((Number) value).intValue());
@@ -130,11 +132,11 @@ public class TestAggregationManager extends BatchTestCase {
         assertNull(value); // before load, the cell is not found
 
         FastBatchingCellReader fbcr =
-                new FastBatchingCellReader(getCube("Sales"));
+            new FastBatchingCellReader(execution, getCube("Sales"));
         fbcr.recordCellRequest(request1);
         fbcr.recordCellRequest(request2);
         fbcr.recordCellRequest(request3);
-        fbcr.loadAggregations(null);
+        fbcr.loadAggregations();
 
         value = aggMan.getCellFromCache(request1); // after load, cell is found
         assertTrue(value instanceof Number);

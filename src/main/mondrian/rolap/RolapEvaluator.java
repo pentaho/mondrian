@@ -16,8 +16,8 @@ import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.server.Statement;
-import mondrian.util.Format;
 import mondrian.spi.Dialect;
+import mondrian.util.Format;
 
 import org.apache.log4j.Logger;
 
@@ -438,7 +438,7 @@ public class RolapEvaluator implements Evaluator {
      *     or null
      */
     protected RolapEvaluator _push(List<List<Member>> aggregationList) {
-        getQuery().checkCancelOrTimeout();
+        root.execution.checkCancelOrTimeout();
         return new RolapEvaluator(root, this, aggregationList);
     }
 

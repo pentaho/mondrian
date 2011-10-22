@@ -10,8 +10,8 @@
 //
 // jhyde, 15 January, 2002
 */
-
 package mondrian.olap;
+
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.spi.CatalogLocator;
@@ -99,7 +99,10 @@ public class DriverManager {
         final String instance =
             properties.get(RolapConnectionProperties.Instance.name());
         MondrianServer server = MondrianServer.forId(instance);
-        if (server != null && locator == null) {
+        if (server == null) {
+            throw Util.newError("Unknown server instance: " + instance);
+        }
+        if (locator == null) {
             locator = server.getCatalogLocator();
         }
         if (locator != null) {
@@ -109,7 +112,10 @@ public class DriverManager {
                 RolapConnectionProperties.Catalog.name(),
                 locator.locate(catalog));
         }
-        return new RolapConnection(server, properties, dataSource);
+        final RolapConnection connection =
+            new RolapConnection(server, properties, dataSource);
+        server.addConnection(connection);
+        return connection;
     }
 }
 

@@ -9,8 +9,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // jhyde, 28 August, 2001
- */
-
+*/
 package mondrian.rolap.agg;
 
 import mondrian.olap.*;
@@ -58,6 +57,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class Aggregation {
 
+    private final MondrianServer server;
+
     private final List<StarPredicate> compoundPredicateList;
     private final RolapStar star;
     private final BitKey constrainedColumnsBitKey;
@@ -98,12 +99,16 @@ public class Aggregation {
     /**
      * Creates an Aggregation.
      *
+     * @param server Server this aggregation belongs to
+     *
      * @param aggregationKey the key specifying the axes, the context and
      *                       the RolapStar for this Aggregation
      */
     public Aggregation(
+        MondrianServer server,
         AggregationKey aggregationKey)
     {
+        this.server = server;
         this.compoundPredicateList = aggregationKey.getCompoundPredicateList();
         this.star = aggregationKey.getStar();
         this.constrainedColumnsBitKey =
@@ -142,6 +147,7 @@ public class Aggregation {
      * gender = unconstrained</pre></blockquote>
      */
     public void load(
+        int cellRequestCount,
         RolapStar.Column[] columns,
         RolapStar.Measure[] measures,
         StarColumnPredicate[] predicates,
@@ -178,6 +184,7 @@ public class Aggregation {
                 new ArrayList<GroupingSet>();
             gsList.add(groupingSet);
             new SegmentLoader().load(
+                cellRequestCount,
                 gsList,
                 pinnedSegments,
                 compoundPredicateList);
@@ -749,8 +756,12 @@ public class Aggregation {
     /**
      * Returns an array of axis representing this aggregation.
      * It is only available once the aggregation has been loaded.
+     *
      * @return An array of axis objects, or null if the aggregation
      * has not been loaded yet.
+     *
+     * @see Util#deprecated(Object) Method is not called; "axes" should become
+     * a local variable in "load", and we should remove this method
      */
     public Axis[] getAxes() {
         return this.axes;

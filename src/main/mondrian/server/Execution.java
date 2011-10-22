@@ -10,17 +10,19 @@
 package mondrian.server;
 
 import mondrian.olap.MemoryLimitExceededException;
+import mondrian.olap.MondrianServer;
 import mondrian.olap.QueryTiming;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapConnection;
+import mondrian.server.monitor.*;
 
+import org.apache.log4j.Logger;
+
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicLong;
-
-import java.sql.SQLException;
-
-import org.apache.log4j.Logger;
 
 /**
  * Execution context.
@@ -42,16 +44,13 @@ public class Execution {
     final StatementImpl statement;
 
     /**
-     * Whether cancel has been requested.
-     */
-    private boolean canceled;
-
-    /**
      * Holds a collection of the SqlStatements which were used by this
      * execution instance.
      */
     private final Map<Locus, java.sql.Statement> statements =
         new HashMap<Locus, java.sql.Statement>();
+
+    private State state = State.FRESH;
 
     /**
      * If not <code>null</code>, this query was notified that it
@@ -61,8 +60,11 @@ public class Execution {
     private long startTimeMillis;
     private long timeoutTimeMillis;
     private long timeoutIntervalMillis;
-    private boolean executing;
     private final QueryTiming queryTiming = new QueryTiming();
+    private int phase;
+    private int cellCacheHitCount;
+    private int cellCacheMissCount;
+    private int cellCachePendingCount;
 
     /**
      * Execution id, global within this JVM instance.
@@ -83,34 +85,80 @@ public class Execution {
             timeoutIntervalMillis > 0
                 ? this.startTimeMillis + timeoutIntervalMillis
                 : 0L;
-        this.executing = true;
+        this.state = State.RUNNING;
         this.queryTiming.init(true);
+
+        final RolapConnection connection =
+            statement.getMondrianConnection();
+        final MondrianServer server = connection.getServer();
+        server.getMonitor().sendEvent(
+            new ExecutionStartEvent(
+                startTimeMillis,
+                server.getId(),
+                connection.getId(),
+                statement.getId(),
+                id,
+                getMdx()));
+    }
+
+    protected String getMdx() {
+        return null;
+    }
+
+    public void tracePhase(
+        int hitCount,
+        int missCount,
+        int pendingCount)
+    {
+        final RolapConnection connection = statement.getMondrianConnection();
+        final MondrianServer server = connection.getServer();
+        final int hitCountInc = hitCount - this.cellCacheHitCount;
+        final int missCountInc = missCount - this.cellCacheMissCount;
+        final int pendingCountInc = pendingCount - this.cellCachePendingCount;
+        server.getMonitor().sendEvent(
+            new ExecutionPhaseEvent(
+                System.currentTimeMillis(),
+                server.getId(),
+                connection.getId(),
+                statement.getId(),
+                id,
+                phase,
+                hitCountInc,
+                missCountInc,
+                pendingCountInc));
+        ++phase;
+        this.cellCacheHitCount = hitCount;
+        this.cellCacheMissCount = missCount;
+        this.cellCachePendingCount = pendingCount;
     }
 
     public void cancel() {
-        this.canceled = true;
+        this.state = State.CANCEL_REQUESTED;
     }
 
     public final void setOutOfMemory(String msg) {
+        assert msg != null;
         this.outOfMemoryMsg = msg;
+        this.state = State.ERROR;
     }
 
     public void checkCancelOrTimeout() {
-        if (canceled) {
-            cleanStatements();
+        switch (state) {
+        case CANCEL_REQUESTED:
+            cleanStatements(State.CANCELED);
             throw MondrianResource.instance().QueryCanceled.ex();
-        }
-        if (timeoutTimeMillis > 0) {
-            long currTime = System.currentTimeMillis();
-            if (currTime > timeoutTimeMillis) {
-                cleanStatements();
-                throw
-                    MondrianResource.instance().QueryTimeout.ex(
+        case RUNNING:
+            if (timeoutTimeMillis > 0) {
+                long currTime = System.currentTimeMillis();
+                if (currTime > timeoutTimeMillis) {
+                    cleanStatements(State.TIMEOUT);
+                    throw MondrianResource.instance().QueryTimeout.ex(
                         timeoutIntervalMillis / 1000);
+                }
             }
-        }
-        if (outOfMemoryMsg != null) {
-            cleanStatements();
+            break;
+        case ERROR:
+            cleanStatements(State.ERROR);
             throw new MemoryLimitExceededException(outOfMemoryMsg);
         }
     }
@@ -122,8 +170,9 @@ public class Execution {
      * @return True or false, depending on the timeout state.
      */
     public boolean isCancelOrTimeout() {
-        if (canceled
-            || (timeoutTimeMillis > 0
+        if (state == State.CANCEL_REQUESTED
+            || (state == State.RUNNING
+                && timeoutTimeMillis > 0
                 && System.currentTimeMillis() > timeoutTimeMillis)
             || outOfMemoryMsg != null)
         {
@@ -138,8 +187,27 @@ public class Execution {
      * for whatever reasons, typically when an exception has occurred
      * or the execution has ended. Any currently running SQL statements
      * will be canceled.
+     *
+     * @param state New state
      */
-    public void cleanStatements() {
+    public void cleanStatements(State state) {
+        this.state = state;
+        final RolapConnection connection =
+            statement.getMondrianConnection();
+        final MondrianServer server = connection.getServer();
+        server.getMonitor().sendEvent(
+            new ExecutionEndEvent(
+                startTimeMillis,
+                server.getId(),
+                connection.getId(),
+                statement.getId(),
+                id,
+                phase,
+                state,
+                cellCacheHitCount,
+                cellCacheMissCount,
+                cellCachePendingCount));
+
         for (Entry<Locus, java.sql.Statement> entry : statements.entrySet()) {
             final Locus locus = entry.getKey();
             final java.sql.Statement stmt = entry.getValue();
@@ -162,10 +230,9 @@ public class Execution {
      * ended, it is not possible to cancel or timeout the query until it
      * starts executing again.
      */
-    void end() {
-        executing = false;
+    public void end() {
         queryTiming.done();
-        cleanStatements();
+        cleanStatements(State.DONE);
     }
 
     public final long getStartTime() {
@@ -196,6 +263,16 @@ public class Execution {
      */
     public void registerStatement(Locus locus, java.sql.Statement statement) {
         this.statements.put(locus, statement);
+    }
+
+    public enum State {
+        FRESH,
+        RUNNING,
+        ERROR,
+        CANCEL_REQUESTED,
+        CANCELED,
+        TIMEOUT,
+        DONE,
     }
 }
 

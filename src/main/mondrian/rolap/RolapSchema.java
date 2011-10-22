@@ -12,6 +12,29 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.*;
+import mondrian.olap.CacheControl.CellRegion;
+import mondrian.olap.fun.*;
+import mondrian.olap.type.*;
+import mondrian.resource.MondrianResource;
+import mondrian.rolap.agg.AggregationManager;
+import mondrian.rolap.aggmatcher.AggTableManager;
+import mondrian.rolap.aggmatcher.JdbcSchema;
+import mondrian.spi.CellFormatter;
+import mondrian.spi.*;
+import mondrian.spi.MemberFormatter;
+import mondrian.spi.PropertyFormatter;
+import mondrian.spi.impl.Scripts;
+
+import org.apache.commons.vfs.FileSystemException;
+import org.apache.log4j.Logger;
+
+import org.eigenbase.xom.*;
+import org.eigenbase.xom.Parser;
+
+import org.olap4j.impl.Olap4jUtil;
+import org.olap4j.mdx.IdentifierSegment;
+
 import java.io.*;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
@@ -19,33 +42,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-
 import javax.sql.DataSource;
-
-import mondrian.olap.*;
-import mondrian.olap.CacheControl.CellRegion;
-import mondrian.olap.fun.*;
-import mondrian.olap.type.MemberType;
-import mondrian.olap.type.NumericType;
-import mondrian.olap.type.StringType;
-import mondrian.olap.type.Type;
-import mondrian.resource.MondrianResource;
-import mondrian.rolap.agg.AggregationManager;
-import mondrian.rolap.aggmatcher.AggTableManager;
-import mondrian.rolap.aggmatcher.JdbcSchema;
-import mondrian.spi.*;
-
-import mondrian.spi.CellFormatter;
-import mondrian.spi.MemberFormatter;
-import mondrian.spi.PropertyFormatter;
-import mondrian.spi.impl.Scripts;
-import org.apache.log4j.Logger;
-import org.apache.commons.vfs.*;
-
-import org.eigenbase.xom.*;
-import org.eigenbase.xom.Parser;
-import org.olap4j.impl.Olap4jUtil;
-import org.olap4j.mdx.IdentifierSegment;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
@@ -85,21 +82,28 @@ public class RolapSchema implements Schema {
      * Internal use only.
      */
     private final RolapConnection internalConnection;
+
     /**
      * Holds cubes in this schema.
      */
-    private final Map<String, RolapCube> mapNameToCube;
+    private final Map<String, RolapCube> mapNameToCube =
+        new HashMap<String, RolapCube>();
+
     /**
      * Maps {@link String shared hierarchy name} to {@link MemberReader}.
      * Shared between all statements which use this connection.
      */
-    private final Map<String, MemberReader> mapSharedHierarchyToReader;
+    private final Map<String, MemberReader> mapSharedHierarchyToReader =
+        new HashMap<String, MemberReader>();
 
     /**
      * Maps {@link String names of shared hierarchies} to {@link
      * RolapHierarchy the canonical instance of those hierarchies}.
      */
-    private final Map<String, RolapHierarchy> mapSharedHierarchyNameToHierarchy;
+    private final Map<String, RolapHierarchy> mapSharedHierarchyNameToHierarchy
+        =
+        new HashMap<String, RolapHierarchy>();
+
     /**
      * The default role for connections to this schema.
      */
@@ -121,7 +125,7 @@ public class RolapSchema implements Schema {
     /**
      * Maps {@link String names of roles} to {@link Role roles with those names}.
      */
-    private final Map<String, Role> mapNameToRole;
+    private final Map<String, Role> mapNameToRole = new HashMap<String, Role>();
 
     /**
      * Maps {@link String names of sets} to {@link NamedSet named sets}.
@@ -153,7 +157,9 @@ public class RolapSchema implements Schema {
     private final Map<
         MondrianDef.Relation,
         Map<MondrianDef.Expression, Integer>>
-        relationExprCardinalityMap;
+        relationExprCardinalityMap = new HashMap<
+            MondrianDef.Relation,
+            Map<MondrianDef.Expression, Integer>>();
 
     /**
      * List of warnings. Populated when a schema is created by a connection
@@ -194,19 +200,11 @@ public class RolapSchema implements Schema {
         final MondrianServer internalServer = MondrianServer.forId(null);
         this.internalConnection =
             new RolapConnection(internalServer, connectInfo, this, dataSource);
+        internalServer.addConnection(internalConnection);
 
-        this.mapSharedHierarchyNameToHierarchy =
-            new HashMap<String, RolapHierarchy>();
-        this.mapSharedHierarchyToReader = new HashMap<String, MemberReader>();
-        this.mapNameToCube = new HashMap<String, RolapCube>();
-        this.mapNameToRole = new HashMap<String, Role>();
         this.aggTableManager = new AggTableManager(this);
         this.dataSourceChangeListener =
             createDataSourceChangeListener(connectInfo);
-        this.relationExprCardinalityMap =
-            new HashMap<
-                MondrianDef.Relation,
-                Map<MondrianDef.Expression, Integer>>();
     }
 
     /**
@@ -340,7 +338,7 @@ public class RolapSchema implements Schema {
 
     protected void finalCleanUp() {
         final CacheControl cacheControl =
-            AggregationManager.instance().getCacheControl(null);
+            internalConnection.getCacheControl(null);
         for (Cube cube : getCubes()) {
             CellRegion cr =
                 cacheControl.createMeasuresRegion(cube);

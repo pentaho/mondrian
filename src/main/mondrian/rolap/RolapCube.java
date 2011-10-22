@@ -12,13 +12,15 @@
 */
 package mondrian.rolap;
 
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunDefBase;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.rolap.cache.SoftSmartCache;
-import mondrian.calc.*;
+import mondrian.server.Locus;
 import mondrian.server.Statement;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.impl.Scripts;
@@ -77,11 +79,6 @@ public class RolapCube extends CubeBase {
     private RolapStar star;
     private ExplicitRules.Group aggGroup;
 
-    /**
-     * True if the cube is being created while loading the schema
-     */
-    private boolean load;
-
     private final Map<Hierarchy, HierarchyUsage> firstUsageMap =
         new HashMap<Hierarchy, HierarchyUsage>();
 
@@ -115,6 +112,7 @@ public class RolapCube extends CubeBase {
      * @param caption Caption
      * @param description Description
      * @param fact Definition of fact table
+     * @param load Whether cube is being created while loading the schema
      * @param annotationMap Annotations
      */
     private RolapCube(
@@ -143,7 +141,6 @@ public class RolapCube extends CubeBase {
         this.caption = caption;
         this.fact = fact;
         this.hierarchyUsages = new ArrayList<HierarchyUsage>();
-        this.load = load;
 
         if (! isVirtual()) {
             this.star = schema.getRolapStarRegistry().getOrCreateStar(fact);
@@ -914,16 +911,26 @@ public class RolapCube extends CubeBase {
 
         // Parse and validate this huge MDX query we've created.
         final String queryString = buf.toString();
-        final Query queryExp;
         try {
-            RolapConnection conn = schema.getInternalConnection();
-            queryExp = conn.parseQuery(queryString, load);
+            final RolapConnection conn = schema.getInternalConnection();
+            return Locus.execute(
+                conn,
+                "Validate calculated members in cube",
+                new Locus.Action<Query>() {
+                    public Query execute() {
+                        final Query queryExp = (Query)
+                            conn.parseStatement(
+                                Locus.peek().execution.getMondrianStatement(),
+                                queryString, null, false);
+                        queryExp.resolve();
+                        return queryExp;
+                    }
+                }
+            );
         } catch (Exception e) {
             throw MondrianResource.instance().UnknownNamedSetHasBadFormula.ex(
                 getName(), e);
         }
-        queryExp.resolve();
-        return queryExp;
     }
 
     private void postNamedSet(
@@ -2753,7 +2760,7 @@ public class RolapCube extends CubeBase {
             createDummyExp(calc),
             new MemberProperty[0]);
         final Statement statement =
-            schema.getInternalConnection().createDummyStatement();
+            schema.getInternalConnection().getInternalStatement();
         try {
             final Query query =
                 new Query(

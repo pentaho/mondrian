@@ -10,31 +10,32 @@
 */
 package mondrian.rolap;
 
+import mondrian.calc.*;
+import mondrian.calc.impl.DelegatingTupleList;
+import mondrian.olap.*;
+import mondrian.parser.MdxParserValidator;
+import mondrian.resource.MondrianResource;
+import mondrian.rolap.agg.AggregationManager;
+import mondrian.server.*;
+import mondrian.spi.*;
+import mondrian.spi.impl.JndiDataSourceResolver;
+import mondrian.util.*;
+
+import org.apache.log4j.Logger;
+
+import org.eigenbase.util.property.StringProperty;
+
+import org.olap4j.Scenario;
+
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.sql.DataSource;
-
-import mondrian.calc.*;
-import mondrian.calc.impl.DelegatingTupleList;
-import mondrian.olap.*;
-import mondrian.rolap.agg.*;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
-import mondrian.server.Statement;
-import mondrian.util.*;
-import mondrian.spi.*;
-import mondrian.spi.impl.JndiDataSourceResolver;
-
-import org.eigenbase.util.property.StringProperty;
-
-import org.apache.log4j.Logger;
-import org.olap4j.Scenario;
 
 /**
  * A <code>RolapConnection</code> is a connection to a Mondrian OLAP Server.
@@ -52,6 +53,7 @@ import org.olap4j.Scenario;
 public class RolapConnection extends ConnectionBase {
     private static final Logger LOGGER =
         Logger.getLogger(RolapConnection.class);
+    private static final AtomicInteger ID_GENERATOR = new AtomicInteger();
 
     private final MondrianServer server;
 
@@ -68,8 +70,11 @@ public class RolapConnection extends ConnectionBase {
     protected Role role;
     private Locale locale = Locale.getDefault();
     private Scenario scenario;
+    private boolean closed = false;
 
     private static DataSourceResolver dataSourceResolver;
+    private final int id;
+    private final Statement internalStatement;
 
     /**
      * Creates a connection.
@@ -112,6 +117,7 @@ public class RolapConnection extends ConnectionBase {
         super();
         assert server != null;
         this.server = server;
+        this.id = ID_GENERATOR.getAndIncrement();
 
         assert connectInfo != null;
         String provider = connectInfo.get(
@@ -130,12 +136,17 @@ public class RolapConnection extends ConnectionBase {
         this.dataSource =
             createDataSource(dataSource, connectInfo, buf);
         Role role = null;
+
+        // Register this connection before we register its internal statement.
+        server.addConnection(this);
+
         if (schema == null) {
             // If RolapSchema.Pool.get were to call this with schema == null,
             // we would loop.
+            Statement bootstrapStatement = createInternalStatement(false);
             final Locus locus =
                 new Locus(
-                    new Execution(null, 0),
+                    new Execution(bootstrapStatement, 0),
                     null,
                     "Initializing connection");
             Locus.push(locus);
@@ -162,7 +173,10 @@ public class RolapConnection extends ConnectionBase {
                 }
             } finally {
                 Locus.pop(locus);
+                bootstrapStatement.close();
             }
+            internalStatement =
+                schema.getInternalConnection().getInternalStatement();
             String roleNameList =
                 connectInfo.get(RolapConnectionProperties.Role.name());
             if (roleNameList != null) {
@@ -203,6 +217,8 @@ public class RolapConnection extends ConnectionBase {
                 }
             }
         } else {
+            this.internalStatement = createInternalStatement(true);
+
             // We are creating an internal connection. Now is a great time to
             // make sure that the JDBC credentials are valid, for this
             // connection and for external connections built on top of this.
@@ -261,6 +277,22 @@ public class RolapConnection extends ConnectionBase {
 
         this.schema = schema;
         setRole(role);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        close();
+    }
+
+    /**
+     * Returns the identifier of this connection. Unique within the lifetime of
+     * this JVM.
+     *
+     * @return Identifier of this connection
+     */
+    public int getId() {
+        return id;
     }
 
     protected Logger getLogger() {
@@ -501,6 +533,10 @@ public class RolapConnection extends ConnectionBase {
     }
 
     public void close() {
+        if (!closed) {
+            closed = true;
+            server.removeConnection(this);
+        }
     }
 
     public RolapSchema getSchema() {
@@ -541,7 +577,7 @@ public class RolapConnection extends ConnectionBase {
     }
 
     public CacheControl getCacheControl(PrintWriter pw) {
-        return AggregationManager.instance().getCacheControl(pw);
+        return AggregationManager.instance().getCacheControl(this, pw);
     }
 
     /**
@@ -706,6 +742,67 @@ public class RolapConnection extends ConnectionBase {
      */
     public MondrianServer getServer() {
         return server;
+    }
+
+    public QueryPart parseStatement(String query) {
+        Statement statement = createInternalStatement(false);
+        final Locus locus =
+            new Locus(
+                new Execution(statement, 0),
+                "Parse/validate MDX statement",
+                null);
+        Locus.push(locus);
+        try {
+            QueryPart queryPart =
+                parseStatement(statement, query, null, false);
+            if (queryPart instanceof Query) {
+                ((Query) queryPart).setOwnStatement(true);
+                statement = null;
+            }
+            return queryPart;
+        } finally {
+            Locus.pop(locus);
+            if (statement != null) {
+                statement.close();
+            }
+        }
+    }
+
+    public Exp parseExpression(String expr) {
+        boolean debug = false;
+        if (getLogger().isDebugEnabled()) {
+            //debug = true;
+            getLogger().debug(
+                Util.nl
+                + expr);
+        }
+        final Statement statement = getInternalStatement();
+        try {
+            MdxParserValidator parser = createParser();
+            final FunTable funTable = getSchema().getFunTable();
+            return parser.parseExpression(statement, expr, debug, funTable);
+        } catch (Throwable exception) {
+            throw MondrianResource.instance().FailedToParseQuery.ex(
+                expr,
+                exception);
+        }
+    }
+
+    public Statement getInternalStatement() {
+        if (internalStatement == null) {
+            return schema.getInternalConnection().getInternalStatement();
+        } else {
+            return internalStatement;
+        }
+    }
+
+    private Statement createInternalStatement(boolean reentrant) {
+        final Statement statement =
+            reentrant
+                ? new ReentrantInternalStatement()
+                : new InternalStatement();
+        server.addStatement(statement);
+        return statement;
     }
 
     /**
@@ -1046,6 +1143,62 @@ public class RolapConnection extends ConnectionBase {
 
         public Connection getConnection() throws SQLException {
             return dataSource.getConnection(jdbcUser, jdbcPassword);
+        }
+    }
+
+    /**
+     * <p>Implementation of {@link Statement} for use when you don't have an
+     * olap4j connection.</p>
+     */
+    private class InternalStatement extends StatementImpl {
+        private boolean closed = false;
+
+        public void close() {
+            if (!closed) {
+                closed = true;
+                server.removeStatement(this);
+            }
+        }
+
+        public RolapConnection getMondrianConnection() {
+            return RolapConnection.this;
+        }
+    }
+
+    /**
+     * <p>A statement that can be used for all of the various internal
+     * operations, such as resolving MDX identifiers, that require a
+     * {@link Statement} and an {@link Execution}.
+     *
+     * <p>The statement needs to be reentrant because there are many such
+     * operations; several of these operations might be active at one time. We
+     * don't want to create a new statement for each, but just one internal
+     * statement for each connection. The statement shouldn't have a unique
+     * execution. For this reason, we don't use the inherited {@link #execution}
+     * field.</p>
+     *
+     * <p>But there is a drawback. If we can't find the unique execution, the
+     * statement cannot be canceled or time out. If you want that behavior
+     * from an internal statement, use the base class: create a new
+     * {@link InternalStatement} for each operation.</p>
+     */
+    private class ReentrantInternalStatement extends InternalStatement {
+        @Override
+        public void start(Execution execution) {
+            // Unlike StatementImpl, there is not a unique execution. An
+            // internal statement can execute several at the same time. So,
+            // we don't set this.execution.
+            execution.start();
+        }
+
+        @Override
+        public void end(Execution execution) {
+            execution.end();
+        }
+
+        @Override
+        public void close() {
+            // do not close
         }
     }
 }

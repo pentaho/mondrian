@@ -9,9 +9,7 @@
 */
 package mondrian.server;
 
-import mondrian.olap.Connection;
 import mondrian.olap.Query;
-import mondrian.olap.Schema;
 import mondrian.olap.SchemaReader;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapSchema;
@@ -110,7 +108,8 @@ public interface Statement {
      * to ensure timely detection of these events, particularly before/after
      * any potentially long running operations.
      *
-     * TODO: move to execution?
+     * @deprecated This method will be removed in mondrian-4.0; use
+     *   {@link mondrian.server.Execution#checkCancelOrTimeout()}
      */
     void checkCancelOrTimeout();
 

@@ -39,7 +39,7 @@ public class QueryTest extends FoodMartTestCase {
         ConnectionBase connection =
             (ConnectionBase) testContext.getConnection();
         final Statement statement =
-            connection.createDummyStatement();
+            connection.getInternalStatement();
 
         try {
             queryWithCellProps =

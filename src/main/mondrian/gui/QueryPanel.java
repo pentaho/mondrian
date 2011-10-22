@@ -10,20 +10,20 @@
 */
 package mondrian.gui;
 
+import mondrian.gui.validate.ValidationUtils;
 import mondrian.olap.*;
 import mondrian.olap.Util.PropertyList;
 import mondrian.rolap.agg.AggregationManager;
-import mondrian.gui.validate.ValidationUtils;
 
 import org.apache.log4j.Logger;
 
-import javax.swing.*;
-import javax.swing.text.DefaultEditorKit;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.text.DefaultEditorKit;
 
 /**
  * @author sean
@@ -320,8 +320,7 @@ public class QueryPanel extends javax.swing.JPanel {
             Connection con = DriverManager.getConnection(list, null);
 
             // clear cache before connecting
-            AggregationManager.instance().getCacheControl(null)
-                .flushSchemaCache();
+            con.getCacheControl(null).flushSchemaCache();
 
             if (con != null) {
                 connection = con;

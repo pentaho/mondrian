@@ -10,7 +10,12 @@
 package mondrian.rolap;
 
 import mondrian.olap.Util;
+import mondrian.server.Execution;
 import mondrian.server.Locus;
+import mondrian.server.monitor.SqlStatementEndEvent;
+import mondrian.server.monitor.SqlStatementEvent;
+import mondrian.server.monitor.SqlStatementExecuteEvent;
+import mondrian.server.monitor.SqlStatementStartEvent;
 import mondrian.util.DelegatingInvocationHandler;
 
 import javax.sql.DataSource;
@@ -19,6 +24,7 @@ import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * SqlStatement contains a SQL statement and associated resources throughout
@@ -54,7 +60,7 @@ public class SqlStatement {
     private static final String TIMING_NAME = "SqlStatement-";
 
     // used for SQL logging, allows for a SQL Statement UID
-    private static long executeCount = -1;
+    private static final AtomicLong ID_GENERATOR = new AtomicLong();
 
     private static final RolapUtil.Semaphore querySemaphore =
         RolapUtil.getQuerySemaphore();
@@ -71,9 +77,11 @@ public class SqlStatement {
     private final int resultSetConcurrency;
     private boolean haveSemaphore;
     public int rowCount;
-    private long startTime;
+    private long startTimeNanos;
+    private long startTimeMillis;
     private final List<Accessor> accessors = new ArrayList<Accessor>();
-    private boolean done;
+    private State state = State.FRESH;
+    private final long id;
 
     /**
      * Creates a SqlStatement.
@@ -89,7 +97,7 @@ public class SqlStatement {
      * @param resultSetType Result set type
      * @param resultSetConcurrency Result set concurrency
      */
-    SqlStatement(
+    public SqlStatement(
         DataSource dataSource,
         String sql,
         List<Type> types,
@@ -99,6 +107,7 @@ public class SqlStatement {
         int resultSetType,
         int resultSetConcurrency)
     {
+        this.id = ID_GENERATOR.getAndIncrement();
         this.dataSource = dataSource;
         this.sql = sql;
         this.types = types;
@@ -113,7 +122,8 @@ public class SqlStatement {
      * Executes the current statement, and handles any SQLException.
      */
     public void execute() {
-        long currId = 0;
+        assert state == State.FRESH : "cannot re-execute";
+        state = State.ACTIVE;
         String status = "failed";
         Statement statement = null;
         try {
@@ -122,9 +132,8 @@ public class SqlStatement {
             haveSemaphore = true;
             // Trace start of execution.
             if (RolapUtil.SQL_LOGGER.isDebugEnabled()) {
-                currId = ++executeCount;
                 StringBuilder sqllog = new StringBuilder();
-                sqllog.append(currId)
+                sqllog.append(id)
                     .append(": ")
                     .append(locus.component)
                     .append(": executing sql [");
@@ -143,7 +152,8 @@ public class SqlStatement {
             if (hook != null) {
                 hook.onExecuteQuery(sql);
             }
-            startTime = System.currentTimeMillis();
+            startTimeNanos = System.nanoTime();
+            startTimeMillis = System.currentTimeMillis();
             if (resultSetType < 0 || resultSetConcurrency < 0) {
                 statement = jdbcConnection.createStatement();
             } else {
@@ -158,27 +168,49 @@ public class SqlStatement {
             // First make sure to register with the execution instance.
             locus.execution.registerStatement(locus, statement);
 
+            locus.getServer().getMonitor().sendEvent(
+                new SqlStatementStartEvent(
+                    startTimeMillis,
+                    id,
+                    locus,
+                    sql,
+                    getPurpose(),
+                    getCellRequestCount()));
+
             this.resultSet = statement.executeQuery(sql);
 
             // skip to first row specified in request
-            this.done = false;
+            this.state = State.ACTIVE;
             if (firstRowOrdinal > 0) {
                 if (resultSetType == ResultSet.TYPE_FORWARD_ONLY) {
                     for (int i = 0; i < firstRowOrdinal; ++i) {
                         if (!this.resultSet.next()) {
-                            this.done = true;
+                            this.state = State.DONE;
                             break;
                         }
                     }
                 } else {
-                    this.done = !this.resultSet.absolute(firstRowOrdinal);
+                    if (!this.resultSet.absolute(firstRowOrdinal)) {
+                        this.state = State.DONE;
+                    }
                 }
             }
 
-            long time = System.currentTimeMillis();
-            final long execMs = time - startTime;
-            Util.addDatabaseTime(execMs);
-            status = ", exec " + execMs + " ms";
+            long timeMillis = System.currentTimeMillis();
+            long timeNanos = System.nanoTime();
+            final long executeNanos = timeNanos - startTimeNanos;
+            final long executeMillis = executeNanos / 1000000;
+            Util.addDatabaseTime(executeMillis);
+            status = ", exec " + executeMillis + " ms";
+
+            locus.getServer().getMonitor().sendEvent(
+                new SqlStatementExecuteEvent(
+                    timeMillis,
+                    id,
+                    locus,
+                    sql,
+                    getPurpose(),
+                    executeNanos));
 
             // Compute accessors. They ensure that we use the most efficient
             // method (e.g. getInt, getDouble, getObject) for the type of the
@@ -205,7 +237,7 @@ public class SqlStatement {
             }
             throw handle(e);
         } finally {
-            RolapUtil.SQL_LOGGER.debug(currId + ": " + status);
+            RolapUtil.SQL_LOGGER.debug(id + ": " + status);
 
             if (RolapUtil.LOGGER.isDebugEnabled()) {
                 RolapUtil.LOGGER.debug(
@@ -261,21 +293,32 @@ public class SqlStatement {
                 jdbcConnection = null;
             }
         }
-        long time = System.currentTimeMillis();
-        long totalMs = time - startTime;
+        long endTime = System.currentTimeMillis();
+        long totalMs = endTime - startTimeMillis;
         String status =
             ", exec+fetch " + totalMs + " ms, " + rowCount + " rows";
 
         locus.execution.getQueryTiming().markFull(
             TIMING_NAME + locus.component, totalMs);
 
-        RolapUtil.SQL_LOGGER.debug(executeCount + ": " + status);
+        RolapUtil.SQL_LOGGER.debug(id + ": " + status);
 
         if (RolapUtil.LOGGER.isDebugEnabled()) {
             RolapUtil.LOGGER.debug(
                 locus.component + ": done executing sql [" + sql + "]"
                 + status);
         }
+
+        locus.getServer().getMonitor().sendEvent(
+            new SqlStatementEndEvent(
+                endTime,
+                id,
+                locus,
+                sql,
+                getPurpose(),
+                rowCount,
+                false,
+                null));
     }
 
     public ResultSet getResultSet() {
@@ -456,10 +499,6 @@ public class SqlStatement {
         return accessors;
     }
 
-    public boolean isDone() {
-        return done;
-    }
-
     /**
      * Returns the result set in a proxy which automatically closes this
      * SqlStatement (and hence also the statement and result set) when the
@@ -475,6 +514,22 @@ public class SqlStatement {
             null,
             new Class<?>[] {ResultSet.class},
             new MyDelegatingInvocationHandler(this));
+    }
+
+    private SqlStatementEvent.Purpose getPurpose() {
+        if (locus instanceof StatementLocus) {
+            return ((StatementLocus) locus).purpose;
+        } else {
+            return SqlStatementEvent.Purpose.OTHER;
+        }
+    }
+
+    private int getCellRequestCount() {
+        if (locus instanceof StatementLocus) {
+            return ((StatementLocus) locus).cellRequestCount;
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -546,6 +601,32 @@ public class SqlStatement {
          */
         public void close() throws SQLException {
             sqlStatement.close();
+        }
+    }
+
+    private enum State {
+        FRESH,
+        ACTIVE,
+        DONE
+    }
+
+    public static class StatementLocus extends Locus {
+        private final SqlStatementEvent.Purpose purpose;
+        private final int cellRequestCount;
+
+        public StatementLocus(
+            Execution execution,
+            String component,
+            String message,
+            SqlStatementEvent.Purpose purpose,
+            int cellRequestCount)
+        {
+            super(
+                execution,
+                component,
+                message);
+            this.purpose = purpose;
+            this.cellRequestCount = cellRequestCount;
         }
     }
 }

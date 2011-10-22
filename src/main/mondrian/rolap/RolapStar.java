@@ -22,14 +22,15 @@ import mondrian.server.Locus;
 import mondrian.spi.DataSourceChangeListener;
 import mondrian.spi.Dialect;
 import mondrian.util.Bug;
+
 import org.apache.log4j.Logger;
 
-import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.*;
 import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * A <code>RolapStar</code> is a star schema. It is the means to read cell
@@ -517,7 +518,11 @@ public class RolapStar {
         Aggregation aggregation = lookupAggregation(aggregationKey);
 
         if (aggregation == null) {
-            aggregation = new Aggregation(aggregationKey);
+            aggregation =
+                new Aggregation(
+                    MondrianServer.forConnection(
+                        schema.getInternalConnection()),
+                    aggregationKey);
 
             this.localAggregations.get().put(aggregationKey, aggregation);
 
@@ -594,7 +599,11 @@ public class RolapStar {
                             // And these will be checked in if all queries
                             // that are currently using these aggregates
                             // are finished
-                            aggregation = new Aggregation(aggregationKey);
+                            aggregation =
+                                new Aggregation(
+                                    MondrianServer.forConnection(
+                                        schema.getInternalConnection()),
+                                    aggregationKey);
 
                             localAggregations.get().put(
                                 aggregationKey, aggregation);

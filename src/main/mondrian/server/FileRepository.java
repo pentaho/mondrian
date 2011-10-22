@@ -15,8 +15,11 @@ import mondrian.olap4j.MondrianOlap4jDriver;
 import mondrian.rolap.*;
 import mondrian.spi.CatalogLocator;
 import mondrian.tui.XmlaSupport;
+import mondrian.util.LockBox;
 import mondrian.xmla.*;
+
 import org.apache.log4j.Logger;
+
 import org.olap4j.*;
 import org.olap4j.impl.Olap4jUtil;
 
@@ -132,10 +135,15 @@ public class FileRepository implements Repository {
             throw Util.newError("Unknown catalog '" + catalogName + "'");
         }
         String connectString = catalogInfo.olap4jConnectString;
+
+        // Save the server for the duration of the call to 'getConnection'.
+        final LockBox.Entry entry =
+            MondrianServerRegistry.INSTANCE.lockBox.register(server);
+
         final Properties properties = new Properties();
         properties.setProperty(
             RolapConnectionProperties.Instance.name(),
-            server.getId());
+            entry.getMoniker());
         if (roleName != null) {
             properties.setProperty(
                 RolapConnectionProperties.Role.name(),

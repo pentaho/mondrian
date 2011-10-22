@@ -15,21 +15,22 @@ package mondrian.rolap;
 import mondrian.calc.TupleList;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.sql.*;
-import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
+import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.sql.*;
 import mondrian.server.Locus;
+import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.Dialect;
 import mondrian.util.CreationException;
 import mondrian.util.ObjectFactory;
 import mondrian.util.Pair;
 
-import javax.sql.DataSource;
+import org.eigenbase.util.property.StringProperty;
+
 import java.sql.*;
 import java.util.*;
-
-import org.eigenbase.util.property.StringProperty;
+import javax.sql.DataSource;
 
 /**
  * A <code>SqlMemberSource</code> reads members from a SQL database.
@@ -289,10 +290,11 @@ class SqlMemberSource
         SqlStatement stmt =
             RolapUtil.executeQuery(
                 dataSource, sql, types, 0, 0,
-                new Locus(
+                new SqlStatement.StatementLocus(
                     null,
                     "SqlMemberSource.getMembers",
-                    "while building member cache"),
+                    "while building member cache",
+                    SqlStatementEvent.Purpose.TUPLES, 0),
                 -1, -1);
         try {
             final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
@@ -902,10 +904,11 @@ RME is this right
         SqlStatement stmt =
             RolapUtil.executeQuery(
                 dataSource, sql, types, 0, 0,
-                new Locus(
+                new SqlStatement.StatementLocus(
                     Locus.peek().execution,
                     "SqlMemberSource.getMemberChildren",
-                    "while building member cache"),
+                    "while building member cache",
+                    SqlStatementEvent.Purpose.TUPLES, 0),
                 -1, -1);
         try {
             int limit = MondrianProperties.instance().ResultLimit.get();

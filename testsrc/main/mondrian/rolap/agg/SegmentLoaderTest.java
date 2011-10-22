@@ -11,6 +11,8 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.*;
+import mondrian.server.*;
+import mondrian.server.Statement;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.util.DelegatingInvocationHandler;
@@ -28,8 +30,25 @@ import java.util.*;
  */
 public class SegmentLoaderTest extends BatchTestCase {
 
+    private Execution execution;
+    private Locus locus;
+
     protected void setUp() throws Exception {
         super.setUp();
+
+        final Statement statement =
+            ((RolapConnection) getConnection()).getInternalStatement();
+        execution = new Execution(statement, 1000);
+        locus = new Locus(execution, null, null);
+
+        Locus.push(locus);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        Locus.pop(locus);
+
+        super.tearDown();
     }
 
     public void testRollup() throws Exception {
@@ -68,21 +87,17 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(groupableSetsInfo);
         SegmentLoader loader = new SegmentLoader() {
             SqlStatement createExecuteSql(
-                GroupingSetsList groupingSetsList,
+                int cellRequestCount,
+                final GroupingSetsList groupingSetsList,
                 List<StarPredicate> compoundPredicateList)
             {
-                return null;
-            }
-
-            ResultSet loadData(
-                SqlStatement stmt,
-                GroupingSetsList groupingSetsList)
-                throws SQLException
-            {
-                return toResultSet(getData(true));
+                return new MockSqlStatement(
+                    cellRequestCount,
+                    groupingSetsList,
+                    getData(true));
             }
         };
-        loader.load(groupingSets, null, null);
+        loader.load(0, groupingSets, null, null);
         Aggregation.Axis[] axes = groupingSetsInfo.getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);
@@ -139,21 +154,17 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(groupableSetsInfo);
         SegmentLoader loader = new SegmentLoader() {
             SqlStatement createExecuteSql(
+                int cellRequestCount,
                 GroupingSetsList groupingSetsList,
                 List<StarPredicate> compoundPredicateList)
             {
-                return null;
-            }
-
-            ResultSet loadData(
-                SqlStatement stmt,
-                GroupingSetsList groupingSetsList)
-                throws SQLException
-            {
-                return toResultSet(getDataWithNullInRollupColumn(true));
+                return new MockSqlStatement(
+                    cellRequestCount,
+                    groupingSetsList,
+                    getDataWithNullInRollupColumn(true));
             }
         };
-        loader.load(groupingSets, null, null);
+        loader.load(0, groupingSets, null, null);
         Segment detailedSegment = groupingSets.get(0).getSegments().get(0);
         assertEquals(3, detailedSegment.getCellCount());
     }
@@ -170,25 +181,21 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(groupableSetsInfo);
         SegmentLoader loader = new SegmentLoader() {
             SqlStatement createExecuteSql(
+                int cellRequestCount,
                 GroupingSetsList groupingSetsList,
                 List<StarPredicate> compoundPredicateList)
             {
-                return null;
-            }
-
-            ResultSet loadData(
-                SqlStatement stmt,
-                GroupingSetsList groupingSetsList) throws
-                SQLException
-            {
-                return toResultSet(getData(true));
+                return new MockSqlStatement(
+                    cellRequestCount,
+                    groupingSetsList,
+                    getData(true));
             }
 
             boolean useSparse(boolean sparse, int n, RowList rows) {
                 return true;
             }
         };
-        loader.load(groupingSets, null, null);
+        loader.load(0, groupingSets, null, null);
         Aggregation.Axis[] axes = groupingSetsInfo.getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);
@@ -205,6 +212,20 @@ public class SegmentLoaderTest extends BatchTestCase {
             groupingSets.get(1).getSegments().get(0));
     }
 
+    private List<Object[]> trim(final int length, final List<Object[]> data) {
+        return new AbstractList<Object[]>() {
+            @Override
+            public Object[] get(int index) {
+                return Arrays.copyOf(data.get(index), length);
+            }
+
+            @Override
+            public int size() {
+                return data.size();
+            }
+        };
+    }
+
     public void testLoadWithMockResultsForLoadingOnlyDetailedSegments() {
         GroupingSet groupingSetsInfo = getDefaultGroupingSet();
         ArrayList<GroupingSet> groupingSets =
@@ -212,21 +233,17 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(groupingSetsInfo);
         SegmentLoader loader = new SegmentLoader() {
             SqlStatement createExecuteSql(
+                int cellRequestCount,
                 GroupingSetsList groupingSetsList,
                 List<StarPredicate> compoundPredicateList)
             {
-                return null;
-            }
-
-            ResultSet loadData(
-                SqlStatement stmt,
-                GroupingSetsList groupingSetsList)
-                throws SQLException
-            {
-                return toResultSet(getData(false));
+                return new MockSqlStatement(
+                    cellRequestCount,
+                    groupingSetsList,
+                    trim(5, getData(false)));
             }
         };
-        loader.load(groupingSets, null, null);
+        loader.load(0, groupingSets, null, null);
         Aggregation.Axis[] axes = groupingSetsInfo.getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);
@@ -247,13 +264,19 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(groupingSetsInfo);
         groupingSets.add(groupableSetsInfo);
 
+        final SqlStatement stmt =
+            new MockSqlStatement(
+                0,
+                new GroupingSetsList(groupingSets),
+                getData(true));
         SegmentLoader loader = new SegmentLoader() {
-            ResultSet loadData(
-                SqlStatement stmt,
-                GroupingSetsList groupingSetsList) throws
-                SQLException
+            @Override
+            SqlStatement createExecuteSql(
+                int cellRequestCount,
+                GroupingSetsList groupingSetsList,
+                List<StarPredicate> compoundPredicateList)
             {
-                return toResultSet(getData(true));
+                return stmt;
             }
         };
         int axisCount = 4;
@@ -263,8 +286,10 @@ public class SegmentLoaderTest extends BatchTestCase {
 
         SegmentLoader.RowList list =
             loader.processData(
-                null, axisContainsNull,
-                axisValueSet, new GroupingSetsList(groupingSets));
+                stmt,
+                axisContainsNull,
+                axisValueSet,
+                new GroupingSetsList(groupingSets));
         int totalNoOfRows = 12;
         int lengthOfRowWithBitKey = 6;
         assertEquals(totalNoOfRows, list.size());
@@ -297,6 +322,7 @@ public class SegmentLoaderTest extends BatchTestCase {
     private GroupingSet getGroupingSetRollupOnGender() {
         return
             getGroupingSet(
+                execution,
                 new String[]{tableTime, tableProductClass, tableProductClass},
                 new String[]{
                     fieldYear, fieldProductFamily, fieldProductDepartment},
@@ -313,13 +339,20 @@ public class SegmentLoaderTest extends BatchTestCase {
     {
         GroupingSet groupingSetsInfo = getDefaultGroupingSet();
 
+        final SqlStatement stmt =
+            new MockSqlStatement(
+                0,
+                new GroupingSetsList(
+                    Collections.singletonList(groupingSetsInfo)),
+                trim(5, getDataWithNullInAxisColumn(false)));
         SegmentLoader loader = new SegmentLoader() {
-            ResultSet loadData(
-                SqlStatement stmt,
-                GroupingSetsList groupingSetsList) throws
-                SQLException
+            @Override
+            SqlStatement createExecuteSql(
+                int cellRequestCount,
+                GroupingSetsList groupingSetsList,
+                List<StarPredicate> compoundPredicateList)
             {
-                return toResultSet(getDataWithNullInAxisColumn(false));
+                return stmt;
             }
         };
         int axisCount = 4;
@@ -330,8 +363,10 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets.add(groupingSetsInfo);
 
         loader.processData(
-            null, axisContainsNull,
-            axisValueSet, new GroupingSetsList(groupingSets));
+            stmt,
+            axisContainsNull,
+            axisValueSet,
+            new GroupingSetsList(groupingSets));
 
         assertFalse(axisContainsNull[0]);
         assertFalse(axisContainsNull[1]);
@@ -343,21 +378,24 @@ public class SegmentLoaderTest extends BatchTestCase {
         throws SQLException
     {
         GroupingSet groupingSetsInfo = getDefaultGroupingSet();
-
+        final List<Object[]> data = new ArrayList<Object[]>();
+        data.add(new Object[]{"1997", "Food", "Deli", "F", "5990"});
+        data.add(new Object[]{"1997", "Food", "Deli", "M", "6047"});
+        data.add(new Object[]{"1997", "Food", "Canned_Products", "F", "867"});
+        final SqlStatement stmt =
+            new MockSqlStatement(
+                0,
+                new GroupingSetsList(
+                    Collections.singletonList(groupingSetsInfo)),
+                data);
         SegmentLoader loader = new SegmentLoader() {
-            ResultSet loadData(
-                SqlStatement stmt,
-                GroupingSetsList groupingSetsList)
-                throws SQLException
+            @Override
+            SqlStatement createExecuteSql(
+                int cellRequestCount,
+                GroupingSetsList groupingSetsList,
+                List<StarPredicate> compoundPredicateList)
             {
-                List<Object[]> data = new ArrayList<Object[]>();
-                data.add(new Object[]{"1997", "Food", "Deli", "F", "5990"});
-                data.add(new Object[]{"1997", "Food", "Deli", "M", "6047"});
-                data.add(
-                    new Object[] {
-                        "1997", "Food", "Canned_Products", "F", "867"});
-
-                return toResultSet(data);
+                return stmt;
             }
         };
         List<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
@@ -367,7 +405,8 @@ public class SegmentLoaderTest extends BatchTestCase {
             loader.getDistinctValueWorkspace(4);
         SegmentLoader.RowList list =
             loader.processData(
-                null, new boolean[4],
+                stmt,
+                new boolean[4],
                 axisValueSet,
                 new GroupingSetsList(groupingSets));
         int totalNoOfRows = 3;
@@ -432,11 +471,8 @@ public class SegmentLoaderTest extends BatchTestCase {
         cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 0, 2}));
         Double[] unitSalesValues = {841.0, 1812.0, 12037.0, 4186.0,};
 
-        Iterator<Map.Entry<CellKey, Object>> iterator =
-            segment.getData().iterator();
         int index = 0;
-        while (iterator.hasNext()) {
-            Map.Entry<CellKey, Object> x = iterator.next();
+        for (Map.Entry<CellKey, Object> x : segment.getData()) {
             assertEquals(cellKeys.get(index), x.getKey());
             assertEquals(unitSalesValues[index], x.getValue());
             index++;
@@ -448,11 +484,8 @@ public class SegmentLoaderTest extends BatchTestCase {
             null, null, 4186.0, null, 1812.0, null,
             null, 12037.0, null, 841.0, null, null
         };
-        Iterator<Map.Entry<CellKey, Object>> iterator =
-            segment.getData().iterator();
         int index = 0;
-        while (iterator.hasNext()) {
-            Map.Entry<CellKey, Object> x = iterator.next();
+        for (Map.Entry<CellKey, Object> x : segment.getData()) {
             assertEquals(unitSalesValues[index++], x.getValue());
         }
     }
@@ -526,7 +559,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     private GroupingSet getGroupingSetRollupOnGenderAndProductFamily() {
         return getGroupingSet(
-            new String[]{tableTime, tableProductClass},
+            execution, new String[]{tableTime, tableProductClass},
             new String[]{fieldYear, fieldProductDepartment},
             new String[][]{fieldValuesYear, fieldValueProductDepartment},
             cubeNameSales, measureUnitSales);
@@ -579,6 +612,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     private GroupingSet getGroupingSetRollupOnGenderAndProductDepartment() {
         return getGroupingSet(
+            execution,
             new String[]{tableProductClass, tableTime},
             new String[]{fieldProductFamily, fieldYear},
             new String[][]{fieldValuesProductFamily, fieldValuesYear},
@@ -590,6 +624,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         getGroupingSetRollupOnProductFamilyAndProductDepartment()
     {
         return getGroupingSet(
+            execution,
             new String[]{tableCustomer, tableTime},
             new String[]{fieldGender, fieldYear},
             new String[][]{fieldValuesGender, fieldValuesYear},
@@ -601,6 +636,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         getGroupingSetRollupOnGenderAndProductDepartmentAndYear()
     {
         return getGroupingSet(
+            execution,
             new String[]{tableProductClass},
             new String[]{fieldProductFamily},
             new String[][]{fieldValuesProductFamily},
@@ -610,12 +646,11 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     private GroupingSet getGroupingSetRollupOnProductDepartment() {
         return getGroupingSet(
-            new String[]{tableCustomer, tableProductClass,
-                tableTime},
-            new String[]{fieldGender, fieldProductFamily,
-                fieldYear},
-            new String[][]{fieldValuesGender, fieldValuesProductFamily,
-                fieldValuesYear},
+            execution,
+            new String[]{tableCustomer, tableProductClass, tableTime},
+            new String[]{fieldGender, fieldProductFamily, fieldYear},
+            new String[][]{
+                fieldValuesGender, fieldValuesProductFamily, fieldValuesYear},
             cubeNameSales,
             measureUnitSales);
     }
@@ -742,7 +777,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     private GroupingSet getDefaultGroupingSet() {
         return getGroupingSet(
-            new String[]{tableCustomer, tableProductClass,
+            execution, new String[]{tableCustomer, tableProductClass,
                 tableProductClass, tableTime},
             new String[]{fieldGender, fieldProductDepartment,
                 fieldProductFamily, fieldYear},
@@ -908,6 +943,39 @@ public class SegmentLoaderTest extends BatchTestCase {
 
         public boolean wasNull() {
             return wasNull;
+        }
+    }
+
+    private class MockSqlStatement extends SqlStatement {
+        private final List<Object[]> data;
+
+        public MockSqlStatement(
+            int cellRequestCount,
+            GroupingSetsList groupingSetsList,
+            List<Object[]> data)
+        {
+            super(
+                groupingSetsList.getStar().getDataSource(),
+                "",
+                null,
+                cellRequestCount,
+                0,
+                SegmentLoaderTest.this.locus,
+                0,
+                0);
+            this.data = data;
+        }
+
+        @Override
+        public List<Type> guessTypes() throws SQLException {
+            return Collections.nCopies(
+                getResultSet().getMetaData().getColumnCount(),
+                Type.OBJECT);
+        }
+
+        @Override
+        public ResultSet getResultSet() {
+            return toResultSet(data);
         }
     }
 }
