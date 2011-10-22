@@ -10,17 +10,15 @@
 //
 // jhyde, 20 January, 1999
 */
-
 package mondrian.olap;
 
 import mondrian.calc.*;
 import mondrian.mdx.*;
-import mondrian.olap.type.*;
 import mondrian.olap.type.DimensionType;
+import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 
 import java.io.PrintWriter;
-import java.util.List;
 
 /**
  * An axis in an MDX query. For example, the typical MDX query has two axes,

@@ -11,10 +11,11 @@ package mondrian.olap4j;
 
 import mondrian.olap.Access;
 import mondrian.rolap.RolapSchema;
-import org.olap4j.metadata.*;
+
 import org.olap4j.OlapDatabaseMetaData;
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
+import org.olap4j.metadata.*;
 
 import java.util.Map;
 

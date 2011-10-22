@@ -12,7 +12,8 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.*;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.SqlStatement.Type;
 import mondrian.rolap.aggmatcher.AggStar;

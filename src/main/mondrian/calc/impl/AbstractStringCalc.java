@@ -9,10 +9,10 @@
 */
 package mondrian.calc.impl;
 
+import mondrian.calc.Calc;
+import mondrian.calc.StringCalc;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
-import mondrian.calc.StringCalc;
-import mondrian.calc.Calc;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.StringCalc} interface.

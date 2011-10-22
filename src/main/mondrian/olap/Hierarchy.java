@@ -10,8 +10,6 @@
 */
 package mondrian.olap;
 
-import java.util.Map;
-
 /**
  * A <code>Hierarchy</code> is a set of members, organized into levels.
  *

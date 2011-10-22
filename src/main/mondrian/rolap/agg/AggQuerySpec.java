@@ -13,8 +13,8 @@
 package mondrian.rolap.agg;
 
 import mondrian.rolap.RolapStar;
-import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.SqlStatement.Type;
+import mondrian.rolap.StarColumnPredicate;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.util.Pair;

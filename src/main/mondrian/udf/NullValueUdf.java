@@ -10,8 +10,8 @@
 package mondrian.udf;
 
 import mondrian.olap.*;
-import mondrian.olap.type.*;
-import mondrian.rolap.RolapUtil;
+import mondrian.olap.type.NumericType;
+import mondrian.olap.type.Type;
 import mondrian.spi.UserDefinedFunction;
 
 /**

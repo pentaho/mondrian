@@ -8,11 +8,11 @@
 */
 package mondrian.olap4j;
 
-import org.olap4j.metadata.Property;
-import org.olap4j.metadata.Datatype;
 import org.olap4j.impl.Named;
+import org.olap4j.metadata.Datatype;
+import org.olap4j.metadata.Property;
 
-import java.util.*;
+import java.util.Set;
 
 /**
  * Implementation of {@link org.olap4j.metadata.Property}

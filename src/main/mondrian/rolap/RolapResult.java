@@ -14,18 +14,15 @@ import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.mdx.*;
 import mondrian.olap.*;
-import mondrian.olap.DimensionType;
 import mondrian.olap.fun.*;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
-import mondrian.olap.type.*;
+import mondrian.olap.type.ScalarType;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.spi.CellFormatter;
-import mondrian.util.ConcatenableList;
-import mondrian.util.Format;
-import mondrian.util.ObjectPool;
+import mondrian.util.*;
 
 import org.apache.log4j.Logger;
 

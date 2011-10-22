@@ -14,16 +14,8 @@
 package mondrian.gui;
 
 import org.apache.log4j.Logger;
-import org.eigenbase.xom.*;
 
-import javax.swing.*;
-import javax.swing.border.EtchedBorder;
-import javax.swing.event.*;
-import javax.swing.plaf.basic.BasicArrowButton;
-import javax.swing.table.*;
-import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.PlainDocument;
-import javax.swing.tree.*;
+import org.eigenbase.xom.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -32,6 +24,14 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.border.EtchedBorder;
+import javax.swing.event.*;
+import javax.swing.plaf.basic.BasicArrowButton;
+import javax.swing.table.*;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.PlainDocument;
+import javax.swing.tree.*;
 
 /**
  * @author sean

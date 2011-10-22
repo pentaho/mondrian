@@ -9,11 +9,9 @@
 */
 package mondrian.rolap;
 
-import java.util.EventObject;
+import mondrian.olap.*;
 
-import mondrian.olap.Exp;
-import mondrian.olap.FunDef;
-import mondrian.olap.NativeEvaluator;
+import java.util.EventObject;
 
 /**
  * A factory for {@link mondrian.olap.NativeEvaluator}.

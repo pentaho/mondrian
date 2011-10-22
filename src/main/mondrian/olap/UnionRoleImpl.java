@@ -8,7 +8,8 @@
 */
 package mondrian.olap;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implementation of {@link Role} which combines the privileges of several

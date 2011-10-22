@@ -9,11 +9,6 @@
 */
 package mondrian.rolap.agg;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 import mondrian.olap.MondrianProperties;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.SegmentHeader.ConstrainedColumn;
@@ -21,6 +16,11 @@ import mondrian.spi.SegmentCache;
 import mondrian.util.ServiceDiscovery;
 
 import org.apache.log4j.Logger;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Utility class to interact with the {@link SegmentCache}.

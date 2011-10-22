@@ -9,10 +9,10 @@
 */
 package mondrian.calc.impl;
 
+import mondrian.calc.BooleanCalc;
+import mondrian.calc.Calc;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
-import mondrian.olap.type.BooleanType;
-import mondrian.calc.*;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.BooleanCalc} interface.

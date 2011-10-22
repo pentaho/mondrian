@@ -9,12 +9,10 @@
 */
 package mondrian.rolap;
 
+import mondrian.calc.*;
+import mondrian.calc.impl.GenericCalc;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
-import mondrian.calc.ParameterCompilable;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.impl.GenericCalc;
 import mondrian.resource.MondrianResource;
 
 /**

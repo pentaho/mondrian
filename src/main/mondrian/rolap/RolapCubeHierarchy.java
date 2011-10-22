@@ -12,20 +12,15 @@
 */
 package mondrian.rolap;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import mondrian.olap.*;
 import mondrian.olap.fun.VisualTotalsFunDef;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.util.UnsupportedList;
+
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Hierarchy that is associated with a specific Cube.

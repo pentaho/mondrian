@@ -9,12 +9,10 @@
 */
 package mondrian.calc.impl;
 
+import mondrian.calc.*;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
-import mondrian.calc.Calc;
-import mondrian.calc.CalcWriter;
-import mondrian.calc.ResultStyle;
-import mondrian.mdx.ResolvedFunCall;
 import mondrian.rolap.RolapEvaluator;
 import mondrian.rolap.RolapHierarchy;
 

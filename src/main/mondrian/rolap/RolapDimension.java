@@ -1,24 +1,24 @@
 /*
- // $Id$
- // This software is subject to the terms of the Eclipse Public License v1.0
- // Agreement, available at the following URL:
- // http://www.eclipse.org/legal/epl-v10.html.
- // Copyright (C) 2001-2002 Kana Software, Inc.
- // Copyright (C) 2001-2009 Julian Hyde and others
- // All Rights Reserved.
- // You must accept the terms of that agreement to use this software.
- //
- // jhyde, 10 August, 2001
- */
-
+// $Id$
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// Copyright (C) 2001-2002 Kana Software, Inc.
+// Copyright (C) 2001-2009 Julian Hyde and others
+// All Rights Reserved.
+// You must accept the terms of that agreement to use this software.
+//
+// jhyde, 10 August, 2001
+*/
 package mondrian.rolap;
 
-import org.apache.log4j.Logger;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 
-import java.util.Map;
+import org.apache.log4j.Logger;
+
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * <code>RolapDimension</code> implements {@link Dimension}for a ROLAP

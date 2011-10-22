@@ -9,8 +9,8 @@
 */
 package mondrian.calc.impl;
 
-import mondrian.olap.*;
 import mondrian.calc.Calc;
+import mondrian.olap.*;
 
 /**
  * Expression which yields the value of the current member in the current

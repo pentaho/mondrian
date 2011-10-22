@@ -10,12 +10,12 @@
 //
 // jhyde, 21 March, 2002
 */
-
 package mondrian.rolap.agg;
 
 import mondrian.rolap.*;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * A <code>CellRequest</code> contains the context necessary to get a cell

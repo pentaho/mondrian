@@ -9,10 +9,10 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.rolap.CellKey;
+
 import java.util.Map;
 import java.util.SortedSet;
-
-import mondrian.rolap.CellKey;
 
 /**
  * Implementation of a segment body which stores the data of a

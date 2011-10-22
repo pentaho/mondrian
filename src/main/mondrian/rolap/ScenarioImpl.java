@@ -9,18 +9,18 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.*;
-import mondrian.olap.type.ScalarType;
-import mondrian.mdx.ResolvedFunCall;
 import mondrian.calc.Calc;
 import mondrian.calc.DummyExp;
 import mondrian.calc.impl.GenericCalc;
+import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
+import mondrian.olap.type.ScalarType;
+
+import org.olap4j.AllocationPolicy;
+import org.olap4j.Scenario;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.olap4j.Scenario;
-import org.olap4j.AllocationPolicy;
 
 /**
  * Implementation of {@link org.olap4j.Scenario}.

@@ -9,8 +9,8 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.*;
-import mondrian.spi.CellFormatter;
+import mondrian.olap.Annotation;
+import mondrian.olap.MondrianDef;
 
 import java.util.Map;
 

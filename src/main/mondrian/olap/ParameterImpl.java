@@ -10,14 +10,15 @@
 //
 // leonardk, 10 January, 2000
 */
-
 package mondrian.olap;
-import mondrian.calc.impl.*;
-import mondrian.olap.type.*;
-import mondrian.mdx.MemberExpr;
-import mondrian.calc.*;
 
-import java.util.*;
+import mondrian.calc.*;
+import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.GenericCalc;
+import mondrian.mdx.MemberExpr;
+import mondrian.olap.type.*;
+
+import java.util.List;
 
 /**
  * Implementation of {@link Parameter}.

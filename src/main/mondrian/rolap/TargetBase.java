@@ -10,11 +10,10 @@
 package mondrian.rolap;
 
 import mondrian.olap.Member;
-import mondrian.olap.Util;
 import mondrian.rolap.sql.TupleConstraint;
 
-import java.util.List;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Base helper class for the SQL tuple readers

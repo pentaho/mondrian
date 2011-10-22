@@ -9,15 +9,15 @@
 package mondrian.spi;
 
 import mondrian.olap.Util;
-import mondrian.util.ServiceDiscovery;
-import mondrian.spi.impl.JdbcDialectImpl;
 import mondrian.spi.impl.JdbcDialectFactory;
+import mondrian.spi.impl.JdbcDialectImpl;
+import mondrian.util.ServiceDiscovery;
 
-import javax.sql.DataSource;
+import java.lang.reflect.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
-import java.lang.reflect.*;
+import javax.sql.DataSource;
 
 /**
  * Manages {@link mondrian.spi.Dialect} and {@link mondrian.spi.DialectFactory}

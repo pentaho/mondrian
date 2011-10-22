@@ -9,9 +9,9 @@
 */
 package mondrian.calc.impl;
 
+import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.calc.*;
 
 import java.util.List;
 

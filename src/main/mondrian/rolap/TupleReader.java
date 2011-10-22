@@ -14,7 +14,6 @@ import mondrian.calc.TupleList;
 
 import java.sql.SQLException;
 import java.util.List;
-
 import javax.sql.DataSource;
 
 /**

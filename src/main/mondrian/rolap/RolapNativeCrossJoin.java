@@ -9,12 +9,11 @@
 */
 package mondrian.rolap;
 
-import java.util.*;
 import mondrian.olap.*;
-import mondrian.olap.fun.*;
-import mondrian.rolap.sql.TupleConstraint;
-import mondrian.rolap.sql.CrossJoinArg;
-import mondrian.rolap.sql.MemberListCrossJoinArg;
+import mondrian.olap.fun.NonEmptyCrossJoinFunDef;
+import mondrian.rolap.sql.*;
+
+import java.util.*;
 
 /**
  * Creates a {@link mondrian.olap.NativeEvaluator} that evaluates NON EMPTY

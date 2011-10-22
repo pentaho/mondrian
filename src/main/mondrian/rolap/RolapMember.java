@@ -10,10 +10,9 @@
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import mondrian.olap.Member;
 
 /**
  * A <code>RolapMember</code> is a member of a {@link RolapHierarchy}. There are

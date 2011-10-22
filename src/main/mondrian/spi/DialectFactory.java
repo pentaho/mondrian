@@ -8,8 +8,8 @@
 */
 package mondrian.spi;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
+import javax.sql.DataSource;
 
 /**
  * Factory that creates {@link Dialect} objects.

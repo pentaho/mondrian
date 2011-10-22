@@ -9,8 +9,8 @@
 */
 package mondrian.calc;
 
-import mondrian.olap.Member;
 import mondrian.olap.Evaluator;
+import mondrian.olap.Member;
 
 /**
  * Expression which yields a tuple.

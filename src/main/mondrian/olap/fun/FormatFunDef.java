@@ -9,13 +9,10 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.FunDef;
-import mondrian.olap.Exp;
-import mondrian.olap.Literal;
-import mondrian.olap.Evaluator;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractStringCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 import mondrian.util.Format;
 
 import java.util.Locale;

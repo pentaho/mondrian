@@ -9,11 +9,11 @@
 */
 package mondrian.calc.impl;
 
+import mondrian.calc.Calc;
+import mondrian.calc.MemberCalc;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.type.MemberType;
-import mondrian.calc.MemberCalc;
-import mondrian.calc.Calc;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.MemberCalc} interface.

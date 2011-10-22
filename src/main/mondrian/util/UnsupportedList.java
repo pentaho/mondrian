@@ -11,11 +11,7 @@ package mondrian.util;
 
 import org.apache.log4j.Logger;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.ListIterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Implementation of {@link java.util.List} where all methods throw

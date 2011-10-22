@@ -10,14 +10,12 @@
 //
 // jhyde, 20 January, 1999
 */
-
 package mondrian.olap;
 
-import mondrian.olap.type.Type;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
-import mondrian.mdx.MdxVisitorImpl;
 import mondrian.mdx.MdxVisitor;
+import mondrian.olap.type.Type;
 
 import java.io.PrintWriter;
 

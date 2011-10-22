@@ -9,12 +9,12 @@
 */
 package mondrian.calc.impl;
 
+import mondrian.calc.Calc;
+import mondrian.calc.IntegerCalc;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.fun.FunUtil;
 import mondrian.olap.type.NumericType;
-import mondrian.calc.IntegerCalc;
-import mondrian.calc.Calc;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.IntegerCalc} interface.

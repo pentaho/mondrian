@@ -12,7 +12,8 @@
 */
 package mondrian.rolap;
 
-import mondrian.calc.*;
+import mondrian.calc.Calc;
+import mondrian.calc.ParameterSlot;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.server.Statement;

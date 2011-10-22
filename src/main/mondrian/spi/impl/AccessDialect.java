@@ -8,9 +8,9 @@
 */
 package mondrian.spi.impl;
 
-import java.util.List;
-import java.util.Calendar;
 import java.sql.*;
+import java.util.Calendar;
+import java.util.List;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the Microsoft Access

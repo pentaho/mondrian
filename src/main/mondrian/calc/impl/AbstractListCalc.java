@@ -9,9 +9,10 @@
 */
 package mondrian.calc.impl;
 
-import mondrian.olap.*;
-import mondrian.olap.type.SetType;
 import mondrian.calc.*;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
+import mondrian.olap.type.SetType;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.ListCalc} interface.

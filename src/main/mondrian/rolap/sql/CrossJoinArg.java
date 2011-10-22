@@ -9,9 +9,7 @@
 */
 package mondrian.rolap.sql;
 
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapLevel;
-import mondrian.rolap.RolapMember;
+import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.AggStar;
 
 import java.util.List;

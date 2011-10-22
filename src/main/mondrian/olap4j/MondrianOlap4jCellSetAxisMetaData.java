@@ -10,12 +10,13 @@ package mondrian.olap4j;
 
 import mondrian.mdx.LevelExpr;
 import mondrian.mdx.UnresolvedFunCall;
-import org.olap4j.CellSetAxisMetaData;
+import mondrian.olap.*;
+import mondrian.olap.type.TypeUtil;
+
 import org.olap4j.Axis;
+import org.olap4j.CellSetAxisMetaData;
 import org.olap4j.metadata.Hierarchy;
 import org.olap4j.metadata.Property;
-import mondrian.olap.*;
-import mondrian.olap.type.*;
 
 import java.util.*;
 

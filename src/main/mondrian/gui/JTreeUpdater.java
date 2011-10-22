@@ -11,11 +11,12 @@
 */
 package mondrian.gui;
 
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import java.util.*;
 
 /**
  * Helper to enable update the tree and keep expanded nodes expanded after

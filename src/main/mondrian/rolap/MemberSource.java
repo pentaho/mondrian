@@ -10,12 +10,11 @@
 //
 // jhyde, 21 December, 2001
 */
-
 package mondrian.rolap;
 
-import java.util.List;
-
 import mondrian.olap.Id;
+
+import java.util.List;
 
 /**
  * A <code>MemberSource</code> has the basic operations to read the members of a

@@ -20,15 +20,12 @@ import org.apache.log4j.Logger;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapWrapper;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
 
 /**
  * XMLA servlet that gets its connections from an olap4j data source.

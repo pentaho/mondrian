@@ -9,29 +9,22 @@
 */
 package mondrian.tui;
 
+import mondrian.olap.*;
+import mondrian.rolap.RolapConnectionProperties;
 import mondrian.server.StringRepositoryContentFinder;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.CatalogLocatorImpl;
 import mondrian.util.LockBox;
 import mondrian.xmla.*;
-import mondrian.olap.MondrianServer;
-import mondrian.olap.Util;
-import mondrian.olap.Role;
-import mondrian.rolap.RolapConnectionProperties;
 import mondrian.xmla.Enumeration;
-import mondrian.xmla.impl.DefaultXmlaRequest;
-import mondrian.xmla.impl.DefaultXmlaResponse;
-import mondrian.xmla.impl.MondrianXmlaServlet;
-
-import org.eigenbase.xom.DOMWrapper;
-import org.eigenbase.xom.Parser;
-import org.eigenbase.xom.XOMUtil;
-import org.eigenbase.xom.XOMException;
+import mondrian.xmla.impl.*;
 
 import org.apache.log4j.Logger;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.Document;
+
+import org.eigenbase.xom.*;
+import org.eigenbase.xom.Parser;
+
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import java.io.*;
@@ -40,8 +33,8 @@ import java.util.*;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 
 /**
  * Support for making XMLA requests and looking at the responses.

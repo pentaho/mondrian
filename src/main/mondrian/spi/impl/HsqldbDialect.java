@@ -10,9 +10,7 @@ package mondrian.spi.impl;
 
 import mondrian.olap.Util;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 
 /**

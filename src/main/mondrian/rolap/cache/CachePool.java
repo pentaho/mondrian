@@ -9,8 +9,6 @@
 */
 package mondrian.rolap.cache;
 
-import mondrian.rolap.RolapSchema;
-
 /**
  * A <code>CachePool</code> manages the objects in a collection of
  * caches.

@@ -16,8 +16,8 @@ import mondrian.calc.Calc;
 import mondrian.rolap.RolapSchema;
 import mondrian.rolap.RolapUtil;
 
-import javax.sql.DataSource;
 import java.util.List;
+import javax.sql.DataSource;
 
 /**
  * <code>DelegatingSchemaReader</code> implements {@link SchemaReader} by

@@ -10,12 +10,12 @@
 */
 package mondrian.rolap.sql;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.olap.MondrianProperties;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents an enumeration {member1, member2, ...}.

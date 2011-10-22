@@ -13,7 +13,8 @@
 package mondrian.olap;
 
 import mondrian.mdx.*;
-import mondrian.olap.fun.*;
+import mondrian.olap.fun.FunUtil;
+import mondrian.olap.fun.Resolver;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapCube;
@@ -32,11 +33,14 @@ import org.olap4j.mdx.*;
 import java.io.*;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
-import java.net.*;
-import java.security.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.regex.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utility functions used throughout mondrian. All methods are static.

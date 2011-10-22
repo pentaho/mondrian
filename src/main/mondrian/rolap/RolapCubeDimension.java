@@ -12,10 +12,7 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.DimensionType;
-import mondrian.olap.HierarchyBase;
-import mondrian.olap.MondrianDef;
-import mondrian.olap.Schema;
+import mondrian.olap.*;
 
 import java.util.List;
 

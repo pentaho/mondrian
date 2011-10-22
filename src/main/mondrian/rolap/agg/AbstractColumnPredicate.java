@@ -10,16 +10,11 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.StarColumnPredicate;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.StarPredicate;
-import mondrian.rolap.sql.SqlQuery;
-import mondrian.rolap.BitKey;
 import mondrian.olap.Util;
+import mondrian.rolap.*;
+import mondrian.rolap.sql.SqlQuery;
 
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * A <code>AbstractColumnPredicate</code> is an abstract implementation for

@@ -10,12 +10,6 @@
 */
 package mondrian.gui;
 
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.text.JTextComponent;
-
 import mondrian.gui.MondrianGuiDef.Hierarchy;
 
 import org.eigenbase.xom.NodeDef;
@@ -25,6 +19,11 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.text.JTextComponent;
 
 /**
  * @author sean

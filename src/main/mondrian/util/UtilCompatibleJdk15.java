@@ -9,14 +9,15 @@
 */
 package mondrian.util;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.UUID;
 import java.util.regex.Pattern;
-import java.math.BigDecimal;
+
 // Only in Java5 and above
-import java.math.MathContext;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.annotation.Annotation;
 
 /**
  * Implementation of {@link UtilCompatible} which runs in

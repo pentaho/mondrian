@@ -13,12 +13,11 @@
 package mondrian.olap;
 
 import org.apache.log4j.Logger;
-import org.eigenbase.util.property.*;
+
+import org.eigenbase.util.property.TriggerableProperties;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.util.Enumeration;
 
 /**

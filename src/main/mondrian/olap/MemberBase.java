@@ -16,8 +16,8 @@ import mondrian.resource.MondrianResource;
 import mondrian.spi.MemberFormatter;
 import mondrian.util.Bug;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <code>MemberBase</code> is a partial implementation of {@link Member}.

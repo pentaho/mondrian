@@ -9,12 +9,12 @@
 */
 package mondrian.olap4j;
 
-import mondrian.olap.DimensionType;
-import mondrian.olap.OlapElement;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 
 import org.olap4j.OlapException;
 import org.olap4j.impl.*;
+import org.olap4j.metadata.Dimension;
+import org.olap4j.metadata.Hierarchy;
 import org.olap4j.metadata.*;
 
 /**

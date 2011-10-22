@@ -9,11 +9,9 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.StarPredicate;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.BitKey;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.olap.Util;
+import mondrian.rolap.*;
+import mondrian.rolap.sql.SqlQuery;
 
 import java.util.*;
 

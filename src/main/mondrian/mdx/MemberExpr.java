@@ -9,11 +9,12 @@
 */
 package mondrian.mdx;
 
-import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.MemberType;
-import mondrian.calc.*;
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
 import mondrian.calc.impl.ConstantCalc;
+import mondrian.olap.*;
+import mondrian.olap.type.MemberType;
+import mondrian.olap.type.Type;
 
 /**
  * Usage of a {@link mondrian.olap.Member} as an MDX expression.

@@ -13,11 +13,12 @@ package mondrian.gui;
 
 import mondrian.gui.validate.ValidationUtils;
 import mondrian.gui.validate.impl.*;
+
 import org.eigenbase.xom.ElementDef;
 
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.tree.TreePath;
-import java.awt.*;
 
 /**
  * Render an entry for the tree.

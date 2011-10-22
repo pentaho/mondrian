@@ -11,12 +11,12 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Util;
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.spi.DataSourceChangeListener;
-import mondrian.olap.Util;
 import mondrian.util.Pair;
 
 import java.util.*;

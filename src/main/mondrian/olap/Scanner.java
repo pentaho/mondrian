@@ -12,14 +12,13 @@
 */
 package mondrian.olap;
 
-import java_cup.runtime.Symbol;
 import org.apache.log4j.Logger;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
+
+import java_cup.runtime.Symbol;
+
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * Lexical analyzer for MDX.

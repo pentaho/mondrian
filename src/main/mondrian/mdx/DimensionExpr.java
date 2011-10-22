@@ -9,11 +9,12 @@
 */
 package mondrian.mdx;
 
+import mondrian.calc.Calc;
+import mondrian.calc.ExpCompiler;
+import mondrian.calc.impl.ConstantCalc;
 import mondrian.olap.*;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.Type;
-import mondrian.calc.*;
-import mondrian.calc.impl.ConstantCalc;
 
 /**
  * Usage of a {@link mondrian.olap.Dimension} as an MDX expression.

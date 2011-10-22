@@ -7,13 +7,9 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.tui;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Enumeration;
-import java.util.Collections;
+import java.util.*;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 

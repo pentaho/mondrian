@@ -9,10 +9,10 @@
 */
 package mondrian.rolap.agg;
 
-import java.util.*;
-
 import mondrian.olap.Util;
 import mondrian.rolap.*;
+
+import java.util.*;
 
 /**
  * Column context that an Aggregation is computed for.

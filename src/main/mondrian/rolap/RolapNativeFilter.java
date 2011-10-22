@@ -10,19 +10,13 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.*;
+import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.sql.*;
+
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.sql.DataSource;
-
-import mondrian.olap.*;
-import mondrian.olap.type.SetType;
-import mondrian.olap.type.StringType;
-import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.rolap.sql.DescendantsCrossJoinArg;
-import mondrian.rolap.sql.SqlQuery;
-import mondrian.rolap.sql.TupleConstraint;
-import mondrian.rolap.sql.CrossJoinArg;
 
 /**
  * Computes a Filter(set, condition) in SQL.

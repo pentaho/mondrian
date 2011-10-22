@@ -9,15 +9,13 @@
 */
 package mondrian.rolap;
 
-import java.util.*;
-
 import mondrian.mdx.MemberExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.rolap.sql.MemberChildrenConstraint;
-import mondrian.rolap.sql.SqlQuery;
-import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.sql.*;
+
+import java.util.*;
 
 /**
  * limits the result of a Member SQL query to the current evaluation context.

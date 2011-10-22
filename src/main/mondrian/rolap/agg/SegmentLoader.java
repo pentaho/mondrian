@@ -9,7 +9,8 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.*;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.SegmentHeader.ConstrainedColumn;
 import mondrian.server.Locus;
@@ -20,9 +21,11 @@ import mondrian.util.Pair;
 import org.apache.log4j.Logger;
 
 import java.io.Serializable;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 
 /**
  * <p>The <code>SegmentLoader</code> queries database and loads the data into

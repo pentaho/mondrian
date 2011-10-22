@@ -7,17 +7,12 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.rolap.agg;
 
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.StarColumnPredicate;
-import mondrian.rolap.StarPredicate;
+import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Provides the information necessary to generate a SQL statement to

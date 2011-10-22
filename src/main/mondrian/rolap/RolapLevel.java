@@ -14,12 +14,12 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
-import mondrian.spi.*;
-
+import mondrian.spi.Dialect;
 import mondrian.spi.PropertyFormatter;
 import mondrian.spi.impl.Scripts;
 
 import org.apache.log4j.Logger;
+
 import org.olap4j.impl.UnmodifiableArrayMap;
 
 import java.util.*;

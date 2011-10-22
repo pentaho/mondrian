@@ -9,11 +9,12 @@
 */
 package mondrian.calc.impl;
 
-import mondrian.olap.*;
+import mondrian.calc.Calc;
+import mondrian.calc.DoubleCalc;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Exp;
 import mondrian.olap.fun.FunUtil;
 import mondrian.olap.type.NumericType;
-import mondrian.calc.DoubleCalc;
-import mondrian.calc.Calc;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.DoubleCalc} interface.

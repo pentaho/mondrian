@@ -9,10 +9,11 @@
 */
 package mondrian.rolap;
 
-import mondrian.calc.*;
+import mondrian.calc.Calc;
+import mondrian.calc.TupleList;
 import mondrian.olap.*;
-import mondrian.olap.fun.*;
-import mondrian.resource.*;
+import mondrian.olap.fun.AggregateFunDef;
+import mondrian.olap.fun.FunUtil;
 
 /**
  * Describes an aggregation operator, such as "sum" or "count".

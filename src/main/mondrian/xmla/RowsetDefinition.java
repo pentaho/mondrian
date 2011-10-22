@@ -9,24 +9,28 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.Category;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.MondrianServer;
-import mondrian.olap.Util;
-
+import mondrian.olap.*;
 import mondrian.util.Composite;
-import org.olap4j.*;
+
+import org.olap4j.OlapConnection;
+import org.olap4j.OlapException;
 import org.olap4j.impl.ArrayNamedListImpl;
 import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.mdx.IdentifierNode;
 import org.olap4j.mdx.IdentifierSegment;
 import org.olap4j.metadata.*;
+import org.olap4j.metadata.Cube;
+import org.olap4j.metadata.Dimension;
+import org.olap4j.metadata.Hierarchy;
+import org.olap4j.metadata.Level;
+import org.olap4j.metadata.Member;
 import org.olap4j.metadata.Member.TreeOp;
+import org.olap4j.metadata.NamedSet;
+import org.olap4j.metadata.Property;
+import org.olap4j.metadata.Schema;
 import org.olap4j.metadata.XmlaConstants;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.sql.SQLException;
 import java.text.Format;
 import java.text.SimpleDateFormat;

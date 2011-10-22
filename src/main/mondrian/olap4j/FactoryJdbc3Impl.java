@@ -10,6 +10,7 @@
 package mondrian.olap4j;
 
 import mondrian.rolap.RolapConnection;
+
 import org.olap4j.OlapException;
 
 import java.sql.*;

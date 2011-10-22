@@ -9,12 +9,13 @@
 */
 package mondrian.calc;
 
-import org.eigenbase.util.property.StringProperty;
+import mondrian.calc.impl.BetterExpCompiler;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
-import mondrian.util.ObjectFactory;
 import mondrian.util.CreationException;
-import mondrian.calc.impl.BetterExpCompiler;
+import mondrian.util.ObjectFactory;
+
+import org.eigenbase.util.property.StringProperty;
 
 import java.util.List;
 

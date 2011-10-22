@@ -18,9 +18,7 @@ import mondrian.util.LockBox;
 import org.olap4j.OlapConnection;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Interface by which to control an instance of Mondrian.

@@ -9,14 +9,13 @@
 */
 package mondrian.xmla;
 
-import java.util.Map;
+import org.w3c.dom.Element;
 
+import java.util.Map;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.w3c.dom.Element;
 
 
 /**

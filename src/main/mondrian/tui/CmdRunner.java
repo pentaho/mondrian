@@ -7,32 +7,29 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.tui;
 
+import mondrian.olap.Category;
 import mondrian.olap.*;
-import mondrian.olap.type.TypeUtil;
+import mondrian.olap.Hierarchy;
 import mondrian.olap.fun.FunInfo;
+import mondrian.olap.type.TypeUtil;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.rolap.RolapCube;
+
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.LogManager;
+import org.apache.log4j.*;
+
 import org.eigenbase.util.property.Property;
 
 import java.io.*;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Command line utility which reads and executes MDX commands.

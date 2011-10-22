@@ -13,10 +13,12 @@ import org.apache.log4j.Logger;
 
 import org.w3c.dom.Element;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.*;
 
 /**
  * Base XML/A servlet.

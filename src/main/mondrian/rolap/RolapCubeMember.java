@@ -10,7 +10,6 @@
 //
 // wgorman, 19 October 2007
 */
-
 package mondrian.rolap;
 
 import mondrian.mdx.HierarchyExpr;

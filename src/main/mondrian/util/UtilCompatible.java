@@ -9,8 +9,8 @@
 */
 package mondrian.util;
 
-import java.math.BigDecimal;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 
 /**
  * Interface containing methods which are implemented differently in different

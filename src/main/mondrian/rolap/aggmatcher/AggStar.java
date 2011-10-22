@@ -22,7 +22,8 @@ import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import javax.sql.DataSource;
 

@@ -9,28 +9,31 @@
 */
 package mondrian.xmla;
 
-import mondrian.olap.*;
+import mondrian.olap.MondrianException;
+import mondrian.olap.Util;
 import mondrian.xmla.impl.DefaultXmlaResponse;
-
-import static org.olap4j.metadata.XmlaConstants.*;
 
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
+
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 
+import java.io.*;
+import java.nio.charset.Charset;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
-import java.nio.charset.Charset;
+
+import static org.olap4j.metadata.XmlaConstants.Format;
+import static org.olap4j.metadata.XmlaConstants.Method;
 
 /**
  * Utility methods for XML/A implementation.

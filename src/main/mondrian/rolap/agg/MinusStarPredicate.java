@@ -9,9 +9,7 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.StarPredicate;
-import mondrian.rolap.StarColumnPredicate;
-import mondrian.rolap.RolapStar;
+import mondrian.rolap.*;
 
 import java.util.*;
 

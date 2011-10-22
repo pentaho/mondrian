@@ -9,13 +9,13 @@
 */
 package mondrian.olap4j;
 
-import mondrian.olap.Query;
 import mondrian.rolap.RolapConnection;
+
 import org.olap4j.OlapException;
 
-import java.util.Properties;
-import java.util.List;
 import java.sql.*;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Instantiates classes to implement the olap4j API against the

@@ -17,7 +17,6 @@ import mondrian.olap.CacheControl.CellRegion;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.spi.CellFormatter;

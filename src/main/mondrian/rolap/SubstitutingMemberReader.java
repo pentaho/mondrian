@@ -12,8 +12,8 @@ import mondrian.olap.Id;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 
-import java.util.*;
 import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Implementation of {@link MemberReader} which replaces given members

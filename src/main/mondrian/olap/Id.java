@@ -10,15 +10,13 @@
 //
 // jhyde, 21 January, 1999
 */
-
 package mondrian.olap;
-import mondrian.olap.type.Type;
+
 import mondrian.mdx.MdxVisitor;
+import mondrian.olap.type.Type;
 
 import java.io.PrintWriter;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 
 /**
  * Multi-part identifier.

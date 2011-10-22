@@ -11,12 +11,12 @@
 */
 package mondrian.rolap;
 
-import java.util.List;
-
 import mondrian.olap.Id;
 import mondrian.rolap.TupleReader.MemberBuilder;
-import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.rolap.sql.TupleConstraint;
+
+import java.util.List;
 
 /**
  * A <code>DelegatingMemberReader</code> is a {@link MemberReader} which

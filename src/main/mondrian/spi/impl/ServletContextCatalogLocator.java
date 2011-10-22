@@ -11,9 +11,9 @@ package mondrian.spi.impl;
 
 import mondrian.spi.CatalogLocator;
 
-import javax.servlet.ServletContext;
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
+import javax.servlet.ServletContext;
 
 /**
  * Locates a catalog based upon a {@link ServletContext}.<p/>

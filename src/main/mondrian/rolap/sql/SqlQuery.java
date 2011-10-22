@@ -12,16 +12,14 @@
 */
 package mondrian.rolap.sql;
 
-import mondrian.olap.MondrianDef;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 import mondrian.util.Pair;
 
-import javax.sql.DataSource;
 import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>

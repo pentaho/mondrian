@@ -7,15 +7,12 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.Hierarchy;
-import mondrian.resource.MondrianResource;
 import mondrian.recorder.MessageRecorder;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapLevel;
-import mondrian.rolap.HierarchyUsage;
+import mondrian.resource.MondrianResource;
+import mondrian.rolap.*;
 
 import java.util.Iterator;
 

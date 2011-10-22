@@ -10,7 +10,7 @@
 package mondrian.udf;
 
 import mondrian.olap.type.*;
-import mondrian.util.*;
+import mondrian.util.Format;
 
 /**
  * User-defined function <code>CurrentDateMember</code>.  Arguments to the

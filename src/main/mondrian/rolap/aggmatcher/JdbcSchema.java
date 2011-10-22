@@ -7,30 +7,25 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianDef;
+import mondrian.olap.MondrianProperties;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapAggregator;
 import mondrian.rolap.RolapStar;
-import mondrian.resource.MondrianResource;
 import mondrian.spi.Dialect;
 
-import javax.sql.DataSource;
-
 import org.apache.log4j.Logger;
+
 import org.olap4j.impl.Olap4jUtil;
 
-import java.lang.ref.SoftReference;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.ResultSet;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.Types;
-import java.sql.SQLException;
+import java.lang.ref.SoftReference;
+import java.sql.*;
 import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * Metadata gleaned from JDBC about the tables and columns in the star schema.

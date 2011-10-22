@@ -10,8 +10,8 @@
 //
 // jhyde, 29 December, 2001
 */
-
 package mondrian.rolap;
+
 import mondrian.olap.Util;
 
 /**

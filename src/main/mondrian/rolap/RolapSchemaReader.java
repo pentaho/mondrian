@@ -11,23 +11,22 @@
 */
 package mondrian.rolap;
 
-import java.util.*;
-
-import javax.sql.DataSource;
-
-import mondrian.olap.*;
-import mondrian.olap.type.StringType;
-import mondrian.rolap.sql.TupleConstraint;
-import mondrian.rolap.sql.MemberChildrenConstraint;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.DummyExp;
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractCalc;
 import mondrian.calc.impl.GenericCalc;
+import mondrian.olap.*;
+import mondrian.olap.type.StringType;
+import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.rolap.sql.TupleConstraint;
 
 import org.apache.log4j.Logger;
+
 import org.eigenbase.util.property.Property;
+
 import org.olap4j.mdx.IdentifierSegment;
+
+import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * A <code>RolapSchemaReader</code> allows you to read schema objects while

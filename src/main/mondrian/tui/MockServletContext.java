@@ -7,22 +7,13 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.tui;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Enumeration;
-import java.util.Collections;
-import java.net.URL;
 import java.net.MalformedURLException;
-import javax.servlet.Servlet;
-import javax.servlet.ServletException;
-import javax.servlet.ServletContext;
-import javax.servlet.RequestDispatcher;
+import java.net.URL;
+import java.util.*;
+import javax.servlet.*;
 
 /**
  * Partial implementation of the {@link ServletContext} where just

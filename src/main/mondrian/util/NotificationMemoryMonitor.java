@@ -9,16 +9,10 @@
 */
 package mondrian.util;
 
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryNotificationInfo;
-import java.lang.management.MemoryUsage;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
-import java.lang.management.MemoryType;
-import javax.management.Notification;
-import javax.management.NotificationEmitter;
-import javax.management.NotificationListener;
 import org.apache.log4j.Logger;
+
+import java.lang.management.*;
+import javax.management.*;
 
 /**
  * The <code>NotificationMemoryMonitor</code> class uses the Java5

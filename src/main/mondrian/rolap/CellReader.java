@@ -10,13 +10,9 @@
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Util;
-import mondrian.olap.Member;
 
-import java.util.List;
+import mondrian.olap.Util;
 
 /**
  * A <code>CellReader</code> finds the cell value for the current context

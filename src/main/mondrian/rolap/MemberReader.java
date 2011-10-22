@@ -10,14 +10,14 @@
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
-import java.util.List;
 
-import mondrian.olap.*;
+import mondrian.olap.Hierarchy;
 import mondrian.rolap.TupleReader.MemberBuilder;
-import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.rolap.sql.TupleConstraint;
+
+import java.util.List;
 
 /**
  * A <code>MemberReader</code> implements common operations to retrieve members

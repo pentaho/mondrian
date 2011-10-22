@@ -7,25 +7,17 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Dimension;
-import mondrian.olap.MondrianDef;
-import mondrian.resource.MondrianResource;
+import mondrian.olap.*;
 import mondrian.recorder.MessageRecorder;
-import mondrian.rolap.RolapStar;
-import mondrian.rolap.RolapLevel;
-import mondrian.rolap.RolapSchema;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapAggregator;
-import mondrian.rolap.HierarchyUsage;
+import mondrian.resource.MondrianResource;
+import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 
-import java.util.*;
-
 import org.apache.log4j.Logger;
+
+import java.util.*;
 
 /**
  * Abstract Recognizer class used to determine if a candidate aggregate table

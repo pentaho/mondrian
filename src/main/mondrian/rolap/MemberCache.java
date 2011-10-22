@@ -10,13 +10,12 @@
 //
 // jhyde, 22 December, 2001
 */
-
 package mondrian.rolap;
 
-import java.util.List;
-
-import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.rolap.sql.TupleConstraint;
+
+import java.util.List;
 
 /**
  * A <code>MemberCache</code> can retrieve members based upon their parent and

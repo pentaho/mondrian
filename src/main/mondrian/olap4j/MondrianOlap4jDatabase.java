@@ -9,16 +9,14 @@
 */
 package mondrian.olap4j;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
 import org.olap4j.impl.Named;
 import org.olap4j.impl.Olap4jUtil;
-import org.olap4j.metadata.Catalog;
-import org.olap4j.metadata.Database;
-import org.olap4j.metadata.NamedList;
+import org.olap4j.metadata.*;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Implementation of {@link org.olap4j.metadata.Database}

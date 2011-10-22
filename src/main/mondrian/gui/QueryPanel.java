@@ -13,7 +13,6 @@ package mondrian.gui;
 import mondrian.gui.validate.ValidationUtils;
 import mondrian.olap.*;
 import mondrian.olap.Util.PropertyList;
-import mondrian.rolap.agg.AggregationManager;
 
 import org.apache.log4j.Logger;
 

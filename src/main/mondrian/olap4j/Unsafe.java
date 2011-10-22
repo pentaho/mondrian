@@ -11,6 +11,7 @@ package mondrian.olap4j;
 
 import mondrian.olap.QueryTiming;
 import mondrian.spi.ProfileHandler;
+
 import org.olap4j.OlapStatement;
 
 import java.io.PrintWriter;

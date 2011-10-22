@@ -10,7 +10,6 @@
 //
 // jhyde, 21 April, 1999
 */
-
 package mondrian.olap;
 
 import mondrian.calc.Calc;

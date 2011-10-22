@@ -10,12 +10,12 @@
 //
 // lkrivopaltsev, 01 November, 1999
 */
-
 package mondrian.olap;
+
 import mondrian.resource.MondrianResource;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class implements object of type GrantCube to apply permissions

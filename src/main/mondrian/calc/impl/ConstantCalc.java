@@ -9,12 +9,12 @@
 */
 package mondrian.calc.impl;
 
+import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.olap.type.*;
 import mondrian.olap.type.DimensionType;
 import mondrian.olap.type.LevelType;
-import mondrian.calc.*;
 
 import java.util.Map;
 

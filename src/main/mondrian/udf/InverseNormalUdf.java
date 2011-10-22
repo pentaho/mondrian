@@ -9,17 +9,17 @@
 */
 package mondrian.udf;
 
-import org.apache.commons.math.MathException;
-import org.apache.commons.math.distribution.DistributionFactory;
-import org.apache.commons.math.distribution.NormalDistribution;
-import org.apache.log4j.Logger;
-
 import mondrian.olap.Evaluator;
 import mondrian.olap.Syntax;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
 import mondrian.spi.UserDefinedFunction;
+
+import org.apache.commons.math.MathException;
+import org.apache.commons.math.distribution.DistributionFactory;
+import org.apache.commons.math.distribution.NormalDistribution;
+import org.apache.log4j.Logger;
 
 
 /**

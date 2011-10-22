@@ -10,10 +10,7 @@
 //
 // jhyde, 1 March, 1999
 */
-
 package mondrian.olap;
-
-import java.util.Map;
 
 /**
  * A <code>Dimension</code> represents a dimension of a cube.

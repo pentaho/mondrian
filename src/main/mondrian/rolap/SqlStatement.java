@@ -12,19 +12,15 @@ package mondrian.rolap;
 import mondrian.olap.Util;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
-import mondrian.server.monitor.SqlStatementEndEvent;
-import mondrian.server.monitor.SqlStatementEvent;
-import mondrian.server.monitor.SqlStatementExecuteEvent;
-import mondrian.server.monitor.SqlStatementStartEvent;
+import mondrian.server.monitor.*;
 import mondrian.util.DelegatingInvocationHandler;
-
-import javax.sql.DataSource;
 
 import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.sql.DataSource;
 
 /**
  * SqlStatement contains a SQL statement and associated resources throughout

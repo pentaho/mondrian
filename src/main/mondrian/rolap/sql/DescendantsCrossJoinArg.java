@@ -12,8 +12,8 @@ package mondrian.rolap.sql;
 import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.AggStar;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents one of:

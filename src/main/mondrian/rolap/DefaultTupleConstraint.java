@@ -10,10 +10,8 @@
 package mondrian.rolap;
 
 import mondrian.olap.Evaluator;
-import mondrian.rolap.sql.TupleConstraint;
-import mondrian.rolap.sql.MemberChildrenConstraint;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.sql.*;
 
 /**
  * TupleConstraint which does not restrict the result.

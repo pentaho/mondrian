@@ -10,11 +10,10 @@
 //
 // jhyde, 6 August, 2001
 */
-
 package mondrian.olap;
 
-import org.olap4j.Scenario;
 import org.olap4j.AllocationPolicy;
+import org.olap4j.Scenario;
 
 import java.util.List;
 

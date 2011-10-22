@@ -10,10 +10,9 @@
 //
 // wgorman, 19 October 2007
 */
-
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import mondrian.olap.Util;
 
 /**
  * The 'All' member of a {@link mondrian.rolap.RolapCubeHierarchy}.

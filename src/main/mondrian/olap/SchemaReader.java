@@ -14,8 +14,8 @@ package mondrian.olap;
 import mondrian.calc.Calc;
 import mondrian.rolap.RolapSchema;
 
-import javax.sql.DataSource;
 import java.util.List;
+import javax.sql.DataSource;
 
 /**
  * A <code>SchemaReader</code> queries schema objects ({@link Schema},
