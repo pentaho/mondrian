@@ -10,11 +10,12 @@
 */
 package mondrian.test;
 
-import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
 import mondrian.olap.*;
 import mondrian.rolap.BatchTestCase;
 import mondrian.spi.Dialect;
+
+import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
 
 /**
  * Tests the expressions used for calculated members. Please keep in sync

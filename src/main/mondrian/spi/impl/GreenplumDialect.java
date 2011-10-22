@@ -9,10 +9,10 @@
 */
 package mondrian.spi.impl;
 
+import mondrian.olap.Util;
+
 import java.sql.Connection;
 import java.sql.SQLException;
-
-import mondrian.olap.Util;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the GreenplumSQL database.

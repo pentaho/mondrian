@@ -10,27 +10,21 @@
 package mondrian.xmla;
 
 import mondrian.olap.Util;
-import mondrian.test.TestContext;
-import mondrian.test.DiffRepository;
-import mondrian.tui.MockHttpServletRequest;
-import mondrian.tui.MockHttpServletResponse;
-import mondrian.tui.XmlaSupport;
-import mondrian.util.Base64;
 import mondrian.rolap.RolapConnectionProperties;
+import mondrian.test.DiffRepository;
+import mondrian.test.TestContext;
+import mondrian.tui.*;
+import mondrian.util.Base64;
 
-import org.w3c.dom.CharacterData;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.Servlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.*;
 import java.util.Enumeration;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Test of the XMLA Fault generation - errors occur/are-detected in

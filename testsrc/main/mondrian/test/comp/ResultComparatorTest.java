@@ -9,17 +9,18 @@
 */
 package mondrian.test.comp;
 
-import javax.xml.parsers.DocumentBuilder;
+import mondrian.olap.*;
+import mondrian.test.FoodMartTestCase;
+
+import junit.framework.TestSuite;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.regex.Pattern;
-
-import mondrian.olap.*;
-import mondrian.test.FoodMartTestCase;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import junit.framework.TestSuite;
+import javax.xml.parsers.DocumentBuilder;
 
 /**
  * Unit test based upon an XML file.

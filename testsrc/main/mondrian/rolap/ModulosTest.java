@@ -11,10 +11,13 @@ package mondrian.rolap;
 
 import mondrian.calc.TupleList;
 import mondrian.calc.impl.UnaryTupleList;
-import mondrian.olap.*;
+import mondrian.olap.Axis;
+import mondrian.olap.Member;
+
 import junit.framework.TestCase;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * Test that the implementations of the Modulos interface are correct.

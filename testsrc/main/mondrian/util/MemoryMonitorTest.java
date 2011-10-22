@@ -7,17 +7,11 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.util;
 
-import mondrian.test.*;
 import mondrian.calc.ResultStyle;
-import mondrian.olap.Query;
-import mondrian.olap.Connection;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Result;
-import mondrian.olap.Util;
-import mondrian.olap.MemoryLimitExceededException;
+import mondrian.olap.*;
+import mondrian.test.FoodMartTestCase;
 
 import java.util.ArrayList;
 import java.util.List;

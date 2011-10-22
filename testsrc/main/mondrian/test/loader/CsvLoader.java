@@ -6,23 +6,14 @@
 // Copyright (C) 2005-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 */
-
 package mondrian.test.loader;
 
-import java.io.BufferedReader;
-import java.io.Reader;
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
+import org.apache.log4j.Logger;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.log4j.*;
 
 /**
  * This is a basic Comma-separated-value (CSV, Csv) reader. As input it

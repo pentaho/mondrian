@@ -15,16 +15,12 @@
 */
 package mondrian.test;
 
+import junit.framework.*;
+import junit.runner.BaseTestRunner;
+
 import java.io.PrintStream;
 import java.text.NumberFormat;
 import java.util.Enumeration;
-
-import junit.framework.AssertionFailedError;
-import junit.framework.Test;
-import junit.framework.TestFailure;
-import junit.framework.TestListener;
-import junit.framework.TestResult;
-import junit.runner.BaseTestRunner;
 
 public class MondrianResultPrinter implements TestListener {
     PrintStream fWriter;

@@ -8,10 +8,7 @@
 */
 package mondrian.spi.impl;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.List;
 import java.util.regex.*;
 

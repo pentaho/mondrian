@@ -10,11 +10,9 @@
 */
 package mondrian.test.clearview;
 
-import junit.framework.*;
+import mondrian.test.DiffRepository;
 
-import mondrian.test.*;
-import mondrian.olap.MondrianProperties;
-import mondrian.util.Bug;
+import junit.framework.TestSuite;
 
 /**
  * <code>MetricFilterTest</code> is a test suite which tests scenarios of

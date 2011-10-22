@@ -7,15 +7,12 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.test;
+
+import junit.framework.*;
 
 import java.lang.reflect.Constructor;
 import java.util.Enumeration;
-import junit.framework.TestFailure;
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
 
 /**
  * Simple test runner.

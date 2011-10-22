@@ -9,9 +9,11 @@
 */
 package mondrian.xmla;
 
-import junit.framework.Assert;
 import mondrian.olap.Util;
 import mondrian.test.FoodMartTestCase;
+
+import junit.framework.Assert;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 // Only in Java5 and above

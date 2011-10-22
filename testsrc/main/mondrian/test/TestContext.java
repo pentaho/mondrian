@@ -10,38 +10,35 @@
 */
 package mondrian.test;
 
-import junit.framework.*;
-
-import junit.framework.Test;
 import mondrian.calc.*;
-import mondrian.olap.*;
+import mondrian.olap.Axis;
+import mondrian.olap.Cell;
 import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
-import mondrian.olap.Member;
+import mondrian.olap.*;
 import mondrian.olap.Position;
-import mondrian.olap.Cell;
-import mondrian.olap.Axis;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
-import mondrian.spi.DynamicSchemaProcessor;
+import mondrian.spi.*;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
-import mondrian.spi.Dialect;
-import mondrian.spi.DialectManager;
 import mondrian.util.DelegatingInvocationHandler;
 
-import javax.sql.DataSource;
+import junit.framework.*;
+import junit.framework.Test;
+
+import org.olap4j.*;
+import org.olap4j.impl.CoordinateIterator;
+import org.olap4j.layout.TraditionalCellSetFormatter;
+
 import java.io.*;
+import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.lang.reflect.*;
-
-import org.olap4j.*;
-import org.olap4j.impl.CoordinateIterator;
-import org.olap4j.layout.TraditionalCellSetFormatter;
+import javax.sql.DataSource;
 
 /**
  * <code>TestContext</code> is a singleton class which contains the information

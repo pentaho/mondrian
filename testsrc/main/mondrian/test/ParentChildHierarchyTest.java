@@ -11,9 +11,10 @@
 */
 package mondrian.test;
 
-import junit.framework.Assert;
 import mondrian.olap.*;
 import mondrian.util.Bug;
+
+import junit.framework.Assert;
 
 import java.util.List;
 

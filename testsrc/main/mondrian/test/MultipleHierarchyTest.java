@@ -9,7 +9,6 @@
 */
 package mondrian.test;
 
-import junit.framework.Assert;
 import mondrian.olap.MondrianProperties;
 
 /**

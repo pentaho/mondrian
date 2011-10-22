@@ -9,9 +9,10 @@
 */
 package mondrian.test;
 
+import mondrian.olap.Util;
+
 import junit.framework.*;
 
-import mondrian.olap.Util;
 import org.olap4j.test.TestContext;
 
 import java.util.Properties;

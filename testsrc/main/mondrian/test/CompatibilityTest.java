@@ -10,11 +10,9 @@
 */
 package mondrian.test;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Result;
-import mondrian.olap.Cell;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.spi.Dialect;
+
 import junit.framework.Assert;
 
 /**

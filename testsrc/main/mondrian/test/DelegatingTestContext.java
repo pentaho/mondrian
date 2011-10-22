@@ -9,7 +9,7 @@
 */
 package mondrian.test;
 
-import mondrian.olap.*;
+import mondrian.olap.Util;
 
 import java.io.PrintWriter;
 

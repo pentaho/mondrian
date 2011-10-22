@@ -15,12 +15,13 @@
 */
 package mondrian.test;
 
+import junit.framework.Test;
+import junit.framework.TestResult;
+import junit.runner.*;
+
 import java.io.PrintStream;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import junit.framework.*;
-import junit.runner.*;
 
 public class MondrianTestRunner extends BaseTestRunner {
     private MondrianResultPrinter fPrinter;

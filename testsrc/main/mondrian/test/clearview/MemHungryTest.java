@@ -10,9 +10,9 @@
 */
 package mondrian.test.clearview;
 
-import junit.framework.TestSuite;
-import junit.framework.Test;
 import mondrian.test.DiffRepository;
+
+import junit.framework.TestSuite;
 
 /**
  * <code>MemHungryTest</code> is a test suite which tests

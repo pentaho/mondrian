@@ -10,9 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.test.DiffRepository;
-import mondrian.test.FoodMartTestCase;
-import mondrian.test.TestContext;
+import mondrian.test.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

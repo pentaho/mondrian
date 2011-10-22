@@ -10,9 +10,9 @@
 */
 package mondrian.test.clearview;
 
-import junit.framework.*;
+import mondrian.test.DiffRepository;
 
-import mondrian.test.*;
+import junit.framework.TestSuite;
 
 /**
  * <code>OrderTest</code> tests the extended syntax of Order

@@ -11,28 +11,11 @@
 */
 package mondrian.test;
 
-import java.util.List;
+import mondrian.olap.*;
 
 import junit.framework.Assert;
-import mondrian.olap.Access;
-import mondrian.olap.Axis;
-import mondrian.olap.Category;
-import mondrian.olap.Connection;
-import mondrian.olap.Cube;
-import mondrian.olap.DelegatingRole;
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Id;
-import mondrian.olap.Level;
-import mondrian.olap.Member;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Position;
-import mondrian.olap.Result;
-import mondrian.olap.Role;
-import mondrian.olap.RoleImpl;
-import mondrian.olap.Schema;
-import mondrian.olap.SchemaReader;
-import mondrian.olap.Util;
+
+import java.util.List;
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.

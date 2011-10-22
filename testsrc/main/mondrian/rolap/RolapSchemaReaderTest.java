@@ -9,11 +9,11 @@
 */
 package mondrian.rolap;
 
-import java.util.*;
-
 import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
+
+import java.util.*;
 
 /**
  * Unit test for {@link SchemaReader}.

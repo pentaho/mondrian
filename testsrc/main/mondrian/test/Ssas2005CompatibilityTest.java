@@ -9,10 +9,10 @@
 */
 package mondrian.test;
 
-import java.sql.SQLException;
-
 import mondrian.olap.*;
 import mondrian.util.Bug;
+
+import java.sql.SQLException;
 
 /**
  * Unit tests that check compatibility with Microsoft SQL Server Analysis

@@ -12,10 +12,8 @@ package mondrian.test;
 import mondrian.olap.*;
 
 import java.io.*;
-import java.text.*;
-import java.util.List;
-import java.util.StringTokenizer;
-import java.util.NoSuchElementException;
+import java.text.MessageFormat;
+import java.util.*;
 
 public class StandAlone {
     private static final String[] indents = new String[]{

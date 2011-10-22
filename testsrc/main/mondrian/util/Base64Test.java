@@ -7,16 +7,13 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
+import junit.framework.TestCase;
+
+import java.io.*;
 import java.util.Arrays;
 import java.util.Random;
-
-import junit.framework.TestCase;
 
 /**
  * Test case for {@link Base64}.

@@ -9,18 +9,17 @@
 */
 package mondrian.rolap.aggmatcher;
 
-import mondrian.recorder.*;
-
-import org.apache.log4j.Logger;
-import org.eigenbase.xom.XOMUtil;
-import org.eigenbase.xom.DOMWrapper;
-import org.eigenbase.xom.Parser;
+import mondrian.recorder.ListRecorder;
 
 import junit.framework.TestCase;
 
-import java.util.Iterator;
+import org.apache.log4j.Logger;
+
+import org.eigenbase.xom.*;
+
 import java.io.File;
 import java.io.FileReader;
+import java.util.Iterator;
 
 /**
  * Testing the default aggregate table recognizer.

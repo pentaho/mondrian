@@ -8,17 +8,16 @@
 // You must accept the terms of that agreement to use this software.
 //
 */
-
 package mondrian.test;
 
 import mondrian.olap.MondrianProperties;
-import java.io.*;
-import java.lang.reflect.Constructor;
-import java.util.*;
+import mondrian.olap.Util;
+import mondrian.test.clearview.*;
+
 import junit.framework.*;
 
-import mondrian.test.clearview.*;
-import mondrian.olap.Util;
+import java.lang.reflect.Constructor;
+import java.util.*;
 
 /**
  * A copy of {@link ConcurrentMdxTest} with modifications to take

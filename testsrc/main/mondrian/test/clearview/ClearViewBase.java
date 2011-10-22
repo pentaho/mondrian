@@ -11,15 +11,16 @@
 */
 package mondrian.test.clearview;
 
-import mondrian.olap.*;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 import mondrian.rolap.BatchTestCase;
-
-import junit.framework.*;
-
-import mondrian.test.*;
 import mondrian.spi.Dialect;
+import mondrian.test.*;
 
-import java.lang.reflect.*;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
+import java.lang.reflect.Constructor;
 
 /**
  * <code>ClearViewBase</code> is the base class to build test cases which test

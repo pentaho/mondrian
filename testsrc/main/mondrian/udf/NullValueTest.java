@@ -12,10 +12,6 @@
 package mondrian.udf;
 
 import mondrian.test.FoodMartTestCase;
-import mondrian.olap.*;
-import mondrian.udf.*;
-
-import junit.framework.Assert;
 
 /**
  * <code>NullValueTest</code> is a test case which tests simple queries

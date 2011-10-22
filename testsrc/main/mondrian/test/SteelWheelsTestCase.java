@@ -10,10 +10,10 @@
 package mondrian.test;
 
 
-import junit.framework.TestCase;
+import mondrian.olap.Util;
+import mondrian.rolap.RolapConnectionProperties;
 
-import mondrian.olap.*;
-import mondrian.rolap.*;
+import junit.framework.TestCase;
 
 /**
  * Unit test against Pentaho's Steel Wheels sample database.

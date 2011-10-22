@@ -9,24 +9,20 @@
 */
 package mondrian.test.comp;
 
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXParseException;
-import org.xml.sax.SAXException;
-import org.w3c.dom.*;
+import mondrian.olap.Util;
+
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+
 import org.eigenbase.xom.XOMUtil;
 import org.eigenbase.xom.wrappers.W3CDOMWrapper;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.regex.Pattern;
+import org.w3c.dom.*;
+import org.xml.sax.*;
 
-import mondrian.olap.Util;
+import java.io.*;
+import java.util.regex.Pattern;
+import javax.xml.parsers.*;
 
 /**
  * XML utility methods.

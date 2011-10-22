@@ -9,22 +9,17 @@
 */
 package mondrian.test;
 
-import junit.framework.TestCase;
-import junit.framework.AssertionFailedError;
-
-import java.sql.*;
-import java.util.*;
-
 import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
-import mondrian.spi.impl.HiveDialect;
-import mondrian.spi.impl.MySqlDialect;
-import mondrian.spi.impl.InfobrightDialect;
+import mondrian.spi.impl.*;
 
+import junit.framework.AssertionFailedError;
+import junit.framework.TestCase;
+
+import java.sql.*;
+import java.util.*;
 import javax.sql.DataSource;
-import mondrian.spi.impl.NetezzaDialect;
-import mondrian.spi.impl.PostgreSqlDialect;
 
 /**
  * Unit test which checks that {@link mondrian.spi.Dialect}

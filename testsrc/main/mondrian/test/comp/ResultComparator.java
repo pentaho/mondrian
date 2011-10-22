@@ -13,11 +13,12 @@ import mondrian.olap.*;
 import mondrian.test.TestContext;
 
 import junit.framework.Assert;
+
 import org.w3c.dom.*;
 
-import javax.xml.parsers.DocumentBuilder;
 import java.util.HashSet;
 import java.util.List;
+import javax.xml.parsers.DocumentBuilder;
 
 /**
  * Compares the {@link Result} produced by a query with the expected result

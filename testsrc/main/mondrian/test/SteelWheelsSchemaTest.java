@@ -9,13 +9,11 @@
 */
 package mondrian.test;
 
-import java.io.InputStream;
-
-import mondrian.olap.Cell;
-import mondrian.olap.Result;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
+
+import java.io.InputStream;
 
 public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
     /**
