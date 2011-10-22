@@ -3,13 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2010 Julian Hyde and others
+// Copyright (C) 2004-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.MondrianProperties;
+import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.server.*;
 import mondrian.server.Statement;
@@ -216,7 +216,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         return new AbstractList<Object[]>() {
             @Override
             public Object[] get(int index) {
-                return Arrays.copyOf(data.get(index), length);
+                return Util.copyOf(data.get(index), length);
             }
 
             @Override
