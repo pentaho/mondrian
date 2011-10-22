@@ -9,16 +9,17 @@
 */
 package mondrian.olap.fun;
 
-import junit.framework.Assert;
-import mondrian.calc.impl.ArrayTupleList;
-import mondrian.test.FoodMartTestCase;
 import mondrian.calc.*;
+import mondrian.calc.impl.ArrayTupleList;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.mdx.*;
+import mondrian.test.FoodMartTestCase;
 
-import java.util.*;
+import junit.framework.Assert;
+
 import java.io.PrintWriter;
+import java.util.*;
 
 /**
  * <code>CrossJoint</code> tests the collation order of positive and negative

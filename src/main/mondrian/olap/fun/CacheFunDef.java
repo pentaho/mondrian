@@ -9,13 +9,13 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.SetType;
 import mondrian.calc.*;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.calc.impl.GenericIterCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
+import mondrian.olap.type.SetType;
+import mondrian.olap.type.Type;
 
 import java.io.PrintWriter;
 import java.util.List;

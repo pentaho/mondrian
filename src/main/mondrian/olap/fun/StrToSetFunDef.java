@@ -10,16 +10,15 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
+import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.impl.UnaryTupleList;
+import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.calc.impl.AbstractListCalc;
-import mondrian.mdx.ResolvedFunCall;
-import mondrian.mdx.DimensionExpr;
-import mondrian.mdx.HierarchyExpr;
 import mondrian.resource.MondrianResource;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Definition of the <code>StrToSet</code> MDX builtin function.

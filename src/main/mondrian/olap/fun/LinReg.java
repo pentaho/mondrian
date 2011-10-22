@@ -9,15 +9,13 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Abstract base class for definitions of linear regression functions.

@@ -12,6 +12,7 @@ package mondrian.server;
 import mondrian.olap.MondrianServer;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapSchema;
+
 import org.olap4j.OlapConnection;
 import org.olap4j.impl.Olap4jUtil;
 

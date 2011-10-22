@@ -12,9 +12,7 @@ package mondrian.olap.fun;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractStringCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Member;
-import mondrian.olap.Exp;
+import mondrian.olap.*;
 
 import java.util.List;
 

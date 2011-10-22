@@ -9,10 +9,12 @@
 */
 package mondrian.rolap;
 
-import junit.framework.TestCase;
 import mondrian.olap.Util;
 
-import java.util.*;
+import junit.framework.TestCase;
+
+import java.util.BitSet;
+import java.util.Iterator;
 
 /**
  * Unit test for {@link BitKey}.

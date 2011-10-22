@@ -13,12 +13,9 @@ import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.impl.AbstractMemberCalc;
 import mondrian.calc.impl.AbstractTupleCalc;
-import mondrian.mdx.ResolvedFunCall;
 import mondrian.mdx.NamedSetExpr;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.type.SetType;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.MemberType;
 import mondrian.resource.MondrianResource;
 
 /**

@@ -9,15 +9,13 @@
 */
 package mondrian.olap.fun;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Member;
+
+import java.util.*;
 
 /**
  * Definition of the <code>Distinct</code> MDX function.

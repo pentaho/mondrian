@@ -9,11 +9,12 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.type.*;
-import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractHierarchyCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
+import mondrian.olap.type.HierarchyType;
+import mondrian.olap.type.Type;
 
 /**
  * Definition of the <code>Dimensions(&lt;String Expression&gt;)</code>

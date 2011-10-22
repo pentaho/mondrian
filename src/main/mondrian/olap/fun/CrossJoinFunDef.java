@@ -15,8 +15,8 @@ import mondrian.calc.impl.*;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.util.*;
-import mondrian.rolap.*;
+import mondrian.rolap.RolapEvaluator;
+import mondrian.util.CartesianProductList;
 
 import java.util.*;
 

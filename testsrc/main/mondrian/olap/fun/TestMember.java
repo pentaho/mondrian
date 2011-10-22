@@ -11,9 +11,7 @@ package mondrian.olap.fun;
 
 import mondrian.olap.*;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Mock implementation of {@link Member} for testing.

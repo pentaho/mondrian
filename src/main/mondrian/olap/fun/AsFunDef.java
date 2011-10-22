@@ -11,8 +11,8 @@ package mondrian.olap.fun;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractIterCalc;
-import mondrian.mdx.ResolvedFunCall;
 import mondrian.mdx.NamedSetExpr;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 
 import java.util.List;

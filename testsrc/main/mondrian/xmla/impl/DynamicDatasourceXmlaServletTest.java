@@ -8,19 +8,17 @@
 */
 package mondrian.xmla.impl;
 
-import junit.framework.TestCase;
 import mondrian.olap.MondrianProperties;
 import mondrian.server.DynamicContentFinder;
 import mondrian.xmla.DataSourcesConfig;
-import org.eigenbase.xom.DOMWrapper;
-import org.eigenbase.xom.Parser;
-import org.eigenbase.xom.XOMException;
-import org.eigenbase.xom.XOMUtil;
+
+import junit.framework.TestCase;
+
+import org.eigenbase.xom.*;
+
 import org.olap4j.impl.Olap4jUtil;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.*;
 
 /**

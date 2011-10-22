@@ -16,11 +16,10 @@ import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.Member;
-import mondrian.olap.fun.extra.NthQuartileFunDef;
 import mondrian.olap.fun.extra.CalculatedChildFunDef;
-import mondrian.olap.fun.vba.Vba;
+import mondrian.olap.fun.extra.NthQuartileFunDef;
 import mondrian.olap.fun.vba.Excel;
+import mondrian.olap.fun.vba.Vba;
 import mondrian.olap.type.LevelType;
 import mondrian.olap.type.Type;
 

@@ -9,12 +9,10 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.TupleCalc;
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractBooleanCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 
 /**
  * Definition of the <code>IS</code> MDX function.

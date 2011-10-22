@@ -7,18 +7,18 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
-import mondrian.olap.type.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
-import mondrian.rolap.RolapUtil;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
+import mondrian.olap.type.TupleType;
+import mondrian.olap.type.Type;
+import mondrian.rolap.RolapUtil;
 
-import java.util.*;
 import java.io.PrintWriter;
+import java.util.*;
 
 /**
  * Definition of the <code>RANK</code> MDX function.

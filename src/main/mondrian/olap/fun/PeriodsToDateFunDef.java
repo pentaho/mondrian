@@ -10,11 +10,11 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
+import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.impl.UnaryTupleList;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.calc.impl.AbstractListCalc;
-import mondrian.mdx.ResolvedFunCall;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapHierarchy;
 

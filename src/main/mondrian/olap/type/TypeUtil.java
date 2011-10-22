@@ -9,9 +9,9 @@
 */
 package mondrian.olap.type;
 
+import mondrian.mdx.UnresolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.fun.Resolver;
-import mondrian.mdx.UnresolvedFunCall;
 
 import java.util.*;
 

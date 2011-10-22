@@ -9,9 +9,7 @@
 */
 package mondrian.olap.type;
 
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
+import mondrian.olap.*;
 
 /**
  * Base class for types which represent scalar values.

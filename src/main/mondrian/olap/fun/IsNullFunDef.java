@@ -9,15 +9,10 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.MemberCalc;
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractBooleanCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.Evaluator;
-import mondrian.olap.FunDef;
-import mondrian.olap.Member;
-import mondrian.olap.Literal;
+import mondrian.olap.*;
 
 /**
  * Definition of the <code>IS NULL</code> MDX function.

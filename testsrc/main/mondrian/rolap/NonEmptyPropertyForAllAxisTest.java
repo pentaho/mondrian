@@ -13,9 +13,7 @@ package mondrian.rolap;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Query;
 import mondrian.test.FoodMartTestCase;
-import mondrian.test.PropertySaver;
 import mondrian.test.TestContext;
-import org.eigenbase.util.property.BooleanProperty;
 
 /**
  * Tests the {@link MondrianProperties#EnableNonEmptyOnAllAxis} property.

@@ -8,12 +8,14 @@
 */
 package mondrian.olap.type;
 
-import mondrian.test.TestContext;
 import mondrian.olap.*;
 import mondrian.olap.fun.Resolver;
+import mondrian.test.TestContext;
+
 import junit.framework.TestCase;
-import java.util.List;
+
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Unit test for mondrian type facility.

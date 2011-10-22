@@ -11,14 +11,11 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-import mondrian.olap.*;
 
-import java.util.List;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Unit test for {@link RolapCube}.

@@ -9,15 +9,17 @@
 */
 package mondrian.rolap;
 
-import junit.framework.Assert;
 import mondrian.calc.TupleCollections;
 import mondrian.calc.TupleList;
-import mondrian.test.FoodMartTestCase;
-import mondrian.olap.fun.TestMember;
 import mondrian.olap.Member;
 import mondrian.olap.Position;
+import mondrian.olap.fun.TestMember;
+import mondrian.test.FoodMartTestCase;
 
-import java.util.*;
+import junit.framework.Assert;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Unit test for lists and iterators over members and tuples.

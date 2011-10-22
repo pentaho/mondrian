@@ -8,10 +8,11 @@
 */
 package mondrian.olap.fun.vba;
 
+import mondrian.olap.InvalidArgumentException;
+import mondrian.olap.fun.JavaFunDef;
+
 import static mondrian.olap.fun.JavaFunDef.Description;
 import static mondrian.olap.fun.JavaFunDef.FunctionName;
-import mondrian.olap.fun.JavaFunDef;
-import mondrian.olap.InvalidArgumentException;
 
 /**
  * Implementations of functions in the Excel worksheet library.

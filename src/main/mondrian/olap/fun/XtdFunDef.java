@@ -9,15 +9,15 @@
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.impl.UnaryTupleList;
-import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.SetType;
-import mondrian.olap.type.MemberType;
-import mondrian.resource.MondrianResource;
-import mondrian.calc.*;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.DimensionType;
+import mondrian.olap.*;
+import mondrian.olap.LevelType;
+import mondrian.olap.type.*;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapHierarchy;
 

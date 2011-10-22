@@ -10,14 +10,12 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.olap.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 
-import java.util.List;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Definition of the <code>ToggleDrillState</code> MDX function.

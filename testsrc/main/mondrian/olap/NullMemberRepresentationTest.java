@@ -9,8 +9,8 @@
 */
 package mondrian.olap;
 
-import mondrian.test.FoodMartTestCase;
 import mondrian.rolap.RolapUtil;
+import mondrian.test.FoodMartTestCase;
 
 import java.io.IOException;
 

@@ -11,12 +11,10 @@ package mondrian.olap.fun;
 
 import mondrian.test.TestContext;
 
-import org.olap4j.Cell;
-import org.olap4j.CellSet;
-import org.olap4j.Position;
-import org.olap4j.metadata.Member;
-
 import junit.framework.TestCase;
+
+import org.olap4j.*;
+import org.olap4j.metadata.Member;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -9,15 +9,10 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.Calc;
-import mondrian.calc.ExpCompiler;
-import mondrian.calc.HierarchyCalc;
+import mondrian.calc.*;
 import mondrian.calc.impl.AbstractDimensionCalc;
 import mondrian.mdx.ResolvedFunCall;
-import mondrian.olap.Exp;
-import mondrian.olap.Dimension;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Hierarchy;
+import mondrian.olap.*;
 
 /**
  * Definition of the <code>&lt;Hierarchy&gt;.Dimension</code> MDX

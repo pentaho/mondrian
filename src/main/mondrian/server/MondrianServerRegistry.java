@@ -9,7 +9,8 @@
 */
 package mondrian.server;
 
-import mondrian.olap.*;
+import mondrian.olap.MondrianServer;
+import mondrian.olap.Util;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.IdentityCatalogLocator;
 import mondrian.util.LockBox;

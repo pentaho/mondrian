@@ -10,19 +10,19 @@
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.*;
 import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.calc.impl.UnaryTupleList;
+import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
-import mondrian.calc.*;
-import mondrian.mdx.*;
 import mondrian.rolap.RolapHierarchy;
 import mondrian.util.*;
 
 import org.apache.commons.collections.ComparatorUtils;
+import org.apache.commons.collections.comparators.ComparatorChain;
 import org.apache.log4j.Logger;
-import org.apache.commons.collections.comparators.*;
 
 import java.util.*;
 

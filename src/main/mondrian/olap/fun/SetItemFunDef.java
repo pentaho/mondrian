@@ -9,15 +9,15 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.type.*;
-import mondrian.olap.*;
 import mondrian.calc.*;
-import mondrian.calc.impl.AbstractTupleCalc;
 import mondrian.calc.impl.AbstractMemberCalc;
+import mondrian.calc.impl.AbstractTupleCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
+import mondrian.olap.type.*;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Definition of the <code>&lt;Set&gt;.Item</code> MDX function.

@@ -9,11 +9,9 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import mondrian.olap.MondrianProperties;
 import mondrian.rolap.agg.*;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
-import mondrian.server.Statement;
+import mondrian.server.*;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;

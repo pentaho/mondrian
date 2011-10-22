@@ -9,10 +9,7 @@
 */
 package mondrian.olap.type;
 
-import mondrian.olap.Cube;
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
+import mondrian.olap.*;
 
 /**
  * The type of an expression which represents a Cube or Virtual Cube.

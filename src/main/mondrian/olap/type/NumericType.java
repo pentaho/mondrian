@@ -9,9 +9,6 @@
 */
 package mondrian.olap.type;
 
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-
 /**
  * The type of a numeric expression.
  *

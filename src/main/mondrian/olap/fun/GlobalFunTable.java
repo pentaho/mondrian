@@ -9,9 +9,7 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.FunTable;
-import mondrian.olap.Syntax;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.olap.type.Type;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.util.ServiceDiscovery;

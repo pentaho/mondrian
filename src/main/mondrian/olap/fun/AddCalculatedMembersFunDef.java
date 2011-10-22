@@ -14,9 +14,7 @@ import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.impl.UnaryTupleList;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.type.SetType;
-import mondrian.olap.type.MemberType;
-import mondrian.olap.type.Type;
+import mondrian.olap.type.*;
 
 import java.util.*;
 

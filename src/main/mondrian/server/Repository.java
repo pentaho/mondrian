@@ -12,12 +12,11 @@ package mondrian.server;
 import mondrian.olap.MondrianServer;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapSchema;
+
 import org.olap4j.OlapConnection;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
  /**
  * Callback by which a {@link mondrian.olap.MondrianServer} finds its

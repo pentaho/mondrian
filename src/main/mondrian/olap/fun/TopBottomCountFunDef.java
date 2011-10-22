@@ -12,11 +12,11 @@ package mondrian.olap.fun;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
-import mondrian.calc.ResultStyle;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.List;
 
 /**
  * Definition of the <code>TopCount</code> and <code>BottomCount</code>

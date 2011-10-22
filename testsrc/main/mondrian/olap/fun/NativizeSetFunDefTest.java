@@ -11,7 +11,8 @@ package mondrian.olap.fun;
 import mondrian.olap.*;
 import mondrian.rolap.BatchTestCase;
 import mondrian.spi.Dialect;
-import mondrian.test.*;
+import mondrian.test.SqlPattern;
+import mondrian.test.TestContext;
 
 /**
  * Unit test for the {@code NativizeSet} function.

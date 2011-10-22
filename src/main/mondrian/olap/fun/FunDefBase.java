@@ -12,13 +12,13 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
-import mondrian.olap.type.*;
-import mondrian.olap.type.LevelType;
-import mondrian.olap.type.DimensionType;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
+import mondrian.olap.type.*;
+import mondrian.olap.type.DimensionType;
+import mondrian.olap.type.LevelType;
 
 import java.io.PrintWriter;
 

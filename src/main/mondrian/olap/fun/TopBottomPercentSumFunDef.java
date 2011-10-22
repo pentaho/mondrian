@@ -15,7 +15,8 @@ import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Definition of the <code>TopPercent</code>, <code>BottomPercent</code>,

@@ -9,24 +9,22 @@
 */
 package mondrian.olap.fun;
 
-import junit.framework.Assert;
-import junit.framework.ComparisonFailure;
 import mondrian.olap.*;
-import mondrian.test.*;
 import mondrian.resource.MondrianResource;
+import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-import mondrian.udf.CurrentDateMemberExactUdf;
-import mondrian.udf.CurrentDateMemberUdf;
-import mondrian.udf.CurrentDateStringUdf;
+import mondrian.udf.*;
 import mondrian.util.Bug;
 
-import org.eigenbase.xom.StringEscaper;
+import junit.framework.Assert;
+import junit.framework.ComparisonFailure;
+
 import org.apache.log4j.Logger;
 
+import org.eigenbase.xom.StringEscaper;
+
 import java.io.*;
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * <code>FunctionTest</code> tests the functions defined in

@@ -9,15 +9,12 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.FunDef;
-import mondrian.olap.Member;
-import mondrian.olap.Evaluator;
-import mondrian.olap.Level;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.LevelType;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractMemberCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
+import mondrian.olap.type.LevelType;
+import mondrian.olap.type.Type;
 
 /**
  * Definition of the <code>Ancestor</code> MDX function.

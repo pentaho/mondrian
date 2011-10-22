@@ -10,14 +10,15 @@
 */
 package mondrian.olap.fun;
 
-import java.util.*;
-
-import mondrian.calc.impl.*;
+import mondrian.calc.*;
+import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.UnaryTupleList;
+import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.calc.*;
-import mondrian.mdx.*;
 import mondrian.resource.MondrianResource;
+
+import java.util.*;
 
 /**
  * Definition of the <code>Descendants</code> MDX function.

@@ -14,9 +14,7 @@ import mondrian.calc.impl.AbstractDoubleCalc;
 import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.fun.AbstractAggregateFunDef;
-import mondrian.olap.fun.MultiResolver;
-import mondrian.olap.fun.ReflectiveMultiResolver;
+import mondrian.olap.fun.*;
 
 /**
  * Definition of the <code>FirstQ</code> and <code>ThirdQ</code> MDX extension

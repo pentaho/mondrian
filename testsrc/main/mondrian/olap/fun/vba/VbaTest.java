@@ -8,15 +8,13 @@
 */
 package mondrian.olap.fun.vba;
 
-import junit.framework.TestCase;
-
-import java.util.*;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-
 import mondrian.olap.InvalidArgumentException;
 import mondrian.util.Bug;
+
+import junit.framework.TestCase;
+
+import java.text.*;
+import java.util.*;
 
 /**
  * Unit tests for implementations of Visual Basic for Applications (VBA)

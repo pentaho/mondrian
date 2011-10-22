@@ -13,7 +13,8 @@ import mondrian.calc.*;
 import mondrian.calc.impl.AbstractHierarchyCalc;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.olap.type.*;
+import mondrian.olap.type.HierarchyType;
+import mondrian.olap.type.Type;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapHierarchy;
 

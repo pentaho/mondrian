@@ -14,7 +14,7 @@ import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * Definition of the <code>Filter</code> MDX function.

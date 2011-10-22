@@ -9,16 +9,14 @@
 */
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import mondrian.rolap.agg.CellRequest;
 import mondrian.olap.MondrianProperties;
-import mondrian.test.SqlPattern;
+import mondrian.rolap.agg.CellRequest;
 import mondrian.spi.Dialect;
+import mondrian.test.SqlPattern;
 
 import org.olap4j.impl.Olap4jUtil;
+
+import java.util.*;
 
 /**
  * Test support for generating SQL queries with the <code>GROUPING SETS</code>

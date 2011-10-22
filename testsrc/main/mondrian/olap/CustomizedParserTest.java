@@ -9,11 +9,13 @@
 */
 package mondrian.olap;
 
-import mondrian.olap.fun.*;
+import mondrian.olap.fun.CustomizedFunctionTable;
+import mondrian.olap.fun.ParenthesesFunDef;
 import mondrian.server.Statement;
 import mondrian.test.FoodMartTestCase;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Tests a customized MDX Parser.

@@ -9,27 +9,17 @@
 */
 package mondrian.rolap;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Random;
-
-import mondrian.olap.Id;
-import mondrian.olap.Connection;
-import mondrian.olap.Query;
-import mondrian.olap.Result;
-import mondrian.olap.Util;
-import mondrian.olap.MondrianProperties;
+import mondrian.olap.*;
 import mondrian.rolap.cache.HardSmartCache;
+import mondrian.spi.impl.*;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-import mondrian.spi.impl.DataSourceChangeListenerImpl;
-import mondrian.spi.impl.DataSourceChangeListenerImpl2;
-import mondrian.spi.impl.DataSourceChangeListenerImpl3;
-import mondrian.spi.impl.DataSourceChangeListenerImpl4;
 import mondrian.util.Bug;
 import mondrian.util.Pair;
 
 import junit.framework.TestCase;
+
+import java.util.*;
 
 /**
  * Tests for testing the DataSourceChangeListener plugin.

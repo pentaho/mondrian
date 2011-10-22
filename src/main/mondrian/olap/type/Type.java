@@ -9,9 +9,7 @@
 */
 package mondrian.olap.type;
 
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
+import mondrian.olap.*;
 
 /**
  * Type of an MDX expression.

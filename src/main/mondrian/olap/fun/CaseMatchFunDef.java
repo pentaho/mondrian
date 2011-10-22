@@ -9,15 +9,15 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.impl.ConstantCalc;
 import mondrian.calc.impl.GenericCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Definition of the matched <code>CASE</code> MDX operator.

@@ -11,17 +11,18 @@ package mondrian.server;
 
 import mondrian.olap.MondrianServer;
 import mondrian.olap4j.CatalogFinder;
-import mondrian.rolap.*;
+import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapSchema;
 import mondrian.server.monitor.*;
 import mondrian.spi.CatalogLocator;
 import mondrian.util.LockBox;
-import mondrian.xmla.*;
+import mondrian.xmla.XmlaHandler;
 
 import org.apache.log4j.Logger;
 
 import org.olap4j.OlapConnection;
 
-import java.sql.*;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
