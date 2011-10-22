@@ -174,7 +174,16 @@ doCheckDeferred() {
    rm -f "${deferred_file}"
 }
 
-export CORE_COUNT=$(cat /proc/cpuinfo | awk '$1 == "processor"' | wc -l)
+function guessCoreCount() {
+    if [ -f /proc/cpuinfo ]; then
+         cat /proc/cpuinfo | awk '$1 == "processor"' | wc -l
+    else
+         # File doe not exist on Darwin or cygwin
+         echo 2
+    fi
+}
+
+export CORE_COUNT=$(guessCoreCount)
 
 export deferred=true
 
@@ -238,7 +247,12 @@ fi
 
 if [ ! -f "$CHECKFILE_AWK" ]
 then
-    export CHECKFILE_AWK="$(dirname $(readlink -f $0))/checkFile.awk"
+    case $(uname) in
+    (Darwin)
+        export CHECKFILE_AWK="$(cd $(dirname $0); pwd -P)/checkFile.awk";;
+    (*)
+        export CHECKFILE_AWK="$(dirname $(readlink -f $0))/checkFile.awk";;
+    esac
 fi
 
 export deferred_file=/tmp/checkFile_deferred_$$.txt
