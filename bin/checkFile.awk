@@ -79,6 +79,11 @@ function countLeadingSpaces(str) {
     return i;
 }
 
+function startsWith(s, p) {
+    return length(s) > length(p) \
+        && substr(s, 1, length(p)) == p;
+}
+
 BEGIN {
     # pre-compute regexp for quotes, linefeed
     apos = sprintf("%c", 39);
@@ -96,6 +101,8 @@ FNR == 1 {
     isCpp = _isCpp(fname);
     isJava = _isJava(fname);
     mondrian = _isMondrian(fname);
+    prevImport = "";
+    prevImportGroup = "";
 }
 {
     if (previousLineEndedInCloseBrace > 0) {
@@ -186,6 +193,55 @@ FNR == 1 {
     }
 }
 
+/^package / && previousLineWasEmpty {
+    error(fname, FNR, "'package' declaration must not occur after empty line");
+}
+/^import / {
+    if (previousLineWasEmpty) {
+        prevImport = "";
+    } else {
+        if (!prevImport) {
+            error(fname, FNR, "Expected blank line before first import");
+        }
+    }
+    thisImport = $2;
+    gsub(/;/, "", thisImport);
+    gsub(/\*/, "", thisImport);
+    if (thisImport ~ /^mondrian/) {
+        importGroup = "a";
+    } else if (thisImport ~ /^static/) {
+        importGroup = "z";
+    } else if (thisImport ~ /^java/) {
+        importGroup = "y";
+    } else if (thisImport ~ /^junit/) {
+        importGroup = "b";
+    } else if (thisImport ~ /^org.apache/) {
+        importGroup = "c";
+    } else if (thisImport ~ /^org.eigenbase/) {
+        importGroup = "d";
+    } else if (thisImport ~ /^org.olap4j/) {
+        importGroup = "e";
+    } else {
+        importGroup = "f";
+    }
+    if (importGroup != prevImportGroup \
+        && prevImportGroup)
+    {
+        if (!previousLineWasEmpty) {
+            error(fname, FNR, "Expected blank line between import groups");
+        } else if (prevImportGroup > importGroup) {
+            error(fname, FNR, "Import group out of sequence");
+        }
+    } else if (prevImport \
+        && prevImport > thisImport \
+        && !startsWith(prevImport, thisImport) \
+        && !startsWith(thisImport, prevImport))
+    {
+        error(fname, FNR, "Import out of sorted order");
+    }
+    prevImport = thisImport;
+    prevImportGroup = importGroup;
+}
 /^$/ {
     if (matchFile && previousLineEndedInOpenBrace) {
         error(fname, FNR, "Empty line following open brace");
@@ -521,10 +577,10 @@ s ~ /{/ {
     else if (s ~ /(\]\)?|=) *{/) {} # ignore e.g. "(int[]) {1, 2}" or "int[] x = {1, 2}"
     else if (s ~ /\({/) {} # ignore e.g. @SuppressWarnings({"unchecked"})
     else if (s ~ /{ *(\/\/|\/\*)/) {} # ignore e.g. "do { // a comment"
-    else if (s ~ / {}$/) {} # ignore e.g. "Constructor() {}"
+    else if (s ~ / \{\}$/) {} # ignore e.g. "Constructor() {}"
     else if (s ~ / },$/) {} # ignore e.g. "{ yada },"
     else if (s ~ / };$/) {} # ignore e.g. "{ yada };"
-    else if (s ~ / {};$/) {} # ignore e.g. "template <> class Foo<int> {};"
+    else if (s ~ / \{\};$/) {} # ignore e.g. "template <> class Foo<int> {};"
     else if (s ~ / },? *\/\/.*$/) {} # ignore e.g. "{ yada }, // comment"
     else if (s ~ /\\$/) {} # ignore multiline macros
     else if (s ~ /{}/) { # e.g. "Constructor(){}"
