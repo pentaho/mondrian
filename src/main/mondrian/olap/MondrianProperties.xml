@@ -499,6 +499,9 @@ counters will be enabled.</p>
 
 <p>Note that this will affect performance due to existence of sync
 blocks.</p>
+
+@deprecated This property is no longer used, and will be removed in
+mondrian-4.0.
         </Description>
         <Type>boolean</Type>
         <Default>false</Default>

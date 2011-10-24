@@ -39,16 +39,23 @@ public class AggregationManager extends RolapAggregationManager {
     private static final Logger LOGGER =
         Logger.getLogger(AggregationManager.class);
 
+    public final List<SegmentCacheWorker> segmentCacheWorkers =
+        new ArrayList<SegmentCacheWorker>();
+
     private static AggregationManager instance;
 
-    /** Returns or creates the singleton. */
+    /**
+     * Returns or creates the singleton.
+     *
+     * @deprecated No longer a singleton, and will be removed in mondrian-4.
+     *   Use {@link mondrian.olap.MondrianServer#getAggregationManager()}.
+     *   To get a server, call
+     *   {@link mondrian.olap.MondrianServer#forConnection(mondrian.olap.Connection)},
+     *   passing in a null connection if you absolutely must.
+     */
     public static synchronized AggregationManager instance() {
         if (instance == null) {
-            if (properties.EnableCacheHitCounters.get()) {
-                instance = new CountingAggregationManager();
-            } else {
-                instance = new AggregationManager();
-            }
+            instance = new AggregationManager();
         }
         return instance;
     }
@@ -56,8 +63,12 @@ public class AggregationManager extends RolapAggregationManager {
     /**
      * Creates the AggregationManager.
      */
-    AggregationManager() {
-        super();
+    public AggregationManager() {
+        if (properties.EnableCacheHitCounters.get()) {
+            LOGGER.error(
+                "Property " + properties.EnableCacheHitCounters.getPath()
+                + " is obsolete; ignored.");
+        }
     }
 
     /**

@@ -61,10 +61,9 @@ public class FastBatchingCellReader implements CellReader {
      */
     private int pendingCount;
 
-    final AggregationManager aggMgr = AggregationManager.instance();
+    final AggregationManager aggMgr;
 
-    private final RolapAggregationManager.PinSet pinnedSegments =
-        aggMgr.createPinSet();
+    private final RolapAggregationManager.PinSet pinnedSegments;
 
     /**
      * Indicates that the reader has given incorrect results.
@@ -80,6 +79,9 @@ public class FastBatchingCellReader implements CellReader {
         this.execution = execution;
         this.cube = cube;
         this.batches = new HashMap<AggregationKey, Batch>();
+        aggMgr = execution.getMondrianStatement().getMondrianConnection()
+            .getServer().getAggregationManager();
+        pinnedSegments = aggMgr.createPinSet();
     }
 
     public Object get(RolapEvaluator evaluator) {
@@ -346,7 +348,7 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         SegmentLoader getSegmentLoader() {
-            return new SegmentLoader();
+            return new SegmentLoader(aggMgr);
         }
     }
 
@@ -445,8 +447,6 @@ public class FastBatchingCellReader implements CellReader {
             final StarColumnPredicate[] predicates = initPredicates();
             final long t1 = System.currentTimeMillis();
 
-            final AggregationManager aggmgr = AggregationManager.instance();
-
             // TODO: optimize key sets; drop a constraint if more than x% of
             // the members are requested; whether we should get just the cells
             // requested or expand to a n-cube
@@ -464,7 +464,7 @@ public class FastBatchingCellReader implements CellReader {
 
             if (tooManyDistinctMeasures) {
                 doSpecialHandlingOfDistinctCountMeasures(
-                    aggmgr, predicates, groupingSetsCollector);
+                    aggMgr, predicates, groupingSetsCollector);
             }
 
             // Load agg(distinct <SQL expression>) measures individually
@@ -483,7 +483,7 @@ public class FastBatchingCellReader implements CellReader {
                     getDistinctSqlMeasures(measuresList);
                 for (RolapStar.Measure measure : distinctSqlMeasureList) {
                     RolapStar.Measure[] measures = {measure};
-                    aggmgr.loadAggregation(
+                    aggMgr.loadAggregation(
                         cellRequestCount,
                         measures,
                         columns,
@@ -499,7 +499,7 @@ public class FastBatchingCellReader implements CellReader {
             if (measureCount > 0) {
                 final RolapStar.Measure[] measures =
                     measuresList.toArray(new RolapStar.Measure[measureCount]);
-                    aggmgr.loadAggregation(
+                    aggMgr.loadAggregation(
                         cellRequestCount,
                         measures,
                         columns,
@@ -864,15 +864,11 @@ public class FastBatchingCellReader implements CellReader {
          * @return AggStar
          */
         private AggStar getAgg(boolean[] rollup) {
-            AggregationManager aggregationManager =
-                AggregationManager.instance();
-            AggStar star =
-                aggregationManager.findAgg(
-                    getStar(),
-                    getConstrainedColumnsBitKey(),
-                    makeMeasureBitKey(),
-                    rollup);
-            return star;
+            return aggMgr.findAgg(
+                getStar(),
+                getConstrainedColumnsBitKey(),
+                makeMeasureBitKey(),
+                rollup);
         }
 
         private BitKey makeMeasureBitKey() {

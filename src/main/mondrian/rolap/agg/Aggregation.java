@@ -57,7 +57,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class Aggregation {
 
-    private final MondrianServer server;
+    private final AggregationManager aggMgr;
 
     private final List<StarPredicate> compoundPredicateList;
     private final RolapStar star;
@@ -74,7 +74,8 @@ public class Aggregation {
      * this list is not synchronized in the code.  This is the only mutable
      * field in the class.
      */
-    private final List<SoftReference<Segment>> segmentRefs;
+    private final List<SoftReference<Segment>> segmentRefs =
+        new CopyOnWriteArrayList<SoftReference<Segment>>();
 
     /**
      * Timestamp of when the aggregation was created. (We use
@@ -99,30 +100,23 @@ public class Aggregation {
     /**
      * Creates an Aggregation.
      *
-     * @param server Server this aggregation belongs to
+     * @param aggMgr Aggregation manager
      *
      * @param aggregationKey the key specifying the axes, the context and
      *                       the RolapStar for this Aggregation
      */
     public Aggregation(
-        MondrianServer server,
+        AggregationManager aggMgr,
         AggregationKey aggregationKey)
     {
-        this.server = server;
+        this.aggMgr = aggMgr;
         this.compoundPredicateList = aggregationKey.getCompoundPredicateList();
         this.star = aggregationKey.getStar();
         this.constrainedColumnsBitKey =
             aggregationKey.getConstrainedColumnsBitKey();
-        this.segmentRefs = getThreadSafeListImplementation();
         this.maxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         this.creationTimestamp = new Date();
-    }
-
-    private CopyOnWriteArrayList<SoftReference<Segment>>
-    getThreadSafeListImplementation()
-    {
-        return new CopyOnWriteArrayList<SoftReference<Segment>>();
     }
 
     /**
@@ -183,7 +177,7 @@ public class Aggregation {
             final List<GroupingSet> gsList =
                 new ArrayList<GroupingSet>();
             gsList.add(groupingSet);
-            new SegmentLoader().load(
+            new SegmentLoader(aggMgr).load(
                 cellRequestCount,
                 gsList,
                 pinnedSegments,
@@ -666,8 +660,11 @@ public class Aggregation {
         }
 
         // Flush the external cache regions
-        SegmentCacheWorker.flush(
-            SegmentHeader.forCacheRegion(cacheRegion));
+        for (SegmentCacheWorker segmentCacheWorker : aggMgr.segmentCacheWorkers)
+        {
+            segmentCacheWorker.flush(
+                SegmentHeader.forCacheRegion(cacheRegion));
+        }
 
         // Replace list of segments.
         // FIXME: Synchronize.

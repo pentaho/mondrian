@@ -14,8 +14,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.agg.Aggregation;
-import mondrian.rolap.agg.AggregationKey;
+import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.server.Locus;
@@ -97,7 +96,7 @@ public class RolapStar {
      * Keeps track of the columns across all tables. Should have
      * a number of elements equal to columnCount.
      */
-    private List<Column> columnList;
+    private final List<Column> columnList = new ArrayList<Column>();
 
     private final Dialect sqlQueryDialect;
 
@@ -109,9 +108,9 @@ public class RolapStar {
 
     /**
      * Partially ordered list of AggStars associated with this RolapStar's fact
-     * table
+     * table.
      */
-    private List<AggStar> aggStars;
+    private final List<AggStar> aggStars = new LinkedList<AggStar>();
 
     private DataSourceChangeListener changeListener;
 
@@ -141,18 +140,15 @@ public class RolapStar {
             new StarNetworkNode(null, factTable.alias, null, null, null);
 
         this.sharedAggregations = new HashMap<AggregationKey, Aggregation>();
-
         this.pendingAggregations = new HashMap<AggregationKey, Aggregation>();
-
         this.aggregationRequests = new ArrayList<AggregationKey>();
-
-        clearAggStarList();
-
         this.sqlQueryDialect = schema.getDialect();
-
         this.changeListener = schema.getDataSourceChangeListener();
+    }
 
-        this.columnList = new ArrayList<Column>(100); //100 is *very* arbitrary
+    public AggregationManager getAggregationManager() {
+        return schema.getInternalConnection().getServer()
+            .getAggregationManager();
     }
 
     private static class StarNetworkNode {
@@ -346,7 +342,7 @@ public class RolapStar {
     }
 
     /**
-     * This is used to decrement the column counter and is used if a newly
+     * Decrements the column counter; used if a newly
      * created column is found to already exist.
      */
     private int decrementColumnCount() {
@@ -354,12 +350,12 @@ public class RolapStar {
     }
 
     /**
-     * This is a place holder in case in the future we wish to be able to
+     * Place holder in case in the future we wish to be able to
      * reload aggregates. In that case, if aggregates had already been loaded,
      * i.e., this star has some aggstars, then those aggstars are cleared.
      */
     public void prepareToLoadAggregates() {
-        aggStars = Collections.emptyList();
+        aggStars.clear();
     }
 
     /**
@@ -370,11 +366,6 @@ public class RolapStar {
      * ties do not matter.
      */
     public void addAggStar(AggStar aggStar) {
-        if (aggStars == Collections.EMPTY_LIST) {
-            // if this is NOT a LinkedList, then the insertion time is longer.
-            aggStars = new LinkedList<AggStar>();
-        }
-
         // Add it before the first AggStar which is larger, if there is one.
         int size = aggStar.getSize();
         ListIterator<AggStar> lit = aggStars.listIterator();
@@ -392,10 +383,10 @@ public class RolapStar {
     }
 
     /**
-     * Set the agg star list to empty.
+     * Clears the list of agg stars.
      */
     void clearAggStarList() {
-        aggStars = Collections.emptyList();
+        aggStars.clear();
     }
 
     /**
@@ -403,11 +394,9 @@ public class RolapStar {
      * algorithm used to order the AggStars has been changed.
      */
     public void reOrderAggStarList() {
-        // the order of these two lines is important
-        List<AggStar> l = aggStars;
-        clearAggStarList();
-
-        for (AggStar aggStar : l) {
+        List<AggStar> oldList = new ArrayList<AggStar>(aggStars);
+        aggStars.clear();
+        for (AggStar aggStar : oldList) {
             addAggStar(aggStar);
         }
     }
@@ -520,8 +509,7 @@ public class RolapStar {
         if (aggregation == null) {
             aggregation =
                 new Aggregation(
-                    MondrianServer.forConnection(
-                        schema.getInternalConnection()),
+                    getAggregationManager(),
                     aggregationKey);
 
             this.localAggregations.get().put(aggregationKey, aggregation);
@@ -601,8 +589,7 @@ public class RolapStar {
                             // are finished
                             aggregation =
                                 new Aggregation(
-                                    MondrianServer.forConnection(
-                                        schema.getInternalConnection()),
+                                    getAggregationManager(),
                                     aggregationKey);
 
                             localAggregations.get().put(

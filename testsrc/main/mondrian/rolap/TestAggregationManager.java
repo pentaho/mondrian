@@ -59,38 +59,37 @@ public class TestAggregationManager extends BatchTestCase {
     public TestAggregationManager(String name) {
         super(name);
     }
+
     public TestAggregationManager() {
         super();
     }
 
     public void testFemaleUnitSales() {
+        final FastBatchingCellReader fbcr =
+            new FastBatchingCellReader(execution, getCube("Sales"));
         CellRequest request = createRequest(
             "Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
-        final RolapAggregationManager aggMan = AggregationManager.instance();
-        Object value = aggMan.getCellFromCache(request);
+        Object value = fbcr.aggMgr.getCellFromCache(request);
         assertNull(value); // before load, the cell is not found
-        FastBatchingCellReader fbcr =
-            new FastBatchingCellReader(execution, getCube("Sales"));
         fbcr.recordCellRequest(request);
         fbcr.loadAggregations();
-        value = aggMan.getCellFromCache(request); // after load, cell is found
+        value = fbcr.aggMgr.getCellFromCache(request); // after load, cell found
         assertTrue(value instanceof Number);
         assertEquals(131558, ((Number) value).intValue());
     }
 
     public void testFemaleCustomerCount() {
+        final FastBatchingCellReader fbcr =
+            new FastBatchingCellReader(execution, getCube("Sales"));
         CellRequest request =
             createRequest(
                 "Sales", "[Measures].[Customer Count]",
                 "customer", "gender", "F");
-        final RolapAggregationManager aggMan = AggregationManager.instance();
-        FastBatchingCellReader fbcr =
-            new FastBatchingCellReader(execution, getCube("Sales"));
-        Object value = aggMan.getCellFromCache(request);
+        Object value = fbcr.aggMgr.getCellFromCache(request);
         assertNull(value); // before load, the cell is not found
         fbcr.recordCellRequest(request);
         fbcr.loadAggregations();
-        value = aggMan.getCellFromCache(request); // after load, cell is found
+        value = fbcr.aggMgr.getCellFromCache(request); // after load, cell found
         assertTrue(value instanceof Number);
         assertEquals(2755, ((Number) value).intValue());
     }
@@ -124,27 +123,26 @@ public class TestAggregationManager extends BatchTestCase {
                 "customer", "gender", "F",
                 makeConstraintYearQuarterMonth(Q1M1Q2M5));
 
-        final RolapAggregationManager aggMan = AggregationManager.instance();
-
-        Object value = aggMan.getCellFromCache(request1);
-        assertNull(value); // before load, the cell is not found
-
         FastBatchingCellReader fbcr =
             new FastBatchingCellReader(execution, getCube("Sales"));
+
+        Object value = fbcr.aggMgr.getCellFromCache(request1);
+        assertNull(value); // before load, the cell is not found
+
         fbcr.recordCellRequest(request1);
         fbcr.recordCellRequest(request2);
         fbcr.recordCellRequest(request3);
         fbcr.loadAggregations();
 
-        value = aggMan.getCellFromCache(request1); // after load, cell is found
+        value = fbcr.aggMgr.getCellFromCache(request1); // after load, found
         assertTrue(value instanceof Number);
         assertEquals(694, ((Number) value).intValue());
 
-        value = aggMan.getCellFromCache(request2); // after load, cell is found
+        value = fbcr.aggMgr.getCellFromCache(request2); // after load, found
         assertTrue(value instanceof Number);
         assertEquals(672, ((Number) value).intValue());
 
-        value = aggMan.getCellFromCache(request3); // after load, cell is found
+        value = fbcr.aggMgr.getCellFromCache(request3); // after load, found
         assertTrue(value instanceof Number);
         assertEquals(1122, ((Number) value).intValue());
         // Note: 1122 != (694 + 672)

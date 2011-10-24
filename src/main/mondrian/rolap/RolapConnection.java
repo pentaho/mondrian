@@ -577,7 +577,7 @@ public class RolapConnection extends ConnectionBase {
     }
 
     public CacheControl getCacheControl(PrintWriter pw) {
-        return AggregationManager.instance().getCacheControl(this, pw);
+        return getServer().getAggregationManager().getCacheControl(this, pw);
     }
 
     /**

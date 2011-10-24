@@ -1235,9 +1235,11 @@ public class SqlTupleReader implements TupleReader {
         }
 
         // find the aggstar using the masks
-        AggStar aggStar = AggregationManager.instance().findAgg(
-            star, levelBitKey, measureBitKey, new boolean[]{ false });
-        return aggStar;
+        final AggregationManager aggMgr =
+            cube.getSchema().getInternalConnection().getServer()
+                .getAggregationManager();
+        return aggMgr.findAgg(
+            star, levelBitKey, measureBitKey, new boolean[] {false});
     }
 
     int getMaxRows() {

@@ -45,8 +45,7 @@ public class RolapResult extends ResultBase {
 
     private CellInfoContainer cellInfos;
     private FastBatchingCellReader batchingReader;
-    private final CellReader aggregatingReader =
-        AggregationManager.instance().getCacheCellReader();
+    private final CellReader aggregatingReader;
     private Modulos modulos = null;
     private final int maxEvalDepth =
             MondrianProperties.instance().MaxEvalDepth.get();
@@ -73,6 +72,11 @@ public class RolapResult extends ResultBase {
         super(execution, null);
 
         this.point = CellKey.Generator.newCellKey(axes.length);
+        final AggregationManager aggMgr =
+            execution.getMondrianStatement()
+                .getMondrianConnection()
+                .getServer().getAggregationManager();
+        this.aggregatingReader = aggMgr.getCacheCellReader();
         final int expDeps =
             MondrianProperties.instance().TestExpDependencies.get();
         if (expDeps > 0) {

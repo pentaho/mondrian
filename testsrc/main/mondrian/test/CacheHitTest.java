@@ -4,15 +4,14 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.test;
 
 import mondrian.olap.*;
-import mondrian.rolap.agg.AggregationManager;
-import mondrian.rolap.agg.CountingAggregationManager;
+import mondrian.server.monitor.ServerInfo;
 import mondrian.test.clearview.*;
 
 import junit.framework.TestResult;
@@ -21,10 +20,9 @@ import junit.framework.TestSuite;
 /**
  * The <code>CacheHitTest</code> class contains test suites that return
  * hit ratio of aggregation cache for various sequences of MDX queries.
- * This test should be run with mondrian property
- * <code>mondrian.rolap.agg.enableCacheHitCounters=true</code>
- * This is not run as part of Main test suite as it only reports
- * ratios for further investigations.
+ *
+ * <p>This is not run as part of Main test suite as it only reports
+ * ratios for further investigations.</p>
  *
  * @author kvu
  * @version $Id$
@@ -36,7 +34,7 @@ public class CacheHitTest extends FoodMartTestCase {
      * of aggregation cache sequentially. All queries reference
      * the relational Sales cube.
      *
-     * @throws Exception
+     * @throws Exception on error
      */
     public void testSmallSetSequential() throws Exception {
         TestSuite suite = new TestSuite();
@@ -55,7 +53,7 @@ public class CacheHitTest extends FoodMartTestCase {
      * of aggregation cache in random order. All queries reference
      * the relational Sales cube.
      *
-     * @throws Exception
+     * @throws Exception on error
      */
     public void testSmallSetRandom() throws Exception {
         TestSuite suite = new TestSuite();
@@ -74,7 +72,7 @@ public class CacheHitTest extends FoodMartTestCase {
      * of aggregation cache sequentially. All queries reference
      * the virtual Warehouse and Sales cube.
      *
-     * @throws Exception
+     * @throws Exception on error
      */
     public void testSmallSetVCSequential() throws Exception {
         TestSuite suite = new TestSuite();
@@ -93,7 +91,7 @@ public class CacheHitTest extends FoodMartTestCase {
      * of aggregation cache in random order. All queries reference
      * the virtual Warehouse and Sales cube.
      *
-     * @throws Exception
+     * @throws Exception on error
      */
     public void testSmallSetVCRandom() throws Exception {
         TestSuite suite = new TestSuite();
@@ -113,7 +111,7 @@ public class CacheHitTest extends FoodMartTestCase {
      * Queries reference to Sales cube as well as
      * Warehouse and Sales cube.
      *
-     * @throws Exception
+     * @throws Exception on error
      */
     public void testBigSetRandom() throws Exception {
         TestSuite suite = new TestSuite();
@@ -148,20 +146,14 @@ public class CacheHitTest extends FoodMartTestCase {
      *
      * @param suite the suite of test cases
      * @param n number of times
-     * @throws Exception
+     * @throws Exception on error
      */
     public void runRandomSuite(TestSuite suite, int n)
         throws Exception
     {
-        TestResult tres = new TestResult();
-        propSaver.set(
-            MondrianProperties.instance().EnableCacheHitCounters,
-            true);
-
-        AggregationManager aggMngr = AggregationManager.instance();
-        assert aggMngr instanceof CountingAggregationManager;
-
-        ((CountingAggregationManager) aggMngr).resetCounters();
+        final TestResult tres = new TestResult();
+        final MondrianServer server =
+            MondrianServer.forConnection(getTestContext().getConnection());
 
         for (int i = 0; i < n; i++) {
             int suiteIdx = (int) (Math.random() * suite.testCount());
@@ -169,7 +161,7 @@ public class CacheHitTest extends FoodMartTestCase {
             int testIdx = (int) (Math.random() * test.testCount());
             test.testAt(testIdx).run(tres);
         }
-        report((CountingAggregationManager) aggMngr);
+        report(server.getMonitor().getServer());
     }
 
     /**
@@ -178,20 +170,14 @@ public class CacheHitTest extends FoodMartTestCase {
      *
      * @param suite the suite of test suites
      * @param numIter number of iterations
-     * @throws Exception
+     * @throws Exception on error
      */
     public void runTestSuiteInOrder(TestSuite suite, int numIter)
         throws Exception
     {
-        TestResult tres = new TestResult();
-        propSaver.set(
-            MondrianProperties.instance().EnableCacheHitCounters,
-            true);
-
-        AggregationManager aggMngr = AggregationManager.instance();
-        assert aggMngr instanceof CountingAggregationManager;
-
-        ((CountingAggregationManager) aggMngr).resetCounters();
+        final TestResult tres = new TestResult();
+        final MondrianServer server =
+            MondrianServer.forConnection(getTestContext().getConnection());
 
         for (int i = 0; i < numIter; i++) {
             TestSuite test = (TestSuite) suite.testAt(i % suite.testCount());
@@ -199,26 +185,29 @@ public class CacheHitTest extends FoodMartTestCase {
                 test.testAt(j).run(tres);
             }
         }
-        report((CountingAggregationManager) aggMngr);
+        report(server.getMonitor().getServer());
     }
 
     /**
-     * Prints cache hit ratio
+     * Prints cache hit ratio.
      *
+     * @param serverInfo Server statistics
      */
-    public void report(CountingAggregationManager am) {
+    public void report(ServerInfo serverInfo) {
         System.out.println(
-            "Number of requests: " + am.getRequestCount());
+            "Number of requests: " + serverInfo.cellCacheRequestCount);
         System.out.println(
-            "Number of misses: " + am.getMissCount());
+            "Number of misses: " + serverInfo.cellCacheMissCount);
         System.out.println(
-            "Hit ratio ---> " + am.getHitRatio());
+            "Hit ratio ---> "
+            + ((float) serverInfo.cellCacheHitCount
+               / (float) serverInfo.cellCacheRequestCount));
     }
 
     /**
      * Clears aggregation cache
      *
-     * @param cube
+     * @param cube Cube name
      */
     public void clearCache(String cube) {
         final TestContext testContext = getTestContext();

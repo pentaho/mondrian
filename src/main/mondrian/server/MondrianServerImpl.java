@@ -13,6 +13,7 @@ import mondrian.olap.MondrianServer;
 import mondrian.olap4j.CatalogFinder;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapSchema;
+import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.monitor.*;
 import mondrian.spi.CatalogLocator;
 import mondrian.util.LockBox;
@@ -70,6 +71,8 @@ class MondrianServerImpl
         new WeakHashMap<Long, Statement>();
 
     private final MonitorImpl monitor = new MonitorImpl();
+
+    private final AggregationManager aggMgr;
 
     private static final Logger LOGGER =
         Logger.getLogger(MondrianServerImpl.class);
@@ -159,6 +162,8 @@ class MondrianServerImpl
         // specifications of the servers where they create and retrieve the
         // entry.
         this.lockBox = registry.lockBox;
+
+        this.aggMgr = new AggregationManager();
     }
 
     @Override
@@ -177,6 +182,10 @@ class MondrianServerImpl
 
     public LockBox getLockBox() {
         return lockBox;
+    }
+
+    public AggregationManager getAggregationManager() {
+        return aggMgr;
     }
 
     @Override

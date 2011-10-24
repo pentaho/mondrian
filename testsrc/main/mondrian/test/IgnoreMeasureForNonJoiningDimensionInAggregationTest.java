@@ -32,7 +32,7 @@ public class IgnoreMeasureForNonJoiningDimensionInAggregationTest
         propSaver.set(
             MondrianProperties.instance().IgnoreMeasureForNonJoiningDimension,
             true);
-        AggregationManager.instance().getCacheControl(null, null)
+        getTestContext().getConnection().getCacheControl(null)
             .flushSchemaCache();
     }
 

@@ -10,6 +10,7 @@
 package mondrian.olap;
 
 import mondrian.rolap.RolapConnection;
+import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.*;
 import mondrian.server.monitor.Monitor;
 import mondrian.spi.CatalogLocator;
@@ -231,6 +232,8 @@ public abstract class MondrianServer {
     public abstract void removeStatement(Statement statement);
 
     public abstract Monitor getMonitor();
+
+    public abstract AggregationManager getAggregationManager();
 
     /**
      * Description of the version of the server.
