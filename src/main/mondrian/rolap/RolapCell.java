@@ -103,14 +103,16 @@ public class RolapCell implements Cell {
         if (cellRequest == null) {
             return null;
         }
+        final RolapConnection connection =
+            result.getExecution().getMondrianStatement()
+                .getMondrianConnection();
         final RolapAggregationManager aggMgr =
-            result.getCube().getStar().getAggregationManager();
+            connection.getServer().getAggregationManager();
         return aggMgr.getDrillThroughSql(
             cellRequest,
             starPredicateSlicer,
             false);
     }
-
 
     public int getDrillThroughCount() {
         final Member[] currentMembers = getMembersForDrillThrough();
@@ -129,11 +131,11 @@ public class RolapCell implements Cell {
         if (cellRequest == null) {
             return -1;
         }
-        RolapConnection connection =
+        final RolapConnection connection =
             result.getExecution().getMondrianStatement()
                 .getMondrianConnection();
         final RolapAggregationManager aggMgr =
-            result.getCube().getStar().getAggregationManager();
+            connection.getServer().getAggregationManager();
         final String sql =
             aggMgr.getDrillThroughSql(
                 cellRequest,
