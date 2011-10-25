@@ -30,7 +30,7 @@ import java.util.List;
 public class MonitorTest extends FoodMartTestCase {
     private void println(Object x) {
         // Enable for debugging, but not for checked-in code.
-        if (true) {
+        if (false) {
             System.out.println(x);
         }
     }
