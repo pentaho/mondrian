@@ -295,7 +295,6 @@ class ExplicitRecognizer extends Recognizer {
             Collections.sort(
                 aggLevels,
                 new Comparator<ExplicitRules.TableDef.Level>() {
-                    @Override
                     public int compare(
                         mondrian.rolap.aggmatcher
                             .ExplicitRules.TableDef.Level o1,
