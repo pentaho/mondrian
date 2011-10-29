@@ -13,6 +13,7 @@ import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianProperties;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapAggregator;
+import mondrian.rolap.RolapLevel;
 import mondrian.rolap.RolapStar;
 import mondrian.spi.Dialect;
 
@@ -358,6 +359,10 @@ public class JdbcSchema {
 
                 // level
                 public RolapStar.Column rColumn;
+
+                // agg stuff
+                public boolean collapsed = false;
+                public RolapLevel level = null;
 
                 // for subtables
                 public RolapStar.Table rTable;

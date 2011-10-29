@@ -488,29 +488,7 @@ abstract class Recognizer {
                             continue;
                         }
 
-
-                        RolapLevel[] levels =
-                            (RolapLevel[]) hierarchy.getLevels();
-                        // If the top level is seen, then one or more
-                        // lower levels may appear but there can be no
-                        // missing levels between the top level and
-                        // lowest level seen.
-                        // On the other hand, if the top level is not
-                        // seen, then no other levels should be present.
-                        mid_level:
-                        for (RolapLevel level : levels) {
-                            if (level.isAll()) {
-                                continue mid_level;
-                            }
-                            if (matchLevel(hierarchy, hierarchyUsage, level)) {
-                                continue mid_level;
-
-                            } else {
-                                // There were no matches, break
-                                // For now, do not check lower levels
-                                break mid_level;
-                            }
-                        }
+                        matchLevels(hierarchy, hierarchyUsage);
                     }
                 }
             }
@@ -576,13 +554,11 @@ abstract class Recognizer {
     }
 
     /**
-     * Match a aggregate table column given the hierarchy, hierarchy usage, and
-     * rolap level returning true if a match is found.
+     * Match a aggregate table column given the hierarchy and hierarchy usage.
      */
-    protected abstract boolean matchLevel(
+    protected abstract void matchLevels(
         final Hierarchy hierarchy,
-        final HierarchyUsage hierarchyUsage,
-        final RolapLevel level);
+        final HierarchyUsage hierarchyUsage);
 
     /**
      * Make a level column usage.
@@ -599,7 +575,9 @@ abstract class Recognizer {
         final HierarchyUsage hierarchyUsage,
         final String factColumnName,
         final String levelColumnName,
-        final String symbolicName)
+        final String symbolicName,
+        final boolean isCollapsed,
+        final RolapLevel rLevel)
     {
         msgRecorder.pushContextName("Recognizer.makeLevel");
 
@@ -644,6 +622,8 @@ abstract class Recognizer {
                 aggUsage.relation = hierarchyUsage.getJoinTable();
                 aggUsage.joinExp = hierarchyUsage.getJoinExp();
                 aggUsage.levelColumnName = levelColumnName;
+                aggUsage.collapsed = isCollapsed;
+                aggUsage.level = rLevel;
 
                 aggUsage.setSymbolicName(symbolicName);
 

@@ -42,6 +42,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
 
         // get value without aggregates
         propSaver.set(props.UseAggregates, false);
+        propSaver.set(props.ReadAggregates, false);
 
         String mdx =
             "select {[Measures].[Total]} on columns from [Fact]";
@@ -57,6 +58,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
         // unless there is a way to flush the cache,
         // I'm skeptical about these results
         propSaver.set(props.UseAggregates, true);
+        propSaver.set(props.ReadAggregates, false);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();

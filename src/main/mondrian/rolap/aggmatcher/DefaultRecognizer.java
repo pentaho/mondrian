@@ -10,11 +10,18 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.Hierarchy;
+import mondrian.olap.Level;
 import mondrian.recorder.MessageRecorder;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
+import mondrian.rolap.aggmatcher.JdbcSchema.Table.Column;
+import mondrian.util.Pair;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * This is the default Recognizer. It uses the rules found in the file
@@ -178,37 +185,103 @@ class DefaultRecognizer extends Recognizer {
      * <p> A Matcher is created using the Hierarchy's name, the RolapLevel
      * name, and the column name associated with the RolapLevel's key
      * expression.  The aggregate table columns are search for the first match
-     * and, if found, a level usage is created for that column and true is
-     * returned.
+     * and, if found, a level usage is created for that column.
      */
-    protected boolean matchLevel(
+    protected void matchLevels(
         final Hierarchy hierarchy,
-        final HierarchyUsage hierarchyUsage,
-        final RolapLevel level)
+        final HierarchyUsage hierarchyUsage)
     {
         msgRecorder.pushContextName("DefaultRecognizer.matchLevel");
         try {
-            String usagePrefix = hierarchyUsage.getUsagePrefix();
-            String hierName = hierarchy.getName();
-            String levelName = level.getName();
-            String levelColumnName = getColumnName(level.getKeyExp());
+            List<Pair<RolapLevel, JdbcSchema.Table.Column>> levelMatches =
+                new ArrayList<Pair<RolapLevel, JdbcSchema.Table.Column>>();
+            level_loop:
+            for (Level level : hierarchy.getLevels()) {
+                if (level.isAll()) {
+                    continue;
+                }
+                final RolapLevel rLevel = (RolapLevel) level;
 
-            Recognizer.Matcher matcher = getRules().getLevelMatcher(
-                usagePrefix, hierName, levelName, levelColumnName);
+                String usagePrefix = hierarchyUsage.getUsagePrefix();
+                String hierName = hierarchy.getName();
+                String levelName = rLevel.getName();
+                String levelColumnName = getColumnName(rLevel.getKeyExp());
 
-            for (JdbcSchema.Table.Column aggColumn : aggTable.getColumns()) {
-                if (matcher.matches(aggColumn.getName())) {
-                    makeLevel(
-                        aggColumn,
-                        hierarchy,
-                        hierarchyUsage,
-                        getColumnName(level.getKeyExp()),
-                        getColumnName(level.getKeyExp()),
-                        level.getName());
-                    return true;
+                Recognizer.Matcher matcher = getRules().getLevelMatcher(
+                    usagePrefix, hierName, levelName, levelColumnName);
+
+                for (JdbcSchema.Table.Column aggColumn
+                    : aggTable.getColumns())
+                {
+                    if (matcher.matches(aggColumn.getName())) {
+                        levelMatches.add(
+                            new Pair<RolapLevel,
+                                JdbcSchema.Table.Column>(
+                                    rLevel, aggColumn));
+                        continue level_loop;
+                    }
                 }
             }
-            return false;
+            if (levelMatches.size() == 0) {
+                return;
+            }
+            // Sort the matches by level depth.
+            Collections.sort(
+                levelMatches,
+                new Comparator<Pair<RolapLevel, JdbcSchema.Table.Column>>() {
+                    public int compare(
+                        Pair<RolapLevel, Column> o1,
+                        Pair<RolapLevel, Column> o2)
+                    {
+                        return
+                            Integer.valueOf(o1.left.getDepth()).compareTo(
+                                Integer.valueOf(o2.left.getDepth()));
+                    }
+                });
+            // Validate by iterating.
+            for (Pair<RolapLevel, JdbcSchema.Table.Column> pair
+                : levelMatches)
+            {
+                // Fail if the level is not the first match
+                // but the one before is not its parent.
+                if (levelMatches.indexOf(pair) > 0
+                    && pair.left.getDepth() - 1
+                        != levelMatches.get(
+                            levelMatches.indexOf(pair) - 1).left.getDepth())
+                {
+                    msgRecorder.reportError(
+                        "The aggregate table "
+                        + aggTable.getName()
+                        + " contains the column "
+                        + pair.right.getName()
+                        + " which maps to the level "
+                        + pair.left.getUniqueName()
+                        + " but its parent level is not part of that aggregation.");
+                }
+            }
+            if (msgRecorder.hasErrors()) {
+                return;
+            }
+            // All checks out. Let's create the levels.
+            for (Pair<RolapLevel, JdbcSchema.Table.Column> pair
+                : levelMatches)
+            {
+                boolean collapsed = true;
+                if (levelMatches.indexOf(pair) == 0
+                    && pair.left.getDepth() > 1)
+                {
+                    collapsed = false;
+                }
+                makeLevel(
+                    pair.right,
+                    hierarchy,
+                    hierarchyUsage,
+                    pair.right.column.name,
+                    getColumnName(pair.left.getKeyExp()),
+                    pair.left.getName(),
+                    collapsed,
+                    pair.left);
+            }
         } finally {
             msgRecorder.popContextName();
         }

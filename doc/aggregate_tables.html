@@ -30,6 +30,7 @@
 			<ol>
       			<li><a href="#A_simple_aggregate_table">A simple aggregate table</a></li>
       			<li><a href="#Another_aggregate_table">Another aggregate table</a></li>
+      			<li><a href="#Non_Collapsed_Aggregate_Levels">Non Collapsed Aggregate Levels</a></li>
     		</ol>
 		<li><a href="#Defining_aggregate_tables">Defining aggregate tables</a></li>
 		<li><a href="#Building_aggregates">Building aggregate tables</a></li>
@@ -302,6 +303,169 @@ used to&nbsp; declare that the column <code>prodid</code> links to the dimension
 table, but all other columns remain in the <code>Product</code> and <code>Mfr</code> 
 
 dimension tables.</p>
+
+<!-- 
+############################################
+##  2.3 Non-collapsed aggregate levels #####
+############################################ -->
+<h1>2.3 Non Collapsed Aggregate Levels<a name="Non_Collapsed_Aggregate_Levels">&nbsp;</a></h1>
+
+<p>Another design option for aggregate tables is to use non collapsed levels.
+Consider the following table structure:</p>
+
+    <p>
+    <img border="0" src="images/aggregate_tables_4.png"></p>
+
+<p>and the corresponding XML:</p>
+
+<blockquote>
+
+    <code>&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;<br>
+    &nbsp;&nbsp;&lt;<a href="#XML_Table">Table</a> name=&quot;sales&quot;&gt;<br>
+
+    &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggName">AggName</a> 
+    name=&quot;agg_3&quot;&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggFactCount">AggFactCount</a> column=&quot;cnt&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Unit 
+    Sales]&quot; column=&quot;sls&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Year]&quot; 
+    column=&quot;yer&quot;/&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Quarter]&quot; 
+    column=&quot;qtr&quot;/&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Month]&quot; 
+    column=&quot;mth&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Channel.Network].[Brand]&quot; 
+    column=&quot;brn&quot; collapsed=&quot;false&quot;/&gt;<br>
+
+
+
+    &nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_AggName">AggName</a>&gt;<br>
+
+    &nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggName">AggName</a> 
+    name=&quot;agg_3&quot;&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggFactCount">AggFactCount</a> column=&quot;cnt&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggMeasure">AggMeasure</a> name=&quot;[Measures].[Unit 
+    Sales]&quot; column=&quot;sls&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Year]&quot; 
+    column=&quot;yer&quot;/&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Quarter]&quot; 
+    column=&quot;qtr&quot;/&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Time].[Month]&quot; 
+    column=&quot;mth&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="#XML_AggLevel">AggLevel</a> name=&quot;[Channel.Distributor].[Brand]&quot; 
+    column=&quot;brn&quot; collapsed=&quot;false&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp; &lt;/<a href="#XML_AggName">AggName</a>&gt;<br>
+
+
+    &nbsp;&nbsp;&lt;/<a href="#XML_Table">Table</a>&gt;<br>
+
+    <br>
+    &nbsp; &lt;<a href="schema.html#XML_Dimension">Dimension</a> name=&quot;Channel&quot;&gt;<br>
+
+    &nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; 
+    name=&quot;Network&quot; primaryKey=&quot;prod&quot; primaryKeyTable=&quot;prod&quot;&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Join">Join</a> leftKey=&quot;brn&quot; 
+    rightKey=&quot;brn&quot; rightAlias=&quot;brn_mfr&quot;&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Table">Table</a> 
+    name=&quot;prod&quot;/&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Join">Join</a> leftKey=&quot;brn&quot; 
+    rightKey=&quot;brn&quot; rightAlias=&quot;brn_mfr&quot;&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Table">Table</a> 
+    name=&quot;brn_mfr&quot;/&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Join">Join</a> leftKey=&quot;mfr&quot; 
+    rightKey=&quot;mfr&quot;&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Table">Table</a> 
+    name=&quot;brn_mfr&quot;/&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Table">Table</a> 
+    name=&quot;mfr_net&quot;/&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_Join">Join</a>&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_Join">Join</a>&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_Join">Join</a>&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
+    name=&quot;Network&quot; table=&quot;mrf_net&quot; column=&quot;net&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
+    name=&quot;Manufacturer&quot; table=&quot;mfr_brn&quot; column=&quot;brn&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
+    name=&quot;Brand&quot; table=&quot;brn_mfr&quot; column=&quot;brn&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
+    name=&quot;Product&quot; table=&quot;prd&quot; column=&quot;brd&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_Hierarchy">Hierarchy</a>&gt;<br>
+
+    &nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; 
+    name=&quot;Distributor&quot; primaryKey=&quot;prod&quot; primaryKeyTable=&quot;prod&quot;&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Join">Join</a> leftKey=&quot;brn&quot; 
+    rightKey=&quot;brn&quot; rightAlias=&quot;brn_mfr&quot;&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Table">Table</a> 
+    name=&quot;prod&quot;/&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Join">Join</a> leftKey=&quot;brn&quot; 
+    rightKey=&quot;brn&quot; rightAlias=&quot;brn_mfr&quot;&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Table">Table</a> 
+    name=&quot;brn_mfr&quot;/&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Join">Join</a> leftKey=&quot;mfr&quot; 
+    rightKey=&quot;mfr&quot;&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Table">Table</a> 
+    name=&quot;brn_mfr&quot;/&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Table">Table</a> 
+    name=&quot;mfr_dist&quot;/&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_Join">Join</a>&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_Join">Join</a>&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_Join">Join</a>&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
+    name=&quot;Distributor&quot; table=&quot;mrf_dist&quot; column=&quot;dist&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
+    name=&quot;Manufacturer&quot; table=&quot;mfr_brn&quot; column=&quot;brn&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
+    name=&quot;Brand&quot; table=&quot;brn_mfr&quot; column=&quot;brn&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;<a href="schema.html#XML_Level">Level</a> 
+    name=&quot;Product&quot; table=&quot;prd&quot; column=&quot;brd&quot;/&gt;<br>
+
+    &nbsp;&nbsp;&nbsp; &lt;/<a href="schema.html#XML_Hierarchy">Hierarchy</a>&gt;<br>
+
+    &nbsp; &lt;/<a href="schema.html#XML_Dimension">Dimension</a>&gt;<br>
+    <br>
+    &nbsp;&nbsp;&lt;!-- Rest of the cube definition --&gt;<br>
+    &lt;/<a href="#XML_Cube">Cube</a>&gt;</code>
+
+</blockquote>
+
+<p>The cube described above uses snoflaked tables for the <code>[Channel]</code> dimension.
+That dimension has two separate hierarchies and they both share the table <code>brn_mfr</code>.
+Because both hierarchies have a level sharing the same table and column, we can take advantage
+of the <code>collapsed</code> option for <code>AggLevel</code> elements, and create an aggregate
+table that can be used for both hierarchies simultaneously.
+</p>
+
+<p>By setting <code>collapsed</code> to false, Mondrian knows that the keys of the top two levels
+of the hierarchies are not part of the aggregate table. They have to be joined when resolving queries
+which use that particular aggregate table.</p>
+
+<p>This also works with implicit aggregate rules. Let's assume that the <code>AggName</code>
+elements are removed from the schema. If Mondrian scans this table in search of a suitable
+aggregate tables to use, it will notice that the top levels are missing, and that it is therefore
+dealing with a non-collapsed hierarchy. Mondrian will automatically create an inner join to the
+other tables so it can effectively take advantage of the aggregate table.</p>
+
+<p>As with regular <code>AggLevel</code> elements, it is not necessary to include the bottom
+levels of the hierarchies. In the example above, we have ommitted the last level, <code>[Product]</code></p>
+
 <!-- 
 ######################################
 ##  3. Defining aggregate tables #####

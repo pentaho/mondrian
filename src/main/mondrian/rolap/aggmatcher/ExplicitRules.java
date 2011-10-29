@@ -555,7 +555,8 @@ RME TODO
             addLevelTo(
                 tableDef,
                 aggLevel.getNameAttribute(),
-                aggLevel.getColumnName());
+                aggLevel.getColumnName(),
+                aggLevel.isCollapsed());
         }
 
         private static void addTo(
@@ -571,9 +572,10 @@ RME TODO
         public static void addLevelTo(
             final ExplicitRules.TableDef tableDef,
             final String name,
-            final String columnName)
+            final String columnName,
+            final boolean collapsed)
         {
-            Level level = tableDef.new Level(name, columnName);
+            Level level = tableDef.new Level(name, columnName, collapsed);
             tableDef.add(level);
         }
 
@@ -593,11 +595,17 @@ RME TODO
         class Level {
             private final String name;
             private final String columnName;
+            private final boolean collapsed;
             private RolapLevel rlevel;
 
-            Level(final String name, final String columnName) {
+            Level(
+                final String name,
+                final String columnName,
+                final boolean collapsed)
+            {
                 this.name = name;
                 this.columnName = columnName;
+                this.collapsed = collapsed;
             }
 
             /**
@@ -612,6 +620,14 @@ RME TODO
              */
             public String getColumnName() {
                 return columnName;
+            }
+
+            /**
+             * Returns whether this level is collapsed (includes
+             * parent levels in the agg table).
+             */
+            public boolean isCollapsed() {
+                return collapsed;
             }
 
             /**
