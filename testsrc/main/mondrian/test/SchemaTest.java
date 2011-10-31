@@ -3943,6 +3943,61 @@ public class SchemaTest extends FoodMartTestCase {
             + "Row #2: 50,236\n");
     }
 
+    public void testNonCollapsedAggregateOnNonUniqueLevelFails()
+        throws Exception
+    {
+        propSaver.set(MondrianProperties.instance().UseAggregates, true);
+        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        final String cube =
+            "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_c_14_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\"/>"
+            + "    <AggName name=\"agg_l_05_sales_fact_1997\">"
+            + "        <AggFactCount column=\"fact_count\"/>\n"
+            + "        <AggIgnoreColumn column=\"customer_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"promotion_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_sales\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_cost\"/>\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\" />\n"
+            + "        <AggLevel name=\"[Product].[Product Name]\" column=\"product_id\" collapsed=\"false\"/>\n"
+            + "    </AggName>\n"
+            + "</Table>\n"
+            + "<Dimension foreignKey=\"product_id\" name=\"Product\">\n"
+            + "<Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "  <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + " <Table name=\"product\"/>\n"
+            + " <Table name=\"product_class\"/>\n"
+            + "  </Join>\n"
+            + "  <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Id\" table=\"product\" column=\"product_id\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>\n"
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube>\n";
+        final TestContext context =
+            TestContext.instance().create(
+                null, cube, null, null, null, null);
+        context.assertQueryThrows(
+            "select {[Product].[Product Family].Members} on rows, {[Measures].[Unit Sales]} on columns from [Foo]",
+            "mondrian.olap.MondrianException: Mondrian Error:Too many errors, '1', while loading/reloading aggregates.");
+    }
+
     public void testTwoNonCollapsedAggregate() throws Exception {
         propSaver.set(MondrianProperties.instance().UseAggregates, true);
         propSaver.set(MondrianProperties.instance().ReadAggregates, true);

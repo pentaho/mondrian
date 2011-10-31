@@ -242,6 +242,12 @@ class DefaultRecognizer extends Recognizer {
             for (Pair<RolapLevel, JdbcSchema.Table.Column> pair
                 : levelMatches)
             {
+                boolean collapsed = true;
+                if (levelMatches.indexOf(pair) == 0
+                    && pair.left.getDepth() > 1)
+                {
+                    collapsed = false;
+                }
                 // Fail if the level is not the first match
                 // but the one before is not its parent.
                 if (levelMatches.indexOf(pair) > 0
@@ -257,6 +263,20 @@ class DefaultRecognizer extends Recognizer {
                         + " which maps to the level "
                         + pair.left.getUniqueName()
                         + " but its parent level is not part of that aggregation.");
+                }
+                // Fail if the level is non-collapsed but its members
+                // are not unique.
+                if (!collapsed
+                    && !pair.left.isUnique())
+                {
+                    msgRecorder.reportError(
+                        "The aggregate table "
+                        + aggTable.getName()
+                        + " contains the column "
+                        + pair.right.getName()
+                        + " which maps to the level "
+                        + pair.left.getUniqueName()
+                        + " but that level doesn't have unique members and this level is marked as non collapsed.");
                 }
             }
             if (msgRecorder.hasErrors()) {

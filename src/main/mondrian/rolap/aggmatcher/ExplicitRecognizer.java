@@ -361,6 +361,21 @@ class ExplicitRecognizer extends Recognizer {
                         + pair.left.getUniqueName()
                         + " but its parent level is not part of that aggregation and this level is marked as collapsed.");
                 }
+                // Fail if the level is non-collapsed but its members
+                // are not unique.
+                if (!aggLevels.get(
+                    levelMatches.indexOf(pair)).isCollapsed()
+                    && !pair.left.isUnique())
+                {
+                    msgRecorder.reportError(
+                        "The aggregate table "
+                        + aggTable.getName()
+                        + " contains the column "
+                        + pair.right.getName()
+                        + " which maps to the level "
+                        + pair.left.getUniqueName()
+                        + " but that level doesn't have unique members and this level is marked as non collapsed.");
+                }
             }
             if (msgRecorder.hasErrors()) {
                 return;
