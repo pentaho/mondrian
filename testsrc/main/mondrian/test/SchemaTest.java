@@ -3881,8 +3881,11 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     public void testNonCollapsedAggregate() throws Exception {
-        propSaver.set(MondrianProperties.instance().UseAggregates, true);
-        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        if (MondrianProperties.instance().UseAggregates.get() == false
+            && MondrianProperties.instance().ReadAggregates.get() == false)
+        {
+            return;
+        }
         final String cube =
             "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\">\n"
@@ -3946,8 +3949,11 @@ public class SchemaTest extends FoodMartTestCase {
     public void testNonCollapsedAggregateOnNonUniqueLevelFails()
         throws Exception
     {
-        propSaver.set(MondrianProperties.instance().UseAggregates, true);
-        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        if (MondrianProperties.instance().UseAggregates.get() == false
+            && MondrianProperties.instance().ReadAggregates.get() == false)
+        {
+            return;
+        }
         final String cube =
             "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\">\n"
@@ -3999,8 +4005,11 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     public void testTwoNonCollapsedAggregate() throws Exception {
-        propSaver.set(MondrianProperties.instance().UseAggregates, true);
-        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        if (MondrianProperties.instance().UseAggregates.get() == false
+            && MondrianProperties.instance().ReadAggregates.get() == false)
+        {
+            return;
+        }
         final String cube =
             "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\">\n"
@@ -4220,8 +4229,11 @@ public class SchemaTest extends FoodMartTestCase {
     }
 
     public void testCollapsedError() throws Exception {
-        propSaver.set(MondrianProperties.instance().UseAggregates, true);
-        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        if (MondrianProperties.instance().UseAggregates.get() == false
+            && MondrianProperties.instance().ReadAggregates.get() == false)
+        {
+            return;
+        }
         final String cube =
             "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\">\n"
@@ -4269,7 +4281,7 @@ public class SchemaTest extends FoodMartTestCase {
                 null, cube, null, null, null, null);
         context.assertQueryThrows(
             "select {[Product].[Product Family].Members} on rows, {[Measures].[Unit Sales]} on columns from [Foo]",
-            "mondrian.olap.MondrianException: Mondrian Error:Too many errors, '1', while loading/reloading aggregates.");
+            "Too many errors, '1', while loading/reloading aggregates.");
     }
 }
 // End SchemaTest.java
