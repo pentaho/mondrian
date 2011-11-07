@@ -80,7 +80,7 @@
   <property name="mondrian.webapp.deploy" value="${env.JBOSS_HOME}/server/default/deploy"/>
   <property name="mondrian.retroweave" value="false"
       description="Tells mondrian to use retroweaver even if the JDK is later than 1.4"/>
-  <property name="unix.script" value="${basedir}/buildJdk16.sh"/>
+  <property name="unix.script" value="${basedir}/buildOnJdk.sh"/>
   <!--
     Set properties that are needed for the retroweaver tasks
     to run correctly under CruiseControl.
@@ -238,6 +238,16 @@ demo/access/MondrianFoodMart.mdb"/>
     </not>
   </condition>
 
+  <condition property="jdk15.present">
+    <equals arg1="${ant.java.version}" arg2="1.5"/>
+  </condition>
+
+  <condition property="jdk15.not.present">
+    <not>
+      <equals arg1="${ant.java.version}" arg2="1.5"/>
+    </not>
+  </condition>
+
   <condition property="jdk16.present">
     <equals arg1="${ant.java.version}" arg2="1.6"/>
   </condition>
@@ -245,6 +255,16 @@ demo/access/MondrianFoodMart.mdb"/>
   <condition property="jdk16.not.present">
     <not>
       <equals arg1="${ant.java.version}" arg2="1.6"/>
+    </not>
+  </condition>
+
+  <condition property="jdk17.present">
+    <equals arg1="${ant.java.version}" arg2="1.7"/>
+  </condition>
+
+  <condition property="jdk17.not.present">
+    <not>
+      <equals arg1="${ant.java.version}" arg2="1.7"/>
     </not>
   </condition>
 
@@ -461,7 +481,9 @@ parser,
 generate.resources,
 generate.properties,
 def,
-compile.java"/>
+compileJdk15,
+compileJdk16,
+compileJdk17"/>
 
   <target name="generate.resources" depends="define-tasks">
 
@@ -473,7 +495,8 @@ compile.java"/>
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
         includeantruntime="false"
-        source="1.5">
+        source="1.5"
+        target="1.5">
       <include name="mondrian/olap/MondrianException.java" />
       <include name="mondrian/olap/ResultLimitExceededException.java" />
       <include name="mondrian/olap/InvalidHierarchyException.java" />
@@ -502,7 +525,8 @@ compile.java"/>
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
         includeantruntime="false"
-        source="1.5">
+        source="1.5"
+        target="1.5">
       <include name="mondrian/util/PropertyUtil.java" />
     </javac>
 
@@ -511,17 +535,6 @@ compile.java"/>
         fork="no"/>
   </target>
 
-
-  <condition property="jdk16.present">
-    <equals arg1="${ant.java.version}" arg2="1.6"/>
-  </condition>
-
-  <condition property="jdk16.not.present">
-    <not>
-      <equals arg1="${ant.java.version}" arg2="1.6"/>
-    </not>
-  </condition>
-
   <target name="compile.java">
     <javac
         srcdir="${java.dir}"
@@ -529,10 +542,13 @@ compile.java"/>
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
         includeantruntime="false"
-        source="1.5">
+        source="1.5"
+        target="1.5">
       <include name="mondrian/**/*.java"/>
-      <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java" if="jdk16.present"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java" if="jdk15.not.present"/>
       <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java" if="jdk16.not.present"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc4Plus.java" if="jdk16.not.present"/>
+      <exclude name="mondrian/olap4j/FactoryJdbc41Impl.java" if="jdk17.not.present"/>
       <exclude name="mondrian/util/UtilCompatibleJdk16.java" if="jdk16.not.present"/>
     </javac>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
@@ -549,7 +565,7 @@ META-INF/**"/>
     </copy>
   </target>
 
-  <target name="compile.tests" depends="info,compile.java">
+  <target name="compile.tests" depends="info">
   	<pathconvert property="test.classpath.formatted" pathsep="${line.separator} " refid="test.classpath" />
   	<echo message="Test Classpath: ${test.classpath.formatted}" /> 
     <javac
@@ -558,7 +574,8 @@ META-INF/**"/>
         debug="${project.build.debug}"
         classpathref="project.test.classpath"
         includeantruntime="false"
-        source="1.5">
+        source="1.5"
+        target="1.5">
         <include name="mondrian/**/*.java"/>
     </javac>
   </target>
@@ -681,12 +698,12 @@ META-INF/**"/>
 
   <target name="test-list">
     <property name="test.args" value="-l"/>
-    <antcall target="test-only"/>  
+    <antcall target="test-only"/>
   </target>
 
   <target name="test-nobuild">
     <property name="test.args" value=""/>
-    <antcall target="test-only"/>  
+    <antcall target="test-only"/>
   </target>
 
   <target name="test-only"
@@ -973,8 +990,8 @@ doc/deployDoc.sh" />
           prefix="${dist.name}"
           filemode="755"
           includes="
-buildJdk16.bat,
-buildJdk16.sh" />
+buildOnJdk.bat,
+buildOnJdk.sh" />
     </zip>
   </target>
 
@@ -1100,7 +1117,7 @@ buildJdk16.sh" />
   </target>
 
   <target name="binzip"
-      depends="version,checkIsNotJdk16,war,srczip,javadoc,xml_schema,retroweave,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
+      depends="version,checkIsJdk15,war,srczip,javadoc,xml_schema,retroweave,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -1199,19 +1216,39 @@ doc/**/*.xml"
     </tar>
   </target>
 
-  <target name="checkIsNotJdk16" if="jdk16.present">
+  <target name="checkIsJdk15" if="jdk15.not.present">
     <fail message="The 'jar' target (and dependent targets 'release', 'binzip')
 must be run under JDK 1.5." />
   </target>
 
-  <target name="compileJdk16">
-    <exec osfamily="unix" executable="${unix.script}"/>
+  <target name="compileJdk15">
+    <exec osfamily="unix" executable="${unix.script}">
+      <arg line="jdk1.5 compile.java"/>
+    </exec>
     <exec osfamily="windows" dir="." executable="cmd">
-      <arg line="/c .\buildJdk16.bat"/>
+      <arg line="/c .\buildOnJdk.bat jdk1.5 compile.java"/>
     </exec>
   </target>
 
-  <target name="jar" depends="version,compile,compile.tests,compileJdk16">
+  <target name="compileJdk16">
+    <exec osfamily="unix" executable="${unix.script}">
+      <arg line="jdk1.6 compile.java"/>
+    </exec>
+    <exec osfamily="windows" dir="." executable="cmd">
+      <arg line="/c .\buildOnJdk.bat jdk1.6 compile.java"/>
+    </exec>
+  </target>
+
+  <target name="compileJdk17">
+    <exec osfamily="unix" executable="${unix.script}">
+      <arg line="jdk1.7 compile.java"/>
+    </exec>
+    <exec osfamily="windows" dir="." executable="cmd">
+      <arg line="/c .\buildOnJdk.bat jdk1.7 compile.java"/>
+    </exec>
+  </target>
+
+  <target name="jar" depends="version,compile,compile.tests">
     <mkdir dir="${lib.dir}" />
     <jar
         destfile="${jar.file}"
@@ -1290,8 +1327,8 @@ clean against JDK 1.6.">
       <fileset dir="${testclasses.dir}" includes="**/package.html"/>
     </delete>
     <property name="ps" value="${path.separator}"/>
-    <!-- Javadoc gives warnings on JDK 1.5 (due to class FactoryJdbc4Impl, which
-         depends on JDBC 4.0) but succeeds with no warnings on JDK 1.6. The
+    <!-- Javadoc gives warnings on JDK 1.5 and JDK 1.6 (due to classes that
+         depends on JDBC 4.1) but succeeds with no warnings on JDK 1.7. The
          apparent workaround, to use an embedded <fileset> element, caused more
          problems than it solved. -->
     <javadoc
@@ -1314,7 +1351,7 @@ clean against JDK 1.6.">
            scope="constructors,methods"/>
       <tag name="testcase" description="Test-case:"
            scope="constructors,methods,types"/>
-      <link href="http://java.sun.com/javase/6/docs/api/"/>
+      <link href="http://java.sun.com/javase/7/docs/api/"/>
       <link href="http://www.olap4j.org/api/"/>
       <link href="http://junit.sourceforge.net/javadoc"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
@@ -1361,7 +1398,7 @@ diagrams and hyperlinks to source code">
            scope="constructors,methods"/>
       <tag name="testcase" description="Test-case:"
            scope="constructors,methods,types"/>
-      <link href="http://java.sun.com/javase/6/docs/api/"/>
+      <link href="http://java.sun.com/javase/7/docs/api/"/>
       <link href="http://www.olap4j.org/api/"/>
       <link href="http://junit.sourceforge.net/javadoc"/>
       <link href="http://java.sun.com/products/servlet/2.2/javadoc/"/>
@@ -1402,11 +1439,11 @@ diagrams and hyperlinks to source code">
         <linecontains negate="true">
           <contains value="Tag @link: can't find unwrap(Class)"/>
         </linecontains>
-         <!-- ignore: FactoryJdbc4Impl is only built in JDK1.6 -->
+        <!-- ignore: FactoryJdbc4Impl is only built in JDK1.6 -->
         <linecontains negate="true">
           <contains value="FactoryJdbc4Impl.java"/>
         </linecontains>
-         <!-- ignore: UtilCompatibleJdk16 is only built in JDK1.6 -->
+        <!-- ignore: UtilCompatibleJdk16 is only built in JDK1.6 -->
         <linecontains negate="true">
           <contains value="UtilCompatibleJdk16.java"/>
         </linecontains>

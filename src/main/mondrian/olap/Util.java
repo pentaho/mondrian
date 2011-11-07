@@ -101,12 +101,19 @@ public class Util extends XOMUtil {
             "IBM Corporation");
 
     /**
-     * What version of JDBC? Returns 4 in JDK 1.6 and higher, 3 otherwise.
+     * What version of JDBC?
+     * Returns:<ul>
+     *     <li>0x0401 in JDK 1.7 and higher</li>
+     *     <li>0x0400 in JDK 1.6</li>
+     *     <li>0x0300 otherwise</li>
+     * </ul>
      */
     public static final int JdbcVersion =
-        System.getProperty("java.version").compareTo("1.6") >= 0
-            ? 4
-            : 3;
+        System.getProperty("java.version").compareTo("1.7") >= 0
+            ? 0x0401
+            : System.getProperty("java.version").compareTo("1.6") >= 0
+            ? 0x0400
+            : 0x0300;
 
     /**
      * Whether the code base has re-engineered using retroweaver.

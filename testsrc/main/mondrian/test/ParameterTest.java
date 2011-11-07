@@ -1070,9 +1070,9 @@ public class ParameterTest extends FoodMartTestCase {
      * Tests accessing system properties as parameters in a statement.
      */
     public void testSystemPropsGet() {
-        for (Property property
-            : MondrianProperties.instance().getPropertyList())
-        {
+        final List<Property> propertyList =
+            MondrianProperties.instance().getPropertyList();
+        for (Property property : propertyList) {
             assertExprReturns(
                 "ParamRef("
                 + Util.singleQuoteString(property.getPath())
@@ -1104,9 +1104,9 @@ public class ParameterTest extends FoodMartTestCase {
      * Tests setting system properties.
      */
     public void testSystemPropsSet() {
-        for (Property property
-            : MondrianProperties.instance().getPropertyList())
-        {
+        final List<Property> propertyList =
+            MondrianProperties.instance().getPropertyList();
+        for (Property property : propertyList) {
             final String propName = property.getPath();
             assertSetPropertyFails(propName, "System");
         }

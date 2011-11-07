@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,6 +13,7 @@ import mondrian.rolap.RolapConnectionProperties;
 
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * Olap4j driver for Mondrian.
@@ -78,16 +79,8 @@ public class MondrianOlap4jDriver implements Driver {
         this.factory = createFactory();
     }
 
-    protected Factory createFactory() {
-        String factoryClassName;
-        try {
-            Class.forName("java.sql.Wrapper");
-            factoryClassName = "mondrian.olap4j.FactoryJdbc4Impl";
-        } catch (ClassNotFoundException e) {
-            // java.sql.Wrapper is not present. This means we are running JDBC
-            // 3.0 or earlier (probably JDK 1.5). Load the JDBC 3.0 factory
-            factoryClassName = "mondrian.olap4j.FactoryJdbc3Impl";
-        }
+    private static Factory createFactory() {
+        final String factoryClassName = getFactoryClassName();
         try {
             final Class<?> clazz = Class.forName(factoryClassName);
             return (Factory) clazz.newInstance();
@@ -97,6 +90,27 @@ public class MondrianOlap4jDriver implements Driver {
             throw new RuntimeException(e);
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static String getFactoryClassName() {
+        try {
+            // If java.sql.PseudoColumnUsage is present, we are running JDBC 4.1
+            // or later.
+            Class.forName("java.sql.PseudoColumnUsage");
+            return "mondrian.olap4j.FactoryJdbc41Impl";
+        } catch (ClassNotFoundException e) {
+            // java.sql.PseudoColumnUsage is not present. This means we are
+            // running JDBC 4.0 or earlier.
+            try {
+                Class.forName("java.sql.Wrapper");
+                return "mondrian.olap4j.FactoryJdbc4Impl";
+            } catch (ClassNotFoundException e2) {
+                // java.sql.Wrapper is not present. This means we are running
+                // JDBC 3.0 or earlier (probably JDK 1.5). Load the JDBC 3.0
+                // factory.
+                return "mondrian.olap4j.FactoryJdbc3Impl";
+            }
         }
     }
 
@@ -146,6 +160,11 @@ public class MondrianOlap4jDriver implements Driver {
                     null));
         }
         return list.toArray(new DriverPropertyInfo[list.size()]);
+    }
+
+    // JDBC 4.1 support (JDK 1.7 and higher)
+    public Logger getParentLogger() {
+        return Logger.getLogger("");
     }
 
     /**

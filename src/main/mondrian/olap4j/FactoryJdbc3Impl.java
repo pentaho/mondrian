@@ -59,6 +59,12 @@ class FactoryJdbc3Impl implements Factory {
         return new MondrianOlap4jCellSetJdbc3(olap4jStatement);
     }
 
+    public MondrianOlap4jStatement newStatement(
+        MondrianOlap4jConnection olap4jConnection)
+    {
+        return new MondrianOlap4jStatementJdbc3(olap4jConnection);
+    }
+
     public MondrianOlap4jPreparedStatement newPreparedStatement(
         String mdx,
         MondrianOlap4jConnection olap4jConnection)
@@ -76,6 +82,16 @@ class FactoryJdbc3Impl implements Factory {
     }
 
     // Inner classes
+
+    private static class MondrianOlap4jStatementJdbc3
+        extends MondrianOlap4jStatement
+    {
+        public MondrianOlap4jStatementJdbc3(
+            MondrianOlap4jConnection olap4jConnection)
+        {
+            super(olap4jConnection);
+        }
+    }
 
     private static class MondrianOlap4jPreparedStatementJdbc3
         extends MondrianOlap4jPreparedStatement

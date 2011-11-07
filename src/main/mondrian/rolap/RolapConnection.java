@@ -15,7 +15,6 @@ import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
 import mondrian.parser.MdxParserValidator;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.*;
 import mondrian.spi.*;
 import mondrian.spi.impl.JndiDataSourceResolver;
@@ -883,6 +882,10 @@ public class RolapConnection extends ConnectionBase {
             return loginTimeout;
         }
 
+        public java.util.logging.Logger getParentLogger() {
+            return java.util.logging.Logger.getLogger("");
+        }
+
         public <T> T unwrap(Class<T> iface) throws SQLException {
             throw new SQLException("not a wrapper");
         }
@@ -1068,8 +1071,9 @@ public class RolapConnection extends ConnectionBase {
             return dataSource.getLoginTimeout();
         }
 
+        // JDBC 4.0 support (JDK 1.6 and higher)
         public <T> T unwrap(Class<T> iface) throws SQLException {
-            if (Util.JdbcVersion >= 4) {
+            if (Util.JdbcVersion >= 0x0400) {
                 // Do
                 //              return dataSource.unwrap(iface);
                 // via reflection.
@@ -1078,11 +1082,11 @@ public class RolapConnection extends ConnectionBase {
                         DataSource.class.getMethod("unwrap", Class.class);
                     return iface.cast(method.invoke(dataSource, iface));
                 } catch (IllegalAccessException e) {
-                    throw Util.newInternal(e, "While invokin unwrap");
+                    throw Util.newInternal(e, "While invoking unwrap");
                 } catch (InvocationTargetException e) {
-                    throw Util.newInternal(e, "While invokin unwrap");
+                    throw Util.newInternal(e, "While invoking unwrap");
                 } catch (NoSuchMethodException e) {
-                    throw Util.newInternal(e, "While invokin unwrap");
+                    throw Util.newInternal(e, "While invoking unwrap");
                 }
             } else {
                 if (iface.isInstance(dataSource)) {
@@ -1093,8 +1097,9 @@ public class RolapConnection extends ConnectionBase {
             }
         }
 
+        // JDBC 4.0 support (JDK 1.6 and higher)
         public boolean isWrapperFor(Class<?> iface) throws SQLException {
-            if (Util.JdbcVersion >= 4) {
+            if (Util.JdbcVersion >= 0x0400) {
                 // Do
                 //              return dataSource.isWrapperFor(iface);
                 // via reflection.
@@ -1112,6 +1117,30 @@ public class RolapConnection extends ConnectionBase {
                 }
             } else {
                 return iface.isInstance(dataSource);
+            }
+        }
+
+        // JDBC 4.1 support (JDK 1.7 and higher)
+        public java.util.logging.Logger getParentLogger() {
+            if (Util.JdbcVersion >= 0x0401) {
+                // Do
+                //              return dataSource.getParentLogger();
+                // via reflection.
+                try {
+                    Method method =
+                        DataSource.class.getMethod("getParentLogger");
+                    return (java.util.logging.Logger) method.invoke(dataSource);
+                } catch (IllegalAccessException e) {
+                    throw Util.newInternal(e, "While invoking getParentLogger");
+                } catch (InvocationTargetException e) {
+                    throw Util.newInternal(e, "While invoking getParentLogger");
+                } catch (NoSuchMethodException e) {
+                    throw Util.newInternal(e, "While invoking getParentLogger");
+                }
+            } else {
+                // Can't throw SQLFeatureNotSupportedException... it doesn't
+                // exist before JDBC 4.1.
+                throw new UnsupportedOperationException();
             }
         }
     }

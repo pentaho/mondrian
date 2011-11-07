@@ -209,7 +209,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
 
     public OlapStatement createStatement() {
         final MondrianOlap4jStatement statement =
-            new MondrianOlap4jStatement(this);
+            factory.newStatement(this);
         mondrianServer.addStatement(statement);
         return statement;
     }
