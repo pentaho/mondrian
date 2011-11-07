@@ -67,8 +67,7 @@ class RolapResultShepherd {
                                 task.left.cancel(true);
                                 // Now try a graceful shutdown of the Execution
                                 // instance
-                                task.right.cleanStatements(
-                                    Execution.State.CANCELED);
+                                task.right.cleanStatements();
                             }
                         }
                         try {

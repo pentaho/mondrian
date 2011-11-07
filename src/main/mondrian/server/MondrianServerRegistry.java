@@ -118,9 +118,9 @@ public class MondrianServerRegistry {
         String implementationVersion = pakkage.getImplementationVersion();
 
         // Second, try to read VERSION.txt.
-        String version = null;
-        String title = null;
-        String vendor = null;
+        String version = "Unknown Version";
+        String title = "Unknown Database";
+        String vendor = "Unknown Vendor";
         URL resource =
             MondrianServerImpl.class.getClassLoader()
                 .getResource("DefaultRules.xml");
@@ -156,9 +156,6 @@ public class MondrianServerRegistry {
         // Version from jar manifest overrides that from VERSION.txt.
         if (implementationVersion != null) {
             version = implementationVersion;
-        }
-        if (version == null) {
-            version = "Unknown version";
         }
         return new String[] {vendor, title, version};
     }

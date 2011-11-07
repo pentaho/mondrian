@@ -141,22 +141,24 @@ public class Execution {
     }
 
     public void checkCancelOrTimeout() {
-        switch (state) {
+        switch (this.state) {
         case CANCEL_REQUESTED:
-            cleanStatements(State.CANCELED);
+        case CANCELED:
+            cleanStatements();
             throw MondrianResource.instance().QueryCanceled.ex();
         case RUNNING:
             if (timeoutTimeMillis > 0) {
                 long currTime = System.currentTimeMillis();
                 if (currTime > timeoutTimeMillis) {
-                    cleanStatements(State.TIMEOUT);
+                    this.state = State.TIMEOUT;
+                    cleanStatements();
                     throw MondrianResource.instance().QueryTimeout.ex(
                         timeoutIntervalMillis / 1000);
                 }
             }
             break;
         case ERROR:
-            cleanStatements(State.ERROR);
+            cleanStatements();
             throw new MemoryLimitExceededException(outOfMemoryMsg);
         }
     }
@@ -188,8 +190,7 @@ public class Execution {
      *
      * @param state New state
      */
-    public void cleanStatements(State state) {
-        this.state = state;
+    public void cleanStatements() {
         final RolapConnection connection =
             statement.getMondrianConnection();
         final MondrianServer server = connection.getServer();
@@ -230,7 +231,8 @@ public class Execution {
      */
     public void end() {
         queryTiming.done();
-        cleanStatements(State.DONE);
+        this.state = State.DONE;
+        cleanStatements();
     }
 
     public final long getStartTime() {
