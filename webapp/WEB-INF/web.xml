@@ -40,7 +40,11 @@ You must accept the terms of that agreement to use this software.
 
   <servlet>
     <servlet-name>MondrianXmlaServlet</servlet-name>
-    <servlet-class>mondrian.xmla.impl.DefaultXmlaServlet</servlet-class>
+    <servlet-class>mondrian.xmla.impl.DynamicDatasourceXmlaServlet</servlet-class>
+    <init-param>
+      <param-name>DataSourcesConfig</param-name>
+      <param-value>/WEB-INF/datasources.xml</param-value>
+    </init-param>
     <!-- 
       This is an example of how to add a callback to the XML/A servlet.
       It must implement mondrian.xmla.XmlaRequestCallback.
@@ -48,12 +52,6 @@ You must accept the terms of that agreement to use this software.
       <param-name>Callbacks</param-name>
       <param-value>com.example.MyCallbackClass;com.example.SomeOtherCallback</param-value>
     </init-param>
-    -->
-    <!--
-    <init-param>
-	  <param-name>DataSourcesConfig</param-name>
-	  <param-value>/datasources.xml</param-value>
-	</init-param>
     -->
   </servlet>
 
