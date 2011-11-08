@@ -9,8 +9,11 @@
 */
 package mondrian.util;
 
+import mondrian.olap.Util;
+
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.sql.Statement;
 
 /**
  * Interface containing methods which are implemented differently in different
@@ -39,6 +42,13 @@ public interface UtilCompatible {
         Method method, String annotationClassName, T defaultValue);
 
     String generateUuidString();
+
+    /**
+     * Cancels and closes a SQL Statement object. If errors are encountered,
+     * they should be logged under {@link Util}.
+     * @param stmt The statement to close.
+     */
+    void cancelAndCloseStatement(Statement stmt);
 
     /**
      * Compiles a script to yield a Java interface.

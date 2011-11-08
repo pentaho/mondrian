@@ -9,11 +9,18 @@
 */
 package mondrian.util;
 
+import mondrian.olap.Util;
+import mondrian.resource.MondrianResource;
+
+import org.apache.log4j.Logger;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -32,6 +39,8 @@ import java.util.regex.Pattern;
  * @since Feb 5, 2007
  */
 public class UtilCompatibleJdk15 implements UtilCompatible {
+    private final static Logger LOGGER =
+        Logger.getLogger(Util.class);
     /**
      * This generates a BigDecimal with a precision reflecting
      * the precision of the input double.
@@ -89,6 +98,31 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
 
     public <T> void threadLocalRemove(ThreadLocal<T> threadLocal) {
         threadLocal.remove();
+    }
+
+    public void cancelAndCloseStatement(Statement stmt) {
+        try {
+            stmt.cancel();
+        } catch (SQLException e) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    MondrianResource.instance()
+                        .ExecutionStatementCleanupException
+                            .ex(e.getMessage(), e),
+                    e);
+            }
+        }
+        try {
+            stmt.close();
+        } catch (SQLException e) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    MondrianResource.instance()
+                        .ExecutionStatementCleanupException
+                            .ex(e.getMessage(), e),
+                    e);
+            }
+        }
     }
 }
 

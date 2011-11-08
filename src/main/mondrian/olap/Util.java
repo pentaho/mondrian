@@ -37,6 +37,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
@@ -1570,6 +1571,17 @@ public class Util extends XOMUtil {
     {
         return compatible.getAnnotation(
             method, annotationClassName, defaultValue);
+    }
+
+    /**
+     * Closes and cancels a {@link Statement} using the correct methods
+     * available on the current Java runtime.
+     * <p>If errors are encountered while canceling or closing a statement,
+     * the message is logged in {@link Util}.
+     * @param stmt The statement to cancel and close.
+     */
+    public static void cancelAndCloseStatement(Statement stmt) {
+        compatible.cancelAndCloseStatement(stmt);
     }
 
     /**

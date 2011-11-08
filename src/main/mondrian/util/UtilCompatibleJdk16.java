@@ -10,6 +10,12 @@
 package mondrian.util;
 
 import mondrian.olap.Util;
+import mondrian.resource.MondrianResource;
+
+import org.apache.log4j.Logger;
+
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.script.*;
 
@@ -27,6 +33,8 @@ import javax.script.*;
  * @version $Id$
  */
 public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
+    private final static Logger LOGGER =
+        Logger.getLogger(Util.class);
     public <T> T compileScript(
         Class<T> iface,
         String script,
@@ -42,6 +50,35 @@ public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
             throw Util.newError(
                 e,
                 "Error while compiling script to implement " + iface + " SPI");
+        }
+    }
+    @Override
+    public void cancelAndCloseStatement(Statement stmt) {
+        try {
+            if (!stmt.isClosed()) {
+                stmt.cancel();
+            }
+        } catch (SQLException e) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    MondrianResource.instance()
+                        .ExecutionStatementCleanupException
+                            .ex(e.getMessage(), e),
+                    e);
+            }
+        }
+        try {
+            if (!stmt.isClosed()) {
+                stmt.close();
+            }
+        } catch (SQLException e) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    MondrianResource.instance()
+                        .ExecutionStatementCleanupException
+                            .ex(e.getMessage(), e),
+                    e);
+            }
         }
     }
 }
