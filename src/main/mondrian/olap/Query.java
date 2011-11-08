@@ -2087,11 +2087,19 @@ public class Query extends QueryPart {
                     //    Filter(Time.Children AS s, x > y)
                     // the scope of the set 's' is the Filter function.
                     assert call2.getArgCount() == 2;
-                    final Id id = (Id) call2.getArg(1);
-                    createScopedNamedSet(
-                        id.getSegments().get(0).name,
-                        parent,
-                        call2.getArg(0));
+                    if (call2.getArg(1) instanceof Id) {
+                        final Id id = (Id) call2.getArg(1);
+                        createScopedNamedSet(
+                            id.getSegments().get(0).name,
+                            parent,
+                            call2.getArg(0));
+                    } else if (call2.getArg(1) instanceof NamedSetExpr) {
+                        NamedSetExpr set = (NamedSetExpr) call2.getArg(1);
+                        createScopedNamedSet(
+                            set.getNamedSet().getName(),
+                            parent,
+                            call2.getArg(0));
+                    }
                 }
             }
         }
