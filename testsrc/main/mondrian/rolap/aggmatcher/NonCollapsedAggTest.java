@@ -170,6 +170,7 @@ public class NonCollapsedAggTest extends AggTableTestCase {
         final MondrianProperties props = MondrianProperties.instance();
         propSaver.set(props.UseAggregates, true);
         propSaver.set(props.ReadAggregates, true);
+        super.getConnection().getCacheControl(null).flushSchemaCache();
     }
 
     protected String getFileName() {

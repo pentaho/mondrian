@@ -981,6 +981,16 @@ as expected. Defaults to 1000ms.</p>
         <Default>1000</Default>
     </PropertyDefinition>
     <PropertyDefinition>
+        <Name>RolapConnectionShepherdNbThreads</Name>
+        <Path>mondrian.rolap.maxQueryThreads</Path>
+        <Description>
+<p>Maximum number of user threads per Mondrian server instance.
+Defaults to 10.</p>
+        </Description>
+        <Type>int</Type>
+        <Default>10</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
         <Name>IgnoreInvalidMembers</Name>
         <Path>mondrian.rolap.ignoreInvalidMembers</Path>
         <Description>

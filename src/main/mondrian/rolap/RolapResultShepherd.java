@@ -14,6 +14,8 @@ import mondrian.server.Execution;
 import mondrian.util.Pair;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.*;
 
 /**
@@ -30,14 +32,17 @@ import java.util.concurrent.*;
  * @author LBoudreau
  * @version $Id$
  */
-class RolapResultShepherd {
+public class RolapResultShepherd {
 
     /**
      * An executor service used for both the shepherd thread and the
      * Execution objects.
      */
-    private static final ExecutorService executor =
-        Util.getExecutorService("mondrian.rolap.RolapResultShepherd$executor");
+    private final ExecutorService executor =
+        Util.getExecutorService(
+            MondrianProperties.instance()
+                .RolapConnectionShepherdNbThreads.get(),
+            "mondrian.rolap.RolapResultShepherd$executor");
 
     /**
      * List of tasks that should be monitored by the shepherd thread.
@@ -45,40 +50,49 @@ class RolapResultShepherd {
     private static final List<Pair<FutureTask<Result>, Execution>> tasks =
         new CopyOnWriteArrayList<Pair<FutureTask<Result>,Execution>>();
 
-    /*
-     * Fire up the shepherd thread.
-     */
-    static {
-        executor.execute(
-            new Runnable() {
-                private final int delay =
-                    MondrianProperties.instance()
-                        .RolapConnectionShepherdThreadPollingInterval.get();
-                public void run() {
-                    while (true) {
-                        for (Pair<FutureTask<Result>, Execution> task
-                            : tasks)
-                        {
-                            if (task.left.isDone()) {
-                                continue;
+    private final Timer timer =
+        new Timer("mondrian.rolap.RolapResultShepherd#timer", true);
+
+    public RolapResultShepherd() {
+        timer.scheduleAtFixedRate(
+            new TimerTask() {
+            public void run() {
+                for (final Pair<FutureTask<Result>, Execution> task
+                    : tasks)
+                {
+                    if (task.left.isDone()) {
+                        tasks.remove(task);
+                        continue;
+                    }
+                    if (task.right.isCancelOrTimeout()) {
+                        // Remove it from the list so that we know
+                        // it was cleaned once.
+                        tasks.remove(task);
+                        // Cancel the FutureTask for which
+                        // the user thread awaits. The user
+                        // thread will call
+                        // Execution.checkCancelOrTimeout
+                        // later and take care of sending
+                        // an exception on the user thread.
+                        task.left.cancel(true);
+                        // The cleanup operation can be done async.
+                        // Let's not interrupt this task.
+                        executor.submit(
+                            new Runnable() {
+                                public void run() {
+                                    // Now cleanup the statement on
+                                    // this thread.
+                                    task.right.cancelSqlStatements();
                             }
-                            if (task.right.isCancelOrTimeout()) {
-                                // First, free the user thread.
-                                task.left.cancel(true);
-                                // Now try a graceful shutdown of the Execution
-                                // instance
-                                task.right.cleanStatements();
-                            }
-                        }
-                        try {
-                            Thread.sleep(delay);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            return;
-                        }
+                        });
                     }
                 }
-            });
+            }
+        },
+        MondrianProperties.instance()
+            .RolapConnectionShepherdThreadPollingInterval.get(),
+        MondrianProperties.instance()
+            .RolapConnectionShepherdThreadPollingInterval.get());
     }
 
     /**
@@ -99,7 +113,7 @@ class RolapResultShepherd {
      * @return A Result object, as supplied by the Callable passed as a
      * parameter.
      */
-    static Result shepherdExecution(
+    public Result shepherdExecution(
         Execution execution,
         Callable<Result> callable)
     {
@@ -142,9 +156,12 @@ class RolapResultShepherd {
             // Since we got here, this means that the exception was
             // something else. Just wrap/throw.
             throw new MondrianException(e);
-        } finally {
-            tasks.remove(pair);
         }
+    }
+
+    public void shutdown() {
+        this.timer.cancel();
+        this.executor.shutdown();
     }
 }
 

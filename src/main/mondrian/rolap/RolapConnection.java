@@ -613,7 +613,7 @@ public class RolapConnection extends ConnectionBase {
      */
     public Result execute(final Execution execution) {
         return
-            RolapResultShepherd
+            server.getResultShepherd()
                 .shepherdExecution(
                     execution,
                     new Callable<Result>() {
@@ -660,11 +660,11 @@ public class RolapConnection extends ConnectionBase {
                 RolapUtil.MDX_LOGGER.debug(currId + ": " + Util.unparse(query));
             }
 
-            statement.start(execution);
             final Locus locus = new Locus(execution, null, "Loading cells");
             Locus.push(locus);
             Result result;
             try {
+                statement.start(execution);
                 result = new RolapResult(execution, true);
                 int i = 0;
                 for (QueryAxis axis : query.getAxes()) {
