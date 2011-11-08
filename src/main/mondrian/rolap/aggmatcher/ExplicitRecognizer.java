@@ -364,8 +364,8 @@ class ExplicitRecognizer extends Recognizer {
                 // Fail if the level is non-collapsed but its members
                 // are not unique.
                 if (!aggLevels.get(
-                    levelMatches.indexOf(pair)).isCollapsed()
-                    && !pair.left.isUnique())
+                        levelMatches.indexOf(pair)).isCollapsed()
+                            && !pair.left.isUnique())
                 {
                     msgRecorder.reportError(
                         "The aggregate table "
