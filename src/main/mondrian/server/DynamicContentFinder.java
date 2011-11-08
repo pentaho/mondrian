@@ -19,7 +19,8 @@ import org.apache.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Implementation of
@@ -45,12 +46,7 @@ public class DynamicContentFinder
     private static final Logger LOGGER =
         Logger.getLogger(MondrianServer.class);
 
-    private final static ScheduledExecutorService executorService =
-        Util.getScheduledExecutorService(
-            1,
-            "mondrian.server.DynamicContentFinder$executorService");
-
-    private final ScheduledFuture<?> scheduledTask;
+    private final Timer timer;
 
     /**
      * Creates a DynamicContentFinder.
@@ -61,51 +57,45 @@ public class DynamicContentFinder
     {
         super(dataSourcesConfigUrl);
         reloadDataSources();
-        scheduledTask = executorService.scheduleWithFixedDelay(
-            new Runnable() {
+        timer = new Timer(
+            "mondrian.server.DynamicContentFinder$timer",
+            true);
+        timer.scheduleAtFixedRate(
+            new TimerTask() {
                 public void run() {
-                    Object result;
-                    try {
-                        result = reloadDataSources();
-                    } catch (Throwable e) {
-                        result = e;
-                    }
-                    Util.discard(result); // for debug
+                    reloadDataSources();
                 }
             },
-            0,
             MondrianProperties.instance().XmlaSchemaRefreshInterval.get(),
-            TimeUnit.MILLISECONDS);
+            MondrianProperties.instance().XmlaSchemaRefreshInterval.get());
     }
 
     /**
      * Cleans up all background updating jobs.
      */
     public void shutdown() {
-        scheduledTask.cancel(true);
+        super.shutdown();
+        timer.cancel();
     }
 
     /**
      * Checks for updates to datasources content, flushes obsolete catalogs.
-     *
-     * @return Whether anything changed
      */
-    public synchronized boolean reloadDataSources() {
+    public synchronized void reloadDataSources() {
         try {
             String dataSourcesConfigString = getContent();
             if (!hasDataSourcesContentChanged(dataSourcesConfigString)) {
-                return false;
+                return;
             }
             DataSourcesConfig.DataSources newDataSources =
                 XmlaSupport.parseDataSources(
                     dataSourcesConfigString, LOGGER);
             if (newDataSources == null) {
-                return false;
+                return;
             }
             flushObsoleteCatalogs(newDataSources);
             this.dataSources = newDataSources;
             this.lastDataSourcesConfigString = dataSourcesConfigString;
-            return true;
         } catch (Exception e) {
             throw Util.newError(
                 e,
