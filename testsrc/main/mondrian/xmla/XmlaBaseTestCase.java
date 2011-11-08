@@ -23,10 +23,9 @@ import org.custommonkey.xmlunit.XMLAssert;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
+import java.io.*;
 import java.util.*;
+
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -71,8 +70,27 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
      * Cache servlet instances between test invocations. Prevents creation
      * of many spurious MondrianServer instances.
      */
-    private static final HashMap<List<String>,WeakReference<Servlet>>
-        SERVLET_CACHE = new HashMap<List<String>, WeakReference<Servlet>>();
+    private final HashMap<List<String>, Servlet>
+        SERVLET_CACHE = new HashMap<List<String>, Servlet>();
+
+    /**
+     * Cache servlet instances between test invocations. Prevents creation
+     * of many spurious MondrianServer instances.
+     */
+    private final HashMap<List<String>, MondrianServer>
+        SERVER_CACHE = new HashMap<List<String>, MondrianServer>();
+
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        for (MondrianServer server : SERVER_CACHE.values()) {
+            server.shutdown();
+        }
+        SERVER_CACHE.clear();
+        for (Servlet servlet : SERVLET_CACHE.values()) {
+            servlet.destroy();
+        }
+        SERVLET_CACHE.clear();
+    }
 
     protected String generateExpectedString(Properties props)
         throws Exception
@@ -345,8 +363,10 @@ System.out.println("Got CONTINUE");
                 getCatalogNameUrls(testContext);
             servlet =
                 XmlaSupport.makeServlet(
-                    connectString, catalogNameUrls,
-                    getServletCallbackClass().getName());
+                    connectString,
+                    catalogNameUrls,
+                    getServletCallbackClass().getName(),
+                    SERVLET_CACHE);
         }
         return servlet;
     }
@@ -574,7 +594,7 @@ System.out.println("Got CONTINUE");
         // do XMLA
         byte[] bytes =
             XmlaSupport.processXmla(
-                xmlaReqDoc, connectString, catalogNameUrls, role);
+                xmlaReqDoc, connectString, catalogNameUrls, role, SERVER_CACHE);
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
                 if (DEBUG) {
@@ -632,7 +652,7 @@ System.out.println("Got CONTINUE");
         // do XMLA
         byte[] bytes =
             XmlaSupport.processXmla(
-                xmlaReqDoc, connectString, catalogNameUrls, role);
+                xmlaReqDoc, connectString, catalogNameUrls, role, SERVER_CACHE);
         if (XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
                 if (DEBUG) {
