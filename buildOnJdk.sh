@@ -22,6 +22,10 @@ if [ ! -d "$JAVA_HOME" ]; then
 fi
 
 export PATH=$JAVA_HOME/bin:$PATH
-ant -Dskip.download=true "$@"
+
+echo Using JAVA_HOME: $JAVA_HOME
+echo Using Ant arguments: $@
+
+ant "$@"
 
 # End buildOnJdk.sh

@@ -239,32 +239,32 @@ demo/access/MondrianFoodMart.mdb"/>
   </condition>
 
   <condition property="jdk15.present">
-    <equals arg1="${ant.java.version}" arg2="1.5"/>
+    <contains string="${java.version}" substring="1.5." />
   </condition>
 
   <condition property="jdk15.not.present">
     <not>
-      <equals arg1="${ant.java.version}" arg2="1.5"/>
+      <contains string="${java.version}" substring="1.5." />
     </not>
   </condition>
 
   <condition property="jdk16.present">
-    <equals arg1="${ant.java.version}" arg2="1.6"/>
+    <contains string="${java.version}" substring="1.6." />
   </condition>
 
   <condition property="jdk16.not.present">
     <not>
-      <equals arg1="${ant.java.version}" arg2="1.6"/>
+      <contains string="${java.version}" substring="1.6." />
     </not>
   </condition>
 
   <condition property="jdk17.present">
-    <equals arg1="${ant.java.version}" arg2="1.7"/>
+    <contains string="${java.version}" substring="1.7." />
   </condition>
 
   <condition property="jdk17.not.present">
     <not>
-      <equals arg1="${ant.java.version}" arg2="1.7"/>
+      <contains string="${java.version}" substring="1.7." />
     </not>
   </condition>
 
@@ -536,14 +536,13 @@ compileJdk17"/>
   </target>
 
   <target name="compile.java">
+    <echo>Compiling on JVM Version: ${java.runtime.version}</echo>
     <javac
         srcdir="${java.dir}"
         destdir="${classes.dir}"
         debug="${project.build.debug}"
         classpathref="project.build.classpath"
-        includeantruntime="false"
-        source="1.5"
-        target="1.5">
+        includeantruntime="false">
       <include name="mondrian/**/*.java"/>
       <exclude name="mondrian/olap4j/FactoryJdbc3Impl.java" if="jdk15.not.present"/>
       <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java" if="jdk16.not.present"/>
@@ -1223,28 +1222,28 @@ must be run under JDK 1.5." />
 
   <target name="compileJdk15">
     <exec osfamily="unix" executable="${unix.script}">
-      <arg line="jdk1.5 compile.java"/>
+      <arg line="jdk1.5 -Dskip.download=true compile.java"/>
     </exec>
     <exec osfamily="windows" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.5 compile.java"/>
+      <arg line="/c .\buildOnJdk.bat jdk1.5 -Dskip.download=true compile.java"/>
     </exec>
   </target>
 
   <target name="compileJdk16">
     <exec osfamily="unix" executable="${unix.script}">
-      <arg line="jdk1.6 compile.java"/>
+      <arg line="jdk1.6 -Dskip.download=true compile.java"/>
     </exec>
     <exec osfamily="windows" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.6 compile.java"/>
+      <arg line="/c .\buildOnJdk.bat jdk1.6 -Dskip.download=true compile.java"/>
     </exec>
   </target>
 
   <target name="compileJdk17">
     <exec osfamily="unix" executable="${unix.script}">
-      <arg line="jdk1.7 compile.java"/>
+      <arg line="jdk1.7 -Dskip.download=true compile.java"/>
     </exec>
     <exec osfamily="windows" dir="." executable="cmd">
-      <arg line="/c .\buildOnJdk.bat jdk1.7 compile.java"/>
+      <arg line="/c .\buildOnJdk.bat jdk1.7 -Dskip.download=true compile.java"/>
     </exec>
   </target>
 
