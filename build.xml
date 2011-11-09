@@ -1442,6 +1442,14 @@ diagrams and hyperlinks to source code">
         <linecontains negate="true">
           <contains value="FactoryJdbc4Impl.java"/>
         </linecontains>
+        <!-- ignore: FactoryJdbc41Impl is only built in JDK1.7 -->
+        <linecontains negate="true">
+          <contains value="FactoryJdbc41Impl.java"/>
+        </linecontains>
+        <!-- ignore: FactoryJdbc4Plus is only built in JDK1.6 -->
+        <linecontains negate="true">
+          <contains value="FactoryJdbc4Plus.java"/>
+        </linecontains>
         <!-- ignore: UtilCompatibleJdk16 is only built in JDK1.6 -->
         <linecontains negate="true">
           <contains value="UtilCompatibleJdk16.java"/>
