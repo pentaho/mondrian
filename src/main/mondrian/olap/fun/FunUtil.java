@@ -813,7 +813,7 @@ public class FunUtil extends Util {
         List<Member> memberList,
         boolean post)
     {
-        if (memberList.isEmpty()) {
+        if (memberList.size() <= 1) {
             return;
         }
         if (memberList.get(0).getDimension().isHighCardinality()) {

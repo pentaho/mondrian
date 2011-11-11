@@ -173,6 +173,26 @@ public class TupleListTest extends FoodMartTestCase {
         checkProject(fm);
     }
 
+    /**
+     * This is a test for MONDRIAN-1040. The DelegatingTupleList.slice()
+     * method was mixing up the column and index variables.
+     */
+    public void testDelegatingTupleListSlice() {
+        assertQueryReturns(
+            "select {[Measures].[Store Sales]} ON COLUMNS, Hierarchize(Except({[Customers].[All Customers], [Customers].[All Customers].Children}, {[Customers].[All Customers]})) ON ROWS from [Sales] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[Canada]}\n"
+            + "{[Customers].[Mexico]}\n"
+            + "{[Customers].[USA]}\n"
+            + "Row #0: \n"
+            + "Row #1: \n"
+            + "Row #2: 565,238.13\n");
+    }
+
     private void checkProject(TupleList fm) {
         assertEquals(2, fm.size());
         assertEquals(2, fm.getArity());
