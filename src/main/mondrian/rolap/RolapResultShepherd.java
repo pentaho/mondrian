@@ -134,6 +134,11 @@ public class RolapResultShepherd {
             if (e instanceof InterruptedException) {
                 Thread.currentThread().interrupt();
             }
+            Throwable node = e;
+            if (e instanceof ExecutionException) {
+                ExecutionException executionException = (ExecutionException) e;
+                node = executionException.getCause();
+            }
             // Let the Execution throw whatever it wants to, this way the
             // API contract is respected. The program should in most cases
             // stop here as most exceptions will originate from the Execution
@@ -143,19 +148,22 @@ public class RolapResultShepherd {
             // which might be wrapped by an ExecutionException. In order to
             // respect the API contract, we must throw the cause, not the
             // wrapper.
-            if (e instanceof ResourceLimitExceededException) {
-                throw (ResourceLimitExceededException) e;
+            final ResourceLimitExceededException t =
+                Util.getMatchingCause(
+                    node, ResourceLimitExceededException.class);
+            if (t != null) {
+                throw t;
             }
-            Throwable node = e;
-            while (node.getCause() != null && node != node.getCause()) {
-                node = node.getCause();
-                if (node instanceof ResourceLimitExceededException) {
-                    throw (ResourceLimitExceededException) node;
-                }
-            }
+
             // Since we got here, this means that the exception was
             // something else. Just wrap/throw.
-            throw new MondrianException(e);
+            if (node instanceof RuntimeException) {
+                throw (RuntimeException) node;
+            } else if (node instanceof Error) {
+                throw (Error) node;
+            } else {
+                throw new MondrianException(node);
+            }
         }
     }
 

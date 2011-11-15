@@ -2195,6 +2195,29 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * If one of the causes of an exception is of a particular class, returns
+     * that cause. Otherwise returns null.
+     *
+     * @param e Exception
+     * @param clazz Desired class
+     * @param <T> Class
+     * @return Cause of given class, or null
+     */
+    public static <T extends Throwable>
+    T getMatchingCause(Throwable e, Class<T> clazz) {
+        for (;;) {
+            if (clazz.isInstance(e)) {
+                return clazz.cast(e);
+            }
+            final Throwable cause = e.getCause();
+            if (cause == null || cause == e) {
+                return null;
+            }
+            e = cause;
+        }
+    }
+
+    /**
      * Converts an expression to a string.
      */
     public static String unparse(Exp exp) {
