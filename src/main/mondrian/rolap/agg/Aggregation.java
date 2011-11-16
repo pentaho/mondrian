@@ -366,6 +366,13 @@ public class Aggregation {
                 newPredicates[j] = new LiteralStarPredicate(columns[j], true);
             }
         }
+
+        // Now do simple structural optimizations, e.g. convert a list predicate
+        // with one element to a value predicate.
+        for (int i = 0; i < newPredicates.length; i++) {
+            newPredicates[i] = StarPredicates.optimize(newPredicates[i]);
+        }
+
         return newPredicates;
     }
 
@@ -774,6 +781,13 @@ public class Aggregation {
         private final StarColumnPredicate predicate;
 
         /**
+         * Whether predicate is always true.
+         */
+        private final boolean predicateAlwaysTrue;
+
+        private final Set<Object> predicateValues;
+
+        /**
          * Map holding the position of each key value.
          *
          * <p>TODO: Hold keys in a sorted array, then deduce ordinal by doing
@@ -800,7 +814,36 @@ public class Aggregation {
          */
         Axis(StarColumnPredicate predicate) {
             this.predicate = predicate;
-            assert predicate != null;
+            this.predicateAlwaysTrue =
+                predicate instanceof LiteralStarPredicate
+                && ((LiteralStarPredicate) predicate).getValue();
+            this.predicateValues = predicateValueSet(predicate);
+        }
+
+        private static Set<Object> predicateValueSet(
+            StarColumnPredicate predicate)
+        {
+            if (!(predicate instanceof ListColumnPredicate)) {
+                return null;
+            }
+            ListColumnPredicate listColumnPredicate =
+                (ListColumnPredicate) predicate;
+            final List<StarColumnPredicate> predicates =
+                listColumnPredicate.getPredicates();
+            if (predicates.size() < 10) {
+                return null;
+            }
+            final HashSet<Object> set = new HashSet<Object>();
+            for (StarColumnPredicate subPredicate : predicates) {
+                if (subPredicate instanceof ValueColumnPredicate) {
+                    ValueColumnPredicate valueColumnPredicate =
+                        (ValueColumnPredicate) subPredicate;
+                    valueColumnPredicate.values(set);
+                } else {
+                    return null;
+                }
+            }
+            return set;
         }
 
         /**
@@ -891,8 +934,12 @@ public class Aggregation {
          * @param key Key
          * @return Whether this axis would contain <code>key</code>
          */
-        boolean contains(Object key) {
-            return predicate.evaluate(key);
+        public final boolean wouldContain(Object key) {
+            return // predicate.evaluate(key);
+                predicateAlwaysTrue
+                   || (predicateValues != null
+                ? predicateValues.contains(key)
+                : predicate.evaluate(key));
         }
 
         /**

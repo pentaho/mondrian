@@ -62,6 +62,10 @@ public class PerformanceTest extends FoodMartTestCase {
         // jdk1.6 marmalade main 14036 15,845 15,180 ms
         // jdk1.6 marmalade main 14037   TODO ms
         // jdk1.6 marmalade main 14052 14,284 ms first, 1419 +- 12 ms
+        // jdk1.7 marmite   main 14770 3,527 ms first, 1325 +- 18 ms
+        // jdk1.7 marmite   main 14771 3,319 ms first, 1305 +- 26 ms
+        // jdk1.7 marmite   main 14772 3,721 ms first, 1321 +- 28 ms
+        // jdk1.7 marmite   main 14773 3,421 ms first, 1298 +- 11 ms
         final Result result = testContext.executeQuery(
             "select NON EMPTY {[Store Name sans All].Members} ON COLUMNS,\n"
             + "  NON EMPTY Hierarchize(Union({[ACC].[All]}, [ACC].[All].Children)) ON ROWS\n"
@@ -96,7 +100,11 @@ public class PerformanceTest extends FoodMartTestCase {
         // jdk1.6 marmalade 3.2 14036  14,799 14,986 ms
         // jdk1.6 marmalade main 14036 20,839 20,331 ms
         // jdk1.6 marmalade main 14037   TODO ms
-        // jdk1.6 marmalade main 14052 9664 +- 49
+        // jdk1.6 marmalade main 14052  9,664 +- 49
+        // jdk1.7 marmite   main 14770 10,228 +- 60 ms
+        // jdk1.7 marmite   main 14771  9,742 +- 111 ms
+        // jdk1.7 marmite   main 14772 10,512 +- 38 ms
+        // jdk1.7 marmite   main 14773  9,544 +- 118 ms
         final Result result2 = testContext.executeQuery(
             "select NON EMPTY {[Store Name sans All].Members} ON COLUMNS,\n"
             + "  NON EMPTY Hierarchize(Union({[ACC].[All]}, [ACC].[All].Children))\n"
@@ -161,6 +169,9 @@ public class PerformanceTest extends FoodMartTestCase {
             // jdk1.6 marmalade main 14036  4,471 3,589 ms
             // jdk1.6 marmalade main 14037  4,400 ms
             // jdk1.6 marmalade main 14052  5,280 ms
+            // jdk1.7 marmite   main 14770  1,189 ms first, 27 +- 4 ms
+            // jdk1.7 marmite   main 14771  1,369 ms first, 24 +- 2 ms
+            // jdk1.7 marmite   main 14773  1,003 ms first, 23 +- 1 ms
             new Statistician("testVeryLargeExplicitSet: Execute axis"),
 
             // Execute:
@@ -177,6 +188,10 @@ public class PerformanceTest extends FoodMartTestCase {
             // jdk1.6 marmalade main 14037     800 400 ms
             // jdk1.6 marmalade 3.2 14036      313 406 ms
             // jdk1.6 marmalade main 14052     577 ms
+            //
+            // jdk1.7 marmite   main 14770 520 ms first, 88 +- 22 ms
+            // jdk1.7 marmite   main 14771 555 ms first, 84 +- 20 ms
+            // jdk1.7 marmite   main 14773 654 ms first, 76 +- 19 ms
             new Statistician("testVeryLargeExplicitSet: Execute"),
 
             // Param query:
@@ -193,6 +208,10 @@ public class PerformanceTest extends FoodMartTestCase {
             // jdk1.6 marmalade main 14036  86 105 95 ms
             // jdk1.6 marmalade main 14037 106 ms
             // jdk1.6 marmalade main 14052  21 ms
+            //
+            // jdk1.7 marmite   main 14770 46 ms first, 12 +- 2 ms
+            // jdk1.7 marmite   main 14771 26 ms first, 10 +- 2 ms
+            // jdk1.7 marmite   main 14773 43 ms first, 10 +- 2 ms
             new Statistician("testVeryLargeExplicitSet: Param query"),
         };
         for (int i = 0; i < 10; i++) {
@@ -283,6 +302,9 @@ public class PerformanceTest extends FoodMartTestCase {
         // jdk1.6 marmalade main 14036            2,185 3,208 1,431 ms
         // jdk1.6 marmalade main 14037            1,801 ms
         // jdk1.6 marmalade main 14052              396 +- 28 ms
+        // jdk1.7 marmite   main 14770 478 ms first, 150 +- 8 ms
+        // jdk1.7 marmite   main 14771 513 ms first, 152 +- 14 ms
+        // jdk1.7 marmite   main 14773 523 ms first, 150 +- 5 ms
         final Statistician statistician =
             new Statistician("testBugMondrian639");
         for (int i = 0; i < 20; i++) {
@@ -344,6 +366,8 @@ public class PerformanceTest extends FoodMartTestCase {
         // jdk1.6 marmalade main 14036 26,430 27,045 25,497 ms
         // jdk1.6 marmalade main 14037 26,893 ms
         // jdk1.6 marmalade main 14052 29,870 ms
+        // jdk1.7 marmite   main 14770  2,877 ms
+        // jdk1.7 marmite   main 14773  3,353 ms
         printDuration("testBigResultsWithBigSchemaPerforms", start);
     }
 
@@ -378,6 +402,7 @@ public class PerformanceTest extends FoodMartTestCase {
      * <li>mondrian     14036 marmalade oracle jdk1.6 598 552
      * <li>mondrian     14037 marmalade oracle jdk1.6 626 596
      * <li>mondrian     14052 marmalade oracle jdk1.6 454
+     * <li>mondrian     14770 marmite   mysql  jdk1.7 &gt; 30 minutes
      * </ul>
      */
     public void testInMemoryCalc() {
@@ -461,6 +486,9 @@ public class PerformanceTest extends FoodMartTestCase {
         // jdk1.6 marmalade main 14036  4,427 3,894 ms
         // jdk1.6 marmalade main 14037   TODO ms
         // jdk1.6 marmalade main 14052    800 ms
+        // jdk1.7 marmite   main 14770   2159 ms (standalone)
+        // jdk1.7 marmite   main 14771    266 ms (as part of suite)
+        // jdk1.7 marmite   main 14773    181 ms
         long start = System.currentTimeMillis();
         executeQuery(
             "WITH SET [filtered] AS "
@@ -486,6 +514,9 @@ public class PerformanceTest extends FoodMartTestCase {
         // various of the following HierarchyGrants.
         // The query runs in about 2s with no access-controlled hierarchies,
         // then appromixately doubles as each is added (48s with 5 hierarchies).
+        //
+        // jdk1.7 marmite   main 14770   30,857 ms
+        // jdk1.7 marmite   main 14771   29,083 ms
         final TestContext testContext =
             TestContext.instance().create(
                 null, null, null, null, null,
