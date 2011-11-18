@@ -57,7 +57,7 @@ public class DynamicContentFinder
     {
         super(dataSourcesConfigUrl);
         reloadDataSources();
-        timer = new Timer(
+        timer = Util.newTimer(
             "mondrian.server.DynamicContentFinder$timer",
             true);
         timer.scheduleAtFixedRate(

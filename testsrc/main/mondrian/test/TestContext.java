@@ -386,7 +386,7 @@ public class TestContext {
                 .getConnection();
         connection.close();
         String schema = SnoopingSchemaProcessor.THREAD_RESULT.get();
-        SnoopingSchemaProcessor.THREAD_RESULT.remove();
+        Util.threadLocalRemove(SnoopingSchemaProcessor.THREAD_RESULT);
         return schema;
     }
 

@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.*;
 
 import javax.script.*;
 
@@ -80,6 +81,18 @@ public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
                     e);
             }
         }
+    }
+
+    @Override
+    public <T> Set<T> newIdentityHashSet() {
+        return Collections.newSetFromMap(
+            new IdentityHashMap<T, Boolean>());
+    }
+
+    public <T extends Comparable<T>> int binarySearch(
+        T[] ts, int start, int end, T t)
+    {
+        return Arrays.binarySearch(ts, start, end, t);
     }
 }
 

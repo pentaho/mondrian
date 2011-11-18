@@ -14,7 +14,6 @@ import mondrian.rolap.RolapUtil;
 import mondrian.server.monitor.*;
 import mondrian.util.Pair;
 
-import java.lang.management.*;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -63,7 +62,7 @@ class MonitorImpl
 {
     private final Handler handler = new Handler();
 
-    protected static final MemoryPoolMXBean TENURED_POOL = findTenuredGenPool();
+    protected static final Util.MemoryInfo MEMORY_INFO = Util.getMemoryInfo();
 
     private static final Actor ACTOR = new Actor();
 
@@ -86,15 +85,6 @@ class MonitorImpl
      * Creates a Monitor.
      */
     public MonitorImpl() {
-    }
-
-    private static MemoryPoolMXBean findTenuredGenPool() {
-        for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
-            if (pool.getType() == MemoryType.HEAP) {
-                return pool;
-            }
-        }
-        throw new AssertionError("Could not find tenured space");
     }
 
     // Commands
@@ -207,7 +197,7 @@ class MonitorImpl
         private int cellCoordinateCount; // TODO: populate
 
         public ServerInfo fix() {
-            MemoryUsage memoryUsage = TENURED_POOL.getUsage();
+            Util.MemoryInfo.Usage memoryUsage = MEMORY_INFO.get();
             return new ServerInfo(
                 aggConn.startCount,
                 aggConn.endCount,

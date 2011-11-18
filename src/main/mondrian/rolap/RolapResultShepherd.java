@@ -51,7 +51,7 @@ public class RolapResultShepherd {
         new CopyOnWriteArrayList<Pair<FutureTask<Result>,Execution>>();
 
     private final Timer timer =
-        new Timer("mondrian.rolap.RolapResultShepherd#timer", true);
+        Util.newTimer("mondrian.rolap.RolapResultShepherd#timer", true);
 
     public RolapResultShepherd() {
         timer.scheduleAtFixedRate(
