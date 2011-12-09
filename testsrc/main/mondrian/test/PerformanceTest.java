@@ -345,7 +345,14 @@ public class PerformanceTest extends FoodMartTestCase {
         TestContext testContext =
             TestContext.instance().createSubstitutingCube(
                 "Sales",
-                extraGenders(1000),
+                TestContext.repeatString(
+                    1000,
+                    "<Dimension name=\"Gender%d \" foreignKey=\"customer_id\">"
+                    + "  <Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">"
+                    + "    <Table name=\"customer\"/>"
+                    + "    <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>"
+                    + "  </Hierarchy>"
+                    + "</Dimension>"),
                 null);
         String mdx =
             "with "
@@ -369,21 +376,6 @@ public class PerformanceTest extends FoodMartTestCase {
         // jdk1.7 marmite   main 14770  2,877 ms
         // jdk1.7 marmite   main 14773  3,353 ms
         printDuration("testBigResultsWithBigSchemaPerforms", start);
-    }
-
-    private String extraGenders(final int numGenders) {
-        final StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < numGenders;i++) {
-            builder.append(
-                String.format(
-                    "<Dimension name=\"Gender%d \" foreignKey=\"customer_id\">"
-                    + "<Hierarchy hasAll=\"true\" allMemberName=\"All Gender\" primaryKey=\"customer_id\">"
-                    + "      <Table name=\"customer\"/>"
-                    + "      <Level name=\"Gender\" column=\"gender\" uniqueMembers=\"true\"/>"
-                    + "    </Hierarchy>"
-                    + "</Dimension>", i));
-        }
-        return builder.toString();
     }
 
     /**

@@ -4283,5 +4283,41 @@ public class SchemaTest extends FoodMartTestCase {
             "select {[Product].[Product Family].Members} on rows, {[Measures].[Unit Sales]} on columns from [Foo]",
             "Too many errors, '1', while loading/reloading aggregates.");
     }
+
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1047">MONDRIAN-1047,
+     * "IllegalArgumentException when cube has closure tables and many
+     * levels"</a>.
+     */
+    public void testBugMondrian1047() {
+        // Test case only works under MySQL, due to how columns are quoted.
+        switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case MYSQL:
+            break;
+        default:
+            return;
+        }
+        TestContext testContext =
+            TestContext.instance().createSubstitutingCube(
+                "HR",
+                TestContext.repeatString(
+                    100,
+                    "<Dimension name='Position %1$d' foreignKey='employee_id'>\n"
+                    + "  <Hierarchy hasAll='true' allMemberName='All Position' primaryKey='employee_id'>\n"
+                    + "    <Table name='employee'/>\n"
+                    + "    <Level name='Position Title' uniqueMembers='false' ordinalColumn='position_id'>\n"
+                    + "      <KeyExpression><SQL dialect='generic'>`position_title` + %1$d</SQL></KeyExpression>\n"
+                    + "    </Level>\n"
+                    + "  </Hierarchy>\n"
+                    + "</Dimension>"),
+                null);
+        testContext.assertQueryReturns(
+            "select from [HR]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "$39,431.67");
+    }
 }
+
 // End SchemaTest.java

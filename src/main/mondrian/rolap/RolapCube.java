@@ -150,10 +150,6 @@ public class RolapCube extends CubeBase {
             if (! isCache) {
                 star.setCacheAggregations(isCache);
             }
-            closureColumnBitKey =
-                BitKey.Factory.makeBitKey(star.getColumnCount());
-        } else {
-            closureColumnBitKey = null;
         }
 
         if (getLogger().isDebugEnabled()) {
@@ -208,6 +204,15 @@ public class RolapCube extends CubeBase {
             // to keep the RolapStar in sync with the realiasing
             // within the RolapCubeHierarchy objects.
             registerDimension(dimension);
+        }
+
+        // Initialize closure bit key only when we know how many columns are in
+        // the star.
+        if (! isVirtual()) {
+            closureColumnBitKey =
+                BitKey.Factory.makeBitKey(star.getColumnCount());
+        } else {
+            closureColumnBitKey = null;
         }
 
         schema.addCube(this);

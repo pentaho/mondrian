@@ -1979,6 +1979,25 @@ public class TestContext {
         return hierarchyName(dimension, hierarchy) + ".[" + level + "]";
     }
 
+    /**
+     * Returns count copies of a string. Format strings within string are
+     * substituted, per {@link String#format}.
+     *
+     * @param count Number of copies
+     * @param format String template
+     * @return Multiple copies of a string
+     */
+    public static String repeatString(
+        final int count,
+        String format)
+    {
+        final Formatter formatter = new Formatter();
+        for (int i = 0; i < count; i++) {
+            formatter.format(format, i);
+        }
+        return formatter.toString();
+    }
+
     //~ Inner classes ----------------------------------------------------------
 
     public static class SnoopingSchemaProcessor
