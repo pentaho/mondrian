@@ -18,6 +18,7 @@ import mondrian.olap.DimensionType;
 import mondrian.olap.LevelType;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
+import mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
 import mondrian.mdx.*;
@@ -1283,6 +1284,16 @@ public class RolapHierarchy extends HierarchyBase {
 
         @Override
         public RolapMember substitute(final RolapMember member) {
+            if (member != null
+                && member instanceof MultiCardinalityDefaultMember
+                && hierarchyAccess.hasInaccessibleDescendants(
+                    member.getParentMember()))
+            {
+                return new LimitedRollupMember(
+                    (RolapCubeMember)
+                        ((MultiCardinalityDefaultMember)member)
+                            .member.getParentMember(), exp);
+            }
             if (member != null
                 && (hierarchyAccess.getAccess(member) == Access.CUSTOM
                 || hierarchyAccess.hasInaccessibleDescendants(member)))
