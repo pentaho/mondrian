@@ -260,7 +260,26 @@ class RestrictedMemberReader extends DelegatingMemberReader {
                 return defaultMember;
             }
         }
-        return getRootMembers().get(0);
+        final List<RolapMember> rootMembers = getRootMembers();
+        if (rootMembers.size() == 1) {
+            return rootMembers.get(0);
+        } else {
+            return new MultiCardinalityDefaultMember(rootMembers.get(0));
+        }
+    }
+
+    /**
+     * This is a special subclass of {@link DelegatingRolapMember}.
+     * It is needed because {@link Evaluator} doesn't support multi cardinality
+     * default members. RolapHierarchy.LimitedRollupSubstitutingMemberReader
+     * .substitute() looks for this class and substitutes the
+     * <p>FIXME: If/when we refactor evaluator to support
+     * multi cardinality default members, we can remove this.
+     */
+    static class MultiCardinalityDefaultMember extends DelegatingRolapMember {
+        protected MultiCardinalityDefaultMember(RolapMember member) {
+            super(member);
+        }
     }
 
     public RolapMember getMemberParent(RolapMember member) {

@@ -2193,6 +2193,204 @@ public class AccessControlTest extends FoodMartTestCase {
             assertTrue(foundMember);
         }
     }
+
+    /**
+     * This is a test for MONDRIAN-1030. When the top level of a hierarchy
+     * is not accessible and a partial rollup policy is used, the results would
+     * be returned as those of the first member of those accessible only.
+     *
+     * <p>ie: If a union of roles give access to two two sibling root members
+     * and the level to which they belong is not included in a query, the
+     * returned cell data would be that of the first sibling and would exclude
+     * those of the second.
+     *
+     * <p>This is because the RolapEvaluator cannot represent default members
+     * as multiple members (only a single member is the default member) and
+     * because the default member is not the 'all member', it adds a constrain
+     * to the SQL for the first member only.
+     *
+     * <p>Currently, Mondrian disguises the root member in the evaluator as a
+     * RestrictedMemberReader.MultiCardinalityDefaultMember. Later,
+     * RolapHierarchy.LimitedRollupSubstitutingMemberReader will recognize it
+     * and use the correct rollup policy on the parent member to generate
+     * correct SQL.
+     */
+    public void testMondrian1030() throws Exception {
+        final String mdx1 =
+            "With\n"
+            + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Product])'\n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Customers].CurrentMember.OrderKey,BASC,[Education Level].CurrentMember.OrderKey,BASC)'\n"
+            + "Set [*BASE_MEMBERS_Customers] as '[Customers].[City].Members'\n"
+            + "Set [*BASE_MEMBERS_Product] as '[Education Level].Members'\n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember,[Education Level].currentMember)})'\n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,###', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns,\n"
+            + "Non Empty [*SORTED_ROW_AXIS] on rows\n"
+            + "From [Sales] \n";
+        final String mdx2 =
+            "With\n"
+            + "Set [*BASE_MEMBERS_Product] as '[Education Level].Members'\n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,###', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns,\n"
+            + "Non Empty [*BASE_MEMBERS_Product] on rows\n"
+            + "From [Sales] \n";
+        final TestContext context =
+                getTestContext().create(
+                    null, null, null, null, null,
+                    "  <Role name=\"Role1\">\n"
+                    + "    <SchemaGrant access=\"all\">\n"
+                    + "      <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                    + "        <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" topLevel=\"[Customers].[City]\" bottomLevel=\"[Customers].[City]\" rollupPolicy=\"partial\">\n"
+                    + "          <MemberGrant member=\"[City].[Coronado]\" access=\"all\">\n"
+                    + "          </MemberGrant>\n"
+                    + "        </HierarchyGrant>\n"
+                    + "      </CubeGrant>\n"
+                    + "    </SchemaGrant>\n"
+                    + "  </Role>\n"
+                    + "  <Role name=\"Role2\">\n"
+                    + "    <SchemaGrant access=\"all\">\n"
+                    + "      <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                    + "        <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" topLevel=\"[Customers].[City]\" bottomLevel=\"[Customers].[City]\" rollupPolicy=\"partial\">\n"
+                    + "          <MemberGrant member=\"[City].[Burbank]\" access=\"all\">\n"
+                    + "          </MemberGrant>\n"
+                    + "        </HierarchyGrant>\n"
+                    + "      </CubeGrant>\n"
+                    + "    </SchemaGrant>\n"
+                    + "  </Role>\n");
+        // Control tests
+        context.withRole("Role1").assertQueryReturns(
+            mdx1,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[All Education Levels]}\n"
+            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Bachelors Degree]}\n"
+            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Graduate Degree]}\n"
+            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[High School Degree]}\n"
+            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Partial College]}\n"
+            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Partial High School]}\n"
+            + "Row #0: 2,391\n"
+            + "Row #1: 559\n"
+            + "Row #2: 205\n"
+            + "Row #3: 551\n"
+            + "Row #4: 253\n"
+            + "Row #5: 823\n");
+        context.withRole("Role2").assertQueryReturns(
+            mdx1,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[All Education Levels]}\n"
+            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Bachelors Degree]}\n"
+            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Graduate Degree]}\n"
+            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[High School Degree]}\n"
+            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Partial College]}\n"
+            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Partial High School]}\n"
+            + "Row #0: 3,086\n"
+            + "Row #1: 914\n"
+            + "Row #2: 126\n"
+            + "Row #3: 1,029\n"
+            + "Row #4: 286\n"
+            + "Row #5: 731\n");
+        context.withRole("Role1,Role2").assertQueryReturns(
+            mdx1,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[All Education Levels]}\n"
+            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Bachelors Degree]}\n"
+            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Graduate Degree]}\n"
+            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[High School Degree]}\n"
+            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Partial College]}\n"
+            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Partial High School]}\n"
+            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[All Education Levels]}\n"
+            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Bachelors Degree]}\n"
+            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Graduate Degree]}\n"
+            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[High School Degree]}\n"
+            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Partial College]}\n"
+            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Partial High School]}\n"
+            + "Row #0: 3,086\n"
+            + "Row #1: 914\n"
+            + "Row #2: 126\n"
+            + "Row #3: 1,029\n"
+            + "Row #4: 286\n"
+            + "Row #5: 731\n"
+            + "Row #6: 2,391\n"
+            + "Row #7: 559\n"
+            + "Row #8: 205\n"
+            + "Row #9: 551\n"
+            + "Row #10: 253\n"
+            + "Row #11: 823\n");
+        // Actual tests
+        context.withRole("Role1").assertQueryReturns(
+            mdx2,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Education Level].[All Education Levels]}\n"
+            + "{[Education Level].[Bachelors Degree]}\n"
+            + "{[Education Level].[Graduate Degree]}\n"
+            + "{[Education Level].[High School Degree]}\n"
+            + "{[Education Level].[Partial College]}\n"
+            + "{[Education Level].[Partial High School]}\n"
+            + "Row #0: 2,391\n"
+            + "Row #1: 559\n"
+            + "Row #2: 205\n"
+            + "Row #3: 551\n"
+            + "Row #4: 253\n"
+            + "Row #5: 823\n");
+        context.withRole("Role2").assertQueryReturns(
+            mdx2,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Education Level].[All Education Levels]}\n"
+            + "{[Education Level].[Bachelors Degree]}\n"
+            + "{[Education Level].[Graduate Degree]}\n"
+            + "{[Education Level].[High School Degree]}\n"
+            + "{[Education Level].[Partial College]}\n"
+            + "{[Education Level].[Partial High School]}\n"
+            + "Row #0: 3,086\n"
+            + "Row #1: 914\n"
+            + "Row #2: 126\n"
+            + "Row #3: 1,029\n"
+            + "Row #4: 286\n"
+            + "Row #5: 731\n");
+        context.withRole("Role1,Role2").assertQueryReturns(
+            mdx2,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Education Level].[All Education Levels]}\n"
+            + "{[Education Level].[Bachelors Degree]}\n"
+            + "{[Education Level].[Graduate Degree]}\n"
+            + "{[Education Level].[High School Degree]}\n"
+            + "{[Education Level].[Partial College]}\n"
+            + "{[Education Level].[Partial High School]}\n"
+            + "Row #0: 5,477\n"
+            + "Row #1: 1,473\n"
+            + "Row #2: 331\n"
+            + "Row #3: 1,580\n"
+            + "Row #4: 539\n"
+            + "Row #5: 1,554\n");
+    }
 }
 
 // End AccessControlTest.java
