@@ -1,0 +1,760 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testFilterAtSameLevel">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine],[Product].[Drink].[Beverages].[Carbonated Beverages],[Product].[Drink].[Beverages].[Drinks],[Product].[Drink].[Beverages].[Hot Beverages],[Product].[Drink].[Beverages].[Pure Juice Beverages],[Product].[All Products].[Drink].[Dairy].[Dairy]}'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Descendants([Product].[Drink],[Product].[Product Category]))'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Product])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin({[Product].[Drink].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Education Level].CurrentMember)})))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Beverages].[Drinks], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Beverages].[Hot Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Dairy].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Education Level].[High School Degree]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Education Level].[Partial College]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Education Level].[Partial High School]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages], [Education Level].[High School Degree]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages], [Education Level].[Partial College]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages], [Education Level].[Partial High School]}
+{[Product].[Drink].[Beverages].[Drinks], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Beverages].[Drinks], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Beverages].[Drinks], [Education Level].[High School Degree]}
+{[Product].[Drink].[Beverages].[Drinks], [Education Level].[Partial College]}
+{[Product].[Drink].[Beverages].[Drinks], [Education Level].[Partial High School]}
+{[Product].[Drink].[Beverages].[Hot Beverages], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Beverages].[Hot Beverages], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Beverages].[Hot Beverages], [Education Level].[High School Degree]}
+{[Product].[Drink].[Beverages].[Hot Beverages], [Education Level].[Partial College]}
+{[Product].[Drink].[Beverages].[Hot Beverages], [Education Level].[Partial High School]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages], [Education Level].[High School Degree]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages], [Education Level].[Partial College]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages], [Education Level].[Partial High School]}
+{[Product].[Drink].[Dairy].[Dairy], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Dairy].[Dairy], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Dairy].[Dairy], [Education Level].[High School Degree]}
+{[Product].[Drink].[Dairy].[Dairy], [Education Level].[Partial College]}
+{[Product].[Drink].[Dairy].[Dairy], [Education Level].[Partial High School]}
+Row #0: 24,597
+Row #1: 6,838
+Row #2: 3,407
+Row #3: 2,469
+Row #4: 4,301
+Row #5: 3,396
+Row #6: 4,186
+Row #7: 24,597
+Row #8: 1,763
+Row #9: 352
+Row #10: 2,079
+Row #11: 574
+Row #12: 2,070
+Row #13: 917
+Row #14: 188
+Row #15: 976
+Row #16: 271
+Row #17: 1,055
+Row #18: 631
+Row #19: 141
+Row #20: 737
+Row #21: 186
+Row #22: 774
+Row #23: 1,090
+Row #24: 256
+Row #25: 1,202
+Row #26: 452
+Row #27: 1,301
+Row #28: 953
+Row #29: 145
+Row #30: 1,010
+Row #31: 303
+Row #32: 985
+Row #33: 1,069
+Row #34: 243
+Row #35: 1,222
+Row #36: 378
+Row #37: 1,274
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterAtHigherLevel">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '{[Product].[Drink].[Dairy].[Dairy]}'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*NATIVE_MEMBERS_Product],[Product].CurrentMember.Parent.Parent = [Product].[Drink]))'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Product])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin({[Product].[Drink].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Education Level].CurrentMember)})))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Dairy].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Dairy].[Dairy], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Dairy].[Dairy], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Dairy].[Dairy], [Education Level].[High School Degree]}
+{[Product].[Drink].[Dairy].[Dairy], [Education Level].[Partial College]}
+{[Product].[Drink].[Dairy].[Dairy], [Education Level].[Partial High School]}
+Row #0: 4,186
+Row #1: 4,186
+Row #2: 4,186
+Row #3: 1,069
+Row #4: 243
+Row #5: 1,222
+Row #6: 378
+Row #7: 1,274
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterEqualsWithNoValues">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '{}'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Product])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)})) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterAtLowerLevel">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*NATIVE_MEMBERS_Product] as '{[Product].[Drink].[*FILTER_MEMBER]}'
+Set [*BASE_MEMBERS_Product] as '{[Product].[Drink].[Dairy]}'
+Set [*NATIVE_DETAIL_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Member [Product].[Drink].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[Drink]))'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Product])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"))}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"),[Education Level].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*FILTER_MEMBER], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*FILTER_MEMBER], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[*FILTER_MEMBER], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[*FILTER_MEMBER], [Education Level].[High School Degree]}
+{[Product].[Drink].[*FILTER_MEMBER], [Education Level].[Partial College]}
+{[Product].[Drink].[*FILTER_MEMBER], [Education Level].[Partial High School]}
+Row #0: 4,186
+Row #1: 4,186
+Row #2: 1,069
+Row #3: 243
+Row #4: 1,222
+Row #5: 378
+Row #6: 1,274
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterWithTimeRangeBetween">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Education Level])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*NATIVE_MEMBERS_Time] as '{[Time].[1997].[*FILTER_MEMBER],[Time].[1998].[*FILTER_MEMBER]}'
+Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q1],[Time].[1997].[Q2],[Time].[1997].[Q3],[Time].[1997].[Q4],[Time].[1998].[Q1],[Time].[1998].[Q2],[Time].[1998].[Q3],[Time].[1998].[Q4]}'
+Set [*NATIVE_DETAIL_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Member [Time].[Time].[1997].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent = [Time].[1997]))'
+Member [Time].[Time].[1998].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent = [Time].[1998]))'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Member [Time].[Time].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Time].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"))}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"),[Education Level].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Time].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[Bachelors Degree]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[Graduate Degree]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[High School Degree]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[Partial College]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[Partial High School]}
+Row #0: 266,773
+Row #1: 266,773
+Row #2: 68,839
+Row #3: 15,570
+Row #4: 78,664
+Row #5: 24,545
+Row #6: 79,155
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterOnSlicerAxis">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Education Level],[*BASE_MEMBERS_Time])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q1],[Time].[1998].[Q4]}'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Member [Time].[Time].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Time])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Education Level].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Education Level].CurrentMember)})) on rows
+From [Sales]
+Where ([Time].[*FILTER_MEMBER])
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{[Time].[*FILTER_MEMBER]}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Education Level].[Bachelors Degree]}
+{[Education Level].[Graduate Degree]}
+{[Education Level].[High School Degree]}
+{[Education Level].[Partial College]}
+{[Education Level].[Partial High School]}
+Row #0: 66,291
+Row #1: 17,066
+Row #2: 3,637
+Row #3: 19,755
+Row #4: 6,309
+Row #5: 19,524
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterOnTwoLevelsInHierarchy">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '{[Product].[Drink].[Alcoholic Beverages],[Product].[Drink].[Beverages]}'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*NATIVE_MEMBERS_Product],[Product].CurrentMember.Parent = [Product].[Drink]))'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Product])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~SUM]},Union({[Product].[Drink].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages]}
+{[Product].[Drink].[Beverages]}
+Row #0: 20,411
+Row #1: 20,411
+Row #2: 6,838
+Row #3: 13,573
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterWithTimeRangeBefore">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Education Level])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*NATIVE_MEMBERS_Time] as '{[Time].[1997].[*FILTER_MEMBER],[Time].[1998].[*FILTER_MEMBER]}'
+Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q1],[Time].[1997].[Q2],[Time].[1997].[Q3],[Time].[1997].[Q4],[Time].[1998].[Q1]}'
+Set [*NATIVE_DETAIL_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Member [Time].[Time].[1997].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent = [Time].[1997]))'
+Member [Time].[Time].[1998].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent = [Time].[1998]))'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Member [Time].[Time].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Time].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"))}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"),[Education Level].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Time].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[Bachelors Degree]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[Graduate Degree]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[High School Degree]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[Partial College]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[Partial High School]}
+Row #0: 266,773
+Row #1: 266,773
+Row #2: 68,839
+Row #3: 15,570
+Row #4: 78,664
+Row #5: 24,545
+Row #6: 79,155
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterWithTimeRangeAfter">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Education Level])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*NATIVE_MEMBERS_Time] as '{[Time].[1997].[*FILTER_MEMBER],[Time].[1998].[*FILTER_MEMBER]}'
+Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q3],[Time].[1997].[Q4],[Time].[1998].[Q1],[Time].[1998].[Q2],[Time].[1998].[Q3],[Time].[1998].[Q4]}'
+Set [*NATIVE_DETAIL_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Member [Time].[Time].[1997].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent = [Time].[1997]))'
+Member [Time].[Time].[1998].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent = [Time].[1998]))'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Member [Time].[Time].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Time].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"))}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.CalculatedChild("*FILTER_MEMBER"),[Education Level].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Time].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[Bachelors Degree]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[Graduate Degree]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[High School Degree]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[Partial College]}
+{[Time].[1997].[*FILTER_MEMBER], [Education Level].[Partial High School]}
+Row #0: 137,872
+Row #1: 137,872
+Row #2: 35,598
+Row #3: 8,053
+Row #4: 41,002
+Row #5: 12,384
+Row #6: 40,835
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterNotEquals">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine],[Product].[Drink].[Beverages].[Carbonated Beverages],[Product].[Drink].[Beverages].[Drinks],[Product].[Drink].[Beverages].[Hot Beverages],[Product].[Drink].[Beverages].[Pure Juice Beverages]}'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*NATIVE_MEMBERS_Product],[Product].CurrentMember.Parent.Parent = [Product].[Drink]))'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Product])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin({[Product].[Drink].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Education Level].CurrentMember)})))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Beverages].[Drinks], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Beverages].[Hot Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Education Level].[High School Degree]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Education Level].[Partial College]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine], [Education Level].[Partial High School]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages], [Education Level].[High School Degree]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages], [Education Level].[Partial College]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages], [Education Level].[Partial High School]}
+{[Product].[Drink].[Beverages].[Drinks], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Beverages].[Drinks], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Beverages].[Drinks], [Education Level].[High School Degree]}
+{[Product].[Drink].[Beverages].[Drinks], [Education Level].[Partial College]}
+{[Product].[Drink].[Beverages].[Drinks], [Education Level].[Partial High School]}
+{[Product].[Drink].[Beverages].[Hot Beverages], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Beverages].[Hot Beverages], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Beverages].[Hot Beverages], [Education Level].[High School Degree]}
+{[Product].[Drink].[Beverages].[Hot Beverages], [Education Level].[Partial College]}
+{[Product].[Drink].[Beverages].[Hot Beverages], [Education Level].[Partial High School]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages], [Education Level].[High School Degree]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages], [Education Level].[Partial College]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages], [Education Level].[Partial High School]}
+Row #0: 20,411
+Row #1: 6,838
+Row #2: 3,407
+Row #3: 2,469
+Row #4: 4,301
+Row #5: 3,396
+Row #6: 20,411
+Row #7: 1,763
+Row #8: 352
+Row #9: 2,079
+Row #10: 574
+Row #11: 2,070
+Row #12: 917
+Row #13: 188
+Row #14: 976
+Row #15: 271
+Row #16: 1,055
+Row #17: 631
+Row #18: 141
+Row #19: 737
+Row #20: 186
+Row #21: 774
+Row #22: 1,090
+Row #23: 256
+Row #24: 1,202
+Row #25: 452
+Row #26: 1,301
+Row #27: 953
+Row #28: 145
+Row #29: 1,010
+Row #30: 303
+Row #31: 985
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterContains">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '{[Product].[Drink].[Dairy].[Dairy],[Product].[Food].[Dairy].[Dairy]}'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Product])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)})) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Dairy].[Dairy]}
+{[Product].[Food].[Dairy].[Dairy]}
+Row #0: 17,071
+Row #1: 4,186
+Row #2: 12,885
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterCurrentYear">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Time])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as '{}'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Member [Time].[Time].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Time].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Time].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Time].[Time].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterPreviousCurrentAndNext">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'CrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Time])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as '{}'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Member [Time].[Time].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Time].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Time].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Time].[Time].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM], [Time].[*CTX_MEMBER_SEL~SUM]}
+Row #0: 
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterDisplayYearAndFilterYearQtrMonth">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*NATIVE_MEMBERS_Time] as '{[Time].[1997].[*FILTER_MEMBER]}'
+Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q3].[7]}'
+Set [*NATIVE_DETAIL_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Member [Time].[Time].[1997].[*FILTER_MEMBER] as 'Aggregate (Filter([*NATIVE_DETAIL_MEMBERS_Time],[Time].[Time].CurrentMember.Parent.Parent = [Time].[1997]))'
+Member [Time].[Time].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Time])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Time].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Time].[Time].CurrentMember.Parent.Parent.CalculatedChild("*FILTER_MEMBER"))})) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Time].[*CTX_MEMBER_SEL~SUM]}
+{[Time].[1997].[*FILTER_MEMBER]}
+Row #0: 23,763
+Row #1: 23,763
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFilterMultipleLevelsOnSlicer">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],NonEmptyCrossJoin([*BASE_MEMBERS_Store],[*BASE_MEMBERS_Time]))'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Store] as '{[Store].[USA]}'
+Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q3].[7]}'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
+Member [Store].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Store])'
+Member [Time].[Time].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Time])'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)})) on rows
+From [Sales]
+Where ([Store].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER])
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{[Store].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER]}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink]}
+{[Product].[Food]}
+{[Product].[Non-Consumable]}
+Row #0: 23,763
+Row #1: 2,205
+Row #2: 17,036
+Row #3: 4,522
+]]>
+        </Resource>
+    </TestCase>
+</Root>

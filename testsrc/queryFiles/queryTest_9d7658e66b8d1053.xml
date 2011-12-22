@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>with member [Measures].[Test Measure] as '[Measures].[Customer Count] * 2 - [Measures].[Sales Count]' select { [Measures].[Test Measure] } on columns,     filter(descendants([Store].[USA]), ([Measures].[Test Measure]) &amp;lt; -1000) on rows from [Sales] where ([Time].[1997].[Q2], [Product].[Product Family].[Food])</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997].[Q2]</member>
+                    <member>[Product].[Food]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Test Measure]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR].[Salem]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR].[Salem].[Store 13]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Bremerton]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Bremerton].[Store 3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Spokane]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Spokane].[Store 16]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Tacoma]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Tacoma].[Store 17]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>-8794.0</cell>
+            </drow>
+            <drow>
+                <cell>-2022.0</cell>
+            </drow>
+            <drow>
+                <cell>-2004.0</cell>
+            </drow>
+            <drow>
+                <cell>-1185.0</cell>
+            </drow>
+            <drow>
+                <cell>-1185.0</cell>
+            </drow>
+            <drow>
+                <cell>-4768.0</cell>
+            </drow>
+            <drow>
+                <cell>-1006.0</cell>
+            </drow>
+            <drow>
+                <cell>-1006.0</cell>
+            </drow>
+            <drow>
+                <cell>-1054.0</cell>
+            </drow>
+            <drow>
+                <cell>-1054.0</cell>
+            </drow>
+            <drow>
+                <cell>-1351.0</cell>
+            </drow>
+            <drow>
+                <cell>-1351.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

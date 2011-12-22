@@ -1,0 +1,295 @@
+<html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Eclipse Public License v1.0
+  == Agreement, available at the following URL:
+  == http://www.eclipse.org/legal/epl-v10.html.
+  == Copyright (C) 2005-2007 Julian Hyde and others
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  -->
+<head>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Optimizing Mondrian Performance</title>
+</head>
+<body>
+<!-- doc2web start -->
+
+<!-- page title -->
+<div class="contentheading">Optimizing Mondrian Performance</div>
+<!-- end page title -->
+
+<p>By Sherman Wood and Julian Hyde; last updated November, 2007.</p>
+
+<hr noshade size="1">
+
+<h2>Contents</h2>
+<ol>
+	<li><a href="#Introduction">Introduction</a></li>
+	<li><a href="#A_generalized_tuning_process_for_Mondrian">A generalized 
+	tuning process for Mondrian</a></li>
+	<li><a href="#Recommendations_for_database_tuning">Recommendations for 
+	database tuning</a></li>
+	<li><a href="#Aggregate_Tables_Materialized_Views_and_Mondrian">Aggregate 
+	Tables, Materialized Views and Mondrian</a><ol>
+		<li><a href="#Choosing_aggregate_tables">Choosing aggregate tables</a></li>
+	</ol>
+	</li>
+	<li><a href="#AggGen">Aggregate Generator (AggGen)</a></li>
+	<li><a href="#Optimizing_Calculations_with_the_Expression_Cache">Optimizing 
+	Calculations with the Expression Cache</a></li>
+</ol>
+
+<h2>Introduction<a name="Introduction">&nbsp;</a></h2>
+
+<p>As with any data warehouse project, dealing with volumes is always
+the make or break issue. Mondrian has its own issues, based on its
+architecture and goals of being cross platform. Here are some
+experiences and comments.</p>
+
+<p>From the Mondrian developer's mailing list in February, 2005 - an
+example of unoptimized performance:</p>
+
+<blockquote>
+
+	<p><i>When Mondrian initializes and starts to process the
+	first queries, it makes SQL calls to get member lists and
+	determine cardinality, and then to load segments into the
+	cache. When Mondrian is closed and restarted, it has to do
+	that work again. This can be a significant chunk of time
+	depending on the cube size. For example in one test an 8GB
+	cube (55M row fact table) took 15 minutes (mostly doing a
+	group by) before it returned results from its first query, and
+	absent any caching on the database server would take another
+	15 minutes if you closed it and reopened the application. Now,
+	this cube was just one month of data; imagine the time if
+	there was 5 years worth.</i></p>
+
+</blockquote>
+
+<p>Since this time, Mondrian has been extended to use aggregate tables
+and materialized views, which have a lot of performance benefits that
+address the above issue.</p>
+
+<p>From Julian:</p>
+
+<blockquote>
+
+	<p><i>I'm surprised that people can run 10m+ row fact tables
+        on Mondrian at all, without using aggregate tables or materialized
+        views.</i></p> </blockquote>
+
+<p>From Sherman:</p>
+
+<blockquote>
+
+	<p><i>Our largest site has a cube with currently ~6M facts on
+        a single low end Linux box running our application with Mondrian and
+        Postgres (not an ideal configuration), without aggregate tables, and
+        gets sub second response times for the user interface (JPivot). This
+        was achieved by tuning the database to support the queries being
+        executed, modifying the OS configuration to best support Postgres
+        execution (thanks Josh!) and adding as much RAM as possible.</i></p>
+
+</blockquote>
+
+<h2>A generalized tuning process for Mondrian<a name="A_generalized_tuning_process_for_Mondrian">&nbsp;</a></h2>
+
+<p>The process for addressing performance of Mondrian is a combination
+of design, hardware, database and other configuration tuning. For
+really large cubes, the performance issues are driven more by the
+hardware, operating system and database tuning than anything Mondrian
+can do.</p>
+
+<ul>
+	<li>Have a reasonable physical design for requirements, such
+	as a data warehouse and specific data marts</li>
+
+	<li>Architect the application effectively<ul>
+
+		<li>Separate the environment where Mondrian is
+		executing from the DBMS</li>
+
+		<li>If possible: separate UI processing from the
+		environment where Mondrian is caching</li>
+
+	</ul>
+	</li>
+
+	<li>Have adequate hardware for the DBMS</li>
+
+	<li>Tune the operating system for the DBMS</li>
+
+	<li>Add materialized views or aggregate tables to support
+	specific MDX queries (see Aggregate Tables and AggGen
+	below)</li>
+
+	<li>Tune the DBMS for the specific SQL queries being executed:
+	that is, indexes on both the dimensions and fact table</li>
+
+	<li>Tune the Mondrian cache: the larger the better</li>
+
+</ul>
+
+<h2>Recommendations for database tuning<a name="Recommendations_for_database_tuning">&nbsp;</a></h2>
+
+<p>As part of database tuning process, enable SQL tracing and tail the
+log file. Run some representative MDX queries and watch which SQL
+statements take a long time. Tune the database to fix those statements
+and rerun.</p>
+
+<ul>
+	<li>Indexes on primary and foreign keys</li>
+
+	<li>Consider enabling foreign keys</li>
+
+	<li>Ensure that columns are marked NOT NULL where possible</li>
+
+	<li>If a table has a compound primary key, experiment with
+	indexing subsets of the columns with different leading edges.
+	For example, for columns (a, b, c) create a unique index on
+	(a, b, c) and non-unique indexes on (b, c) and (c, a). Oracle
+	can use such indexes to speed up counts.</li>
+
+	<li>On Oracle, consider using bitmap indexes for
+	low-cardinality columns.  (Julian implemented the Oracle's
+	bitmap index feature, and he's rather proud of them!)</li>
+
+	<li>On Oracle, Postgres and other DBMSs, analyze tables,
+        otherwise the cost-based optimizers will not be used</li> </ul>
+
+<p>Mondrian currently uses 'count(distinct ...)' queries to determine
+the cardinality of dimensions and levels as it starts, and for your
+measures that are counts, that is,
+<code>aggregator="count"</code>. Indexes might speed up those queries
+-- although performance is likely to vary between databases, because
+optimizing count-distinct queries is a tricky problem.</p>
+
+<h2>Aggregate Tables, Materialized Views and Mondrian<a name="Aggregate_Tables_Materialized_Views_and_Mondrian">&nbsp;</a></h2>
+
+<p>The best way to increase the performance of Mondrian is to build a
+set of aggregate (summary) tables that coexist with the base fact
+table. These aggregate tables contain pre-aggregated measures build
+from the fact table.</p>
+
+<p>Some databases, particularly Oracle, can automatically create these
+aggregations through materialized views, which are tables created and
+synchronized from views. Otherwise, you will have to maintain the
+aggregation tables through your data warehouse load processes, usually
+by clearing them and rerunning aggregating INSERTs.</p>
+
+<p>Aggregate tables are introduced in the <a href="schema.html#Aggregate_tables">
+Schema Guide</a>, and described in more detail in their own document,
+<a href="aggregate_tables.html">Aggregate Tables</a>.</p>
+
+<h3>Choosing aggregate tables<a name="Choosing_aggregate_tables">&nbsp;</a></h3>
+
+<p>It isn't easy to choose the right aggregate tables. For one thing, there are 
+so many to choose from: even a modest cube with six dimensions each with three 
+levels has 6<sup><font face="Verdana">4</font></sup> = 1296 possible aggregate 
+tables! And aggregate tables interfere with each other. If you add a new 
+aggregate table, Mondrian may use an existing aggregate table less frequently.</p>
+
+<p>Missing aggregate tables may not even be the problem. Choosing aggregate 
+tables is part of a wider performance tuning process, where finding the problem 
+is more than half of the battle. The real cause may be a missing index on your 
+fact table, your cache isn't large enough, or (if you're running Oracle) the 
+fact that you forgot to compute statistics. (See
+<a href="#Recommendations_for_database_tuning">recommendations</a>, above.)</p>
+
+<p>Performance tuning is an iterative process. The steps are something like 
+this:</p>
+<ol>
+	<li>Choose a few queries which are typical for those the end-users will be 
+	executing.</li>
+	<li>Run your set of sample queries, and note how long they take. Now the 
+	cache has been primed, run the queries again: has performance improved?</li>
+	<li>Is the performance good enough? If it is, stop tuning now! If your data 
+	set isn't very large, you probably don't need any aggregate tables. </li>
+	<li>Decide which aggregate tables to create. If you turn on SQL tracing, 
+	looking at the GROUP BY clauses of the long-running SQL statements will be a 
+	big clue here.</li>
+	<li>Register the aggregate tables in your catalog, create the tables in the 
+	database, populate the tables, and add indexes.</li>
+	<li>Restart Mondrian, to flush the cache and re-read the schema, then go to 
+	step 2 to see if things have improved.</li>
+</ol>
+
+<h2>AggGen<a name="AggGen">&nbsp;</a></h2>
+
+<p><code>AggGen</code> is a tool that generates SQL to support the
+creation and maintenance of aggregate tables, and would give a
+template for the creation of materialized views for databases that
+support those. Given an MDX query, the generated create/insert SQL is
+optimal for the given query. The generated SQL covers both the "lost"
+and "collapsed" dimensions. For usage, see the documentation for
+<a href="cmdrunner.html#AggGen">CmdRunner</a>.</p>
+
+<h2>Optimizing Calculations with the Expression Cache<a name="Optimizing_Calculations_with_the_Expression_Cache">&nbsp;</a></h2>
+
+<p>Mondrian may have performance issues if your schema makes intensive use of 
+calculations. Mondrian executes calculations very efficiently, so usually the 
+time spent calculating expressions is insignificant compared to the time spent 
+executing SQL, but if you have many layers of calculated members and sets, in 
+particular set-oriented constructs like the Aggregate function, it is possible 
+that many thousands of calculations will be required for each cell.</p>
+
+<p>To see whether calculations are causing your performance problem, turn on SQL 
+tracing and measure what proportion of the time is spent executing SQL. If SQL 
+is less than 50% of the time, it is possible that excessive calculations are 
+responsible for the rest. (If the result set is very large, and if you are using 
+JPivot or XML/A, the cost of generating HTML or XML is also worth 
+investigating.)</p>
+
+<p>It caches cell values retrieved from the database, but it does not 
+generally cache the results of calculations. (The sole case where mondrian 
+caches expression results automatically is for the second argument of the <code>
+Rank(&lt;Member&gt;, &lt;Set&gt;[, &lt;Expression&gt;])</code> function,
+since this function is typically evaluated 
+many times for different members over the same set.)</p>
+
+<p>Since calculations are very efficient, this is generally the best policy: it 
+is better for mondrian to use the available memory to cache values retrieved 
+from the database, which are much slower to re-create.</p>
+<p>The expression cache only caches expression results for the duration of a 
+single statement. The results are not available for other statements. The 
+expression cache also takes into account the evaluation context, and the known 
+dependencies of particular functions and operators. For example, the expression</p>
+<blockquote>
+	<p><code>Filter([Store].[City].Members, ([Store].CurrentMember.Parent, 
+	[Time].[1997].[Q1])) &gt; 100)</code></p>
+</blockquote>
+<p>depends on all dimensions besides [Store] and [Time], because the expression 
+overrides the value of the [Store] and [Time] dimensions inherited from the 
+context, but the implicit evaluation of a cell pulls in all other dimensions. If 
+the expression result has been cached for the contexts ([Store].[USA], 
+[Time].[1997].[Q2], [Gender].[M]), the cache knows that it will return the same 
+value for ([Store].[USA].[CA], [Time].[1997].[Q3], [Gender].[M]); however, 
+([Store].[USA], [Time].[1997].[Q2], [Gender].[F]) will require a new cache 
+value, because the dependent dimension [Gender] has a different value.</p>
+<p>However, if your application is very calculation intensive, you can use the
+<code>Cache(&lt;Expression&gt;)</code> function to tell mondrian to store the results 
+of the expression in the expression cache. The first time this function is 
+called, it evaluates its argument and stores it in the expression cache; 
+subsequent calls within the an equivalent context will retrieve the value from 
+the cache. We recommend that you use this function sparingly. If you have cached 
+a frequently evaluated expression, then it will not be necessary to cache 
+sub-expressions or super-expressions; the sub-expressions will be evaluated less 
+frequently, and the super-expressions will evaluate more quickly because their 
+expensive argument has been cached.</p>
+
+<hr>
+
+<p>
+    Author: Sherman Wood &amp; Julian Hyde; last updated November, 2007.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/optimizing_performance.html?ac=22">log</a>)<br/>
+    Copyright (C) 2005-2007 Julian Hyde and others
+</p>
+
+<br />
+
+<!-- doc2web end -->
+
+</body>
+</html>

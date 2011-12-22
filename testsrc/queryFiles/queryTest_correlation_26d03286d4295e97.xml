@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>WITH MEMBER [Measures].[Store Sales Q1 over All USA] AS
+    'CORRELATION([Store].[USA].Children, ([Measures].[Store Sales], [Time].[1997].[Q1]), ([Measures].[Store Sales],
+     [Store].CurrentMember))'
+SELECT CROSSJOIN({[Measures].[Store Sales Q1 over All USA]}, [Time].[1997].Children) ON COLUMNS,
+    [Store].[USA].Children ON ROWS
+from [Sales]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Sales Q1 over All USA]</member>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Sales Q1 over All USA]</member>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Sales Q1 over All USA]</member>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Sales Q1 over All USA]</member>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[USA].[CA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>1.0</cell>
+                <cell>0.9416770690866142</cell>
+                <cell>0.9694826103273714</cell>
+                <cell>0.9169740461138594</cell>
+            </drow>
+            <drow>
+                <cell>1.0</cell>
+                <cell>0.9416770690866142</cell>
+                <cell>0.9694826103273714</cell>
+                <cell>0.9169740461138594</cell>
+            </drow>
+            <drow>
+                <cell>1.0</cell>
+                <cell>0.9416770690866142</cell>
+                <cell>0.9694826103273714</cell>
+                <cell>0.9169740461138594</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

@@ -1,0 +1,245 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testSolveOrder">
+        <Resource name="description">
+            <![CDATA[
+Tests that solve order is correctly generated such that max is applied on top of rank on top of ratio measure. 
+]]>
+        </Resource>
+        <Resource name="modifiedCubeName">
+            <![CDATA[
+Sales
+]]>
+        </Resource>
+        <Resource name="calculatedMembers">
+            <![CDATA[
+<CalculatedMember 
+  name='Sales as % of Cost' 
+  dimension='Measures' 
+  formula='([Measures].[Store Sales] - [Measures].[Store Cost])/[Measures].[Store Cost]'>
+  <CalculatedMemberProperty name='FORMAT_STRING' value='####0.0%'/>
+</CalculatedMember>
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Sales as % of Cost]))'
+Set [*SM_RSUM_SET_0] as 'Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)})'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Sales as % of Cost],[Measures].[*SUMMARY_METRIC_0]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Member [Measures].[*SUMMARY_METRIC_0] as 'Rank(([Product].CurrentMember),[*SM_RSUM_SET_0],[Measures].[Sales as % of Cost])', SOLVE_ORDER=50
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})', SOLVE_ORDER=-100
+Member [Product].[*CTX_MEMBER_SEL~MAX] as 'Max([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=100
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~MAX]},Union({[Product].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Sales as % of Cost]}
+{[Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~MAX]}
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages]}
+{[Product].[Drink].[Beverages]}
+{[Product].[Drink].[Dairy]}
+{[Product].[Food].[Baked Goods]}
+{[Product].[Food].[Baking Goods]}
+{[Product].[Food].[Breakfast Foods]}
+{[Product].[Food].[Canned Foods]}
+{[Product].[Food].[Canned Products]}
+{[Product].[Food].[Dairy]}
+{[Product].[Food].[Deli]}
+{[Product].[Food].[Eggs]}
+{[Product].[Food].[Frozen Foods]}
+{[Product].[Food].[Meat]}
+{[Product].[Food].[Produce]}
+{[Product].[Food].[Seafood]}
+{[Product].[Food].[Snack Foods]}
+{[Product].[Food].[Snacks]}
+{[Product].[Food].[Starchy Foods]}
+{[Product].[Non-Consumable].[Carousel]}
+{[Product].[Non-Consumable].[Checkout]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Non-Consumable].[Household]}
+{[Product].[Non-Consumable].[Periodicals]}
+Row #0: 151.8%
+Row #0: 23
+Row #1: 150.5%
+Row #1: 12
+Row #2: 151.6%
+Row #2: 5
+Row #3: 150.7%
+Row #3: 9
+Row #4: 149.3%
+Row #4: 22
+Row #5: 150.7%
+Row #5: 8
+Row #6: 151.6%
+Row #6: 4
+Row #7: 151.8%
+Row #7: 1
+Row #8: 150.2%
+Row #8: 16
+Row #9: 151.6%
+Row #9: 3
+Row #10: 149.5%
+Row #10: 21
+Row #11: 150.5%
+Row #11: 14
+Row #12: 149.7%
+Row #12: 19
+Row #13: 150.6%
+Row #13: 10
+Row #14: 150.4%
+Row #14: 15
+Row #15: 150.5%
+Row #15: 12
+Row #16: 150.5%
+Row #16: 13
+Row #17: 150.7%
+Row #17: 7
+Row #18: 149.7%
+Row #18: 20
+Row #19: 149.8%
+Row #19: 18
+Row #20: 151.7%
+Row #20: 2
+Row #21: 147.1%
+Row #21: 23
+Row #22: 151.1%
+Row #22: 6
+Row #23: 150.2%
+Row #23: 17
+Row #24: 150.6%
+Row #24: 11
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSlicerStackOverflowNotContain">
+        <Resource name="description">
+            <![CDATA[
+Tests that we do not get a stackoverflow for non-native necj evaluation with slicer members that references the necj. (We do not get stackoverflow because if a dimension is referenced in the necj, then same dimension in the slicer is ignored.)
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],NonEmptyCrossJoin([*BASE_MEMBERS_Product],NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Education Level])))'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+  Set [*BASE_MEMBERS_Gender] as '[Gender].[Gender].Members'
+  Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})'
+  Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Name].Members,[Product].CurrentMember.Name Not Matches ("(?i).*Low Fat Bologna.*"))'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Set [*BASE_MEMBERS_Time] as '{[Time].[1997]}'
+  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+  Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[High School Degree]}'
+  Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+  Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-200
+  Member [Time].[Time].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Time])', SOLVE_ORDER=-200
+  Member [Education Level].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Education Level])', SOLVE_ORDER=-200
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember)}) on rows
+From [Sales]
+Where ([Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER])
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{[Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER]}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Gender].[F]}
+{[Gender].[M]}
+Row #0: 37,895
+Row #1: 40,498
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSlicerStackOverflowNotEqual">
+        <Resource name="description">
+            <![CDATA[
+Tests that we do not get a stackoverflow for non-native necj evluation with slicer members that references the necj. (We do not get stackoverflow because if a dimension is referenced in the necj, then same dimension in the slicer is ignored.)
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Gender],NonEmptyCrossJoin([*BASE_MEMBERS_Product],NonEmptyCrossJoin([*BASE_MEMBERS_Time],[*BASE_MEMBERS_Education Level])))'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+  Set [*BASE_MEMBERS_Gender] as '[Gender].[Gender].Members'
+  Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})'
+  Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Name].Members,[Product].CurrentMember Not In {[Product].[Food].[Deli].[Meat].[Bologna].[American].[American Low Fat Bologna]})'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Set [*BASE_MEMBERS_Time] as '{[Time].[1997]}'
+  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+  Set [*BASE_MEMBERS_Education Level] as '{[Education Level].[High School Degree]}'
+  Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+  Member [Product].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-200
+  Member [Time].[Time].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Time])', SOLVE_ORDER=-200
+  Member [Education Level].[*FILTER_MEMBER] as 'Aggregate ([*NATIVE_MEMBERS_Education Level])', SOLVE_ORDER=-200
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*NATIVE_CJ_SET], {([Gender].CurrentMember)}) on rows
+From [Sales]
+Where ([Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER])
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{[Product].[*FILTER_MEMBER], [Time].[*FILTER_MEMBER], [Education Level].[*FILTER_MEMBER]}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Gender].[F]}
+{[Gender].[M]}
+Row #0: 38,023
+Row #1: 40,576
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testPeriodstodateOnNonTimeDimension">
+        <Resource name="description">
+            <![CDATA[
+Test for sf.net bug 2118478.
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+select
+{[Measures].[Unit Sales]} on columns,
+periodstodate(
+    [Product].[Product Category],
+    [Product].[Food].[Baked Goods].[Bread].[Muffins]) on rows
+from [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[Food].[Baked Goods].[Bread].[Bagels]}
+{[Product].[Food].[Baked Goods].[Bread].[Muffins]}
+Row #0: 815
+Row #1: 3,497
+]]>
+        </Resource>
+    </TestCase>
+</Root>

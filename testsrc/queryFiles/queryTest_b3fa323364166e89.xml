@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>select {[Measures].[Store Invoice], [Measures].[Supply Time]} on columns,     descendants([Store].[USA], [Store].[Store City], bEfOrE) on rows from [Warehouse] </mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Time]</dim>
+                <dim>[Warehouse]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Time].[1997]</member>
+                    <member>[Warehouse].[All Warehouses]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Invoice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Supply Time]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>102278.4089</cell>
+                <cell>10425.0</cell>
+            </drow>
+            <drow>
+                <cell>29607.2994</cell>
+                <cell>3100.0</cell>
+            </drow>
+            <drow>
+                <cell>20194.0007</cell>
+                <cell>2051.0</cell>
+            </drow>
+            <drow>
+                <cell>52477.1088</cell>
+                <cell>5274.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

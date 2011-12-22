@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>SELECT Measures.Members ON COLUMNS FROM [Sales] WHERE(StrToSet("{[Christian]}").Item(0).Item(0)) </mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[USA].[OR].[Lebanon].[Christian]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Cost]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Sales Count]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Customer Count]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <data>
+            <drow>
+                <cell>49.0</cell>
+                <cell>39.8567</cell>
+                <cell>102.78</cell>
+                <cell>16.0</cell>
+                <cell>1.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

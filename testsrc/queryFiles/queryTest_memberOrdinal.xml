@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>select {[Product]} on columns, Hierarchize(crossjoin([Measures].allMembers, [Time].[Time].children)) on rows from [Sales 2]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                    <member>[Product].[All Products]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Product]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[All Products]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Sales Count]</member>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Sales Count]</member>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Sales Count]</member>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Sales Count]</member>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+
+                <tuple>
+                    <member>[Measures].[Profit]</member>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Profit]</member>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Profit]</member>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Profit]</member>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+
+                <tuple>
+                    <member>[Measures].[Profit last Period]</member>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Profit last Period]</member>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Profit last Period]</member>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Profit last Period]</member>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+
+                <tuple>
+                    <member>[Measures].[Store Cost]</member>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Cost]</member>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Cost]</member>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Cost]</member>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+
+                <tuple>
+                    <member>[Measures].[Customer Count]</member>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Customer Count]</member>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Customer Count]</member>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Customer Count]</member>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+
+            </tuples>
+        </rows>
+
+        <data>
+            <drow>
+                <cell>21588</cell>
+            </drow>
+            <drow>
+                <cell>20368</cell>
+            </drow>
+            <drow>
+                <cell>21453</cell>
+            </drow>
+            <drow>
+               <cell>23428</cell>
+            </drow>
+
+            <drow>
+               <cell>66291</cell>
+            </drow>
+            <drow>
+               <cell>62610</cell>
+            </drow>
+            <drow>
+               <cell>65848</cell>
+            </drow>
+            <drow>
+               <cell>72024</cell>
+            </drow>
+
+            <drow>
+               <cell>139628.35</cell>
+            </drow>
+            <drow>
+               <cell>132666.27</cell>
+            </drow>
+            <drow>
+               <cell>140271.89</cell>
+            </drow>
+            <drow>
+               <cell>152671.62</cell>
+            </drow>
+
+            <drow>
+               <cell>83876.11</cell>
+            </drow>
+            <drow>
+               <cell>79702.0452</cell>
+            </drow>
+            <drow>
+               <cell>84367.02</cell>
+            </drow>
+            <drow>
+               <cell>91665.7211</cell>
+            </drow>
+
+            <drow>
+               <cell>83876.11</cell>
+            </drow>
+            <drow>
+               <cell>83876.11</cell>
+            </drow>
+            <drow>
+               <cell>79702.0452</cell>
+            </drow>
+            <drow>
+               <cell>84367.02</cell>
+            </drow>
+
+            <drow>
+               <cell>55752.24</cell>
+            </drow>
+            <drow>
+               <cell>52964.2248</cell>
+            </drow>
+            <drow>
+               <cell>55904.87</cell>
+            </drow>
+            <drow>
+               <cell>61005.8989</cell>
+            </drow>
+
+            <drow>
+               <cell>2981</cell>
+            </drow>
+            <drow>
+               <cell>2973</cell>
+            </drow>
+            <drow>
+               <cell>3026</cell>
+            </drow>
+            <drow>
+               <cell>3261</cell>
+            </drow>
+        </data>
+
+    </dataResult>
+</mdbTest>

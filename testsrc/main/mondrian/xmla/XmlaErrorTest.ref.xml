@@ -1,0 +1,749 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="request">
+        <Resource name="request">
+            <![CDATA[
+this is just junk
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadXml01">
+        <Resource name="request">
+            <![CDATA[
+<soapenv:FOOEnvelope 
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<ns1:Discover 
+    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+    xmlns:ns1="urn:schemas-microsoft-com:xml-analysis">
+    <ns1:RequestType xsi:type="xsd:string">DISCOVER_DATASOURCES</ns1:RequestType>
+    <ns1:Restrictions>
+        <ns1:RestrictionList/>
+    </ns1:Restrictions>
+    <ns1:Properties>
+    </ns1:Properties>
+</ns1:Discover>
+    </soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadXml02">
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope 
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelopeFOO/" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<ns1:Discover 
+    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+    xmlns:ns1="urn:schemas-microsoft-com:xml-analysis">
+    <ns1:RequestType xsi:type="xsd:string">DISCOVER_DATASOURCES</ns1:RequestType>
+    <ns1:Restrictions>
+        <ns1:RestrictionList/>
+    </ns1:Restrictions>
+    <ns1:Properties>
+    </ns1:Properties>
+</ns1:Discover>
+    </soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadAction01">
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope 
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<ns1:FOODiscover 
+    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+    xmlns:ns1="urn:schemas-microsoft-com:xml-analysis">
+    <ns1:RequestType xsi:type="xsd:string">DISCOVER_DATASOURCES</ns1:RequestType>
+    <ns1:Restrictions>
+        <ns1:RestrictionList/>
+    </ns1:Restrictions>
+    <ns1:Properties>
+    </ns1:Properties>
+</ns1:FOODiscover>
+    </soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadAction02">
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope 
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<ns1:Discover 
+    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+    xmlns:ns1="urn:schemas-microsoft-com:xml-analysis">
+    <ns1:RequestType xsi:type="xsd:string">DISCOVER_DATASOURCES</ns1:RequestType>
+    <ns1:Restrictions>
+        <ns1:RestrictionList/>
+    </ns1:Restrictions>
+    <ns1:Properties>
+    </ns1:Properties>
+</ns1:Discover>
+<ns1:Discover 
+    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+    xmlns:ns1="urn:schemas-microsoft-com:xml-analysis">
+    <ns1:RequestType xsi:type="xsd:string">DISCOVER_DATASOURCES</ns1:RequestType>
+    <ns1:Restrictions>
+        <ns1:RestrictionList/>
+    </ns1:Restrictions>
+    <ns1:Properties>
+    </ns1:Properties>
+</ns1:Discover>
+    </soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadAction03">
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope 
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<ns1:Discover 
+    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+    xmlns:ns1="urn:schemas-microsoft-com:xml-analysis">
+    <ns1:RequestType xsi:type="xsd:string">DISCOVER_DATASOURCES</ns1:RequestType>
+    <ns1:Restrictions>
+        <ns1:RestrictionList/>
+    </ns1:Restrictions>
+    <ns1:Properties>
+    </ns1:Properties>
+</ns1:Discover>
+    <ns2:Execute xmlns="urn:schemas-microsoft-com:xml-analysis"
+        xmlns:ns2="urn:schemas-microsoft-com:xml-analysis">
+      <ns2:Command>
+        <ns2:Statement/>
+      </ns2:Command>
+      <ns2:Properties>
+        <ns2:PropertyList>
+          <ns2:LocaleIdentifier>1033</ns2:LocaleIdentifier>
+          <ns2:DataSourceInfo>MondrianFoodMart</ns2:DataSourceInfo>
+        </ns2:PropertyList>
+      </ns2:Properties>
+    </ns2:Execute>
+    </soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadSoap01">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Header/>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadSoap02">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testAuth01">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testAuth02">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testAuth03">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testAuth04">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testAuth05">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadHeader01">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <XA:Foo mustUnderstand="1" 
+            xmlns:XA="urn:schemas-microsoft-com:xml-analysis" />
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody01">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <RequestType>DISCOVER_DATASOURCES</RequestType>
+      <Restrictions>
+        <RestrictionList/>
+      </Restrictions>
+      <Properties>
+        <PropertyList>
+          <Content>Data</Content>
+        </PropertyList>
+      </Properties>
+    </Discover>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody02">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <FooExecute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </FooExecute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody03">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis-FOO">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody04">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <FOORequestType>DISCOVER_DATASOURCES</FOORequestType>
+      <Restrictions>
+        <RestrictionList/>
+      </Restrictions>
+      <Properties>
+        <PropertyList>
+          <Content>Data</Content>
+        </PropertyList>
+      </Properties>
+    </Discover>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody05">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <RequestType>DISCOVER_DATASOURCES</RequestType>
+      <FOORestrictions>
+        <RestrictionList/>
+      </FOORestrictions>
+      <Properties>
+        <PropertyList>
+          <Content>Data</Content>
+        </PropertyList>
+      </Properties>
+    </Discover>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody06">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <RequestType>DISCOVER_DATASOURCES</RequestType>
+      <Restrictions>
+        <RestrictionList/>
+      </Restrictions>
+      <FOOProperties>
+        <PropertyList>
+          <Content>Data</Content>
+        </PropertyList>
+      </FOOProperties>
+    </Discover>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody07">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <FooCommand>
+        <Statement/>
+      </FooCommand>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody08">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <FooProperties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </FooProperties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody09">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <RequestType>DISCOVER_DATASOURCES</RequestType>
+      <Restrictions>
+        <RestrictionList/>
+        <RestrictionList/>
+      </Restrictions>
+      <Properties>
+        <PropertyList>
+          <Content>Data</Content>
+        </PropertyList>
+      </Properties>
+    </Discover>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody10">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <RequestType>DISCOVER_DATASOURCES</RequestType>
+      <Restrictions>
+        <RestrictionList/>
+      </Restrictions>
+      <Properties>
+        <PropertyList>
+          <Content>Data</Content>
+        </PropertyList>
+        <PropertyList/>
+      </Properties>
+    </Discover>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody11">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList/>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody12">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement/>
+        <Statement/>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody13">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement>
+DRILLTHROUGH MAXROWS -1000
+SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,
+{[Time].[1997]} ON 1,
+{[Product].[Drink]} ON 2
+FROM Sales
+        </Statement>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody14">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement>
+DRILLTHROUGH MAXROWS 1000 FIRSTROWSET -200
+SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,
+{[Time].[1997]} ON 1,
+{[Product].[Drink]} ON 2
+FROM Sales
+        </Statement>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBadBody15">
+        <Resource name="request">
+            <![CDATA[
+<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+  <Header>
+    <Foo>Have a nice day</Foo>
+  </Header>
+  <Body>
+    <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <Command>
+        <Statement>
+SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,
+{[Time].[1997]} ON 1,
+{[Product].[Drink]} ON 2
+DRILLTHROUGH MAXROWS 1000 FIRSTROWSET 200
+FROM Sales
+        </Statement>
+      </Command>
+      <Properties>
+        <PropertyList>
+          <LocaleIdentifier>1033</LocaleIdentifier>
+          <DataSourceInfo>MondrianFoodMart</DataSourceInfo>
+        </PropertyList>
+      </Properties>
+    </Execute>
+  </Body>
+</Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testJunk">
+        <Resource name="request">
+            <![CDATA[
+
+]]>
+        </Resource>
+    </TestCase>
+</Root>

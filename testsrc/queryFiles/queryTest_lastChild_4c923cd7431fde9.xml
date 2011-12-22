@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>SELECT {Store.[USA].LastSibling, Store.[USA].[CA].LastSibling, Store.[USA].[CA], Store.[USA].[CA].[Los Angeles]} on ROWS,
+       {Time.[1997], Time.[1997].[Q3].LastSibling, Time.[1997].[Q3].[9].LastSibling} on COLUMNS
+FROM [Sales]
+WHERE([Measures].[Unit Sales], [Product].[All Products], [Store Size in SQFT].[All Store Size in SQFTs], [Store Type].[All Store Types], [Promotions].[All Promotions], [Customers].[USA].[CA].[Woodland Hills], [Education Level].[All Education Levels], [Marital Status].[All Marital Status], [Yearly Income].[All Yearly Incomes], [Promotion Media].[All Media], [Gender].[All Gender])</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[USA].[CA].[Woodland Hills]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q3].[9]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Los Angeles]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>2516.0</cell>
+                <cell>704.0</cell>
+                <cell>247.0</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>2516.0</cell>
+                <cell>704.0</cell>
+                <cell>247.0</cell>
+            </drow>
+            <drow>
+                <cell>1257.0</cell>
+                <cell>371.0</cell>
+                <cell>120.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

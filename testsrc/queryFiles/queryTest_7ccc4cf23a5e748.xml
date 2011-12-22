@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>select { ([Measures].[Store Sales]) } on columns,     generate( crossjoin([Product].[Drink].children, [Time].[1997].children),         { ([Product].currentmember, [Time].[Time].currentmember) }) on rows from [Sales]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Store]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Product]</dim>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Drink].[Alcoholic Beverages]</member>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Drink].[Beverages]</member>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Drink].[Beverages]</member>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Drink].[Beverages]</member>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Drink].[Beverages]</member>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Drink].[Dairy]</member>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Drink].[Dairy]</member>
+                    <member>[Time].[1997].[Q2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Drink].[Dairy]</member>
+                    <member>[Time].[1997].[Q3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Drink].[Dairy]</member>
+                    <member>[Time].[1997].[Q4]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>3082.0</cell>
+            </drow>
+            <drow>
+                <cell>3506.37</cell>
+            </drow>
+            <drow>
+                <cell>3450.49</cell>
+            </drow>
+            <drow>
+                <cell>3990.22</cell>
+            </drow>
+            <drow>
+                <cell>6770.79</cell>
+            </drow>
+            <drow>
+                <cell>6771.57</cell>
+            </drow>
+            <drow>
+                <cell>6881.84</cell>
+            </drow>
+            <drow>
+                <cell>7324.33</cell>
+            </drow>
+            <drow>
+                <cell>1733.01</cell>
+            </drow>
+            <drow>
+                <cell>1636.64</cell>
+            </drow>
+            <drow>
+                <cell>1661.67</cell>
+            </drow>
+            <drow>
+                <cell>2027.28</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

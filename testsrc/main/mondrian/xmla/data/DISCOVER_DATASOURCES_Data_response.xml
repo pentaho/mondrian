@@ -1,0 +1,25 @@
+<DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <return>
+    <root
+      xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+      xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+      <row
+        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+        <DataSourceName>Foodmart 2000</DataSourceName>
+        <DataSourceDescription>Foodmart 2000 on local machine</DataSourceDescription>
+        <URL>http://localhost/xmla/msxisapi.dll</URL>
+        <DataSourceInfo>Foodmart 2000</DataSourceInfo>
+        <ProviderName>Microsoft XML for Analysis</ProviderName>
+        <ProviderType>TDP</ProviderType>
+        <ProviderType>MDP</ProviderType>
+        <ProviderType>DMP</ProviderType>
+        <AuthenticationMode>Unauthenticated</AuthenticationMode>
+      </row>
+    </root>
+  </return>
+</DiscoverResponse>

@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<AggRules tag="default">
+<!--
+    This is an instance of the schema found in the file AggRulesSchema.xml
+-->
+
+    <!--
+      This matches aggregate tables with names: "${fact_table_name}_agg_NNN"
+        <TableMatch id="ta" posttemplate="_agg_[0-9]+"/>
+
+      This matches aggregate tables with names: "${base_name}_agg_NNN"
+        where the fact_table_name == RF_base_name
+        <TableMatch id="ta" posttemplate="_agg_[0-9]+"
+            basename="RF_(.*)"/>
+
+      This matches aggregate tables with names: "agg_.+_${fact_table_name}"
+    -->
+    <TableMatch id="ta" pretemplate="agg_.+_"/>
+
+    <!--
+      This matches aggregate table fact count columns named "fact_count".
+    -->
+    <FactCountMatch id="fca" />
+
+    <LevelMap id="lxx" >
+        <Regex id="logical" charcase="lower" >
+            ${hierarchy_name}_${level_name}
+        </Regex>
+        <Regex id="mixed" charcase="lower" >
+            ${hierarchy_name}_${level_column_name}
+        </Regex>
+        <Regex id="usage" charcase="exact" >
+            ${usage_prefix}${level_column_name}
+        </Regex>
+        <Regex id="physical" charcase="exact" >
+            ${level_column_name}
+        </Regex>
+    </LevelMap>
+
+    <MeasureMap id="mxx" >
+        <Regex id="logical" charcase="lower" >
+            ${measure_name}
+        </Regex>
+        <Regex id="foreignkey" charcase="exact" >
+            <!--
+                Sometimes a base fact table foreign key is also used in a
+                measure. This Regex is used to match such usages in
+                the aggregate table. Using such a match only makes sense
+                if one prior to attempting to match knows that the 
+                column in question in the base fact table is indeed used
+                as a measure (for this matches any foreign key).
+            -->
+            ${measure_column_name}
+        </Regex>
+        <Regex id="physical" charcase="exact" >
+            ${measure_column_name}_${aggregate_name}
+        </Regex>
+    </MeasureMap>
+
+    <AggRule tag="default" >
+        <FactCountMatchRef refId="fca"/>
+        <ForeignKeyMatch id="fka"/>
+        <TableMatchRef refId="ta"/>
+        <LevelMapRef refId="lxx"/>
+        <MeasureMapRef refId="mxx" />
+    </AggRule>
+</AggRules>

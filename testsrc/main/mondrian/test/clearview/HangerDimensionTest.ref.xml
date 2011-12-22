@@ -1,0 +1,1701 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testBasicTrendSmartSubTotal">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="modifiedCubeName">
+            <![CDATA[
+Sales
+]]>
+        </Resource>
+        <Resource name="customDimensions">
+            <![CDATA[
+<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
+  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
+    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
+      <ColumnDefs>
+        <ColumnDef name="HANGER_KEY" type="Numeric"/>
+      </ColumnDefs>
+      <Rows>
+        <Row>
+          <Value column="HANGER_KEY">1</Value>
+        </Row>
+      </Rows>
+    </InlineTable>
+    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
+  </Hierarchy>
+</Dimension>
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Cost]) OR Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1],[Measures].[*FORMATTED_MEASURE_3],[Measures].[*CALCULATED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_2]}'
+Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
+Member [Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=-100
+Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_2])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
+Member [Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=-100
+Member [Measures].[*CALCULATED_MEASURE_0] as '[Measures].[Store Cost] * 10000 / [Measures].[Unit Sales]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
+Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=400
+Member [Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=-100
+Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=-100
+Member [Measures].[*FORMATTED_MEASURE_3] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Member [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q4])}))', SOLVE_ORDER=-100
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS]) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_1]}
+{[Measures].[*FORMATTED_MEASURE_3]}
+{[Measures].[*CALCULATED_MEASURE_0]}
+{[Measures].[*CALCULATED_MEASURE_2]}
+Axis #2:
+{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q1].[1]}
+{[Time].[1997].[Q1].[2]}
+{[Time].[1997].[Q1].[3]}
+{[Time].[1997].[Q2].[4]}
+{[Time].[1997].[Q2].[5]}
+{[Time].[1997].[Q2].[6]}
+{[Time].[1997].[Q3].[7]}
+{[Time].[1997].[Q3].[8]}
+{[Time].[1997].[Q3].[9]}
+{[Time].[1997].[Q4].[10]}
+{[Time].[1997].[Q4].[11]}
+{[Time].[1997].[Q4].[12]}
+Row #0: 55,752.24
+Row #0: 66,291
+Row #0: 8,410.23
+Row #0: 
+Row #1: 52,964.22
+Row #1: 62,610
+Row #1: 8,459.39
+Row #1: 8,410.23
+Row #2: 55,904.87
+Row #2: 65,848
+Row #2: 8,489.99
+Row #2: 8,459.39
+Row #3: 61,005.90
+Row #3: 72,024
+Row #3: 8,470.22
+Row #3: 8,489.99
+Row #4: 18,178.49
+Row #4: 21,628
+Row #4: 8,405.07
+Row #4: 
+Row #5: 17,599.67
+Row #5: 20,957
+Row #5: 8,397.99
+Row #5: 
+Row #6: 19,974.08
+Row #6: 23,706
+Row #6: 8,425.75
+Row #6: 
+Row #7: 17,111.70
+Row #7: 20,179
+Row #7: 8,479.95
+Row #7: 8,405.07
+Row #8: 17,782.56
+Row #8: 21,081
+Row #8: 8,435.35
+Row #8: 8,397.99
+Row #9: 18,069.97
+Row #9: 21,350
+Row #9: 8,463.69
+Row #9: 8,425.75
+Row #10: 20,005.79
+Row #10: 23,763
+Row #10: 8,418.88
+Row #10: 8,479.95
+Row #11: 18,435.96
+Row #11: 21,697
+Row #11: 8,497.01
+Row #11: 8,435.35
+Row #12: 17,463.12
+Row #12: 20,388
+Row #12: 8,565.39
+Row #12: 8,463.69
+Row #13: 16,902.01
+Row #13: 19,958
+Row #13: 8,468.79
+Row #13: 8,418.88
+Row #14: 21,357.76
+Row #14: 25,270
+Row #14: 8,451.82
+Row #14: 8,497.01
+Row #15: 22,746.13
+Row #15: 26,796
+Row #15: 8,488.63
+Row #15: 8,565.39
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBasicSubTotal2D">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="modifiedCubeName">
+            <![CDATA[
+Sales
+]]>
+        </Resource>
+        <Resource name="customDimensions">
+            <![CDATA[
+<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
+  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
+    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
+      <ColumnDefs>
+        <ColumnDef name="HANGER_KEY" type="Numeric"/>
+      </ColumnDefs>
+      <Rows>
+        <Row>
+          <Value column="HANGER_KEY">1</Value>
+        </Row>
+      </Rows>
+    </InlineTable>
+    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
+  </Hierarchy>
+</Dimension>
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Time])'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Customers].CurrentMember.OrderKey,BASC,Ancestor([Customers].[State Province].currentMember,1).OrderKey,BASC,Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members'
+Set [*NATIVE_MEMBERS_Customers] as 'Generate([*NATIVE_CJ_SET], {[Customers].CurrentMember})'
+Set [*BASE_MEMBERS_Customers] as '[Customers].[State Province].Members'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1],[Measures].[*FORMATTED_MEASURE_4],[Measures].[*CALCULATED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_2],[Measures].[*CALCULATED_MEASURE_3]}'
+Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Customers].currentMember,[Time].[Time].currentMember)})'
+Member [Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Customers].currentMember, [Time].[1997].[Q4])}))', SOLVE_ORDER=-101
+Member [Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Customers].currentMember, [Time].[1998].[Q1])}))', SOLVE_ORDER=-101
+Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_2])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
+Member [Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Customers].currentMember, [Time].[1998].[Q3])}))', SOLVE_ORDER=-101
+Member [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Customers].currentMember, [Time].[1997].[Q1])}))', SOLVE_ORDER=-101
+Member [Measures].[*CALCULATED_MEASURE_3] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_3])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
+Member [Measures].[*CALCULATED_MEASURE_0] as '[Measures].[Store Cost] * 10000 / [Measures].[Unit Sales]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
+Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=400
+Member [Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Customers].currentMember, [Time].[1998].[Q2])}))', SOLVE_ORDER=-101
+Member [Le System-Trend Hanger].[TrendContext_3] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Measures].[*FORMATTED_MEASURE_4] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Customers].[State Province], 1, [Customers].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Customers].currentMember, [Time].[1997].[Q3])}))', SOLVE_ORDER=-101
+Member [Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Customers].currentMember, [Time].[1998].[Q4])}))', SOLVE_ORDER=-101
+Member [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Customers].currentMember, [Time].[1997].[Q2])}))', SOLVE_ORDER=-101
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Customers].currentMember)}),{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}),[*SORTED_ROW_AXIS]) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_1]}
+{[Measures].[*FORMATTED_MEASURE_4]}
+{[Measures].[*CALCULATED_MEASURE_0]}
+{[Measures].[*CALCULATED_MEASURE_2]}
+{[Measures].[*CALCULATED_MEASURE_3]}
+Axis #2:
+{[Customers].[USA].[CA], [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customers].[USA].[CA], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customers].[USA].[CA], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customers].[USA].[CA], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customers].[USA].[OR], [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customers].[USA].[OR], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customers].[USA].[OR], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customers].[USA].[OR], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customers].[USA].[WA], [Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customers].[USA].[WA], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customers].[USA].[WA], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customers].[USA].[WA], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Customers].[USA].[CA], [Time].[1997].[Q1].[1]}
+{[Customers].[USA].[CA], [Time].[1997].[Q1].[2]}
+{[Customers].[USA].[CA], [Time].[1997].[Q1].[3]}
+{[Customers].[USA].[CA], [Time].[1997].[Q2].[4]}
+{[Customers].[USA].[CA], [Time].[1997].[Q2].[5]}
+{[Customers].[USA].[CA], [Time].[1997].[Q2].[6]}
+{[Customers].[USA].[CA], [Time].[1997].[Q3].[7]}
+{[Customers].[USA].[CA], [Time].[1997].[Q3].[8]}
+{[Customers].[USA].[CA], [Time].[1997].[Q3].[9]}
+{[Customers].[USA].[CA], [Time].[1997].[Q4].[10]}
+{[Customers].[USA].[CA], [Time].[1997].[Q4].[11]}
+{[Customers].[USA].[CA], [Time].[1997].[Q4].[12]}
+{[Customers].[USA].[OR], [Time].[1997].[Q1].[1]}
+{[Customers].[USA].[OR], [Time].[1997].[Q1].[2]}
+{[Customers].[USA].[OR], [Time].[1997].[Q1].[3]}
+{[Customers].[USA].[OR], [Time].[1997].[Q2].[4]}
+{[Customers].[USA].[OR], [Time].[1997].[Q2].[5]}
+{[Customers].[USA].[OR], [Time].[1997].[Q2].[6]}
+{[Customers].[USA].[OR], [Time].[1997].[Q3].[7]}
+{[Customers].[USA].[OR], [Time].[1997].[Q3].[8]}
+{[Customers].[USA].[OR], [Time].[1997].[Q3].[9]}
+{[Customers].[USA].[OR], [Time].[1997].[Q4].[10]}
+{[Customers].[USA].[OR], [Time].[1997].[Q4].[11]}
+{[Customers].[USA].[OR], [Time].[1997].[Q4].[12]}
+{[Customers].[USA].[WA], [Time].[1997].[Q1].[1]}
+{[Customers].[USA].[WA], [Time].[1997].[Q1].[2]}
+{[Customers].[USA].[WA], [Time].[1997].[Q1].[3]}
+{[Customers].[USA].[WA], [Time].[1997].[Q2].[4]}
+{[Customers].[USA].[WA], [Time].[1997].[Q2].[5]}
+{[Customers].[USA].[WA], [Time].[1997].[Q2].[6]}
+{[Customers].[USA].[WA], [Time].[1997].[Q3].[7]}
+{[Customers].[USA].[WA], [Time].[1997].[Q3].[8]}
+{[Customers].[USA].[WA], [Time].[1997].[Q3].[9]}
+{[Customers].[USA].[WA], [Time].[1997].[Q4].[10]}
+{[Customers].[USA].[WA], [Time].[1997].[Q4].[11]}
+{[Customers].[USA].[WA], [Time].[1997].[Q4].[12]}
+Row #0: 14,431.09
+Row #0: 16,890
+Row #0: 8,544.16
+Row #0: 
+Row #0: 
+Row #1: 15,332.02
+Row #1: 18,052
+Row #1: 8,493.25
+Row #1: 
+Row #1: 8,544.16
+Row #2: 15,672.83
+Row #2: 18,370
+Row #2: 8,531.75
+Row #2: 
+Row #2: 8,493.25
+Row #3: 18,094.50
+Row #3: 21,436
+Row #3: 8,441.17
+Row #3: 
+Row #3: 8,531.75
+Row #4: 16,081.07
+Row #4: 19,287
+Row #4: 8,337.78
+Row #4: 8,544.16
+Row #4: 
+Row #5: 12,678.96
+Row #5: 15,079
+Row #5: 8,408.36
+Row #5: 8,493.25
+Row #5: 8,337.78
+Row #6: 14,273.78
+Row #6: 16,940
+Row #6: 8,426.08
+Row #6: 8,531.75
+Row #6: 8,408.36
+Row #7: 13,738.68
+Row #7: 16,353
+Row #7: 8,401.32
+Row #7: 8,441.17
+Row #7: 8,426.08
+Row #8: 25,240.08
+Row #8: 30,114
+Row #8: 8,381.51
+Row #8: 8,337.78
+Row #8: 
+Row #9: 24,953.25
+Row #9: 29,479
+Row #9: 8,464.75
+Row #9: 8,408.36
+Row #9: 8,381.51
+Row #10: 25,958.26
+Row #10: 30,538
+Row #10: 8,500.31
+Row #10: 8,426.08
+Row #10: 8,464.75
+Row #11: 29,172.72
+Row #11: 34,235
+Row #11: 8,521.31
+Row #11: 8,401.32
+Row #11: 8,500.31
+Row #12: 4,670.97
+Row #12: 5,377
+Row #12: 8,686.94
+Row #12: 
+Row #12: 
+Row #13: 5,065.41
+Row #13: 6,021
+Row #13: 8,412.90
+Row #13: 
+Row #13: 
+Row #14: 4,694.71
+Row #14: 5,492
+Row #14: 8,548.27
+Row #14: 
+Row #14: 
+Row #15: 5,445.33
+Row #15: 6,382
+Row #15: 8,532.33
+Row #15: 
+Row #15: 8,686.94
+Row #16: 4,714.30
+Row #16: 5,607
+Row #16: 8,407.89
+Row #16: 
+Row #16: 8,412.90
+Row #17: 5,172.38
+Row #17: 6,063
+Row #17: 8,531.06
+Row #17: 
+Row #17: 8,548.27
+Row #18: 4,600.94
+Row #18: 5,403
+Row #18: 8,515.52
+Row #18: 
+Row #18: 8,532.33
+Row #19: 5,939.40
+Row #19: 6,984
+Row #19: 8,504.30
+Row #19: 
+Row #19: 8,407.89
+Row #20: 5,132.49
+Row #20: 5,983
+Row #20: 8,578.45
+Row #20: 
+Row #20: 8,531.06
+Row #21: 5,228.13
+Row #21: 6,213
+Row #21: 8,414.83
+Row #21: 
+Row #21: 8,515.52
+Row #22: 6,115.73
+Row #22: 7,268
+Row #22: 8,414.60
+Row #22: 
+Row #22: 8,504.30
+Row #23: 6,750.63
+Row #23: 7,955
+Row #23: 8,486.03
+Row #23: 
+Row #23: 8,578.45
+Row #24: 5,717.17
+Row #24: 6,909
+Row #24: 8,274.97
+Row #24: 8,686.94
+Row #24: 
+Row #25: 3,886.33
+Row #25: 4,617
+Row #25: 8,417.44
+Row #25: 8,412.90
+Row #25: 
+Row #26: 6,477.57
+Row #26: 7,761
+Row #26: 8,346.31
+Row #26: 8,548.27
+Row #26: 
+Row #27: 3,326.07
+Row #27: 3,901
+Row #27: 8,526.21
+Row #27: 8,532.33
+Row #27: 8,274.97
+Row #28: 5,108.53
+Row #28: 6,107
+Row #28: 8,365.05
+Row #28: 8,407.89
+Row #28: 8,417.44
+Row #29: 4,244.36
+Row #29: 5,071
+Row #29: 8,369.86
+Row #29: 8,531.06
+Row #29: 8,346.31
+Row #30: 6,446.68
+Row #30: 7,720
+Row #30: 8,350.62
+Row #30: 8,515.52
+Row #30: 8,526.21
+Row #31: 3,578.17
+Row #31: 4,217
+Row #31: 8,485.12
+Row #31: 8,504.30
+Row #31: 8,365.05
+Row #32: 4,248.93
+Row #32: 5,003
+Row #32: 8,492.77
+Row #32: 8,578.45
+Row #32: 8,369.86
+Row #33: 3,578.72
+Row #33: 4,206
+Row #33: 8,508.60
+Row #33: 8,414.83
+Row #33: 8,350.62
+Row #34: 4,778.91
+Row #34: 5,705
+Row #34: 8,376.70
+Row #34: 8,414.60
+Row #34: 8,485.12
+Row #35: 5,381.06
+Row #35: 6,442
+Row #35: 8,353.08
+Row #35: 8,486.03
+Row #35: 8,492.77
+Row #36: 7,790.35
+Row #36: 9,342
+Row #36: 8,339.06
+Row #36: 8,274.97
+Row #36: 
+Row #37: 8,647.93
+Row #37: 10,319
+Row #37: 8,380.59
+Row #37: 8,417.44
+Row #37: 
+Row #38: 8,801.80
+Row #38: 10,453
+Row #38: 8,420.36
+Row #38: 8,346.31
+Row #38: 
+Row #39: 8,340.29
+Row #39: 9,896
+Row #39: 8,427.94
+Row #39: 8,526.21
+Row #39: 8,339.06
+Row #40: 7,959.72
+Row #40: 9,367
+Row #40: 8,497.62
+Row #40: 8,365.05
+Row #40: 8,380.59
+Row #41: 8,653.24
+Row #41: 10,216
+Row #41: 8,470.28
+Row #41: 8,369.86
+Row #41: 8,420.36
+Row #42: 8,958.18
+Row #42: 10,640
+Row #42: 8,419.34
+Row #42: 8,350.62
+Row #42: 8,427.94
+Row #43: 8,918.39
+Row #43: 10,496
+Row #43: 8,496.94
+Row #43: 8,485.12
+Row #43: 8,497.62
+Row #44: 8,081.70
+Row #44: 9,402
+Row #44: 8,595.72
+Row #44: 8,492.77
+Row #44: 8,470.28
+Row #45: 8,095.15
+Row #45: 9,539
+Row #45: 8,486.37
+Row #45: 8,508.60
+Row #45: 8,419.34
+Row #46: 10,463.12
+Row #46: 12,297
+Row #46: 8,508.68
+Row #46: 8,376.70
+Row #46: 8,496.94
+Row #47: 10,614.44
+Row #47: 12,399
+Row #47: 8,560.73
+Row #47: 8,353.08
+Row #47: 8,595.72
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBasicSubtotalWithAttributeFilter">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="modifiedCubeName">
+            <![CDATA[
+Sales
+]]>
+        </Resource>
+        <Resource name="customDimensions">
+            <![CDATA[
+<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
+  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
+    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
+      <ColumnDefs>
+        <ColumnDef name="HANGER_KEY" type="Numeric"/>
+      </ColumnDefs>
+      <Rows>
+        <Row>
+          <Value column="HANGER_KEY">1</Value>
+        </Row>
+      </Rows>
+    </InlineTable>
+    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
+  </Hierarchy>
+</Dimension>
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Cost]) OR Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as '{[Time].[1997].[Q1].[1],[Time].[1997].[Q1].[2],[Time].[1997].[Q2].[4],[Time].[1997].[Q2].[5]}'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1],[Measures].[*FORMATTED_MEASURE_3],[Measures].[*CALCULATED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_2]}'
+Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
+Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_2])', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
+Member [Measures].[*FORMATTED_MEASURE_3] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=400
+Member [Measures].[*CALCULATED_MEASURE_0] as '[Measures].[Store Cost] * 10000 / [Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS]) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_1]}
+{[Measures].[*FORMATTED_MEASURE_3]}
+{[Measures].[*CALCULATED_MEASURE_0]}
+{[Measures].[*CALCULATED_MEASURE_2]}
+Axis #2:
+{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q1].[1]}
+{[Time].[1997].[Q1].[2]}
+{[Time].[1997].[Q2].[4]}
+{[Time].[1997].[Q2].[5]}
+Row #0: 35,778.16
+Row #0: 42,585
+Row #0: 8,402
+Row #0: 
+Row #1: 34,894.26
+Row #1: 41,260
+Row #1: 8,457
+Row #1: 8,402
+Row #2: 18,178.49
+Row #2: 21,628
+Row #2: 8,405
+Row #2: 
+Row #3: 17,599.67
+Row #3: 20,957
+Row #3: 8,398
+Row #3: 
+Row #4: 17,111.70
+Row #4: 20,179
+Row #4: 8,480
+Row #4: 8,405
+Row #5: 17,782.56
+Row #5: 21,081
+Row #5: 8,435
+Row #5: 8,398
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTrendWithPercentandDelta">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="modifiedCubeName">
+            <![CDATA[
+Sales
+]]>
+        </Resource>
+        <Resource name="customDimensions">
+            <![CDATA[
+<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
+  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
+    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
+      <ColumnDefs>
+        <ColumnDef name="HANGER_KEY" type="Numeric"/>
+      </ColumnDefs>
+      <Rows>
+        <Row>
+          <Value column="HANGER_KEY">1</Value>
+        </Row>
+      </Rows>
+    </InlineTable>
+    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
+  </Hierarchy>
+</Dimension>
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Cost]) OR Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as 'Filter([Time].[Month].Members,[Time].[Time].CurrentMember.Parent In {[Time].[1997].[Q2],[Time].[1997].[Q3]})'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1],[Measures].[*FORMATTED_MEASURE_11],[Measures].[*CALCULATED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_6],[Measures].[*CALCULATED_MEASURE_5],[Measures].[*CALCULATED_MEASURE_3],[Measures].[*CALCULATED_MEASURE_7],[Measures].[*CALCULATED_MEASURE_8],[Measures].[*CALCULATED_MEASURE_13],[Measures].[*CALCULATED_MEASURE_10]}'
+Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
+Member [Measures].[*CALCULATED_MEASURE_6] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_6])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
+Member [Measures].[*CALCULATED_MEASURE_10] as '[Measures].[*CALCULATED_MEASURE_7] - [Measures].[*CALCULATED_MEASURE_9]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
+Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_2])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
+Member [Measures].[*CALCULATED_MEASURE_12] as '([Measures].[*CALCULATED_MEASURE_7], [Le System-Trend Hanger].[TrendContext_12])', FORMAT_STRING = '###0.00%', SOLVE_ORDER=-300
+Member [Measures].[*CALCULATED_MEASURE_7] as '[Measures].[Store Cost] / 1000', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-300
+Member [Measures].[*FORMATTED_MEASURE_11] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Member [Measures].[*CALCULATED_MEASURE_3] as '[Measures].[*CALCULATED_MEASURE_0] - [Measures].[*CALCULATED_MEASURE_2]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
+Member [Le System-Trend Hanger].[TrendContext_6] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Measures].[*CALCULATED_MEASURE_0] as '[Measures].[Store Cost] / [Measures].[Unit Sales]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
+Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=400
+Member [Measures].[*CALCULATED_MEASURE_13] as '([Measures].[*CALCULATED_MEASURE_7] - [Measures].[*CALCULATED_MEASURE_12])/[Measures].[*CALCULATED_MEASURE_12]', FORMAT_STRING = '###0.00%', SOLVE_ORDER=0
+Member [Le System-Trend Hanger].[TrendContext_12] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '###0.00%', SOLVE_ORDER=-200
+Member [Measures].[*CALCULATED_MEASURE_4] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_4])', FORMAT_STRING = '###0.00%', SOLVE_ORDER=0
+Member [Measures].[*CALCULATED_MEASURE_8] as '([Measures].[*CALCULATED_MEASURE_7], [Le System-Trend Hanger].[TrendContext_8])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-300
+Member [Le System-Trend Hanger].[TrendContext_9] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_4] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '###0.00%', SOLVE_ORDER=-200
+Member [Measures].[*CALCULATED_MEASURE_5] as '([Measures].[*CALCULATED_MEASURE_0] - [Measures].[*CALCULATED_MEASURE_4])/[Measures].[*CALCULATED_MEASURE_4]', FORMAT_STRING = '###0.00%', SOLVE_ORDER=0
+Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Le System-Trend Hanger].[TrendContext_8] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Measures].[*CALCULATED_MEASURE_9] as '([Measures].[*CALCULATED_MEASURE_7], [Le System-Trend Hanger].[TrendContext_9])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-300
+Member [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS]) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_1]}
+{[Measures].[*FORMATTED_MEASURE_11]}
+{[Measures].[*CALCULATED_MEASURE_0]}
+{[Measures].[*CALCULATED_MEASURE_6]}
+{[Measures].[*CALCULATED_MEASURE_5]}
+{[Measures].[*CALCULATED_MEASURE_3]}
+{[Measures].[*CALCULATED_MEASURE_7]}
+{[Measures].[*CALCULATED_MEASURE_8]}
+{[Measures].[*CALCULATED_MEASURE_13]}
+{[Measures].[*CALCULATED_MEASURE_10]}
+Axis #2:
+{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q2].[4]}
+{[Time].[1997].[Q2].[5]}
+{[Time].[1997].[Q2].[6]}
+{[Time].[1997].[Q3].[7]}
+{[Time].[1997].[Q3].[8]}
+{[Time].[1997].[Q3].[9]}
+Row #0: 52,964.22
+Row #0: 62,610
+Row #0: 0.85
+Row #0: 0.84
+Row #0: 0.58%
+Row #0: 0.00
+Row #0: 52.96
+Row #0: 55.75
+Row #0: -5.00%
+Row #0: -2.79
+Row #1: 55,904.87
+Row #1: 65,848
+Row #1: 0.85
+Row #1: 0.85
+Row #1: 0.36%
+Row #1: 0.00
+Row #1: 55.90
+Row #1: 52.96
+Row #1: 5.55%
+Row #1: 2.94
+Row #2: 17,111.70
+Row #2: 20,179
+Row #2: 0.85
+Row #2: 0.84
+Row #2: 0.89%
+Row #2: 0.01
+Row #2: 17.11
+Row #2: 18.18
+Row #2: -5.87%
+Row #2: -1.07
+Row #3: 17,782.56
+Row #3: 21,081
+Row #3: 0.84
+Row #3: 0.84
+Row #3: 0.44%
+Row #3: 0.00
+Row #3: 17.78
+Row #3: 17.60
+Row #3: 1.04%
+Row #3: 0.18
+Row #4: 18,069.97
+Row #4: 21,350
+Row #4: 0.85
+Row #4: 0.84
+Row #4: 0.45%
+Row #4: 0.00
+Row #4: 18.07
+Row #4: 19.97
+Row #4: -9.53%
+Row #4: -1.90
+Row #5: 20,005.79
+Row #5: 23,763
+Row #5: 0.84
+Row #5: 0.85
+Row #5: -0.72%
+Row #5: -0.01
+Row #5: 20.01
+Row #5: 17.11
+Row #5: 16.91%
+Row #5: 2.89
+Row #6: 18,435.96
+Row #6: 21,697
+Row #6: 0.85
+Row #6: 0.84
+Row #6: 0.73%
+Row #6: 0.01
+Row #6: 18.44
+Row #6: 17.78
+Row #6: 3.67%
+Row #6: 0.65
+Row #7: 17,463.12
+Row #7: 20,388
+Row #7: 0.86
+Row #7: 0.85
+Row #7: 1.20%
+Row #7: 0.01
+Row #7: 17.46
+Row #7: 18.07
+Row #7: -3.36%
+Row #7: -0.61
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTrendTotalwMinMax">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="modifiedCubeName">
+            <![CDATA[
+Sales
+]]>
+        </Resource>
+        <Resource name="customDimensions">
+            <![CDATA[
+<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
+  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
+    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
+      <ColumnDefs>
+        <ColumnDef name="HANGER_KEY" type="Numeric"/>
+      </ColumnDefs>
+      <Rows>
+        <Row>
+          <Value column="HANGER_KEY">1</Value>
+        </Row>
+      </Rows>
+    </InlineTable>
+    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
+  </Hierarchy>
+</Dimension>
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Cost]))'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1],[Measures].[*CALCULATED_MEASURE_3],[Measures].[*CALCULATED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_2]}'
+Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
+Member [Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~MIN] as 'Min(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~AVG] as 'Avg(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~MAX] as 'Max(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=200
+
+Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_2])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
+Member [Le System-Trend Hanger].[TrendContext_2] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+
+Member [Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~MIN] as 'Min(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=200
+Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=400
+Member [Measures].[*CALCULATED_MEASURE_0] as '[Measures].[Store Cost]+10', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=0
+Member [Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~MAX] as 'Max(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~MAX] as 'Max(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~AVG] as 'Avg(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q4])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~MAX] as 'Max(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q4])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~MIN] as 'Min(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~MIN] as 'Min(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q4])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~AVG] as 'Avg(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~MAX] as 'Max(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~MIN] as 'Min(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~AVG] as 'Avg(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~MIN] as 'Min(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~AVG] as 'Avg(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=-100
+Member [Measures].[*CALCULATED_MEASURE_3] as '([Measures].[Store Cost], ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember))', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=-200
+Member [Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~MAX] as 'Max(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~MAX] as 'Max(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~MAX] as 'Max(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~AVG] as 'Avg(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~MIN] as 'Min(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~MIN] as 'Min(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~AVG] as 'Avg(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~AVG] as 'Avg(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=200
+Member [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q4])}))', SOLVE_ORDER=-100
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~MIN], [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~MIN], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~MIN], [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~MIN], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~MIN], [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~MIN], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~MIN], [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~MIN]},Union({[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~MAX], [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~MAX], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~MAX], [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~MAX], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~MAX], [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~MAX], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~MAX], [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~MAX]},Union({[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~AVG], [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~AVG], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~AVG], [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~AVG], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~AVG], [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~AVG], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~AVG], [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~AVG]},Union({[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS])))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_1]}
+{[Measures].[*CALCULATED_MEASURE_3]}
+{[Measures].[*CALCULATED_MEASURE_0]}
+{[Measures].[*CALCULATED_MEASURE_2]}
+Axis #2:
+{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~MIN]}
+{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~MIN]}
+{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~MIN]}
+{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~MIN]}
+{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~MAX]}
+{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~MAX]}
+{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~MAX]}
+{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~MAX]}
+{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~AVG]}
+{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~AVG]}
+{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~AVG]}
+{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~AVG]}
+{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q1].[1]}
+{[Time].[1997].[Q1].[2]}
+{[Time].[1997].[Q1].[3]}
+{[Time].[1997].[Q2].[4]}
+{[Time].[1997].[Q2].[5]}
+{[Time].[1997].[Q2].[6]}
+{[Time].[1997].[Q3].[7]}
+{[Time].[1997].[Q3].[8]}
+{[Time].[1997].[Q3].[9]}
+{[Time].[1997].[Q4].[10]}
+{[Time].[1997].[Q4].[11]}
+{[Time].[1997].[Q4].[12]}
+Row #0: 17,599.67
+Row #0: 
+Row #0: 17,609.67
+Row #0: 10.00
+Row #1: 17,111.70
+Row #1: 17,599.67
+Row #1: 17,121.70
+Row #1: 17,609.67
+Row #2: 17,463.12
+Row #2: 17,111.70
+Row #2: 17,473.12
+Row #2: 17,121.70
+Row #3: 16,902.01
+Row #3: 17,463.12
+Row #3: 16,912.01
+Row #3: 17,473.12
+Row #4: 19,974.08
+Row #4: 
+Row #4: 19,984.08
+Row #4: 10.00
+Row #5: 18,069.97
+Row #5: 19,974.08
+Row #5: 18,079.97
+Row #5: 19,984.08
+Row #6: 20,005.79
+Row #6: 18,069.97
+Row #6: 20,015.79
+Row #6: 18,079.97
+Row #7: 22,746.13
+Row #7: 20,005.79
+Row #7: 22,756.13
+Row #7: 20,015.79
+Row #8: 18,584.08
+Row #8: 
+Row #8: 18,594.08
+Row #8: 10.00
+Row #9: 17,654.74
+Row #9: 18,584.08
+Row #9: 17,664.74
+Row #9: 18,594.08
+Row #10: 18,634.96
+Row #10: 17,654.74
+Row #10: 18,644.96
+Row #10: 17,664.74
+Row #11: 20,335.30
+Row #11: 18,634.96
+Row #11: 20,345.30
+Row #11: 18,644.96
+Row #12: 55,752.24
+Row #12: 
+Row #12: 55,762.24
+Row #12: 10.00
+Row #13: 
+Row #13: 
+Row #13: 10.00
+Row #13: 10.00
+Row #14: 52,964.22
+Row #14: 55,752.24
+Row #14: 52,974.22
+Row #14: 55,762.24
+Row #15: 
+Row #15: 
+Row #15: 10.00
+Row #15: 10.00
+Row #16: 55,904.87
+Row #16: 52,964.22
+Row #16: 55,914.87
+Row #16: 52,974.22
+Row #17: 
+Row #17: 
+Row #17: 10.00
+Row #17: 10.00
+Row #18: 61,005.90
+Row #18: 55,904.87
+Row #18: 61,015.90
+Row #18: 55,914.87
+Row #19: 
+Row #19: 
+Row #19: 10.00
+Row #19: 10.00
+Row #20: 18,178.49
+Row #20: 
+Row #20: 18,188.49
+Row #20: 10.00
+Row #21: 17,599.67
+Row #21: 
+Row #21: 17,609.67
+Row #21: 10.00
+Row #22: 19,974.08
+Row #22: 
+Row #22: 19,984.08
+Row #22: 10.00
+Row #23: 17,111.70
+Row #23: 18,178.49
+Row #23: 17,121.70
+Row #23: 18,188.49
+Row #24: 17,782.56
+Row #24: 17,599.67
+Row #24: 17,792.56
+Row #24: 17,609.67
+Row #25: 18,069.97
+Row #25: 19,974.08
+Row #25: 18,079.97
+Row #25: 19,984.08
+Row #26: 20,005.79
+Row #26: 17,111.70
+Row #26: 20,015.79
+Row #26: 17,121.70
+Row #27: 18,435.96
+Row #27: 17,782.56
+Row #27: 18,445.96
+Row #27: 17,792.56
+Row #28: 17,463.12
+Row #28: 18,069.97
+Row #28: 17,473.12
+Row #28: 18,079.97
+Row #29: 16,902.01
+Row #29: 20,005.79
+Row #29: 16,912.01
+Row #29: 20,015.79
+Row #30: 21,357.76
+Row #30: 18,435.96
+Row #30: 21,367.76
+Row #30: 18,445.96
+Row #31: 22,746.13
+Row #31: 17,463.12
+Row #31: 22,756.13
+Row #31: 17,473.12
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTrendOnSummaryMetric">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="modifiedCubeName">
+            <![CDATA[
+Sales
+]]>
+        </Resource>
+        <Resource name="customDimensions">
+            <![CDATA[
+<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
+  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
+    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
+      <ColumnDefs>
+        <ColumnDef name="HANGER_KEY" type="Numeric"/>
+      </ColumnDefs>
+      <Rows>
+        <Row>
+          <Value column="HANGER_KEY">1</Value>
+        </Row>
+      </Rows>
+    </InlineTable>
+    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
+  </Hierarchy>
+</Dimension>
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Cost]))'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,Ancestor([Time].[Quarter].currentMember,1).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_1],[Measures].[*CALCULATED_MEASURE_2],[Measures].[*SUMMARY_MEASURE_5],[Measures].[*SUMMARY_MEASURE_4],[Measures].[*SUMMARY_MEASURE_6],[Measures].[*SUMMARY_MEASURE_3]}'
+Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
+Member [Measures].[*SUMMARY_MEASURE_4] as 'Sum(Head(Exists([*SORTED_ROW_AXIS], {(Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]))}),Rank(([Time].[Time].currentMember),Exists([*SORTED_ROW_AXIS], {(Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]))}))),[Measures].[*CALCULATED_MEASURE_2])', FORMAT_STRING = '#,##0', SOLVE_ORDER=100
+Member [Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=-100
+Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_1], [Le System-Trend Hanger].[TrendContext_2_0])', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Member [Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=-100
+Member [Measures].[*SUMMARY_MEASURE_3] as '[Measures].[*CALCULATED_MEASURE_2]/([Measures].[*CALCULATED_MEASURE_2],Ancestor([Time].[Time].CurrentMember,[Time].[Quarter]).CalculatedChild("*TOTAL_MEMBER_SEL~SUM"))', FORMAT_STRING = '###0.00%', SOLVE_ORDER=100
+Member [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=-100
+Member [Measures].[*SUMMARY_MEASURE_6] as '[Measures].[*CALCULATED_MEASURE_1]/([Measures].[*CALCULATED_MEASURE_1],Ancestor([Time].[Time].CurrentMember,[Time].[Quarter]).CalculatedChild("*TOTAL_MEMBER_SEL~SUM"))', FORMAT_STRING = '###0.00%', SOLVE_ORDER=100
+Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Member [Measures].[*SUMMARY_MEASURE_5] as 'Sum(Head(Exists([*SORTED_ROW_AXIS], {(Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]))}),Rank(([Time].[Time].currentMember),Exists([*SORTED_ROW_AXIS], {(Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]))}))),[Measures].[*CALCULATED_MEASURE_1])', FORMAT_STRING = '#,##0', SOLVE_ORDER=100
+Member [Measures].[*CALCULATED_MEASURE_1] as '[Measures].[Store Cost] + 10000', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Member [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=-100
+Member [Le System-Trend Hanger].[TrendContext_2_0] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q4])}))', SOLVE_ORDER=-100
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS]) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+{[Measures].[*CALCULATED_MEASURE_1]}
+{[Measures].[*CALCULATED_MEASURE_2]}
+{[Measures].[*SUMMARY_MEASURE_5]}
+{[Measures].[*SUMMARY_MEASURE_4]}
+{[Measures].[*SUMMARY_MEASURE_6]}
+{[Measures].[*SUMMARY_MEASURE_3]}
+Axis #2:
+{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q1].[1]}
+{[Time].[1997].[Q1].[2]}
+{[Time].[1997].[Q1].[3]}
+{[Time].[1997].[Q2].[4]}
+{[Time].[1997].[Q2].[5]}
+{[Time].[1997].[Q2].[6]}
+{[Time].[1997].[Q3].[7]}
+{[Time].[1997].[Q3].[8]}
+{[Time].[1997].[Q3].[9]}
+{[Time].[1997].[Q4].[10]}
+{[Time].[1997].[Q4].[11]}
+{[Time].[1997].[Q4].[12]}
+Row #0: 55,752
+Row #0: 65,752
+Row #0: 10,000
+Row #0: 
+Row #0: 
+Row #0: 100.00%
+Row #0: 100.00%
+Row #1: 
+Row #1: 10,000
+Row #1: 10,000
+Row #1: 
+Row #1: 
+Row #1: 100.00%
+Row #1: 100.00%
+Row #2: 52,964
+Row #2: 62,964
+Row #2: 65,752
+Row #2: 
+Row #2: 
+Row #2: 100.00%
+Row #2: 100.00%
+Row #3: 
+Row #3: 10,000
+Row #3: 10,000
+Row #3: 
+Row #3: 
+Row #3: 100.00%
+Row #3: 100.00%
+Row #4: 55,905
+Row #4: 65,905
+Row #4: 62,964
+Row #4: 
+Row #4: 
+Row #4: 100.00%
+Row #4: 100.00%
+Row #5: 
+Row #5: 10,000
+Row #5: 10,000
+Row #5: 
+Row #5: 
+Row #5: 100.00%
+Row #5: 100.00%
+Row #6: 61,006
+Row #6: 71,006
+Row #6: 65,905
+Row #6: 
+Row #6: 
+Row #6: 100.00%
+Row #6: 100.00%
+Row #7: 
+Row #7: 10,000
+Row #7: 10,000
+Row #7: 
+Row #7: 
+Row #7: 100.00%
+Row #7: 100.00%
+Row #8: 18,178
+Row #8: 28,178
+Row #8: 10,000
+Row #8: 28,178
+Row #8: 10,000
+Row #8: 42.86%
+Row #8: 100.00%
+Row #9: 17,600
+Row #9: 27,600
+Row #9: 10,000
+Row #9: 55,778
+Row #9: 20,000
+Row #9: 41.98%
+Row #9: 100.00%
+Row #10: 19,974
+Row #10: 29,974
+Row #10: 10,000
+Row #10: 85,752
+Row #10: 30,000
+Row #10: 45.59%
+Row #10: 100.00%
+Row #11: 17,112
+Row #11: 27,112
+Row #11: 28,178
+Row #11: 27,112
+Row #11: 28,178
+Row #11: 43.06%
+Row #11: 42.86%
+Row #12: 17,783
+Row #12: 27,783
+Row #12: 27,600
+Row #12: 54,894
+Row #12: 55,778
+Row #12: 44.12%
+Row #12: 41.98%
+Row #13: 18,070
+Row #13: 28,070
+Row #13: 29,974
+Row #13: 82,964
+Row #13: 85,752
+Row #13: 44.58%
+Row #13: 45.59%
+Row #14: 20,006
+Row #14: 30,006
+Row #14: 27,112
+Row #14: 30,006
+Row #14: 27,112
+Row #14: 45.53%
+Row #14: 43.06%
+Row #15: 18,436
+Row #15: 28,436
+Row #15: 27,783
+Row #15: 58,442
+Row #15: 54,894
+Row #15: 43.15%
+Row #15: 44.12%
+Row #16: 17,463
+Row #16: 27,463
+Row #16: 28,070
+Row #16: 85,905
+Row #16: 82,964
+Row #16: 41.67%
+Row #16: 44.58%
+Row #17: 16,902
+Row #17: 26,902
+Row #17: 30,006
+Row #17: 26,902
+Row #17: 30,006
+Row #17: 37.89%
+Row #17: 45.53%
+Row #18: 21,358
+Row #18: 31,358
+Row #18: 28,436
+Row #18: 58,260
+Row #18: 58,442
+Row #18: 44.16%
+Row #18: 43.15%
+Row #19: 22,746
+Row #19: 32,746
+Row #19: 27,463
+Row #19: 91,006
+Row #19: 85,905
+Row #19: 46.12%
+Row #19: 41.67%
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTrendOnTrend">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="modifiedCubeName">
+            <![CDATA[
+Sales
+]]>
+        </Resource>
+        <Resource name="customDimensions">
+            <![CDATA[
+<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
+  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
+    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
+      <ColumnDefs>
+        <ColumnDef name="HANGER_KEY" type="Numeric"/>
+      </ColumnDefs>
+      <Rows>
+        <Row>
+          <Value column="HANGER_KEY">1</Value>
+        </Row>
+      </Rows>
+    </InlineTable>
+    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
+  </Hierarchy>
+</Dimension>
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Sales]))'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Year]).OrderKey,BASC,Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_1],[Measures].[*CALCULATED_MEASURE_2],[Measures].[*CALCULATED_MEASURE_3]}'
+Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
+Member [Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=-100
+Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_1], [Le System-Trend Hanger].[TrendContext_2_0])', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Member [Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=-100
+Member [Le System-Trend Hanger].[TrendContext_3_0] as '(ParallelPeriod([Time].[Quarter], 1,ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=-100
+Member [Measures].[*CALCULATED_MEASURE_3] as '([Measures].[*CALCULATED_MEASURE_1], [Le System-Trend Hanger].[TrendContext_3_0])', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Member [Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=-100
+Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Member [Measures].[*CALCULATED_MEASURE_1] as '[Measures].[Store Sales] + 10000', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Member [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q4])}))', SOLVE_ORDER=-100
+Member [Le System-Trend Hanger].[TrendContext_2_0] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS]) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+{[Measures].[*CALCULATED_MEASURE_1]}
+{[Measures].[*CALCULATED_MEASURE_2]}
+{[Measures].[*CALCULATED_MEASURE_3]}
+Axis #2:
+{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q1].[1]}
+{[Time].[1997].[Q1].[2]}
+{[Time].[1997].[Q1].[3]}
+{[Time].[1997].[Q2].[4]}
+{[Time].[1997].[Q2].[5]}
+{[Time].[1997].[Q2].[6]}
+{[Time].[1997].[Q3].[7]}
+{[Time].[1997].[Q3].[8]}
+{[Time].[1997].[Q3].[9]}
+{[Time].[1997].[Q4].[10]}
+{[Time].[1997].[Q4].[11]}
+{[Time].[1997].[Q4].[12]}
+Row #0: 139,628
+Row #0: 149,628
+Row #0: 10,000
+Row #0: 10,000
+Row #1: 
+Row #1: 10,000
+Row #1: 10,000
+Row #1: 10,000
+Row #2: 132,666
+Row #2: 142,666
+Row #2: 149,628
+Row #2: 10,000
+Row #3: 
+Row #3: 10,000
+Row #3: 10,000
+Row #3: 10,000
+Row #4: 140,272
+Row #4: 150,272
+Row #4: 142,666
+Row #4: 149,628
+Row #5: 
+Row #5: 10,000
+Row #5: 10,000
+Row #5: 10,000
+Row #6: 152,672
+Row #6: 162,672
+Row #6: 150,272
+Row #6: 142,666
+Row #7: 
+Row #7: 10,000
+Row #7: 10,000
+Row #7: 10,000
+Row #8: 45,540
+Row #8: 55,540
+Row #8: 10,000
+Row #8: 10,000
+Row #9: 44,059
+Row #9: 54,059
+Row #9: 10,000
+Row #9: 10,000
+Row #10: 50,030
+Row #10: 60,030
+Row #10: 10,000
+Row #10: 10,000
+Row #11: 42,878
+Row #11: 52,878
+Row #11: 55,540
+Row #11: 10,000
+Row #12: 44,456
+Row #12: 54,456
+Row #12: 54,059
+Row #12: 10,000
+Row #13: 45,332
+Row #13: 55,332
+Row #13: 60,030
+Row #13: 10,000
+Row #14: 50,247
+Row #14: 60,247
+Row #14: 52,878
+Row #14: 55,540
+Row #15: 46,199
+Row #15: 56,199
+Row #15: 54,456
+Row #15: 54,059
+Row #16: 43,826
+Row #16: 53,826
+Row #16: 55,332
+Row #16: 60,030
+Row #17: 42,342
+Row #17: 52,342
+Row #17: 60,247
+Row #17: 52,878
+Row #18: 53,364
+Row #18: 63,364
+Row #18: 56,199
+Row #18: 54,456
+Row #19: 56,966
+Row #19: 66,966
+Row #19: 53,826
+Row #19: 55,332
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTrendOnCalc">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="modifiedCubeName">
+            <![CDATA[
+Sales
+]]>
+        </Resource>
+        <Resource name="customDimensions">
+            <![CDATA[
+<Dimension name="Le System-Trend Hanger" foreignKey="store_id">
+  <Hierarchy hasAll="true" primaryKey="HANGER_KEY">
+    <InlineTable alias="LE_SYSTEM_TREND_HANGER">
+      <ColumnDefs>
+        <ColumnDef name="HANGER_KEY" type="Numeric"/>
+      </ColumnDefs>
+      <Rows>
+        <Row>
+          <Value column="HANGER_KEY">1</Value>
+        </Row>
+      </Rows>
+    </InlineTable>
+    <Level name="Hanger Level" column="HANGER_KEY" uniqueMembers="true"/>
+  </Hierarchy>
+</Dimension>
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Time], Not IsEmpty ([Measures].[Store Sales]))'
+Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],Ancestor([Time].[Time].CurrentMember, [Time].[Year]).OrderKey,BASC,Ancestor([Time].[Time].CurrentMember, [Time].[Quarter]).OrderKey,BASC,[Time].[Time].CurrentMember.OrderKey,BASC)'
+Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+Set [*BASE_MEMBERS_Time] as '[Time].[Month].Members'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_1],[Measures].[*CALCULATED_MEASURE_3],[Measures].[*CALCULATED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_4],[Measures].[*CALCULATED_MEASURE_2],[Measures].[*CALCULATED_MEASURE_5],[Measures].[*CALCULATED_MEASURE_6]}'
+Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'
+Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Time].[Time].currentMember)})'
+Member [Time].[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q4])}))', SOLVE_ORDER=-100
+Member [Measures].[*CALCULATED_MEASURE_6] as '(([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_6_0]) + ([Measures].[*CALCULATED_MEASURE_3], [Le System-Trend Hanger].[TrendContext_6_1])) / 2', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Member [Le System-Trend Hanger].[TrendContext_6_0] as '(ParallelPeriod([Time].[Quarter], 1,ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Time].[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q1])}))', SOLVE_ORDER=-100
+Member [Measures].[*CALCULATED_MEASURE_2] as '([Measures].[*CALCULATED_MEASURE_0], [Le System-Trend Hanger].[TrendContext_2_0])', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Member [Time].[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q3])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q1])}))', SOLVE_ORDER=-100
+Member [Le System-Trend Hanger].[TrendContext_4_0] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Measures].[*CALCULATED_MEASURE_3] as '[Measures].[Store Sales] + 10000', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Member [Measures].[*CALCULATED_MEASURE_0] as '[Measures].[Store Sales] - 10000', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Store Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Member [Time].[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q2])}))', SOLVE_ORDER=-100
+Member [Measures].[*CALCULATED_MEASURE_4] as '([Measures].[*CALCULATED_MEASURE_3], [Le System-Trend Hanger].[TrendContext_4_0])', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Member [Measures].[*CALCULATED_MEASURE_5] as '([Measures].[*CALCULATED_MEASURE_2] + [Measures].[*CALCULATED_MEASURE_4]) / 2', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Member [Le System-Trend Hanger].[TrendContext_6_1] as '(ParallelPeriod([Time].[Quarter], 1,ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)))', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Member [Time].[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q3])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1998].[Q4])}))', SOLVE_ORDER=-100
+Member [Time].[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Exists([*NATIVE_CJ_SET], {([Time].[1997].[Q2])}))', SOLVE_ORDER=-100
+Member [Le System-Trend Hanger].[TrendContext_2_0] as 'ParallelPeriod([Time].[Quarter], 1, [Time].[Time].currentMember)', FORMAT_STRING = '#,##0', SOLVE_ORDER=-200
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM], [Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM], [Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS]) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_1]}
+{[Measures].[*CALCULATED_MEASURE_3]}
+{[Measures].[*CALCULATED_MEASURE_0]}
+{[Measures].[*CALCULATED_MEASURE_4]}
+{[Measures].[*CALCULATED_MEASURE_2]}
+{[Measures].[*CALCULATED_MEASURE_5]}
+{[Measures].[*CALCULATED_MEASURE_6]}
+Axis #2:
+{[Time].[1997].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q1].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q2].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q3].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1998].[Q4].[*TOTAL_MEMBER_SEL~SUM]}
+{[Time].[1997].[Q1].[1]}
+{[Time].[1997].[Q1].[2]}
+{[Time].[1997].[Q1].[3]}
+{[Time].[1997].[Q2].[4]}
+{[Time].[1997].[Q2].[5]}
+{[Time].[1997].[Q2].[6]}
+{[Time].[1997].[Q3].[7]}
+{[Time].[1997].[Q3].[8]}
+{[Time].[1997].[Q3].[9]}
+{[Time].[1997].[Q4].[10]}
+{[Time].[1997].[Q4].[11]}
+{[Time].[1997].[Q4].[12]}
+Row #0: 139,628
+Row #0: 149,628
+Row #0: 129,628
+Row #0: 10,000
+Row #0: -10,000
+Row #0: 0
+Row #0: 0
+Row #1: 
+Row #1: 10,000
+Row #1: -10,000
+Row #1: 10,000
+Row #1: -10,000
+Row #1: 0
+Row #1: 0
+Row #2: 132,666
+Row #2: 142,666
+Row #2: 122,666
+Row #2: 149,628
+Row #2: 129,628
+Row #2: 139,628
+Row #2: 0
+Row #3: 
+Row #3: 10,000
+Row #3: -10,000
+Row #3: 10,000
+Row #3: -10,000
+Row #3: 0
+Row #3: 0
+Row #4: 140,272
+Row #4: 150,272
+Row #4: 130,272
+Row #4: 142,666
+Row #4: 122,666
+Row #4: 132,666
+Row #4: 139,628
+Row #5: 
+Row #5: 10,000
+Row #5: -10,000
+Row #5: 10,000
+Row #5: -10,000
+Row #5: 0
+Row #5: 0
+Row #6: 152,672
+Row #6: 162,672
+Row #6: 142,672
+Row #6: 150,272
+Row #6: 130,272
+Row #6: 140,272
+Row #6: 132,666
+Row #7: 
+Row #7: 10,000
+Row #7: -10,000
+Row #7: 10,000
+Row #7: -10,000
+Row #7: 0
+Row #7: 0
+Row #8: 45,540
+Row #8: 55,540
+Row #8: 35,540
+Row #8: 10,000
+Row #8: -10,000
+Row #8: 0
+Row #8: 0
+Row #9: 44,059
+Row #9: 54,059
+Row #9: 34,059
+Row #9: 10,000
+Row #9: -10,000
+Row #9: 0
+Row #9: 0
+Row #10: 50,030
+Row #10: 60,030
+Row #10: 40,030
+Row #10: 10,000
+Row #10: -10,000
+Row #10: 0
+Row #10: 0
+Row #11: 42,878
+Row #11: 52,878
+Row #11: 32,878
+Row #11: 55,540
+Row #11: 35,540
+Row #11: 45,540
+Row #11: 0
+Row #12: 44,456
+Row #12: 54,456
+Row #12: 34,456
+Row #12: 54,059
+Row #12: 34,059
+Row #12: 44,059
+Row #12: 0
+Row #13: 45,332
+Row #13: 55,332
+Row #13: 35,332
+Row #13: 60,030
+Row #13: 40,030
+Row #13: 50,030
+Row #13: 0
+Row #14: 50,247
+Row #14: 60,247
+Row #14: 40,247
+Row #14: 52,878
+Row #14: 32,878
+Row #14: 42,878
+Row #14: 45,540
+Row #15: 46,199
+Row #15: 56,199
+Row #15: 36,199
+Row #15: 54,456
+Row #15: 34,456
+Row #15: 44,456
+Row #15: 44,059
+Row #16: 43,826
+Row #16: 53,826
+Row #16: 33,826
+Row #16: 55,332
+Row #16: 35,332
+Row #16: 45,332
+Row #16: 50,030
+Row #17: 42,342
+Row #17: 52,342
+Row #17: 32,342
+Row #17: 60,247
+Row #17: 40,247
+Row #17: 50,247
+Row #17: 42,878
+Row #18: 53,364
+Row #18: 63,364
+Row #18: 43,364
+Row #18: 56,199
+Row #18: 36,199
+Row #18: 46,199
+Row #18: 44,456
+Row #19: 56,966
+Row #19: 66,966
+Row #19: 46,966
+Row #19: 53,826
+Row #19: 33,826
+Row #19: 43,826
+Row #19: 45,332
+]]>
+        </Resource>
+    </TestCase>
+</Root>

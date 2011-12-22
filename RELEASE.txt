@@ -1,0 +1,192 @@
+Mondrian 3.3.0.14703 production release notes
+=============================================
+
+Introduction
+------------
+
+Mondrian 3.3.0.14703 introduces many new features, optimizations and
+bug fixes to the previous release. There are a few potentially
+disruptive changes introduced in this release. We strongly
+recommend reading these release notes carefully.
+
+To find out more about mondrian, go to http://mondrian.pentaho.com.
+
+Contents
+--------
+
+As usual, there are two distributions for this release:
+ * mondrian-<version>.zip contains the FoodMart dataset in
+   SQL and Access format
+ * mondrian-<version>-derby.zip contains the FoodMart
+   dataset as an Apache Derby database
+
+Each distribution contains the full mondrian source code, as
+mondrian-<version>-src.zip, documentation including
+generated API documentation, and a web archive mondrian.war.
+This web archive contains all classes and libraries (jars)
+necessary to run mondrian.
+
+This release runs on Java version 1.5 and higher. For
+backwards compatibility on Java 1.4, substitute
+mondrian-jdk14.jar for mondrian.jar, and add
+retroweaver-rt-1.2.4.jar to your classpath.
+
+For further installation instructions, see
+http://mondrian.pentaho.com/documentation/installation.php
+or the included file doc/installation.html.
+
+Main functionality in this release
+----------------------------------
+ - Improved native performance.
+ - Support for olap4j 1.0.
+ - XMLA now supports roles and access controls, as well as
+   a major refactoring to allow the XMLA servlet to run on top
+   of any olap4j compliant driver.
+ - Improved Greenplum support.
+ - Improved member cache control.
+ - Introduces the Hive dialect.
+ - Introduces scripted user defined functions and formatters.
+ - Introduces the SegmentCache SPI.
+ - Introduces the EXPLAIN PLAN query.
+
+API changes from 3.2.to 3.3
+---------------------------
+ - Added OlapElement.isVisible().
+ - Dialect now includes:
+     o allowsJoinOn()
+     o allowsRegularExpressionInWhereClause()
+     o generateRegularExpression()
+     o requiresHavingAlias()
+     o generateCountExpression()
+ - Dialect removes:
+     o getNullCollation()
+ - Upgraded to olap4j-1.0.0.445
+ - Introduction of:
+     o SegmentCache
+     o PropertyFormatter
+     o MemberFormatter
+     o CellFormatter
+
+See CHANGES.txt for a list of all source code changes
+since the previous release.
+
+Bugs and feature requests fixed for 3.3.0.14703
+----------------------------------------------------------
+
+A complete list of the changes included in this release is available
+at the following URL.
+
+http://jira.pentaho.com/secure/IssueNavigator.jspa?requestId=11075
+
+Bugs and feature requests fixed for 3.2.1.13885
+----------------------------------------------------------
+MONDRIAN-821 - Adds a unique ID property to the Schema API. This id 
+               is expected to be different across different Mondrian
+               instances. It allows clients to refresh their schema
+               caches when that ID changes. This usually happened 
+               when a dynamic schema processor is used and the schema 
+               changes when a user login changes.
+MONDRIAN-695 - NonEmpty, Crossjoin and multiple dimensions in a slicer 
+               all together were returning wrong results with native 
+               sets.
+PPP-2542 - Changing dir to the current dir for win7 issue, 
+           BISERVER-4632, added check to see if the jre folder 
+           provided exists
+
+Bugs and feature requests fixed for 3.2.1.13841
+----------------------------------------------------------
+MONDRIAN-799 - Currency format string shows a junk character for the
+               currency symbol
+MONDRIAN-779 - Include/exclude filter not working
+MONDRIAN-777 - The identical view acting as a relation for a dimension
+               table and fact table is determined not equal, causing 
+               issues with degenerate dimensions in views
+MONDRIAN-776 - mondrian.xsd updated to new specifications
+MONDRIAN-769 - row counts coming back as zero
+MONDRIAN-766 - Bug in escaping strings containing backslash for MySQL
+MONDRIAN-761 - mondrian.olap.fun.VisualTotalsFunDef$VisualTotalMember
+               cannot be cast to mondrian.rolap.RolapCubeMember
+MONDRIAN-756 - Error in RolapResult.replaceNonAllMembers leads to NPE
+MONDRIAN-755 - Getting drillthrough count results in exception
+MONDRIAN-735 - Indian format strings
+MONDRIAN-724 - Cannot reference Member that has the same name as the
+               Level.
+MONDRIAN-711 - Wrong behaviour with approxRowCount attribute added in
+               a Level element
+MONDRIAN-568 - If two cubes have dimension with same name, mondrian
+               treats grant to one as grant to other
+MONDRIAN-463 - New error messages if hierarchy has no levels; if
+               hierarchy has
+BISERVER-4618 - PSW Duplicate catalog entry in datasources.xml
+PSW-87 - As a BI Pracitioner, I would like Schema Workbench to use the
+         same connection creation dialog as the rest of the Pentaho
+         products
+PSW-84 - Column in schema workbench wont allow as measure if data type 
+         in RDBMS is BIGINT
+
+Bugs and feature requests fixed for 3.2.0.13661
+----------------------------------------------------------
+MONDRIAN-751 - Drill SQL does not include slicer members in WHERE 
+               clause
+
+Bugs and feature requests fixed for 3.2.0.13658
+----------------------------------------------------------
+MONDRIAN-745 - NullPointerException when passing in null param value
+MONDRIAN-746 - Level of calculated member is different when hierarchy
+               is access-controlled
+MONDRIAN-750 - View model with Analyzer where model contains multiple
+               hierarchies beneath a single dimension throws exception
+
+Bugs and feature requests fixed for 3.2.0.13643
+----------------------------------------------------------
+MONDRIAN-560 - StrToMember function doesn't use IgnoreInvalidMembers
+               option
+MONDRIAN-737 - Sybase SQL Dialect is not correctly applied for
+               Sybase Adaptive Server Enterprise 15.5
+MONDRIAN-722 - If ignoreInvalidMembers=true, should ignore
+               grants with invalid members
+MONDRIAN-734 - Exception thrown when creating a 'New Analysis View'
+               with JPivot
+MONDRIAN-728 - Rolap Connection Locale is handled incorrectly in
+               LocalizingDynamicSchemaProcessor.java
+MONDRIAN-738 - Statements not being closed
+MONDRIAN-708 - After change 13351 all Excel pivots fail to update.
+               CellInfo element in XMLA response is wrong
+MONDRIAN-742 - Role security not applied correctly for the 'Top
+               Level' restriction
+MONDRIAN-727 - [Fact count] measure added in change 13506
+               shouldn't be returned in XMLA rowset, not visible 
+               measures shouldn't be
+               returned either
+
+Bugs and feature requests fixed for 3.2.0.13583
+----------------------------------------------------------
+MONDRIAN-686 - Regression: JPivot output invalid - New Variance
+               Percent column
+MONDRIAN-691 - RolapSchemaReader is not enforcing access control
+               on two APIs
+MONDRIAN-694 - Incorrect handling of child/parent relationship
+               with hierarchy grants
+MONDRIAN-726 - Change 13509 is not Excel 2007 compatible
+MONDRIAN-725 - setParameter function should be able to accept
+               Java string for set value
+MONDRIAN-652 - Add support for generic annotations to Mondrian schema
+MONDRIAN-718 - Direct References to Members on a Dimension that has
+               calculated members defined will not be found
+MONDRIAN-710 - Count with ExcludeEmpty throws an exception when
+               the cube does not have a factCountMeasure 
+MONDRIAN-715 - Constrained Measures can generate incorrect results
+               when evaluated natively
+MONDRIAN-706 - SQL using hierarchy attribute 'Column Name' 
+               instead of 'Column' in the filter
+MONDRIAN-705 - Aggregate with grouping sets turned on causes
+               exception
+MONDRIAN-704 - MDSCHEMA_PROPERTIES should not return internal
+               properties
+MONDRIAN-681 - Add serializable to PropertyList class for caching
+MONDRIAN-678 - VisualTotals gives UnsupportedOperationException
+               calling getOrdinal
+MONDRIAN-679 - VisualTotals gives ClassCastException when called
+               via XMLA
+
+

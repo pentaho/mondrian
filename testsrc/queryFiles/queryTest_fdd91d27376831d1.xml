@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>WITH MEMBER [Measures].[Qualified Count] AS  'COUNT(FILTER(DESCENDANTS([Customers].[USA].[CA], [Customers].[City]), ([Measures].[Store Sales]) &amp;gt; 6000 OR ([Measures].[Unit Sales]) &amp;gt; 3000))' MEMBER [Measures].[Qualified Sales] AS 'SUM(FILTER(DESCENDANTS([Customers].[USA].[CA], [Customers].[City]), ([Measures].[Store Sales]) &amp;gt; 6000 OR ([Measures].[Unit Sales]) &amp;gt; 3000), ([Measures].[Store Sales]))' SELECT {[Measures].[Store Sales], [Measures].[Unit Sales], [Measures].[Qualified Count], [Measures].[Qualified Sales]}  ON COLUMNS, {FILTER(DESCENDANTS([Customers].[USA].[CA], [Customers].[City]), ([Measures].[Store Sales]) &amp;gt; 6000 OR ([Measures].[Unit Sales]) &amp;gt; 3000)} ON ROWS FROM  [Sales] </mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Sales]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Qualified Count]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Qualified Sales]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Customers]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Customers].[USA].[CA].[Bellflower]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[USA].[CA].[Beverly Hills]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[USA].[CA].[Burbank]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[USA].[CA].[Chula Vista]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[USA].[CA].[Downey]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[USA].[CA].[Glendale]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[USA].[CA].[Long Beach]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[USA].[CA].[Newport Beach]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>6633.97</cell>
+                <cell>3106.0</cell>
+                <cell>8.0</cell>
+                <cell>53258.37</cell>
+            </drow>
+            <drow>
+                <cell>6194.37</cell>
+                <cell>2907.0</cell>
+                <cell>8.0</cell>
+                <cell>53258.37</cell>
+            </drow>
+            <drow>
+                <cell>6577.33</cell>
+                <cell>3086.0</cell>
+                <cell>8.0</cell>
+                <cell>53258.37</cell>
+            </drow>
+            <drow>
+                <cell>6284.3</cell>
+                <cell>2999.0</cell>
+                <cell>8.0</cell>
+                <cell>53258.37</cell>
+            </drow>
+            <drow>
+                <cell>7367.06</cell>
+                <cell>3440.0</cell>
+                <cell>8.0</cell>
+                <cell>53258.37</cell>
+            </drow>
+            <drow>
+                <cell>7082.91</cell>
+                <cell>3284.0</cell>
+                <cell>8.0</cell>
+                <cell>53258.37</cell>
+            </drow>
+            <drow>
+                <cell>6422.37</cell>
+                <cell>2973.0</cell>
+                <cell>8.0</cell>
+                <cell>53258.37</cell>
+            </drow>
+            <drow>
+                <cell>6696.06</cell>
+                <cell>3098.0</cell>
+                <cell>8.0</cell>
+                <cell>53258.37</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

@@ -1,0 +1,297 @@
+<html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Eclipse Public License v1.0
+  == Agreement, available at the following URL:
+  == http://www.eclipse.org/legal/epl-v10.html.
+  == Copyright (C) 2001-2002 Kana Software, Inc.
+  == Copyright (C) 2001-2010 Julian Hyde
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  == jhyde, 24 September, 2002
+  -->
+<head>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Mondrian Architecture</title>
+</head>
+<body>
+<!-- doc2web start -->
+
+<script>
+<!-- Begin
+function popUpSnapsHoriz(URL) {
+day = new Date();
+id = day.getTime();
+eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=1,width=1024,height=768');");
+}
+
+
+function popUpSnapsVert(URL) {
+day = new Date();
+id = day.getTime();
+eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,resizable=1,width=1024,height=768');");
+}
+// End -->
+</script>
+<!-- page title -->
+<div class="contentheading">Architecture</div>
+<!-- end page title -->
+
+<!--
+#####################################
+##  Layers of a Mondrian system #####
+##################################### -->
+<h3>Layers of a Mondrian system</h3>
+
+<p>A Mondrian OLAP System consists of four layers; working from the eyes of the end-user to the bowels of the data center, these are as follows: the presentation layer, the dimensional layer, the star layer, and the storage layer. (See <a href="#Figure_1:_Mondrian_architecture">figure 1</a>.)</p>
+
+<p>The presentation layer determines what the end-user sees on his or her monitor, and how he or she can interact to ask new questions. There are many ways to present multidimensional datasets, including pivot tables (an interactive version of the table shown above), pie, line and bar charts, and advanced visualization tools such as clickable maps and dynamic graphics. These might be written in Swing or JSP, charts rendered in JPEG or GIF format, or transmitted to a remote application via XML. What all of these forms of presentation have in common is the multidimensional 'grammar' of dimensions, measures and cells in which the presentation layer asks the question is asked, and OLAP server returns the answer.</p>
+
+<p>The second layer is the dimensional layer. The dimensional layer parses, validates and executes MDX queries. A query is evaluted in multiple phases. The axes are computed first, then the values of the cells within the axes. For efficiency, the dimensional layer sends cell-requests to the aggregation layer in batches. A query transformer allows the application to manipulate existing queries, rather than building an MDX statement from scratch for each request. And metadata describes the the dimensional model, and how it maps onto the relational model.</p>
+
+<p>The third layer is the star layer, and is responsible for maintaining an aggregate cache. An aggregation is a set of measure values ('cells') in memory, qualified by a set of dimension column values. The dimensional layer sends requests for sets of cells. If the requested cells are not in the cache, or derivable by rolling up an aggregation in the cache, the aggregation manager sends a request to the storage layer.</p>
+
+<p>The storage layer is an RDBMS. It is responsible for providing aggregated cell data, and members from dimension tables. I describe <a href="#Storage_and_aggregation_strategies">below</a> why I decided to use the features of the RDBMS rather than developing a storage system optimized for multidimensional data.</p>
+
+<p>These components can all exist on the same machine, or can be distributed between machines. Layers 2 and 3, which comprise the Mondrian server, must be on the same machine. The storage layer could be on another machine, accessed via remote JDBC connection. In a multi-user system, the presentation layer would exist on each end-user's machine (except in the case of JSP pages generated on the server).</p>
+<a name="Figure_1:_Mondrian_architecture">&nbsp;</a>
+<table   width="500" class="whiteTable">
+	<tr>
+		<td align="center">
+			<table   width="200" class="whiteTable">
+				<tr>
+					<td>
+						<a href="javascript:popUpSnapsVert('http://mondrian.pentaho.com/images/arch_mondrian_v1_lrg.png')">
+						<img border="0" alt="Mondrian architecture" src="images/arch_mondrian_v1_tn.png" width="200" height="147"></a>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table class="whiteTable" align="center">
+							<tr>
+								<td width="19">
+									<a href="javascript:popUpSnapsVert('http://mondrian.pentaho.com/images/arch_mondrian_v1_lrg.png')">
+									<img height="15" alt="Zoom" src="images/zoom.png" width="14" border="0" /></a>
+								</td>
+								<td>
+									<a href="javascript:popUpSnapsVert('http://mondrian.pentaho.com/images/arch_mondrian_v1_lrg.png')">
+										Zoom
+									</a>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</td>
+		<td align="center">
+			<table   width="200" class="whiteTable">
+				<tr>
+					<td>
+						<a href="javascript:popUpSnapsVert('http://mondrian.pentaho.com/images/architecture2_big.png')">
+						<img border="0" alt="Mondrian architecture (hand-drawn)" src="images/arch_mondrian_sketch_tn.png" width="201" height="158" align="middle"></a>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table class="whiteTable" align="center">
+							<tr>
+								<td width="19">
+									<a href="javascript:popUpSnapsVert('http://mondrian.pentaho.com/images/architecture2_big.png')">
+									<img height="15" alt="Zoom" src="images/zoom.png" width="14" border="0" /></a>
+								</td>
+								<td>
+									<a href="javascript:popUpSnapsVert('http://mondrian.pentaho.com/images/architecture2_big.png')">
+										Zoom
+									</a>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
+<!--
+############################################
+##  Storage and aggregation strategies #####
+############################################ -->
+<h3>Storage and aggregation strategies<a name="Storage_and_aggregation_strategies">&nbsp;</a></h3>
+
+<p>OLAP Servers are generally categorized according to how they store their data:</p>
+
+<ul>
+	<li>A MOLAP (multidimensional OLAP) server stores all of its data on disk in structures optimized for multidimensional access. Typically, data is stored in dense arrays, requiring only 4 or 8 bytes per cell value. </li>
+	<li>A ROLAP (relational OLAP) server stores its data in a relational database. Each row in a fact table has a column for each dimension and measure. </li>
+</ul>
+
+<p>Three kinds of data need to be stored: fact table data (the transactional records), aggregates, and dimensions.</p>
+
+<p>MOLAP databases store fact data in multidimensional format, but if there are more than a few dimensions, this data will be sparse, and the multidimensional format does not perform well. A HOLAP (hybrid OLAP) system solves this problem by leaving the most granular data in the relational database, but stores aggregates in multidimensional format.</p>
+
+<p>Pre-computed aggregates are necessary for large data sets, otherwise certain queries could not be answered without reading the entire contents of the fact table. MOLAP aggregates are often an image of the in-memory data structure, broken up into pages and stored on disk. ROLAP aggregates are stored in tables. In some ROLAP systems these are explicitly managed by the OLAP server; in other systems, the tables are declared as materialized views, and they are implicitly used when the OLAP server issues a query with the right combination of columns in the group by clause.</p>
+
+<p>The final component of the aggregation strategy is the cache. The cache holds pre-computed aggregations in memory so subsequent queries can access cell values without going to disk. If the cache holds the required data set at a lower level of aggregation, it can compute the required data set by rolling up.</p>
+
+<p>The cache is arguably the most important part of the aggregation strategy because it is adaptive. It is difficult to choose a set of aggregations to pre-compute which speed up the system without using huge amounts of disk, particularly those with a high dimensionality or if the users are submitting unpredictable queries. And in a system where data is changing in real-time, it is impractical to maintain pre-computed aggregates. A reasonably sized cache can allow a system to perform adequately in the face of unpredictable queries, with few or no pre-computed aggregates.</p>
+
+<p>Mondrian's aggregation strategy is as follows:</p>
+
+<ul>
+	<li>Fact data is stored in the RDBMS. Why develop a storage manager when the RDBMS already has one? </li>
+	<li>Read aggregate data into the cache by submitting group by queries. Again, why develop an aggregator when the RDBMS has one? </li>
+	<li>If the RDBMS supports materialized views, and the database administrator chooses to create materialized views for particular aggregations, then Mondrian will use them implicitly. Ideally, Mondrian's aggregation manager should be aware that these materialized views exist and that those particular aggregations are cheap to compute. It should even offer tuning suggestings to the database administrator. </li>
+</ul>
+
+<p>The general idea is to delegate unto the database what is the database's. This places additional burden on the database, but once those features are added to the database, all clients of the database will benefit from them. Multidimensional storage would reduce I/O and result in faster operation in some circumstances, but I don't think it warrants the complexity at this stage.</p>
+
+<p>A wonderful side-effect is that because Mondrian requires no storage of its own, it can be installed by adding a JAR file to the class path and be up and running immediately. Because there are no redundant data sets to manage, the data-loading process is easier, and Mondrian is ideally suited to do OLAP on data sets which change in real time.</p>
+<!--
+########################
+##      API        #####
+######################## -->
+<h3>API</h3>
+
+<p>Mondrian provides an API for client applications to execute queries.</p>
+
+<p>Since there is no widely universally accepted API for executing OLAP queries, Mondrian's primary API proprietary; however, anyone who has used JDBC should find it familiar. The main difference is the query language: Mondrian uses a language called MDX ('<b>M</b>ulti-<b>D</b>imensional e<b>X</b>pressions') to specify queries, where JDBC would use SQL. MDX is described in more detail <a href="#MDX">below</a>.</p>
+
+<p>The following Java fragment connects to Mondrian, executes a query, and prints the results:</p>
+
+<blockquote><p>
+import mondrian.olap.*;<br />
+import java.io.PrintWriter;<br />
+<br />
+Connection connection = DriverManager.getConnection(<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"Provider=mondrian;" +<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"Jdbc=jdbc:odbc:MondrianFoodMart;" +<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"Catalog=/WEB-INF/FoodMart.xml;",<br />
+&nbsp;&nbsp;&nbsp;&nbsp;null,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;false);<br />
+Query query = connection.parseQuery(<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"SELECT {[Measures].[Unit Sales], [Measures].[Store Sales]} on columns," +<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"  {[Product].children} on rows " +<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"FROM [Sales] " +<br />
+&nbsp;&nbsp;&nbsp;&nbsp;"WHERE ([Time].[1997].[Q1], [Store].[CA].[San Francisco])");<br />
+Result result = connection.execute(query);<br />
+result.print(new PrintWriter(System.out));
+</p></blockquote>
+
+<p>A <a href="api/mondrian/olap/Connection.html">Connection</a>
+is created via a <a href="api/mondrian/olap/DriverManager.html">
+DriverManager</a>, in a similar way to JDBC. A
+<a href="api/mondrian/olap/Query.html">Query</a> is analogous to
+a JDBC <a href="http://java.sun.com/j2se/1.4/docs/api/java/sql/Statement.html"> Statement</a>,
+and is created by parsing an MDX string. A
+<a href="api/mondrian/olap/Result.html">Result</a> is analogous
+to a JDBC <a href="http://java.sun.com/j2se/1.4/docs/api/java/sql/ResultSet.html">ResultSet</a>;
+since we are dealing with multi-dimensional data, it consists of axes and cells, rather than rows and columns. Since OLAP is
+intended for data exploration, you can modify the parse tree contained in a query by operations such as
+<a href="api/mondrian/olap/Query.html#drillDown(mondrian.olap.Level)">
+drillDown</a> and <a href="api/mondrian/olap/Query.html#sort(int, int, mondrian.olap.Member[])">
+sort</a>, then re-execute the query.</p>
+
+<p>The API also presents the database schema as a set of objects:
+<a href="api/mondrian/olap/Schema.html">Schema</a>,
+<a href="api/mondrian/olap/Cube.html">Cube</a>,
+<a href="api/mondrian/olap/Dimension.html">Dimension</a>,
+<a href="api/mondrian/olap/Hierarchy.html">Hierarchy</a>,
+<a href="api/mondrian/olap/Level.html">Level</a>,
+<a href="api/mondrian/olap/Member.html">Member</a>. For more
+information about the Mondrian API, see <a href="api/overview-summary.html">
+the javadoc</a>.</p>
+
+<p><a href="http://xmla.org/default.asp">XML for Analysis</a> is a standard for accessing
+OLAP servers via SOAP (Simple Object Access Protocol).
+This allows non-Java components like Microsoft Excel to run
+queries against Mondrian.</p>
+
+<p>Mondrian included support for the
+<a href="http://java.sun.com/aboutJava/communityprocess/jsr/jsr_069_jolap.html">JSR-069</a>
+('JOLAP') proposed standard, but this support was removed in mondrian-2.3
+when it became clear that the standard would never be ratified.</p>
+
+<!--
+########################
+##     MDX         #####
+######################## -->
+<h3>MDX<a name="MDX">&nbsp;</a></h3>
+
+<p>MDX is a language for querying multidimensional databases, in the same way that SQL is used to query relational databases. It was originally defined as part of the OLE DB for OLAP specification, and a similar language, mdXML, is part of the XML for Analysis specification.</p>
+
+<p>Since you can read <a href="http://msdn.microsoft.com/library/en-us/olapdmad/agmdxbasics_04qg.asp">
+the specification online</a> and there are <a href="faq.html/index.php#Further_reading">
+some great books on MDX available</a>, I won't describe the full MDX language. Mondrian's extensions to MDX are parameters and modified builtin functions.</p>
+
+<h1>Parameters</h1>
+
+<p>A parameter is a named variable embedded in an MDX query. Every parameter has a default value, but you can supply a different value when you run the query.</p>
+
+<p>Parameters are declared and used by using a special function, <code>Parameter</code>:</p>
+
+<blockquote><p>
+Parameter(&lt;name&gt;, &lt;type&gt;, &lt;defaultValue&gt;[, &lt;description&gt;])
+</p></blockquote>
+
+<p>The arguments of Parameter are as follows:</p>
+
+<ul>
+	<li>name is a string constant. It must be unique within the query. </li>
+	<li>type is either NUMERIC, STRING, or the name of a hierarchy.</li>
+	<li>defaultValue is an expression. The expression's type must be consistent with the type parameter; if type was a hierarchy, the expression must be a member of that hierarchy. </li>
+	<li>description is an optional string constant.</li>
+</ul>
+
+<p>If you want to use a parameter more than once in a query, use the ParamRef function:</p>
+
+<blockquote><p>
+ParamRef(&lt;name&gt;)
+</p></blockquote>
+
+<p>The name argument must be the name of a parameter declared elsewhere in the query by calling the Parameter function.</p>
+
+<p>The following query shows the top 10 brands in California, but you could change the Count parameter to show the top 5, or the Region parameter to show sales in Seattle:</p>
+
+<blockquote><p>
+SELECT {[Measures].[Unit Sales]} on columns,<br />
+&nbsp;&nbsp;&nbsp;TopCount([Product].[Brand].members,<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Parameter("Count", NUMERIC, 10, "Number of products to show"),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(Parameter("Region", [Store], [Store].[USA].[CA]),<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Measures].[Unit Sales])) on rows<br />
+FROM Sales
+</p></blockquote>
+
+<p>You can list a query's parameters by calling
+<a href="api/mondrian/olap/Query.html#getParameters()">
+Query.getParameters()</a>, and change a parameter's value by calling
+<a href="api/mondrian/olap/Query.html#setParameter(java.lang.String, java.lang.String)">
+Query.setParameter(String name, String value)</a>.</p>
+
+<h1>Builtin Functions</h1>
+
+<p>The StrToSet() and StrToTuple() functions take an optional parameter not present in the
+standard MDX versions of these functions, describing the hierarchy the result will belong to:</p>
+
+<blockquote><p>
+StrToSet(&lt;String Expression&gt;[, &lt;Hierarchy&gt;])<br />
+StrToTuple(&lt;String Expression&gt;[, &lt;Hierarchy&gt;])
+</p></blockquote>
+<br />
+<br />
+
+<hr noshade size="1"/>
+<p>
+    Author: Julian Hyde; last modified, August 2006.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/architecture.html?ac=22">log</a>)<br/>
+    Copyright (C) 2001-2002 Kana Software, Inc.<br/>
+    Copyright (C) 2001-2007 Julian Hyde
+</p>
+
+<br />
+
+<!-- doc2web end -->
+
+</body>
+</html>

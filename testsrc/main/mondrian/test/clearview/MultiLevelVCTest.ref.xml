@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="test">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+  Set [*BASE_MEMBERS_Product] as '{[Product].[Drink].[Beverages].[Hot Beverages].[Coffee].[BBB Best].[BBB Best Columbian Coffee]}'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+  Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*NATIVE_MEMBERS_Product],[Product].CurrentMember.Parent.Parent.Parent.Parent.Parent = [Product].[Drink]))', SOLVE_ORDER=-100
+  Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-100
+  Member [Product].[Drink].[*CTX_MEMBER_ALL~SUM] as 'Sum({[Product].[Drink]})', SOLVE_ORDER=-100
+  Member [Product].[*CTX_MEMBER_ALL~SUM] as 'Sum({[Product].[All Products]})', SOLVE_ORDER=-100 
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Union({[Product].[*CTX_MEMBER_ALL~SUM]},Union({[Product].[Drink].[*CTX_MEMBER_ALL~SUM]},Union({[Product].[*CTX_MEMBER_SEL~SUM]},Union({[Product].[Drink].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}))))) on rows 
+From [Warehouse and Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Product].[*CTX_MEMBER_ALL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_ALL~SUM]}
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Beverages].[Hot Beverages].[Coffee].[BBB Best].[BBB Best Columbian Coffee]}
+Row #0: 266,773
+Row #1: 24,597
+Row #2: 158
+Row #3: 158
+Row #4: 158
+]]>
+        </Resource>
+    </TestCase>
+</Root>

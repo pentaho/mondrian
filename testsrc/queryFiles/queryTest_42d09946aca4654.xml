@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>SELECT          {[Time].[1997].[Q1]} ON COLUMNS,          bottompercent(filter(         {[Store].[USA].[CA].children, [Store].[USA].[OR].children, [Store].[USA].[WA].children},                      [Measures].[Unit Sales] &amp;gt; 0),                  100,                  [Measures].[Store Sales]) ON ROWS  FROM [Sales]      WHERE([Measures].[Unit Sales])</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997].[Q1]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[USA].[CA].[San Francisco]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Walla Walla]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Bellingham]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Yakima]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Beverly Hills]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Spokane]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Seattle]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Bremerton]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[San Diego]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Los Angeles]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR].[Portland]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Tacoma]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR].[Salem]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>439.0</cell>
+            </drow>
+            <drow>
+                <cell>500.0</cell>
+            </drow>
+            <drow>
+                <cell>518.0</cell>
+            </drow>
+            <drow>
+                <cell>3096.0</cell>
+            </drow>
+            <drow>
+                <cell>3822.0</cell>
+            </drow>
+            <drow>
+                <cell>5607.0</cell>
+            </drow>
+            <drow>
+                <cell>6098.0</cell>
+            </drow>
+            <drow>
+                <cell>5896.0</cell>
+            </drow>
+            <drow>
+                <cell>6256.0</cell>
+            </drow>
+            <drow>
+                <cell>6373.0</cell>
+            </drow>
+            <drow>
+                <cell>6709.0</cell>
+            </drow>
+            <drow>
+                <cell>8399.0</cell>
+            </drow>
+            <drow>
+                <cell>12578.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>SELECT  DISTINCT(Subset( ( {[Measures].[Customer Count], [Measures].[Sales Count], [Measures].[Store Cost], [Measures].[Store Sales], [Measures].[Unit Sales]} ), 0, 3 ))  ON AXIS(0) , DISTINCT( {[Product].[All Products], [Product].[Product Family].[Drink], [Product].[Product Family].[Food], [Product].[Product Family].[Non-Consumable]} )  ON AXIS(1) FROM [Sales]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Store]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Customer Count]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Sales Count]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Store Cost]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Product]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[All Products]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Drink]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Food]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Non-Consumable]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>5581.0</cell>
+                <cell>86837.0</cell>
+                <cell>225627.2336</cell>
+            </drow>
+            <drow>
+                <cell>3485.0</cell>
+                <cell>7978.0</cell>
+                <cell>19477.2346</cell>
+            </drow>
+            <drow>
+                <cell>5525.0</cell>
+                <cell>62445.0</cell>
+                <cell>163270.7235</cell>
+            </drow>
+            <drow>
+                <cell>4468.0</cell>
+                <cell>16414.0</cell>
+                <cell>42879.2755</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

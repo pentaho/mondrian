@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="test">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+SELECT 
+{[Customers].[USA],
+ [Customers].[USA].[CA],
+ [Customers].[USA].[CA].[Oakland]} ON ROWS,
+{[Measures].[Unit Sales]} ON COLUMNS
+FROM [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Customers].[USA]}
+{[Customers].[USA].[CA]}
+{[Customers].[USA].[CA].[Oakland]}
+Row #0: 266,773
+Row #1: 74,748
+Row #2: 70
+]]>
+        </Resource>
+    </TestCase>
+</Root>

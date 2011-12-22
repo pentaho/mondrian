@@ -1,0 +1,842 @@
+<html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Eclipse Public License v1.0
+  == Agreement, available at the following URL:
+  == http://www.eclipse.org/legal/epl-v10.html.
+  == Copyright (C) 2005-2007 Julian Hyde and others
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  -->
+<head>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: How to Design a Mondrian Schema</title>
+</head>
+<body>
+<!-- doc2web start -->
+
+<!-- page title -->
+<div class="contentheading">Mondrian CmdRunner</div>
+<!-- end page title -->
+
+<hr noshade size="1">
+
+<h2>Contents</h2>
+<ul>
+    <li><a href="#What_is_CmdRunner">What is CmdRunner?</a></li>
+    <li><a href="#Building">Building</a></li>
+    <li><a href="#Usage">Usage</a></li>
+    <li><a href="#Properties_file">Properties File</a></li>
+    <li><a href="#Command_line_arguments">Command line arguments</a></li>
+    <li><a href="#CmdRunner_Commands">CmdRunner Commands</a><ul>
+        <li><a href="#help">help</a></li>
+        <li><a href="#set">set</a></li>
+        <li><a href="#log">log</a></li>
+        <li><a href="#file">file</a></li>
+        <li><a href="#list">list</a></li>
+        <li><a href="#func">func</a></li>
+        <li><a href="#param">param</a></li>
+        <li><a href="#cube">cube</a></li>
+        <li><a href="#error">error</a></li>
+        <li><a href="#echo">echo</a></li>
+        <li><a href="#expr">expr</a></li>
+        <li><a href="#equals">=</a></li>
+        <li><a href="#tilde">~</a></li>
+        <li><a href="#exit">exit</a></li>
+        <li><a href="#run_an_MDX_query">run an MDX query</a></li>
+    </ul>
+    </li>
+    <li><a href="#AggGen">AggGen: Aggregate SQL Generator</a></li>
+</ul>
+
+<h2>What is CmdRunner?<a name="What_is_CmdRunner">&nbsp;</a></h2>
+
+<p>
+<code>CmdRunner</code> is a command line interpreter for Mondrian.
+From within the command interpreter or in a command file:
+properties can be set and values displayed, logging
+levels changed, built-in function usages displayed,
+parameter values displayed and set,
+per-cube attributes displayed and set,
+results and errors from the previous MDX command
+displayed
+and, of course, MDX queries evaluated.
+</p>
+<p>
+For Mondrian developers new features can be quickly tested with <code>CmdRunner</code>. 
+As an example, to test a new user-defined function all one need to is add it to 
+the schema, add the location of the function's java class to the class path, 
+point <code>CmdRunner</code> at the schema 
+and execute a MDX query that uses the new function.
+</p>
+<p>
+For MDX developers, <code>CmdRunner</code> lets one test a new MDX query or
+Mondrian schema without having to run Mondrian in a Webserver
+using JPivot. Rather, one can have the new MDX query in a file and point <code>CmdRunner</code> 
+at it. Granted, the output is a list, possibly long, of row and column entries; 
+but sometimes all one needs from <code>CmdRunner</code> is to know that the query runs
+and other times one can always post process the output into
+excel or gnuplot, etc.
+</p>
+
+<h2>Building<a name="Building">&nbsp;</a></h2>
+<p>
+There are two ways to run the command interpreter. The first is to
+have a script create a class path with all of the needed mondrian
+and support jars in it and then have java execute the CmdRunner 
+main method. The second is to build a jar that contains all of the
+needed classes and simply have java reference the jar using the 
+<code>-jar</code> argument.
+</p>
+<p>
+To build the CmdRunner combined jar from the shell command line execute
+the following build command:
+</p>
+<blockquote>
+<code>
+    mondrian&gt; ./build.sh cmdrunner
+</code>
+</blockquote>
+<p>
+This will create the jar 
+<code>cmdrunner.jar</code> 
+in the 
+<code><i>MONDRIAN_HOME</i>/lib</code> directory.
+For this build to create a jar that can actually be used it is
+important that the <i>JDBC</i> jar for your database be placed in the 
+<code><i>MONDRIAN_HOME</i>/testlib</code> directory prior to 
+executing the build command.
+</p>
+<p>
+What is useful about the
+<code>cmdrunner.jar</code> 
+is that it can be executed without having to have the 
+<code><i>MONDRIAN_HOME</i></code> directory 
+around since it bundles up everything that is needed
+(other than the properties and schema files).
+</p>
+
+<h2>Usage<a name="Usage">&nbsp;</a></h2>
+<p>
+There are two ways to invoke <code>CmdRunner</code>: using the 
+<code>cmdrunner.jar</code> 
+or using a script that builds a class path of the required jars
+and then executes java with that class path. The former is an easy
+"canned" solution but requires building the 
+<code>cmdrunner.jar</code> 
+while the
+later is quicker if you are in a code, compile and test cycle.
+</p>
+<p>
+To run <code>CmdRunner</code> using the 
+<code>cmdrunner.jar</code> 
+from the shell prompt execute:
+</p>
+<blockquote>
+<code>
+    somedir&gt; java -jar cmdrunner.jar -p foodmart.properties
+</code>
+</blockquote>
+<p>
+In the 
+<code><i>MONDRIAN_HOME</i>/bin</code> directory 
+there are the shell scripts
+<code>cmdrunner.sh</code>
+and
+<code>cmdrunner.cmd</code>
+that can be used duplicating the above command:
+</p>
+<blockquote>
+<code>
+    mondrian&gt; ./bin/cmdrunner.sh -p foodmart.properties
+</code>
+</blockquote>
+<p>
+To run <code>CmdRunner</code> without first building the
+<code>cmdrunner.jar</code> 
+there is the
+<code>run.sh</code>
+in the
+<code><i>MONDRIAN_HOME</i>/bin</code> directory.
+This script creates a class path and includes all jars
+in the 
+<code><i>MONDRIAN_HOME</i>/testlib</code> directory
+where the jdbc jars are located.
+<blockquote>
+<code>
+    mondrian&gt; ./bin/run.sh -p foodmart.properties
+</code>
+</blockquote>
+</p>
+
+<h2>Properties File<a name="Properties_file">&nbsp;</a></h2>
+<p>
+Below is an example properties file:
+</p>
+<blockquote>
+<code>
+##############################################################################<br>
+#<br>
+# Example properties file<br>
+#<br>
+# $Id$<br>
+##############################################################################<br>
+# Environment<br>
+mondrian.catalogURL=file:///home/madonna/mondrian/FoodMartSchema.xml<br>
+<br>
+# mysql<br>
+mondrian.test.jdbcURL=jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart<br>
+# to specify the jdbc username and password:<br>
+# mondrian.test.jdbcUser=foodmart<br>
+# mondrian.test.jdbcPassword=foodmart<br>
+mondrian.jdbcDrivers=com.mysql.jdbc.Driver<br>
+<br>
+# Use MD5 based caching for the RolapSchema instance<br>
+mondrian.catalog.content.cache.enabled=true<br>
+<br>
+# both read and use aggregate tables<br>
+mondrian.rolap.aggregates.Use=true<br>
+mondrian.rolap.aggregates.Read=true<br>
+<br>
+# generate aggregate sql (for every mdx query)<br>
+#mondrian.rolap.aggregates.generateSql=true<br>
+<br>
+# pretty print sql (if log level for mondrian.rolap.RolapUtil is DEBUG)<br>
+mondrian.rolap.generate.formatted.sql=true<br>
+<br>
+# by default the aggregate table with the smallest number of rows <br>
+# (rather than rows times size of each row) is used <br>
+#mondrian.rolap.aggregates.ChooseByVolume=true<br>
+<br>
+</code>
+</blockquote>
+
+<h2>Command line arguments<a name="Command_line_arguments">&nbsp;</a></h2>
+<p>
+<code>CmdRunner</code> has the following command line options:</p>
+
+<blockquote>
+    <table style="border-width:0; text-align: left"
+ border="1" cellpadding="2" cellspacing="0">
+        <tbody>
+            <tr>
+                <td style="vertical-align: top; text-align: center;">
+                <span
+ style="font-weight: bold;">Option</span><br></td>
+                <td style="vertical-align: top; text-align: center;">
+                <span
+ style="font-weight: bold;">Description</span><br></td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-h</code></td>
+                <td style="vertical-align: top;">Print help, the list of command line
+options.</td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-d</code></td>
+                <td style="vertical-align: top;">Enable CmdRunner debugging. 
+        This does not change this log level.</td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-t</code></td>
+                <td style="vertical-align: top;">Time each mdx query's execution.
+                </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-nocache</code></td>
+                <td style="vertical-align: top;">Regardless of the settings in the
+        Schema file, set each Cube to no in-memory aggregate caching 
+        (caching is turned off so each query goes to the database).
+        </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-rc</code></td>
+                <td style="vertical-align: top;">Do not reload the connection
+        after each query (the default is to reload the connection.
+        Its safe to just ignore this.
+      </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;" nowrap><code>-p property-file</code></td>
+                <td style="vertical-align: top;">Specify the Mondrian property
+        file. This argument is basically required for any but the most 
+        trivial command interpreter commands. To execute a MDX query or
+        request information about a function, the property file must be 
+        supplied. On the other hand, to have the CmdRunner print out
+        its internal help, then the property file is not needed. </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-f filename+</code></td>
+                <td style="vertical-align: top;">Specify the name of one or
+        more files that contains CmdRunner commands. If this argument 
+        is not supplied, then the interpreter starting in the command 
+        entry mode. After the <code>-f</code> is seen, all subsequent
+        arguments are interpreted as filenames.
+      </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-x xmla_filename+</code></td>
+                <td style="vertical-align: top;">Specify the name of one or
+        more files that contains XMAL request that has no SOAP wrapper.
+        After the <code>-x</code> is seen, all subsequent
+        arguments are interpreted as XMLA filenames.
+      </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-xs soap_xmla_filename+</code></td>
+                <td style="vertical-align: top;">Specify the name of one or
+        more files that contains XMAL request with a SOAP wrapper.
+        After the <code>-xs</code> is seen, all subsequent
+        arguments are interpreted as SOAP XMLA filenames.
+      </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-vt</code></td>
+                <td style="vertical-align: top;">Validate the XMLA 
+        response using XSLT transform. This can only be used with 
+        the <code>-x</code> or <code>-xs</code> flags.
+      </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>-vx</code></td>
+                <td style="vertical-align: top;">Validate the XMLA 
+        response using XPaths. This can only be used with 
+        the <code>-x</code> or <code>-xs</code> flags.
+      </td>
+            </tr>
+            <tr>
+                <td style="vertical-align: top;"><code>mdx_command</code></td>
+                <td style="vertical-align: top;">A string representing 
+        one or more CmdRunner commands. </td>
+            </tr>
+        </tbody>
+    </table>
+</blockquote>
+
+<h2>CmdRunner Commands<a name="CmdRunner_Commands">&nbsp;</a></h2>
+<p>
+The command interpreter has a fixed set of built in commands.
+When a line is read, if the first word of the line matches one
+of the commands, then the rest of the line is assumed to be arguments
+to that command. On the other hand, if the first word does not match
+a built in command, then all text until a ';' is seen or until
+a '=' is entered by itself on a command continuation line is seen
+will be passed to the Mondrian query engine.
+</p>
+<h3>help<a name="help">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; help &lt;cr&gt;
+</code>
+<p>
+Prints help for all commands.
+</p>
+</blockquote>
+
+<h3>set<a name="set">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; set [ property[=value ] ] &lt;cr&gt;
+</code>
+<p>
+With no args, prints all mondrian properties and values.
+</p>
+<p>
+With "property" prints property's value.
+</p>
+<p>
+With "property=value" set property to that value.
+</p>
+</blockquote>
+
+<h3>log<a name="log">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; log [ classname[=level ] ] &lt;cr&gt;
+</code>
+<p>
+With no args, prints the current log level of all classes.
+</p>
+<p>
+With "classname" prints the current log level of the class.
+</p>
+<p>
+With "classname=level" set log level to new value.
+</p>
+</blockquote>
+
+<h3>file<a name="file">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; file [ filename | '=' ] &lt;cr&gt;
+</code>
+<p>
+With no args, prints the last filename executed.
+</p>
+<p>
+With "filename", read and execute filename.
+</p>
+<p>
+With "=" character, re-read and re-execute previous filename.
+</p>
+</blockquote>
+
+<h3>list<a name="list">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; list [ cmd | result ] &lt;cr&gt;
+</code>
+<p>
+With no arguments, list previous cmd and result
+</p>
+<p>
+With "cmd" argument, list the last mdx query cmd.
+</p>
+<p>
+With "result" argument, list the last mdx query result.
+</p>
+</blockquote>
+
+<h3>func<a name="func">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; func [ name ] &lt;cr&gt;
+</code>
+<p>
+With no arguments, list all defined function names.
+</p>
+<p>
+With "name" argument, display the functions:
+      name, description, and syntax.</p>
+</blockquote>
+
+<h3>param<a name="param">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; param [ name[=value ] ] &lt;cr&gt;
+</code>
+<p>
+With no arguments, all param name/value pairs are printed.
+</p>
+<p>
+With "name" argument, the value of the param is printed.
+</p>
+<p>
+With "name=value" sets the parameter with name to value.
+    If name is null, then unsets all parameters.
+    If value is null, then unsets the parameter associated with value.
+</p>
+</blockquote>
+
+<h3>cube<a name="cube">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; cube [ cubename [ name [=value | command] ] ] &lt;cr&gt;
+</code>
+<p>
+    With no arguments, all cubes are listed by name.
+</p>
+<p>
+    With "cubename" argument, cube attribute name/values for:
+      fact table (readonly)
+      aggregate caching (readwrite)
+    are printed.</p>
+<p>
+    With "cubename name=value", sets the readwrite attribute with name to value.
+</p>
+<p>
+    With "cubename command", executes the commands: clearCache.</p>
+</blockquote>
+
+<h3>error<a name="error">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; error [ msg | stack ] &lt;cr&gt;
+</code>
+<p>
+With no arguments, both message and stack are printed.
+</p>
+<p>
+With "msg" argument, the Error message is printed.
+</p>
+<p>
+With "stack" argument, the Error stack trace is printed.
+</p>
+</blockquote>
+
+<h3>echo<a name="echo">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; echo text &lt;cr&gt;
+</code>
+<p>
+Prints text to standard out.
+</p>
+</blockquote>
+
+<h3>expr<a name="expr">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; expr cubename expression &lt;cr&gt;
+</code>
+<p>
+Evaluates an expression against a cube
+</p>
+</blockquote>
+
+<h3>=<a name="equals">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; = &lt;cr&gt;
+</code>
+<p>
+Re-executes previous MDX query.
+</p>
+</blockquote>
+
+<h3>~<a name="tilde">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; ~ &lt;cr&gt;
+</code>
+<p>
+Clears any text entered so far for the current command.
+</p>
+</blockquote>
+
+<h3>exit<a name="exit">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; exit &lt;cr&gt;
+</code>
+<p>
+Exits the MDX command interpreter.
+</p>
+</blockquote>
+
+<h3>run an MDX query<a name="run_an_MDX_query">&nbsp;</a></h3>
+<blockquote>
+<code>
+  &gt; &lt;mdx query&gt; ( [ ';' ] &lt;cr&gt; | &lt;cr&gt; ( '=' | '~' ) &lt;cr&gt;
+)
+</code>
+<p>
+Executes or cancels an MDX query.
+</p>
+<p>
+An MDX query may span one or more lines. The continuation prompt is a '?'.
+</p>
+<p>
+After the last line of the query has been entered,
+      on the next line a single execute character, '=', may be entered
+      followed by a carriage return.
+      The lone '=' informs the interpreter that the query has
+      has been entered and is ready to execute.
+</p>
+<p>
+At anytime during the entry of a query the cancel
+      character, '~', may be entered alone on a line.
+      This removes all of the query text from the
+      the command interpreter.
+</p>
+<p>
+Queries can also be ended by using a semicolon ';' at the end of a line.
+</p>
+</blockquote>
+
+<p>
+During general operation, Mondrian Property triggers are disabled.
+If you enable Mondrian Property triggers for a CmdRunner session,
+either in the property file read on starup or by explicitly using the 
+<code>set</code> property command
+</p>
+<blockquote>
+<code>
+  &gt; set mondrian.olap.triggers.enable=true &lt;cr&gt;
+</code>
+</blockquote>
+<p>
+then one can force a re-scanning of the database for aggregate tables
+by disabling and then re-enabling the use of aggregates:
+</p>
+<blockquote>
+<code>
+  &gt; set mondrian.olap.aggregates.Read=false &lt;cr&gt;<br>
+  &gt; set mondrian.olap.aggregates.Read=true &lt;cr&gt;
+</code>
+</blockquote>
+<p>
+In fact, as long as one does not use the 
+<code>-rc</code> command line argument so that a new connection
+is gotten every time a query is executed, one can edit the
+Mondrian schema file between MDX query execute. This allows one
+to not only change what aggregates tables are in seen by Mondrian
+but also the definitions of the cubes within a given CmdRunner
+session.
+</p>
+<p>
+Similarly, one can change between aggregate table partial ordering
+algorithm by changing the value of the associated property, 
+<code>
+mondrian.olap.aggregates.ChooseByVolume
+</code>
+thus
+triggering internal code to reorder the aggregate table lookup order.
+</p>
+<p>
+Within the command interpreter there is no ability to edit a previously
+entered MDX query. If you wish to iteratively edit and run a MDX query,
+put the query in a file, tell the CmdRunner to execute the file using
+the 
+<code>file</code> command,
+re-execute the file using the
+<code>=</code> command,
+and in separate window edit/save MDX in the file.
+</p>
+<p>
+There is also no support for a command history (other than the '='
+command).
+</p>
+<h2>AggGen: Aggregate SQL Generator<a name="AggGen">&nbsp;</a></h2>
+<p>
+Mondrian release 1.2 introduces <a href="aggregate_tables.html">Aggregate Tables&nbsp;</a>
+as a means of improving performance, but aggregate tables are difficult to use 
+without tools to support them.
+</p>
+<p>
+<code>CmdRunner</code> includes a utility called <code>AggGen</code>, the Aggregate 
+Table Generator.
+With it, you can issue an MDX query, and generate a script to create and 
+populate the appropriate aggregate tables to support that MDX query. (The query 
+does not actually return a result.)<p>
+In the property file provided to the 
+<code>CmdRunner</code>
+at startup add the line:
+<blockquote>
+<code>
+    mondrian.rolap.aggregates.generateSql=true
+</code>
+</blockquote>
+</p>
+<p>
+or from the 
+<code>CmdRunner</code>
+command line enter:
+<blockquote>
+<code>
+  &gt; set mondrian.rolap.aggregates.generateSql=true &lt;cr&gt;
+</code>
+</blockquote>
+</p>
+<p>
+This instructs Mondrian whenever an MDX query is executed
+(and the cube associated with the query is not virtual)
+to output to standard out the Sql associated with the creation
+and population of both the "lost" dimension aggregate table
+and the "collapsed" dimension aggregate table which would be
+best suited to optimize the given MDX query.
+This Sql has to be edited to change the "l_XXX" in the "lost" 
+dimension statements or "c_XXX" in the "collapsed" dimension
+statements to more appropriate table names (remembering to
+make sure that the new names can still be recognized by Mondrian
+as aggregates of the particular fact table).
+</p>
+<p>
+As an example, if the following MDX is run against a MySql system:
+<blockquote>
+<pre>
+<code>WITH MEMBER
+    [Store].[Nat'l Avg] AS
+   'AVG(  { [Store].[Store Country].Members}, [Measures].[Units Shipped])'
+SELECT
+    { [Store].[Store Country].Members, [Store].[Nat'l Avg] } ON COLUMNS,
+    { [Product].[Product Family].[Non-Consumable].Children } ON ROWS
+FROM
+   [Warehouse]
+WHERE 
+    [Measures].[Units Shipped];</code></pre>
+</blockquote>
+</p>
+<p>
+Then the following is written to standard output:
+<blockquote>
+<pre>
+<code>WARN  [main] AggGen For RolapStar: "inventory_fact_1997" measure with
+name, "warehouse_sales"-"inventory_fact_1997"."warehouse_cost", is not a column
+name. The measure's column name may be an expression and currently AggGen does
+not handle expressions. You will have to add this measure to the aggregate table
+definition by hand.
+
+CREATE TABLE agg_l_XXX_inventory_fact_1997 (
+    time_id INT,
+    product_id INT NOT NULL,
+    store_id INT,
+    store_invoice DECIMAL(10,4),
+    supply_time SMALLINT,
+    warehouse_cost DECIMAL(10,4),
+    warehouse_sales DECIMAL(10,4),
+    units_shipped INT,
+    units_ordered INT,
+    fact_count INTEGER NOT NULL);
+
+INSERT INTO agg_l_XXX_inventory_fact_1997 (
+    time_id,
+    product_id,
+    store_id,
+    store_invoice,
+    supply_time,
+    warehouse_cost,
+    warehouse_sales,
+    units_shipped,
+    units_ordered,
+    fact_count)
+SELECT
+    `inventory_fact_1997`.`time_id` AS `time_id`,
+    `inventory_fact_1997`.`product_id` AS `product_id`,
+    `inventory_fact_1997`.`store_id` AS `store_id`,
+    SUM(`inventory_fact_1997`.`store_invoice`) AS `store_invoice`,
+    SUM(`inventory_fact_1997`.`supply_time`) AS `supply_time`,
+    SUM(`inventory_fact_1997`.`warehouse_cost`) AS `warehouse_cost`,
+    SUM(`inventory_fact_1997`.`warehouse_sales`) AS `warehouse_sales`,
+    SUM(`inventory_fact_1997`.`units_shipped`) AS `units_shipped`,
+    SUM(`inventory_fact_1997`.`units_ordered`) AS `units_ordered`,
+    COUNT(*) AS `fact_count`
+FROM 
+    `inventory_fact_1997` AS `inventory_fact_1997`
+GROUP BY 
+    `inventory_fact_1997`.`time_id`,
+    `inventory_fact_1997`.`product_id`,
+    `inventory_fact_1997`.`store_id`;
+
+CREATE TABLE agg_c_XXX_inventory_fact_1997 (
+    product_family VARCHAR(30),
+    product_department VARCHAR(30),
+    store_country VARCHAR(30),
+    the_year SMALLINT,
+    store_invoice DECIMAL(10,4),
+    supply_time SMALLINT,
+    warehouse_cost DECIMAL(10,4),
+    warehouse_sales DECIMAL(10,4),
+    units_shipped INT,
+    units_ordered INT,
+    fact_count INTEGER NOT NULL);
+
+INSERT INTO agg_c_XXX_inventory_fact_1997 (
+    product_family,
+    product_department,
+    store_country,
+    the_year,
+    store_invoice,
+    supply_time,
+    warehouse_cost,
+    warehouse_sales,
+    units_shipped,
+    units_ordered,
+    fact_count)
+SELECT
+    `product_class`.`product_family` AS `product_family`,
+    `product_class`.`product_department` AS `product_department`,
+    `store`.`store_country` AS `store_country`,
+    `time_by_day`.`the_year` AS `the_year`,
+    SUM(`inventory_fact_1997`.`store_invoice`) AS `store_invoice`,
+    SUM(`inventory_fact_1997`.`supply_time`) AS `supply_time`,
+    SUM(`inventory_fact_1997`.`warehouse_cost`) AS `warehouse_cost`,
+    SUM(`inventory_fact_1997`.`warehouse_sales`) AS `warehouse_sales`,
+    SUM(`inventory_fact_1997`.`units_shipped`) AS `units_shipped`,
+    SUM(`inventory_fact_1997`.`units_ordered`) AS `units_ordered`,
+    COUNT(*) AS `fact_count`
+FROM 
+    `inventory_fact_1997` AS `inventory_fact_1997`,
+    `product_class` AS `product_class`,
+    `product` AS `product`,
+    `store` AS `store`,
+    `time_by_day` AS `time_by_day`
+WHERE 
+    `product`.`product_class_id` = `product_class`.`product_class_id` and
+    `inventory_fact_1997`.`product_id` = `product`.`product_id` and
+    `inventory_fact_1997`.`store_id` = `store`.`store_id` and
+    `inventory_fact_1997`.`time_id` = `time_by_day`.`time_id`
+GROUP BY 
+    `product_class`.`product_family`,
+    `product_class`.`product_department`,
+    `store`.`store_country`,
+    `time_by_day`.`the_year`;</code>
+</pre>
+</blockquote>
+</p>
+<p>
+There are a couple of things to notice about the output.
+</p>
+<p>
+First, is the 
+<code>WARN</code>
+log message. This appears because the inventory_fact_1997 table has
+a measure with a column attribute
+<code>
+"warehouse_sales"-"inventory_fact_1997"."warehouse_cost"
+</code>
+that is not a column name, its an expression. The
+<code>AggGen</code>
+code does not currently know what to do with such an expression, so
+it issues a warning. A user would have to take the generated 
+aggregate table Sql scripts and alter them to accommodate this measure.
+</p>
+<p>
+There are two aggregate tables, 
+<code>agg_l_XXX_inventory_fact_1997</code>
+the "lost" dimension case and
+<code>agg_c_XXX_inventory_fact_1997</code>
+the "collapsed" dimension case.
+The "lost" dimension table, keeps the foreign keys for those 
+dimension used by the MDX query and discards the other
+foreign keys, while the
+"collapsed" dimension table also discards the foreign keys that are
+not needed but, in addition, rolls up or collapses the remaining
+dimensions to just those levels needed by the query.
+</p>
+<p>
+There are no indexes creation Sql statements for the aggregate
+tables. This is because not all databases require indexes to
+achive good performance against star schemas - your mileage may vary
+so do some testing. (With MySql indexes are a good idea).
+</p>
+<p>
+If one is creating a set of aggregate tables, there are cases where
+it is more efficient to create the set of aggregates that are just
+above the fact tables and then create each subsequent level of
+aggregates from one of the preceeding aggregate tables rather than
+always going back to the fact table.
+</p>
+<p>
+There are many possible aggregate tables for a given set of fact tables.
+<code>AggGen</code>
+just provides example Sql scripts based upon the MDX query run.
+Judgement has to be used when creating aggregate tables.
+There are tradeoffs such as which are the MDX queries that are
+run the most often? How much space does each aggregate table take?
+How long does it take to create the aggregate tables?
+How often does the set of MDX queries change?
+etc.
+</p>
+<p>
+During normal Mondrian operation, for instance, with 
+<code>JPivot</code>, it is recommended that the above 
+<code>AggGen</code>
+property not be set to true as it will slow down Mondrian and
+generate a lot of text in the log file.
+</p>
+
+<hr noshade size="1"/>
+<p>
+    Author: Richard Emberson; last updated July, 2005.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/cmdrunner.html?ac=22">log&nbsp;</a>)<br/>
+    Copyright (C) 2005-2007 Julian Hyde and others
+</p>
+
+<br />
+
+<!-- doc2web end -->
+
+</body>
+</html>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>WITH MEMBER [Promotions].[Average] AS 'AVG({[Bag Stuffers], [Best Savings]})'
+SELECT {[Promotions].[Bag Stuffers], [Promotions].[Best Savings], [Promotions].[Average]} ON AXIS(0),
+       {[Store].[USA], [Store].[USA].Children} ON AXIS(1)
+FROM [Sales]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Time].[1997]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Promotions]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Promotions].[Bag Stuffers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[Best Savings]</member>
+                </tuple>
+                <tuple>
+                    <member>[Promotions].[Average]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>901.0</cell>
+                <cell>2081.0</cell>
+                <cell>1491.0</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>1608.0</cell>
+                <cell>1608.0</cell>
+            </drow>
+            <drow>
+                <cell>617.0</cell>
+                <cell>#Missing</cell>
+                <cell>617.0</cell>
+            </drow>
+            <drow>
+                <cell>284.0</cell>
+                <cell>473.0</cell>
+                <cell>378.5</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

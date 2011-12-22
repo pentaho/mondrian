@@ -1,0 +1,159 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testBatchedFill1">
+        <Resource name="description">
+            <![CDATA[
+on sales cube
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store],[*BASE_MEMBERS_Time])'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*FORMATTED_MEASURE_1],[Measures].[*FORMATTED_MEASURE_2],[Measures].[*FORMATTED_MEASURE_3],[Measures].[*FORMATTED_MEASURE_4]}'
+  Set [*BASE_MEMBERS_Store] as '{[Store].[USA].[CA]}'
+  Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})'
+  Set [*BASE_MEMBERS_Time] as '[Time].[Year].Members'
+  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+  Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Store Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+  Member [Measures].[*FORMATTED_MEASURE_2] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+  Member [Measures].[*FORMATTED_MEASURE_3] as '[Measures].[Customer Count]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+  Member [Measures].[*FORMATTED_MEASURE_4] as '[Measures].[Sales Count]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*NATIVE_CJ_SET], {([Store].CurrentMember,[Time].[Time].CurrentMember)}) on rows 
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+{[Measures].[*FORMATTED_MEASURE_1]}
+{[Measures].[*FORMATTED_MEASURE_2]}
+{[Measures].[*FORMATTED_MEASURE_3]}
+{[Measures].[*FORMATTED_MEASURE_4]}
+Axis #2:
+{[Store].[USA].[CA], [Time].[1997]}
+Row #0: 74,748
+Row #0: 159,168
+Row #0: 63,530
+Row #0: 2,716
+Row #0: 24,442
+]]>
+        </Resource>
+        <Resource dialect="DERBY" name="expectedSql">
+            <![CDATA[
+select
+  "store"."store_state" as "c0",
+  "time_by_day"."the_year" as "c1",
+  sum("sales_fact_1997"."unit_sales") as "m0",
+  sum("sales_fact_1997"."store_sales") as "m1",
+  sum("sales_fact_1997"."store_cost") as "m2",
+  count(distinct "sales_fact_1997"."customer_id") as "m3",
+  count("sales_fact_1997"."product_id") as "m4" 
+from
+  "store" as "store",
+  "sales_fact_1997" as "sales_fact_1997",
+  "time_by_day" as "time_by_day" 
+where
+  "sales_fact_1997"."store_id" = "store"."store_id" and "store"."store_state" = 'CA' and 
+  "sales_fact_1997"."time_id" = "time_by_day"."time_id" and
+  "time_by_day"."the_year" = 1997 
+group by
+  "store"."store_state",
+  "time_by_day"."the_year"
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBatchedFill2">
+        <Resource name="description">
+            <![CDATA[
+on warehouse and sales cube
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Time])'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*FORMATTED_MEASURE_1]}'
+  Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Set [*BASE_MEMBERS_Time] as '[Time].[Year].Members'
+  Set [*NATIVE_MEMBERS_Time] as 'Generate([*NATIVE_CJ_SET], {[Time].[Time].CurrentMember})'
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300
+  Member [Measures].[*FORMATTED_MEASURE_1] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=300 
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Time].[Time].CurrentMember)}) on rows 
+From [Warehouse and Sales]   
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+{[Measures].[*FORMATTED_MEASURE_1]}
+Axis #2:
+{[Product].[Drink], [Time].[1997]}
+{[Product].[Food], [Time].[1997]}
+{[Product].[Non-Consumable], [Time].[1997]}
+Row #0: 48,836
+Row #0: 24,597
+Row #1: 409,036
+Row #1: 191,940
+Row #2: 107,366
+Row #2: 50,236
+]]>
+        </Resource>
+        <Resource dialect="DERBY" name="expectedSql">
+            <![CDATA[
+select
+  "time_by_day"."the_year" as "c0",
+  "product_class"."product_family" as "c1", 
+  sum("sales_fact_1997"."store_sales") as "m0", 
+  sum("sales_fact_1997"."unit_sales") as "m1" 
+from
+  "time_by_day" as "time_by_day", 
+  "sales_fact_1997" as "sales_fact_1997", 
+  "product_class" as "product_class", 
+  "product" as "product"
+where
+  "sales_fact_1997"."time_id" = "time_by_day"."time_id" and 
+  "time_by_day"."the_year" = 1997 and 
+  "sales_fact_1997"."product_id" = "product"."product_id" and 
+  "product"."product_class_id" = "product_class"."product_class_id"
+group by
+  "time_by_day"."the_year", 
+  "product_class"."product_family"                     
+]]>
+        </Resource>
+        <Resource dialect="MYSQL" name="expectedSql">
+            <![CDATA[
+select
+  "time_by_day"."the_year" as "c0",
+  "product_class"."product_family" as "c1",
+  sum("sales_fact_1997"."store_sales") as "m0",
+  sum("sales_fact_1997"."unit_sales") as "m1"
+from
+  "time_by_day" as "time_by_day",
+  "sales_fact_1997" as "sales_fact_1997",
+  "product_class" as "product_class",
+  "product" as "product"
+where
+  "sales_fact_1997"."time_id" = "time_by_day"."time_id" and
+  "time_by_day"."the_year" = 1997 and
+  "sales_fact_1997"."product_id" = "product"."product_id" and
+  "product"."product_class_id" = "product_class"."product_class_id"
+group by
+  "time_by_day"."the_year",
+  "product_class"."product_family"                     
+]]>
+        </Resource>
+    </TestCase>
+</Root>

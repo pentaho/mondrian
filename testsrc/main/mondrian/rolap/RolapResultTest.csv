@@ -1,0 +1,41 @@
+# RolapResultTest.csv
+# @version  $Id:$
+# fact table
+## TableName: FT1
+## ColumnNames: d1_id,d2_id,value
+## ColumnTypes: INTEGER,INTEGER,DECIMAL(10,2)
+## NosOfRows: 3
+1,1,5
+2,2,10
+3,3,15
+## TableName: FT2
+## ColumnNames: d1_id,d2_id,value,vextra
+## ColumnTypes: INTEGER,INTEGER,DECIMAL(10,2),DECIMAL(10,2):null
+## NosOfRows: 9
+1,1,5
+2,2,10
+3,3,15
+4,1,2
+4,2,4
+4,3,8
+1,4,3
+2,4,9
+3,4,27
+# dimension
+## TableName: D1
+## ColumnNames: d1_id,name
+## ColumnTypes: INTEGER,VARCHAR(20)
+## NosOfRows: 4
+1,a
+2,b
+3,c
+4,d
+# dimension
+## TableName: D2
+## ColumnNames: d2_id,name
+## ColumnTypes: INTEGER,VARCHAR(20)
+## NosOfRows: 4
+1,x
+2,y
+3,z
+4,w

@@ -1,0 +1,1247 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testBasicSorting">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+  Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Store Size in SQFT])' 
+  Set [*SORTED_SET] as 'Order([*NATIVE_CJ_SET], [Customers].currentMember.OrderKey, BASC, [Store Size in SQFT].currentMember.OrderKey, BDESC)' 
+  Set [*BASE_MEMBERS_Store Size in SQFT] as '[Store Size in SQFT].[Store Sqft].Members' 
+  Set [*NATIVE_MEMBERS_Customers] as 'Generate([*NATIVE_CJ_SET], {[Customers].CurrentMember})' 
+  Set [*BASE_MEMBERS_Customers] as '[Customers].[City].Members' 
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}' 
+  Set [*NATIVE_MEMBERS_Store Size in SQFT] as 'Generate([*NATIVE_CJ_SET], {[Store Size in SQFT].CurrentMember})' 
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Unit Sales]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 
+Select 
+  [*BASE_MEMBERS_Measures] on columns, 
+  Non Empty Generate([*SORTED_SET], {([Customers].currentMember,[Store Size in SQFT].currentMember)}) on rows 
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Customers].[USA].[OR].[Albany], [Store Size in SQFT].[27694]}
+{[Customers].[USA].[CA].[Altadena], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Altadena], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Anacortes], [Store Size in SQFT].[28206]}
+{[Customers].[USA].[CA].[Arcadia], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Arcadia], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Ballard], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[OR].[Beaverton], [Store Size in SQFT].[20319]}
+{[Customers].[USA].[CA].[Bellflower], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Bellflower], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Bellingham], [Store Size in SQFT].[28206]}
+{[Customers].[USA].[CA].[Berkeley], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Beverly Hills], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Beverly Hills], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Bremerton], [Store Size in SQFT].[39696]}
+{[Customers].[USA].[CA].[Burbank], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Burbank], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Burien], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[Burlingame], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Chula Vista], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[Colma], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Concord], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Coronado], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[OR].[Corvallis], [Store Size in SQFT].[27694]}
+{[Customers].[USA].[CA].[Daly City], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Downey], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Downey], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Edmonds], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[El Cajon], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[WA].[Everett], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[Fremont], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Glendale], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Glendale], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[CA].[Grossmont], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[Imperial Beach], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[WA].[Issaquah], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[WA].[Kirkland], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[La Jolla], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[La Mesa], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[OR].[Lake Oswego], [Store Size in SQFT].[20319]}
+{[Customers].[USA].[CA].[Lakewood], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Lakewood], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[OR].[Lebanon], [Store Size in SQFT].[27694]}
+{[Customers].[USA].[CA].[Lemon Grove], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[Lincoln Acres], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[Long Beach], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Long Beach], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[CA].[Los Angeles], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Los Angeles], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Lynnwood], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[WA].[Marysville], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[Mill Valley], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[OR].[Milwaukie], [Store Size in SQFT].[20319]}
+{[Customers].[USA].[CA].[National City], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[Newport Beach], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Newport Beach], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[CA].[Novato], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Oakland], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[WA].[Olympia], [Store Size in SQFT].[33858]}
+{[Customers].[USA].[OR].[Oregon City], [Store Size in SQFT].[20319]}
+{[Customers].[USA].[CA].[Palo Alto], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Pomona], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Pomona], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Port Orchard], [Store Size in SQFT].[39696]}
+{[Customers].[USA].[OR].[Portland], [Store Size in SQFT].[20319]}
+{[Customers].[USA].[WA].[Puyallup], [Store Size in SQFT].[33858]}
+{[Customers].[USA].[WA].[Redmond], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[Redwood City], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[WA].[Renton], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[CA].[Richmond], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[OR].[Salem], [Store Size in SQFT].[27694]}
+{[Customers].[USA].[CA].[San Carlos], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[San Diego], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[San Francisco], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[San Gabriel], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[San Gabriel], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[CA].[San Jose], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Santa Cruz], [Store Size in SQFT].[22478]}
+{[Customers].[USA].[CA].[Santa Monica], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Santa Monica], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Seattle], [Store Size in SQFT].[21215]}
+{[Customers].[USA].[WA].[Sedro Woolley], [Store Size in SQFT].[28206]}
+{[Customers].[USA].[WA].[Spokane], [Store Size in SQFT].[30268]}
+{[Customers].[USA].[CA].[Spring Valley], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[WA].[Tacoma], [Store Size in SQFT].[33858]}
+{[Customers].[USA].[CA].[Torrance], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Torrance], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[OR].[W. Linn], [Store Size in SQFT].[20319]}
+{[Customers].[USA].[WA].[Walla Walla], [Store Size in SQFT].[#null]}
+{[Customers].[USA].[CA].[West Covina], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[West Covina], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[OR].[Woodburn], [Store Size in SQFT].[27694]}
+{[Customers].[USA].[CA].[Woodland Hills], [Store Size in SQFT].[23688]}
+{[Customers].[USA].[CA].[Woodland Hills], [Store Size in SQFT].[23598]}
+{[Customers].[USA].[WA].[Yakima], [Store Size in SQFT].[#null]}
+Row #0: 6,806
+Row #1: 1,152
+Row #2: 1,422
+Row #3: 766
+Row #4: 1,063
+Row #5: 1,377
+Row #6: 2,559
+Row #7: 4,558
+Row #8: 1,391
+Row #9: 1,715
+Row #10: 758
+Row #11: 136
+Row #12: 1,155
+Row #13: 1,752
+Row #14: 12,177
+Row #15: 1,350
+Row #16: 1,736
+Row #17: 2,783
+Row #18: 198
+Row #19: 2,999
+Row #20: 129
+Row #21: 105
+Row #22: 2,391
+Row #23: 9,539
+Row #24: 129
+Row #25: 1,583
+Row #26: 1,857
+Row #27: 2,041
+Row #28: 2,543
+Row #29: 2,690
+Row #30: 163
+Row #31: 1,555
+Row #32: 1,729
+Row #33: 2,131
+Row #34: 1,616
+Row #35: 2,063
+Row #36: 2,249
+Row #37: 1,938
+Row #38: 1,834
+Row #39: 4,910
+Row #40: 1,167
+Row #41: 1,320
+Row #42: 9,596
+Row #43: 2,651
+Row #44: 2,176
+Row #45: 1,391
+Row #46: 1,582
+Row #47: 891
+Row #48: 1,118
+Row #49: 2,192
+Row #50: 2,232
+Row #51: 58
+Row #52: 5,145
+Row #53: 2,031
+Row #54: 1,204
+Row #55: 1,894
+Row #56: 163
+Row #57: 70
+Row #58: 12,570
+Row #59: 3,708
+Row #60: 133
+Row #61: 1,198
+Row #62: 1,514
+Row #63: 12,399
+Row #64: 3,583
+Row #65: 11,802
+Row #66: 2,105
+Row #67: 144
+Row #68: 2,212
+Row #69: 110
+Row #70: 7,678
+Row #71: 145
+Row #72: 1,535
+Row #73: 88
+Row #74: 1,280
+Row #75: 1,351
+Row #76: 161
+Row #77: 185
+Row #78: 1,131
+Row #79: 1,529
+Row #80: 1,885
+Row #81: 713
+Row #82: 23,591
+Row #83: 1,790
+Row #84: 10,885
+Row #85: 1,176
+Row #86: 1,394
+Row #87: 4,175
+Row #88: 2,203
+Row #89: 1,387
+Row #90: 1,116
+Row #91: 7,961
+Row #92: 1,259
+Row #93: 1,257
+Row #94: 11,491
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSortInHierarchy">
+        <Resource name="description">
+            <![CDATA[
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Product]'
+  Set [*SORTED_SET] as 'Order([*NATIVE_CJ_SET], Ancestor([Product].currentMember, [Product].[Product Family]).OrderKey, BDESC, Ancestor([Product].currentMember, [Product].[Product Department]).OrderKey, BDESC)'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Department].Members,[Product].CurrentMember.Parent Not In {[Product].[Food]})'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*ZERO]}'
+  Member [Measures].[*ZERO] as '0', SOLVE_ORDER=0
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*SORTED_SET], {([Product].currentMember)}) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*ZERO]}
+Axis #2:
+{[Product].[Non-Consumable].[Periodicals]}
+{[Product].[Non-Consumable].[Household]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Non-Consumable].[Checkout]}
+{[Product].[Non-Consumable].[Carousel]}
+{[Product].[Drink].[Dairy]}
+{[Product].[Drink].[Beverages]}
+{[Product].[Drink].[Alcoholic Beverages]}
+Row #0: 0
+Row #1: 0
+Row #2: 0
+Row #3: 0
+Row #4: 0
+Row #5: 0
+Row #6: 0
+Row #7: 0
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSortRowAtt">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Yearly Income],[*BASE_MEMBERS_Education Level])'
+Set [*SORTED_COL_AXIS] as 'Order([*NATIVE_MEMBERS_Yearly Income],[Yearly Income].CurrentMember.OrderKey,BASC)'
+Set [*SORTED_ROW_AXIS] as 'Order([*NATIVE_MEMBERS_Education Level],([Yearly Income].[*TOTAL_MEMBER_SEL~SUM],[Measures].[*FORMATTED_MEASURE_0]),BASC)'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+Set [*BASE_MEMBERS_Yearly Income] as 'Filter([Yearly Income].[Yearly Income].Members,[Yearly Income].CurrentMember Not In {[Yearly Income].[$10K - $30K],[Yearly Income].[$50K - $70K]})'
+Set [*NATIVE_MEMBERS_Yearly Income] as 'Generate([*NATIVE_CJ_SET], {[Yearly Income].CurrentMember})'
+Member [Yearly Income].[*TOTAL_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Yearly Income])', SOLVE_ORDER=-101
+Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Member [Yearly Income].[*TOTAL_MEMBER_SEL~MAX] as 'Max([*NATIVE_MEMBERS_Yearly Income])', SOLVE_ORDER=199
+Member [Education Level].[*TOTAL_MEMBER_SEL~MAX] as 'Max([*NATIVE_MEMBERS_Education Level])', SOLVE_ORDER=200
+Member [Education Level].[*TOTAL_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})', SOLVE_ORDER=-100
+Select
+Union(CrossJoin({[Yearly Income].[*TOTAL_MEMBER_SEL~MAX]},[*BASE_MEMBERS_Measures]),Union(CrossJoin({[Yearly Income].[*TOTAL_MEMBER_SEL~SUM]},[*BASE_MEMBERS_Measures]),CrossJoin([*SORTED_COL_AXIS],[*BASE_MEMBERS_Measures]))) on columns,
+Non Empty Union({[Education Level].[*TOTAL_MEMBER_SEL~MAX]},Union({[Education Level].[*TOTAL_MEMBER_SEL~SUM]},[*SORTED_ROW_AXIS])) on rows
+From [Sales]    
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Yearly Income].[*TOTAL_MEMBER_SEL~MAX], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[*TOTAL_MEMBER_SEL~SUM], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[$110K - $130K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[$130K - $150K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[$150K +], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[$30K - $50K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[$70K - $90K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Yearly Income].[$90K - $110K], [Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Education Level].[*TOTAL_MEMBER_SEL~MAX]}
+{[Education Level].[*TOTAL_MEMBER_SEL~SUM]}
+{[Education Level].[Graduate Degree]}
+{[Education Level].[Partial College]}
+{[Education Level].[Partial High School]}
+{[Education Level].[Bachelors Degree]}
+{[Education Level].[High School Degree]}
+Row #0: 46,305
+Row #0: 61,645
+Row #0: 3,047
+Row #0: 4,351
+Row #0: 1,709
+Row #0: 46,305
+Row #0: 16,740
+Row #0: 2,950
+Row #1: 73,871
+Row #1: 138,645
+Row #1: 9,814
+Row #1: 12,296
+Row #1: 4,799
+Row #1: 73,871
+Row #1: 27,839
+Row #1: 10,028
+Row #2: 5,505
+Row #2: 12,633
+Row #2: 1,538
+Row #2: 2,502
+Row #2: 509
+Row #2: 370
+Row #2: 5,505
+Row #2: 2,209
+Row #3: 14,835
+Row #3: 17,946
+Row #3: 665
+Row #3: 1,163
+Row #3: 273
+Row #3: 14,835
+Row #3: 614
+Row #3: 396
+Row #4: 9,652
+Row #4: 18,927
+Row #4: 1,573
+Row #4: 2,230
+Row #4: 1,127
+Row #4: 9,652
+Row #4: 1,697
+Row #4: 2,647
+Row #5: 16,740
+Row #5: 27,494
+Row #5: 2,991
+Row #5: 2,049
+Row #5: 1,181
+Row #5: 2,707
+Row #5: 16,740
+Row #5: 1,826
+Row #6: 46,305
+Row #6: 61,645
+Row #6: 3,047
+Row #6: 4,351
+Row #6: 1,709
+Row #6: 46,305
+Row #6: 3,283
+Row #6: 2,950
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSortRowTotal">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Gender]))'
+  Set [*SORTED_COL_AXIS] as 'Order([*NATIVE_MEMBERS_Customers],[Customers].currentMember.OrderKey, BDESC)'
+  Set [*SORTED_ROW_AXIS] as 'Order(Generate([*NATIVE_CJ_SET], {([Product].currentMember,[Gender].CurrentMember)}),[Product].currentMember.OrderKey, BDESC, ([Customers].[*TOTAL_MEMBER_SEL~SUM],[Measures].[*FORMATTED_MEASURE_0]),BASC)'
+  Set [*BASE_MEMBERS_Gender] as '[Gender].[Gender].Members'
+  Set [*NATIVE_MEMBERS_Customers] as 'Generate([*NATIVE_CJ_SET], {[Customers].CurrentMember})'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Set [*BASE_MEMBERS_Customers] as '[Customers].[State Province].Members'
+  Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'
+  Set [*NATIVE_MEMBERS_Gender] as 'Generate([*NATIVE_CJ_SET], {[Gender].CurrentMember})'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'
+  Member [Customers].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Generate([*NATIVE_CJ_SET], {([Customers].currentMember)}))', SOLVE_ORDER=-102
+  Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Customer Count]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400 Select
+  Union(
+    CrossJoin({[Customers].[*TOTAL_MEMBER_SEL~SUM]},[*BASE_MEMBERS_Measures]),
+    CrossJoin([*SORTED_COL_AXIS],[*BASE_MEMBERS_Measures])) on columns,
+  Non Empty [*SORTED_ROW_AXIS] on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Customers].[*TOTAL_MEMBER_SEL~SUM], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customers].[USA].[WA], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customers].[USA].[OR], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customers].[USA].[CA], [Measures].[*FORMATTED_MEASURE_0]}
+Axis #2:
+{[Product].[Non-Consumable], [Gender].[F]}
+{[Product].[Non-Consumable], [Gender].[M]}
+{[Product].[Food], [Gender].[F]}
+{[Product].[Food], [Gender].[M]}
+{[Product].[Drink], [Gender].[M]}
+{[Product].[Drink], [Gender].[F]}
+Row #0: 2,206
+Row #0: 770
+Row #0: 457
+Row #0: 979
+Row #1: 2,262
+Row #1: 741
+Row #1: 476
+Row #1: 1,045
+Row #2: 2,735
+Row #2: 922
+Row #2: 501
+Row #2: 1,312
+Row #3: 2,790
+Row #3: 892
+Row #3: 534
+Row #3: 1,364
+Row #4: 1,732
+Row #4: 590
+Row #4: 417
+Row #4: 725
+Row #5: 1,753
+Row #5: 652
+Row #5: 392
+Row #5: 709
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSort3Levels">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*ORDERED_SET] as 
+    'Order([*NATIVE_CJ_SET],
+           Ancestor([Product].currentMember, [Product].[Product Family]).OrderKey, BASC,
+           Ancestor([Product].currentMember, [Product].[Product Department]).OrderKey, BDESC,
+           Ancestor([Product].currentMember, [Product].[Product Category]).OrderKey, BASC)'
+  Set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Product]'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Set [*BASE_MEMBERS_Product] as '[Product].[Product Category].Members'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*ZERO]}' Member [Measures].[*ZERO] as '0', SOLVE_ORDER=0
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*ORDERED_SET], {([Product].currentMember)}) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*ZERO]}
+Axis #2:
+{[Product].[Drink].[Dairy].[Dairy]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages]}
+{[Product].[Drink].[Beverages].[Drinks]}
+{[Product].[Drink].[Beverages].[Hot Beverages]}
+{[Product].[Drink].[Beverages].[Pure Juice Beverages]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]}
+{[Product].[Food].[Starchy Foods].[Starchy Foods]}
+{[Product].[Food].[Snacks].[Candy]}
+{[Product].[Food].[Snack Foods].[Snack Foods]}
+{[Product].[Food].[Seafood].[Seafood]}
+{[Product].[Food].[Produce].[Fruit]}
+{[Product].[Food].[Produce].[Packaged Vegetables]}
+{[Product].[Food].[Produce].[Specialty]}
+{[Product].[Food].[Produce].[Vegetables]}
+{[Product].[Food].[Meat].[Meat]}
+{[Product].[Food].[Frozen Foods].[Breakfast Foods]}
+{[Product].[Food].[Frozen Foods].[Frozen Desserts]}
+{[Product].[Food].[Frozen Foods].[Frozen Entrees]}
+{[Product].[Food].[Frozen Foods].[Meat]}
+{[Product].[Food].[Frozen Foods].[Pizza]}
+{[Product].[Food].[Frozen Foods].[Vegetables]}
+{[Product].[Food].[Eggs].[Eggs]}
+{[Product].[Food].[Deli].[Meat]}
+{[Product].[Food].[Deli].[Side Dishes]}
+{[Product].[Food].[Dairy].[Dairy]}
+{[Product].[Food].[Canned Products].[Fruit]}
+{[Product].[Food].[Canned Foods].[Canned Anchovies]}
+{[Product].[Food].[Canned Foods].[Canned Clams]}
+{[Product].[Food].[Canned Foods].[Canned Oysters]}
+{[Product].[Food].[Canned Foods].[Canned Sardines]}
+{[Product].[Food].[Canned Foods].[Canned Shrimp]}
+{[Product].[Food].[Canned Foods].[Canned Soup]}
+{[Product].[Food].[Canned Foods].[Canned Tuna]}
+{[Product].[Food].[Canned Foods].[Vegetables]}
+{[Product].[Food].[Breakfast Foods].[Breakfast Foods]}
+{[Product].[Food].[Baking Goods].[Baking Goods]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies]}
+{[Product].[Food].[Baked Goods].[Bread]}
+{[Product].[Non-Consumable].[Periodicals].[Magazines]}
+{[Product].[Non-Consumable].[Household].[Bathroom Products]}
+{[Product].[Non-Consumable].[Household].[Candles]}
+{[Product].[Non-Consumable].[Household].[Cleaning Supplies]}
+{[Product].[Non-Consumable].[Household].[Electrical]}
+{[Product].[Non-Consumable].[Household].[Hardware]}
+{[Product].[Non-Consumable].[Household].[Kitchen Products]}
+{[Product].[Non-Consumable].[Household].[Paper Products]}
+{[Product].[Non-Consumable].[Household].[Plastic Products]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Bathroom Products]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Cold Remedies]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Decongestants]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Hygiene]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Pain Relievers]}
+{[Product].[Non-Consumable].[Checkout].[Hardware]}
+{[Product].[Non-Consumable].[Checkout].[Miscellaneous]}
+{[Product].[Non-Consumable].[Carousel].[Specialty]}
+Row #0: 0
+Row #1: 0
+Row #2: 0
+Row #3: 0
+Row #4: 0
+Row #5: 0
+Row #6: 0
+Row #7: 0
+Row #8: 0
+Row #9: 0
+Row #10: 0
+Row #11: 0
+Row #12: 0
+Row #13: 0
+Row #14: 0
+Row #15: 0
+Row #16: 0
+Row #17: 0
+Row #18: 0
+Row #19: 0
+Row #20: 0
+Row #21: 0
+Row #22: 0
+Row #23: 0
+Row #24: 0
+Row #25: 0
+Row #26: 0
+Row #27: 0
+Row #28: 0
+Row #29: 0
+Row #30: 0
+Row #31: 0
+Row #32: 0
+Row #33: 0
+Row #34: 0
+Row #35: 0
+Row #36: 0
+Row #37: 0
+Row #38: 0
+Row #39: 0
+Row #40: 0
+Row #41: 0
+Row #42: 0
+Row #43: 0
+Row #44: 0
+Row #45: 0
+Row #46: 0
+Row #47: 0
+Row #48: 0
+Row #49: 0
+Row #50: 0
+Row #51: 0
+Row #52: 0
+Row #53: 0
+Row #54: 0
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSortSkipLevel2">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+  Set [*ORDERED_SET] as 
+    'Order([*NATIVE_CJ_SET],
+           Ancestor([Product].currentMember, [Product].[Product Family]).OrderKey, BASC, 
+           Ancestor([Product].currentMember, [Product].[Product Category]).OrderKey, BDESC)'
+  Set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Product]'
+  Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+  Set [*BASE_MEMBERS_Product] as '[Product].[Product Category].Members'
+  Set [*BASE_MEMBERS_Measures] as '{[Measures].[*ZERO]}' Member [Measures].[*ZERO] as '0', SOLVE_ORDER=0
+Select
+  [*BASE_MEMBERS_Measures] on columns,
+  Non Empty Generate([*ORDERED_SET], {([Product].currentMember)}) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*ZERO]}
+Axis #2:
+{[Product].[Drink].[Beverages].[Pure Juice Beverages]}
+{[Product].[Drink].[Beverages].[Hot Beverages]}
+{[Product].[Drink].[Beverages].[Drinks]}
+{[Product].[Drink].[Dairy].[Dairy]}
+{[Product].[Drink].[Beverages].[Carbonated Beverages]}
+{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine]}
+{[Product].[Food].[Canned Foods].[Vegetables]}
+{[Product].[Food].[Frozen Foods].[Vegetables]}
+{[Product].[Food].[Produce].[Vegetables]}
+{[Product].[Food].[Starchy Foods].[Starchy Foods]}
+{[Product].[Food].[Produce].[Specialty]}
+{[Product].[Food].[Snack Foods].[Snack Foods]}
+{[Product].[Food].[Deli].[Side Dishes]}
+{[Product].[Food].[Seafood].[Seafood]}
+{[Product].[Food].[Frozen Foods].[Pizza]}
+{[Product].[Food].[Produce].[Packaged Vegetables]}
+{[Product].[Food].[Deli].[Meat]}
+{[Product].[Food].[Frozen Foods].[Meat]}
+{[Product].[Food].[Meat].[Meat]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies]}
+{[Product].[Food].[Canned Products].[Fruit]}
+{[Product].[Food].[Produce].[Fruit]}
+{[Product].[Food].[Frozen Foods].[Frozen Entrees]}
+{[Product].[Food].[Frozen Foods].[Frozen Desserts]}
+{[Product].[Food].[Eggs].[Eggs]}
+{[Product].[Food].[Dairy].[Dairy]}
+{[Product].[Food].[Canned Foods].[Canned Tuna]}
+{[Product].[Food].[Canned Foods].[Canned Soup]}
+{[Product].[Food].[Canned Foods].[Canned Shrimp]}
+{[Product].[Food].[Canned Foods].[Canned Sardines]}
+{[Product].[Food].[Canned Foods].[Canned Oysters]}
+{[Product].[Food].[Canned Foods].[Canned Clams]}
+{[Product].[Food].[Canned Foods].[Canned Anchovies]}
+{[Product].[Food].[Snacks].[Candy]}
+{[Product].[Food].[Breakfast Foods].[Breakfast Foods]}
+{[Product].[Food].[Frozen Foods].[Breakfast Foods]}
+{[Product].[Food].[Baked Goods].[Bread]}
+{[Product].[Food].[Baking Goods].[Baking Goods]}
+{[Product].[Non-Consumable].[Carousel].[Specialty]}
+{[Product].[Non-Consumable].[Household].[Plastic Products]}
+{[Product].[Non-Consumable].[Household].[Paper Products]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Pain Relievers]}
+{[Product].[Non-Consumable].[Checkout].[Miscellaneous]}
+{[Product].[Non-Consumable].[Periodicals].[Magazines]}
+{[Product].[Non-Consumable].[Household].[Kitchen Products]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Hygiene]}
+{[Product].[Non-Consumable].[Checkout].[Hardware]}
+{[Product].[Non-Consumable].[Household].[Hardware]}
+{[Product].[Non-Consumable].[Household].[Electrical]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Decongestants]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Cold Remedies]}
+{[Product].[Non-Consumable].[Household].[Cleaning Supplies]}
+{[Product].[Non-Consumable].[Household].[Candles]}
+{[Product].[Non-Consumable].[Health and Hygiene].[Bathroom Products]}
+{[Product].[Non-Consumable].[Household].[Bathroom Products]}
+Row #0: 0
+Row #1: 0
+Row #2: 0
+Row #3: 0
+Row #4: 0
+Row #5: 0
+Row #6: 0
+Row #7: 0
+Row #8: 0
+Row #9: 0
+Row #10: 0
+Row #11: 0
+Row #12: 0
+Row #13: 0
+Row #14: 0
+Row #15: 0
+Row #16: 0
+Row #17: 0
+Row #18: 0
+Row #19: 0
+Row #20: 0
+Row #21: 0
+Row #22: 0
+Row #23: 0
+Row #24: 0
+Row #25: 0
+Row #26: 0
+Row #27: 0
+Row #28: 0
+Row #29: 0
+Row #30: 0
+Row #31: 0
+Row #32: 0
+Row #33: 0
+Row #34: 0
+Row #35: 0
+Row #36: 0
+Row #37: 0
+Row #38: 0
+Row #39: 0
+Row #40: 0
+Row #41: 0
+Row #42: 0
+Row #43: 0
+Row #44: 0
+Row #45: 0
+Row #46: 0
+Row #47: 0
+Row #48: 0
+Row #49: 0
+Row #50: 0
+Row #51: 0
+Row #52: 0
+Row #53: 0
+Row #54: 0
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSortCalcMetric1">
+        <Resource name="description">
+            <![CDATA[
+sort on calculated metrics
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Store Cost]))'
+Set [*SortedSet] as 'Order([*NATIVE_CJ_SET], [Measures].[*CALCULATED_MEASURE_1], BASC)' 
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*CALCULATED_MEASURE_1]}'
+Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Member [Measures].[*CALCULATED_MEASURE_1] as '[Measures].[Store Cost]*-1', FORMAT_STRING = '#,##0', SOLVE_ORDER=0
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Generate([*SortedSet], {([Product].currentMember)}) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+{[Measures].[*CALCULATED_MEASURE_1]}
+Axis #2:
+{[Product].[Food]}
+{[Product].[Non-Consumable]}
+{[Product].[Drink]}
+Row #0: 163,271
+Row #0: -163,271
+Row #1: 42,879
+Row #1: -42,879
+Row #2: 19,477
+Row #2: -19,477
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSortCalcMetric2">
+        <Resource name="description">
+            <![CDATA[
+sort on calculated metrics
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Store Cost]))'
+Set [*SortedSet] as 'Order([*NATIVE_CJ_SET], [Measures].[*SUMMARY_MEASURE_1], BASC)' 
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*SUMMARY_MEASURE_1]}'
+Member [Product].[*TOTAL_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})', SOLVE_ORDER=-100
+Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Member [Measures].[*SUMMARY_MEASURE_1] as '[Measures].[Store Cost]/([Measures].[Store Cost],[Product].[*TOTAL_MEMBER_SEL~SUM])', FORMAT_STRING = '###0.00%', SOLVE_ORDER=100
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Generate([*SortedSet], {([Product].currentMember)}) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+{[Measures].[*SUMMARY_MEASURE_1]}
+Axis #2:
+{[Product].[Drink]}
+{[Product].[Non-Consumable]}
+{[Product].[Food]}
+Row #0: 19,477
+Row #0: 8.63%
+Row #1: 42,879
+Row #1: 19.00%
+Row #2: 163,271
+Row #2: 72.36%
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBasicRSum1">
+        <Resource name="description">
+            <![CDATA[
+report sorted by name BDESC
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Store Cost]))'
+Set [*SM_SET_2] as 'Order(Generate([*NATIVE_CJ_SET], {([Product].currentMember)}), [Product].currentMember.OrderKey, BDESC)'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*SUMMARY_MEASURE_1],[Measures].[*SUMMARY_MEASURE_3]}'
+Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Member [Measures].[*SUMMARY_MEASURE_1] as 'Sum(Head([*SM_SET_2],Rank(([Product].currentMember),[*SM_SET_2])),[Measures].[Store Cost])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=100
+Member [Measures].[*SUMMARY_MEASURE_3] as '[Measures].[*SUMMARY_MEASURE_1]/([Measures].[Store Cost],[Product].[*TOTAL_MEMBER_SEL~SUM])', FORMAT_STRING = '###0.00%', SOLVE_ORDER=100
+Member [Product].[*TOTAL_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})', SOLVE_ORDER=-100
+Select
+[*BASE_MEMBERS_Measures] on columns,
+[*SM_SET_2] on rows From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+{[Measures].[*SUMMARY_MEASURE_1]}
+{[Measures].[*SUMMARY_MEASURE_3]}
+Axis #2:
+{[Product].[Food].[Starchy Foods]}
+{[Product].[Food].[Snacks]}
+{[Product].[Food].[Snack Foods]}
+{[Product].[Food].[Seafood]}
+{[Product].[Food].[Produce]}
+{[Product].[Non-Consumable].[Periodicals]}
+{[Product].[Food].[Meat]}
+{[Product].[Non-Consumable].[Household]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Food].[Frozen Foods]}
+{[Product].[Food].[Eggs]}
+{[Product].[Food].[Deli]}
+{[Product].[Drink].[Dairy]}
+{[Product].[Food].[Dairy]}
+{[Product].[Non-Consumable].[Checkout]}
+{[Product].[Non-Consumable].[Carousel]}
+{[Product].[Food].[Canned Products]}
+{[Product].[Food].[Canned Foods]}
+{[Product].[Food].[Breakfast Foods]}
+{[Product].[Drink].[Beverages]}
+{[Product].[Food].[Baking Goods]}
+{[Product].[Food].[Baked Goods]}
+{[Product].[Drink].[Alcoholic Beverages]}
+Row #0: 4,706
+Row #0: 4,705.91
+Row #0: 2.09%
+Row #1: 5,828
+Row #1: 10,533.49
+Row #1: 4.67%
+Row #2: 26,963
+Row #2: 37,496.83
+Row #2: 16.62%
+Row #3: 1,521
+Row #3: 39,017.53
+Row #3: 17.29%
+Row #4: 32,831
+Row #4: 71,848.86
+Row #4: 31.84%
+Row #5: 3,615
+Row #5: 75,463.41
+Row #5: 33.45%
+Row #6: 1,465
+Row #6: 76,928.83
+Row #6: 34.10%
+Row #7: 24,171
+Row #7: 101,099.56
+Row #7: 44.81%
+Row #8: 12,973
+Row #8: 114,072.55
+Row #8: 50.56%
+Row #9: 22,031
+Row #9: 136,103.21
+Row #9: 60.32%
+Row #10: 3,685
+Row #10: 139,788.11
+Row #10: 61.96%
+Row #11: 10,109
+Row #11: 149,896.98
+Row #11: 66.44%
+Row #12: 2,831
+Row #12: 152,727.90
+Row #12: 67.69%
+Row #13: 12,229
+Row #13: 164,956.75
+Row #13: 73.11%
+Row #14: 1,525
+Row #14: 166,481.79
+Row #14: 73.79%
+Row #15: 596
+Row #15: 167,077.75
+Row #15: 74.05%
+Row #16: 1,317
+Row #16: 168,394.89
+Row #16: 74.63%
+Row #17: 15,895
+Row #17: 184,289.42
+Row #17: 81.68%
+Row #18: 2,757
+Row #18: 187,046.22
+Row #18: 82.90%
+Row #19: 11,070
+Row #19: 198,115.75
+Row #19: 87.81%
+Row #20: 15,371
+Row #20: 213,486.36
+Row #20: 94.62%
+Row #21: 6,564
+Row #21: 220,050.45
+Row #21: 97.53%
+Row #22: 5,577
+Row #22: 225,627.23
+Row #22: 100.00%
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testBasicRSum2">
+        <Resource name="description">
+            <![CDATA[
+report sorted by measure BDESC
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Store Cost]))'
+Set [*SM_SET_2] as 'Order(Generate([*NATIVE_CJ_SET], {([Product].currentMember)}), [Measures].[*FORMATTED_MEASURE_0], BDESC)'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0],[Measures].[*SUMMARY_MEASURE_1],[Measures].[*SUMMARY_MEASURE_3]}'
+Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Member [Measures].[*SUMMARY_MEASURE_1] as 'Sum(Head([*SM_SET_2],Rank(([Product].currentMember),[*SM_SET_2])),[Measures].[Store Cost])', FORMAT_STRING = '#,##0.00', SOLVE_ORDER=100
+Member [Measures].[*SUMMARY_MEASURE_3] as '[Measures].[*SUMMARY_MEASURE_1]/([Measures].[Store Cost],[Product].[*TOTAL_MEMBER_SEL~SUM])', FORMAT_STRING = '###0.00%', SOLVE_ORDER=100
+Member [Product].[*TOTAL_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})', SOLVE_ORDER=-100
+Select
+[*BASE_MEMBERS_Measures] on columns,
+[*SM_SET_2] on rows From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_0]}
+{[Measures].[*SUMMARY_MEASURE_1]}
+{[Measures].[*SUMMARY_MEASURE_3]}
+Axis #2:
+{[Product].[Food].[Produce]}
+{[Product].[Food].[Snack Foods]}
+{[Product].[Non-Consumable].[Household]}
+{[Product].[Food].[Frozen Foods]}
+{[Product].[Food].[Canned Foods]}
+{[Product].[Food].[Baking Goods]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Food].[Dairy]}
+{[Product].[Drink].[Beverages]}
+{[Product].[Food].[Deli]}
+{[Product].[Food].[Baked Goods]}
+{[Product].[Food].[Snacks]}
+{[Product].[Drink].[Alcoholic Beverages]}
+{[Product].[Food].[Starchy Foods]}
+{[Product].[Food].[Eggs]}
+{[Product].[Non-Consumable].[Periodicals]}
+{[Product].[Drink].[Dairy]}
+{[Product].[Food].[Breakfast Foods]}
+{[Product].[Non-Consumable].[Checkout]}
+{[Product].[Food].[Seafood]}
+{[Product].[Food].[Meat]}
+{[Product].[Food].[Canned Products]}
+{[Product].[Non-Consumable].[Carousel]}
+Row #0: 32,831
+Row #0: 32,831.33
+Row #0: 14.55%
+Row #1: 26,963
+Row #1: 59,794.67
+Row #1: 26.50%
+Row #2: 24,171
+Row #2: 83,965.40
+Row #2: 37.21%
+Row #3: 22,031
+Row #3: 105,996.06
+Row #3: 46.98%
+Row #4: 15,895
+Row #4: 121,890.60
+Row #4: 54.02%
+Row #5: 15,371
+Row #5: 137,261.21
+Row #5: 60.84%
+Row #6: 12,973
+Row #6: 150,234.19
+Row #6: 66.59%
+Row #7: 12,229
+Row #7: 162,463.04
+Row #7: 72.01%
+Row #8: 11,070
+Row #8: 173,532.57
+Row #8: 76.91%
+Row #9: 10,109
+Row #9: 183,641.44
+Row #9: 81.39%
+Row #10: 6,564
+Row #10: 190,205.54
+Row #10: 84.30%
+Row #11: 5,828
+Row #11: 196,033.12
+Row #11: 86.88%
+Row #12: 5,577
+Row #12: 201,609.90
+Row #12: 89.36%
+Row #13: 4,706
+Row #13: 206,315.81
+Row #13: 91.44%
+Row #14: 3,685
+Row #14: 210,000.71
+Row #14: 93.07%
+Row #15: 3,615
+Row #15: 213,615.26
+Row #15: 94.68%
+Row #16: 2,831
+Row #16: 216,446.18
+Row #16: 95.93%
+Row #17: 2,757
+Row #17: 219,202.98
+Row #17: 97.15%
+Row #18: 1,525
+Row #18: 220,728.01
+Row #18: 97.83%
+Row #19: 1,521
+Row #19: 222,248.71
+Row #19: 98.50%
+Row #20: 1,465
+Row #20: 223,714.13
+Row #20: 99.15%
+Row #21: 1,317
+Row #21: 225,031.27
+Row #21: 99.74%
+Row #22: 596
+Row #22: 225,627.23
+Row #22: 100.00%
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testRSumBreak">
+        <Resource name="description">
+            <![CDATA[
+test RSUM that breaks by higher levels
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Store Cost]))'
+Set [*ORDERED_SET] as 'Order([*SM_SET_10],[Product].CurrentMember.Parent.OrderKey,BDESC,[Measures].[*FORMATTED_MEASURE_3],BASC)'
+Set [*SM_SET_10] as 'Generate([*NATIVE_CJ_SET], {([Product].currentMember)})'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Product] as 'Filter([Product].[Product Department].Members,[Product].CurrentMember.Parent Not In {[Product].[Food]})'
+Set [*SM_SET_1] as 'Generate([*NATIVE_CJ_SET], {([Product].currentMember)})'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_3],[Measures].[*SUMMARY_MEASURE_7],[Measures].[*SUMMARY_MEASURE_6],[Measures].[*SUMMARY_MEASURE_9],[Measures].[*SUMMARY_MEASURE_2]}'
+Member [Measures].[*SUMMARY_MEASURE_7] as 'Sum(Head(Generate(Exists([*ORDERED_SET], {(Ancestor([Product].CurrentMember, [Product].[Product Family]))}), {([Product].currentMember)}),Rank(([Product].currentMember),Generate(Exists([*ORDERED_SET], {(Ancestor([Product].CurrentMember, [Product].[Product Family]))}), {([Product].currentMember)}))),[Measures].[Store Cost])', FORMAT_STRING = '#,##0', SOLVE_ORDER=100
+Member [Measures].[*SUMMARY_MEASURE_4] as 'Sum(Head(Generate(Exists([*ORDERED_SET], {(Ancestor([Product].CurrentMember, [Product].[Product Family]))}), {([Product].currentMember)}),Rank(([Product].currentMember),Generate(Exists([*ORDERED_SET], {(Ancestor([Product].CurrentMember, [Product].[Product Family]))}), {([Product].currentMember)}))),[Measures].[Store Cost])', FORMAT_STRING = '###0%', SOLVE_ORDER=100
+Member [Measures].[*SUMMARY_MEASURE_9] as 'Sum(Head([*ORDERED_SET],Rank(([Product].currentMember),[*ORDERED_SET])),[Measures].[Store Cost])', FORMAT_STRING = '#,##0', SOLVE_ORDER=100
+Member [Measures].[*SUMMARY_MEASURE_6] as '[Measures].[*SUMMARY_MEASURE_4]/([Measures].[Store Cost],Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*TOTAL_MEMBER_SEL~SUM"))', FORMAT_STRING = '###0%', SOLVE_ORDER=100
+Member [Measures].[*SUMMARY_MEASURE_2] as '[Measures].[*SUMMARY_MEASURE_0]/([Measures].[Store Cost],[Product].[*TOTAL_MEMBER_SEL~SUM])', FORMAT_STRING = '###0%', SOLVE_ORDER=100
+Member [Product].[Drink].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Descendants([Product].[Drink],[Product].[Product Department]))', SOLVE_ORDER=-100
+Member [Product].[*TOTAL_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Product])', SOLVE_ORDER=-100
+Member [Measures].[*SUMMARY_MEASURE_0] as 'Sum(Head([*ORDERED_SET],Rank(([Product].currentMember),[*ORDERED_SET])),[Measures].[Store Cost])', FORMAT_STRING = '###0%', SOLVE_ORDER=100
+Member [Product].[Non-Consumable].[*TOTAL_MEMBER_SEL~SUM] as 'Sum(Descendants([Product].[Non-Consumable],[Product].[Product Department]))', SOLVE_ORDER=-100
+Member [Measures].[*FORMATTED_MEASURE_3] as '[Measures].[Store Cost]', FORMAT_STRING = '#,##0', SOLVE_ORDER=400
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[Non-Consumable].[*TOTAL_MEMBER_SEL~SUM],[Product].[Drink].[*TOTAL_MEMBER_SEL~SUM]},Generate([*ORDERED_SET], {([Product].currentMember)})) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*FORMATTED_MEASURE_3]}
+{[Measures].[*SUMMARY_MEASURE_7]}
+{[Measures].[*SUMMARY_MEASURE_6]}
+{[Measures].[*SUMMARY_MEASURE_9]}
+{[Measures].[*SUMMARY_MEASURE_2]}
+Axis #2:
+{[Product].[Non-Consumable].[*TOTAL_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*TOTAL_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[Carousel]}
+{[Product].[Non-Consumable].[Checkout]}
+{[Product].[Non-Consumable].[Periodicals]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Non-Consumable].[Household]}
+{[Product].[Drink].[Dairy]}
+{[Product].[Drink].[Alcoholic Beverages]}
+{[Product].[Drink].[Beverages]}
+Row #0: 42,879
+Row #0: 
+Row #0: 
+Row #0: 
+Row #0: 
+Row #1: 19,477
+Row #1: 
+Row #1: 
+Row #1: 
+Row #1: 
+Row #2: 596
+Row #2: 596
+Row #2: 1%
+Row #2: 596
+Row #2: 1%
+Row #3: 1,525
+Row #3: 2,121
+Row #3: 5%
+Row #3: 2,121
+Row #3: 3%
+Row #4: 3,615
+Row #4: 5,736
+Row #4: 13%
+Row #4: 5,736
+Row #4: 9%
+Row #5: 12,973
+Row #5: 18,709
+Row #5: 44%
+Row #5: 18,709
+Row #5: 30%
+Row #6: 24,171
+Row #6: 42,879
+Row #6: 100%
+Row #6: 42,879
+Row #6: 69%
+Row #7: 2,831
+Row #7: 2,831
+Row #7: 15%
+Row #7: 45,710
+Row #7: 73%
+Row #8: 5,577
+Row #8: 8,408
+Row #8: 43%
+Row #8: 51,287
+Row #8: 82%
+Row #9: 11,070
+Row #9: 19,477
+Row #9: 100%
+Row #9: 62,357
+Row #9: 100%
+]]>
+        </Resource>
+    </TestCase>
+<!--
+    <TestCase name="test">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="test">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="test">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+
+]]>
+        </Resource>
+    </TestCase>
+-->
+</Root>

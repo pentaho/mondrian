@@ -1,0 +1,686 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testTabularOneByOne">
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <Command>
+    <Statement>
+  select [Measures].[Sales Count] on 0, non empty [Store].[Store State].members on 1 from [Sales]
+  </Statement>
+  </Command>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${data.source.info}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+      <AxisFormat>TupleFormat</AxisFormat>
+    </PropertyList>
+  </Properties>
+</Execute>
+</soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0" name="_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Store].[Store Country].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Store].[Store State].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_" sql:field="[Measures].[Sales Count]"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>CA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">24442</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>OR</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">21611</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>WA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">40784</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTabularOneByTwo">
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <Command>
+    <Statement>
+select
+ {[Measures].[Sales Count], [Measures].[Store Sales]} on 0,
+non empty [Store].[Store State].members  on 1
+from [Sales]
+  </Statement>
+  </Command>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${data.source.info}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+      <AxisFormat>TupleFormat</AxisFormat>
+    </PropertyList>
+  </Properties>
+</Execute>
+</soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0" name="_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Store].[Store Country].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Store].[Store State].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_" sql:field="[Measures].[Sales Count]"/>
+                                <xsd:element minOccurs="0" name="_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_" sql:field="[Measures].[Store Sales]"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>CA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">24442</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">159167.84</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>OR</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">21611</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">142277.07</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>WA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">40784</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">263793.22</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTabularTwoByOne">
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <Command>
+    <Statement>
+select
+[Measures].[Sales Count] on 0,
+non empty [Store].[Store State].members * [Product].[Product Family].members  on 1
+from [Sales]
+  </Statement>
+  </Command>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${data.source.info}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+      <AxisFormat>TupleFormat</AxisFormat>
+    </PropertyList>
+  </Properties>
+</Execute>
+</soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0" name="_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Store].[Store Country].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Store].[Store State].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Product].[Product Family].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_" sql:field="[Measures].[Sales Count]"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>CA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Drink</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">2291</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>CA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Food</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">17556</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>CA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Non-Consumable</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">4595</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>OR</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Drink</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">1953</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>OR</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Food</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">15516</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>OR</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Non-Consumable</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">4142</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>WA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Drink</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">3734</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>WA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Food</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">29373</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>WA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Non-Consumable</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">7677</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTabularTwoByTwo">
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <Command>
+    <Statement>
+select
+ {[Measures].[Sales Count], [Measures].[Store Sales]} on 0,
+non empty [Store].[Store State].members * [Product].[Product Family].members  on 1
+from [Sales]
+  </Statement>
+  </Command>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${data.source.info}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+      <AxisFormat>TupleFormat</AxisFormat>
+    </PropertyList>
+  </Properties>
+</Execute>
+</soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0" name="_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Store].[Store Country].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Store].[Store State].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Product].[Product Family].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_" sql:field="[Measures].[Sales Count]"/>
+                                <xsd:element minOccurs="0" name="_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_" sql:field="[Measures].[Store Sales]"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>CA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Drink</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">2291</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">14203.24</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>CA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Food</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">17556</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">115193.17</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>CA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Non-Consumable</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">4595</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">29771.43</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>OR</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Drink</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">1953</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">12137.29</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>OR</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Food</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">15516</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">102564.67</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>OR</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Non-Consumable</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">4142</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">27575.11</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>WA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Drink</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">3734</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">22495.68</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>WA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Food</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">29373</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">191277.75</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>WA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>Non-Consumable</_x005b_Product_x005d_._x005b_Product_x0020_Family_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_ xsi:type="xsd:int">7677</_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_>
+                        <_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_ xsi:type="xsd:double">50019.79</_x005b_Measures_x005d_._x005b_Store_x0020_Sales_x005d_>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTabularZeroByZero">
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <Command>
+    <Statement>
+select
+from [Sales]
+where([Measures].[Sales Count])
+  </Statement>
+  </Command>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${data.source.info}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+      <AxisFormat>TupleFormat</AxisFormat>
+    </PropertyList>
+  </Properties>
+</Execute>
+</soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence/>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row/>
+                </root>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTabularVoid">
+        <Resource name="request">
+            <![CDATA[
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+<Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <Command>
+    <Statement>
+select
+[Measures].[Sales Count] on 0,
+non empty filter([Store].[Store State].members, [Measures].[Sales Count]>50000)   on 1
+from [Sales]
+  </Statement>
+  </Command>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${data.source.info}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+      <AxisFormat>TupleFormat</AxisFormat>
+    </PropertyList>
+  </Properties>
+</Execute>
+</soapenv:Body>
+</soapenv:Envelope>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0" name="_x005b_Measures_x005d_._x005b_Sales_x0020_Count_x005d_" sql:field="[Measures].[Sales Count]"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                </root>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testTabularThreeAxes">
+        <Resource name="request">
+            <![CDATA[
+  <soapenv:Envelope
+      xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <soapenv:Body>
+  <Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <Command>
+      <Statement>
+    select [Product].Children on 0, non empty [Store].[Store State].members on 1, [Gender].members on 2 from [Sales]
+    </Statement>
+    </Command>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${data.source.info}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>Tabular</Format>
+        <AxisFormat>TupleFormat</AxisFormat>
+      </PropertyList>
+    </Properties>
+  </Execute>
+  </soapenv:Body>
+  </soapenv:Envelope>
+  ]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0"?>
+<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+        <cxmla:ExecuteResponse xmlns:cxmla="urn:schemas-microsoft-com:xml-analysis">
+            <cxmla:return>
+                <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                        <xsd:element name="root">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                    <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+                                </xsd:sequence>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:simpleType name="uuid">
+                            <xsd:restriction base="xsd:string">
+                                <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+                            </xsd:restriction>
+                        </xsd:simpleType>
+                        <xsd:complexType name="row">
+                            <xsd:sequence>
+                                <xsd:element minOccurs="0" name="_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Gender].[Gender].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Store].[Store Country].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Store].[Store State].[MEMBER_CAPTION]" type="xsd:string"/>
+                                <xsd:element minOccurs="0" name="_x005b_Product_x005d_._x005b_Drink_x005d_" sql:field="[Product].[Drink]"/>
+                                <xsd:element minOccurs="0" name="_x005b_Product_x005d_._x005b_Food_x005d_" sql:field="[Product].[Food]"/>
+                                <xsd:element minOccurs="0" name="_x005b_Product_x005d_._x005b_Non-Consumable_x005d_" sql:field="[Product].[Non-Consumable]"/>
+                            </xsd:sequence>
+                        </xsd:complexType>
+                    </xsd:schema>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>CA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Drink_x005d_ xsi:type="xsd:double">7102</_x005b_Product_x005d_._x005b_Drink_x005d_>
+                        <_x005b_Product_x005d_._x005b_Food_x005d_ xsi:type="xsd:double">53656</_x005b_Product_x005d_._x005b_Food_x005d_>
+                        <_x005b_Product_x005d_._x005b_Non-Consumable_x005d_ xsi:type="xsd:double">13990</_x005b_Product_x005d_._x005b_Non-Consumable_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>OR</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Drink_x005d_ xsi:type="xsd:double">6106</_x005b_Product_x005d_._x005b_Drink_x005d_>
+                        <_x005b_Product_x005d_._x005b_Food_x005d_ xsi:type="xsd:double">48537</_x005b_Product_x005d_._x005b_Food_x005d_>
+                        <_x005b_Product_x005d_._x005b_Non-Consumable_x005d_ xsi:type="xsd:double">13016</_x005b_Product_x005d_._x005b_Non-Consumable_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>WA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Drink_x005d_ xsi:type="xsd:double">11389</_x005b_Product_x005d_._x005b_Drink_x005d_>
+                        <_x005b_Product_x005d_._x005b_Food_x005d_ xsi:type="xsd:double">89747</_x005b_Product_x005d_._x005b_Food_x005d_>
+                        <_x005b_Product_x005d_._x005b_Non-Consumable_x005d_ xsi:type="xsd:double">23230</_x005b_Product_x005d_._x005b_Non-Consumable_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_>F</_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>CA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Drink_x005d_ xsi:type="xsd:double">7102</_x005b_Product_x005d_._x005b_Drink_x005d_>
+                        <_x005b_Product_x005d_._x005b_Food_x005d_ xsi:type="xsd:double">53656</_x005b_Product_x005d_._x005b_Food_x005d_>
+                        <_x005b_Product_x005d_._x005b_Non-Consumable_x005d_ xsi:type="xsd:double">13990</_x005b_Product_x005d_._x005b_Non-Consumable_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_>F</_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>OR</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Drink_x005d_ xsi:type="xsd:double">6106</_x005b_Product_x005d_._x005b_Drink_x005d_>
+                        <_x005b_Product_x005d_._x005b_Food_x005d_ xsi:type="xsd:double">48537</_x005b_Product_x005d_._x005b_Food_x005d_>
+                        <_x005b_Product_x005d_._x005b_Non-Consumable_x005d_ xsi:type="xsd:double">13016</_x005b_Product_x005d_._x005b_Non-Consumable_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_>F</_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>WA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Drink_x005d_ xsi:type="xsd:double">11389</_x005b_Product_x005d_._x005b_Drink_x005d_>
+                        <_x005b_Product_x005d_._x005b_Food_x005d_ xsi:type="xsd:double">89747</_x005b_Product_x005d_._x005b_Food_x005d_>
+                        <_x005b_Product_x005d_._x005b_Non-Consumable_x005d_ xsi:type="xsd:double">23230</_x005b_Product_x005d_._x005b_Non-Consumable_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_>M</_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>CA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Drink_x005d_ xsi:type="xsd:double">7102</_x005b_Product_x005d_._x005b_Drink_x005d_>
+                        <_x005b_Product_x005d_._x005b_Food_x005d_ xsi:type="xsd:double">53656</_x005b_Product_x005d_._x005b_Food_x005d_>
+                        <_x005b_Product_x005d_._x005b_Non-Consumable_x005d_ xsi:type="xsd:double">13990</_x005b_Product_x005d_._x005b_Non-Consumable_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_>M</_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>OR</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Drink_x005d_ xsi:type="xsd:double">6106</_x005b_Product_x005d_._x005b_Drink_x005d_>
+                        <_x005b_Product_x005d_._x005b_Food_x005d_ xsi:type="xsd:double">48537</_x005b_Product_x005d_._x005b_Food_x005d_>
+                        <_x005b_Product_x005d_._x005b_Non-Consumable_x005d_ xsi:type="xsd:double">13016</_x005b_Product_x005d_._x005b_Non-Consumable_x005d_>
+                    </row>
+                    <row>
+                        <_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_>M</_x005b_Gender_x005d_._x005b_Gender_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>USA</_x005b_Store_x005d_._x005b_Store_x0020_Country_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>WA</_x005b_Store_x005d_._x005b_Store_x0020_State_x005d_._x005b_MEMBER_CAPTION_x005d_>
+                        <_x005b_Product_x005d_._x005b_Drink_x005d_ xsi:type="xsd:double">11389</_x005b_Product_x005d_._x005b_Drink_x005d_>
+                        <_x005b_Product_x005d_._x005b_Food_x005d_ xsi:type="xsd:double">89747</_x005b_Product_x005d_._x005b_Food_x005d_>
+                        <_x005b_Product_x005d_._x005b_Non-Consumable_x005d_ xsi:type="xsd:double">23230</_x005b_Product_x005d_._x005b_Non-Consumable_x005d_>
+                    </row>
+                </root>
+            </cxmla:return>
+        </cxmla:ExecuteResponse>
+    </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
+]]>
+        </Resource>
+    </TestCase>
+</Root>

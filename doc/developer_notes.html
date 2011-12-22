@@ -1,0 +1,1176 @@
+<html>
+<!--
+  == $Id$
+  == This software is subject to the terms of the Eclipse Public License v1.0
+  == Agreement, available at the following URL:
+  == http://www.eclipse.org/legal/epl-v10.html.
+  == Copyright (C) 2005-2009 Julian Hyde and others
+  == All Rights Reserved.
+  == You must accept the terms of that agreement to use this software.
+  -->
+
+<head>
+    <link rel="stylesheet" type="text/css" href="stylesheet.css"/>
+	<title>Pentaho Analysis Services: Developer Notes</title>
+</head>
+<body>
+<!-- doc2web start -->
+
+<!-- page title -->
+<div class="contentheading">Mondrian Developer Notes</div>
+<!-- end page title -->
+
+<hr noshade size="1">
+
+<h2>Contents</h2>
+<ol>
+  <li><a href="#Log_Levels">Logging Levels and Information</a></li>
+  <li><a href="#Agg_default_rules">Default aggregate table recognition rules</a></li>
+  <li><a href="#Snowflakes">Snowflakes and the DimensionUsage level attribute</a></li>
+  <li><a href="#Memory_monitoring">Memory Monitoring</a></li>
+  <li><a href="#Role_implementation">Implementing Roles</a></li>
+  <li><a href="#Database_Dialects">Implementing Database Dialects</a></li>
+</ol>
+
+<h2>Logging Levels and Information<a name="Log_Levels">&nbsp;</a></h2>
+
+<p>
+Some of the Mondrian classes are instrumented with Apache Log4J Loggers.
+For some of these classes there are certain logging setting that provide
+information for not just the code developer but also for someone
+setting up a Mondrian installation. The following is a list of some
+of those log setting and the associated information.
+</p>
+<table style="text-align: left; "
+ border="1" cellpadding="2" cellspacing="0">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; text-align: center;">
+        <span style="font-weight: bold;">Category</span><br>
+      </td>
+      <td style="vertical-align: top; text-align: center;">
+        <span style="font-weight: bold;">Level</span><br>
+      </td>
+      <td style="vertical-align: top; text-align: center;">
+        <span style="font-weight: bold;">Description</span><br>
+      </td>
+    </tr>
+    <tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.aggmatcher.AggTableManager
+      </code></td>
+      <td style="vertical-align: top;"><code>INFO</code></td>
+      <td style="vertical-align: top;">
+        A list of the RolapStar fact table names (aliases) and for each
+        fact table, a list of all of its associated aggregate tables.
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.aggmatcher.AggTableManager
+      </code></td>
+      <td style="vertical-align: top;"><code>DEBUG</code></td>
+      <td style="vertical-align: top;">
+        A verbose output of all RolapStar fact tables, their measures columns,
+        and dimension tables and columnns, along with all of each fact
+        table's aggregate tables, columns and dimension tables.
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.aggmatcher.DefaultDef
+      </code></td>
+      <td style="vertical-align: top;"><code>DEBUG</code></td>
+      <td style="vertical-align: top;">
+        For each candidate aggregate table, the Matcher regular expressions
+        for matching: table name and the fact count, foreign key,
+        level and measure columns.
+        Helpful in finding out why an aggregate table was not recognized.
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.agg.AggregationManager
+      </code></td>
+      <td style="vertical-align: top;"><code>DEBUG</code></td>
+      <td style="vertical-align: top;">
+        For each aggregate Sql query, if an aggregate table can be used
+        to fulfill the query, which aggregate it was along with bitKeys
+        and column names.
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.RolapUtil
+      </code></td>
+      <td style="vertical-align: top;"><code>DEBUG</code></td>
+      <td style="vertical-align: top;">
+        Prints out all Sql statements and their execution time.
+        If one set the Mondrian property,
+        <code>mondrian.rolap.generate.formatted.sql</code>
+        to true, then the Sql is pretty printed (very nice).
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.RolapConnection
+      </code></td>
+      <td style="vertical-align: top;"><code>DEBUG</code></td>
+      <td style="vertical-align: top;">
+        Prints out each MDX query prior to its execution.
+        (No pretty printing, sigh.)
+      </td>
+    </tr>
+
+    <tr>
+      <td style="vertical-align: top;"><code>
+      mondrian.rolap.RolapSchema
+      </code></td>
+      <td style="vertical-align: top;"><code>DEBUG</code></td>
+      <td style="vertical-align: top;">
+        Prints out each Rolap Schema as it is being loaded.
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+<p>
+There are more classes with logging, but their logging is at a lower, more
+detailed level of more use to code developers.
+</p>
+<p>
+Log levels can be set in either a log4j.properties file or log4j.xml file.
+You have to make sure you tell Mondrian which one to use.
+For the log4j.properties, entries might look like:
+</p>
+<blockquote>
+    log4j.category.mondrian.rolap.RolapConnection=DEBUG<br>
+    log4j.category.mondrian.rolap.RolapUtil=DEBUG<br>
+</blockquote>
+<p>
+while for the log4.xml:
+</p>
+<blockquote>
+   &lt;category name="mondrian.rolap.RolapConnection"&gt;<br>
+   &nbsp;&nbsp; &lt;priority value="DEBUG"/&gt;<br>
+   &lt;/category&gt;<br>
+   &lt;category name="mondrian.rolap.RolapUtil"&gt;<br>
+   &nbsp;&nbsp; &lt;priority value="DEBUG"/&gt;<br>
+   &lt;/category&gt;<br>
+</blockquote>
+
+<h2>Default aggregate table recognition rules<a name="Agg_default_rules">&nbsp;</a></h2>
+
+<p>
+The default Mondrian rules for recognizing aggregate tables
+are specified by creating an instance of the rule schema
+found in the file:
+<code>
+MONDRIAN_HOME/src/main/rolap/aggmatcher/DefaultRulesSchema.xml.
+</code>
+The instance of this schema that is built into the
+<code>
+mondrian.jar
+</code>
+after a build is in the same directory,
+<code>
+MONDRIAN_HOME/src/main/rolap/aggmatcher/DefaultRules.xml.
+</code>
+</p>
+<p>
+There are six different default rules that are used to match and map
+a candidate
+aggregate table: table name, ignore column, fact count column, foreign
+key column, level column and measure column. All of these rules are
+defined by creating an instance of the DefaultRulesSchema.xml grammar.
+The DefaultRulesSchema.xml instance, the DefaultRules.xml file mentioned
+above, that by default is built as part of the mondrian.jar does not
+contain an ignore column rule.
+This grammar has base/supporting classes that are common to the above
+rules. In
+<code>
+XOM
+</code>
+terms, these are classes and super classes of the rule elements.
+</p>
+<p>
+The first
+<code>
+XOM
+</code>
+class dealing with matching is the
+<code>
+CaseMatcher
+</code>
+class.
+This has an attribute "charcase" that takes the legal values of
+</p>
+<blockquote>
+    "ignore" (default)<br>
+    "exact"<br>
+    "upper"<br>
+    "lower"<br>
+</blockquote>
+<p>
+When the value of the attribute is "ignore", then the regular
+expression formed by an element extending the
+<code>
+CaseMatcher
+</code>
+class will be case independent for both any parameters used
+to instantiate the regular expression template as well as for
+the text in the post-instantiated regular expression.
+On the other hand, when the "charcase" attribute take any of
+the other three values, it is only the parameter values themselves
+that are "exact", unchanged, "lower", converted to lower case, or
+"upper", converted to upper case.
+</p>
+<p>
+The class
+<code>
+NameMatcher
+</code>
+extends the
+<code>
+CaseMatcher
+</code>
+class. This class
+has pre-template and post-template attributes whose default values
+is the empty string. These attributes are prepended/appended
+to a parameter to generate a regular expression.
+As an example, the
+<code>
+TableMatcher
+</code>
+element extends
+<code>
+NameMatcher
+</code>
+class.
+The parameter in this case is the fact table name and the regular
+expression would be:
+</p>
+<blockquote>
+    pre-template-attribute${fact_table_name}post-template-attribute
+</blockquote>
+<p>
+For Mondrian, the builtin rule has the pre template value
+"agg_.+_" and the post template attribute value is the default
+so the regular expression becomes:
+</p>
+<blockquote>
+    agg_.+_${fact_table_name}
+</blockquote>
+<p>
+Also, the
+<code>
+NameMatcher
+</code>
+has an attribute called
+<code>
+basename
+</code>
+which is optional. If set, then its value must be a regular expression
+with a single capture group. A capture group is an regular expression
+component surrounded by "(" and ")". As an example, "(.*)" is
+a capture group and if this was the total regular expression, then
+it would match anything and the single capture would match the same.
+On the other hand if the total regular expression was "RF_(.*)_TBL", then
+a name such as "RF_SHIPPMENTS_TBL" would match the regular expression while
+the capture group would be "SHIPPMENTS".
+Now, if the
+<code>
+basename
+</code>
+attribute is defined, then it is applied to each fact table name allowing
+one to strip away information and get to the "base" name. This might
+be needed because a DBA might prepend or append a tag to all of
+your fact table names and the DBA might wish to have a different tag
+prepend or append to all of your aggregate table names (RF_SHIPPMENTS_TBL
+as the fact table and RA_SHIPPMENTS_AGG_14 as an example aggregate
+name (the DBA prepended the "RA_" and you appended the "_AGG_14")).
+</p>
+<p>
+Both the
+<code>
+FactCountMatch
+</code>
+and
+<code>
+ForeignKeyMatch
+</code>
+elements also extend the
+<code>
+NameMatcher
+</code>
+class. In these cases, the builtin Mondrian rule has no
+pre or post template attribute values, no regular expression,
+The
+<code>
+FactCountMatch
+</code>
+takes no other parameter from the fact table (the fact table does not
+have a fact count column) rather it takes a fact count attribute
+with default value "fact_count", and this is used to
+create the regular expression.
+For the
+<code>
+ForeignKeyMatch
+</code>
+matcher, its the fact table's foreign key that is used
+as the regular expression.
+</p>
+<p>
+The ignore, asdf level and measure column matching elements have one or more
+<code>
+Regex
+</code>
+child elements. These allow for specifying multiple possible matches
+(if any match, then its a match).
+The
+<code>
+IgnoreMap,
+</code>
+<code>
+LevelMap
+</code>
+and
+<code>
+MeasureMap
+</code>
+elements extend the
+<code>
+RegexMapper
+</code>
+which holds an array of
+<code>
+Regex
+</code>
+elements.
+The
+<code>
+Regex
+</code>
+element extends
+<code>
+CaseMatcher
+</code>
+It has two attributes,
+<code>
+space
+</code>
+with default value '_' which says how space characters should be mapped,
+and
+<code>
+dot
+</code>
+with default value '_' which says how '.' characters should be mapped.
+If a name were the string "Unit Sales.Case" then (with the default
+values for the
+<code>
+space
+</code>
+and
+<code>
+dot
+</code>
+attributes and with
+<code>
+CaseMatcher
+</code>
+mapping to lower case
+) this would become "unit_sales_case".
+</p>
+<p>
+The
+<code>
+IgnoreMap
+</code>
+element has NO template parameter names. Each
+<code>
+Regex
+</code>
+value is simply a regular expression. As an example (Mondrian by
+default does not include an
+<code>
+IgnoreMap
+</code>
+by default), a regular expression that matches all aggregate table columns
+then end with '_DO_NOT_USE' would be:
+</p>
+<blockquote>
+    .*_DO_NOT_USE<br>
+</blockquote>
+<p>
+One might want to use an
+<code>
+IgnoreMap
+</code>
+element to filter out aggregate columns if, for example, the aggregate
+table is a materialized view, since with each "normal" column
+of such a materialized view there is an associated support column
+used by the database which has no significance to Mondrian.
+In the process of recognizing aggregate tables, Mondrian logs
+a warning message for each column whose use can not be determined.
+Materialized views have so many of these support columns
+that if, in fact, there was a column whose use was desired
+but was not recognized (for instance, the column name is
+misspelt) all of the materialized view column warning message
+mask the one warning message that one really needs to see.
+</p>
+<p>
+The
+<code>
+IgnoreMap
+</code>
+regular expressions are applied before any of the other column
+matching actions. If one sets the
+<code>
+IgnoreMap
+</code>
+regular expression to, for example,
+<blockquote>
+    .*<br>
+</blockquote>
+</p>
+<p>
+then all columns are marked as "ignore" and there are no other
+columns left to match anything else. One must be very careful
+when choosing
+<code>
+IgnoreMap
+</code>
+regular expressions not just for your current columns but for
+columns that might be created in the future. Its best to document
+this usage in your organization.
+</p>
+<p>
+The following is what the element might look like in a
+DefaultRules.xml file:
+<blockquote>
+<pre>
+    &lt;IgnoreMap id="ixx" &gt;
+      &lt;Regex id="physical" charcase="ignore"&gt;
+          .*_DO_NOT_USE
+      &lt;/Regex&gt;
+    &lt;/IgnoreMap&gt;
+</pre>
+</blockquote>
+</p>
+<p>
+The
+<code>
+LevelMap
+</code>
+element has the four template parameter names (hardcoded):
+</p>
+<blockquote>
+    hierarchy_name<br>
+    level_name<br>
+    level_column_name<br>
+    usage_prefix<br>
+</blockquote>
+<p>
+These are names that can be used in creating template regular
+expressions.
+The builtin Mondrian default rules for level matching defines
+three
+<code>
+Regex
+</code>
+child elements for the
+<code>
+LevelMap
+</code>
+element.
+These define the template regular expressions:
+</p>
+<blockquote>
+    ${hierarchy_name}_${level_name}<br>
+    ${hierarchy_name}_${level_column_name}<br>
+    ${usage_prefix}${level_column_name}<br>
+    ${level_column_name}<br>
+</blockquote>
+<p>
+Mondrian while attempting to match a candidate aggregate table
+against a particular fact table, iterates through the fact table's cube's
+hierarchy name, level name and level colum names looking for
+matches.
+</p>
+<p>
+The
+<code>
+MeasureMap
+</code>
+element has the three template parameter names (hardcoded):
+</p>
+<blockquote>
+    measure_name<br>
+    measure_column_name<br>
+    aggregate_name<br>
+</blockquote>
+<p>
+which can appear in template regular expressions.
+The builtin Mondrian default rules for measure matching defines
+three
+<code>
+Regex
+</code>
+child elements for the
+<code>
+MeasureMap
+</code>
+element.
+These are
+</p>
+<blockquote>
+    ${measure_name}<br>
+    ${measure_column_name}<br>
+    ${measure_column_name}_${aggregate_name}<br>
+</blockquote>
+<p>
+and Mondrian attempts to match a candidate aggregate table's
+column names against these as it iterators over a fact table's measures.
+</p>
+<p>
+A grouping of
+<code>
+FactCountMatch
+</code>,
+<code>
+ForeignKeyMatch
+</code>,
+<code>
+TableMatcher
+</code>,
+<code>
+LevelMap
+</code>,
+and
+<code>
+MeasureMap
+</code>
+make up a
+<code>
+AggRule
+</code>
+element, a rule set.
+Each
+<code>
+AggRule
+</code>
+has a
+<code>
+tag
+</code>
+attribute which is a unique identifier for the rule.
+There can be multiple
+<code>
+AggRule
+</code>
+elements in the outer
+<code>
+AggRules
+</code>
+element.
+Each
+<code>
+AggRule
+</code>
+having its own
+<code>
+tag
+</code>
+attribute.
+When Mondrian runs, it selects (via the
+<code>
+mondrian.rolap.aggregates.rule.tag
+</code>
+property) which rule set to use.
+</p>
+<p>
+One last wrinkle, within a
+<code>
+AggRule
+</code>
+the
+<code>
+FactCountMatch
+</code>,
+<code>
+ForeignKeyMatch
+</code>,
+<code>
+TableMatcher
+</code>,
+<code>
+LevelMap
+</code>,
+and
+<code>
+MeasureMap
+</code>
+child elements can be either defined explicitly within the
+<code>
+AggRule
+</code>
+element or by reference
+<code>
+FactCountMatchRef
+</code>,
+<code>
+ForeignKeyMatchRef
+</code>,
+<code>
+TableMatcherRef
+</code>,
+<code>
+LevelMapRef
+</code>,
+and
+<code>
+MeasureMapRef
+</code>
+The references are defined as child elements of the top level
+<code>
+AggRules
+</code>
+element. With references the same rule element
+can be used by more than one
+<code>
+AggRule
+</code>
+(code reuse).
+</p>
+<p>
+Below is an example of a default rule set with rather different matching
+rules.
+</p>
+<blockquote>
+<pre>
+&lt;AggRules tag="your_mamas_dot_com"&gt;
+  &lt;AggRule tag="default" &gt;
+    &lt;FactCountMatch id="fca" factCountName="FACT_TABLE_COUNT"
+      charcase="exact" /&gt;
+    &lt;ForeignKeyMatch id="fka" pretemplate="agg_" /&gt;
+    &lt;TableMatch id="ta" pretemplate="agg_" posttemplate="_.+"/&gt;
+    &lt;LevelMap id="lxx" &gt;
+      &lt;Regex id="logical" charcase="ignore" space="_" dot="_"&gt;
+          ${hierarchy_name}_${level_name}
+      &lt;/Regex&gt;
+      &lt;Regex id="mixed" charcase="ignore" &gt;
+          ${hierarchy_name}_${level_name}_${level_column_name}
+      &lt;/Regex&gt;
+      &lt;Regex id="mixed" charcase="ignore" &gt;
+          ${hierarchy_name}_${level_column_name}
+      &lt;/Regex&gt;
+      &lt;Regex id="usage" charcase="exact" &gt;
+          ${usage_prefix}${level_column_name}
+      &lt;/Regex&gt;
+      &lt;Regex id="physical" charcase="exact" &gt;
+          ${level_column_name}_.+
+      &lt;/Regex&gt;
+    &lt;/LevelMap&gt;
+    &lt;MeasureMap id="mxx" &gt;
+      &lt;Regex id="one" charcase="lower" &gt;
+          ${measure_name}(_${measure_column_name}(_${aggregate_name})?)?
+      &lt;/Regex&gt;
+      &lt;Regex id="two" charcase="exact" &gt;
+        ${measure_column_name}(_${aggregate_name})?
+      &lt;/Regex&gt;
+    &lt;/MeasureMap&gt;
+  &lt;/AggRule&gt;
+&lt;/AggRules&gt;
+</pre>
+</blockquote>
+<p>
+First, all fact count columns must be called
+<code>
+FACT_TABLE_COUNT
+</code>
+exactly, no ignoring case.
+Next, foreign key columns match the regular expression
+</p>
+<blockquote>
+    agg_${foreign_key_name}
+</blockquote>
+<p>
+that is, the fact table foreign key column name with "agg_" prepened such
+as
+<code>
+agg_time_id
+</code>.
+The aggregate table names match the regular expression
+</p>
+<blockquote>
+    agg_${fact_table_name}_.+
+</blockquote>
+<p>
+For the FoodMart
+<code>
+sales_fact_1997
+</code>
+fact table, an aggregate could be named,
+</p>
+<blockquote>
+    agg_sales_fact_1997_01<br>
+    agg_sales_fact_1997_lost_time_id<br>
+    agg_sales_fact_1997_top<br>
+</blockquote>
+<p>
+If the hierarchy, level and level column names were:
+</p>
+<blockquote>
+    hierarchy_name="Sales Location"<br>
+    level_name="State"<br>
+    level_column_name="state_location"<br>
+    usage_prefix=null<br>
+</blockquote>
+<p>
+then the following aggregate table column names would be
+recognizing as level column names:
+</p>
+<blockquote>
+    SALES_LOCATION_STATE<br>
+    Sales_Location_State_state_location<br>
+    state_location_level.<br>
+</blockquote>
+<p>
+If in the schema file the DimensionUsage for the hierarchy had a
+usagePrefix attribute,
+</p>
+<blockquote>
+    usage_prefix="foo_"<br>
+</blockquote>
+<p>
+then with the above level and level column names and usage_prefix
+the following aggregate table column names would be
+recognizing as level column names:
+</p>
+<blockquote>
+    SALES_LOCATION_STATE<br>
+    Sales_Location_State_state_location<br>
+    state_location_level.<br>
+    foo_state_location.<br>
+</blockquote>
+<p>
+In the case of matching measure columns, if the measure template parameters
+have the following values:
+</p>
+<blockquote>
+    measure_name="Unit Sales"<br>
+    measure_column_name="m1"<br>
+    aggregate_name="Avg"<br>
+</blockquote>
+<p>
+then possible aggregate columns that could match are:
+</p>
+<blockquote>
+    unit_sales_m1<br>
+    unit_sales_m1_avg<br>
+    m1<br>
+    m1_avg<br>
+</blockquote>
+<p>
+The intent of the above example default rule set is not
+that they are necessarily
+realistic or usable, rather, it just shows what is possible.
+</p>
+
+<h2>Snowflakes and the DimensionUsage level attribute<a name="Snowflakes">&nbsp;</a></h2>
+
+<p>
+Mondrian supports dimensions with all of their levels lumped
+into a single table (with all the duplication of data that that entails),
+but also snowflakes. A snowflake dimension is one where the fact table
+joins to one table (generally the lowest) and that table then joins to
+a table representing the next highest level, and so on until the top
+level's table is reached.
+For each level there is a separate table.
+</p>
+<p>
+As an example snowflake, below is a set of Time levels and four
+possible join element blocks, relationships between the tables
+making up the Time dimension.
+(In a schema file, the levels must
+appear after the joins.)
+</p>
+<blockquote>
+<pre>
+&lt;Level name="Calendar Year" table="TimeYear" column="YEAR_SID"
+  nameColumn="YEAR_NAME" levelType="TimeYears" uniqueMembers="true"/&gt;
+&lt;Level name="Quarter" table="TimeQtr" column="QTR_SID"
+  nameColumn="QTR_NAME" levelType="TimeQuarters" uniqueMembers="true"/&gt;
+&lt;Level name="Month" table="TimeMonth" column="MONTH_SID"
+  nameColumn="MONTH_ONLY_NAME" levelType="TimeMonths" uniqueMembers="false"/&gt;
+&lt;Level name="Day" table="TimeDay" column="DAY_SID" nameColumn="DAY_NAME"
+  levelType="TimeDays" uniqueMembers="true"/&gt;
+
+
+  &lt;Join leftAlias="TimeYear" leftKey="YEAR_SID"
+        rightAlias="TimeQtr" rightKey="YEAR_SID" &gt;
+    &lt;Table name="RD_PERIOD_YEAR" alias="TimeYear" /&gt;
+    &lt;Join leftAlias="TimeQtr" leftKey="QTR_SID"
+        rightAlias="TimeMonth" rightKey="QTR_SID" &gt;
+        &lt;Table name="RD_PERIOD_QTR" alias="TimeQtr" /&gt;
+        &lt;Join leftAlias="TimeMonth" leftKey="MONTH_SID"
+            rightAlias="TimeDay" rightKey="MONTH_SID" &gt;
+            &lt;Table name="RD_PERIOD_MONTH" alias="TimeMonth" /&gt;
+            &lt;Table name="RD_PERIOD_DAY" alias="TimeDay" /&gt;
+        &lt;/Join&gt;
+    &lt;/Join&gt;
+  &lt;/Join&gt;
+
+  &lt;Join leftAlias="TimeQtr" leftKey="YEAR_SID"
+        rightAlias="TimeYear" rightKey="YEAR_SID" &gt;
+    &lt;Join leftAlias="TimeMonth" leftKey="QTR_SID"
+        rightAlias="TimeQtr" rightKey="QTR_SID" &gt;
+        &lt;Join leftAlias="TimeDay" leftKey="MONTH_SID"
+            rightAlias="TimeMonth" rightKey="MONTH_SID" &gt;
+            &lt;Table name="RD_PERIOD_DAY" alias="TimeDay" /&gt;
+            &lt;Table name="RD_PERIOD_MONTH" alias="TimeMonth" /&gt;
+        &lt;/Join&gt;
+        &lt;Table name="RD_PERIOD_QTR" alias="TimeQtr" /&gt;
+    &lt;/Join&gt;
+    &lt;Table name="RD_PERIOD_YEAR" alias="TimeYear" /&gt;
+  &lt;/Join&gt;
+
+  &lt;Join leftAlias="TimeMonth" leftKey="MONTH_SID"
+        rightAlias="TimeDay" rightKey="MONTH_SID" &gt;
+    &lt;Join leftAlias="TimeQtr" leftKey="QTR_SID"
+        rightAlias="TimeMonth" rightKey="QTR_SID" &gt;
+        &lt;Join leftAlias="TimeYear" leftKey="YEAR_SID"
+            rightAlias="TimeQtr" rightKey="YEAR_SID" &gt;
+            &lt;Table name="RD_PERIOD_YEAR" alias="TimeYear" /&gt;
+            &lt;Table name="RD_PERIOD_QTR" alias="TimeQtr" /&gt;
+        &lt;/Join&gt;
+        &lt;Table name="RD_PERIOD_MONTH" alias="TimeMonth" /&gt;
+    &lt;/Join&gt;
+    &lt;Table name="RD_PERIOD_DAY" alias="TimeDay" /&gt;
+  &lt;/Join&gt;
+
+  &lt;Join leftAlias="TimeDay" leftKey="MONTH_SID"
+        rightAlias="TimeMonth" rightKey="MONTH_SID" &gt;
+    &lt;Table name="RD_PERIOD_DAY" alias="TimeDay" /&gt;
+    &lt;Join leftAlias="TimeMonth" leftKey="QTR_SID"
+        rightAlias="TimeQtr" rightKey="QTR_SID" &gt;
+        &lt;Table name="RD_PERIOD_MONTH" alias="TimeMonth" /&gt;
+        &lt;Join leftAlias="TimeQtr" leftKey="YEAR_SID"
+            rightAlias="TimeYear" rightKey="YEAR_SID" &gt;
+            &lt;Table name="RD_PERIOD_QTR" alias="TimeQtr" /&gt;
+            &lt;Table name="RD_PERIOD_YEAR" alias="TimeYear" /&gt;
+        &lt;/Join&gt;
+    &lt;/Join&gt;
+  &lt;/Join&gt;
+</pre>
+</blockquote>
+<p>
+Viewed as trees these can be represented as follows:
+</p>
+<blockquote>
+<pre>
+            |
+    ---------------
+    |             |
+   Year     --------------
+            |            |
+         Quarter     ---------
+                     |       |
+                   Month    Day
+
+                  |
+           ----------------
+           |              |
+        --------------   Year
+        |            |
+    ---------     Quarter
+    |       |
+   Day     Month
+
+                  |
+           ----------------
+           |              |
+        --------------   Day
+        |            |
+    ---------      Month
+    |       |
+   Year   Quarter
+
+            |
+    ---------------
+    |             |
+   Day      --------------
+            |            |
+          Month      ---------
+                     |       |
+                   Quarter  Year
+</pre>
+</blockquote>
+<p>
+It turns out that these join block are equivalent; what table joins
+to what other table using what keys. In addition, they are all
+(now) treated the same by Mondrian. The last join block is
+the canonical representation; left side components are levels of
+greater depth than right side components, and components of greater
+depth are higher in the join tree than those of lower depth:
+</p>
+<blockquote>
+<pre>
+            |
+    ---------------
+    |             |
+   Day      --------------
+            |            |
+          Month      ---------
+                     |       |
+                   Quarter  Year
+</pre>
+</blockquote>
+<p>
+Mondrian reorders these join blocks into the canonical form and uses
+that to build subtables in the RolapStar.
+</p>
+<p>
+In addition, if a cube had a
+<code>DimensionUsage</code>
+of this Time dimension with, for example, its
+<code>level</code>
+attribute set to Month, then the above tree is pruned
+</p>
+<blockquote>
+<pre>
+              |
+        --------------
+        |            |
+      Month      ---------
+                 |       |
+               Quarter  Year
+</pre>
+</blockquote>
+<p>
+and the pruned tree is what is used to create the subtables in the
+RolapStar.
+Of course, the fact table must, in this case, have a MONTH_SID
+foreign key.
+</p>
+<p>
+Note that the
+<code>Level</code>
+element's table attribute MUST use the table alias and NOT the table name.
+</p>
+
+<h2>Memory monitoring, Java5 and memory usage<a name="Memory_monitoring">&nbsp;</a></h2>
+<p>
+With Java5, developers using its memory monitoring capabilities
+need to make sure the code they create will best use this new feature.
+In particular, if a given algorithm which uses significant memory
+is surrounded by
+block in which a <code>MemoryMonitor.Listener</code> has been
+registered with the <code>MemoryMonitor</code>, then the code
+must periodically check if a memory notification has occurred.
+If the algorithm has long stretches of allocating memory for
+data structures that will exist throughout the life-time of the
+algorithm's execution during which it does not check for
+memory notifications, then it is possible that an
+<code>OutOfMemoryError</code> could still occur.
+You can see for the ResultSet object where, basically, all memory
+is created in its constructor, throughout the Member determination
+and value evaluation code, the Query object's checkCancelOrTimeout
+method is called repeatedly.
+<p>
+The Java5 memory management mechanism is not fool proof, so to speak.
+If one, as an example, attempts to allocate a very big
+array, an <code>OutOfMemoryError</code> will occur. This
+technique works best when memory is allocated incrementally between
+checks for memory notifications allowing the developer to
+take steps before a possible OOME gotterdammerung.
+<p>
+One last issue, if a developer needs to embed Mondrian in
+a Web or Application server and the server has its own
+way of dealing with Java5 memory notification system, then
+it is important that Mondrian be a good application citizen
+in the server. It is much like the use of JAAS in an
+application. A JVM allows for a single JAAS instance and
+most servers register their mechanism with the JVM.
+It is bad for the application in the server to use its own
+JAAS rather than register with the server's. So, if
+Mondrian is in a Web or Application server that has its own
+dealings with the Java5 memory notification system and
+the server expects applications to use its mechanism, then the developer
+must create an instance of the <code>MemoryManager</code> interface
+that communicates the Webserver/Appserver mechanism and
+uses a System property to instruct the <code>MemoryManagerFactory</code>
+to create that specialized version.
+
+<h2>Implementing Roles<a name="Role_implementation">&nbsp;</a></h2>
+<p>
+The developer can create their own Roles by
+implementing the <code>Role</code> interface or by taking an
+existing Role instance and wrapping it in an object
+derived from and overriding some of the
+methods of the <code>DelegatingRole</code>
+and <code>DelegatingRole.HierarchyAccess</code>
+classes.
+In both cases, some care must be taken not to stray too
+far from the semantics of the default Mondrian <code>Role</code>
+implementation, the <code>RoleImpl</code> class.
+<p>
+When implementing one's own <code>Role</code>
+the <code>Role</code> interface has methods that return an
+<code>Access</code> object for
+<code>Schema</code>,
+<code>Cube</code>,
+<code>Dimension</code>,
+<code>Hierarchy</code>,
+<code>Level</code>,
+<code>Member</code> and
+<code>NamedSet</code> all of which must have implementations.
+One reason one might wish to create one's own <code>Role</code> implementations
+is to avoid defining Roles in the <code>Schema</code> definition. This allows
+the Mondrian container to dynamically generate new Roles while using the
+same <code>Schema</code> definitio nand, therefore,
+the same in-memory caches associated with that <code>Schema</code> object.
+Such Roles do not need to be registered with the <code>Schema</code> object;
+they are associated with the <code>Connection</code>.
+Another reason one might wish to implement one's own Roles is that
+there might be an existing permission system and, rather than
+have duplicate information: in the permission system and the <code>Schema</code>
+definition, one simply creates Roles based upon permission system
+information.
+<p>
+If one wishes simply to alter or extend the semantics of the
+existing <code>Role</code> implementation, the <code>RoleImpl</code> class, then
+using the <code>DelegatingRole</code> class is a reasonably
+utilitarian approach. This requires that one create a <code>Role</code>
+implementation derived from the <code>DelegatingRole</code> class,
+in the Mondrian container call the <code>Schema.lookupRole(String)</code>
+method to get the <code>Role</code> whose semantics are to be modified, create
+an instance of the Role derived from the <code>DelegatingRole</code>
+that wraps the underlying <code>Role</code>, and, finally, set the
+<code>Connection</code>'s <code>Role</code> by calling
+<code>Connection.setRole(Role)</code> with this wrapping <code>Role</code>.
+<p>
+The following code is an example where the underlying <code>Role</code>
+is wrapped in a class that extends the <code>DelegatingRole</code> class.
+Here, the user has no access to the store where "Joe Bob" is the
+manager.
+<p>
+<blockquote>
+public class RoleExample extends DelegatingRole {<br>
+&nbsp;&nbsp;.....<br>
+&nbsp;&nbsp;public static class HierarchyAccessExample <br>
+&nbsp;&nbsp;&nbsp;&nbsp;extends DelegatingRole.HierarchyAccess {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;.....<br>
+&nbsp;&nbsp;&nbsp;&nbsp;public Access getAccess(Member member) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Access access = hierarchyAccess.getAccess(member); <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return getAccess(member, access);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;.....<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;.....<br>
+&nbsp;&nbsp;public Access getAccess(Member member) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Access access = role.getAccess(member);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return getAccess(member, access);<br>
+&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;.....<br>
+&nbsp;&nbsp;// no one see's information about the store where "Joe Bob" is manager.<br>
+&nbsp;&nbsp;protected Access getAccess(Member member, Access access) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;final String storeNamelevel = <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"[Store].[Store Country].[Store State].[Store City].[Store Name]";<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if (member.getLevel().getUniqueName().equals(storeNamelevel)) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Object o = member.getProperty("Store Manager");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return (o != null && o.equals("Joe Bob")) ? Access.NONE : access;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;} else {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return access;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;}<br>
+}<br>
+</blockquote>
+<p>
+In this case, special care must be taken if one over rides one of the
+methods that yield a <code>Member</code>'s <code>Access</code>.
+This is because there are two such methods. The first is in the
+<code>Role</code> itself <code>Role.getAccess(Member)</code>
+and the second is <code>Role.HierarchyAccess.getAccess(Member)</code>.
+Internally, Mondrian is certain code paths calls one of the methods
+while in other code paths it calls the other, thus they should be
+overridden in a consistent manner.
+
+<h2>Implementing support for new databases<a name="Database_Dialects">&nbsp;</a></h2>
+<p>
+
+Mondrian supports many different databases - see
+<a href="install.html#7_Database_compatibility">Install instructions</a>.
+
+<p>Mondrian can work on almost any JDBC data source, so even if your
+database doesn't appear in the above list, give it a try. Mondrian can
+generally figure out the capabilities of the database from the JDBC
+driver, and generate SQL accordingly. If your database's SQL has a syntax
+that Mondrian does not generate correctly, you will need to add a Dialect for it.</p>
+
+<p>To add a dialect, you will need to do the following:</p>
+
+<ul>
+	<li>Implement a class that implements mondrian.spi.Dialect. It is suggested that
+	you subclass mondrian.spi.impl.JdbcDialectImpl. There are existing dialect
+	implementations you can refer to in the mondrian.spi.impl package. Check out the
+	Javadoc for mondrian.spi.Dialect and mondrian.spi.impl.JdbcDialectImpl.</li>
+	<li>Create a JAR containing:
+		<ul>
+			<li>your dialect implementation class(es)</li>
+			<li>a text file META-INF/services/mondrian.spi.Dialect. This file must
+			contain the names of the Dialect class(es), one per line.</li>
+		</ul>
+	</li>
+	<li>Put this JAR on the classpath.</li>
+</ul>
+
+<p>If the database dialect has been named to the Mondrian schema DTD, you can add
+custom SQL in your schema for the dialect. Otherwise, your dialect will be classiifed as
+UNKNOWN, so if you have custom SQL for your database, you would insert the SQL into
+as an "unknown" dialect, like:</p>
+
+<blockquote>
+<pre>
+&lt;NameExpression&gt;
+    &lt;SQL dialect="unknown"&gt;
+"fname" || ' ' || "lname"
+    &lt;/SQL&gt;
+&lt;/NameExpression&gt;
+</pre>
+</blockquote>
+
+<p>If you want your database to be a "known" database in the Mondrian schema, you will need to:
+<ul>
+	<li>Add to the DatabaseProduct enum in the mondrian.spi.Dialect interface.</li>
+	<li>Update the static method mondrian.spi.impl.JdbcDialectImpl.getProduct to detect the
+	DatabaseProduct for your Dialect.</li>
+	<li>Update src/main/META-INF/services/mondrian.spi.Dialect with the dialect class name.</li>
+	<li>Update the documentation in the src/main/mondrian/olap/Mondrian.xml with the new
+	dialect name to appear in the schema. This has to match the entry (in lower case) you
+	added to the DatabaseProduct enum above.</li>
+	<li>Add a section in testsrc/main/mondrian/test/DialectTest.testDialectVsDatabaseProduct()
+	to check the detection of the DatabaseProduct.</li>
+</ul>
+
+
+<hr noshade size="1"/>
+<p>
+    Author: Julian Hyde, Richard Emberson, Sherman Wood; last updated April, 2009.<br/>
+    Version: $Id$
+    (<a href="http://p4web.eigenbase.org/open/mondrian/doc/developer_notes.html?ac=22">log</a>)<br/>
+    Copyright (C) 2005-2009 Julian Hyde and others
+</p>
+
+<br/>
+<!-- doc2web end -->
+
+</body>
+</html>

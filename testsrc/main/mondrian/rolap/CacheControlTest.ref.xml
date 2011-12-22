@@ -1,0 +1,273 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testPartialFlush">
+        <Resource name="output">
+            <![CDATA[Cache state before flush:
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter=any, values={Q1, Q2, Q3, Q4}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter=any, values={Q1, Q2, Q3, Q4}
+    time_by_day.month_of_year=any, values={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+
+discard segment - it has no columns in common: Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any
+    product_class.product_family=any}
+Cache state after flush:
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter(true - [Time].[1997].[Q1]), values={Q2, Q3, Q4}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={[Time].[1997].[Q1]}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter(true - [Time].[1997].[Q1]), values={Q2, Q3, Q4}
+    time_by_day.month_of_year=any, values={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={[Time].[1997].[Q1]}}
+
+]]>
+        </Resource>
+        <Resource name="output2">
+            <![CDATA[Cache state before flush:
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter(true - [Time].[1997].[Q1]), values={Q2, Q3, Q4}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={[Time].[1997].[Q1]}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter(true - [Time].[1997].[Q1]), values={Q2, Q3, Q4}
+    time_by_day.month_of_year=any, values={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={[Time].[1997].[Q1]}}
+
+Cache state after flush:
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter(true - [Time].[1997].[Q1]), values={Q2, Q3, Q4}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={[Time].[1997].[Q1]}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter(true - [Time].[1997].[Q1]), values={Q2, Q3, Q4}
+    time_by_day.month_of_year=any, values={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={[Time].[1997].[Q1]}}
+
+]]>
+        </Resource>
+        <Resource name="output3">
+            <![CDATA[Cache state before flush:
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter(true - [Time].[1997].[Q1]), values={Q2, Q3, Q4}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={[Time].[1997].[Q1]}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter(true - [Time].[1997].[Q1]), values={Q2, Q3, Q4}
+    time_by_day.month_of_year=any, values={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={[Time].[1997].[Q1]}}
+
+Cache state after flush:
+
+]]>
+        </Resource>
+        <Resource name="output4">
+            <![CDATA[Cache state before flush:
+
+Cache state after flush:
+
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testFlush">
+        <Resource name="output">
+            <![CDATA[Cache state before flush:
+
+Cache state before flush:
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter=any, values={Q1, Q2, Q3, Q4}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter=any, values={Q1, Q2, Q3, Q4}
+    time_by_day.month_of_year=any, values={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+
+discard segment - it has no columns in common: Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any
+    product_class.product_family=any}
+Cache state after flush:
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter(true - [Time].[1997].[Q1]), values={Q2, Q3, Q4}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={[Time].[1997].[Q1]}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter(true - [Time].[1997].[Q1]), values={Q2, Q3, Q4}
+    time_by_day.month_of_year=any, values={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={[Time].[1997].[Q1]}}
+
+]]>
+        </Resource>
+        <Resource name="output2">
+            <![CDATA[Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter(true - [Time].[1997].[Q1]), values={Q2, Q3, Q4}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={[Time].[1997].[Q1]}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter={Q1}, values={Q1}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter(true - [Time].[1997].[Q1]), values={Q2, Q3, Q4}
+    time_by_day.month_of_year=any, values={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={[Time].[1997].[Q1]}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter={Q1}, values={Q1}
+    time_by_day.month_of_year={1, 2, 3}, values={1, 2, 3}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testPartialFlushRange">
+        <Resource name="output">
+            <![CDATA[Cache state before flush:
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter=any, values={Q1, Q2, Q3, Q4}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter=any, values={Q1, Q2, Q3, Q4}
+    time_by_day.month_of_year=any, values={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+
+Cache state after flush:
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={>= [Time].[1997].[Q2].[4]}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter=any, values={Q1, Q2}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={>= [Time].[1997].[Q2].[4]}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter=any, values={Q1}
+    time_by_day.month_of_year=any, values={1, 2, 3}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={>= [Time].[1997].[Q2].[4]}}
+
+]]>
+        </Resource>
+        <Resource name="output2">
+            <![CDATA[Cache state before flush:
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={>= [Time].[1997].[Q2].[4]}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter=any, values={Q1, Q2}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={>= [Time].[1997].[Q2].[4]}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter=any, values={Q1}
+    time_by_day.month_of_year=any, values={1, 2, 3}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={>= [Time].[1997].[Q2].[4]}}
+
+Cache state after flush:
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={>= [Time].[1997].[Q2].[4]}}
+
+]]>
+        </Resource>
+        <Resource name="output3">
+            <![CDATA[Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}
+    excluded={>= [Time].[1997].[Q2].[4]}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter=any, values={Q1, Q2, Q3, Q4}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+Segment ## {
+    measure=sum(sales_fact_1997.unit_sales)
+    time_by_day.the_year=any, values={1997}
+    time_by_day.quarter=any, values={Q1, Q2, Q3, Q4}
+    time_by_day.month_of_year=any, values={1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+    product_class.product_family=any, values={Drink, Food, Non-Consumable}}
+]]>
+        </Resource>
+    </TestCase>
+</Root>

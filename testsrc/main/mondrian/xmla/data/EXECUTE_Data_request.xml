@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope 
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+    <ns1:Execute 
+        soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+        xmlns:ns1="urn:schemas-microsoft-com:xml-analysis">
+        <Command>
+        <Statement 
+            xsi:type="soapenc:string" 
+            xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">SELECT 
+NON EMPTY
+{
+      {     {[Customers].[City].Members}
+}
+    * {     {[Measures].[Store Cost]}
+}
+}  ON COLUMNS, 
+
+NON EMPTY
+{
+     {[Store].[Store City].Members}
+
+} ON ROWS
+FROM [Sales]</Statement>
+        </Command>
+        <Properties>
+        <PropertyList>
+            <ns1:DataSourceInfo 
+                xsi:type="soapenc:string" 
+                xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">Foodmart 2000</ns1:DataSourceInfo>
+            <ns1:Catalog 
+                xsi:type="soapenc:string" 
+                xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">FoodMart 2000</ns1:Catalog>
+            <ns1:Format 
+                xsi:type="soapenc:string" 
+                xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">Native</ns1:Format>
+            <ns1:Content 
+                xsi:type="soapenc:string" 
+                xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">Data</ns1:Content>
+            <ns1:AxisFormat 
+                xsi:type="soapenc:string" 
+                xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/">TupleFormat</ns1:AxisFormat>
+    </PropertyList>
+    </Properties>
+</ns1:Execute>
+</soapenv:Body>
+</soapenv:Envelope>

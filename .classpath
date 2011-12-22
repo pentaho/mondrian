@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main"/>
+	<classpathentry kind="src" path="testsrc/main"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/commons-collections.jar"/>
+	<classpathentry kind="lib" path="lib/javacup.jar"/>
+	<classpathentry kind="lib" path="lib/jlfgr.jar"/>
+	<classpathentry kind="lib" path="lib/eigenbase-resgen.jar"/>
+	<classpathentry kind="lib" path="lib/eigenbase-xom.jar"/>
+	<classpathentry kind="lib" path="lib/xalan.jar"/>
+	<classpathentry kind="lib" path="lib/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="lib/xml-apis.jar"/>
+	<classpathentry kind="lib" path="lib/jsp-api.jar"/>
+	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="lib" path="lib/commons-dbcp.jar"/>
+	<classpathentry kind="lib" path="lib/commons-pool.jar"/>
+	<classpathentry kind="lib" path="lib/log4j.jar"/>
+	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
+	<classpathentry kind="lib" path="lib/eigenbase-properties.jar"/>
+	<classpathentry kind="lib" path="lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="lib/commons-math.jar"/>
+	<classpathentry kind="lib" path="lib/derby.jar"/>
+	<classpathentry kind="lib" path="lib/xmlunit.jar"/>
+	<classpathentry kind="lib" path="lib/commons-vfs.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="lib/olap4j.jar"/>
+	<classpathentry kind="lib" path="workbench/plugins/kettle-core.jar"/>
+	<classpathentry kind="lib" path="workbench/plugins/kettle-db.jar" sourcepath="/home/aaron/workspaces/pentaho/Kettle trunk/src-db"/>
+	<classpathentry kind="lib" path="workbench/plugins/kettle-engine.jar"/>
+	<classpathentry kind="lib" path="workbench/plugins/pentaho-database.jar"/>
+	<classpathentry kind="lib" path="workbench/plugins/pentaho-xul-core.jar"/>
+	<classpathentry kind="lib" path="workbench/plugins/pentaho-xul-swing.jar"/>
+	<classpathentry kind="lib" path="workbench/plugins/commons-io.jar"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>

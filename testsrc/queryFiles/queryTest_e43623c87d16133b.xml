@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>select {[Measures].[Unit Sales]} on columns,     drilldownlevel({[Store].[USA], [Store].[USA].[CA], [Store].[USA].[OR]}, [Store].[Store State]) on rows from [Sales] </mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Alameda]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Beverly Hills]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Los Angeles]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[San Diego]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[San Francisco]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR].[Portland]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR].[Salem]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>266773.0</cell>
+            </drow>
+            <drow>
+                <cell>74748.0</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>21333.0</cell>
+            </drow>
+            <drow>
+                <cell>25663.0</cell>
+            </drow>
+            <drow>
+                <cell>25635.0</cell>
+            </drow>
+            <drow>
+                <cell>2117.0</cell>
+            </drow>
+            <drow>
+                <cell>67659.0</cell>
+            </drow>
+            <drow>
+                <cell>26079.0</cell>
+            </drow>
+            <drow>
+                <cell>41580.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

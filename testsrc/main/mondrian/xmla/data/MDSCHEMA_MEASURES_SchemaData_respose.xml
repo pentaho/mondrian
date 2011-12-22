@@ -1,0 +1,280 @@
+<DiscoverResponse xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <return>
+  <root
+    xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+    <xsd:schema
+        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+        targetNamespace=urn:schemas-microsoft-com:xml-analysis:rowset
+        elementFormDefault=qualified>
+        <xsd:element
+            xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+            name=root>
+            <xsd:complexType>
+                <xsd:sequence>
+                    <xsd:element
+                        name=row
+                        type=row
+                        minOccurs=0
+                        maxOccurs=unbounded>
+                </xsd:sequence>
+            </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType
+            xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+            name=uuid>
+            <xsd:restriction
+                base=xsd:string>
+                <xsd:pattern
+                    value=[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}>
+            </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType
+            xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:sql="urn:schemas-microsoft-com:xml-sql"
+            name=row>
+            <xsd:sequence>
+                <xsd:element
+                    name=CATALOG_NAME
+                    type=xsd:string
+                    sql:field=CATALOG_NAME
+                    minOccurs=0>
+                <xsd:element
+                    name=SCHEMA_NAME
+                    type=xsd:string
+                    sql:field=SCHEMA_NAME
+                    minOccurs=0>
+                <xsd:element
+                    name=CUBE_NAME
+                    type=xsd:string
+                    sql:field=CUBE_NAME
+                    minOccurs=0>
+                <xsd:element
+                    name=MEASURE_NAME
+                    type=xsd:string
+                    sql:field=MEASURE_NAME
+                    minOccurs=0>
+                <xsd:element
+                    name=MEASURE_UNIQUE_NAME
+                    type=xsd:string
+                    sql:field=MEASURE_UNIQUE_NAME
+                    minOccurs=0>
+                <xsd:element
+                    name=MEASURE_CAPTION
+                    type=xsd:string
+                    sql:field=MEASURE_CAPTION
+                    minOccurs=0>
+                <xsd:element
+                    name=MEASURE_GUID
+                    type=uuid
+                    sql:field=MEASURE_GUID
+                    minOccurs=0>
+                <xsd:element
+                    name=MEASURE_AGGREGATOR
+                    type=xsd:int
+                    sql:field=MEASURE_AGGREGATOR
+                    minOccurs=0>
+                <xsd:element
+                    name=DATA_TYPE
+                    type=xsd:unsignedShort
+                    sql:field=DATA_TYPE>
+                <xsd:element
+                    name=NUMERIC_PRECISION
+                    type=xsd:unsignedShort
+                    sql:field=NUMERIC_PRECISION
+                    minOccurs=0>
+                <xsd:element
+                    name=NUMERIC_SCALE
+                    type=xsd:short
+                    sql:field=NUMERIC_SCALE
+                    minOccurs=0>
+                <xsd:element
+                    name=MEASURE_UNITS
+                    type=xsd:string
+                    sql:field=MEASURE_UNITS
+                    minOccurs=0>
+                <xsd:element
+                    name=DESCRIPTION
+                    type=xsd:string
+                    sql:field=DESCRIPTION
+                    minOccurs=0>
+                <xsd:element
+                    name=EXPRESSION
+                    type=xsd:string
+                    sql:field=EXPRESSION
+                    minOccurs=0>
+                <xsd:element
+                    name=MEASURE_IS_VISIBLE
+                    type=xsd:boolean
+                    sql:field=MEASURE_IS_VISIBLE>
+                <xsd:element
+                    name=LEVELS_LIST
+                    type=xsd:string
+                    sql:field=LEVELS_LIST
+                    minOccurs=0>
+                <xsd:element
+                    name=MEASURE_NAME_SQL_COLUMN_NAME
+                    type=xsd:string
+                    sql:field=MEASURE_NAME_SQL_COLUMN_NAME
+                    minOccurs=0>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:schema>
+    <row
+        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+        <CATALOG_NAME>FoodMart 2000</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Profit</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Profit]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Profit</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
+        <DATA_TYPE>12</DATA_TYPE>
+        <NUMERIC_PRECISION>65535</NUMERIC_PRECISION>
+        <NUMERIC_SCALE>-1</NUMERIC_SCALE>
+        <EXPRESSION>[Measures].[Store Sales]-[Measures].[Store Cost]</EXPRESSION>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Profit</MEASURE_NAME_SQL_COLUMN_NAME>
+    </row>
+    <row
+        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+        <CATALOG_NAME>FoodMart 2000</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Sales Average</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Sales Average]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Sales Average</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
+        <DATA_TYPE>12</DATA_TYPE>
+        <NUMERIC_PRECISION>65535</NUMERIC_PRECISION>
+        <NUMERIC_SCALE>-1</NUMERIC_SCALE>
+        <EXPRESSION>[Measures].[Store Sales]/[Measures].[Sales Count]</EXPRESSION>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Sales Average</MEASURE_NAME_SQL_COLUMN_NAME>
+    </row>
+    <row>
+        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Promotion Sales</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Promotion Sales]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Promotion Sales</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
+        <DATA_TYPE>5</DATA_TYPE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time.Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Promotion Sales</MEASURE_NAME_SQL_COLUMN_NAME>
+    </row>
+    <row
+        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+        <CATALOG_NAME>FoodMart 2000</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Sales Count</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Sales Count]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Sales Count</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>2</MEASURE_AGGREGATOR>
+        <DATA_TYPE>20</DATA_TYPE>
+        <NUMERIC_PRECISION>19</NUMERIC_PRECISION>
+        <NUMERIC_SCALE>255</NUMERIC_SCALE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Sales Count</MEASURE_NAME_SQL_COLUMN_NAME>
+    </row>
+    <row
+        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+        <CATALOG_NAME>FoodMart 2000</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Store Cost</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Store Cost]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Store Cost</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
+        <DATA_TYPE>5</DATA_TYPE>
+        <NUMERIC_PRECISION>16</NUMERIC_PRECISION>
+        <NUMERIC_SCALE>255</NUMERIC_SCALE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Store Cost</MEASURE_NAME_SQL_COLUMN_NAME>
+    </row>
+    <row
+        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+        <CATALOG_NAME>FoodMart 2000</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Store Sales</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Store Sales]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Store Sales</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
+        <DATA_TYPE>5</DATA_TYPE>
+        <NUMERIC_PRECISION>16</NUMERIC_PRECISION>
+        <NUMERIC_SCALE>255</NUMERIC_SCALE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Store Sales</MEASURE_NAME_SQL_COLUMN_NAME>
+    </row>
+    <row
+        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+        <CATALOG_NAME>FoodMart 2000</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Store Sales Net</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Store Sales Net]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Store Sales Net</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
+        <DATA_TYPE>5</DATA_TYPE>
+        <NUMERIC_PRECISION>16</NUMERIC_PRECISION>
+        <NUMERIC_SCALE>255</NUMERIC_SCALE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Store Sales Net</MEASURE_NAME_SQL_COLUMN_NAME>
+    </row>
+    <row
+        xmlns="urn:schemas-microsoft-com:xml-analysis:rowset"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+        <CATALOG_NAME>FoodMart 2000</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Unit Sales</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Unit Sales]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Unit Sales</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
+        <DATA_TYPE>5</DATA_TYPE>
+        <NUMERIC_PRECISION>16</NUMERIC_PRECISION>
+        <NUMERIC_SCALE>255</NUMERIC_SCALE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Time].[Month],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <MEASURE_NAME_SQL_COLUMN_NAME>Measures:Unit Sales</MEASURE_NAME_SQL_COLUMN_NAME>
+    </row>
+  </root>
+  </return>
+</DiscoverResponse>

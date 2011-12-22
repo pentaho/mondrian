@@ -1,0 +1,144 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testFill1State1">
+        <Resource name="description">
+            <![CDATA[
+partially fill cache with data for CA
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+SELECT 
+{[Customers].[USA].[CA]} ON ROWS,
+{[Measures].[Unit Sales]} ON COLUMNS
+FROM [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Customers].[USA].[CA]}
+Row #0: 74,748
+]]>
+        </Resource>
+        <Resource name="expectedSql" dialect="DERBY">
+            <![CDATA[
+select
+  "time_by_day"."the_year" as "c0",
+  "customer"."state_province" as "c1",
+  sum("sales_fact_1997"."unit_sales") as "m0"
+from
+  "time_by_day" as "time_by_day",
+  "sales_fact_1997" as "sales_fact_1997",
+  "customer" as "customer"
+where
+  "sales_fact_1997"."time_id" = "time_by_day"."time_id" and
+  "time_by_day"."the_year" = 1997 and
+  "sales_fact_1997"."customer_id" = "customer"."customer_id" and
+  "customer"."state_province" = 'CA'
+group by
+ "time_by_day"."the_year",
+ "customer"."state_province"
+]]>        
+        </Resource>
+    </TestCase>
+    <TestCase name="testFill1State2">
+        <Resource name="description">
+            <![CDATA[
+partially fill cache with data for OR
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+SELECT 
+{[Customers].[USA].[OR]} ON ROWS,
+{[Measures].[Unit Sales]} ON COLUMNS
+FROM [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Customers].[USA].[OR]}
+Row #0: 67,659
+]]>
+        </Resource>
+        <Resource name="expectedSql" dialect="DERBY">
+            <![CDATA[
+select
+  "time_by_day"."the_year" as "c0",
+  "customer"."state_province" as "c1",
+  sum("sales_fact_1997"."unit_sales") as "m0"
+from
+  "time_by_day" as "time_by_day",
+  "sales_fact_1997" as "sales_fact_1997",
+  "customer" as "customer"
+where
+  "sales_fact_1997"."time_id" = "time_by_day"."time_id" and
+  "time_by_day"."the_year" = 1997 and
+  "sales_fact_1997"."customer_id" = "customer"."customer_id" and
+  "customer"."state_province" = 'OR'
+group by
+ "time_by_day"."the_year",
+ "customer"."state_province"
+]]>        
+        </Resource>
+    </TestCase>
+    <TestCase name="testFill2States">
+        <Resource name="description">
+            <![CDATA[
+partially fill cache with data for CA and WA
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+SELECT 
+{[Customers].[USA].[CA], 
+[Customers].[USA].[WA]} ON ROWS,
+{[Measures].[Unit Sales]} ON COLUMNS
+FROM [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Customers].[USA].[CA]}
+{[Customers].[USA].[WA]}
+Row #0: 74,748
+Row #1: 124,366
+]]>
+        </Resource>
+        <Resource name="expectedSql" dialect="DERBY">
+            <![CDATA[
+select
+  "time_by_day"."the_year" as "c0",
+  "customer"."state_province" as "c1",
+  sum("sales_fact_1997"."unit_sales") as "m0"
+from
+  "time_by_day" as "time_by_day",
+  "sales_fact_1997" as "sales_fact_1997",
+  "customer" as "customer"
+where
+  "sales_fact_1997"."time_id" = "time_by_day"."time_id" and
+  "time_by_day"."the_year" = 1997 and
+  "sales_fact_1997"."customer_id" = "customer"."customer_id" and
+  "customer"."state_province" in ('CA', 'WA')
+group by
+ "time_by_day"."the_year",
+ "customer"."state_province"
+]]>        
+        </Resource>
+    </TestCase>
+</Root>

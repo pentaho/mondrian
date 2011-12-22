@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>WITH MEMBER [Measures].[Cumulative No of Employees] AS 'SUM(HEAD(ORDER({[Store].Siblings}, [Measures].[Number of Employees], BDESC) AS OrderedSiblings,RANK([Store],OrderedSiblings)),[Measures].[Number of Employees])' SELECT  {[Measures].[Number of Employees],  [Measures].[Cumulative No of Employees]}  ON COLUMNS, ORDER( DESCENDANTS( Store.CA,  [Store State],  AFTER ),  [Measures].[Number of Employees],  BDESC )  ON ROWS FROM [HR]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Pay Type]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Position]</dim>
+                <dim>[Department]</dim>
+                <dim>[Employees]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[All Times]</member>
+                    <member>[Pay Type].[All Pay Types]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Position].[All Positions]</member>
+                    <member>[Department].[All Departments]</member>
+                    <member>[Employees].[All Employees]</member>
+               </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Number of Employees]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Cumulative No of Employees]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Los Angeles]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Los Angeles].[Store 7]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[San Diego]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[San Diego].[Store 24]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Beverly Hills]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Beverly Hills].[Store 6]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Alameda]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Alameda].[HQ]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[San Francisco]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[San Francisco].[Store 14]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>62.0</cell>
+                <cell>62.0</cell>
+            </drow>
+            <drow>
+                <cell>62.0</cell>
+                <cell>62.0</cell>
+            </drow>
+            <drow>
+                <cell>62.0</cell>
+                <cell>124.0</cell>
+            </drow>
+            <drow>
+                <cell>62.0</cell>
+                <cell>62.0</cell>
+            </drow>
+            <drow>
+                <cell>48.0</cell>
+                <cell>172.0</cell>
+            </drow>
+            <drow>
+                <cell>48.0</cell>
+                <cell>48.0</cell>
+            </drow>
+            <drow>
+                <cell>27.0</cell>
+                <cell>199.0</cell>
+            </drow>
+            <drow>
+                <cell>27.0</cell>
+                <cell>27.0</cell>
+            </drow>
+            <drow>
+                <cell>4.0</cell>
+                <cell>203.0</cell>
+            </drow>
+            <drow>
+                <cell>4.0</cell>
+                <cell>4.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

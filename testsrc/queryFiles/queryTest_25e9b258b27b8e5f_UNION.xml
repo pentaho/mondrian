@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>SELECT {[Measures].[Warehouse Sales]} ON COLUMNS, UNION( {[Store].[USA].[WA].Children}, {[Store].[USA].[OR].[Portland]}) ON ROWS FROM [Warehouse] </mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Time]</dim>
+                <dim>[Warehouse]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Time].[1997]</member>
+                    <member>[Warehouse].[All Warehouses]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Warehouse Sales]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Bellingham]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Bremerton]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Seattle]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Spokane]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Tacoma]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Walla Walla]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Yakima]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR].[Portland]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>2058.0574</cell>
+            </drow>
+            <drow>
+                <cell>22187.4183</cell>
+            </drow>
+            <drow>
+                <cell>22046.9416</cell>
+            </drow>
+            <drow>
+                <cell>10879.6737</cell>
+            </drow>
+            <drow>
+                <cell>30743.7722</cell>
+            </drow>
+            <drow>
+                <cell>1992.9122</cell>
+            </drow>
+            <drow>
+                <cell>10212.2007</cell>
+            </drow>
+            <drow>
+                <cell>7718.6783</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

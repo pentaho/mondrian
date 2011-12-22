@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>WITH MEMBER [Product].[Food].[Deli].[Meat].[BBQ] AS  'AGGREGATE({[Product].[Food].[Deli].[Meat].[Fresh Chicken], [Product].[Food].[Deli].[Meat].[Hot Dogs]})'
+SELECT {[Store].[All Stores]} ON AXIS(0),
+       {[Product].[Food].[Deli].[Meat], [Product].[Food].[Deli].[Meat].Children,
+        [Product].[Food].[Deli].[Meat].[BBQ]} ON AXIS(1)
+FROM [Sales]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Measures]</dim>
+                <dim>[Time]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Unit Sales]</member>
+                    <member>[Time].[1997]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[All Stores]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Product]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[Food].[Deli].[Meat]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Food].[Deli].[Meat].[Bologna]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Food].[Deli].[Meat].[Deli Meats]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Food].[Deli].[Meat].[Fresh Chicken]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Food].[Deli].[Meat].[Hot Dogs]</member>
+                </tuple>
+                <tuple>
+                    <member>[Product].[Food].[Deli].[Meat].[BBQ]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>9433.0</cell>
+            </drow>
+            <drow>
+                <cell>2588.0</cell>
+            </drow>
+            <drow>
+                <cell>3339.0</cell>
+            </drow>
+            <drow>
+                <cell>878.0</cell>
+            </drow>
+            <drow>
+                <cell>2628.0</cell>
+            </drow>
+            <drow>
+                <cell>3506.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

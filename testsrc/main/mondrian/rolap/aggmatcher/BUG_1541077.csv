@@ -1,0 +1,34 @@
+# BUG_1541077.csv
+# @version  $Id:$
+## TableName: cheques
+## ColumnNames: prod_id,store_id,amount
+## ColumnTypes: INTEGER,INTEGER,DECIMAL(10,2)
+## NosOfRows: 6
+1,10,6
+1,11,3
+1,12,2
+2,10,4
+2,11,2
+2,12,2
+# aggregate over prod_id 
+## TableName: agg_lp_xxx_cheques
+## ColumnNames: store_id,amount_AVG,FACT_COUNT
+## ColumnTypes: INTEGER,DECIMAL(10,2),INTEGER
+## NosOfRows: 3
+10,5.0,2
+11,2.5,2
+12,2.0,2
+# store dimension
+## TableName: store_x
+## ColumnNames: store_id,value
+## ColumnTypes: INTEGER,DECIMAL(10,2)
+## NosOfRows: 3
+10,4
+11,5
+12,6
+# product dimension
+## TableName: product_x
+## ColumnNames: prod_id,name
+## ColumnTypes: INTEGER,VARCHAR(30)
+1,One
+2,Two

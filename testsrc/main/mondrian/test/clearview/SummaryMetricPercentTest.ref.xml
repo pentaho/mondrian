@@ -1,0 +1,4011 @@
+<?xml version="1.0" ?>
+<Root>
+<!--==================================================
+    SummaryMetricPercentOfTest
+===================================================-->
+    <TestCase name="testSpecialMetricPctOfGrand">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store],NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level]))'
+Set [*BASE_MEMBERS_Store] as '{[Store].[USA].[CA],[Store].[USA].[OR],[Store].[USA].[WA]}'
+Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0],[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Member [Store].[*CTX_MEMBER_SEL~AGG] as 'Aggregate([*NATIVE_MEMBERS_Store])'
+Member [Product].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Product].[All Products]})'
+Member [Education Level].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Education Level].[All Education Levels]})'
+Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],[Store].[*CTX_MEMBER_SEL~AGG],[Product].[*CTX_MEMBER_SEL~AGG],[Education Level].[*CTX_MEMBER_SEL~AGG])', FORMAT_STRING = '0.00%'
+Member [Store].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Store])'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
+Select
+Union(CrossJoin({[Store].[*CTX_MEMBER_SEL~SUM]},[*BASE_MEMBERS_Measures]),CrossJoin(Generate([*NATIVE_CJ_SET], {([Store].CurrentMember)}),[*BASE_MEMBERS_Measures])) on columns,
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Education Level].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Store].[*CTX_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}
+{[Store].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Store].[USA].[CA], [Measures].[*SUMMARY_METRIC_0]}
+{[Store].[USA].[CA], [Measures].[Unit Sales]}
+{[Store].[USA].[OR], [Measures].[*SUMMARY_METRIC_0]}
+{[Store].[USA].[OR], [Measures].[Unit Sales]}
+{[Store].[USA].[WA], [Measures].[*SUMMARY_METRIC_0]}
+{[Store].[USA].[WA], [Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink], [Education Level].[Bachelors Degree]}
+{[Product].[Drink], [Education Level].[Graduate Degree]}
+{[Product].[Drink], [Education Level].[High School Degree]}
+{[Product].[Drink], [Education Level].[Partial College]}
+{[Product].[Drink], [Education Level].[Partial High School]}
+{[Product].[Food], [Education Level].[Bachelors Degree]}
+{[Product].[Food], [Education Level].[Graduate Degree]}
+{[Product].[Food], [Education Level].[High School Degree]}
+{[Product].[Food], [Education Level].[Partial College]}
+{[Product].[Food], [Education Level].[Partial High School]}
+{[Product].[Non-Consumable], [Education Level].[Bachelors Degree]}
+{[Product].[Non-Consumable], [Education Level].[Graduate Degree]}
+{[Product].[Non-Consumable], [Education Level].[High School Degree]}
+{[Product].[Non-Consumable], [Education Level].[Partial College]}
+{[Product].[Non-Consumable], [Education Level].[Partial High School]}
+Row #0: 100.00%
+Row #0: 266,773
+Row #0: 28.02%
+Row #0: 74,748
+Row #0: 25.36%
+Row #0: 67,659
+Row #0: 46.62%
+Row #0: 124,366
+Row #1: 9.22%
+Row #1: 24,597
+Row #1: 2.66%
+Row #1: 7,102
+Row #1: 2.29%
+Row #1: 6,106
+Row #1: 4.27%
+Row #1: 11,389
+Row #2: 71.95%
+Row #2: 191,940
+Row #2: 20.11%
+Row #2: 53,656
+Row #2: 18.19%
+Row #2: 48,537
+Row #2: 33.64%
+Row #2: 89,747
+Row #3: 18.83%
+Row #3: 50,236
+Row #3: 5.24%
+Row #3: 13,990
+Row #3: 4.88%
+Row #3: 13,016
+Row #3: 8.71%
+Row #3: 23,230
+Row #4: 2.41%
+Row #4: 6,423
+Row #4: 0.67%
+Row #4: 1,780
+Row #4: 0.57%
+Row #4: 1,512
+Row #4: 1.17%
+Row #4: 3,131
+Row #5: 0.50%
+Row #5: 1,325
+Row #5: 0.15%
+Row #5: 400
+Row #5: 0.12%
+Row #5: 321
+Row #5: 0.23%
+Row #5: 604
+Row #6: 2.71%
+Row #6: 7,226
+Row #6: 0.77%
+Row #6: 2,048
+Row #6: 0.69%
+Row #6: 1,828
+Row #6: 1.26%
+Row #6: 3,350
+Row #7: 0.81%
+Row #7: 2,164
+Row #7: 0.23%
+Row #7: 623
+Row #7: 0.20%
+Row #7: 530
+Row #7: 0.38%
+Row #7: 1,011
+Row #8: 2.80%
+Row #8: 7,459
+Row #8: 0.84%
+Row #8: 2,251
+Row #8: 0.72%
+Row #8: 1,915
+Row #8: 1.23%
+Row #8: 3,293
+Row #9: 18.50%
+Row #9: 49,365
+Row #9: 5.38%
+Row #9: 14,356
+Row #9: 4.20%
+Row #9: 11,210
+Row #9: 8.92%
+Row #9: 23,799
+Row #10: 4.22%
+Row #10: 11,255
+Row #10: 1.12%
+Row #10: 2,980
+Row #10: 1.21%
+Row #10: 3,241
+Row #10: 1.89%
+Row #10: 5,034
+Row #11: 21.18%
+Row #11: 56,509
+Row #11: 5.65%
+Row #11: 15,075
+Row #11: 5.58%
+Row #11: 14,896
+Row #11: 9.95%
+Row #11: 26,538
+Row #12: 6.69%
+Row #12: 17,859
+Row #12: 1.89%
+Row #12: 5,037
+Row #12: 1.69%
+Row #12: 4,509
+Row #12: 3.12%
+Row #12: 8,313
+Row #13: 21.35%
+Row #13: 56,952
+Row #13: 6.08%
+Row #13: 16,208
+Row #13: 5.50%
+Row #13: 14,681
+Row #13: 9.77%
+Row #13: 26,063
+Row #14: 4.89%
+Row #14: 13,051
+Row #14: 1.39%
+Row #14: 3,700
+Row #14: 1.14%
+Row #14: 3,045
+Row #14: 2.36%
+Row #14: 6,306
+Row #15: 1.12%
+Row #15: 2,990
+Row #15: 0.30%
+Row #15: 794
+Row #15: 0.29%
+Row #15: 767
+Row #15: 0.54%
+Row #15: 1,429
+Row #16: 5.60%
+Row #16: 14,929
+Row #16: 1.50%
+Row #16: 4,008
+Row #16: 1.49%
+Row #16: 3,978
+Row #16: 2.60%
+Row #16: 6,943
+Row #17: 1.70%
+Row #17: 4,522
+Row #17: 0.41%
+Row #17: 1,105
+Row #17: 0.50%
+Row #17: 1,331
+Row #17: 0.78%
+Row #17: 2,086
+Row #18: 5.53%
+Row #18: 14,744
+Row #18: 1.64%
+Row #18: 4,383
+Row #18: 1.46%
+Row #18: 3,895
+Row #18: 2.42%
+Row #18: 6,466
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSpecialMetricPctOfCol">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store],NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level]))'
+Set [*BASE_MEMBERS_Store] as '[Store].[Store State].Members'
+Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales],[Measures].[*SUMMARY_METRIC_0]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Member [Store].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Store].[All Stores]})'
+Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],[Store].[*CTX_MEMBER_SEL~AGG])', FORMAT_STRING = '0.00%'
+Member [Store].[Canada].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Store].[Canada]})'
+Member [Store].[Mexico].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Store].[Mexico]})'
+Member [Store].[USA].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Store].[USA]})'
+Member [Store].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Store].[All Stores]})'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Drink]})'
+Member [Product].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Food]})'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Non-Consumable]})'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
+Select
+Union(CrossJoin({[Store].[*CTX_MEMBER_SEL~SUM]},[*BASE_MEMBERS_Measures]),Union(CrossJoin({[Store].[Canada].[*CTX_MEMBER_SEL~SUM],[Store].[Mexico].[*CTX_MEMBER_SEL~SUM],[Store].[USA].[*CTX_MEMBER_SEL~SUM]},[*BASE_MEMBERS_Measures]),CrossJoin(Generate([*NATIVE_CJ_SET], {([Store].CurrentMember)}),[*BASE_MEMBERS_Measures]))) on columns,
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin({[Product].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Education Level].CurrentMember)})))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Store].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Store].[*CTX_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}
+{[Store].[Canada].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Store].[Canada].[*CTX_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}
+{[Store].[Mexico].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Store].[Mexico].[*CTX_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}
+{[Store].[USA].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Store].[USA].[*CTX_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}
+{[Store].[USA].[CA], [Measures].[Unit Sales]}
+{[Store].[USA].[CA], [Measures].[*SUMMARY_METRIC_0]}
+{[Store].[USA].[OR], [Measures].[Unit Sales]}
+{[Store].[USA].[OR], [Measures].[*SUMMARY_METRIC_0]}
+{[Store].[USA].[WA], [Measures].[Unit Sales]}
+{[Store].[USA].[WA], [Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Baked Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Baking Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Breakfast Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Canned Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Canned Products], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Deli], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Eggs], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Frozen Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Meat], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Produce], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Seafood], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Snack Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Snacks], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Starchy Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[Carousel], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[Checkout], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[Household], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[Periodicals], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Alcoholic Beverages], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Alcoholic Beverages], [Education Level].[High School Degree]}
+{[Product].[Drink].[Alcoholic Beverages], [Education Level].[Partial College]}
+{[Product].[Drink].[Alcoholic Beverages], [Education Level].[Partial High School]}
+{[Product].[Drink].[Beverages], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Beverages], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Beverages], [Education Level].[High School Degree]}
+{[Product].[Drink].[Beverages], [Education Level].[Partial College]}
+{[Product].[Drink].[Beverages], [Education Level].[Partial High School]}
+{[Product].[Drink].[Dairy], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Dairy], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Dairy], [Education Level].[High School Degree]}
+{[Product].[Drink].[Dairy], [Education Level].[Partial College]}
+{[Product].[Drink].[Dairy], [Education Level].[Partial High School]}
+{[Product].[Food].[Baked Goods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Baked Goods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Baked Goods], [Education Level].[High School Degree]}
+{[Product].[Food].[Baked Goods], [Education Level].[Partial College]}
+{[Product].[Food].[Baked Goods], [Education Level].[Partial High School]}
+{[Product].[Food].[Baking Goods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Baking Goods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Baking Goods], [Education Level].[High School Degree]}
+{[Product].[Food].[Baking Goods], [Education Level].[Partial College]}
+{[Product].[Food].[Baking Goods], [Education Level].[Partial High School]}
+{[Product].[Food].[Breakfast Foods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Breakfast Foods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Breakfast Foods], [Education Level].[High School Degree]}
+{[Product].[Food].[Breakfast Foods], [Education Level].[Partial College]}
+{[Product].[Food].[Breakfast Foods], [Education Level].[Partial High School]}
+{[Product].[Food].[Canned Foods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Canned Foods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Canned Foods], [Education Level].[High School Degree]}
+{[Product].[Food].[Canned Foods], [Education Level].[Partial College]}
+{[Product].[Food].[Canned Foods], [Education Level].[Partial High School]}
+{[Product].[Food].[Canned Products], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Canned Products], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Canned Products], [Education Level].[High School Degree]}
+{[Product].[Food].[Canned Products], [Education Level].[Partial College]}
+{[Product].[Food].[Canned Products], [Education Level].[Partial High School]}
+{[Product].[Food].[Dairy], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Dairy], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Dairy], [Education Level].[High School Degree]}
+{[Product].[Food].[Dairy], [Education Level].[Partial College]}
+{[Product].[Food].[Dairy], [Education Level].[Partial High School]}
+{[Product].[Food].[Deli], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Deli], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Deli], [Education Level].[High School Degree]}
+{[Product].[Food].[Deli], [Education Level].[Partial College]}
+{[Product].[Food].[Deli], [Education Level].[Partial High School]}
+{[Product].[Food].[Eggs], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Eggs], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Eggs], [Education Level].[High School Degree]}
+{[Product].[Food].[Eggs], [Education Level].[Partial College]}
+{[Product].[Food].[Eggs], [Education Level].[Partial High School]}
+{[Product].[Food].[Frozen Foods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Frozen Foods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Frozen Foods], [Education Level].[High School Degree]}
+{[Product].[Food].[Frozen Foods], [Education Level].[Partial College]}
+{[Product].[Food].[Frozen Foods], [Education Level].[Partial High School]}
+{[Product].[Food].[Meat], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Meat], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Meat], [Education Level].[High School Degree]}
+{[Product].[Food].[Meat], [Education Level].[Partial College]}
+{[Product].[Food].[Meat], [Education Level].[Partial High School]}
+{[Product].[Food].[Produce], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Produce], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Produce], [Education Level].[High School Degree]}
+{[Product].[Food].[Produce], [Education Level].[Partial College]}
+{[Product].[Food].[Produce], [Education Level].[Partial High School]}
+{[Product].[Food].[Seafood], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Seafood], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Seafood], [Education Level].[High School Degree]}
+{[Product].[Food].[Seafood], [Education Level].[Partial College]}
+{[Product].[Food].[Seafood], [Education Level].[Partial High School]}
+{[Product].[Food].[Snack Foods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Snack Foods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Snack Foods], [Education Level].[High School Degree]}
+{[Product].[Food].[Snack Foods], [Education Level].[Partial College]}
+{[Product].[Food].[Snack Foods], [Education Level].[Partial High School]}
+{[Product].[Food].[Snacks], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Snacks], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Snacks], [Education Level].[High School Degree]}
+{[Product].[Food].[Snacks], [Education Level].[Partial College]}
+{[Product].[Food].[Snacks], [Education Level].[Partial High School]}
+{[Product].[Food].[Starchy Foods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Starchy Foods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Starchy Foods], [Education Level].[High School Degree]}
+{[Product].[Food].[Starchy Foods], [Education Level].[Partial College]}
+{[Product].[Food].[Starchy Foods], [Education Level].[Partial High School]}
+{[Product].[Non-Consumable].[Carousel], [Education Level].[Bachelors Degree]}
+{[Product].[Non-Consumable].[Carousel], [Education Level].[Graduate Degree]}
+{[Product].[Non-Consumable].[Carousel], [Education Level].[High School Degree]}
+{[Product].[Non-Consumable].[Carousel], [Education Level].[Partial College]}
+{[Product].[Non-Consumable].[Carousel], [Education Level].[Partial High School]}
+{[Product].[Non-Consumable].[Checkout], [Education Level].[Bachelors Degree]}
+{[Product].[Non-Consumable].[Checkout], [Education Level].[Graduate Degree]}
+{[Product].[Non-Consumable].[Checkout], [Education Level].[High School Degree]}
+{[Product].[Non-Consumable].[Checkout], [Education Level].[Partial College]}
+{[Product].[Non-Consumable].[Checkout], [Education Level].[Partial High School]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Education Level].[Bachelors Degree]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Education Level].[Graduate Degree]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Education Level].[High School Degree]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Education Level].[Partial College]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Education Level].[Partial High School]}
+{[Product].[Non-Consumable].[Household], [Education Level].[Bachelors Degree]}
+{[Product].[Non-Consumable].[Household], [Education Level].[Graduate Degree]}
+{[Product].[Non-Consumable].[Household], [Education Level].[High School Degree]}
+{[Product].[Non-Consumable].[Household], [Education Level].[Partial College]}
+{[Product].[Non-Consumable].[Household], [Education Level].[Partial High School]}
+{[Product].[Non-Consumable].[Periodicals], [Education Level].[Bachelors Degree]}
+{[Product].[Non-Consumable].[Periodicals], [Education Level].[Graduate Degree]}
+{[Product].[Non-Consumable].[Periodicals], [Education Level].[High School Degree]}
+{[Product].[Non-Consumable].[Periodicals], [Education Level].[Partial College]}
+{[Product].[Non-Consumable].[Periodicals], [Education Level].[Partial High School]}
+Row #0: 266,773
+Row #0: 100.00%
+Row #0: 
+Row #0: 
+Row #0: 
+Row #0: 
+Row #0: 266,773
+Row #0: 100.00%
+Row #0: 74,748
+Row #0: 28.02%
+Row #0: 67,659
+Row #0: 25.36%
+Row #0: 124,366
+Row #0: 46.62%
+Row #1: 6,838
+Row #1: 100.00%
+Row #1: 
+Row #1: 
+Row #1: 
+Row #1: 
+Row #1: 6,838
+Row #1: 100.00%
+Row #1: 1,936
+Row #1: 28.31%
+Row #1: 1,680
+Row #1: 24.57%
+Row #1: 3,222
+Row #1: 47.12%
+Row #2: 13,573
+Row #2: 100.00%
+Row #2: 
+Row #2: 
+Row #2: 
+Row #2: 
+Row #2: 13,573
+Row #2: 100.00%
+Row #2: 3,886
+Row #2: 28.63%
+Row #2: 3,385
+Row #2: 24.94%
+Row #2: 6,302
+Row #2: 46.43%
+Row #3: 4,186
+Row #3: 100.00%
+Row #3: 
+Row #3: 
+Row #3: 
+Row #3: 
+Row #3: 4,186
+Row #3: 100.00%
+Row #3: 1,280
+Row #3: 30.58%
+Row #3: 1,041
+Row #3: 24.87%
+Row #3: 1,865
+Row #3: 44.55%
+Row #4: 7,870
+Row #4: 100.00%
+Row #4: 
+Row #4: 
+Row #4: 
+Row #4: 
+Row #4: 7,870
+Row #4: 100.00%
+Row #4: 2,150
+Row #4: 27.32%
+Row #4: 2,013
+Row #4: 25.58%
+Row #4: 3,707
+Row #4: 47.10%
+Row #5: 20,245
+Row #5: 100.00%
+Row #5: 
+Row #5: 
+Row #5: 
+Row #5: 
+Row #5: 20,245
+Row #5: 100.00%
+Row #5: 5,799
+Row #5: 28.64%
+Row #5: 4,810
+Row #5: 23.76%
+Row #5: 9,636
+Row #5: 47.60%
+Row #6: 3,317
+Row #6: 100.00%
+Row #6: 
+Row #6: 
+Row #6: 
+Row #6: 
+Row #6: 3,317
+Row #6: 100.00%
+Row #6: 938
+Row #6: 28.28%
+Row #6: 862
+Row #6: 25.99%
+Row #6: 1,517
+Row #6: 45.73%
+Row #7: 19,026
+Row #7: 100.00%
+Row #7: 
+Row #7: 
+Row #7: 
+Row #7: 
+Row #7: 19,026
+Row #7: 100.00%
+Row #7: 5,268
+Row #7: 27.69%
+Row #7: 4,889
+Row #7: 25.70%
+Row #7: 8,869
+Row #7: 46.62%
+Row #8: 1,812
+Row #8: 100.00%
+Row #8: 
+Row #8: 
+Row #8: 
+Row #8: 
+Row #8: 1,812
+Row #8: 100.00%
+Row #8: 448
+Row #8: 24.72%
+Row #8: 464
+Row #8: 25.61%
+Row #8: 900
+Row #8: 49.67%
+Row #9: 12,885
+Row #9: 100.00%
+Row #9: 
+Row #9: 
+Row #9: 
+Row #9: 
+Row #9: 12,885
+Row #9: 100.00%
+Row #9: 3,534
+Row #9: 27.43%
+Row #9: 3,131
+Row #9: 24.30%
+Row #9: 6,220
+Row #9: 48.27%
+Row #10: 12,037
+Row #10: 100.00%
+Row #10: 
+Row #10: 
+Row #10: 
+Row #10: 
+Row #10: 12,037
+Row #10: 100.00%
+Row #10: 3,393
+Row #10: 28.19%
+Row #10: 3,038
+Row #10: 25.24%
+Row #10: 5,606
+Row #10: 46.57%
+Row #11: 4,132
+Row #11: 100.00%
+Row #11: 
+Row #11: 
+Row #11: 
+Row #11: 
+Row #11: 4,132
+Row #11: 100.00%
+Row #11: 1,116
+Row #11: 27.01%
+Row #11: 1,119
+Row #11: 27.08%
+Row #11: 1,897
+Row #11: 45.91%
+Row #12: 26,655
+Row #12: 100.00%
+Row #12: 
+Row #12: 
+Row #12: 
+Row #12: 
+Row #12: 26,655
+Row #12: 100.00%
+Row #12: 7,505
+Row #12: 28.16%
+Row #12: 6,575
+Row #12: 24.67%
+Row #12: 12,575
+Row #12: 47.18%
+Row #13: 1,714
+Row #13: 100.00%
+Row #13: 
+Row #13: 
+Row #13: 
+Row #13: 
+Row #13: 1,714
+Row #13: 100.00%
+Row #13: 527
+Row #13: 30.75%
+Row #13: 469
+Row #13: 27.36%
+Row #13: 718
+Row #13: 41.89%
+Row #14: 37,792
+Row #14: 100.00%
+Row #14: 
+Row #14: 
+Row #14: 
+Row #14: 
+Row #14: 37,792
+Row #14: 100.00%
+Row #14: 10,588
+Row #14: 28.02%
+Row #14: 9,744
+Row #14: 25.78%
+Row #14: 17,460
+Row #14: 46.20%
+Row #15: 1,764
+Row #15: 100.00%
+Row #15: 
+Row #15: 
+Row #15: 
+Row #15: 
+Row #15: 1,764
+Row #15: 100.00%
+Row #15: 441
+Row #15: 25.00%
+Row #15: 451
+Row #15: 25.57%
+Row #15: 872
+Row #15: 49.43%
+Row #16: 30,545
+Row #16: 100.00%
+Row #16: 
+Row #16: 
+Row #16: 
+Row #16: 
+Row #16: 30,545
+Row #16: 100.00%
+Row #16: 8,543
+Row #16: 27.97%
+Row #16: 7,789
+Row #16: 25.50%
+Row #16: 14,213
+Row #16: 46.53%
+Row #17: 6,884
+Row #17: 100.00%
+Row #17: 
+Row #17: 
+Row #17: 
+Row #17: 
+Row #17: 6,884
+Row #17: 100.00%
+Row #17: 1,958
+Row #17: 28.44%
+Row #17: 1,831
+Row #17: 26.60%
+Row #17: 3,095
+Row #17: 44.96%
+Row #18: 5,262
+Row #18: 100.00%
+Row #18: 
+Row #18: 
+Row #18: 
+Row #18: 
+Row #18: 5,262
+Row #18: 100.00%
+Row #18: 1,448
+Row #18: 27.52%
+Row #18: 1,352
+Row #18: 25.69%
+Row #18: 2,462
+Row #18: 46.79%
+Row #19: 841
+Row #19: 100.00%
+Row #19: 
+Row #19: 
+Row #19: 
+Row #19: 
+Row #19: 841
+Row #19: 100.00%
+Row #19: 223
+Row #19: 26.52%
+Row #19: 248
+Row #19: 29.49%
+Row #19: 370
+Row #19: 44.00%
+Row #20: 1,779
+Row #20: 100.00%
+Row #20: 
+Row #20: 
+Row #20: 
+Row #20: 
+Row #20: 1,779
+Row #20: 100.00%
+Row #20: 547
+Row #20: 30.75%
+Row #20: 446
+Row #20: 25.07%
+Row #20: 786
+Row #20: 44.18%
+Row #21: 16,284
+Row #21: 100.00%
+Row #21: 
+Row #21: 
+Row #21: 
+Row #21: 
+Row #21: 16,284
+Row #21: 100.00%
+Row #21: 4,387
+Row #21: 26.94%
+Row #21: 4,140
+Row #21: 25.42%
+Row #21: 7,757
+Row #21: 47.64%
+Row #22: 27,038
+Row #22: 100.00%
+Row #22: 
+Row #22: 
+Row #22: 
+Row #22: 
+Row #22: 27,038
+Row #22: 100.00%
+Row #22: 7,572
+Row #22: 28.01%
+Row #22: 7,119
+Row #22: 26.33%
+Row #22: 12,347
+Row #22: 45.67%
+Row #23: 4,294
+Row #23: 100.00%
+Row #23: 
+Row #23: 
+Row #23: 
+Row #23: 
+Row #23: 4,294
+Row #23: 100.00%
+Row #23: 1,261
+Row #23: 29.37%
+Row #23: 1,063
+Row #23: 24.76%
+Row #23: 1,970
+Row #23: 45.88%
+Row #24: 24,597
+Row #24: 100.00%
+Row #24: 
+Row #24: 
+Row #24: 
+Row #24: 
+Row #24: 24,597
+Row #24: 100.00%
+Row #24: 7,102
+Row #24: 28.87%
+Row #24: 6,106
+Row #24: 24.82%
+Row #24: 11,389
+Row #24: 46.30%
+Row #25: 191,940
+Row #25: 100.00%
+Row #25: 
+Row #25: 
+Row #25: 
+Row #25: 
+Row #25: 191,940
+Row #25: 100.00%
+Row #25: 53,656
+Row #25: 27.95%
+Row #25: 48,537
+Row #25: 25.29%
+Row #25: 89,747
+Row #25: 46.76%
+Row #26: 50,236
+Row #26: 100.00%
+Row #26: 
+Row #26: 
+Row #26: 
+Row #26: 
+Row #26: 50,236
+Row #26: 100.00%
+Row #26: 13,990
+Row #26: 27.85%
+Row #26: 13,016
+Row #26: 25.91%
+Row #26: 23,230
+Row #26: 46.24%
+Row #27: 1,763
+Row #27: 100.00%
+Row #27: 
+Row #27: 
+Row #27: 
+Row #27: 
+Row #27: 1,763
+Row #27: 100.00%
+Row #27: 472
+Row #27: 26.77%
+Row #27: 405
+Row #27: 22.97%
+Row #27: 886
+Row #27: 50.26%
+Row #28: 352
+Row #28: 100.00%
+Row #28: 
+Row #28: 
+Row #28: 
+Row #28: 
+Row #28: 352
+Row #28: 100.00%
+Row #28: 99
+Row #28: 28.13%
+Row #28: 88
+Row #28: 25.00%
+Row #28: 165
+Row #28: 46.88%
+Row #29: 2,079
+Row #29: 100.00%
+Row #29: 
+Row #29: 
+Row #29: 
+Row #29: 
+Row #29: 2,079
+Row #29: 100.00%
+Row #29: 601
+Row #29: 28.91%
+Row #29: 510
+Row #29: 24.53%
+Row #29: 968
+Row #29: 46.56%
+Row #30: 574
+Row #30: 100.00%
+Row #30: 
+Row #30: 
+Row #30: 
+Row #30: 
+Row #30: 574
+Row #30: 100.00%
+Row #30: 156
+Row #30: 27.18%
+Row #30: 161
+Row #30: 28.05%
+Row #30: 257
+Row #30: 44.77%
+Row #31: 2,070
+Row #31: 100.00%
+Row #31: 
+Row #31: 
+Row #31: 
+Row #31: 
+Row #31: 2,070
+Row #31: 100.00%
+Row #31: 608
+Row #31: 29.37%
+Row #31: 516
+Row #31: 24.93%
+Row #31: 946
+Row #31: 45.70%
+Row #32: 3,591
+Row #32: 100.00%
+Row #32: 
+Row #32: 
+Row #32: 
+Row #32: 
+Row #32: 3,591
+Row #32: 100.00%
+Row #32: 1,002
+Row #32: 27.90%
+Row #32: 849
+Row #32: 23.64%
+Row #32: 1,740
+Row #32: 48.45%
+Row #33: 730
+Row #33: 100.00%
+Row #33: 
+Row #33: 
+Row #33: 
+Row #33: 
+Row #33: 730
+Row #33: 100.00%
+Row #33: 249
+Row #33: 34.11%
+Row #33: 163
+Row #33: 22.33%
+Row #33: 318
+Row #33: 43.56%
+Row #34: 3,925
+Row #34: 100.00%
+Row #34: 
+Row #34: 
+Row #34: 
+Row #34: 
+Row #34: 3,925
+Row #34: 100.00%
+Row #34: 1,047
+Row #34: 26.68%
+Row #34: 1,038
+Row #34: 26.45%
+Row #34: 1,840
+Row #34: 46.88%
+Row #35: 1,212
+Row #35: 100.00%
+Row #35: 
+Row #35: 
+Row #35: 
+Row #35: 
+Row #35: 1,212
+Row #35: 100.00%
+Row #35: 355
+Row #35: 29.29%
+Row #35: 266
+Row #35: 21.95%
+Row #35: 591
+Row #35: 48.76%
+Row #36: 4,115
+Row #36: 100.00%
+Row #36: 
+Row #36: 
+Row #36: 
+Row #36: 
+Row #36: 4,115
+Row #36: 100.00%
+Row #36: 1,233
+Row #36: 29.96%
+Row #36: 1,069
+Row #36: 25.98%
+Row #36: 1,813
+Row #36: 44.06%
+Row #37: 1,069
+Row #37: 100.00%
+Row #37: 
+Row #37: 
+Row #37: 
+Row #37: 
+Row #37: 1,069
+Row #37: 100.00%
+Row #37: 306
+Row #37: 28.62%
+Row #37: 258
+Row #37: 24.13%
+Row #37: 505
+Row #37: 47.24%
+Row #38: 243
+Row #38: 100.00%
+Row #38: 
+Row #38: 
+Row #38: 
+Row #38: 
+Row #38: 243
+Row #38: 100.00%
+Row #38: 52
+Row #38: 21.40%
+Row #38: 70
+Row #38: 28.81%
+Row #38: 121
+Row #38: 49.79%
+Row #39: 1,222
+Row #39: 100.00%
+Row #39: 
+Row #39: 
+Row #39: 
+Row #39: 
+Row #39: 1,222
+Row #39: 100.00%
+Row #39: 400
+Row #39: 32.73%
+Row #39: 280
+Row #39: 22.91%
+Row #39: 542
+Row #39: 44.35%
+Row #40: 378
+Row #40: 100.00%
+Row #40: 
+Row #40: 
+Row #40: 
+Row #40: 
+Row #40: 378
+Row #40: 100.00%
+Row #40: 112
+Row #40: 29.63%
+Row #40: 103
+Row #40: 27.25%
+Row #40: 163
+Row #40: 43.12%
+Row #41: 1,274
+Row #41: 100.00%
+Row #41: 
+Row #41: 
+Row #41: 
+Row #41: 
+Row #41: 1,274
+Row #41: 100.00%
+Row #41: 410
+Row #41: 32.18%
+Row #41: 330
+Row #41: 25.90%
+Row #41: 534
+Row #41: 41.92%
+Row #42: 1,933
+Row #42: 100.00%
+Row #42: 
+Row #42: 
+Row #42: 
+Row #42: 
+Row #42: 1,933
+Row #42: 100.00%
+Row #42: 584
+Row #42: 30.21%
+Row #42: 398
+Row #42: 20.59%
+Row #42: 951
+Row #42: 49.20%
+Row #43: 500
+Row #43: 100.00%
+Row #43: 
+Row #43: 
+Row #43: 
+Row #43: 
+Row #43: 500
+Row #43: 100.00%
+Row #43: 99
+Row #43: 19.80%
+Row #43: 143
+Row #43: 28.60%
+Row #43: 258
+Row #43: 51.60%
+Row #44: 2,348
+Row #44: 100.00%
+Row #44: 
+Row #44: 
+Row #44: 
+Row #44: 
+Row #44: 2,348
+Row #44: 100.00%
+Row #44: 635
+Row #44: 27.04%
+Row #44: 687
+Row #44: 29.26%
+Row #44: 1,026
+Row #44: 43.70%
+Row #45: 809
+Row #45: 100.00%
+Row #45: 
+Row #45: 
+Row #45: 
+Row #45: 
+Row #45: 809
+Row #45: 100.00%
+Row #45: 203
+Row #45: 25.09%
+Row #45: 211
+Row #45: 26.08%
+Row #45: 395
+Row #45: 48.83%
+Row #46: 2,280
+Row #46: 100.00%
+Row #46: 
+Row #46: 
+Row #46: 
+Row #46: 
+Row #46: 2,280
+Row #46: 100.00%
+Row #46: 629
+Row #46: 27.59%
+Row #46: 574
+Row #46: 25.18%
+Row #46: 1,077
+Row #46: 47.24%
+Row #47: 5,456
+Row #47: 100.00%
+Row #47: 
+Row #47: 
+Row #47: 
+Row #47: 
+Row #47: 5,456
+Row #47: 100.00%
+Row #47: 1,640
+Row #47: 30.06%
+Row #47: 1,168
+Row #47: 21.41%
+Row #47: 2,648
+Row #47: 48.53%
+Row #48: 1,278
+Row #48: 100.00%
+Row #48: 
+Row #48: 
+Row #48: 
+Row #48: 
+Row #48: 1,278
+Row #48: 100.00%
+Row #48: 313
+Row #48: 24.49%
+Row #48: 363
+Row #48: 28.40%
+Row #48: 602
+Row #48: 47.10%
+Row #49: 5,839
+Row #49: 100.00%
+Row #49: 
+Row #49: 
+Row #49: 
+Row #49: 
+Row #49: 5,839
+Row #49: 100.00%
+Row #49: 1,610
+Row #49: 27.57%
+Row #49: 1,416
+Row #49: 24.25%
+Row #49: 2,813
+Row #49: 48.18%
+Row #50: 2,009
+Row #50: 100.00%
+Row #50: 
+Row #50: 
+Row #50: 
+Row #50: 
+Row #50: 2,009
+Row #50: 100.00%
+Row #50: 538
+Row #50: 26.78%
+Row #50: 530
+Row #50: 26.38%
+Row #50: 941
+Row #50: 46.84%
+Row #51: 5,663
+Row #51: 100.00%
+Row #51: 
+Row #51: 
+Row #51: 
+Row #51: 
+Row #51: 5,663
+Row #51: 100.00%
+Row #51: 1,698
+Row #51: 29.98%
+Row #51: 1,333
+Row #51: 23.54%
+Row #51: 2,632
+Row #51: 46.48%
+Row #52: 885
+Row #52: 100.00%
+Row #52: 
+Row #52: 
+Row #52: 
+Row #52: 
+Row #52: 885
+Row #52: 100.00%
+Row #52: 258
+Row #52: 29.15%
+Row #52: 188
+Row #52: 21.24%
+Row #52: 439
+Row #52: 49.60%
+Row #53: 144
+Row #53: 100.00%
+Row #53: 
+Row #53: 
+Row #53: 
+Row #53: 
+Row #53: 144
+Row #53: 100.00%
+Row #53: 36
+Row #53: 25.00%
+Row #53: 48
+Row #53: 33.33%
+Row #53: 60
+Row #53: 41.67%
+Row #54: 1,060
+Row #54: 100.00%
+Row #54: 
+Row #54: 
+Row #54: 
+Row #54: 
+Row #54: 1,060
+Row #54: 100.00%
+Row #54: 294
+Row #54: 27.74%
+Row #54: 309
+Row #54: 29.15%
+Row #54: 457
+Row #54: 43.11%
+Row #55: 279
+Row #55: 100.00%
+Row #55: 
+Row #55: 
+Row #55: 
+Row #55: 
+Row #55: 279
+Row #55: 100.00%
+Row #55: 78
+Row #55: 27.96%
+Row #55: 46
+Row #55: 16.49%
+Row #55: 155
+Row #55: 55.56%
+Row #56: 949
+Row #56: 100.00%
+Row #56: 
+Row #56: 
+Row #56: 
+Row #56: 
+Row #56: 949
+Row #56: 100.00%
+Row #56: 272
+Row #56: 28.66%
+Row #56: 271
+Row #56: 28.56%
+Row #56: 406
+Row #56: 42.78%
+Row #57: 4,914
+Row #57: 100.00%
+Row #57: 
+Row #57: 
+Row #57: 
+Row #57: 
+Row #57: 4,914
+Row #57: 100.00%
+Row #57: 1,414
+Row #57: 28.77%
+Row #57: 1,093
+Row #57: 22.24%
+Row #57: 2,407
+Row #57: 48.98%
+Row #58: 1,202
+Row #58: 100.00%
+Row #58: 
+Row #58: 
+Row #58: 
+Row #58: 
+Row #58: 1,202
+Row #58: 100.00%
+Row #58: 318
+Row #58: 26.46%
+Row #58: 389
+Row #58: 32.36%
+Row #58: 495
+Row #58: 41.18%
+Row #59: 5,460
+Row #59: 100.00%
+Row #59: 
+Row #59: 
+Row #59: 
+Row #59: 
+Row #59: 5,460
+Row #59: 100.00%
+Row #59: 1,425
+Row #59: 26.10%
+Row #59: 1,444
+Row #59: 26.45%
+Row #59: 2,591
+Row #59: 47.45%
+Row #60: 1,745
+Row #60: 100.00%
+Row #60: 
+Row #60: 
+Row #60: 
+Row #60: 
+Row #60: 1,745
+Row #60: 100.00%
+Row #60: 489
+Row #60: 28.02%
+Row #60: 444
+Row #60: 25.44%
+Row #60: 812
+Row #60: 46.53%
+Row #61: 5,705
+Row #61: 100.00%
+Row #61: 
+Row #61: 
+Row #61: 
+Row #61: 
+Row #61: 5,705
+Row #61: 100.00%
+Row #61: 1,622
+Row #61: 28.43%
+Row #61: 1,519
+Row #61: 26.63%
+Row #61: 2,564
+Row #61: 44.94%
+Row #62: 502
+Row #62: 100.00%
+Row #62: 
+Row #62: 
+Row #62: 
+Row #62: 
+Row #62: 502
+Row #62: 100.00%
+Row #62: 139
+Row #62: 27.69%
+Row #62: 105
+Row #62: 20.92%
+Row #62: 258
+Row #62: 51.39%
+Row #63: 114
+Row #63: 100.00%
+Row #63: 
+Row #63: 
+Row #63: 
+Row #63: 
+Row #63: 114
+Row #63: 100.00%
+Row #63: 50
+Row #63: 43.86%
+Row #63: 15
+Row #63: 13.16%
+Row #63: 49
+Row #63: 42.98%
+Row #64: 582
+Row #64: 100.00%
+Row #64: 
+Row #64: 
+Row #64: 
+Row #64: 
+Row #64: 582
+Row #64: 100.00%
+Row #64: 126
+Row #64: 21.65%
+Row #64: 146
+Row #64: 25.09%
+Row #64: 310
+Row #64: 53.26%
+Row #65: 128
+Row #65: 100.00%
+Row #65: 
+Row #65: 
+Row #65: 
+Row #65: 
+Row #65: 128
+Row #65: 100.00%
+Row #65: 32
+Row #65: 25.00%
+Row #65: 35
+Row #65: 27.34%
+Row #65: 61
+Row #65: 47.66%
+Row #66: 486
+Row #66: 100.00%
+Row #66: 
+Row #66: 
+Row #66: 
+Row #66: 
+Row #66: 486
+Row #66: 100.00%
+Row #66: 101
+Row #66: 20.78%
+Row #66: 163
+Row #66: 33.54%
+Row #66: 222
+Row #66: 45.68%
+Row #67: 3,195
+Row #67: 100.00%
+Row #67: 
+Row #67: 
+Row #67: 
+Row #67: 
+Row #67: 3,195
+Row #67: 100.00%
+Row #67: 802
+Row #67: 25.10%
+Row #67: 697
+Row #67: 21.82%
+Row #67: 1,696
+Row #67: 53.08%
+Row #68: 822
+Row #68: 100.00%
+Row #68: 
+Row #68: 
+Row #68: 
+Row #68: 
+Row #68: 822
+Row #68: 100.00%
+Row #68: 248
+Row #68: 30.17%
+Row #68: 196
+Row #68: 23.84%
+Row #68: 378
+Row #68: 45.99%
+Row #69: 3,811
+Row #69: 100.00%
+Row #69: 
+Row #69: 
+Row #69: 
+Row #69: 
+Row #69: 3,811
+Row #69: 100.00%
+Row #69: 1,017
+Row #69: 26.69%
+Row #69: 972
+Row #69: 25.51%
+Row #69: 1,822
+Row #69: 47.81%
+Row #70: 1,223
+Row #70: 100.00%
+Row #70: 
+Row #70: 
+Row #70: 
+Row #70: 
+Row #70: 1,223
+Row #70: 100.00%
+Row #70: 377
+Row #70: 30.83%
+Row #70: 285
+Row #70: 23.30%
+Row #70: 561
+Row #70: 45.87%
+Row #71: 3,834
+Row #71: 100.00%
+Row #71: 
+Row #71: 
+Row #71: 
+Row #71: 
+Row #71: 3,834
+Row #71: 100.00%
+Row #71: 1,090
+Row #71: 28.43%
+Row #71: 981
+Row #71: 25.59%
+Row #71: 1,763
+Row #71: 45.98%
+Row #72: 2,861
+Row #72: 100.00%
+Row #72: 
+Row #72: 
+Row #72: 
+Row #72: 
+Row #72: 2,861
+Row #72: 100.00%
+Row #72: 845
+Row #72: 29.54%
+Row #72: 688
+Row #72: 24.05%
+Row #72: 1,328
+Row #72: 46.42%
+Row #73: 685
+Row #73: 100.00%
+Row #73: 
+Row #73: 
+Row #73: 
+Row #73: 
+Row #73: 685
+Row #73: 100.00%
+Row #73: 187
+Row #73: 27.30%
+Row #73: 184
+Row #73: 26.86%
+Row #73: 314
+Row #73: 45.84%
+Row #74: 3,609
+Row #74: 100.00%
+Row #74: 
+Row #74: 
+Row #74: 
+Row #74: 
+Row #74: 3,609
+Row #74: 100.00%
+Row #74: 947
+Row #74: 26.24%
+Row #74: 958
+Row #74: 26.54%
+Row #74: 1,704
+Row #74: 47.22%
+Row #75: 1,174
+Row #75: 100.00%
+Row #75: 
+Row #75: 
+Row #75: 
+Row #75: 
+Row #75: 1,174
+Row #75: 100.00%
+Row #75: 328
+Row #75: 27.94%
+Row #75: 258
+Row #75: 21.98%
+Row #75: 588
+Row #75: 50.09%
+Row #76: 3,708
+Row #76: 100.00%
+Row #76: 
+Row #76: 
+Row #76: 
+Row #76: 
+Row #76: 3,708
+Row #76: 100.00%
+Row #76: 1,086
+Row #76: 29.29%
+Row #76: 950
+Row #76: 25.62%
+Row #76: 1,672
+Row #76: 45.09%
+Row #77: 1,068
+Row #77: 100.00%
+Row #77: 
+Row #77: 
+Row #77: 
+Row #77: 
+Row #77: 1,068
+Row #77: 100.00%
+Row #77: 302
+Row #77: 28.28%
+Row #77: 271
+Row #77: 25.37%
+Row #77: 495
+Row #77: 46.35%
+Row #78: 247
+Row #78: 100.00%
+Row #78: 
+Row #78: 
+Row #78: 
+Row #78: 
+Row #78: 247
+Row #78: 100.00%
+Row #78: 52
+Row #78: 21.05%
+Row #78: 65
+Row #78: 26.32%
+Row #78: 130
+Row #78: 52.63%
+Row #79: 1,232
+Row #79: 100.00%
+Row #79: 
+Row #79: 
+Row #79: 
+Row #79: 
+Row #79: 1,232
+Row #79: 100.00%
+Row #79: 327
+Row #79: 26.54%
+Row #79: 373
+Row #79: 30.28%
+Row #79: 532
+Row #79: 43.18%
+Row #80: 358
+Row #80: 100.00%
+Row #80: 
+Row #80: 
+Row #80: 
+Row #80: 
+Row #80: 358
+Row #80: 100.00%
+Row #80: 90
+Row #80: 25.14%
+Row #80: 85
+Row #80: 23.74%
+Row #80: 183
+Row #80: 51.12%
+Row #81: 1,227
+Row #81: 100.00%
+Row #81: 
+Row #81: 
+Row #81: 
+Row #81: 
+Row #81: 1,227
+Row #81: 100.00%
+Row #81: 345
+Row #81: 28.12%
+Row #81: 325
+Row #81: 26.49%
+Row #81: 557
+Row #81: 45.40%
+Row #82: 6,937
+Row #82: 100.00%
+Row #82: 
+Row #82: 
+Row #82: 
+Row #82: 
+Row #82: 6,937
+Row #82: 100.00%
+Row #82: 2,112
+Row #82: 30.45%
+Row #82: 1,551
+Row #82: 22.36%
+Row #82: 3,274
+Row #82: 47.20%
+Row #83: 1,540
+Row #83: 100.00%
+Row #83: 
+Row #83: 
+Row #83: 
+Row #83: 
+Row #83: 1,540
+Row #83: 100.00%
+Row #83: 459
+Row #83: 29.81%
+Row #83: 404
+Row #83: 26.23%
+Row #83: 677
+Row #83: 43.96%
+Row #84: 7,965
+Row #84: 100.00%
+Row #84: 
+Row #84: 
+Row #84: 
+Row #84: 
+Row #84: 7,965
+Row #84: 100.00%
+Row #84: 2,113
+Row #84: 26.53%
+Row #84: 2,070
+Row #84: 25.99%
+Row #84: 3,782
+Row #84: 47.48%
+Row #85: 2,372
+Row #85: 100.00%
+Row #85: 
+Row #85: 
+Row #85: 
+Row #85: 
+Row #85: 2,372
+Row #85: 100.00%
+Row #85: 647
+Row #85: 27.28%
+Row #85: 593
+Row #85: 25.00%
+Row #85: 1,132
+Row #85: 47.72%
+Row #86: 7,841
+Row #86: 100.00%
+Row #86: 
+Row #86: 
+Row #86: 
+Row #86: 
+Row #86: 7,841
+Row #86: 100.00%
+Row #86: 2,174
+Row #86: 27.73%
+Row #86: 1,957
+Row #86: 24.96%
+Row #86: 3,710
+Row #86: 47.32%
+Row #87: 456
+Row #87: 100.00%
+Row #87: 
+Row #87: 
+Row #87: 
+Row #87: 
+Row #87: 456
+Row #87: 100.00%
+Row #87: 166
+Row #87: 36.40%
+Row #87: 118
+Row #87: 25.88%
+Row #87: 172
+Row #87: 37.72%
+Row #88: 101
+Row #88: 100.00%
+Row #88: 
+Row #88: 
+Row #88: 
+Row #88: 
+Row #88: 101
+Row #88: 100.00%
+Row #88: 25
+Row #88: 24.75%
+Row #88: 31
+Row #88: 30.69%
+Row #88: 45
+Row #88: 44.55%
+Row #89: 501
+Row #89: 100.00%
+Row #89: 
+Row #89: 
+Row #89: 
+Row #89: 
+Row #89: 501
+Row #89: 100.00%
+Row #89: 144
+Row #89: 28.74%
+Row #89: 125
+Row #89: 24.95%
+Row #89: 232
+Row #89: 46.31%
+Row #90: 140
+Row #90: 100.00%
+Row #90: 
+Row #90: 
+Row #90: 
+Row #90: 
+Row #90: 140
+Row #90: 100.00%
+Row #90: 38
+Row #90: 27.14%
+Row #90: 56
+Row #90: 40.00%
+Row #90: 46
+Row #90: 32.86%
+Row #91: 516
+Row #91: 100.00%
+Row #91: 
+Row #91: 
+Row #91: 
+Row #91: 
+Row #91: 516
+Row #91: 100.00%
+Row #91: 154
+Row #91: 29.84%
+Row #91: 139
+Row #91: 26.94%
+Row #91: 223
+Row #91: 43.22%
+Row #92: 9,640
+Row #92: 100.00%
+Row #92: 
+Row #92: 
+Row #92: 
+Row #92: 
+Row #92: 9,640
+Row #92: 100.00%
+Row #92: 2,864
+Row #92: 29.71%
+Row #92: 2,319
+Row #92: 24.06%
+Row #92: 4,457
+Row #92: 46.23%
+Row #93: 2,158
+Row #93: 100.00%
+Row #93: 
+Row #93: 
+Row #93: 
+Row #93: 
+Row #93: 2,158
+Row #93: 100.00%
+Row #93: 551
+Row #93: 25.53%
+Row #93: 654
+Row #93: 30.31%
+Row #93: 953
+Row #93: 44.16%
+Row #94: 10,916
+Row #94: 100.00%
+Row #94: 
+Row #94: 
+Row #94: 
+Row #94: 
+Row #94: 10,916
+Row #94: 100.00%
+Row #94: 2,858
+Row #94: 26.18%
+Row #94: 2,946
+Row #94: 26.99%
+Row #94: 5,112
+Row #94: 46.83%
+Row #95: 3,518
+Row #95: 100.00%
+Row #95: 
+Row #95: 
+Row #95: 
+Row #95: 
+Row #95: 3,518
+Row #95: 100.00%
+Row #95: 1,055
+Row #95: 29.99%
+Row #95: 862
+Row #95: 24.50%
+Row #95: 1,601
+Row #95: 45.51%
+Row #96: 11,560
+Row #96: 100.00%
+Row #96: 
+Row #96: 
+Row #96: 
+Row #96: 
+Row #96: 11,560
+Row #96: 100.00%
+Row #96: 3,260
+Row #96: 28.20%
+Row #96: 2,963
+Row #96: 25.63%
+Row #96: 5,337
+Row #96: 46.17%
+Row #97: 430
+Row #97: 100.00%
+Row #97: 
+Row #97: 
+Row #97: 
+Row #97: 
+Row #97: 430
+Row #97: 100.00%
+Row #97: 118
+Row #97: 27.44%
+Row #97: 94
+Row #97: 21.86%
+Row #97: 218
+Row #97: 50.70%
+Row #98: 101
+Row #98: 100.00%
+Row #98: 
+Row #98: 
+Row #98: 
+Row #98: 
+Row #98: 101
+Row #98: 100.00%
+Row #98: 30
+Row #98: 29.70%
+Row #98: 30
+Row #98: 29.70%
+Row #98: 41
+Row #98: 40.59%
+Row #99: 549
+Row #99: 100.00%
+Row #99: 
+Row #99: 
+Row #99: 
+Row #99: 
+Row #99: 549
+Row #99: 100.00%
+Row #99: 114
+Row #99: 20.77%
+Row #99: 176
+Row #99: 32.06%
+Row #99: 259
+Row #99: 47.18%
+Row #100: 174
+Row #100: 100.00%
+Row #100: 
+Row #100: 
+Row #100: 
+Row #100: 
+Row #100: 174
+Row #100: 100.00%
+Row #100: 37
+Row #100: 21.26%
+Row #100: 56
+Row #100: 32.18%
+Row #100: 81
+Row #100: 46.55%
+Row #101: 510
+Row #101: 100.00%
+Row #101: 
+Row #101: 
+Row #101: 
+Row #101: 
+Row #101: 510
+Row #101: 100.00%
+Row #101: 142
+Row #101: 27.84%
+Row #101: 95
+Row #101: 18.63%
+Row #101: 273
+Row #101: 53.53%
+Row #102: 7,898
+Row #102: 100.00%
+Row #102: 
+Row #102: 
+Row #102: 
+Row #102: 
+Row #102: 7,898
+Row #102: 100.00%
+Row #102: 2,219
+Row #102: 28.10%
+Row #102: 1,722
+Row #102: 21.80%
+Row #102: 3,957
+Row #102: 50.10%
+Row #103: 1,700
+Row #103: 100.00%
+Row #103: 
+Row #103: 
+Row #103: 
+Row #103: 
+Row #103: 1,700
+Row #103: 100.00%
+Row #103: 438
+Row #103: 25.76%
+Row #103: 507
+Row #103: 29.82%
+Row #103: 755
+Row #103: 44.41%
+Row #104: 9,135
+Row #104: 100.00%
+Row #104: 
+Row #104: 
+Row #104: 
+Row #104: 
+Row #104: 9,135
+Row #104: 100.00%
+Row #104: 2,483
+Row #104: 27.18%
+Row #104: 2,440
+Row #104: 26.71%
+Row #104: 4,212
+Row #104: 46.11%
+Row #105: 2,863
+Row #105: 100.00%
+Row #105: 
+Row #105: 
+Row #105: 
+Row #105: 
+Row #105: 2,863
+Row #105: 100.00%
+Row #105: 827
+Row #105: 28.89%
+Row #105: 763
+Row #105: 26.65%
+Row #105: 1,273
+Row #105: 44.46%
+Row #106: 8,949
+Row #106: 100.00%
+Row #106: 
+Row #106: 
+Row #106: 
+Row #106: 
+Row #106: 8,949
+Row #106: 100.00%
+Row #106: 2,576
+Row #106: 28.79%
+Row #106: 2,357
+Row #106: 26.34%
+Row #106: 4,016
+Row #106: 44.88%
+Row #107: 1,799
+Row #107: 100.00%
+Row #107: 
+Row #107: 
+Row #107: 
+Row #107: 
+Row #107: 1,799
+Row #107: 100.00%
+Row #107: 516
+Row #107: 28.68%
+Row #107: 444
+Row #107: 24.68%
+Row #107: 839
+Row #107: 46.64%
+Row #108: 378
+Row #108: 100.00%
+Row #108: 
+Row #108: 
+Row #108: 
+Row #108: 
+Row #108: 378
+Row #108: 100.00%
+Row #108: 99
+Row #108: 26.19%
+Row #108: 127
+Row #108: 33.60%
+Row #108: 152
+Row #108: 40.21%
+Row #109: 2,007
+Row #109: 100.00%
+Row #109: 
+Row #109: 
+Row #109: 
+Row #109: 
+Row #109: 2,007
+Row #109: 100.00%
+Row #109: 569
+Row #109: 28.35%
+Row #109: 457
+Row #109: 22.77%
+Row #109: 981
+Row #109: 48.88%
+Row #110: 607
+Row #110: 100.00%
+Row #110: 
+Row #110: 
+Row #110: 
+Row #110: 
+Row #110: 607
+Row #110: 100.00%
+Row #110: 176
+Row #110: 29.00%
+Row #110: 193
+Row #110: 31.80%
+Row #110: 238
+Row #110: 39.21%
+Row #111: 2,093
+Row #111: 100.00%
+Row #111: 
+Row #111: 
+Row #111: 
+Row #111: 
+Row #111: 2,093
+Row #111: 100.00%
+Row #111: 598
+Row #111: 28.57%
+Row #111: 610
+Row #111: 29.14%
+Row #111: 885
+Row #111: 42.28%
+Row #112: 1,391
+Row #112: 100.00%
+Row #112: 
+Row #112: 
+Row #112: 
+Row #112: 
+Row #112: 1,391
+Row #112: 100.00%
+Row #112: 377
+Row #112: 27.10%
+Row #112: 354
+Row #112: 25.45%
+Row #112: 660
+Row #112: 47.45%
+Row #113: 285
+Row #113: 100.00%
+Row #113: 
+Row #113: 
+Row #113: 
+Row #113: 
+Row #113: 285
+Row #113: 100.00%
+Row #113: 75
+Row #113: 26.32%
+Row #113: 85
+Row #113: 29.82%
+Row #113: 125
+Row #113: 43.86%
+Row #114: 1,495
+Row #114: 100.00%
+Row #114: 
+Row #114: 
+Row #114: 
+Row #114: 
+Row #114: 1,495
+Row #114: 100.00%
+Row #114: 413
+Row #114: 27.63%
+Row #114: 377
+Row #114: 25.22%
+Row #114: 705
+Row #114: 47.16%
+Row #115: 460
+Row #115: 100.00%
+Row #115: 
+Row #115: 
+Row #115: 
+Row #115: 
+Row #115: 460
+Row #115: 100.00%
+Row #115: 122
+Row #115: 26.52%
+Row #115: 92
+Row #115: 20.00%
+Row #115: 246
+Row #115: 53.48%
+Row #116: 1,631
+Row #116: 100.00%
+Row #116: 
+Row #116: 
+Row #116: 
+Row #116: 
+Row #116: 1,631
+Row #116: 100.00%
+Row #116: 461
+Row #116: 28.26%
+Row #116: 444
+Row #116: 27.22%
+Row #116: 726
+Row #116: 44.51%
+Row #117: 215
+Row #117: 100.00%
+Row #117: 
+Row #117: 
+Row #117: 
+Row #117: 
+Row #117: 215
+Row #117: 100.00%
+Row #117: 64
+Row #117: 29.77%
+Row #117: 51
+Row #117: 23.72%
+Row #117: 100
+Row #117: 46.51%
+Row #118: 53
+Row #118: 100.00%
+Row #118: 
+Row #118: 
+Row #118: 
+Row #118: 
+Row #118: 53
+Row #118: 100.00%
+Row #118: 8
+Row #118: 15.09%
+Row #118: 18
+Row #118: 33.96%
+Row #118: 27
+Row #118: 50.94%
+Row #119: 283
+Row #119: 100.00%
+Row #119: 
+Row #119: 
+Row #119: 
+Row #119: 
+Row #119: 283
+Row #119: 100.00%
+Row #119: 73
+Row #119: 25.80%
+Row #119: 91
+Row #119: 32.16%
+Row #119: 119
+Row #119: 42.05%
+Row #120: 68
+Row #120: 100.00%
+Row #120: 
+Row #120: 
+Row #120: 
+Row #120: 
+Row #120: 68
+Row #120: 100.00%
+Row #120: 16
+Row #120: 23.53%
+Row #120: 11
+Row #120: 16.18%
+Row #120: 41
+Row #120: 60.29%
+Row #121: 222
+Row #121: 100.00%
+Row #121: 
+Row #121: 
+Row #121: 
+Row #121: 
+Row #121: 222
+Row #121: 100.00%
+Row #121: 62
+Row #121: 27.93%
+Row #121: 77
+Row #121: 34.68%
+Row #121: 83
+Row #121: 37.39%
+Row #122: 505
+Row #122: 100.00%
+Row #122: 
+Row #122: 
+Row #122: 
+Row #122: 
+Row #122: 505
+Row #122: 100.00%
+Row #122: 138
+Row #122: 27.33%
+Row #122: 141
+Row #122: 27.92%
+Row #122: 226
+Row #122: 44.75%
+Row #123: 80
+Row #123: 100.00%
+Row #123: 
+Row #123: 
+Row #123: 
+Row #123: 
+Row #123: 80
+Row #123: 100.00%
+Row #123: 30
+Row #123: 37.50%
+Row #123: 21
+Row #123: 26.25%
+Row #123: 29
+Row #123: 36.25%
+Row #124: 473
+Row #124: 100.00%
+Row #124: 
+Row #124: 
+Row #124: 
+Row #124: 
+Row #124: 473
+Row #124: 100.00%
+Row #124: 142
+Row #124: 30.02%
+Row #124: 90
+Row #124: 19.03%
+Row #124: 241
+Row #124: 50.95%
+Row #125: 141
+Row #125: 100.00%
+Row #125: 
+Row #125: 
+Row #125: 
+Row #125: 
+Row #125: 141
+Row #125: 100.00%
+Row #125: 39
+Row #125: 27.66%
+Row #125: 35
+Row #125: 24.82%
+Row #125: 67
+Row #125: 47.52%
+Row #126: 580
+Row #126: 100.00%
+Row #126: 
+Row #126: 
+Row #126: 
+Row #126: 
+Row #126: 580
+Row #126: 100.00%
+Row #126: 198
+Row #126: 34.14%
+Row #126: 159
+Row #126: 27.41%
+Row #126: 223
+Row #126: 38.45%
+Row #127: 4,176
+Row #127: 100.00%
+Row #127: 
+Row #127: 
+Row #127: 
+Row #127: 
+Row #127: 4,176
+Row #127: 100.00%
+Row #127: 1,168
+Row #127: 27.97%
+Row #127: 941
+Row #127: 22.53%
+Row #127: 2,067
+Row #127: 49.50%
+Row #128: 995
+Row #128: 100.00%
+Row #128: 
+Row #128: 
+Row #128: 
+Row #128: 
+Row #128: 995
+Row #128: 100.00%
+Row #128: 248
+Row #128: 24.92%
+Row #128: 240
+Row #128: 24.12%
+Row #128: 507
+Row #128: 50.95%
+Row #129: 4,609
+Row #129: 100.00%
+Row #129: 
+Row #129: 
+Row #129: 
+Row #129: 
+Row #129: 4,609
+Row #129: 100.00%
+Row #129: 1,195
+Row #129: 25.93%
+Row #129: 1,210
+Row #129: 26.25%
+Row #129: 2,204
+Row #129: 47.82%
+Row #130: 1,580
+Row #130: 100.00%
+Row #130: 
+Row #130: 
+Row #130: 
+Row #130: 
+Row #130: 1,580
+Row #130: 100.00%
+Row #130: 381
+Row #130: 24.11%
+Row #130: 453
+Row #130: 28.67%
+Row #130: 746
+Row #130: 47.22%
+Row #131: 4,924
+Row #131: 100.00%
+Row #131: 
+Row #131: 
+Row #131: 
+Row #131: 
+Row #131: 4,924
+Row #131: 100.00%
+Row #131: 1,395
+Row #131: 28.33%
+Row #131: 1,296
+Row #131: 26.32%
+Row #131: 2,233
+Row #131: 45.35%
+Row #132: 7,060
+Row #132: 100.00%
+Row #132: 
+Row #132: 
+Row #132: 
+Row #132: 
+Row #132: 7,060
+Row #132: 100.00%
+Row #132: 2,021
+Row #132: 28.63%
+Row #132: 1,660
+Row #132: 23.51%
+Row #132: 3,379
+Row #132: 47.86%
+Row #133: 1,607
+Row #133: 100.00%
+Row #133: 
+Row #133: 
+Row #133: 
+Row #133: 
+Row #133: 1,607
+Row #133: 100.00%
+Row #133: 433
+Row #133: 26.94%
+Row #133: 425
+Row #133: 26.45%
+Row #133: 749
+Row #133: 46.61%
+Row #134: 8,178
+Row #134: 100.00%
+Row #134: 
+Row #134: 
+Row #134: 
+Row #134: 
+Row #134: 8,178
+Row #134: 100.00%
+Row #134: 2,201
+Row #134: 26.91%
+Row #134: 2,207
+Row #134: 26.99%
+Row #134: 3,770
+Row #134: 46.10%
+Row #135: 2,417
+Row #135: 100.00%
+Row #135: 
+Row #135: 
+Row #135: 
+Row #135: 
+Row #135: 2,417
+Row #135: 100.00%
+Row #135: 583
+Row #135: 24.12%
+Row #135: 746
+Row #135: 30.86%
+Row #135: 1,088
+Row #135: 45.01%
+Row #136: 7,776
+Row #136: 100.00%
+Row #136: 
+Row #136: 
+Row #136: 
+Row #136: 
+Row #136: 7,776
+Row #136: 100.00%
+Row #136: 2,334
+Row #136: 30.02%
+Row #136: 2,081
+Row #136: 26.76%
+Row #136: 3,361
+Row #136: 43.22%
+Row #137: 1,095
+Row #137: 100.00%
+Row #137: 
+Row #137: 
+Row #137: 
+Row #137: 
+Row #137: 1,095
+Row #137: 100.00%
+Row #137: 309
+Row #137: 28.22%
+Row #137: 252
+Row #137: 23.01%
+Row #137: 534
+Row #137: 48.77%
+Row #138: 255
+Row #138: 100.00%
+Row #138: 
+Row #138: 
+Row #138: 
+Row #138: 
+Row #138: 255
+Row #138: 100.00%
+Row #138: 75
+Row #138: 29.41%
+Row #138: 63
+Row #138: 24.71%
+Row #138: 117
+Row #138: 45.88%
+Row #139: 1,386
+Row #139: 100.00%
+Row #139: 
+Row #139: 
+Row #139: 
+Row #139: 
+Row #139: 1,386
+Row #139: 100.00%
+Row #139: 397
+Row #139: 28.64%
+Row #139: 380
+Row #139: 27.42%
+Row #139: 609
+Row #139: 43.94%
+Row #140: 316
+Row #140: 100.00%
+Row #140: 
+Row #140: 
+Row #140: 
+Row #140: 
+Row #140: 316
+Row #140: 100.00%
+Row #140: 86
+Row #140: 27.22%
+Row #140: 86
+Row #140: 27.22%
+Row #140: 144
+Row #140: 45.57%
+Row #141: 1,242
+Row #141: 100.00%
+Row #141: 
+Row #141: 
+Row #141: 
+Row #141: 
+Row #141: 1,242
+Row #141: 100.00%
+Row #141: 394
+Row #141: 31.72%
+Row #141: 282
+Row #141: 22.71%
+Row #141: 566
+Row #141: 45.57%
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSpecialMetricPctOfRow">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales],[Measures].[*SUMMARY_METRIC_0]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Member [Product].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Product].[All Products]})'
+Member [Education Level].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Education Level].[All Education Levels]})'
+Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],[Product].[*CTX_MEMBER_SEL~AGG],[Education Level].[*CTX_MEMBER_SEL~AGG])', FORMAT_STRING = '0.00%'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Drink]})'
+Member [Product].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Food]})'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Non-Consumable]})'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin({[Product].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Education Level].CurrentMember)})))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+{[Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Beverages], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Baked Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Baking Goods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Breakfast Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Canned Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Canned Products], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Dairy], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Deli], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Eggs], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Frozen Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Meat], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Produce], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Seafood], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Snack Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Snacks], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Starchy Foods], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[Carousel], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[Checkout], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[Household], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[Periodicals], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Alcoholic Beverages], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Alcoholic Beverages], [Education Level].[High School Degree]}
+{[Product].[Drink].[Alcoholic Beverages], [Education Level].[Partial College]}
+{[Product].[Drink].[Alcoholic Beverages], [Education Level].[Partial High School]}
+{[Product].[Drink].[Beverages], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Beverages], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Beverages], [Education Level].[High School Degree]}
+{[Product].[Drink].[Beverages], [Education Level].[Partial College]}
+{[Product].[Drink].[Beverages], [Education Level].[Partial High School]}
+{[Product].[Drink].[Dairy], [Education Level].[Bachelors Degree]}
+{[Product].[Drink].[Dairy], [Education Level].[Graduate Degree]}
+{[Product].[Drink].[Dairy], [Education Level].[High School Degree]}
+{[Product].[Drink].[Dairy], [Education Level].[Partial College]}
+{[Product].[Drink].[Dairy], [Education Level].[Partial High School]}
+{[Product].[Food].[Baked Goods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Baked Goods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Baked Goods], [Education Level].[High School Degree]}
+{[Product].[Food].[Baked Goods], [Education Level].[Partial College]}
+{[Product].[Food].[Baked Goods], [Education Level].[Partial High School]}
+{[Product].[Food].[Baking Goods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Baking Goods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Baking Goods], [Education Level].[High School Degree]}
+{[Product].[Food].[Baking Goods], [Education Level].[Partial College]}
+{[Product].[Food].[Baking Goods], [Education Level].[Partial High School]}
+{[Product].[Food].[Breakfast Foods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Breakfast Foods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Breakfast Foods], [Education Level].[High School Degree]}
+{[Product].[Food].[Breakfast Foods], [Education Level].[Partial College]}
+{[Product].[Food].[Breakfast Foods], [Education Level].[Partial High School]}
+{[Product].[Food].[Canned Foods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Canned Foods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Canned Foods], [Education Level].[High School Degree]}
+{[Product].[Food].[Canned Foods], [Education Level].[Partial College]}
+{[Product].[Food].[Canned Foods], [Education Level].[Partial High School]}
+{[Product].[Food].[Canned Products], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Canned Products], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Canned Products], [Education Level].[High School Degree]}
+{[Product].[Food].[Canned Products], [Education Level].[Partial College]}
+{[Product].[Food].[Canned Products], [Education Level].[Partial High School]}
+{[Product].[Food].[Dairy], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Dairy], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Dairy], [Education Level].[High School Degree]}
+{[Product].[Food].[Dairy], [Education Level].[Partial College]}
+{[Product].[Food].[Dairy], [Education Level].[Partial High School]}
+{[Product].[Food].[Deli], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Deli], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Deli], [Education Level].[High School Degree]}
+{[Product].[Food].[Deli], [Education Level].[Partial College]}
+{[Product].[Food].[Deli], [Education Level].[Partial High School]}
+{[Product].[Food].[Eggs], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Eggs], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Eggs], [Education Level].[High School Degree]}
+{[Product].[Food].[Eggs], [Education Level].[Partial College]}
+{[Product].[Food].[Eggs], [Education Level].[Partial High School]}
+{[Product].[Food].[Frozen Foods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Frozen Foods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Frozen Foods], [Education Level].[High School Degree]}
+{[Product].[Food].[Frozen Foods], [Education Level].[Partial College]}
+{[Product].[Food].[Frozen Foods], [Education Level].[Partial High School]}
+{[Product].[Food].[Meat], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Meat], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Meat], [Education Level].[High School Degree]}
+{[Product].[Food].[Meat], [Education Level].[Partial College]}
+{[Product].[Food].[Meat], [Education Level].[Partial High School]}
+{[Product].[Food].[Produce], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Produce], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Produce], [Education Level].[High School Degree]}
+{[Product].[Food].[Produce], [Education Level].[Partial College]}
+{[Product].[Food].[Produce], [Education Level].[Partial High School]}
+{[Product].[Food].[Seafood], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Seafood], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Seafood], [Education Level].[High School Degree]}
+{[Product].[Food].[Seafood], [Education Level].[Partial College]}
+{[Product].[Food].[Seafood], [Education Level].[Partial High School]}
+{[Product].[Food].[Snack Foods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Snack Foods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Snack Foods], [Education Level].[High School Degree]}
+{[Product].[Food].[Snack Foods], [Education Level].[Partial College]}
+{[Product].[Food].[Snack Foods], [Education Level].[Partial High School]}
+{[Product].[Food].[Snacks], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Snacks], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Snacks], [Education Level].[High School Degree]}
+{[Product].[Food].[Snacks], [Education Level].[Partial College]}
+{[Product].[Food].[Snacks], [Education Level].[Partial High School]}
+{[Product].[Food].[Starchy Foods], [Education Level].[Bachelors Degree]}
+{[Product].[Food].[Starchy Foods], [Education Level].[Graduate Degree]}
+{[Product].[Food].[Starchy Foods], [Education Level].[High School Degree]}
+{[Product].[Food].[Starchy Foods], [Education Level].[Partial College]}
+{[Product].[Food].[Starchy Foods], [Education Level].[Partial High School]}
+{[Product].[Non-Consumable].[Carousel], [Education Level].[Bachelors Degree]}
+{[Product].[Non-Consumable].[Carousel], [Education Level].[Graduate Degree]}
+{[Product].[Non-Consumable].[Carousel], [Education Level].[High School Degree]}
+{[Product].[Non-Consumable].[Carousel], [Education Level].[Partial College]}
+{[Product].[Non-Consumable].[Carousel], [Education Level].[Partial High School]}
+{[Product].[Non-Consumable].[Checkout], [Education Level].[Bachelors Degree]}
+{[Product].[Non-Consumable].[Checkout], [Education Level].[Graduate Degree]}
+{[Product].[Non-Consumable].[Checkout], [Education Level].[High School Degree]}
+{[Product].[Non-Consumable].[Checkout], [Education Level].[Partial College]}
+{[Product].[Non-Consumable].[Checkout], [Education Level].[Partial High School]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Education Level].[Bachelors Degree]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Education Level].[Graduate Degree]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Education Level].[High School Degree]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Education Level].[Partial College]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Education Level].[Partial High School]}
+{[Product].[Non-Consumable].[Household], [Education Level].[Bachelors Degree]}
+{[Product].[Non-Consumable].[Household], [Education Level].[Graduate Degree]}
+{[Product].[Non-Consumable].[Household], [Education Level].[High School Degree]}
+{[Product].[Non-Consumable].[Household], [Education Level].[Partial College]}
+{[Product].[Non-Consumable].[Household], [Education Level].[Partial High School]}
+{[Product].[Non-Consumable].[Periodicals], [Education Level].[Bachelors Degree]}
+{[Product].[Non-Consumable].[Periodicals], [Education Level].[Graduate Degree]}
+{[Product].[Non-Consumable].[Periodicals], [Education Level].[High School Degree]}
+{[Product].[Non-Consumable].[Periodicals], [Education Level].[Partial College]}
+{[Product].[Non-Consumable].[Periodicals], [Education Level].[Partial High School]}
+Row #0: 266,773
+Row #0: 100.00%
+Row #1: 6,838
+Row #1: 2.56%
+Row #2: 13,573
+Row #2: 5.09%
+Row #3: 4,186
+Row #3: 1.57%
+Row #4: 7,870
+Row #4: 2.95%
+Row #5: 20,245
+Row #5: 7.59%
+Row #6: 3,317
+Row #6: 1.24%
+Row #7: 19,026
+Row #7: 7.13%
+Row #8: 1,812
+Row #8: 0.68%
+Row #9: 12,885
+Row #9: 4.83%
+Row #10: 12,037
+Row #10: 4.51%
+Row #11: 4,132
+Row #11: 1.55%
+Row #12: 26,655
+Row #12: 9.99%
+Row #13: 1,714
+Row #13: 0.64%
+Row #14: 37,792
+Row #14: 14.17%
+Row #15: 1,764
+Row #15: 0.66%
+Row #16: 30,545
+Row #16: 11.45%
+Row #17: 6,884
+Row #17: 2.58%
+Row #18: 5,262
+Row #18: 1.97%
+Row #19: 841
+Row #19: 0.32%
+Row #20: 1,779
+Row #20: 0.67%
+Row #21: 16,284
+Row #21: 6.10%
+Row #22: 27,038
+Row #22: 10.14%
+Row #23: 4,294
+Row #23: 1.61%
+Row #24: 24,597
+Row #24: 9.22%
+Row #25: 191,940
+Row #25: 71.95%
+Row #26: 50,236
+Row #26: 18.83%
+Row #27: 1,763
+Row #27: 0.66%
+Row #28: 352
+Row #28: 0.13%
+Row #29: 2,079
+Row #29: 0.78%
+Row #30: 574
+Row #30: 0.22%
+Row #31: 2,070
+Row #31: 0.78%
+Row #32: 3,591
+Row #32: 1.35%
+Row #33: 730
+Row #33: 0.27%
+Row #34: 3,925
+Row #34: 1.47%
+Row #35: 1,212
+Row #35: 0.45%
+Row #36: 4,115
+Row #36: 1.54%
+Row #37: 1,069
+Row #37: 0.40%
+Row #38: 243
+Row #38: 0.09%
+Row #39: 1,222
+Row #39: 0.46%
+Row #40: 378
+Row #40: 0.14%
+Row #41: 1,274
+Row #41: 0.48%
+Row #42: 1,933
+Row #42: 0.72%
+Row #43: 500
+Row #43: 0.19%
+Row #44: 2,348
+Row #44: 0.88%
+Row #45: 809
+Row #45: 0.30%
+Row #46: 2,280
+Row #46: 0.85%
+Row #47: 5,456
+Row #47: 2.05%
+Row #48: 1,278
+Row #48: 0.48%
+Row #49: 5,839
+Row #49: 2.19%
+Row #50: 2,009
+Row #50: 0.75%
+Row #51: 5,663
+Row #51: 2.12%
+Row #52: 885
+Row #52: 0.33%
+Row #53: 144
+Row #53: 0.05%
+Row #54: 1,060
+Row #54: 0.40%
+Row #55: 279
+Row #55: 0.10%
+Row #56: 949
+Row #56: 0.36%
+Row #57: 4,914
+Row #57: 1.84%
+Row #58: 1,202
+Row #58: 0.45%
+Row #59: 5,460
+Row #59: 2.05%
+Row #60: 1,745
+Row #60: 0.65%
+Row #61: 5,705
+Row #61: 2.14%
+Row #62: 502
+Row #62: 0.19%
+Row #63: 114
+Row #63: 0.04%
+Row #64: 582
+Row #64: 0.22%
+Row #65: 128
+Row #65: 0.05%
+Row #66: 486
+Row #66: 0.18%
+Row #67: 3,195
+Row #67: 1.20%
+Row #68: 822
+Row #68: 0.31%
+Row #69: 3,811
+Row #69: 1.43%
+Row #70: 1,223
+Row #70: 0.46%
+Row #71: 3,834
+Row #71: 1.44%
+Row #72: 2,861
+Row #72: 1.07%
+Row #73: 685
+Row #73: 0.26%
+Row #74: 3,609
+Row #74: 1.35%
+Row #75: 1,174
+Row #75: 0.44%
+Row #76: 3,708
+Row #76: 1.39%
+Row #77: 1,068
+Row #77: 0.40%
+Row #78: 247
+Row #78: 0.09%
+Row #79: 1,232
+Row #79: 0.46%
+Row #80: 358
+Row #80: 0.13%
+Row #81: 1,227
+Row #81: 0.46%
+Row #82: 6,937
+Row #82: 2.60%
+Row #83: 1,540
+Row #83: 0.58%
+Row #84: 7,965
+Row #84: 2.99%
+Row #85: 2,372
+Row #85: 0.89%
+Row #86: 7,841
+Row #86: 2.94%
+Row #87: 456
+Row #87: 0.17%
+Row #88: 101
+Row #88: 0.04%
+Row #89: 501
+Row #89: 0.19%
+Row #90: 140
+Row #90: 0.05%
+Row #91: 516
+Row #91: 0.19%
+Row #92: 9,640
+Row #92: 3.61%
+Row #93: 2,158
+Row #93: 0.81%
+Row #94: 10,916
+Row #94: 4.09%
+Row #95: 3,518
+Row #95: 1.32%
+Row #96: 11,560
+Row #96: 4.33%
+Row #97: 430
+Row #97: 0.16%
+Row #98: 101
+Row #98: 0.04%
+Row #99: 549
+Row #99: 0.21%
+Row #100: 174
+Row #100: 0.07%
+Row #101: 510
+Row #101: 0.19%
+Row #102: 7,898
+Row #102: 2.96%
+Row #103: 1,700
+Row #103: 0.64%
+Row #104: 9,135
+Row #104: 3.42%
+Row #105: 2,863
+Row #105: 1.07%
+Row #106: 8,949
+Row #106: 3.35%
+Row #107: 1,799
+Row #107: 0.67%
+Row #108: 378
+Row #108: 0.14%
+Row #109: 2,007
+Row #109: 0.75%
+Row #110: 607
+Row #110: 0.23%
+Row #111: 2,093
+Row #111: 0.78%
+Row #112: 1,391
+Row #112: 0.52%
+Row #113: 285
+Row #113: 0.11%
+Row #114: 1,495
+Row #114: 0.56%
+Row #115: 460
+Row #115: 0.17%
+Row #116: 1,631
+Row #116: 0.61%
+Row #117: 215
+Row #117: 0.08%
+Row #118: 53
+Row #118: 0.02%
+Row #119: 283
+Row #119: 0.11%
+Row #120: 68
+Row #120: 0.03%
+Row #121: 222
+Row #121: 0.08%
+Row #122: 505
+Row #122: 0.19%
+Row #123: 80
+Row #123: 0.03%
+Row #124: 473
+Row #124: 0.18%
+Row #125: 141
+Row #125: 0.05%
+Row #126: 580
+Row #126: 0.22%
+Row #127: 4,176
+Row #127: 1.57%
+Row #128: 995
+Row #128: 0.37%
+Row #129: 4,609
+Row #129: 1.73%
+Row #130: 1,580
+Row #130: 0.59%
+Row #131: 4,924
+Row #131: 1.85%
+Row #132: 7,060
+Row #132: 2.65%
+Row #133: 1,607
+Row #133: 0.60%
+Row #134: 8,178
+Row #134: 3.07%
+Row #135: 2,417
+Row #135: 0.91%
+Row #136: 7,776
+Row #136: 2.91%
+Row #137: 1,095
+Row #137: 0.41%
+Row #138: 255
+Row #138: 0.10%
+Row #139: 1,386
+Row #139: 0.52%
+Row #140: 316
+Row #140: 0.12%
+Row #141: 1,242
+Row #141: 0.47%
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSpecialMetricPctOfLabelFieldWithHierarchy">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0],[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Product].[Drink]})'
+Member [Product].[Food].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Product].[Food]})'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Product].[Non-Consumable]})'
+Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*CTX_MEMBER_SEL~AGG"))', FORMAT_STRING = '0.00%'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Drink]})'
+Member [Product].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Food]})'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Non-Consumable]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~SUM]},Union({[Product].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*SUMMARY_METRIC_0]}
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages]}
+{[Product].[Drink].[Beverages]}
+{[Product].[Drink].[Dairy]}
+{[Product].[Food].[Baked Goods]}
+{[Product].[Food].[Baking Goods]}
+{[Product].[Food].[Breakfast Foods]}
+{[Product].[Food].[Canned Foods]}
+{[Product].[Food].[Canned Products]}
+{[Product].[Food].[Dairy]}
+{[Product].[Food].[Deli]}
+{[Product].[Food].[Eggs]}
+{[Product].[Food].[Frozen Foods]}
+{[Product].[Food].[Meat]}
+{[Product].[Food].[Produce]}
+{[Product].[Food].[Seafood]}
+{[Product].[Food].[Snack Foods]}
+{[Product].[Food].[Snacks]}
+{[Product].[Food].[Starchy Foods]}
+{[Product].[Non-Consumable].[Carousel]}
+{[Product].[Non-Consumable].[Checkout]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Non-Consumable].[Household]}
+{[Product].[Non-Consumable].[Periodicals]}
+Row #0: Infinity%
+Row #0: 266,773
+Row #1: 100.00%
+Row #1: 24,597
+Row #2: 100.00%
+Row #2: 191,940
+Row #3: 100.00%
+Row #3: 50,236
+Row #4: 27.80%
+Row #4: 6,838
+Row #5: 55.18%
+Row #5: 13,573
+Row #6: 17.02%
+Row #6: 4,186
+Row #7: 4.10%
+Row #7: 7,870
+Row #8: 10.55%
+Row #8: 20,245
+Row #9: 1.73%
+Row #9: 3,317
+Row #10: 9.91%
+Row #10: 19,026
+Row #11: 0.94%
+Row #11: 1,812
+Row #12: 6.71%
+Row #12: 12,885
+Row #13: 6.27%
+Row #13: 12,037
+Row #14: 2.15%
+Row #14: 4,132
+Row #15: 13.89%
+Row #15: 26,655
+Row #16: 0.89%
+Row #16: 1,714
+Row #17: 19.69%
+Row #17: 37,792
+Row #18: 0.92%
+Row #18: 1,764
+Row #19: 15.91%
+Row #19: 30,545
+Row #20: 3.59%
+Row #20: 6,884
+Row #21: 2.74%
+Row #21: 5,262
+Row #22: 1.67%
+Row #22: 841
+Row #23: 3.54%
+Row #23: 1,779
+Row #24: 32.42%
+Row #24: 16,284
+Row #25: 53.82%
+Row #25: 27,038
+Row #26: 8.55%
+Row #26: 4,294
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSpecialMetricPctOfLabelFieldNoHierarchy">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales],[Measures].[*SUMMARY_METRIC_0]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Family].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Member [Education Level].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Education Level].[All Education Levels]})'
+Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],[Product].CurrentMember,[Education Level].[*CTX_MEMBER_SEL~AGG])', FORMAT_STRING = '0.00%'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Education Level].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Education Level].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+{[Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable], [Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink], [Education Level].[Bachelors Degree]}
+{[Product].[Drink], [Education Level].[Graduate Degree]}
+{[Product].[Drink], [Education Level].[High School Degree]}
+{[Product].[Drink], [Education Level].[Partial College]}
+{[Product].[Drink], [Education Level].[Partial High School]}
+{[Product].[Food], [Education Level].[Bachelors Degree]}
+{[Product].[Food], [Education Level].[Graduate Degree]}
+{[Product].[Food], [Education Level].[High School Degree]}
+{[Product].[Food], [Education Level].[Partial College]}
+{[Product].[Food], [Education Level].[Partial High School]}
+{[Product].[Non-Consumable], [Education Level].[Bachelors Degree]}
+{[Product].[Non-Consumable], [Education Level].[Graduate Degree]}
+{[Product].[Non-Consumable], [Education Level].[High School Degree]}
+{[Product].[Non-Consumable], [Education Level].[Partial College]}
+{[Product].[Non-Consumable], [Education Level].[Partial High School]}
+Row #0: 266,773
+Row #0: 100.00%
+Row #1: 24,597
+Row #1: 100.00%
+Row #2: 191,940
+Row #2: 100.00%
+Row #3: 50,236
+Row #3: 100.00%
+Row #4: 6,423
+Row #4: 26.11%
+Row #5: 1,325
+Row #5: 5.39%
+Row #6: 7,226
+Row #6: 29.38%
+Row #7: 2,164
+Row #7: 8.80%
+Row #8: 7,459
+Row #8: 30.32%
+Row #9: 49,365
+Row #9: 25.72%
+Row #10: 11,255
+Row #10: 5.86%
+Row #11: 56,509
+Row #11: 29.44%
+Row #12: 17,859
+Row #12: 9.30%
+Row #13: 56,952
+Row #13: 29.67%
+Row #14: 13,051
+Row #14: 25.98%
+Row #15: 2,990
+Row #15: 5.95%
+Row #16: 14,929
+Row #16: 29.72%
+Row #17: 4,522
+Row #17: 9.00%
+Row #18: 14,744
+Row #18: 29.35%
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSpecialMetricPctOfLabelFieldNonVisual">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales],[Measures].[*SUMMARY_METRIC_0]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Member [Product].[Drink].[*CTX_MEMBER_ALL~AGG] as 'Aggregate({[Product].[Drink]})'
+Member [Product].[Food].[*CTX_MEMBER_ALL~AGG] as 'Aggregate({[Product].[Food]})'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_ALL~AGG] as 'Aggregate({[Product].[Non-Consumable]})'
+Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*CTX_MEMBER_ALL~AGG"))', FORMAT_STRING = '0.00%'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Drink]})'
+Member [Product].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Food]})'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Non-Consumable]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
+Member [Product].[Drink].[*CTX_MEMBER_ALL~SUM] as 'Sum({[Product].[Drink]})'
+Member [Product].[Food].[*CTX_MEMBER_ALL~SUM] as 'Sum({[Product].[Food]})'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_ALL~SUM] as 'Sum({[Product].[Non-Consumable]})'
+Member [Product].[*CTX_MEMBER_ALL~SUM] as 'Sum({[Product].[All Products]})'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_ALL~SUM]},Union({[Product].[Drink].[*CTX_MEMBER_ALL~SUM],[Product].[Food].[*CTX_MEMBER_ALL~SUM],[Product].[Non-Consumable].[*CTX_MEMBER_ALL~SUM]},Union({[Product].[*CTX_MEMBER_SEL~SUM]},Union({[Product].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[All Products].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}))))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+{[Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Product].[*CTX_MEMBER_ALL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_ALL~SUM]}
+{[Product].[Food].[*CTX_MEMBER_ALL~SUM]}
+{[Product].[Non-Consumable].[*CTX_MEMBER_ALL~SUM]}
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages]}
+{[Product].[Drink].[Beverages]}
+{[Product].[Drink].[Dairy]}
+{[Product].[Food].[Baked Goods]}
+{[Product].[Food].[Baking Goods]}
+{[Product].[Food].[Breakfast Foods]}
+{[Product].[Food].[Canned Foods]}
+{[Product].[Food].[Canned Products]}
+{[Product].[Food].[Dairy]}
+{[Product].[Food].[Deli]}
+{[Product].[Food].[Eggs]}
+{[Product].[Food].[Frozen Foods]}
+{[Product].[Food].[Meat]}
+{[Product].[Food].[Produce]}
+{[Product].[Food].[Seafood]}
+{[Product].[Food].[Snack Foods]}
+{[Product].[Food].[Snacks]}
+{[Product].[Food].[Starchy Foods]}
+{[Product].[Non-Consumable].[Carousel]}
+{[Product].[Non-Consumable].[Checkout]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Non-Consumable].[Household]}
+{[Product].[Non-Consumable].[Periodicals]}
+Row #0: 266,773
+Row #0: Infinity%
+Row #1: 24,597
+Row #1: 100.00%
+Row #2: 191,940
+Row #2: 100.00%
+Row #3: 50,236
+Row #3: 100.00%
+Row #4: 266,773
+Row #4: Infinity%
+Row #5: 24,597
+Row #5: 100.00%
+Row #6: 191,940
+Row #6: 100.00%
+Row #7: 50,236
+Row #7: 100.00%
+Row #8: 6,838
+Row #8: 27.80%
+Row #9: 13,573
+Row #9: 55.18%
+Row #10: 4,186
+Row #10: 17.02%
+Row #11: 7,870
+Row #11: 4.10%
+Row #12: 20,245
+Row #12: 10.55%
+Row #13: 3,317
+Row #13: 1.73%
+Row #14: 19,026
+Row #14: 9.91%
+Row #15: 1,812
+Row #15: 0.94%
+Row #16: 12,885
+Row #16: 6.71%
+Row #17: 12,037
+Row #17: 6.27%
+Row #18: 4,132
+Row #18: 2.15%
+Row #19: 26,655
+Row #19: 13.89%
+Row #20: 1,714
+Row #20: 0.89%
+Row #21: 37,792
+Row #21: 19.69%
+Row #22: 1,764
+Row #22: 0.92%
+Row #23: 30,545
+Row #23: 15.91%
+Row #24: 6,884
+Row #24: 3.59%
+Row #25: 5,262
+Row #25: 2.74%
+Row #26: 841
+Row #26: 1.67%
+Row #27: 1,779
+Row #27: 3.54%
+Row #28: 16,284
+Row #28: 32.42%
+Row #29: 27,038
+Row #29: 53.82%
+Row #30: 4,294
+Row #30: 8.55%
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSpecialMetricPctOfLabelFieldOnCols">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Education Level])'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales],[Measures].[*SUMMARY_METRIC_0]}'
+Set [*BASE_MEMBERS_Education Level] as '[Education Level].[Education Level].Members'
+Set [*NATIVE_MEMBERS_Education Level] as 'Generate([*NATIVE_CJ_SET], {[Education Level].CurrentMember})'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Product].[Drink]})'
+Member [Product].[Food].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Product].[Food]})'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Product].[Non-Consumable]})'
+Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*CTX_MEMBER_SEL~AGG"))', FORMAT_STRING = '0.00%'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Drink]})'
+Member [Product].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Food]})'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Non-Consumable]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[All Products]})'
+Member [Education Level].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Education Level].[All Education Levels]})'
+Select
+Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},[*BASE_MEMBERS_Measures]),Union(CrossJoin({[Product].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},[*BASE_MEMBERS_Measures]),CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),[*BASE_MEMBERS_Measures]))) on columns,
+Non Empty Union({[Education Level].[*CTX_MEMBER_SEL~SUM]},Generate([*NATIVE_CJ_SET], {([Education Level].CurrentMember)})) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Product].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Product].[*CTX_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Product].[Food].[*CTX_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Measures].[Unit Sales]}
+{[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Drink].[Alcoholic Beverages], [Measures].[Unit Sales]}
+{[Product].[Drink].[Alcoholic Beverages], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Drink].[Beverages], [Measures].[Unit Sales]}
+{[Product].[Drink].[Beverages], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Drink].[Dairy], [Measures].[Unit Sales]}
+{[Product].[Drink].[Dairy], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Baked Goods], [Measures].[Unit Sales]}
+{[Product].[Food].[Baked Goods], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Baking Goods], [Measures].[Unit Sales]}
+{[Product].[Food].[Baking Goods], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Breakfast Foods], [Measures].[Unit Sales]}
+{[Product].[Food].[Breakfast Foods], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Canned Foods], [Measures].[Unit Sales]}
+{[Product].[Food].[Canned Foods], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Canned Products], [Measures].[Unit Sales]}
+{[Product].[Food].[Canned Products], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Dairy], [Measures].[Unit Sales]}
+{[Product].[Food].[Dairy], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Deli], [Measures].[Unit Sales]}
+{[Product].[Food].[Deli], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Eggs], [Measures].[Unit Sales]}
+{[Product].[Food].[Eggs], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Frozen Foods], [Measures].[Unit Sales]}
+{[Product].[Food].[Frozen Foods], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Meat], [Measures].[Unit Sales]}
+{[Product].[Food].[Meat], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Produce], [Measures].[Unit Sales]}
+{[Product].[Food].[Produce], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Seafood], [Measures].[Unit Sales]}
+{[Product].[Food].[Seafood], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Snack Foods], [Measures].[Unit Sales]}
+{[Product].[Food].[Snack Foods], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Snacks], [Measures].[Unit Sales]}
+{[Product].[Food].[Snacks], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Food].[Starchy Foods], [Measures].[Unit Sales]}
+{[Product].[Food].[Starchy Foods], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Non-Consumable].[Carousel], [Measures].[Unit Sales]}
+{[Product].[Non-Consumable].[Carousel], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Non-Consumable].[Checkout], [Measures].[Unit Sales]}
+{[Product].[Non-Consumable].[Checkout], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Measures].[Unit Sales]}
+{[Product].[Non-Consumable].[Health and Hygiene], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Non-Consumable].[Household], [Measures].[Unit Sales]}
+{[Product].[Non-Consumable].[Household], [Measures].[*SUMMARY_METRIC_0]}
+{[Product].[Non-Consumable].[Periodicals], [Measures].[Unit Sales]}
+{[Product].[Non-Consumable].[Periodicals], [Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Education Level].[Bachelors Degree]}
+{[Education Level].[Graduate Degree]}
+{[Education Level].[High School Degree]}
+{[Education Level].[Partial College]}
+{[Education Level].[Partial High School]}
+Row #0: 266,773
+Row #0: Infinity%
+Row #0: 24,597
+Row #0: 100.00%
+Row #0: 191,940
+Row #0: 100.00%
+Row #0: 50,236
+Row #0: 100.00%
+Row #0: 6,838
+Row #0: 27.80%
+Row #0: 13,573
+Row #0: 55.18%
+Row #0: 4,186
+Row #0: 17.02%
+Row #0: 7,870
+Row #0: 4.10%
+Row #0: 20,245
+Row #0: 10.55%
+Row #0: 3,317
+Row #0: 1.73%
+Row #0: 19,026
+Row #0: 9.91%
+Row #0: 1,812
+Row #0: 0.94%
+Row #0: 12,885
+Row #0: 6.71%
+Row #0: 12,037
+Row #0: 6.27%
+Row #0: 4,132
+Row #0: 2.15%
+Row #0: 26,655
+Row #0: 13.89%
+Row #0: 1,714
+Row #0: 0.89%
+Row #0: 37,792
+Row #0: 19.69%
+Row #0: 1,764
+Row #0: 0.92%
+Row #0: 30,545
+Row #0: 15.91%
+Row #0: 6,884
+Row #0: 3.59%
+Row #0: 5,262
+Row #0: 2.74%
+Row #0: 841
+Row #0: 1.67%
+Row #0: 1,779
+Row #0: 3.54%
+Row #0: 16,284
+Row #0: 32.42%
+Row #0: 27,038
+Row #0: 53.82%
+Row #0: 4,294
+Row #0: 8.55%
+Row #1: 68,839
+Row #1: Infinity%
+Row #1: 6,423
+Row #1: 100.00%
+Row #1: 49,365
+Row #1: 100.00%
+Row #1: 13,051
+Row #1: 100.00%
+Row #1: 1,763
+Row #1: 27.45%
+Row #1: 3,591
+Row #1: 55.91%
+Row #1: 1,069
+Row #1: 16.64%
+Row #1: 1,933
+Row #1: 3.92%
+Row #1: 5,456
+Row #1: 11.05%
+Row #1: 885
+Row #1: 1.79%
+Row #1: 4,914
+Row #1: 9.95%
+Row #1: 502
+Row #1: 1.02%
+Row #1: 3,195
+Row #1: 6.47%
+Row #1: 2,861
+Row #1: 5.80%
+Row #1: 1,068
+Row #1: 2.16%
+Row #1: 6,937
+Row #1: 14.05%
+Row #1: 456
+Row #1: 0.92%
+Row #1: 9,640
+Row #1: 19.53%
+Row #1: 430
+Row #1: 0.87%
+Row #1: 7,898
+Row #1: 16.00%
+Row #1: 1,799
+Row #1: 3.64%
+Row #1: 1,391
+Row #1: 2.82%
+Row #1: 215
+Row #1: 1.65%
+Row #1: 505
+Row #1: 3.87%
+Row #1: 4,176
+Row #1: 32.00%
+Row #1: 7,060
+Row #1: 54.10%
+Row #1: 1,095
+Row #1: 8.39%
+Row #2: 15,570
+Row #2: Infinity%
+Row #2: 1,325
+Row #2: 100.00%
+Row #2: 11,255
+Row #2: 100.00%
+Row #2: 2,990
+Row #2: 100.00%
+Row #2: 352
+Row #2: 26.57%
+Row #2: 730
+Row #2: 55.09%
+Row #2: 243
+Row #2: 18.34%
+Row #2: 500
+Row #2: 4.44%
+Row #2: 1,278
+Row #2: 11.35%
+Row #2: 144
+Row #2: 1.28%
+Row #2: 1,202
+Row #2: 10.68%
+Row #2: 114
+Row #2: 1.01%
+Row #2: 822
+Row #2: 7.30%
+Row #2: 685
+Row #2: 6.09%
+Row #2: 247
+Row #2: 2.19%
+Row #2: 1,540
+Row #2: 13.68%
+Row #2: 101
+Row #2: 0.90%
+Row #2: 2,158
+Row #2: 19.17%
+Row #2: 101
+Row #2: 0.90%
+Row #2: 1,700
+Row #2: 15.10%
+Row #2: 378
+Row #2: 3.36%
+Row #2: 285
+Row #2: 2.53%
+Row #2: 53
+Row #2: 1.77%
+Row #2: 80
+Row #2: 2.68%
+Row #2: 995
+Row #2: 33.28%
+Row #2: 1,607
+Row #2: 53.75%
+Row #2: 255
+Row #2: 8.53%
+Row #3: 78,664
+Row #3: Infinity%
+Row #3: 7,226
+Row #3: 100.00%
+Row #3: 56,509
+Row #3: 100.00%
+Row #3: 14,929
+Row #3: 100.00%
+Row #3: 2,079
+Row #3: 28.77%
+Row #3: 3,925
+Row #3: 54.32%
+Row #3: 1,222
+Row #3: 16.91%
+Row #3: 2,348
+Row #3: 4.16%
+Row #3: 5,839
+Row #3: 10.33%
+Row #3: 1,060
+Row #3: 1.88%
+Row #3: 5,460
+Row #3: 9.66%
+Row #3: 582
+Row #3: 1.03%
+Row #3: 3,811
+Row #3: 6.74%
+Row #3: 3,609
+Row #3: 6.39%
+Row #3: 1,232
+Row #3: 2.18%
+Row #3: 7,965
+Row #3: 14.10%
+Row #3: 501
+Row #3: 0.89%
+Row #3: 10,916
+Row #3: 19.32%
+Row #3: 549
+Row #3: 0.97%
+Row #3: 9,135
+Row #3: 16.17%
+Row #3: 2,007
+Row #3: 3.55%
+Row #3: 1,495
+Row #3: 2.65%
+Row #3: 283
+Row #3: 1.90%
+Row #3: 473
+Row #3: 3.17%
+Row #3: 4,609
+Row #3: 30.87%
+Row #3: 8,178
+Row #3: 54.78%
+Row #3: 1,386
+Row #3: 9.28%
+Row #4: 24,545
+Row #4: Infinity%
+Row #4: 2,164
+Row #4: 100.00%
+Row #4: 17,859
+Row #4: 100.00%
+Row #4: 4,522
+Row #4: 100.00%
+Row #4: 574
+Row #4: 26.52%
+Row #4: 1,212
+Row #4: 56.01%
+Row #4: 378
+Row #4: 17.47%
+Row #4: 809
+Row #4: 4.53%
+Row #4: 2,009
+Row #4: 11.25%
+Row #4: 279
+Row #4: 1.56%
+Row #4: 1,745
+Row #4: 9.77%
+Row #4: 128
+Row #4: 0.72%
+Row #4: 1,223
+Row #4: 6.85%
+Row #4: 1,174
+Row #4: 6.57%
+Row #4: 358
+Row #4: 2.00%
+Row #4: 2,372
+Row #4: 13.28%
+Row #4: 140
+Row #4: 0.78%
+Row #4: 3,518
+Row #4: 19.70%
+Row #4: 174
+Row #4: 0.97%
+Row #4: 2,863
+Row #4: 16.03%
+Row #4: 607
+Row #4: 3.40%
+Row #4: 460
+Row #4: 2.58%
+Row #4: 68
+Row #4: 1.50%
+Row #4: 141
+Row #4: 3.12%
+Row #4: 1,580
+Row #4: 34.94%
+Row #4: 2,417
+Row #4: 53.45%
+Row #4: 316
+Row #4: 6.99%
+Row #5: 79,155
+Row #5: Infinity%
+Row #5: 7,459
+Row #5: 100.00%
+Row #5: 56,952
+Row #5: 100.00%
+Row #5: 14,744
+Row #5: 100.00%
+Row #5: 2,070
+Row #5: 27.75%
+Row #5: 4,115
+Row #5: 55.17%
+Row #5: 1,274
+Row #5: 17.08%
+Row #5: 2,280
+Row #5: 4.00%
+Row #5: 5,663
+Row #5: 9.94%
+Row #5: 949
+Row #5: 1.67%
+Row #5: 5,705
+Row #5: 10.02%
+Row #5: 486
+Row #5: 0.85%
+Row #5: 3,834
+Row #5: 6.73%
+Row #5: 3,708
+Row #5: 6.51%
+Row #5: 1,227
+Row #5: 2.15%
+Row #5: 7,841
+Row #5: 13.77%
+Row #5: 516
+Row #5: 0.91%
+Row #5: 11,560
+Row #5: 20.30%
+Row #5: 510
+Row #5: 0.90%
+Row #5: 8,949
+Row #5: 15.71%
+Row #5: 2,093
+Row #5: 3.68%
+Row #5: 1,631
+Row #5: 2.86%
+Row #5: 222
+Row #5: 1.51%
+Row #5: 580
+Row #5: 3.93%
+Row #5: 4,924
+Row #5: 33.40%
+Row #5: 7,776
+Row #5: 52.74%
+Row #5: 1,242
+Row #5: 8.42%
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSpecialMetricPctOfLabelFieldWithHierarchyAndParentLevelMetricFilter">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Unit Sales_SEL~SUM] > 50000.0)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0],[Measures].[*SUMMARY_METRIC_1],[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+Member [Product].[Drink].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Product].[Drink]})'
+Member [Product].[Food].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Product].[Food]})'
+Member [Product].[Non-Consumable].[*CTX_METRIC_MEMBER_SEL~SUM] as 'Sum({[Product].[Non-Consumable]})'
+Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*CTX_METRIC_MEMBER_SEL~SUM"))'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Product].[Drink]})'
+Member [Product].[Food].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Product].[Food]})'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Product].[Non-Consumable]})'
+Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*CTX_MEMBER_SEL~AGG"))', FORMAT_STRING = '0.00%'
+Member [Product].[*CTX_MEMBER_SEL~AGG] as 'Aggregate(Filter([*METRIC_MEMBERS_Product],[Measures].[*Unit Sales_SEL~SUM] > 50000.0))'
+Member [Measures].[*SUMMARY_METRIC_1] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],[Product].[*CTX_MEMBER_SEL~AGG])', FORMAT_STRING = '0.00%'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Drink]})'
+Member [Product].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Food]})'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Product].[Non-Consumable]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Measures].[*Unit Sales_SEL~SUM] > 50000.0))'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~SUM]},Union({[Product].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Product].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*SUMMARY_METRIC_0]}
+{[Measures].[*SUMMARY_METRIC_1]}
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Baked Goods]}
+{[Product].[Food].[Baking Goods]}
+{[Product].[Food].[Breakfast Foods]}
+{[Product].[Food].[Canned Foods]}
+{[Product].[Food].[Canned Products]}
+{[Product].[Food].[Dairy]}
+{[Product].[Food].[Deli]}
+{[Product].[Food].[Eggs]}
+{[Product].[Food].[Frozen Foods]}
+{[Product].[Food].[Meat]}
+{[Product].[Food].[Produce]}
+{[Product].[Food].[Seafood]}
+{[Product].[Food].[Snack Foods]}
+{[Product].[Food].[Snacks]}
+{[Product].[Food].[Starchy Foods]}
+{[Product].[Non-Consumable].[Carousel]}
+{[Product].[Non-Consumable].[Checkout]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Non-Consumable].[Household]}
+{[Product].[Non-Consumable].[Periodicals]}
+Row #0: Infinity%
+Row #0: 100.00%
+Row #0: 242,176
+Row #1: 100.00%
+Row #1: 10.16%
+Row #1: 24,597
+Row #2: 100.00%
+Row #2: 79.26%
+Row #2: 191,940
+Row #3: 100.00%
+Row #3: 20.74%
+Row #3: 50,236
+Row #4: 4.10%
+Row #4: 3.25%
+Row #4: 7,870
+Row #5: 10.55%
+Row #5: 8.36%
+Row #5: 20,245
+Row #6: 1.73%
+Row #6: 1.37%
+Row #6: 3,317
+Row #7: 9.91%
+Row #7: 7.86%
+Row #7: 19,026
+Row #8: 0.94%
+Row #8: 0.75%
+Row #8: 1,812
+Row #9: 6.71%
+Row #9: 5.32%
+Row #9: 12,885
+Row #10: 6.27%
+Row #10: 4.97%
+Row #10: 12,037
+Row #11: 2.15%
+Row #11: 1.71%
+Row #11: 4,132
+Row #12: 13.89%
+Row #12: 11.01%
+Row #12: 26,655
+Row #13: 0.89%
+Row #13: 0.71%
+Row #13: 1,714
+Row #14: 19.69%
+Row #14: 15.61%
+Row #14: 37,792
+Row #15: 0.92%
+Row #15: 0.73%
+Row #15: 1,764
+Row #16: 15.91%
+Row #16: 12.61%
+Row #16: 30,545
+Row #17: 3.59%
+Row #17: 2.84%
+Row #17: 6,884
+Row #18: 2.74%
+Row #18: 2.17%
+Row #18: 5,262
+Row #19: 1.67%
+Row #19: 0.35%
+Row #19: 841
+Row #20: 3.54%
+Row #20: 0.73%
+Row #20: 1,779
+Row #21: 32.42%
+Row #21: 6.72%
+Row #21: 16,284
+Row #22: 53.82%
+Row #22: 11.16%
+Row #22: 27,038
+Row #23: 8.55%
+Row #23: 1.77%
+Row #23: 4,294
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSpecialMetricPctOfLabelFieldWithHierarchyAndLowestLevelMetricFilter">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Product], Not IsEmpty ([Measures].[Unit Sales]))'
+Set [*METRIC_CJ_SET] as 'Filter([*NATIVE_CJ_SET],[Measures].[*Unit Sales_SEL~SUM] > 5000.0)'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[*SUMMARY_METRIC_0],[Measures].[*SUMMARY_METRIC_1],[Measures].[Unit Sales]}'
+Set [*BASE_MEMBERS_Product] as '[Product].[Product Department].Members'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*METRIC_MEMBERS_Product] as 'Generate([*METRIC_CJ_SET], {[Product].CurrentMember})'
+Member [Measures].[*Unit Sales_SEL~SUM] as '([Measures].[Unit Sales],[Product].CurrentMember)'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~AGG] as 'Aggregate(Filter(Descendants([Product].[Drink],[Product].[Product Department]),[Measures].[*Unit Sales_SEL~SUM] > 5000.0))'
+Member [Product].[Food].[*CTX_MEMBER_SEL~AGG] as 'Aggregate(Filter(Descendants([Product].[Food],[Product].[Product Department]),[Measures].[*Unit Sales_SEL~SUM] > 5000.0))'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_SEL~AGG] as 'Aggregate(Filter(Descendants([Product].[Non-Consumable],[Product].[Product Department]),[Measures].[*Unit Sales_SEL~SUM] > 5000.0))'
+Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],Ancestor([Product].CurrentMember,[Product].[Product Family]).CalculatedChild("*CTX_MEMBER_SEL~AGG"))', FORMAT_STRING = '0.00%'
+Member [Product].[*CTX_MEMBER_SEL~AGG] as 'Aggregate(Filter([*METRIC_MEMBERS_Product],[Measures].[*Unit Sales_SEL~SUM] > 5000.0))'
+Member [Measures].[*SUMMARY_METRIC_1] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],[Product].[*CTX_MEMBER_SEL~AGG])', FORMAT_STRING = '0.00%'
+Member [Product].[Drink].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Descendants([Product].[Drink],[Product].[Product Department]),[Measures].[*Unit Sales_SEL~SUM] > 5000.0))'
+Member [Product].[Food].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Descendants([Product].[Food],[Product].[Product Department]),[Measures].[*Unit Sales_SEL~SUM] > 5000.0))'
+Member [Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter(Descendants([Product].[Non-Consumable],[Product].[Product Department]),[Measures].[*Unit Sales_SEL~SUM] > 5000.0))'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum(Filter([*METRIC_MEMBERS_Product],[Measures].[*Unit Sales_SEL~SUM] > 5000.0))'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union({[Product].[*CTX_MEMBER_SEL~SUM]},Union({[Product].[Drink].[*CTX_MEMBER_SEL~SUM],[Product].[Food].[*CTX_MEMBER_SEL~SUM],[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]},Generate([*METRIC_CJ_SET], {([Product].CurrentMember)}))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[*SUMMARY_METRIC_0]}
+{[Measures].[*SUMMARY_METRIC_1]}
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Non-Consumable].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Drink].[Alcoholic Beverages]}
+{[Product].[Drink].[Beverages]}
+{[Product].[Food].[Baked Goods]}
+{[Product].[Food].[Baking Goods]}
+{[Product].[Food].[Canned Foods]}
+{[Product].[Food].[Dairy]}
+{[Product].[Food].[Deli]}
+{[Product].[Food].[Frozen Foods]}
+{[Product].[Food].[Produce]}
+{[Product].[Food].[Snack Foods]}
+{[Product].[Food].[Snacks]}
+{[Product].[Food].[Starchy Foods]}
+{[Product].[Non-Consumable].[Health and Hygiene]}
+{[Product].[Non-Consumable].[Household]}
+Row #0: Infinity%
+Row #0: 100.00%
+Row #0: 242,934
+Row #1: 100.00%
+Row #1: 8.40%
+Row #1: 20,411
+Row #2: 100.00%
+Row #2: 73.77%
+Row #2: 179,201
+Row #3: 100.00%
+Row #3: 17.83%
+Row #3: 43,322
+Row #4: 33.50%
+Row #4: 2.81%
+Row #4: 6,838
+Row #5: 66.50%
+Row #5: 5.59%
+Row #5: 13,573
+Row #6: 4.39%
+Row #6: 3.24%
+Row #6: 7,870
+Row #7: 11.30%
+Row #7: 8.33%
+Row #7: 20,245
+Row #8: 10.62%
+Row #8: 7.83%
+Row #8: 19,026
+Row #9: 7.19%
+Row #9: 5.30%
+Row #9: 12,885
+Row #10: 6.72%
+Row #10: 4.95%
+Row #10: 12,037
+Row #11: 14.87%
+Row #11: 10.97%
+Row #11: 26,655
+Row #12: 21.09%
+Row #12: 15.56%
+Row #12: 37,792
+Row #13: 17.05%
+Row #13: 12.57%
+Row #13: 30,545
+Row #14: 3.84%
+Row #14: 2.83%
+Row #14: 6,884
+Row #15: 2.94%
+Row #15: 2.17%
+Row #15: 5,262
+Row #16: 37.59%
+Row #16: 6.70%
+Row #16: 16,284
+Row #17: 62.41%
+Row #17: 11.13%
+Row #17: 27,038
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="testSummaryMetricPctNonVisualGrand">
+        <Resource name="description">
+            <![CDATA[
+
+]]>
+        </Resource>
+        <Resource name="mdx">
+            <![CDATA[
+With 
+Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Product],[*BASE_MEMBERS_Customers])'
+Set [*BASE_MEMBERS_Measures] as '{[Measures].[Unit Sales],[Measures].[*SUMMARY_METRIC_0]}'
+Set [*BASE_MEMBERS_Product] as '{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves]}'
+Set [*NATIVE_MEMBERS_Product] as 'Generate([*NATIVE_CJ_SET], {[Product].CurrentMember})'
+Set [*BASE_MEMBERS_Customers] as '[Customers].[City].Members'
+Set [*NATIVE_MEMBERS_Customers] as 'Generate([*NATIVE_CJ_SET], {[Customers].CurrentMember})'
+Member [Product].[*CTX_MEMBER_ALL~AGG] as 'Aggregate({[Product].[All Products]})'
+Member [Customers].[*CTX_MEMBER_ALL~AGG] as 'Aggregate({[Customers].[All Customers]})'
+Member [Measures].[*SUMMARY_METRIC_0] as '[Measures].[Unit Sales]/([Measures].[Unit Sales],[Product].[*CTX_MEMBER_ALL~AGG],[Customers].[*CTX_MEMBER_ALL~AGG])', FORMAT_STRING = '0.00%'
+Member [Customers].[*CTX_MEMBER_SEL~SUM] as 'Sum({[Customers].[All Customers]})'
+Member [Product].[*CTX_MEMBER_SEL~SUM] as 'Sum([*NATIVE_MEMBERS_Product])'
+Member [Customers].[*CTX_MEMBER_ALL~SUM] as 'Sum({[Customers].[All Customers]})'
+Member [Product].[*CTX_MEMBER_ALL~SUM] as 'Sum({[Product].[All Products]})'
+Select
+[*BASE_MEMBERS_Measures] on columns,
+Non Empty Union(CrossJoin({[Product].[*CTX_MEMBER_ALL~SUM]},{[Customers].[*CTX_MEMBER_ALL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Customers].[*CTX_MEMBER_ALL~SUM]}),Union(CrossJoin({[Product].[*CTX_MEMBER_SEL~SUM]},{[Customers].[*CTX_MEMBER_SEL~SUM]}),Union(CrossJoin(Generate([*NATIVE_CJ_SET], {([Product].CurrentMember)}),{[Customers].[*CTX_MEMBER_SEL~SUM]}),Generate([*NATIVE_CJ_SET], {([Product].CurrentMember,[Customers].CurrentMember)}))))) on rows
+From [Sales]
+]]>
+        </Resource>
+        <Resource name="result">
+            <![CDATA[
+Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+{[Measures].[*SUMMARY_METRIC_0]}
+Axis #2:
+{[Product].[*CTX_MEMBER_ALL~SUM], [Customers].[*CTX_MEMBER_ALL~SUM]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[*CTX_MEMBER_ALL~SUM]}
+{[Product].[*CTX_MEMBER_SEL~SUM], [Customers].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[*CTX_MEMBER_SEL~SUM]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[CA].[Berkeley]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[CA].[Long Beach]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[CA].[Pomona]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[CA].[Torrance]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[CA].[West Covina]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[OR].[Albany]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[OR].[Corvallis]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[OR].[Lake Oswego]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[OR].[Salem]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[OR].[W. Linn]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[OR].[Woodburn]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[WA].[Bremerton]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[WA].[Everett]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[WA].[Olympia]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[WA].[Port Orchard]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[WA].[Seattle]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[WA].[Spokane]}
+{[Product].[Food].[Baking Goods].[Jams and Jellies].[Preserves].[CDR].[CDR Apple Preserves], [Customers].[USA].[WA].[Tacoma]}
+Row #0: 266,773
+Row #0: 100.00%
+Row #1: 79
+Row #1: 0.03%
+Row #2: 79
+Row #2: 0.03%
+Row #3: 79
+Row #3: 0.03%
+Row #4: 2
+Row #4: 0.00%
+Row #5: 2
+Row #5: 0.00%
+Row #6: 2
+Row #6: 0.00%
+Row #7: 2
+Row #7: 0.00%
+Row #8: 3
+Row #8: 0.00%
+Row #9: 3
+Row #9: 0.00%
+Row #10: 2
+Row #10: 0.00%
+Row #11: 4
+Row #11: 0.00%
+Row #12: 4
+Row #12: 0.00%
+Row #13: 5
+Row #13: 0.00%
+Row #14: 7
+Row #14: 0.00%
+Row #15: 3
+Row #15: 0.00%
+Row #16: 5
+Row #16: 0.00%
+Row #17: 3
+Row #17: 0.00%
+Row #18: 7
+Row #18: 0.00%
+Row #19: 2
+Row #19: 0.00%
+Row #20: 17
+Row #20: 0.01%
+Row #21: 6
+Row #21: 0.00%
+]]>
+        </Resource>
+    </TestCase>
+</Root>

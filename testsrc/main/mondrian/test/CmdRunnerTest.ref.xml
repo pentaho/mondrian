@@ -1,0 +1,50 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="testQuery">
+        <Resource name="input">
+            <![CDATA[
+ SELECT {[Measures].[Unit Sales]} ON COLUMNS,
+  {[Product].Children} ON ROWS
+ FROM [Sales];
+ ]]>
+        </Resource>
+        <Resource name="output">
+            <![CDATA[Axis #0:
+{}
+Axis #1:
+{[Measures].[Unit Sales]}
+Axis #2:
+{[Product].[Drink]}
+{[Product].[Food]}
+{[Product].[Non-Consumable]}
+Row #0: 24,597
+Row #1: 191,940
+Row #2: 50,236
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="test7731">
+        <Resource name="input">
+            <![CDATA[
+ with member [Measures].[Tom O'Neil] as '[Measures].[Unit Sales]'
+ SELECT {[Measures].[Tom O'Neil]} ON COLUMNS,
+  {[Product].Children} ON ROWS
+ FROM [Sales];
+ ]]>
+        </Resource>
+        <Resource name="output">
+            <![CDATA[Axis #0:
+{}
+Axis #1:
+{[Measures].[Tom O'Neil]}
+Axis #2:
+{[Product].[Drink]}
+{[Product].[Food]}
+{[Product].[Non-Consumable]}
+Row #0: 24,597
+Row #1: 191,940
+Row #2: 50,236
+]]>
+        </Resource>
+    </TestCase>
+</Root>

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>WITH MEMBER [Measures].[Qualified Count] AS    'COUNT(FILTER(DESCENDANTS(Customers.CURRENTMEMBER, [Customers].[Name]), ([Measures].[Store Sales]) &amp;gt; 10000 OR     ([Measures].[Unit Sales]) &amp;gt; 10))' MEMBER [Measures].[Qualified Sales] AS    'SUM(FILTER(DESCENDANTS(Customers.CURRENTMEMBER, [Customers].[Name]), ([Measures].[Store Sales]) &amp;gt; 10000 OR     ([Measures].[Unit Sales]) &amp;gt; 10), ([Measures].[Store Sales]))' SELECT {[Measures].[Qualified Count], [Measures].[Qualified Sales]}  ON COLUMNS, DESCENDANTS([Customers].[All Customers], [State Province], SELF_AND_BEFORE) ON ROWS FROM  [Sales] </mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Time]</dim>
+                <dim>[Product]</dim>
+                <dim>[Store]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997]</member>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Qualified Count]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Qualified Sales]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Customers]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Customers].[All Customers]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[Canada]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[Canada].[BC]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[Mexico]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[Mexico].[DF]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[Mexico].[Guerrero]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[Mexico].[Jalisco]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[Mexico].[Mexico]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[Mexico].[Oaxaca]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[Mexico].[Sinaloa]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[Mexico].[Veracruz]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[Mexico].[Yucatan]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[Mexico].[Zacatecas]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[USA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[USA].[CA]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[USA].[OR]</member>
+                </tuple>
+                <tuple>
+                    <member>[Customers].[USA].[WA]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>4719.0</cell>
+                <cell>553587.77</cell>
+            </drow>
+            <drow>
+                <cell>0.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>0.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>0.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>0.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>0.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>0.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>0.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>0.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>0.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>0.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>0.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>0.0</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>4719</cell>
+                <cell>553587.77</cell>
+            </drow>
+            <drow>
+                <cell>2149</cell>
+                <cell>151509.69</cell>
+            </drow>
+            <drow>
+                <cell>1008</cell>
+                <cell>141899.84</cell>
+            </drow>
+            <drow>
+                <cell>1562</cell>
+                <cell>260178.24</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

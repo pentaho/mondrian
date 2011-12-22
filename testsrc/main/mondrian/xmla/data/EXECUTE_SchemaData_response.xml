@@ -1,0 +1,1714 @@
+<m:ExecuteResponse xmlns:m="urn:schemas-microsoft-com:xml-analysis">
+  <m:return 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <root 
+        xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" 
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+        xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception">
+        <xsd:schema 
+            xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" 
+            targetNamespace="urn:schemas-microsoft-com:xml-analysis:mddataset" 
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+            xmlns:sql="urn:schemas-microsoft-com:xml-sql" 
+            elementFormDefault="qualified">
+        <xsd:complexType name="MemberType">
+        <xsd:sequence>
+        <xsd:element name="UName" type="xsd:string"/>
+        <xsd:element name="Caption" type="xsd:string"/>
+        <xsd:element name="LName" type="xsd:string"/>
+        <xsd:element name="LNum" type="xsd:unsignedInt"/>
+        <xsd:group ref="GCustomDimProps"/></xsd:sequence>
+        <xsd:attribute name="Hierarchy" type="xsd:string"/></xsd:complexType>
+        <xsd:complexType name="PropType">
+            <xsd:sequence>
+                <xsd:element name="Default" minOccurs="0"/>
+            </xsd:sequence>
+            <xsd:attribute name="name" type="xsd:string" use="required"/>
+            <xsd:attribute name="type" type="xsd:QName"/>
+        </xsd:complexType>
+        <xsd:element abstract="true" name="ECustomDimPropType" type="PropType"/>
+        <xsd:element abstract="true" name="ECustomCellPropType" type="PropType"/>
+        <xsd:element substitutionGroup="ECustomDimPropType" name="DisplayInfo"/>
+        <xsd:complexType name="TupleType">
+        <xsd:sequence>
+        <xsd:element name="Member" type="MemberType" maxOccurs="unbounded"/></xsd:sequence></xsd:complexType>
+        <xsd:complexType name="MembersType">
+        <xsd:sequence>
+        <xsd:element name="Member" type="MemberType" minOccurs="0" maxOccurs="unbounded"/></xsd:sequence>
+        <xsd:attribute name="Hierarchy" type="xsd:string" use="required"/></xsd:complexType>
+        <xsd:complexType name="TuplesType">
+        <xsd:sequence>
+        <xsd:element name="Tuple" type="TupleType" minOccurs="0" maxOccurs="unbounded"/></xsd:sequence></xsd:complexType>
+        <xsd:group name="SetType">
+            <xsd:choice>
+                <xsd:element name="Members" type="MembersType"/>
+                <xsd:element name="Tuples" type="TuplesType"/>
+                <xsd:element name="CrossProduct" type="SetListType"/>
+                <xsd:element name="Union">
+                <xsd:complexType>
+                <xsd:group ref="SetType" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:complexType>
+                </xsd:element>
+            </xsd:choice>
+        </xsd:group>
+        <xsd:complexType name="SetListType">
+            <xsd:group ref="SetType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:attribute name="Size" type="xsd:unsignedInt"/>
+        </xsd:complexType>
+        <xsd:complexType name="OlapInfo">
+        <xsd:sequence>
+            <xsd:element name="CubeInfo">
+            <xsd:complexType>
+                <xsd:sequence>
+                <xsd:element name="Cube" maxOccurs="unbounded">
+                    <xsd:complexType>
+                    <xsd:sequence>
+                    <xsd:element name="CubeName" type="xsd:string"/>
+                    </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                </xsd:sequence>
+            </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="AxesInfo">
+                <xsd:complexType>
+                    <xsd:sequence>
+                    <xsd:element name="AxisInfo" maxOccurs="unbounded">
+                        <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="HierarchyInfo" minOccurs="0" maxOccurs="unbounded">
+                            <xsd:complexType>
+                                <xsd:sequence>
+                                <xsd:element name="UName" type="PropType"/>
+                                <xsd:element name="Caption" type="PropType"/>
+                                <xsd:element name="LName" type="PropType"/>
+                                <xsd:element name="LNum" type="PropType"/>
+                                <xsd:element ref="ECustomDimPropType" 
+                                    minOccurs="0" maxOccurs="unbounded"/>
+                                </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required"/>
+                            </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                        <xsd:attribute name="name" type="xsd:string"/>
+                        </xsd:complexType>
+                    </xsd:element>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        <xsd:element name="CellInfo">
+            <xsd:complexType>
+                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="Value" type="PropType"/>
+                <xsd:element name="FmtValue" type="PropType"/>
+                <xsd:element name="CellOrdinal" type="PropType"/>
+                <xsd:element name="BackColor" type="PropType"/>
+                <xsd:element name="ForeColor" type="PropType"/>
+                <xsd:element ref="ECustomCellPropType"/>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+        </xsd:sequence>
+        </xsd:complexType>
+        <xsd:complexType name="Axes">
+            <xsd:sequence>
+            <xsd:element name="Axis" maxOccurs="unbounded">
+            <xsd:complexType>
+            <xsd:group ref="SetType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+            </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+        <xsd:complexType name="CellData">
+            <xsd:sequence>
+            <xsd:element name="Cell" minOccurs="0" maxOccurs="unbounded">
+                <xsd:complexType>
+                    <xsd:sequence>
+                    <xsd:element minOccurs="0" nillable="true" name="Value"/>
+                    <xsd:element minOccurs="0" nillable="true" name="FmtValue" type="xsd:string"/>
+                    <xsd:element minOccurs="0" nillable="true" name="BackColor" type="xsd:unsignedInt"/>
+                    <xsd:element minOccurs="0" nillable="true" name="ForeColor" type="xsd:unsignedInt"/>
+                    <xsd:group ref="GCustomCellProps"/>
+                    </xsd:sequence>
+                <xsd:attribute name="CellOrdinal" type="xsd:unsignedInt" use="required"/>
+                </xsd:complexType>
+            </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+        <xsd:group name="GCustomDimProps">
+            <xsd:sequence>
+            <xsd:element minOccurs="0" nillable="true" name="DisplayInfo" type="xsd:int"/>
+            </xsd:sequence>
+        </xsd:group>
+        <xsd:group name="GCustomCellProps">
+            <xsd:sequence></xsd:sequence>
+        </xsd:group>
+        <xsd:element name="root">
+        <xsd:complexType>
+        <xsd:sequence>
+        <xsd:any namespace="http://www.w3.org/2001/XMLSchema" processContents="strict" minOccurs="0"/>
+        <xsd:element name="OlapInfo" type="OlapInfo" minOccurs="0"/>
+        <xsd:element name="Axes" type="Axes" minOccurs="0"/>
+        <xsd:element name="CellData" type="CellData" minOccurs="0"/></xsd:sequence></xsd:complexType>
+    </xsd:element>
+    </xsd:schema>
+    <OlapInfo>
+    <AxesInfo>
+    <AxisInfo name="Axis0">
+    <HierarchyInfo name="Customers">
+    <UName name="[Customers].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Customers].[MEMBER_CAPTION]"/>
+    <LName name="[Customers].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Customers].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Customers].[DISPLAY_INFO]"/></HierarchyInfo>
+    <HierarchyInfo name="Measures">
+    <UName name="[Measures].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Measures].[MEMBER_CAPTION]"/>
+    <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Measures].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Measures].[DISPLAY_INFO]"/></HierarchyInfo></AxisInfo>
+    <AxisInfo name="Axis1">
+    <HierarchyInfo name="Store">
+    <UName name="[Store].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Store].[MEMBER_CAPTION]"/>
+    <LName name="[Store].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Store].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Store].[DISPLAY_INFO]"/></HierarchyInfo></AxisInfo>
+    <AxisInfo name="SlicerAxis">
+    <HierarchyInfo name="Time">
+    <UName name="[Time].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Time].[MEMBER_CAPTION]"/>
+    <LName name="[Time].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Time].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Time].[DISPLAY_INFO]"/></HierarchyInfo>
+    <HierarchyInfo name="Product">
+    <UName name="[Product].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Product].[MEMBER_CAPTION]"/>
+    <LName name="[Product].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Product].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Product].[DISPLAY_INFO]"/></HierarchyInfo>
+    <HierarchyInfo name="Promotion Media">
+    <UName name="[Promotion Media].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Promotion Media].[MEMBER_CAPTION]"/>
+    <LName name="[Promotion Media].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Promotion Media].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Promotion Media].[DISPLAY_INFO]"/></HierarchyInfo>
+    <HierarchyInfo name="Promotions">
+    <UName name="[Promotions].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Promotions].[MEMBER_CAPTION]"/>
+    <LName name="[Promotions].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Promotions].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Promotions].[DISPLAY_INFO]"/></HierarchyInfo>
+    <HierarchyInfo name="Education Level">
+    <UName name="[Education Level].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Education Level].[MEMBER_CAPTION]"/>
+    <LName name="[Education Level].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Education Level].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Education Level].[DISPLAY_INFO]"/></HierarchyInfo>
+    <HierarchyInfo name="Gender">
+    <UName name="[Gender].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Gender].[MEMBER_CAPTION]"/>
+    <LName name="[Gender].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Gender].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Gender].[DISPLAY_INFO]"/></HierarchyInfo>
+    <HierarchyInfo name="Marital Status">
+    <UName name="[Marital Status].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Marital Status].[MEMBER_CAPTION]"/>
+    <LName name="[Marital Status].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Marital Status].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Marital Status].[DISPLAY_INFO]"/></HierarchyInfo>
+    <HierarchyInfo name="Store Size in SQFT">
+    <UName name="[Store Size in SQFT].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Store Size in SQFT].[MEMBER_CAPTION]"/>
+    <LName name="[Store Size in SQFT].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Store Size in SQFT].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Store Size in SQFT].[DISPLAY_INFO]"/></HierarchyInfo>
+    <HierarchyInfo name="Store Type">
+    <UName name="[Store Type].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Store Type].[MEMBER_CAPTION]"/>
+    <LName name="[Store Type].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Store Type].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Store Type].[DISPLAY_INFO]"/></HierarchyInfo>
+    <HierarchyInfo name="Yearly Income">
+    <UName name="[Yearly Income].[MEMBER_UNIQUE_NAME]"/>
+    <Caption name="[Yearly Income].[MEMBER_CAPTION]"/>
+    <LName name="[Yearly Income].[LEVEL_UNIQUE_NAME]"/>
+    <LNum name="[Yearly Income].[LEVEL_NUMBER]"/>
+    <DisplayInfo name="[Yearly Income].[DISPLAY_INFO]"/></HierarchyInfo>
+    </AxisInfo>
+    </AxesInfo>
+    <CellInfo>
+    <Value name="VALUE"/>
+    <FmtValue name="FORMATTED_VALUE"/>
+    <CellOrdinal name="CELL_ORDINAL"/></CellInfo>
+    </OlapInfo>
+    <Axes>
+    <Axis name="Axis0">
+    <Tuples>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Altadena]</UName>
+    <Caption>Altadena</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Arcadia]</UName>
+    <Caption>Arcadia</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Bellflower]</UName>
+    <Caption>Bellflower</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Berkeley]</UName>
+    <Caption>Berkeley</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Beverly Hills]</UName>
+    <Caption>Beverly Hills</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Burbank]</UName>
+    <Caption>Burbank</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Burlingame]</UName>
+    <Caption>Burlingame</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Chula Vista]</UName>
+    <Caption>Chula Vista</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Colma]</UName>
+    <Caption>Colma</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Concord]</UName>
+    <Caption>Concord</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Coronado]</UName>
+    <Caption>Coronado</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Daly City]</UName>
+    <Caption>Daly City</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Downey]</UName>
+    <Caption>Downey</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[El Cajon]</UName>
+    <Caption>El Cajon</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Fremont]</UName>
+    <Caption>Fremont</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Glendale]</UName>
+    <Caption>Glendale</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Grossmont]</UName>
+    <Caption>Grossmont</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Imperial Beach]</UName>
+    <Caption>Imperial Beach</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[La Jolla]</UName>
+    <Caption>La Jolla</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[La Mesa]</UName>
+    <Caption>La Mesa</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Lakewood]</UName>
+    <Caption>Lakewood</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Lemon Grove]</UName>
+    <Caption>Lemon Grove</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Lincoln Acres]</UName>
+    <Caption>Lincoln Acres</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Long Beach]</UName>
+    <Caption>Long Beach</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Los Angeles]</UName>
+    <Caption>Los Angeles</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Mill Valley]</UName>
+    <Caption>Mill Valley</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[National City]</UName>
+    <Caption>National City</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Newport Beach]</UName>
+    <Caption>Newport Beach</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Novato]</UName>
+    <Caption>Novato</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Oakland]</UName>
+    <Caption>Oakland</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Palo Alto]</UName>
+    <Caption>Palo Alto</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Pomona]</UName>
+    <Caption>Pomona</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Redwood City]</UName>
+    <Caption>Redwood City</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Richmond]</UName>
+    <Caption>Richmond</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[San Carlos]</UName>
+    <Caption>San Carlos</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[San Diego]</UName>
+    <Caption>San Diego</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[San Francisco]</UName>
+    <Caption>San Francisco</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[San Gabriel]</UName>
+    <Caption>San Gabriel</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[San Jose]</UName>
+    <Caption>San Jose</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Santa Cruz]</UName>
+    <Caption>Santa Cruz</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Santa Monica]</UName>
+    <Caption>Santa Monica</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Spring Valley]</UName>
+    <Caption>Spring Valley</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Torrance]</UName>
+    <Caption>Torrance</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[West Covina]</UName>
+    <Caption>West Covina</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[CA].[Woodland Hills]</UName>
+    <Caption>Woodland Hills</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[OR].[Albany]</UName>
+    <Caption>Albany</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>1000</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[OR].[Beaverton]</UName>
+    <Caption>Beaverton</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[OR].[Corvallis]</UName>
+    <Caption>Corvallis</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[OR].[Lake Oswego]</UName>
+    <Caption>Lake Oswego</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[OR].[Lebanon]</UName>
+    <Caption>Lebanon</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[OR].[Milwaukie]</UName>
+    <Caption>Milwaukie</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[OR].[Oregon City]</UName>
+    <Caption>Oregon City</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[OR].[Portland]</UName>
+    <Caption>Portland</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[OR].[Salem]</UName>
+    <Caption>Salem</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[OR].[W. Linn]</UName>
+    <Caption>W. Linn</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[OR].[Woodburn]</UName>
+    <Caption>Woodburn</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Anacortes]</UName>
+    <Caption>Anacortes</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>1000</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Ballard]</UName>
+    <Caption>Ballard</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Bellingham]</UName>
+    <Caption>Bellingham</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Bremerton]</UName>
+    <Caption>Bremerton</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Burien]</UName>
+    <Caption>Burien</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Edmonds]</UName>
+    <Caption>Edmonds</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Everett]</UName>
+    <Caption>Everett</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Issaquah]</UName>
+    <Caption>Issaquah</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Kirkland]</UName>
+    <Caption>Kirkland</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Lynnwood]</UName>
+    <Caption>Lynnwood</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Marysville]</UName>
+    <Caption>Marysville</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Olympia]</UName>
+    <Caption>Olympia</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Port Orchard]</UName>
+    <Caption>Port Orchard</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Puyallup]</UName>
+    <Caption>Puyallup</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Redmond]</UName>
+    <Caption>Redmond</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Renton]</UName>
+    <Caption>Renton</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Seattle]</UName>
+    <Caption>Seattle</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Sedro Woolley]</UName>
+    <Caption>Sedro Woolley</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Spokane]</UName>
+    <Caption>Spokane</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Tacoma]</UName>
+    <Caption>Tacoma</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Walla Walla]</UName>
+    <Caption>Walla Walla</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Customers">
+    <UName>[Customers].[USA].[WA].[Yakima]</UName>
+    <Caption>Yakima</Caption>
+    <LName>[Customers].[City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>132072</DisplayInfo></Member>
+    <Member Hierarchy="Measures">
+    <UName>[Measures].[Store Cost]</UName>
+    <Caption>Store Cost</Caption>
+    <LName>[Measures].[MeasuresLevel]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>131072</DisplayInfo></Member></Tuple></Tuples>
+    </Axis>
+    <Axis name="Axis1">
+    <Tuples>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[CA].[Beverly Hills]</UName>
+    <Caption>Beverly Hills</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>131073</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[CA].[Los Angeles]</UName>
+    <Caption>Los Angeles</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>131073</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[CA].[San Diego]</UName>
+    <Caption>San Diego</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>131073</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[CA].[San Francisco]</UName>
+    <Caption>San Francisco</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>131073</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[OR].[Portland]</UName>
+    <Caption>Portland</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>1</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[OR].[Salem]</UName>
+    <Caption>Salem</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>131073</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[WA].[Bellingham]</UName>
+    <Caption>Bellingham</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>1</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[WA].[Bremerton]</UName>
+    <Caption>Bremerton</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>131073</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[WA].[Seattle]</UName>
+    <Caption>Seattle</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>131073</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[WA].[Spokane]</UName>
+    <Caption>Spokane</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>131073</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[WA].[Tacoma]</UName>
+    <Caption>Tacoma</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>131073</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[WA].[Walla Walla]</UName>
+    <Caption>Walla Walla</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>131073</DisplayInfo></Member></Tuple>
+    <Tuple>
+    <Member Hierarchy="Store">
+    <UName>[Store].[USA].[WA].[Yakima]</UName>
+    <Caption>Yakima</Caption>
+    <LName>[Store].[Store City]</LName>
+    <LNum>3</LNum>
+    <DisplayInfo>131073</DisplayInfo></Member></Tuple></Tuples></Axis>
+    <Axis name="SlicerAxis">
+    <Tuples>
+    <Tuple>
+    <Member Hierarchy="Time">
+    <UName>[Time].[1997]</UName>
+    <Caption>1997</Caption>
+    <LName>[Time].[Year]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>4</DisplayInfo></Member>
+    <Member Hierarchy="Product">
+    <UName>[Product].[All Products]</UName>
+    <Caption>All Products</Caption>
+    <LName>[Product].[(All)]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>3</DisplayInfo></Member>
+    <Member Hierarchy="Promotion Media">
+    <UName>[Promotion Media].[All Media]</UName>
+    <Caption>All Media</Caption>
+    <LName>[Promotion Media].[(All)]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>14</DisplayInfo></Member>
+    <Member Hierarchy="Promotions">
+    <UName>[Promotions].[All Promotions]</UName>
+    <Caption>All Promotions</Caption>
+    <LName>[Promotions].[(All)]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>51</DisplayInfo></Member>
+    <Member Hierarchy="Education Level">
+    <UName>[Education Level].[All Education Level]</UName>
+    <Caption>All Education Level</Caption>
+    <LName>[Education Level].[(All)]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>5</DisplayInfo></Member>
+    <Member Hierarchy="Gender">
+    <UName>[Gender].[All Gender]</UName>
+    <Caption>All Gender</Caption>
+    <LName>[Gender].[(All)]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>2</DisplayInfo></Member>
+    <Member Hierarchy="Marital Status">
+    <UName>[Marital Status].[All Marital Status]</UName>
+    <Caption>All Marital Status</Caption>
+    <LName>[Marital Status].[(All)]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>2</DisplayInfo></Member>
+    <Member Hierarchy="Store Size in SQFT">
+    <UName>[Store Size in SQFT].[All Store Size in SQFT]</UName>
+    <Caption>All Store Size in SQFT</Caption>
+    <LName>[Store Size in SQFT].[(All)]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>21</DisplayInfo></Member>
+    <Member Hierarchy="Store Type">
+    <UName>[Store Type].[All Store Type]</UName>
+    <Caption>All Store Type</Caption>
+    <LName>[Store Type].[(All)]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>6</DisplayInfo></Member>
+    <Member Hierarchy="Yearly Income">
+    <UName>[Yearly Income].[All Yearly Income]</UName>
+    <Caption>All Yearly Income</Caption>
+    <LName>[Yearly Income].[(All)]</LName>
+    <LNum>0</LNum>
+    <DisplayInfo>8</DisplayInfo></Member></Tuple></Tuples></Axis>
+    </Axes>
+    <CellData>
+    <Cell CellOrdinal="0">
+    <Value xsi:type="xsd:double">1001.1069</Value>
+    <FmtValue>1,001.11</FmtValue></Cell>
+    <Cell CellOrdinal="1">
+    <Value xsi:type="xsd:double">898.5578</Value>
+    <FmtValue>898.56</FmtValue></Cell>
+    <Cell CellOrdinal="2">
+    <Value xsi:type="xsd:double">1205.9452</Value>
+    <FmtValue>1,205.95</FmtValue></Cell>
+    <Cell CellOrdinal="4">
+    <Value xsi:type="xsd:double">994.7675</Value>
+    <FmtValue>994.77</FmtValue></Cell>
+    <Cell CellOrdinal="5">
+    <Value xsi:type="xsd:double">1151.6987</Value>
+    <FmtValue>1,151.70</FmtValue></Cell>
+    <Cell CellOrdinal="12">
+    <Value xsi:type="xsd:double">1367.4653</Value>
+    <FmtValue>1,367.47</FmtValue></Cell>
+    <Cell CellOrdinal="15">
+    <Value xsi:type="xsd:double">1372.8403</Value>
+    <FmtValue>1,372.84</FmtValue></Cell>
+    <Cell CellOrdinal="20">
+    <Value xsi:type="xsd:double">965.4238</Value>
+    <FmtValue>965.42</FmtValue></Cell>
+    <Cell CellOrdinal="23">
+    <Value xsi:type="xsd:double">1191.4299</Value>
+    <FmtValue>1,191.43</FmtValue></Cell>
+    <Cell CellOrdinal="24">
+    <Value xsi:type="xsd:double">775.8819</Value>
+    <FmtValue>775.88</FmtValue></Cell>
+    <Cell CellOrdinal="27">
+    <Value xsi:type="xsd:double">1027.6061</Value>
+    <FmtValue>1,027.61</FmtValue></Cell>
+    <Cell CellOrdinal="31">
+    <Value xsi:type="xsd:double">975.6317</Value>
+    <FmtValue>975.63</FmtValue></Cell>
+    <Cell CellOrdinal="37">
+    <Value xsi:type="xsd:double">1102.5056</Value>
+    <FmtValue>1,102.51</FmtValue></Cell>
+    <Cell CellOrdinal="40">
+    <Value xsi:type="xsd:double">963.7611</Value>
+    <FmtValue>963.76</FmtValue></Cell>
+    <Cell CellOrdinal="42">
+    <Value xsi:type="xsd:double">997.2073</Value>
+    <FmtValue>997.21</FmtValue></Cell>
+    <Cell CellOrdinal="43">
+    <Value xsi:type="xsd:double">1186.8846</Value>
+    <FmtValue>1,186.88</FmtValue></Cell>
+    <Cell CellOrdinal="44">
+    <Value xsi:type="xsd:double">1087.7267</Value>
+    <FmtValue>1,087.73</FmtValue></Cell>
+    <Cell CellOrdinal="78">
+    <Value xsi:type="xsd:double">1238.6062</Value>
+    <FmtValue>1,238.61</FmtValue></Cell>
+    <Cell CellOrdinal="79">
+    <Value xsi:type="xsd:double">1147.1708</Value>
+    <FmtValue>1,147.17</FmtValue></Cell>
+    <Cell CellOrdinal="80">
+    <Value xsi:type="xsd:double">1432.5258</Value>
+    <FmtValue>1,432.53</FmtValue></Cell>
+    <Cell CellOrdinal="82">
+    <Value xsi:type="xsd:double">1484.6944</Value>
+    <FmtValue>1,484.69</FmtValue></Cell>
+    <Cell CellOrdinal="83">
+    <Value xsi:type="xsd:double">1471.3451</Value>
+    <FmtValue>1,471.35</FmtValue></Cell>
+    <Cell CellOrdinal="90">
+    <Value xsi:type="xsd:double">1554.2816</Value>
+    <FmtValue>1,554.28</FmtValue></Cell>
+    <Cell CellOrdinal="93">
+    <Value xsi:type="xsd:double">1456.2808</Value>
+    <FmtValue>1,456.28</FmtValue></Cell>
+    <Cell CellOrdinal="98">
+    <Value xsi:type="xsd:double">1068.2778</Value>
+    <FmtValue>1,068.28</FmtValue></Cell>
+    <Cell CellOrdinal="101">
+    <Value xsi:type="xsd:double">1386.9222</Value>
+    <FmtValue>1,386.92</FmtValue></Cell>
+    <Cell CellOrdinal="102">
+    <Value xsi:type="xsd:double">973.8091</Value>
+    <FmtValue>973.81</FmtValue></Cell>
+    <Cell CellOrdinal="105">
+    <Value xsi:type="xsd:double">1636.7446</Value>
+    <FmtValue>1,636.74</FmtValue></Cell>
+    <Cell CellOrdinal="109">
+    <Value xsi:type="xsd:double">1289.9055</Value>
+    <FmtValue>1,289.91</FmtValue></Cell>
+    <Cell CellOrdinal="115">
+    <Value xsi:type="xsd:double">1158.0826</Value>
+    <FmtValue>1,158.08</FmtValue></Cell>
+    <Cell CellOrdinal="118">
+    <Value xsi:type="xsd:double">1310.6892</Value>
+    <FmtValue>1,310.69</FmtValue></Cell>
+    <Cell CellOrdinal="120">
+    <Value xsi:type="xsd:double">1131.9651</Value>
+    <FmtValue>1,131.97</FmtValue></Cell>
+    <Cell CellOrdinal="121">
+    <Value xsi:type="xsd:double">933.8937</Value>
+    <FmtValue>933.89</FmtValue></Cell>
+    <Cell CellOrdinal="122">
+    <Value xsi:type="xsd:double">1096.3415</Value>
+    <FmtValue>1,096.34</FmtValue></Cell>
+    <Cell CellOrdinal="163">
+    <Value xsi:type="xsd:double">2492.9104</Value>
+    <FmtValue>2,492.91</FmtValue></Cell>
+    <Cell CellOrdinal="166">
+    <Value xsi:type="xsd:double">2031.1717</Value>
+    <FmtValue>2,031.17</FmtValue></Cell>
+    <Cell CellOrdinal="169">
+    <Value xsi:type="xsd:double">2173.7062</Value>
+    <FmtValue>2,173.71</FmtValue></Cell>
+    <Cell CellOrdinal="172">
+    <Value xsi:type="xsd:double">1785.3183</Value>
+    <FmtValue>1,785.32</FmtValue></Cell>
+    <Cell CellOrdinal="173">
+    <Value xsi:type="xsd:double">1340.2879</Value>
+    <FmtValue>1,340.29</FmtValue></Cell>
+    <Cell CellOrdinal="174">
+    <Value xsi:type="xsd:double">1640.6061</Value>
+    <FmtValue>1,640.61</FmtValue></Cell>
+    <Cell CellOrdinal="175">
+    <Value xsi:type="xsd:double">1565.2103</Value>
+    <FmtValue>1,565.21</FmtValue></Cell>
+    <Cell CellOrdinal="177">
+    <Value xsi:type="xsd:double">2243.3616</Value>
+    <FmtValue>2,243.36</FmtValue></Cell>
+    <Cell CellOrdinal="178">
+    <Value xsi:type="xsd:double">1867.9515</Value>
+    <FmtValue>1,867.95</FmtValue></Cell>
+    <Cell CellOrdinal="182">
+    <Value xsi:type="xsd:double">1680.898</Value>
+    <FmtValue>1,680.90</FmtValue></Cell>
+    <Cell CellOrdinal="191">
+    <Value xsi:type="xsd:double">1349.1013</Value>
+    <FmtValue>1,349.10</FmtValue></Cell>
+    <Cell CellOrdinal="197">
+    <Value xsi:type="xsd:double">1543.0095</Value>
+    <FmtValue>1,543.01</FmtValue></Cell>
+    <Cell CellOrdinal="237">
+    <Value xsi:type="xsd:double">129.2897</Value>
+    <FmtValue>129.29</FmtValue></Cell>
+    <Cell CellOrdinal="240">
+    <Value xsi:type="xsd:double">160.4193</Value>
+    <FmtValue>160.42</FmtValue></Cell>
+    <Cell CellOrdinal="242">
+    <Value xsi:type="xsd:double">114.1765</Value>
+    <FmtValue>114.18</FmtValue></Cell>
+    <Cell CellOrdinal="243">
+    <Value xsi:type="xsd:double">86.4811</Value>
+    <FmtValue>86.48</FmtValue></Cell>
+    <Cell CellOrdinal="245">
+    <Value xsi:type="xsd:double">112.4619</Value>
+    <FmtValue>112.46</FmtValue></Cell>
+    <Cell CellOrdinal="248">
+    <Value xsi:type="xsd:double">141.1693</Value>
+    <FmtValue>141.17</FmtValue></Cell>
+    <Cell CellOrdinal="259">
+    <Value xsi:type="xsd:double">43.5545</Value>
+    <FmtValue>43.55</FmtValue></Cell>
+    <Cell CellOrdinal="262">
+    <Value xsi:type="xsd:double">135.293</Value>
+    <FmtValue>135.29</FmtValue></Cell>
+    <Cell CellOrdinal="263">
+    <Value xsi:type="xsd:double">60.4207</Value>
+    <FmtValue>60.42</FmtValue></Cell>
+    <Cell CellOrdinal="264">
+    <Value xsi:type="xsd:double">108.8179</Value>
+    <FmtValue>108.82</FmtValue></Cell>
+    <Cell CellOrdinal="266">
+    <Value xsi:type="xsd:double">123.518</Value>
+    <FmtValue>123.52</FmtValue></Cell>
+    <Cell CellOrdinal="267">
+    <Value xsi:type="xsd:double">81.001</Value>
+    <FmtValue>81.00</FmtValue></Cell>
+    <Cell CellOrdinal="268">
+    <Value xsi:type="xsd:double">116.2018</Value>
+    <FmtValue>116.20</FmtValue></Cell>
+    <Cell CellOrdinal="270">
+    <Value xsi:type="xsd:double">80.2158</Value>
+    <FmtValue>80.22</FmtValue></Cell>
+    <Cell CellOrdinal="272">
+    <Value xsi:type="xsd:double">138.1977</Value>
+    <FmtValue>138.20</FmtValue></Cell>
+    <Cell CellOrdinal="273">
+    <Value xsi:type="xsd:double">147.6977</Value>
+    <FmtValue>147.70</FmtValue></Cell>
+    <Cell CellOrdinal="358">
+    <Value xsi:type="xsd:double">3798.0392</Value>
+    <FmtValue>3,798.04</FmtValue></Cell>
+    <Cell CellOrdinal="360">
+    <Value xsi:type="xsd:double">4134.7989</Value>
+    <FmtValue>4,134.80</FmtValue></Cell>
+    <Cell CellOrdinal="362">
+    <Value xsi:type="xsd:double">4347.82460000001</Value>
+    <FmtValue>4,347.82</FmtValue></Cell>
+    <Cell CellOrdinal="363">
+    <Value xsi:type="xsd:double">3139.5415</Value>
+    <FmtValue>3,139.54</FmtValue></Cell>
+    <Cell CellOrdinal="364">
+    <Value xsi:type="xsd:double">2985.40549999999</Value>
+    <FmtValue>2,985.41</FmtValue></Cell>
+    <Cell CellOrdinal="366">
+    <Value xsi:type="xsd:double">3543.3343</Value>
+    <FmtValue>3,543.33</FmtValue></Cell>
+    <Cell CellOrdinal="435">
+    <Value xsi:type="xsd:double">5593.27710000001</Value>
+    <FmtValue>5,593.28</FmtValue></Cell>
+    <Cell CellOrdinal="437">
+    <Value xsi:type="xsd:double">8006.7321</Value>
+    <FmtValue>8,006.73</FmtValue></Cell>
+    <Cell CellOrdinal="439">
+    <Value xsi:type="xsd:double">8127.6501</Value>
+    <FmtValue>8,127.65</FmtValue></Cell>
+    <Cell CellOrdinal="443">
+    <Value xsi:type="xsd:double">6430.5984</Value>
+    <FmtValue>6,430.60</FmtValue></Cell>
+    <Cell CellOrdinal="445">
+    <Value xsi:type="xsd:double">6665.29889999999</Value>
+    <FmtValue>6,665.30</FmtValue></Cell>
+    <Cell CellOrdinal="524">
+    <Value xsi:type="xsd:double">641.9349</Value>
+    <FmtValue>641.93</FmtValue></Cell>
+    <Cell CellOrdinal="526">
+    <Value xsi:type="xsd:double">646.714</Value>
+    <FmtValue>646.71</FmtValue></Cell>
+    <Cell CellOrdinal="541">
+    <Value xsi:type="xsd:double">607.9685</Value>
+    <FmtValue>607.97</FmtValue></Cell>
+    <Cell CellOrdinal="605">
+    <Value xsi:type="xsd:double">10505.9363</Value>
+    <FmtValue>10,505.94</FmtValue></Cell>
+    <Cell CellOrdinal="614">
+    <Value xsi:type="xsd:double">10616.0268</Value>
+    <FmtValue>10,616.03</FmtValue></Cell>
+    <Cell CellOrdinal="681">
+    <Value xsi:type="xsd:double">2169.5106</Value>
+    <FmtValue>2,169.51</FmtValue></Cell>
+    <Cell CellOrdinal="684">
+    <Value xsi:type="xsd:double">2342.9026</Value>
+    <FmtValue>2,342.90</FmtValue></Cell>
+    <Cell CellOrdinal="685">
+    <Value xsi:type="xsd:double">1685.905</Value>
+    <FmtValue>1,685.91</FmtValue></Cell>
+    <Cell CellOrdinal="686">
+    <Value xsi:type="xsd:double">2267.4592</Value>
+    <FmtValue>2,267.46</FmtValue></Cell>
+    <Cell CellOrdinal="687">
+    <Value xsi:type="xsd:double">1734.8628</Value>
+    <FmtValue>1,734.86</FmtValue></Cell>
+    <Cell CellOrdinal="688">
+    <Value xsi:type="xsd:double">1903.4541</Value>
+    <FmtValue>1,903.45</FmtValue></Cell>
+    <Cell CellOrdinal="689">
+    <Value xsi:type="xsd:double">1903.74</Value>
+    <FmtValue>1,903.74</FmtValue></Cell>
+    <Cell CellOrdinal="690">
+    <Value xsi:type="xsd:double">1800.8132</Value>
+    <FmtValue>1,800.81</FmtValue></Cell>
+    <Cell CellOrdinal="694">
+    <Value xsi:type="xsd:double">1705.1584</Value>
+    <FmtValue>1,705.16</FmtValue></Cell>
+    <Cell CellOrdinal="695">
+    <Value xsi:type="xsd:double">1843.6079</Value>
+    <FmtValue>1,843.61</FmtValue></Cell>
+    <Cell CellOrdinal="696">
+    <Value xsi:type="xsd:double">1599.3887</Value>
+    <FmtValue>1,599.39</FmtValue></Cell>
+    <Cell CellOrdinal="776">
+    <Value xsi:type="xsd:double">19795.491</Value>
+    <FmtValue>19,795.49</FmtValue></Cell>
+    <Cell CellOrdinal="847">
+    <Value xsi:type="xsd:double">10581.9671</Value>
+    <FmtValue>10,581.97</FmtValue></Cell>
+    <Cell CellOrdinal="849">
+    <Value xsi:type="xsd:double">10139.8147</Value>
+    <FmtValue>10,139.81</FmtValue></Cell>
+    <Cell CellOrdinal="855">
+    <Value xsi:type="xsd:double">9237.49949999999</Value>
+    <FmtValue>9,237.50</FmtValue></Cell>
+    <Cell CellOrdinal="934">
+    <Value xsi:type="xsd:double">1880.3396</Value>
+    <FmtValue>1,880.34</FmtValue></Cell>
+    <Cell CellOrdinal="1013">
+    <Value xsi:type="xsd:double">9713.81299999999</Value>
+    <FmtValue>9,713.81</FmtValue>
+    </Cell>
+    </CellData>
+</root>
+</m:return>
+</m:ExecuteResponse>

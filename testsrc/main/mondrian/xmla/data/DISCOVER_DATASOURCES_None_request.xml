@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soapenv:Envelope 
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <soapenv:Body>
+    <ns1:Discover 
+    soapenv:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" 
+    xmlns:ns1="urn:schemas-microsoft-com:xml-analysis">
+        <RequestType xsi:type="xsd:string">DISCOVER_DATASOURCES</RequestType>
+        <Restrictions>
+            <RestrictionList/>
+        </Restrictions>
+        <Properties>
+            <PropertyList>
+                <Content>None</Content>
+            </PropertyList>
+        </Properties>
+    </ns1:Discover>
+    </soapenv:Body>
+</soapenv:Envelope>

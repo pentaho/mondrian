@@ -1,0 +1,1932 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>select {[Measures].[Store Invoice], [Measures].[Supply Time]} on columns,     crossjoin([Warehouse].children, crossjoin([Store].[Store State].members, [Store Type].members)) on rows from [Warehouse] </mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Time].[1997]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Invoice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Supply Time]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Warehouse]</dim>
+                <dim>[Store]</dim>
+                <dim>[Store Type]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Canada]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[Mexico]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Canada].[BC]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[DF]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Guerrero]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Jalisco]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Veracruz]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Yucatan]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[Mexico].[Zacatecas]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[CA]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[OR]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Deluxe Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Gourmet Supermarket]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[HeadQuarters]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Mid-Size Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Small Grocery]</member>
+                </tuple>
+                <tuple>
+                    <member>[Warehouse].[USA]</member>
+                    <member>[Store].[USA].[WA]</member>
+                    <member>[Store Type].[Supermarket]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>29607.2994</cell>
+                <cell>3100.0</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>5132.8974</cell>
+                <cell>559.0</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>988.8204</cell>
+                <cell>80.0</cell>
+            </drow>
+            <drow>
+                <cell>23485.5816</cell>
+                <cell>2461.0</cell>
+            </drow>
+            <drow>
+                <cell>20194.0007</cell>
+                <cell>2051.0</cell>
+            </drow>
+            <drow>
+                <cell>16151.0411</cell>
+                <cell>1650.0</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>4042.9596</cell>
+                <cell>401.0</cell>
+            </drow>
+            <drow>
+                <cell>52477.1088</cell>
+                <cell>5274.0</cell>
+            </drow>
+            <drow>
+                <cell>16100.8297</cell>
+                <cell>1578.0</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>5274.3375</cell>
+                <cell>528.0</cell>
+            </drow>
+            <drow>
+                <cell>2143.2282</cell>
+                <cell>299.0</cell>
+            </drow>
+            <drow>
+                <cell>28958.7134</cell>
+                <cell>2869.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

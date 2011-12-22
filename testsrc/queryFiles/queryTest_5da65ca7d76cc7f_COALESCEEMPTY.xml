@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>WITH MEMBER Measures.[Profit] AS    '(Measures.[Store Sales] - Measures.[Store Cost])' MEMBER Measures.[Profit Increase] AS '(Measures.[Profit]) /    COALESCEEMPTY((Measures.[Profit], [Time].[Time].PREVMEMBER),    Measures.[Profit])', FORMAT_STRING = '#.00%' SELECT {Measures.[Profit], Measures.[Profit Increase]} ON COLUMNS, {DESCENDANTS([Time].[1997], [Month])} ON ROWS FROM [Sales]</mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Product]</dim>
+                <dim>[Store]</dim>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Promotions]</dim>
+                <dim>[Customers]</dim>
+                <dim>[Education Level]</dim>
+                <dim>[Marital Status]</dim>
+                <dim>[Yearly Income]</dim>
+                <dim>[Promotion Media]</dim>
+                <dim>[Gender]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Product].[All Products]</member>
+                    <member>[Store].[All Stores]</member>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Promotions].[All Promotions]</member>
+                    <member>[Customers].[All Customers]</member>
+                    <member>[Education Level].[All Education Levels]</member>
+                    <member>[Marital Status].[All Marital Status]</member>
+                    <member>[Yearly Income].[All Yearly Incomes]</member>
+                    <member>[Promotion Media].[All Media]</member>
+                    <member>[Gender].[All Gender]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Profit]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Profit Increase]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Time]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Time].[1997].[Q1].[1]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q1].[2]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q1].[3]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q2].[4]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q2].[5]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q2].[6]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q3].[7]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q3].[8]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q3].[9]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q4].[10]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q4].[11]</member>
+                </tuple>
+                <tuple>
+                    <member>[Time].[1997].[Q4].[12]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>27361.1974</cell>
+                <cell>1.0</cell>
+            </drow>
+            <drow>
+                <cell>26459.1212</cell>
+                <cell>0.967030821538534</cell>
+            </drow>
+            <drow>
+                <cell>30055.7909</cell>
+                <cell>1.1359330747538205</cell>
+            </drow>
+            <drow>
+                <cell>25766.5507</cell>
+                <cell>0.8572907226340865</cell>
+            </drow>
+            <drow>
+                <cell>26673.7343</cell>
+                <cell>1.035207801407427</cell>
+            </drow>
+            <drow>
+                <cell>27261.7602</cell>
+                <cell>1.0220451284918137</cell>
+            </drow>
+            <drow>
+                <cell>30241.089</cell>
+                <cell>1.109286002743139</cell>
+            </drow>
+            <drow>
+                <cell>27763.0792</cell>
+                <cell>0.9180581823624142</cell>
+            </drow>
+            <drow>
+                <cell>26362.8524</cell>
+                <cell>0.9495651476584053</cell>
+            </drow>
+            <drow>
+                <cell>25440.2644</cell>
+                <cell>0.9650042421054559</cell>
+            </drow>
+            <drow>
+                <cell>32005.9514</cell>
+                <cell>1.2580824985451016</cell>
+            </drow>
+            <drow>
+                <cell>34219.5053</cell>
+                <cell>1.0691606967821616</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>

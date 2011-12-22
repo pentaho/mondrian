@@ -1,0 +1,2621 @@
+<?xml version="1.0" ?>
+<Root>
+    <TestCase name="dbschemaCatalogs">
+        <Resource name="request">
+            <![CDATA[
+<Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <RequestType>DBSCHEMA_CATALOGS</RequestType>
+  <Restrictions>
+    <RestrictionList/>
+  </Restrictions>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${datasource}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+    </PropertyList>
+  </Properties>
+</Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element name="ROLES" sql:field="ROLES" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DATE_MODIFIED" sql:field="DATE_MODIFIED" type="xsd:dateTime"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <DESCRIPTION>No description available</DESCRIPTION>
+        <ROLES>California manager,No HR Cube</ROLES>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="dbschemaSchemata">
+        <Resource name="request">
+            <![CDATA[
+<Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <RequestType>DBSCHEMA_SCHEMATA</RequestType>
+  <Restrictions>
+    <RestrictionList/>
+  </Restrictions>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${datasource}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+    </PropertyList>
+  </Properties>
+</Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="SCHEMA_OWNER" sql:field="SCHEMA_OWNER" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <SCHEMA_OWNER/>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="discoverDataSources">
+        <Resource name="request">
+            <![CDATA[
+<Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <RequestType>DISCOVER_DATASOURCES</RequestType>
+  <Restrictions>
+    <RestrictionList/>
+  </Restrictions>
+  <Properties>
+    <PropertyList>
+      <Format>Tabular</Format>
+    </PropertyList>
+  </Properties>
+</Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element name="DataSourceName" sql:field="DataSourceName" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DataSourceDescription" sql:field="DataSourceDescription" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="URL" sql:field="URL" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DataSourceInfo" sql:field="DataSourceInfo" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="ProviderName" sql:field="ProviderName" type="xsd:string"/>
+            <xsd:element maxOccurs="unbounded" name="ProviderType" sql:field="ProviderType" type="xsd:string"/>
+            <xsd:element name="AuthenticationMode" sql:field="AuthenticationMode" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <DataSourceName>FoodMart</DataSourceName>
+        <DataSourceDescription>Mondrian FoodMart Test data source</DataSourceDescription>
+        <URL>http://localhost:8080/mondrian/xmla</URL>
+        <DataSourceInfo>FoodMart</DataSourceInfo>
+        <ProviderName>Mondrian</ProviderName>
+        <ProviderType>MDP</ProviderType>
+        <AuthenticationMode>Unauthenticated</AuthenticationMode>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="executeHR-tabular">
+        <Resource name="request">
+            <![CDATA[
+<Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <Command>
+    <Statement>
+      SELECT {[Measures].[Org Salary]} ON columns, Hierarchize(Union({[Employees].[All Employees]}, [Employees].[All Employees].Children)) ON rows FROM HR WHERE ([Time].[1997])
+    </Statement>
+  </Command>
+  <Properties>
+    <PropertyList>
+      <Catalog>${catalog}</Catalog>
+      <DataSourceInfo>${datasource}</DataSourceInfo>
+      <Format>Tabular</Format>
+      <AxisFormat>TupleFormat</AxisFormat>
+    </PropertyList>
+  </Properties>
+</Execute>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="_x005b_Employees_x005d_._x005b_Employee_x0020_Id_x005d_._x005b_MEMBER_CAPTION_x005d_" sql:field="[Employees].[Employee Id].[MEMBER_CAPTION]" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="_x005b_Measures_x005d_._x005b_Org_x0020_Salary_x005d_" sql:field="[Measures].[Org Salary]"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <_x005b_Measures_x005d_._x005b_Org_x0020_Salary_x005d_ xsi:type="xsd:double">39431.6712</_x005b_Measures_x005d_._x005b_Org_x0020_Salary_x005d_>
+      </row>
+      <row>
+        <_x005b_Employees_x005d_._x005b_Employee_x0020_Id_x005d_._x005b_MEMBER_CAPTION_x005d_>Sheri Nowmer</_x005b_Employees_x005d_._x005b_Employee_x0020_Id_x005d_._x005b_MEMBER_CAPTION_x005d_>
+        <_x005b_Measures_x005d_._x005b_Org_x0020_Salary_x005d_ xsi:type="xsd:double">39431.6712</_x005b_Measures_x005d_._x005b_Org_x0020_Salary_x005d_>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:ExecuteResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="executeHR">
+        <Resource name="request">
+            <![CDATA[
+<Execute xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <Command>
+    <Statement>
+      SELECT {[Measures].[Org Salary]} ON columns, Hierarchize(Union({[Employees].[All Employees]}, [Employees].[All Employees].Children)) ON rows FROM HR WHERE ([Time].[1997])
+    </Statement>
+  </Command>
+  <Properties>
+    <PropertyList>
+      <Catalog>${catalog}</Catalog>
+      <DataSourceInfo>${datasource}</DataSourceInfo>
+      <Format>Multidimensional</Format>
+      <AxisFormat>TupleFormat</AxisFormat>
+    </PropertyList>
+  </Properties>
+</Execute>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:ExecuteResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns="urn:schemas-microsoft-com:xml-analysis:mddataset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:complexType name="MemberType">
+          <xsd:sequence>
+            <xsd:element name="UName" type="xsd:string"/>
+            <xsd:element name="Caption" type="xsd:string"/>
+            <xsd:element name="LName" type="xsd:string"/>
+            <xsd:element name="LNum" type="xsd:unsignedInt"/>
+            <xsd:element name="DisplayInfo" type="xsd:unsignedInt"/>
+            <xsd:sequence maxOccurs="unbounded" minOccurs="0">
+              <xsd:any maxOccurs="unbounded" processContents="lax"/>
+            </xsd:sequence>
+          </xsd:sequence>
+          <xsd:attribute name="Hierarchy" type="xsd:string"/>
+        </xsd:complexType>
+        <xsd:complexType name="PropType">
+          <xsd:attribute name="name" type="xsd:string"/>
+        </xsd:complexType>
+        <xsd:complexType name="TupleType">
+          <xsd:sequence maxOccurs="unbounded">
+            <xsd:element name="Member" type="MemberType"/>
+          </xsd:sequence>
+        </xsd:complexType>
+        <xsd:complexType name="MembersType">
+          <xsd:sequence maxOccurs="unbounded">
+            <xsd:element name="Member" type="MemberType"/>
+          </xsd:sequence>
+          <xsd:attribute name="Hierarchy" type="xsd:string"/>
+        </xsd:complexType>
+        <xsd:complexType name="TuplesType">
+          <xsd:sequence maxOccurs="unbounded">
+            <xsd:element name="Tuple" type="TupleType"/>
+          </xsd:sequence>
+        </xsd:complexType>
+        <xsd:complexType name="CrossProductType">
+          <xsd:sequence>
+            <xsd:choice maxOccurs="unbounded" minOccurs="0">
+              <xsd:element name="Members" type="MembersType"/>
+              <xsd:element name="Tuples" type="TuplesType"/>
+            </xsd:choice>
+          </xsd:sequence>
+          <xsd:attribute name="Size" type="xsd:unsignedInt"/>
+        </xsd:complexType>
+        <xsd:complexType name="OlapInfo">
+          <xsd:sequence>
+            <xsd:element name="CubeInfo">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element maxOccurs="unbounded" name="Cube">
+                    <xsd:complexType>
+                      <xsd:sequence>
+                        <xsd:element name="CubeName" type="xsd:string"/>
+                      </xsd:sequence>
+                    </xsd:complexType>
+                  </xsd:element>
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="AxesInfo">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element maxOccurs="unbounded" name="AxisInfo">
+                    <xsd:complexType>
+                      <xsd:sequence>
+                        <xsd:element maxOccurs="unbounded" minOccurs="0" name="HierarchyInfo">
+                          <xsd:complexType>
+                            <xsd:sequence>
+                              <xsd:sequence maxOccurs="unbounded">
+                                <xsd:element name="UName" type="PropType"/>
+                                <xsd:element name="Caption" type="PropType"/>
+                                <xsd:element name="LName" type="PropType"/>
+                                <xsd:element name="LNum" type="PropType"/>
+                                <xsd:element maxOccurs="unbounded" minOccurs="0" name="DisplayInfo" type="PropType"/>
+                              </xsd:sequence>
+                              <xsd:sequence>
+                                <xsd:any maxOccurs="unbounded" minOccurs="0" processContents="lax"/>
+                              </xsd:sequence>
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required"/>
+                          </xsd:complexType>
+                        </xsd:element>
+                      </xsd:sequence>
+                      <xsd:attribute name="name" type="xsd:string"/>
+                    </xsd:complexType>
+                  </xsd:element>
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="CellInfo">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:sequence maxOccurs="unbounded" minOccurs="0">
+                    <xsd:choice>
+                      <xsd:element name="Value" type="PropType"/>
+                      <xsd:element name="FmtValue" type="PropType"/>
+                      <xsd:element name="BackColor" type="PropType"/>
+                      <xsd:element name="ForeColor" type="PropType"/>
+                      <xsd:element name="FontName" type="PropType"/>
+                      <xsd:element name="FontSize" type="PropType"/>
+                      <xsd:element name="FontFlags" type="PropType"/>
+                      <xsd:element name="FormatString" type="PropType"/>
+                      <xsd:element name="NonEmptyBehavior" type="PropType"/>
+                      <xsd:element name="SolveOrder" type="PropType"/>
+                      <xsd:element name="Updateable" type="PropType"/>
+                      <xsd:element name="Visible" type="PropType"/>
+                      <xsd:element name="Expression" type="PropType"/>
+                    </xsd:choice>
+                  </xsd:sequence>
+                  <xsd:sequence maxOccurs="unbounded" minOccurs="0">
+                    <xsd:any maxOccurs="unbounded" processContents="lax"/>
+                  </xsd:sequence>
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+        <xsd:complexType name="Axes">
+          <xsd:sequence maxOccurs="unbounded">
+            <xsd:element name="Axis">
+              <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded" minOccurs="0">
+                  <xsd:element name="CrossProduct" type="CrossProductType"/>
+                  <xsd:element name="Tuples" type="TuplesType"/>
+                  <xsd:element name="Members" type="MembersType"/>
+                </xsd:choice>
+                <xsd:attribute name="name" type="xsd:string"/>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+        <xsd:complexType name="CellData">
+          <xsd:sequence>
+            <xsd:element maxOccurs="unbounded" minOccurs="0" name="Cell">
+              <xsd:complexType>
+                <xsd:sequence maxOccurs="unbounded">
+                  <xsd:choice>
+                    <xsd:element name="Value"/>
+                    <xsd:element name="FmtValue" type="xsd:string"/>
+                    <xsd:element name="BackColor" type="xsd:unsignedInt"/>
+                    <xsd:element name="ForeColor" type="xsd:unsignedInt"/>
+                    <xsd:element name="FontName" type="xsd:string"/>
+                    <xsd:element name="FontSize" type="xsd:unsignedShort"/>
+                    <xsd:element name="FontFlags" type="xsd:unsignedInt"/>
+                    <xsd:element name="FormatString" type="xsd:string"/>
+                    <xsd:element name="NonEmptyBehavior" type="xsd:unsignedShort"/>
+                    <xsd:element name="SolveOrder" type="xsd:unsignedInt"/>
+                    <xsd:element name="Updateable" type="xsd:unsignedInt"/>
+                    <xsd:element name="Visible" type="xsd:unsignedInt"/>
+                    <xsd:element name="Expression" type="xsd:string"/>
+                  </xsd:choice>
+                </xsd:sequence>
+                <xsd:attribute name="CellOrdinal" type="xsd:unsignedInt" use="required"/>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence maxOccurs="unbounded">
+              <xsd:element name="OlapInfo" type="OlapInfo"/>
+              <xsd:element name="Axes" type="Axes"/>
+              <xsd:element name="CellData" type="CellData"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+      </xsd:schema>
+      <OlapInfo>
+        <CubeInfo>
+          <Cube>
+            <CubeName>HR</CubeName>
+          </Cube>
+        </CubeInfo>
+        <AxesInfo>
+          <AxisInfo name="Axis0">
+            <HierarchyInfo name="Measures">
+              <UName name="[Measures].[MEMBER_UNIQUE_NAME]"/>
+              <Caption name="[Measures].[MEMBER_CAPTION]"/>
+              <LName name="[Measures].[LEVEL_UNIQUE_NAME]"/>
+              <LNum name="[Measures].[LEVEL_NUMBER]"/>
+              <DisplayInfo name="[Measures].[DISPLAY_INFO]"/>
+            </HierarchyInfo>
+          </AxisInfo>
+          <AxisInfo name="Axis1">
+            <HierarchyInfo name="Employees">
+              <UName name="[Employees].[MEMBER_UNIQUE_NAME]"/>
+              <Caption name="[Employees].[MEMBER_CAPTION]"/>
+              <LName name="[Employees].[LEVEL_UNIQUE_NAME]"/>
+              <LNum name="[Employees].[LEVEL_NUMBER]"/>
+              <DisplayInfo name="[Employees].[DISPLAY_INFO]"/>
+            </HierarchyInfo>
+          </AxisInfo>
+          <AxisInfo name="SlicerAxis">
+            <HierarchyInfo name="Time">
+              <UName name="[Time].[MEMBER_UNIQUE_NAME]"/>
+              <Caption name="[Time].[MEMBER_CAPTION]"/>
+              <LName name="[Time].[LEVEL_UNIQUE_NAME]"/>
+              <LNum name="[Time].[LEVEL_NUMBER]"/>
+              <DisplayInfo name="[Time].[DISPLAY_INFO]"/>
+            </HierarchyInfo>
+          </AxisInfo>
+        </AxesInfo>
+        <CellInfo>
+          <Value name="VALUE"/>
+          <FmtValue name="FORMATTED_VALUE"/>
+          <FormatString name="FORMAT_STRING"/>
+        </CellInfo>
+      </OlapInfo>
+      <Axes>
+        <Axis name="Axis0">
+          <Tuples>
+            <Tuple>
+              <Member Hierarchy="Measures">
+                <UName>[Measures].[Org Salary]</UName>
+                <Caption>Org Salary</Caption>
+                <LName>[Measures].[MeasuresLevel]</LName>
+                <LNum>0</LNum>
+                <DisplayInfo>0</DisplayInfo>
+              </Member>
+            </Tuple>
+          </Tuples>
+        </Axis>
+        <Axis name="Axis1">
+          <Tuples>
+            <Tuple>
+              <Member Hierarchy="Employees">
+                <UName>[Employees].[All Employees]</UName>
+                <Caption>All Employees</Caption>
+                <LName>[Employees].[(All)]</LName>
+                <LNum>0</LNum>
+                <DisplayInfo>65537</DisplayInfo>
+              </Member>
+            </Tuple>
+            <Tuple>
+              <Member Hierarchy="Employees">
+                <UName>[Employees].[Sheri Nowmer]</UName>
+                <Caption>Sheri Nowmer</Caption>
+                <LName>[Employees].[Employee Id]</LName>
+                <LNum>1</LNum>
+                <DisplayInfo>7</DisplayInfo>
+              </Member>
+            </Tuple>
+          </Tuples>
+        </Axis>
+        <Axis name="SlicerAxis">
+          <Tuples>
+            <Tuple>
+              <Member Hierarchy="Time">
+                <UName>[Time].[1997]</UName>
+                <Caption>1997</Caption>
+                <LName>[Time].[Year]</LName>
+                <LNum>0</LNum>
+                <DisplayInfo>4</DisplayInfo>
+              </Member>
+            </Tuple>
+          </Tuples>
+        </Axis>
+      </Axes>
+      <CellData>
+        <Cell CellOrdinal="0">
+          <Value xsi:type="xsd:double">39431.6712</Value>
+          <FmtValue>$39,431.67</FmtValue>
+          <FormatString>Currency</FormatString>
+        </Cell>
+        <Cell CellOrdinal="1">
+          <Value xsi:type="xsd:double">39431.6712</Value>
+          <FmtValue>$39,431.67</FmtValue>
+          <FormatString>Currency</FormatString>
+        </Cell>
+      </CellData>
+    </root>
+  </xmla:return>
+</xmla:ExecuteResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="mdschemaCubesRestrictions">
+        <Resource name="request">
+            <![CDATA[
+<Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <RequestType>MDSCHEMA_CUBES</RequestType>
+  <Restrictions>
+    <RestrictionList>
+      <CATALOG_NAME>${catalog}</CATALOG_NAME>
+      <CUBE_NAME>Sales</CUBE_NAME>
+    </RestrictionList>
+  </Restrictions>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${datasource}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+    </PropertyList>
+  </Properties>
+</Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_TYPE" sql:field="CUBE_TYPE" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="CUBE_GUID" sql:field="CUBE_GUID" type="uuid"/>
+            <xsd:element minOccurs="0" name="CREATED_ON" sql:field="CREATED_ON" type="xsd:dateTime"/>
+            <xsd:element minOccurs="0" name="LAST_SCHEMA_UPDATE" sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
+            <xsd:element minOccurs="0" name="SCHEMA_UPDATED_BY" sql:field="SCHEMA_UPDATED_BY" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="LAST_DATA_UPDATE" sql:field="LAST_DATA_UPDATE" type="xsd:dateTime"/>
+            <xsd:element minOccurs="0" name="DATA_UPDATED_BY" sql:field="DATA_UPDATED_BY" type="xsd:string"/>
+            <xsd:element name="IS_DRILLTHROUGH_ENABLED" sql:field="IS_DRILLTHROUGH_ENABLED" type="xsd:boolean"/>
+            <xsd:element name="IS_WRITE_ENABLED" sql:field="IS_WRITE_ENABLED" type="xsd:boolean"/>
+            <xsd:element name="IS_LINKABLE" sql:field="IS_LINKABLE" type="xsd:boolean"/>
+            <xsd:element name="IS_SQL_ENABLED" sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="CUBE_CAPTION" sql:field="CUBE_CAPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
+            <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+            <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <CUBE_TYPE>CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+        <CUBE_CAPTION>Sales</CUBE_CAPTION>
+        <DESCRIPTION>FoodMart Schema - Sales Cube</DESCRIPTION>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="mdschemaCubes">
+        <Resource name="request">
+            <![CDATA[
+<Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <RequestType>MDSCHEMA_CUBES</RequestType>
+  <Restrictions>
+    <RestrictionList>
+      <CATALOG_NAME>${catalog}</CATALOG_NAME>
+    </RestrictionList>
+  </Restrictions>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${datasource}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+    </PropertyList>
+  </Properties>
+</Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_TYPE" sql:field="CUBE_TYPE" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="CUBE_GUID" sql:field="CUBE_GUID" type="uuid"/>
+            <xsd:element minOccurs="0" name="CREATED_ON" sql:field="CREATED_ON" type="xsd:dateTime"/>
+            <xsd:element minOccurs="0" name="LAST_SCHEMA_UPDATE" sql:field="LAST_SCHEMA_UPDATE" type="xsd:dateTime"/>
+            <xsd:element minOccurs="0" name="SCHEMA_UPDATED_BY" sql:field="SCHEMA_UPDATED_BY" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="LAST_DATA_UPDATE" sql:field="LAST_DATA_UPDATE" type="xsd:dateTime"/>
+            <xsd:element minOccurs="0" name="DATA_UPDATED_BY" sql:field="DATA_UPDATED_BY" type="xsd:string"/>
+            <xsd:element name="IS_DRILLTHROUGH_ENABLED" sql:field="IS_DRILLTHROUGH_ENABLED" type="xsd:boolean"/>
+            <xsd:element name="IS_WRITE_ENABLED" sql:field="IS_WRITE_ENABLED" type="xsd:boolean"/>
+            <xsd:element name="IS_LINKABLE" sql:field="IS_LINKABLE" type="xsd:boolean"/>
+            <xsd:element name="IS_SQL_ENABLED" sql:field="IS_SQL_ENABLED" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="CUBE_CAPTION" sql:field="CUBE_CAPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DIMENSIONS" sql:field="DIMENSIONS"/>
+            <xsd:element minOccurs="0" name="SETS" sql:field="SETS"/>
+            <xsd:element minOccurs="0" name="MEASURES" sql:field="MEASURES"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>HR</CUBE_NAME>
+        <CUBE_TYPE>CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+        <CUBE_CAPTION>HR</CUBE_CAPTION>
+        <DESCRIPTION>FoodMart Schema - HR Cube</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <CUBE_TYPE>CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+        <CUBE_CAPTION>Sales</CUBE_CAPTION>
+        <DESCRIPTION>FoodMart Schema - Sales Cube</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales 2</CUBE_NAME>
+        <CUBE_TYPE>CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+        <CUBE_CAPTION>Sales 2</CUBE_CAPTION>
+        <DESCRIPTION>FoodMart Schema - Sales 2 Cube</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales Ragged</CUBE_NAME>
+        <CUBE_TYPE>CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+        <CUBE_CAPTION>Sales Ragged</CUBE_CAPTION>
+        <DESCRIPTION>FoodMart Schema - Sales Ragged Cube</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Store</CUBE_NAME>
+        <CUBE_TYPE>CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+        <CUBE_CAPTION>Store</CUBE_CAPTION>
+        <DESCRIPTION>FoodMart Schema - Store Cube</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Warehouse</CUBE_NAME>
+        <CUBE_TYPE>CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+        <CUBE_CAPTION>Warehouse</CUBE_CAPTION>
+        <DESCRIPTION>FoodMart Schema - Warehouse Cube</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
+        <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
+        <IS_DRILLTHROUGH_ENABLED>true</IS_DRILLTHROUGH_ENABLED>
+        <IS_WRITE_ENABLED>false</IS_WRITE_ENABLED>
+        <IS_LINKABLE>false</IS_LINKABLE>
+        <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
+        <CUBE_CAPTION>Warehouse and Sales</CUBE_CAPTION>
+        <DESCRIPTION>FoodMart Schema - Warehouse and Sales Cube</DESCRIPTION>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="mdschemaDimensionsCubeDimRestrictions">
+        <Resource name="request">
+            <![CDATA[
+  <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <RequestType>MDSCHEMA_DIMENSIONS</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Time</DIMENSION_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${datasource}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>Tabular</Format>
+      </PropertyList>
+    </Properties>
+  </Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_NAME" sql:field="DIMENSION_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DIMENSION_GUID" sql:field="DIMENSION_GUID" type="uuid"/>
+            <xsd:element name="DIMENSION_CAPTION" sql:field="DIMENSION_CAPTION" type="xsd:string"/>
+            <xsd:element name="DIMENSION_ORDINAL" sql:field="DIMENSION_ORDINAL" type="xsd:unsignedInt"/>
+            <xsd:element name="DIMENSION_TYPE" sql:field="DIMENSION_TYPE" type="xsd:short"/>
+            <xsd:element name="DIMENSION_CARDINALITY" sql:field="DIMENSION_CARDINALITY" type="xsd:unsignedInt"/>
+            <xsd:element name="DEFAULT_HIERARCHY" sql:field="DEFAULT_HIERARCHY" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="IS_VIRTUAL" sql:field="IS_VIRTUAL" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="IS_READWRITE" sql:field="IS_READWRITE" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
+            <xsd:element minOccurs="0" name="DIMENSION_MASTER_UNIQUE_NAME" sql:field="DIMENSION_MASTER_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="HIERARCHIES" sql:field="HIERARCHIES"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Time</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Time Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="mdschemaDimensionsCubeRestrictions">
+        <Resource name="request">
+            <![CDATA[
+  <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <RequestType>MDSCHEMA_DIMENSIONS</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${datasource}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>Tabular</Format>
+      </PropertyList>
+    </Properties>
+  </Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_NAME" sql:field="DIMENSION_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DIMENSION_GUID" sql:field="DIMENSION_GUID" type="uuid"/>
+            <xsd:element name="DIMENSION_CAPTION" sql:field="DIMENSION_CAPTION" type="xsd:string"/>
+            <xsd:element name="DIMENSION_ORDINAL" sql:field="DIMENSION_ORDINAL" type="xsd:unsignedInt"/>
+            <xsd:element name="DIMENSION_TYPE" sql:field="DIMENSION_TYPE" type="xsd:short"/>
+            <xsd:element name="DIMENSION_CARDINALITY" sql:field="DIMENSION_CARDINALITY" type="xsd:unsignedInt"/>
+            <xsd:element name="DEFAULT_HIERARCHY" sql:field="DEFAULT_HIERARCHY" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="IS_VIRTUAL" sql:field="IS_VIRTUAL" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="IS_READWRITE" sql:field="IS_READWRITE" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
+            <xsd:element minOccurs="0" name="DIMENSION_MASTER_UNIQUE_NAME" sql:field="DIMENSION_MASTER_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="HIERARCHIES" sql:field="HIERARCHIES"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Customers</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Customers</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>8</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>10282</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Customers]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Customers Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Education Level</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Education Level</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>9</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>6</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Education Level]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Education Level Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Gender</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Gender</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>10</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>3</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Gender]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Gender Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Marital Status</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Marital Status</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>11</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>112</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Marital Status]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Marital Status Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Measures</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Measures</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>0</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>2</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>10</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Measures]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Measures Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Product</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Product</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>5</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>1561</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Product]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Product Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Promotion Media</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Promotion Media]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Promotion Media</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>6</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>15</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Promotion Media]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Promotion Media Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Promotions</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Promotions</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>7</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>52</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Promotions]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Promotions Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Store</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Store</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>1</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>26</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Store]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Store Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Store Size in SQFT</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Store Size in SQFT</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>2</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>22</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Store Size in SQFT]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Store Size in SQFT Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Store Type</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Store Type</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>3</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>7</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Store Type]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Store Type Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Time</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Time</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>4</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>25</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Time]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Time Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_NAME>Yearly Income</DIMENSION_NAME>
+        <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
+        <DIMENSION_CAPTION>Yearly Income</DIMENSION_CAPTION>
+        <DIMENSION_ORDINAL>12</DIMENSION_ORDINAL>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <DIMENSION_CARDINALITY>9</DIMENSION_CARDINALITY>
+        <DEFAULT_HIERARCHY>[Yearly Income]</DEFAULT_HIERARCHY>
+        <DESCRIPTION>Sales Cube - Yearly Income Dimension</DESCRIPTION>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="mdschemaHierarchiesCubeDimRestrictions">
+        <Resource name="request">
+            <![CDATA[
+  <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <RequestType>MDSCHEMA_HIERARCHIES</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${datasource}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>Tabular</Format>
+      </PropertyList>
+    </Properties>
+  </Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_NAME" sql:field="HIERARCHY_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="HIERARCHY_GUID" sql:field="HIERARCHY_GUID" type="uuid"/>
+            <xsd:element name="HIERARCHY_CAPTION" sql:field="HIERARCHY_CAPTION" type="xsd:string"/>
+            <xsd:element name="DIMENSION_TYPE" sql:field="DIMENSION_TYPE" type="xsd:short"/>
+            <xsd:element name="HIERARCHY_CARDINALITY" sql:field="HIERARCHY_CARDINALITY" type="xsd:unsignedInt"/>
+            <xsd:element minOccurs="0" name="DEFAULT_MEMBER" sql:field="DEFAULT_MEMBER" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="ALL_MEMBER" sql:field="ALL_MEMBER" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element name="STRUCTURE" sql:field="STRUCTURE" type="xsd:short"/>
+            <xsd:element name="IS_VIRTUAL" sql:field="IS_VIRTUAL" type="xsd:boolean"/>
+            <xsd:element name="IS_READWRITE" sql:field="IS_READWRITE" type="xsd:boolean"/>
+            <xsd:element name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
+            <xsd:element name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element name="HIERARCHY_IS_VISIBLE" sql:field="HIERARCHY_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
+            <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="LEVELS" sql:field="LEVELS"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Time</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>34</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Time].[1997]</DEFAULT_MEMBER>
+        <DESCRIPTION>Sales Cube - Time Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>4</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Weekly</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Weekly</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>837</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Time].[Weekly].[All Weeklys]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Time].[Weekly].[All Weeklys]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>5</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="mdschemaHierarchiesCubeRestrictions">
+        <Resource name="request">
+            <![CDATA[
+  <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <RequestType>MDSCHEMA_HIERARCHIES</RequestType>
+    <Restrictions>
+      <RestrictionList>
+        <CATALOG_NAME>${catalog}</CATALOG_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+        <DataSourceInfo>${datasource}</DataSourceInfo>
+        <Catalog>${catalog}</Catalog>
+        <Format>Tabular</Format>
+      </PropertyList>
+    </Properties>
+  </Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_NAME" sql:field="HIERARCHY_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="HIERARCHY_GUID" sql:field="HIERARCHY_GUID" type="uuid"/>
+            <xsd:element name="HIERARCHY_CAPTION" sql:field="HIERARCHY_CAPTION" type="xsd:string"/>
+            <xsd:element name="DIMENSION_TYPE" sql:field="DIMENSION_TYPE" type="xsd:short"/>
+            <xsd:element name="HIERARCHY_CARDINALITY" sql:field="HIERARCHY_CARDINALITY" type="xsd:unsignedInt"/>
+            <xsd:element minOccurs="0" name="DEFAULT_MEMBER" sql:field="DEFAULT_MEMBER" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="ALL_MEMBER" sql:field="ALL_MEMBER" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element name="STRUCTURE" sql:field="STRUCTURE" type="xsd:short"/>
+            <xsd:element name="IS_VIRTUAL" sql:field="IS_VIRTUAL" type="xsd:boolean"/>
+            <xsd:element name="IS_READWRITE" sql:field="IS_READWRITE" type="xsd:boolean"/>
+            <xsd:element name="DIMENSION_UNIQUE_SETTINGS" sql:field="DIMENSION_UNIQUE_SETTINGS" type="xsd:int"/>
+            <xsd:element name="DIMENSION_IS_VISIBLE" sql:field="DIMENSION_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element name="HIERARCHY_IS_VISIBLE" sql:field="HIERARCHY_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element name="HIERARCHY_ORDINAL" sql:field="HIERARCHY_ORDINAL" type="xsd:unsignedInt"/>
+            <xsd:element name="DIMENSION_IS_SHARED" sql:field="DIMENSION_IS_SHARED" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="PARENT_CHILD" sql:field="PARENT_CHILD" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="LEVELS" sql:field="LEVELS"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Customers]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Customers</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Customers]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Customers</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>10407</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Customers].[All Customers]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Customers].[All Customers]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Customers Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>9</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Education Level]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Education Level</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Education Level]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Education Level</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>6</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Education Level].[All Education Levels]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Education Level].[All Education Levels]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Education Level Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>10</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Gender]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Gender</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Gender]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Gender</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>3</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Gender].[All Gender]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Gender].[All Gender]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Gender Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>11</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Marital Status]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Marital Status</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Marital Status]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Marital Status</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>112</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Marital Status].[All Marital Status]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Marital Status].[All Marital Status]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Marital Status Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>12</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Measures</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Measures</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>2</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>9</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Measures].[Unit Sales]</DEFAULT_MEMBER>
+        <DESCRIPTION>Sales Cube - Measures Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>0</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Product]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Product</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Product]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Product</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>2256</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Product].[All Products]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Product].[All Products]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Product Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>6</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Promotion Media]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Promotion Media</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Promotion Media]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Promotion Media</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>15</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Promotion Media].[All Media]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Promotion Media].[All Media]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Promotion Media Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>7</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Promotions]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Promotions</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Promotions]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Promotions</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>52</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Promotions].[All Promotions]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Promotions].[All Promotions]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Promotions Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>8</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Store Size in SQFT]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Store Size in SQFT</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Store Size in SQFT]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Store Size in SQFT</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>22</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Store Size in SQFT].[All Store Size in SQFTs]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Store Size in SQFT].[All Store Size in SQFTs]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Store Size in SQFT Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>2</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Store Type]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Store Type</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Store Type]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Store Type</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>7</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Store Type].[All Store Types]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Store Type].[All Store Types]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Store Type Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>3</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Store]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Store</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Store]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Store</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>63</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Store].[All Stores]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Store].[All Stores]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Store Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>1</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Time</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Time</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>34</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Time].[1997]</DEFAULT_MEMBER>
+        <DESCRIPTION>Sales Cube - Time Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>4</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Weekly</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Weekly</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>1</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>837</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Time].[Weekly].[All Weeklys]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Time].[Weekly].[All Weeklys]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>5</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Yearly Income]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_NAME>Yearly Income</HIERARCHY_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Yearly Income]</HIERARCHY_UNIQUE_NAME>
+        <HIERARCHY_CAPTION>Yearly Income</HIERARCHY_CAPTION>
+        <DIMENSION_TYPE>3</DIMENSION_TYPE>
+        <HIERARCHY_CARDINALITY>9</HIERARCHY_CARDINALITY>
+        <DEFAULT_MEMBER>[Yearly Income].[All Yearly Incomes]</DEFAULT_MEMBER>
+        <ALL_MEMBER>[Yearly Income].[All Yearly Incomes]</ALL_MEMBER>
+        <DESCRIPTION>Sales Cube - Yearly Income Hierarchy</DESCRIPTION>
+        <STRUCTURE>0</STRUCTURE>
+        <IS_VIRTUAL>false</IS_VIRTUAL>
+        <IS_READWRITE>false</IS_READWRITE>
+        <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
+        <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
+        <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
+        <HIERARCHY_ORDINAL>13</HIERARCHY_ORDINAL>
+        <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
+        <PARENT_CHILD>false</PARENT_CHILD>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="mdschemaLevelsCubeDimRestrictions">
+        <Resource name="request">
+            <![CDATA[
+  <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <RequestType>MDSCHEMA_LEVELS</RequestType>
+    <Restrictions>
+      <RestrictionList>
+	<CUBE_NAME>Sales</CUBE_NAME>
+	<DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+	<DataSourceInfo>${datasource}</DataSourceInfo>
+	<Catalog>${catalog}</Catalog>
+	<Format>Tabular</Format>
+      </PropertyList>
+    </Properties>
+  </Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="LEVEL_NAME" sql:field="LEVEL_NAME" type="xsd:string"/>
+            <xsd:element name="LEVEL_UNIQUE_NAME" sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="LEVEL_GUID" sql:field="LEVEL_GUID" type="uuid"/>
+            <xsd:element name="LEVEL_CAPTION" sql:field="LEVEL_CAPTION" type="xsd:string"/>
+            <xsd:element name="LEVEL_NUMBER" sql:field="LEVEL_NUMBER" type="xsd:unsignedInt"/>
+            <xsd:element name="LEVEL_CARDINALITY" sql:field="LEVEL_CARDINALITY" type="xsd:unsignedInt"/>
+            <xsd:element name="LEVEL_TYPE" sql:field="LEVEL_TYPE" type="xsd:int"/>
+            <xsd:element name="CUSTOM_ROLLUP_SETTINGS" sql:field="CUSTOM_ROLLUP_SETTINGS" type="xsd:int"/>
+            <xsd:element name="LEVEL_UNIQUE_SETTINGS" sql:field="LEVEL_UNIQUE_SETTINGS" type="xsd:int"/>
+            <xsd:element name="LEVEL_IS_VISIBLE" sql:field="LEVEL_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_NAME>Year</LEVEL_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Year]</LEVEL_UNIQUE_NAME>
+        <LEVEL_CAPTION>Year</LEVEL_CAPTION>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <LEVEL_CARDINALITY>2</LEVEL_CARDINALITY>
+        <LEVEL_TYPE>20</LEVEL_TYPE>
+        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Time Hierarchy - Year Level</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_NAME>Quarter</LEVEL_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Quarter]</LEVEL_UNIQUE_NAME>
+        <LEVEL_CAPTION>Quarter</LEVEL_CAPTION>
+        <LEVEL_NUMBER>1</LEVEL_NUMBER>
+        <LEVEL_CARDINALITY>8</LEVEL_CARDINALITY>
+        <LEVEL_TYPE>68</LEVEL_TYPE>
+        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Time Hierarchy - Quarter Level</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_NAME>Month</LEVEL_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Month]</LEVEL_UNIQUE_NAME>
+        <LEVEL_CAPTION>Month</LEVEL_CAPTION>
+        <LEVEL_NUMBER>2</LEVEL_NUMBER>
+        <LEVEL_CARDINALITY>24</LEVEL_CARDINALITY>
+        <LEVEL_TYPE>132</LEVEL_TYPE>
+        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Time Hierarchy - Month Level</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_NAME>(All)</LEVEL_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Weekly].[(All)]</LEVEL_UNIQUE_NAME>
+        <LEVEL_CAPTION>(All)</LEVEL_CAPTION>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <LEVEL_CARDINALITY>1</LEVEL_CARDINALITY>
+        <LEVEL_TYPE>1</LEVEL_TYPE>
+        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>3</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy - (All) Level</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_NAME>Year</LEVEL_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Weekly].[Year]</LEVEL_UNIQUE_NAME>
+        <LEVEL_CAPTION>Year</LEVEL_CAPTION>
+        <LEVEL_NUMBER>1</LEVEL_NUMBER>
+        <LEVEL_CARDINALITY>2</LEVEL_CARDINALITY>
+        <LEVEL_TYPE>20</LEVEL_TYPE>
+        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>1</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy - Year Level</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_NAME>Week</LEVEL_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Weekly].[Week]</LEVEL_UNIQUE_NAME>
+        <LEVEL_CAPTION>Week</LEVEL_CAPTION>
+        <LEVEL_NUMBER>2</LEVEL_NUMBER>
+        <LEVEL_CARDINALITY>104</LEVEL_CARDINALITY>
+        <LEVEL_TYPE>260</LEVEL_TYPE>
+        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy - Week Level</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time].[Weekly]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_NAME>Day</LEVEL_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Weekly].[Day]</LEVEL_UNIQUE_NAME>
+        <LEVEL_CAPTION>Day</LEVEL_CAPTION>
+        <LEVEL_NUMBER>3</LEVEL_NUMBER>
+        <LEVEL_CARDINALITY>730</LEVEL_CARDINALITY>
+        <LEVEL_TYPE>516</LEVEL_TYPE>
+        <CUSTOM_ROLLUP_SETTINGS>0</CUSTOM_ROLLUP_SETTINGS>
+        <LEVEL_UNIQUE_SETTINGS>0</LEVEL_UNIQUE_SETTINGS>
+        <LEVEL_IS_VISIBLE>true</LEVEL_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Time.Weekly Hierarchy - Day Level</DESCRIPTION>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="mdschemaMeasuresCubeRestrictions">
+        <Resource name="request">
+            <![CDATA[
+<Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+  <RequestType>MDSCHEMA_MEASURES</RequestType>
+  <Restrictions>
+    <RestrictionList>
+      <CATALOG_NAME>${catalog}</CATALOG_NAME>
+      <CUBE_NAME>Sales</CUBE_NAME>
+    </RestrictionList>
+  </Restrictions>
+  <Properties>
+    <PropertyList>
+      <DataSourceInfo>${datasource}</DataSourceInfo>
+      <Catalog>${catalog}</Catalog>
+      <Format>Tabular</Format>
+    </PropertyList>
+  </Properties>
+</Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="MEASURE_NAME" sql:field="MEASURE_NAME" type="xsd:string"/>
+            <xsd:element name="MEASURE_UNIQUE_NAME" sql:field="MEASURE_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="MEASURE_CAPTION" sql:field="MEASURE_CAPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="MEASURE_GUID" sql:field="MEASURE_GUID" type="uuid"/>
+            <xsd:element name="MEASURE_AGGREGATOR" sql:field="MEASURE_AGGREGATOR" type="xsd:int"/>
+            <xsd:element name="DATA_TYPE" sql:field="DATA_TYPE" type="xsd:unsignedShort"/>
+            <xsd:element name="MEASURE_IS_VISIBLE" sql:field="MEASURE_IS_VISIBLE" type="xsd:boolean"/>
+            <xsd:element minOccurs="0" name="LEVELS_LIST" sql:field="LEVELS_LIST" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DESCRIPTION" sql:field="DESCRIPTION" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DEFAULT_FORMAT_STRING" sql:field="DEFAULT_FORMAT_STRING" type="xsd:string"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Customer Count</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Customer Count]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Customer Count</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>0</MEASURE_AGGREGATOR>
+        <DATA_TYPE>3</DATA_TYPE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <DESCRIPTION>Sales Cube - Customer Count Member</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Profit</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Profit]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Profit</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
+        <DATA_TYPE>130</DATA_TYPE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Profit Member</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Profit Growth</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Profit Growth]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Gewinn-Wachstum</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>127</MEASURE_AGGREGATOR>
+        <DATA_TYPE>130</DATA_TYPE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <DESCRIPTION>Sales Cube - Profit Growth Member</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Promotion Sales</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Promotion Sales]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Promotion Sales</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
+        <DATA_TYPE>5</DATA_TYPE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <DESCRIPTION>Sales Cube - Promotion Sales Member</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Sales Count</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Sales Count]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Sales Count</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>2</MEASURE_AGGREGATOR>
+        <DATA_TYPE>3</DATA_TYPE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <DESCRIPTION>Sales Cube - Sales Count Member</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Store Cost</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Store Cost]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Store Cost</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
+        <DATA_TYPE>5</DATA_TYPE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <DESCRIPTION>Sales Cube - Store Cost Member</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Store Sales</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Store Sales]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Store Sales</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
+        <DATA_TYPE>5</DATA_TYPE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <DESCRIPTION>Sales Cube - Store Sales Member</DESCRIPTION>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <MEASURE_NAME>Unit Sales</MEASURE_NAME>
+        <MEASURE_UNIQUE_NAME>[Measures].[Unit Sales]</MEASURE_UNIQUE_NAME>
+        <MEASURE_CAPTION>Unit Sales</MEASURE_CAPTION>
+        <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
+        <DATA_TYPE>5</DATA_TYPE>
+        <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
+        <LEVELS_LIST>[Store].[Store Name],[Store Size in SQFT].[Store Sqft],[Store Type].[Store Type],[Time].[Month],[Time].[Weekly].[Day],[Product].[Product Name],[Promotion Media].[Media Type],[Promotions].[Promotion Name],[Customers].[Name],[Education Level].[Education Level],[Gender].[Gender],[Marital Status].[Marital Status],[Yearly Income].[Yearly Income]</LEVELS_LIST>
+        <DESCRIPTION>Sales Cube - Unit Sales Member</DESCRIPTION>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="mdschemaMeasuresCubeLvlRestrictions">
+        <Resource name="request">
+            <![CDATA[
+  <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+    <RequestType>MDSCHEMA_MEMBERS</RequestType>
+    <Restrictions>
+      <RestrictionList>
+	<CATALOG_NAME>${catalog}</CATALOG_NAME>
+	<CUBE_NAME>Sales</CUBE_NAME>
+	<LEVEL_UNIQUE_NAME>[Time].[Year]</LEVEL_UNIQUE_NAME>
+      </RestrictionList>
+    </Restrictions>
+    <Properties>
+      <PropertyList>
+	<DataSourceInfo>${datasource}</DataSourceInfo>
+	<Catalog>${catalog}</Catalog>
+	<Format>Tabular</Format>
+      </PropertyList>
+    </Properties>
+  </Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="LEVEL_UNIQUE_NAME" sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="LEVEL_NUMBER" sql:field="LEVEL_NUMBER" type="xsd:unsignedInt"/>
+            <xsd:element name="MEMBER_ORDINAL" sql:field="MEMBER_ORDINAL" type="xsd:unsignedInt"/>
+            <xsd:element name="MEMBER_NAME" sql:field="MEMBER_NAME" type="xsd:string"/>
+            <xsd:element name="MEMBER_UNIQUE_NAME" sql:field="MEMBER_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="MEMBER_TYPE" sql:field="MEMBER_TYPE" type="xsd:int"/>
+            <xsd:element minOccurs="0" name="MEMBER_GUID" sql:field="MEMBER_GUID" type="uuid"/>
+            <xsd:element name="MEMBER_CAPTION" sql:field="MEMBER_CAPTION" type="xsd:string"/>
+            <xsd:element name="CHILDREN_CARDINALITY" sql:field="CHILDREN_CARDINALITY" type="xsd:unsignedInt"/>
+            <xsd:element name="PARENT_LEVEL" sql:field="PARENT_LEVEL" type="xsd:unsignedInt"/>
+            <xsd:element minOccurs="0" name="PARENT_UNIQUE_NAME" sql:field="PARENT_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="PARENT_COUNT" sql:field="PARENT_COUNT" type="xsd:unsignedInt"/>
+            <xsd:element minOccurs="0" name="TREE_OP" sql:field="TREE_OP" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DEPTH" sql:field="DEPTH" type="xsd:int"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Year]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>0</MEMBER_ORDINAL>
+        <MEMBER_NAME>1997</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Time].[1997]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>1</MEMBER_TYPE>
+        <MEMBER_CAPTION>1997</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>4</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Time]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Time]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Time].[Year]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>17</MEMBER_ORDINAL>
+        <MEMBER_NAME>1998</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Time].[1998]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>1</MEMBER_TYPE>
+        <MEMBER_CAPTION>1998</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>4</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="mdschemaMembersCubeMeasureRestrictions2">
+        <Resource name="request">
+            <![CDATA[
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <RequestType>MDSCHEMA_MEMBERS</RequestType>
+      <Restrictions>
+        <RestrictionList>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        </RestrictionList>
+      </Restrictions>
+      <Properties>
+        <PropertyList>
+          <DataSourceInfo>${datasource}</DataSourceInfo>
+	      <Catalog>${catalog}</Catalog>
+          <Format>Tabular</Format>
+        </PropertyList>
+      </Properties>
+    </Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="LEVEL_UNIQUE_NAME" sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="LEVEL_NUMBER" sql:field="LEVEL_NUMBER" type="xsd:unsignedInt"/>
+            <xsd:element name="MEMBER_ORDINAL" sql:field="MEMBER_ORDINAL" type="xsd:unsignedInt"/>
+            <xsd:element name="MEMBER_NAME" sql:field="MEMBER_NAME" type="xsd:string"/>
+            <xsd:element name="MEMBER_UNIQUE_NAME" sql:field="MEMBER_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="MEMBER_TYPE" sql:field="MEMBER_TYPE" type="xsd:int"/>
+            <xsd:element minOccurs="0" name="MEMBER_GUID" sql:field="MEMBER_GUID" type="uuid"/>
+            <xsd:element name="MEMBER_CAPTION" sql:field="MEMBER_CAPTION" type="xsd:string"/>
+            <xsd:element name="CHILDREN_CARDINALITY" sql:field="CHILDREN_CARDINALITY" type="xsd:unsignedInt"/>
+            <xsd:element name="PARENT_LEVEL" sql:field="PARENT_LEVEL" type="xsd:unsignedInt"/>
+            <xsd:element minOccurs="0" name="PARENT_UNIQUE_NAME" sql:field="PARENT_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="PARENT_COUNT" sql:field="PARENT_COUNT" type="xsd:unsignedInt"/>
+            <xsd:element minOccurs="0" name="TREE_OP" sql:field="TREE_OP" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DEPTH" sql:field="DEPTH" type="xsd:int"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>0</MEMBER_ORDINAL>
+        <MEMBER_NAME>Unit Sales</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Unit Sales]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>3</MEMBER_TYPE>
+        <MEMBER_CAPTION>Unit Sales</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>1</MEMBER_ORDINAL>
+        <MEMBER_NAME>Store Cost</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Store Cost]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>3</MEMBER_TYPE>
+        <MEMBER_CAPTION>Store Cost</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>2</MEMBER_ORDINAL>
+        <MEMBER_NAME>Store Sales</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Store Sales]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>3</MEMBER_TYPE>
+        <MEMBER_CAPTION>Store Sales</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>3</MEMBER_ORDINAL>
+        <MEMBER_NAME>Sales Count</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Sales Count]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>3</MEMBER_TYPE>
+        <MEMBER_CAPTION>Sales Count</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>4</MEMBER_ORDINAL>
+        <MEMBER_NAME>Customer Count</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Customer Count]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>3</MEMBER_TYPE>
+        <MEMBER_CAPTION>Customer Count</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>5</MEMBER_ORDINAL>
+        <MEMBER_NAME>Promotion Sales</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Promotion Sales]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>3</MEMBER_TYPE>
+        <MEMBER_CAPTION>Promotion Sales</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>6</MEMBER_ORDINAL>
+        <MEMBER_NAME>Profit</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Profit]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>4</MEMBER_TYPE>
+        <MEMBER_CAPTION>Profit</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>8</MEMBER_ORDINAL>
+        <MEMBER_NAME>Profit Growth</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Profit Growth]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>4</MEMBER_TYPE>
+        <MEMBER_CAPTION>Gewinn-Wachstum</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="mdschemaMembersCubeMeasureRestrictions3">
+        <Resource name="request">
+            <![CDATA[
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <RequestType>MDSCHEMA_MEMBERS</RequestType>
+      <Restrictions>
+        <RestrictionList>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <MEMBER_UNIQUE_NAME>[Measures].[Profit Growth]</MEMBER_UNIQUE_NAME>
+        </RestrictionList>
+      </Restrictions>
+      <Properties>
+        <PropertyList>
+          <DataSourceInfo>${datasource}</DataSourceInfo>
+	      <Catalog>${catalog}</Catalog>
+          <Format>Tabular</Format>
+        </PropertyList>
+      </Properties>
+    </Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="LEVEL_UNIQUE_NAME" sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="LEVEL_NUMBER" sql:field="LEVEL_NUMBER" type="xsd:unsignedInt"/>
+            <xsd:element name="MEMBER_ORDINAL" sql:field="MEMBER_ORDINAL" type="xsd:unsignedInt"/>
+            <xsd:element name="MEMBER_NAME" sql:field="MEMBER_NAME" type="xsd:string"/>
+            <xsd:element name="MEMBER_UNIQUE_NAME" sql:field="MEMBER_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="MEMBER_TYPE" sql:field="MEMBER_TYPE" type="xsd:int"/>
+            <xsd:element minOccurs="0" name="MEMBER_GUID" sql:field="MEMBER_GUID" type="uuid"/>
+            <xsd:element name="MEMBER_CAPTION" sql:field="MEMBER_CAPTION" type="xsd:string"/>
+            <xsd:element name="CHILDREN_CARDINALITY" sql:field="CHILDREN_CARDINALITY" type="xsd:unsignedInt"/>
+            <xsd:element name="PARENT_LEVEL" sql:field="PARENT_LEVEL" type="xsd:unsignedInt"/>
+            <xsd:element minOccurs="0" name="PARENT_UNIQUE_NAME" sql:field="PARENT_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="PARENT_COUNT" sql:field="PARENT_COUNT" type="xsd:unsignedInt"/>
+            <xsd:element minOccurs="0" name="TREE_OP" sql:field="TREE_OP" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DEPTH" sql:field="DEPTH" type="xsd:int"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>8</MEMBER_ORDINAL>
+        <MEMBER_NAME>Profit Growth</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Profit Growth]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>4</MEMBER_TYPE>
+        <MEMBER_CAPTION>Gewinn-Wachstum</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+    <TestCase name="mdschemaMembersCubeMeasureRestrictions">
+        <Resource name="request">
+            <![CDATA[
+    <Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+      <RequestType>MDSCHEMA_MEMBERS</RequestType>
+      <Restrictions>
+        <RestrictionList>
+          <CUBE_NAME>Sales</CUBE_NAME>
+          <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        </RestrictionList>
+      </Restrictions>
+      <Properties>
+        <PropertyList>
+          <DataSourceInfo>${datasource}</DataSourceInfo>
+	      <Catalog>${catalog}</Catalog>
+          <Format>Tabular</Format>
+        </PropertyList>
+      </Properties>
+    </Discover>
+]]>
+        </Resource>
+        <Resource name="response">
+            <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<xmla:DiscoverResponse xmlns:xmla="urn:schemas-microsoft-com:xml-analysis">
+  <xmla:return>
+    <root xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:EX="urn:schemas-microsoft-com:xml-analysis:exception" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      <xsd:schema elementFormDefault="qualified" targetNamespace="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns="urn:schemas-microsoft-com:xml-analysis:rowset" xmlns:sql="urn:schemas-microsoft-com:xml-sql" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <xsd:element name="root">
+          <xsd:complexType>
+            <xsd:sequence>
+              <xsd:element maxOccurs="unbounded" minOccurs="0" name="row" type="row"/>
+            </xsd:sequence>
+          </xsd:complexType>
+        </xsd:element>
+        <xsd:simpleType name="uuid">
+          <xsd:restriction base="xsd:string">
+            <xsd:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"/>
+          </xsd:restriction>
+        </xsd:simpleType>
+        <xsd:complexType name="row">
+          <xsd:sequence>
+            <xsd:element minOccurs="0" name="CATALOG_NAME" sql:field="CATALOG_NAME" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="SCHEMA_NAME" sql:field="SCHEMA_NAME" type="xsd:string"/>
+            <xsd:element name="CUBE_NAME" sql:field="CUBE_NAME" type="xsd:string"/>
+            <xsd:element name="DIMENSION_UNIQUE_NAME" sql:field="DIMENSION_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="HIERARCHY_UNIQUE_NAME" sql:field="HIERARCHY_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="LEVEL_UNIQUE_NAME" sql:field="LEVEL_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="LEVEL_NUMBER" sql:field="LEVEL_NUMBER" type="xsd:unsignedInt"/>
+            <xsd:element name="MEMBER_ORDINAL" sql:field="MEMBER_ORDINAL" type="xsd:unsignedInt"/>
+            <xsd:element name="MEMBER_NAME" sql:field="MEMBER_NAME" type="xsd:string"/>
+            <xsd:element name="MEMBER_UNIQUE_NAME" sql:field="MEMBER_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="MEMBER_TYPE" sql:field="MEMBER_TYPE" type="xsd:int"/>
+            <xsd:element minOccurs="0" name="MEMBER_GUID" sql:field="MEMBER_GUID" type="uuid"/>
+            <xsd:element name="MEMBER_CAPTION" sql:field="MEMBER_CAPTION" type="xsd:string"/>
+            <xsd:element name="CHILDREN_CARDINALITY" sql:field="CHILDREN_CARDINALITY" type="xsd:unsignedInt"/>
+            <xsd:element name="PARENT_LEVEL" sql:field="PARENT_LEVEL" type="xsd:unsignedInt"/>
+            <xsd:element minOccurs="0" name="PARENT_UNIQUE_NAME" sql:field="PARENT_UNIQUE_NAME" type="xsd:string"/>
+            <xsd:element name="PARENT_COUNT" sql:field="PARENT_COUNT" type="xsd:unsignedInt"/>
+            <xsd:element minOccurs="0" name="TREE_OP" sql:field="TREE_OP" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="DEPTH" sql:field="DEPTH" type="xsd:int"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:schema>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>0</MEMBER_ORDINAL>
+        <MEMBER_NAME>Unit Sales</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Unit Sales]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>3</MEMBER_TYPE>
+        <MEMBER_CAPTION>Unit Sales</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>1</MEMBER_ORDINAL>
+        <MEMBER_NAME>Store Cost</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Store Cost]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>3</MEMBER_TYPE>
+        <MEMBER_CAPTION>Store Cost</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>2</MEMBER_ORDINAL>
+        <MEMBER_NAME>Store Sales</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Store Sales]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>3</MEMBER_TYPE>
+        <MEMBER_CAPTION>Store Sales</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>3</MEMBER_ORDINAL>
+        <MEMBER_NAME>Sales Count</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Sales Count]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>3</MEMBER_TYPE>
+        <MEMBER_CAPTION>Sales Count</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>4</MEMBER_ORDINAL>
+        <MEMBER_NAME>Customer Count</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Customer Count]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>3</MEMBER_TYPE>
+        <MEMBER_CAPTION>Customer Count</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>5</MEMBER_ORDINAL>
+        <MEMBER_NAME>Promotion Sales</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Promotion Sales]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>3</MEMBER_TYPE>
+        <MEMBER_CAPTION>Promotion Sales</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>6</MEMBER_ORDINAL>
+        <MEMBER_NAME>Profit</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Profit]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>4</MEMBER_TYPE>
+        <MEMBER_CAPTION>Profit</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+      <row>
+        <CATALOG_NAME>FoodMart</CATALOG_NAME>
+        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+        <CUBE_NAME>Sales</CUBE_NAME>
+        <DIMENSION_UNIQUE_NAME>[Measures]</DIMENSION_UNIQUE_NAME>
+        <HIERARCHY_UNIQUE_NAME>[Measures]</HIERARCHY_UNIQUE_NAME>
+        <LEVEL_UNIQUE_NAME>[Measures].[MeasuresLevel]</LEVEL_UNIQUE_NAME>
+        <LEVEL_NUMBER>0</LEVEL_NUMBER>
+        <MEMBER_ORDINAL>8</MEMBER_ORDINAL>
+        <MEMBER_NAME>Profit Growth</MEMBER_NAME>
+        <MEMBER_UNIQUE_NAME>[Measures].[Profit Growth]</MEMBER_UNIQUE_NAME>
+        <MEMBER_TYPE>4</MEMBER_TYPE>
+        <MEMBER_CAPTION>Gewinn-Wachstum</MEMBER_CAPTION>
+        <CHILDREN_CARDINALITY>0</CHILDREN_CARDINALITY>
+        <PARENT_LEVEL>0</PARENT_LEVEL>
+        <PARENT_COUNT>0</PARENT_COUNT>
+        <DEPTH>0</DEPTH>
+      </row>
+    </root>
+  </xmla:return>
+</xmla:DiscoverResponse>
+]]>
+        </Resource>
+    </TestCase>
+</Root>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mdbTest>
+    <mdxQuery>select {[Measures].[Store Invoice], [Measures].[Supply Time]} on columns,     descendants([Store].[USA], [Store].[Store City], Leaves) on rows from [Warehouse] </mdxQuery>
+    <dataResult>
+        <slicer>
+            <dimensions>
+                <dim>[Store Size in SQFT]</dim>
+                <dim>[Store Type]</dim>
+                <dim>[Time]</dim>
+                <dim>[Warehouse]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store Size in SQFT].[All Store Size in SQFTs]</member>
+                    <member>[Store Type].[All Store Types]</member>
+                    <member>[Time].[1997]</member>
+                    <member>[Warehouse].[All Warehouses]</member>
+                </tuple>
+            </tuples>
+        </slicer>
+        <columns>
+            <dimensions>
+                <dim>[Measures]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Measures].[Store Invoice]</member>
+                </tuple>
+                <tuple>
+                    <member>[Measures].[Supply Time]</member>
+                </tuple>
+            </tuples>
+        </columns>
+        <rows>
+            <dimensions>
+                <dim>[Store]</dim>
+            </dimensions>
+            <tuples>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Alameda]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Beverly Hills]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[Los Angeles]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[San Diego]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[CA].[San Francisco]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR].[Portland]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[OR].[Salem]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Bellingham]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Bremerton]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Seattle]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Spokane]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Tacoma]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Walla Walla]</member>
+                </tuple>
+                <tuple>
+                    <member>[Store].[USA].[WA].[Yakima]</member>
+                </tuple>
+            </tuples>
+        </rows>
+        <data>
+            <drow>
+                <cell>#Missing</cell>
+                <cell>#Missing</cell>
+            </drow>
+            <drow>
+                <cell>5132.8974</cell>
+                <cell>559.0</cell>
+            </drow>
+            <drow>
+                <cell>11634.9186</cell>
+                <cell>1279.0</cell>
+            </drow>
+            <drow>
+                <cell>11850.663</cell>
+                <cell>1182.0</cell>
+            </drow>
+            <drow>
+                <cell>988.8204</cell>
+                <cell>80.0</cell>
+            </drow>
+            <drow>
+                <cell>4042.9596</cell>
+                <cell>401.0</cell>
+            </drow>
+            <drow>
+                <cell>16151.0411</cell>
+                <cell>1650.0</cell>
+            </drow>
+            <drow>
+                <cell>1049.4587</cell>
+                <cell>216.0</cell>
+            </drow>
+            <drow>
+                <cell>11659.6249</cell>
+                <cell>1130.0</cell>
+            </drow>
+            <drow>
+                <cell>11517.1251</cell>
+                <cell>1193.0</cell>
+            </drow>
+            <drow>
+                <cell>5781.9634</cell>
+                <cell>546.0</cell>
+            </drow>
+            <drow>
+                <cell>16100.8297</cell>
+                <cell>1578.0</cell>
+            </drow>
+            <drow>
+                <cell>1093.7695</cell>
+                <cell>83.0</cell>
+            </drow>
+            <drow>
+                <cell>5274.3375</cell>
+                <cell>528.0</cell>
+            </drow>
+        </data>
+    </dataResult>
+</mdbTest>
