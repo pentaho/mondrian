@@ -1,8 +1,0 @@
-#Organize Import Order
-#Wed Jun 23 15:37:30 EDT 2004
-5=java
-4=javax
-3=org
-2=mondrian
-1=junit
-0=com
