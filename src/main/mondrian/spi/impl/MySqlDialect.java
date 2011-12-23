@@ -26,7 +26,7 @@ public class MySqlDialect extends JdbcDialectImpl {
 
     private final String flagsRegexp = "^(\\(\\?([a-zA-Z])\\)).*$";
     private final Pattern flagsPattern = Pattern.compile(flagsRegexp);
-    private final String escapeRegexp = "^.*(\\\\Q(.*)\\\\E).*$";
+    private final String escapeRegexp = "(\\\\Q([^\\\\Q]+)\\\\E)";
     private final Pattern escapePattern = Pattern.compile(escapeRegexp);
 
     public static final JdbcDialectFactory FACTORY =
@@ -285,13 +285,11 @@ public class MySqlDialect extends JdbcDialectImpl {
                 + javaRegex.substring(flagsMatcher.end(1));
         }
         final Matcher escapeMatcher = escapePattern.matcher(javaRegex);
-        if (escapeMatcher.matches()) {
-            String sequence = escapeMatcher.group(2);
-            sequence = sequence.replaceAll("\\\\", "\\\\");
+        while (escapeMatcher.find()) {
             javaRegex =
-                javaRegex.substring(0, escapeMatcher.start(1))
-                + sequence.toUpperCase()
-                + javaRegex.substring(escapeMatcher.end(1));
+                javaRegex.replace(
+                    escapeMatcher.group(1),
+                    escapeMatcher.group(2));
         }
         final StringBuilder sb = new StringBuilder();
         sb.append("UPPER(");
