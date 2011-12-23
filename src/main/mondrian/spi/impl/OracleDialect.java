@@ -23,7 +23,7 @@ public class OracleDialect extends JdbcDialectImpl {
 
     private final String flagsRegexp = "^(\\(\\?([a-zA-Z])\\)).*$";
     private final Pattern flagsPattern = Pattern.compile(flagsRegexp);
-    private final String escapeRegexp = "^.*(\\\\Q(.*)\\\\E).*$";
+    private final String escapeRegexp = "(\\\\Q([^\\\\Q]+)\\\\E)";
     private final Pattern escapePattern = Pattern.compile(escapeRegexp);
 
     public static final JdbcDialectFactory FACTORY =
@@ -112,15 +112,11 @@ public class OracleDialect extends JdbcDialectImpl {
             suffix = "";
         }
         final Matcher escapeMatcher = escapePattern.matcher(javaRegex);
-        if (escapeMatcher.matches()) {
-            // We need to convert escape characters \E and \Q into
-            // oracle compatible escapes.
-            String sequence = escapeMatcher.group(2);
-            sequence = sequence.replaceAll("\\\\", "\\\\");
+        while (escapeMatcher.find()) {
             javaRegex =
                 javaRegex.replace(
                     escapeMatcher.group(1),
-                    sequence);
+                    escapeMatcher.group(2));
         }
         final StringBuilder sb = new StringBuilder();
         sb.append("REGEXP_LIKE(");

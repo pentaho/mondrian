@@ -943,6 +943,50 @@ public class DialectTest extends TestCase {
         }
     }
 
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1057">
+     * http://jira.pentaho.com/browse/MONDRIAN-1057</a>
+     * Some dialects are not removing the \Q and \E markers if they
+     * are in the middle of the regexp.
+     */
+    public void testComplexRegularExpression() throws Exception {
+        final String regexp =
+            "(?i).*\\QJeanne\\E.*|.*\\QSheri\\E.*|.*\\QJonathan\\E.*|.*\\QJewel\\E.*";
+        Dialect dialect = getDialect();
+        if (dialect.allowsRegularExpressionInWhereClause()) {
+            assertNotNull(
+                dialect.generateRegularExpression(
+                    dialect.quoteIdentifier("customer", "fname"),
+                    regexp));
+            StringBuilder sb =
+                new StringBuilder(
+                    "select "
+                    + dialect.quoteIdentifier("customer", "fname")
+                    + " from "
+                    + dialect.quoteIdentifier("customer")
+                    + " group by "
+                    + dialect.quoteIdentifier("customer", "fname")
+                    + " having "
+                    + dialect.generateRegularExpression(
+                        dialect.quoteIdentifier("customer", "fname"),
+                        regexp));
+            final ResultSet resultSet =
+                getConnection().createStatement().executeQuery(sb.toString());
+            int i = 0;
+            while (resultSet.next()) {
+                i++;
+            }
+            assertEquals(7, i);
+            resultSet.close();
+        } else {
+            assertNull(
+                dialect.generateRegularExpression(
+                    "Foo",
+                    "(?i).*\\QBar\\E.*"));
+        }
+    }
+
     public void testRegularExpressionSqlInjection() throws SQLException {
         // bug mondrian-983
         // We know that mysql's dialect can handle this regex
