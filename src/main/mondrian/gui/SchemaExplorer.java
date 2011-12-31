@@ -3533,7 +3533,9 @@ public class SchemaExplorer
 
     protected void addMemberFormatter(ActionEvent evt) {
         final LevelInfo info = getSelectedLevel(evt);
-        if (info == null) return;
+        if (info == null) {
+            return;
+        }
 
         final MondrianGuiDef.MemberFormatter formatter =
             new MondrianGuiDef.MemberFormatter();
@@ -3600,7 +3602,9 @@ public class SchemaExplorer
 
     protected void addKeyExp(ActionEvent evt) {
         final LevelInfo info = getSelectedLevel(evt);
-        if (info == null) return;
+        if (info == null) {
+            return;
+        }
 
         MondrianGuiDef.KeyExpression keyExp =
             new MondrianGuiDef.KeyExpression();
@@ -3617,9 +3621,10 @@ public class SchemaExplorer
     }
 
     protected void addNameExp(ActionEvent evt) {
-
         final LevelInfo info = getSelectedLevel(evt);
-        if (info == null) return;
+        if (info == null) {
+            return;
+        }
 
         MondrianGuiDef.NameExpression nameExp =
             new MondrianGuiDef.NameExpression();
@@ -3637,7 +3642,9 @@ public class SchemaExplorer
 
     protected void addOrdinalExp(ActionEvent evt) {
         final LevelInfo info = getSelectedLevel(evt);
-        if (info == null) return;
+        if (info == null) {
+            return;
+        }
 
         MondrianGuiDef.OrdinalExpression ordinalExp =
             new MondrianGuiDef.OrdinalExpression();
@@ -3655,7 +3662,9 @@ public class SchemaExplorer
 
     protected void addCaptionExp(ActionEvent evt) {
         final LevelInfo info = getSelectedLevel(evt);
-        if (info == null) return;
+        if (info == null) {
+            return;
+        }
 
         MondrianGuiDef.CaptionExpression captionExp =
             new MondrianGuiDef.CaptionExpression();
@@ -3673,7 +3682,9 @@ public class SchemaExplorer
 
     protected void addParentExp(ActionEvent evt) {
         final LevelInfo info = getSelectedLevel(evt);
-        if (info == null) return;
+        if (info == null) {
+            return;
+        }
 
         MondrianGuiDef.ParentExpression parentExp =
             new MondrianGuiDef.ParentExpression();
@@ -3991,7 +4002,9 @@ public class SchemaExplorer
 
     protected void moveLevelUp(ActionEvent evt) {
         final LevelInfo info = getSelectedLevel(evt);
-        if (info == null) return;
+        if (info == null) {
+            return;
+        }
 
         MondrianGuiDef.Hierarchy hierarchy =
             (MondrianGuiDef.Hierarchy)
@@ -4006,8 +4019,8 @@ public class SchemaExplorer
         }
 
         if (loc > 0) {
-          MondrianGuiDef.Level tmp = hierarchy.levels[loc-1];
-          hierarchy.levels[loc-1] = info.level;
+          MondrianGuiDef.Level tmp = hierarchy.levels[loc - 1];
+          hierarchy.levels[loc - 1] = info.level;
           hierarchy.levels[loc] = tmp;
         }
 
@@ -4019,7 +4032,9 @@ public class SchemaExplorer
 
     protected void moveLevelDown(ActionEvent evt) {
         final LevelInfo info = getSelectedLevel(evt);
-        if (info == null) return;
+        if (info == null) {
+            return;
+        }
 
         MondrianGuiDef.Hierarchy hierarchy =
             (MondrianGuiDef.Hierarchy)
@@ -4034,8 +4049,8 @@ public class SchemaExplorer
         }
 
         if (loc < hierarchy.levels.length - 1) {
-          MondrianGuiDef.Level tmp = hierarchy.levels[loc+1];
-          hierarchy.levels[loc+1] = info.level;
+          MondrianGuiDef.Level tmp = hierarchy.levels[loc + 1];
+          hierarchy.levels[loc + 1] = info.level;
           hierarchy.levels[loc] = tmp;
         }
 
@@ -4051,8 +4066,9 @@ public class SchemaExplorer
      */
     protected void addProperty(ActionEvent evt) {
         final LevelInfo info = getSelectedLevel(evt);
-        if (info == null) return;
-
+        if (info == null) {
+            return;
+        }
 
         MondrianGuiDef.Property property = new MondrianGuiDef.Property();
         property.name = "";

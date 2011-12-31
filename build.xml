@@ -1454,6 +1454,11 @@ diagrams and hyperlinks to source code">
         <linecontains negate="true">
           <contains value="UtilCompatibleJdk16.java"/>
         </linecontains>
+        <!-- ignore complaints about a variant of Arrays.binarySearch introduced
+             in JDK1.6 -->
+        <linecontains negate="true">
+          <contains value="Tag @link: can't find binarySearch"/>
+        </linecontains>
         <striplinebreaks />
       </filterchain>
     </loadfile>

@@ -1981,7 +1981,7 @@ public class TestContext {
 
     /**
      * Returns count copies of a string. Format strings within string are
-     * substituted, per {@link String#format}.
+     * substituted, per {@link java.lang.String#format}.
      *
      * @param count Number of copies
      * @param format String template

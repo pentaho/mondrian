@@ -87,7 +87,7 @@ public interface UtilCompatible {
     <T> Set<T> newIdentityHashSet();
 
     /**
-     * As {@link Arrays#binarySearch(Object[], int, int, Object)}, but
+     * As {@link java.util.Arrays#binarySearch(Object[], int, int, Object)}, but
      * available pre-JDK 1.6.
      */
     <T extends Comparable<T>> int binarySearch(T[] ts, int start, int end, T t);
