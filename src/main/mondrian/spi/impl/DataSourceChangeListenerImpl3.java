@@ -9,9 +9,9 @@
 */
 package mondrian.spi.impl;
 
-import mondrian.spi.DataSourceChangeListener;
 import mondrian.rolap.RolapHierarchy;
 import mondrian.rolap.agg.Aggregation;
+import mondrian.spi.DataSourceChangeListener;
 
 
 /**

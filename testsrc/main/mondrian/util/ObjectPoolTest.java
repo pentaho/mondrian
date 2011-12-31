@@ -7,14 +7,13 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.util;
 
 import mondrian.olap.Util;
 
-import java.util.*;
-
 import junit.framework.TestCase;
+
+import java.util.*;
 
 /**
  * Test case for {@link ObjectPool}.

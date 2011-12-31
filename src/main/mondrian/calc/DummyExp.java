@@ -9,9 +9,10 @@
 */
 package mondrian.calc;
 
-import mondrian.olap.*;
-import mondrian.olap.type.Type;
 import mondrian.mdx.MdxVisitor;
+import mondrian.olap.Exp;
+import mondrian.olap.Validator;
+import mondrian.olap.type.Type;
 
 import java.io.PrintWriter;
 

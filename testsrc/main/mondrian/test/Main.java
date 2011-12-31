@@ -19,12 +19,8 @@ import mondrian.olap.fun.vba.ExcelTest;
 import mondrian.olap.fun.vba.VbaTest;
 import mondrian.olap.type.TypeTest;
 import mondrian.rolap.*;
-import mondrian.rolap.agg.AggregationOnDistinctCountMeasuresTest;
-import mondrian.rolap.agg.SegmentCacheTest;
-import mondrian.rolap.agg.SegmentLoaderTest;
-import mondrian.rolap.aggmatcher.AggGenTest;
-import mondrian.rolap.aggmatcher.DefaultRuleTest;
-import mondrian.rolap.aggmatcher.MultipleColsInTupleAggTest;
+import mondrian.rolap.agg.*;
+import mondrian.rolap.aggmatcher.*;
 import mondrian.rolap.sql.SelectNotInGroupByTest;
 import mondrian.rolap.sql.SqlQueryTest;
 import mondrian.test.build.CodeComplianceTest;
@@ -38,9 +34,7 @@ import mondrian.xmla.impl.DynamicDatasourceXmlaServletTest;
 import mondrian.xmla.test.XmlaTest;
 
 import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
+import junit.framework.*;
 
 import org.apache.log4j.Logger;
 
@@ -48,8 +42,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**

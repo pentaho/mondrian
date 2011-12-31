@@ -12,9 +12,7 @@ package mondrian.olap.type;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Tuple type.

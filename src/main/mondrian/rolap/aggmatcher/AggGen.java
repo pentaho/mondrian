@@ -7,24 +7,19 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.Util;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.*;
+import mondrian.rolap.sql.SqlQuery;
+
 import org.apache.log4j.Logger;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.*;
 
 /**
  * This class is used to create "lost" and "collapsed" aggregate table

@@ -7,20 +7,18 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.rolap.aggmatcher;
 
-
-import mondrian.olap.*;
-import mondrian.rolap.RolapStar;
+import mondrian.olap.MondrianProperties;
 import mondrian.recorder.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapStar;
 
 import org.apache.log4j.Logger;
-import org.eigenbase.xom.*;
-import org.eigenbase.xom.Parser;
-import org.eigenbase.util.property.*;
+
 import org.eigenbase.util.property.Property;
+import org.eigenbase.util.property.Trigger;
+import org.eigenbase.xom.*;
 
 import java.io.*;
 import java.net.MalformedURLException;

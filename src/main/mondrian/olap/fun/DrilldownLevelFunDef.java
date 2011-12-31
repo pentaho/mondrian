@@ -9,13 +9,14 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.calc.impl.UnaryTupleList;
-import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Definition of the <code>DrilldownLevel</code> MDX function.

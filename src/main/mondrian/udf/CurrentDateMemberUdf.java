@@ -11,8 +11,8 @@ package mondrian.udf;
 
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.spi.*;
-import mondrian.util.*;
+import mondrian.spi.UserDefinedFunction;
+import mondrian.util.Format;
 
 import java.util.*;
 

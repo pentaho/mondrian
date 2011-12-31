@@ -10,14 +10,14 @@
 */
 package mondrian.rolap;
 
-import java.util.*;
-
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.util.FilteredIterableList;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.Dialect;
+import mondrian.util.FilteredIterableList;
+
+import java.util.*;
 
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},

@@ -13,7 +13,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.Id.Segment;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 import mondrian.rolap.agg.*;
 

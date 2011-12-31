@@ -9,21 +9,16 @@
 */
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.StringType;
-import mondrian.rolap.RolapStar.Column;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.mdx.DimensionExpr;
-import mondrian.mdx.HierarchyExpr;
-import mondrian.mdx.LevelExpr;
-import mondrian.mdx.MemberExpr;
-import mondrian.mdx.ResolvedFunCall;
 import mondrian.spi.Dialect;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Creates SQL from parse tree nodes. Currently it creates the SQL that

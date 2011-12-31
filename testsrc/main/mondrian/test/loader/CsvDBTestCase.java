@@ -10,14 +10,13 @@
 package mondrian.test.loader;
 
 import mondrian.olap.Schema;
-import mondrian.rolap.RolapConnection;
+import mondrian.spi.Dialect;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-import mondrian.spi.Dialect;
 
-import java.sql.SQLException;
-import java.sql.Connection;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * Base class for tests that use

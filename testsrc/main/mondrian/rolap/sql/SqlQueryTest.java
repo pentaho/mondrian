@@ -11,13 +11,11 @@ package mondrian.rolap.sql;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.BatchTestCase;
+import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
-import mondrian.spi.Dialect;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Test for <code>SqlQuery</code>.

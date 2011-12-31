@@ -12,8 +12,8 @@ package mondrian.gui;
 
 import mondrian.util.CompositeList;
 
-import javax.swing.tree.*;
 import java.util.*;
+import javax.swing.tree.*;
 
 /**
  * @author sean

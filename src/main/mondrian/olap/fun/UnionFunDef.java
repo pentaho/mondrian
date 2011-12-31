@@ -10,13 +10,11 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.olap.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 /**
  * Definition of the <code>Union</code> MDX function.

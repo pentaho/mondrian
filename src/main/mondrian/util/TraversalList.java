@@ -11,8 +11,8 @@ package mondrian.util;
 
 import mondrian.olap.Util;
 
-import java.util.*;
 import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Implementation of {@link java.util.List} for transposing an array of

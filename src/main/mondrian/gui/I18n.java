@@ -1,3 +1,4 @@
+/*
 // $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
@@ -6,16 +7,19 @@
 // Copyright (C) 2008-2009 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-
+*/
 package mondrian.gui;
 
+import org.apache.log4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.JarURLConnection;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.jar.*;
-import java.net.*;
-import java.io.*;
-
-import org.apache.log4j.Logger;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class I18n {
     private static final Logger LOGGER = Logger.getLogger(I18n.class);

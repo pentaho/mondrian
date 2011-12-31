@@ -9,17 +9,14 @@
 */
 package mondrian.rolap;
 
-import java.util.*;
-
-import javax.sql.DataSource;
-
+import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.rolap.sql.SqlQuery;
-import mondrian.rolap.sql.TupleConstraint;
-import mondrian.rolap.sql.CrossJoinArg;
+import mondrian.rolap.sql.*;
 import mondrian.spi.Dialect;
-import mondrian.mdx.MemberExpr;
+
+import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * Computes a TopCount in SQL.

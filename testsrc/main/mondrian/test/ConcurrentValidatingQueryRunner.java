@@ -8,12 +8,12 @@
 */
 package mondrian.test;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.io.*;
-import java.text.MessageFormat;
-
 import mondrian.olap.*;
+
+import java.io.PrintStream;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility class to run set of MDX queries in multiple threads and

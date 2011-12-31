@@ -7,7 +7,6 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.test.loader;
 
 import mondrian.olap.Util;
@@ -18,16 +17,11 @@ import mondrian.spi.DialectManager;
 
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.sql.Date;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
+import java.text.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

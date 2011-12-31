@@ -14,13 +14,16 @@ import mondrian.calc.impl.AbstractListCalc;
 import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.mdx.*;
 import mondrian.olap.*;
-import static mondrian.olap.fun.NativizeSetFunDef.NativeElementType.*;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
+
 import org.apache.log4j.Logger;
+
 import org.olap4j.impl.Olap4jUtil;
 
 import java.util.*;
+
+import static mondrian.olap.fun.NativizeSetFunDef.NativeElementType.*;
 
 /**
  * Definition of the <code>NativizeSet</code> MDX function.

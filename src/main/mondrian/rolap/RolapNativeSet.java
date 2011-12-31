@@ -10,20 +10,19 @@
 */
 package mondrian.rolap;
 
-import mondrian.calc.*;
+import mondrian.calc.ResultStyle;
+import mondrian.calc.TupleList;
 import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.aggmatcher.AggStar;
-import mondrian.rolap.cache.HardSmartCache;
-import mondrian.rolap.cache.SmartCache;
-import mondrian.rolap.cache.SoftSmartCache;
+import mondrian.rolap.cache.*;
 import mondrian.rolap.sql.*;
 
 import org.apache.log4j.Logger;
 
-import javax.sql.DataSource;
 import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * Analyses set expressions and executes them in SQL if possible.

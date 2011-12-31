@@ -9,16 +9,13 @@
 */
 package mondrian.util;
 
-import junit.framework.TestCase;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Arrays;
-import java.math.BigDecimal;
-
 import mondrian.olap.Util;
 import mondrian.test.I18nTest;
+
+import junit.framework.TestCase;
+
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * Unit test for {@link Format}.

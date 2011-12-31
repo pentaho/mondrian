@@ -9,7 +9,8 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.*;
+import mondrian.rolap.BitKey;
+import mondrian.rolap.RolapStar;
 
 import java.util.*;
 

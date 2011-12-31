@@ -10,11 +10,9 @@
 */
 package mondrian.olap;
 
+import mondrian.mdx.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
-import mondrian.mdx.MemberExpr;
-import mondrian.mdx.MdxVisitor;
-import mondrian.mdx.MdxVisitorImpl;
 import mondrian.rolap.RolapCalculatedMember;
 import mondrian.rolap.RolapCubeHierarchy;
 

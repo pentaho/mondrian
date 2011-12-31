@@ -11,14 +11,14 @@ package mondrian.olap4j;
 
 import org.olap4j.OlapWrapper;
 
-import javax.sql.rowset.RowSetMetaDataImpl;
-import java.sql.*;
-import java.sql.Date;
-import java.math.BigDecimal;
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.*;
+import java.math.BigDecimal;
 import java.net.URL;
+import java.sql.*;
+import java.sql.Date;
+import java.util.*;
+import javax.sql.rowset.RowSetMetaDataImpl;
 
 /**
  * Implementation of {@link ResultSet} which returns 0 rows.

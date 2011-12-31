@@ -12,15 +12,14 @@
 */
 package mondrian.test;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
 import mondrian.calc.TupleList;
 import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Arrays;
+import junit.framework.Assert;
+import junit.framework.TestCase;
+
+import java.util.*;
 
 /**
  * <code>FoodMartTestCase</code> is a unit test which runs against the FoodMart

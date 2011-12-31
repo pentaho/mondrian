@@ -11,17 +11,17 @@ package mondrian.xmla;
 
 import mondrian.olap.*;
 import mondrian.olap4j.MondrianOlap4jDriver;
-import mondrian.test.*;
+import mondrian.spi.Dialect;
+import mondrian.test.DiffRepository;
+import mondrian.test.TestContext;
 import mondrian.tui.XmlUtil;
 import mondrian.tui.XmlaSupport;
-import mondrian.spi.Dialect;
 
 import org.olap4j.metadata.XmlaConstants;
+
 import org.w3c.dom.Document;
 
-import java.util.Locale;
-import java.util.Properties;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Test XML/A functionality.

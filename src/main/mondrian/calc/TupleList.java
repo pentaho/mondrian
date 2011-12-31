@@ -9,9 +9,9 @@
 */
 package mondrian.calc;
 
-import mondrian.olap.*;
+import mondrian.olap.Member;
 
-import java.util.*;
+import java.util.List;
 
 /**
  * List of tuples.

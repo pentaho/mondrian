@@ -9,11 +9,11 @@
 */
 package mondrian.olap;
 
+import mondrian.mdx.*;
+import mondrian.olap.fun.Resolver;
 import mondrian.olap.type.Type;
 import mondrian.olap.type.TypeUtil;
-import mondrian.olap.fun.Resolver;
 import mondrian.resource.MondrianResource;
-import mondrian.mdx.*;
 import mondrian.util.ArrayStack;
 
 import java.util.*;

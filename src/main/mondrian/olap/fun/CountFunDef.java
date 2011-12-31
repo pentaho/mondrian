@@ -9,10 +9,10 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractIntegerCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 
 /**
  * Definition of the <code>Count</code> MDX function.

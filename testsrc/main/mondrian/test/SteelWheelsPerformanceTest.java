@@ -10,8 +10,6 @@
 package mondrian.test;
 
 import junit.framework.TestCase;
-import mondrian.olap.Util;
-import mondrian.rolap.RolapConnectionProperties;
 
 import org.apache.log4j.Logger;
 

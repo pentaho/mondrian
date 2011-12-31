@@ -10,13 +10,12 @@
 //
 // jhyde, 26 August, 2001
 */
-
 package mondrian.rolap;
 
 import mondrian.olap.*;
 
-import java.util.Map;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * A <code>RolapCalculatedMember</code> is a member based upon a

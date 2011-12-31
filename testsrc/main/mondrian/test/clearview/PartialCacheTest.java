@@ -10,9 +10,9 @@
 */
 package mondrian.test.clearview;
 
-import junit.framework.*;
+import mondrian.test.DiffRepository;
 
-import mondrian.test.*;
+import junit.framework.TestSuite;
 
 /**
  * <code>PartialCacheTest</code> is a test suite which tests

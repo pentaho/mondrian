@@ -10,14 +10,14 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
-import mondrian.resource.MondrianResource;
 import mondrian.recorder.MessageRecorder;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 
-import java.util.*;
-
 import org.apache.log4j.Logger;
+
+import java.util.*;
 
 /**
  * Abstract Recognizer class used to determine if a candidate aggregate table

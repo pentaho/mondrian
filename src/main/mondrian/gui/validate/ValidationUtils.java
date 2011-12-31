@@ -9,13 +9,13 @@
 */
 package mondrian.gui.validate;
 
-import java.lang.reflect.Field;
-import java.util.TreeSet;
+import mondrian.gui.MondrianGuiDef;
+import mondrian.gui.SchemaExplorer;
 
 import org.apache.log4j.Logger;
 
-import mondrian.gui.MondrianGuiDef;
-import mondrian.gui.SchemaExplorer;
+import java.lang.reflect.Field;
+import java.util.TreeSet;
 
 /**
  * Validates a <code>MondrianGuiDef</code>. Class contains <code>invalid</code>

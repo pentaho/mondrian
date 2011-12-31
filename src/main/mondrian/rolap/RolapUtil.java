@@ -14,11 +14,10 @@ package mondrian.rolap;
 
 import mondrian.calc.ExpCompiler;
 import mondrian.olap.*;
+import mondrian.olap.Member;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
-import mondrian.server.Statement;
+import mondrian.server.*;
 import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
@@ -26,9 +25,7 @@ import org.apache.log4j.Logger;
 import org.eigenbase.util.property.StringProperty;
 
 import java.io.*;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
 import java.sql.SQLException;
 import java.util.*;
 import javax.sql.DataSource;

@@ -8,14 +8,15 @@
  */
 package mondrian.olap.fun.vba;
 
-import mondrian.olap.Util;
 import mondrian.olap.InvalidArgumentException;
-import static mondrian.olap.fun.JavaFunDef.*;
+import mondrian.olap.Util;
 
+import java.text.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.text.*;
+
+import static mondrian.olap.fun.JavaFunDef.*;
 
 /**
  * Implementations of functions in the Visual Basic for Applications (VBA)

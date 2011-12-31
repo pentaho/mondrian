@@ -9,10 +9,12 @@
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
+
 import org.apache.log4j.Logger;
 
 import java.sql.*;
-import java.util.regex.*;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the PostgreSQL database.

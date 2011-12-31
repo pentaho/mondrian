@@ -9,12 +9,12 @@
 */
 package mondrian.util;
 
+import mondrian.test.TestContext;
+
 import junit.framework.TestCase;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
-import mondrian.test.TestContext;
 
 /**
  * Testcase for {@link mondrian.util.PrimeFinder}.

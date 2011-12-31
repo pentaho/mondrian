@@ -9,9 +9,7 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.RolapSchema;
-import mondrian.rolap.StarPredicate;
-import mondrian.rolap.BitKey;
+import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
 import java.util.*;

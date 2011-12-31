@@ -10,13 +10,13 @@
 */
 package mondrian.spi;
 
-import java.util.List;
-import java.util.concurrent.Future;
-
 import mondrian.olap.MondrianProperties;
 import mondrian.rolap.agg.SegmentBody;
 import mondrian.rolap.agg.SegmentHeader;
 import mondrian.rolap.agg.SegmentHeader.ConstrainedColumn;
+
+import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * SPI definition of the segments cache.

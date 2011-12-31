@@ -15,8 +15,8 @@ import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
-import javax.sql.DataSource;
 import java.sql.*;
+import javax.sql.DataSource;
 
 /**
  * Test generation of SQL to access the fact table data underlying an MDX

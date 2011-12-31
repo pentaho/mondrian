@@ -10,11 +10,10 @@
 package mondrian.olap4j;
 
 import mondrian.calc.TupleList;
-import mondrian.olap.*;
+import mondrian.olap.AxisOrdinal;
 import mondrian.rolap.RolapAxis;
+
 import org.olap4j.*;
-import org.olap4j.Axis;
-import org.olap4j.Position;
 import org.olap4j.metadata.Member;
 
 import java.util.*;

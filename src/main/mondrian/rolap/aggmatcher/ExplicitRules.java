@@ -7,13 +7,12 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
-import mondrian.rolap.*;
 import mondrian.recorder.MessageRecorder;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.*;
 
 import org.apache.log4j.Logger;
 

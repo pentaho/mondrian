@@ -8,15 +8,15 @@
 */
 package mondrian.olap4j;
 
+import mondrian.tui.XmlaSupport;
+
 import org.olap4j.driver.xmla.XmlaOlap4jServerInfos;
 import org.olap4j.driver.xmla.proxy.XmlaOlap4jProxy;
 
-import javax.servlet.Servlet;
 import java.lang.ref.WeakReference;
-import java.util.concurrent.*;
 import java.util.*;
-
-import mondrian.tui.XmlaSupport;
+import java.util.concurrent.*;
+import javax.servlet.Servlet;
 
 /**
  * Proxy which implements XMLA requests by talking to mondrian

@@ -11,11 +11,10 @@ package mondrian.test;
 
 import mondrian.olap.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.io.PrintStream;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Thread which runs an MDX query and checks it against an expected result.

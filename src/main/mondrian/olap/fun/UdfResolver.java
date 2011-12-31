@@ -9,12 +9,12 @@
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.*;
 import mondrian.calc.impl.*;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.spi.UserDefinedFunction;
-import mondrian.calc.*;
-import mondrian.mdx.ResolvedFunCall;
 
 import java.util.*;
 

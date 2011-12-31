@@ -13,24 +13,23 @@ import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.test.*;
 import mondrian.tui.*;
-
 import mondrian.util.LockBox;
-import org.olap4j.metadata.XmlaConstants;
 
 import junit.framework.AssertionFailedError;
 
-import org.custommonkey.xmlunit.XMLAssert;
+import org.olap4j.metadata.XmlaConstants;
 
+import org.custommonkey.xmlunit.XMLAssert;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Extends FoodMartTestCase, adding support for testing XMLA specific

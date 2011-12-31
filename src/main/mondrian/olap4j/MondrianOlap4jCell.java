@@ -10,14 +10,16 @@
 package mondrian.olap4j;
 
 import mondrian.rolap.RolapCell;
-
 import mondrian.rolap.SqlStatement;
+
 import org.apache.log4j.Logger;
+
 import org.olap4j.*;
 import org.olap4j.metadata.Property;
 
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Implementation of {@link Cell}

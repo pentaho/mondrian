@@ -8,8 +8,8 @@
 */
 package mondrian.calc;
 
-import java.util.List;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Enumeration of ways that a compiled expression can return its result to

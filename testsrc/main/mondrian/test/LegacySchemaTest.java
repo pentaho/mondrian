@@ -9,9 +9,9 @@
 */
 package mondrian.test;
 
-import junit.framework.Assert;
-
 import mondrian.olap.*;
+
+import junit.framework.Assert;
 
 /**
  * Unit tests on the legacy (mondrian version 3) schema.

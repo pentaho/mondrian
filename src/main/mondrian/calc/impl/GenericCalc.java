@@ -9,11 +9,11 @@
 */
 package mondrian.calc.impl;
 
+import mondrian.calc.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
-import mondrian.calc.*;
 
-import java.util.*;
+import java.util.Date;
 
 /**
  * Adapter which computes a scalar or tuple expression and converts it to any

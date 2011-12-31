@@ -9,15 +9,13 @@
 */
 package mondrian.olap.fun;
 
+import mondrian.calc.*;
 import mondrian.calc.impl.*;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.calc.*;
-import mondrian.mdx.ResolvedFunCall;
 
-import java.util.List;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Definition of the <code>Generate</code> MDX function.

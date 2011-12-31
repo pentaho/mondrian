@@ -13,13 +13,9 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.Level;
-import mondrian.olap.Member;
-import mondrian.olap.Property;
 import mondrian.spi.MemberFormatter;
 
 import org.apache.log4j.Logger;
-import org.olap4j.metadata.*;
 
 import java.util.*;
 

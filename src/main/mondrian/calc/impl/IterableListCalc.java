@@ -10,7 +10,7 @@
 package mondrian.calc.impl;
 
 import mondrian.calc.*;
-import mondrian.olap.*;
+import mondrian.olap.Evaluator;
 
 /**
  * Adapter that converts a {@link mondrian.calc.IterCalc} to a

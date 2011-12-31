@@ -9,28 +9,25 @@
 */
 package mondrian.xmla.test;
 
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.net.URL;
-
 import mondrian.olap.Util;
+import mondrian.rolap.RolapConnectionProperties;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.CatalogLocatorImpl;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
 import mondrian.xmla.DataSourcesConfig;
-import mondrian.rolap.RolapConnectionProperties;
 
 import org.apache.log4j.Logger;
-import org.eigenbase.xom.DOMWrapper;
-import org.eigenbase.xom.Parser;
-import org.eigenbase.xom.XOMUtil;
+
+import org.eigenbase.xom.*;
 
 import org.olap4j.impl.Olap4jUtil;
+
+import java.io.StringReader;
+import java.net.URL;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Common utilities for XML/A testing, used in test suite and

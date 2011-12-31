@@ -8,9 +8,9 @@
 */
 package mondrian.spi.impl;
 
-import java.util.List;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the Neoview database.

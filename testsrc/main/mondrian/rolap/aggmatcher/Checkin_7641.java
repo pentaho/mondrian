@@ -9,10 +9,9 @@
 */
 package mondrian.rolap.aggmatcher;
 
-import mondrian.test.loader.CsvDBTestCase;
-import mondrian.test.TestContext;
 import mondrian.olap.Result;
-import mondrian.olap.MondrianProperties;
+import mondrian.test.TestContext;
+import mondrian.test.loader.CsvDBTestCase;
 
 /**
  * Checkin 7641 attempted to correct a problem demonstrated by this

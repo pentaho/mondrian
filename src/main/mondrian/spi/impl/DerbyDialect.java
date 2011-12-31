@@ -10,8 +10,8 @@ package mondrian.spi.impl;
 
 import mondrian.olap.Util;
 
-import java.util.List;
 import java.sql.*;
+import java.util.List;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the Apache Derby database.

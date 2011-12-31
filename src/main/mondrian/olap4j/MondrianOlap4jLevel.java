@@ -9,16 +9,19 @@
 */
 package mondrian.olap4j;
 
-import mondrian.olap.OlapElement;
-import mondrian.olap.Role;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
 import mondrian.server.Locus;
 
 import org.olap4j.OlapException;
-import org.olap4j.metadata.*;
 import org.olap4j.impl.ArrayNamedListImpl;
 import org.olap4j.impl.Named;
+import org.olap4j.metadata.Dimension;
+import org.olap4j.metadata.Hierarchy;
+import org.olap4j.metadata.Level;
+import org.olap4j.metadata.Member;
+import org.olap4j.metadata.*;
+import org.olap4j.metadata.Property;
 
 import java.util.*;
 

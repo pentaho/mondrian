@@ -10,20 +10,15 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.UnaryTupleList;
-import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.SetType;
-import mondrian.olap.type.MemberType;
-import mondrian.olap.type.TypeUtil;
 import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
+import mondrian.olap.type.*;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapHierarchy;
 
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Definition of the <code>LastPeriods</code> MDX function.

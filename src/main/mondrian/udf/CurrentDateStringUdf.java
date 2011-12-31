@@ -14,9 +14,10 @@ import mondrian.olap.Syntax;
 import mondrian.olap.type.StringType;
 import mondrian.olap.type.Type;
 import mondrian.spi.UserDefinedFunction;
-import mondrian.util.*;
+import mondrian.util.Format;
 
-import java.util.*;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * User-defined function <code>CurrentDateString<code>, which returns the

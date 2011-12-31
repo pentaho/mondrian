@@ -11,13 +11,7 @@
 //
 // jhyde, 21 December, 2001
 */
-
 package mondrian.rolap;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import mondrian.olap.Id;
 import mondrian.olap.Util;
@@ -25,6 +19,8 @@ import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.util.ConcatenableList;
+
+import java.util.*;
 
 /**
  * <code>SmartMemberReader</code> implements {@link MemberReader} by keeping a

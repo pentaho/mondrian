@@ -11,9 +11,7 @@ package mondrian.util;
 
 import mondrian.olap.Util;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Mapping between {@link Locale} and Locale identifier (LCID).

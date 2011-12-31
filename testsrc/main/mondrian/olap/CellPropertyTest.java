@@ -7,21 +7,18 @@
 // Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 */
-
 package mondrian.olap;
 
 import junit.framework.TestCase;
 
 /**
- * Test for <code>Cell Property<code>
+ * Test for <code>Cell Property<code>.
  *
  * @author Shishir
  * @version $Id$
  * @since 08 May, 2007
  */
-
 public class CellPropertyTest extends TestCase {
     private CellProperty cellProperty;
 

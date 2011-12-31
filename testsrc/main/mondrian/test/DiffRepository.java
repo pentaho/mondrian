@@ -9,21 +9,19 @@
 */
 package mondrian.test;
 
-import junit.framework.Assert;
-import junit.framework.AssertionFailedError;
-import junit.framework.ComparisonFailure;
+import mondrian.olap.Util;
+
+import junit.framework.*;
+
 import org.eigenbase.xom.XMLOutput;
+
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.util.*;
 import java.net.URL;
-
-import mondrian.olap.Util;
+import java.util.*;
+import javax.xml.parsers.*;
 
 /**
  * A collection of resources used by tests.

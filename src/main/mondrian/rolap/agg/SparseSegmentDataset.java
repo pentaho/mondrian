@@ -16,10 +16,7 @@ import mondrian.olap.Util;
 import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.SortedSet;
+import java.util.*;
 
 /**
  * A <code>SparseSegmentDataset</code> is a means of storing segment values

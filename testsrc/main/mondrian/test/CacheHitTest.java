@@ -7,36 +7,16 @@
 // Copyright (C) 2001-2009 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 */
-
 package mondrian.test;
 
-import java.io.PrintWriter;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Enumeration;
-import java.util.regex.Pattern;
-
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import junit.framework.TestSuite;
-import mondrian.olap.CacheControl;
-import mondrian.olap.Connection;
-import mondrian.olap.Cube;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
-import mondrian.olap.UtilTestCase;
-import mondrian.rolap.*;
-import mondrian.rolap.aggmatcher.*;
-import mondrian.udf.*;
-import mondrian.util.*;
-import mondrian.test.clearview.*;
+import mondrian.olap.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CountingAggregationManager;
+import mondrian.test.clearview.*;
 
-import org.apache.log4j.Logger;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
 
 /**
  * The <code>CacheHitTest</code> class contains test suites that return

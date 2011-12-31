@@ -11,13 +11,12 @@ package mondrian.xmla;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.spi.Dialect;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
-import mondrian.spi.Dialect;
-import org.eigenbase.util.property.BooleanProperty;
 
-import java.util.Arrays;
+import org.eigenbase.util.property.BooleanProperty;
 
 /**
  * Test suite for compatibility of Mondrian XMLA with Cognos8.2 connected via

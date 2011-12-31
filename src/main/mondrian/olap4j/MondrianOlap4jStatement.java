@@ -12,9 +12,7 @@ package mondrian.olap4j;
 import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnection;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
-import mondrian.server.StatementImpl;
+import mondrian.server.*;
 import mondrian.util.Pair;
 
 import org.olap4j.*;
@@ -23,7 +21,8 @@ import org.olap4j.mdx.*;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.*;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Implementation of {@link org.olap4j.OlapStatement}

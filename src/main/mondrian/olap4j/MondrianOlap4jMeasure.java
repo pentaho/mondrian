@@ -10,6 +10,7 @@ package mondrian.olap4j;
 
 import mondrian.olap.Property;
 import mondrian.rolap.*;
+
 import org.olap4j.metadata.Datatype;
 import org.olap4j.metadata.Measure;
 

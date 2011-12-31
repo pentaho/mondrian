@@ -10,13 +10,11 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.*;
 import mondrian.olap.Util;
+import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
-import java.util.List;
-import java.util.Collections;
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * A <code>AbstractColumnPredicate</code> is an abstract implementation for

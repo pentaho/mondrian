@@ -14,10 +14,7 @@ import mondrian.rolap.RolapUtil;
 import mondrian.server.monitor.*;
 import mondrian.util.Pair;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
-import java.lang.management.MemoryType;
-import java.lang.management.MemoryUsage;
+import java.lang.management.*;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;

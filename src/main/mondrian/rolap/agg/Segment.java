@@ -12,15 +12,15 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.*;
+import mondrian.olap.Util;
 import mondrian.rolap.*;
 
+import org.apache.log4j.Logger;
+
+import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.io.PrintWriter;
-
-import org.apache.log4j.Logger;
 
 /**
  * A <code>Segment</code> is a collection of cell values parameterized by

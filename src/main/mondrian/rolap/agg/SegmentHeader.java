@@ -10,19 +10,13 @@
 */
 package mondrian.rolap.agg;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import mondrian.olap.Util;
-import mondrian.rolap.BitKey;
-import mondrian.rolap.RolapCacheRegion;
-import mondrian.rolap.StarColumnPredicate;
-import mondrian.rolap.StarPredicate;
+import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.Dialect;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * SegmentHeaders are the key objects used to retrieve the segments

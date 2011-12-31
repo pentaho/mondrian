@@ -7,12 +7,12 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.recorder;
 
 import mondrian.resource.MondrianResource;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Abstract implemention of the {@link MessageRecorder} interface.

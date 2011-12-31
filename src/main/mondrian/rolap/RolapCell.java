@@ -11,23 +11,20 @@ package mondrian.rolap;
 
 import mondrian.mdx.*;
 import mondrian.olap.*;
-import mondrian.olap.Axis;
-import mondrian.olap.Cell;
-import mondrian.olap.Connection;
-import mondrian.olap.Position;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.SetFunDef;
 import mondrian.rolap.agg.*;
 import mondrian.server.*;
-import mondrian.server.Statement;
 import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
 
-import org.olap4j.*;
+import org.olap4j.AllocationPolicy;
+import org.olap4j.Scenario;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 /**

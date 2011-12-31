@@ -9,13 +9,12 @@
 */
 package mondrian.udf;
 
-import mondrian.olap.*;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Syntax;
 import mondrian.olap.type.*;
 import mondrian.spi.UserDefinedFunction;
-import mondrian.util.*;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.regex.Pattern;
 
 /**
  * User-defined function <code>MATCHES</code>.

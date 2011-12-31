@@ -9,11 +9,11 @@
 */
 package mondrian.olap.fun.extra;
 
-import mondrian.olap.*;
-import mondrian.olap.fun.FunDefBase;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractMemberCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
+import mondrian.olap.fun.FunDefBase;
 
 import java.util.List;
 

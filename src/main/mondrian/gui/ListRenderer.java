@@ -9,8 +9,8 @@
 */
 package mondrian.gui;
 
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 /**
  * <code>ListRenderer</code> ...

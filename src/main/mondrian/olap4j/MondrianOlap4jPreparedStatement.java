@@ -9,21 +9,25 @@
 */
 package mondrian.olap4j;
 
-import mondrian.olap.Query;
+import mondrian.olap.*;
 import mondrian.util.Pair;
-import org.olap4j.*;
-import org.olap4j.type.*;
-import org.olap4j.metadata.*;
 
-import java.sql.*;
-import java.math.BigDecimal;
+import org.olap4j.*;
+import org.olap4j.metadata.Cube;
+import org.olap4j.metadata.Dimension;
+import org.olap4j.metadata.Hierarchy;
+import org.olap4j.metadata.Level;
+import org.olap4j.metadata.Member;
+import org.olap4j.type.*;
+import org.olap4j.type.DimensionType;
+import org.olap4j.type.LevelType;
+
 import java.io.InputStream;
 import java.io.Reader;
-import java.util.Calendar;
+import java.math.BigDecimal;
 import java.net.URL;
-
-import mondrian.olap.Parameter;
-import mondrian.olap.Util;
+import java.sql.*;
+import java.util.Calendar;
 
 /**
  * Implementation of {@link PreparedOlapStatement}

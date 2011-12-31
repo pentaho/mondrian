@@ -9,17 +9,16 @@
 */
 package mondrian.xmla.impl;
 
-import java.util.*;
-
 import mondrian.olap.Util;
 import mondrian.xmla.*;
 
-import static org.olap4j.metadata.XmlaConstants.*;
-
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.apache.log4j.Logger;
+
+import org.w3c.dom.*;
+
+import java.util.*;
+
+import static org.olap4j.metadata.XmlaConstants.Method;
 
 /**
  * Default implementation of {@link mondrian.xmla.XmlaRequest} by DOM API.

@@ -10,13 +10,12 @@
 package mondrian.test;
 
 import mondrian.olap.*;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Member;
 import mondrian.olap.type.*;
-import mondrian.spi.*;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.MemberFormatter;
 import mondrian.spi.PropertyFormatter;
+import mondrian.spi.*;
+
 import org.olap4j.CellSet;
 import org.olap4j.metadata.Property;
 

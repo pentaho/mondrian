@@ -9,13 +9,13 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
-import mondrian.olap.type.Type;
-import mondrian.olap.type.MemberType;
 import mondrian.calc.*;
-import mondrian.calc.impl.ConstantCalc;
 import mondrian.calc.impl.AbstractMemberCalc;
+import mondrian.calc.impl.ConstantCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
+import mondrian.olap.type.MemberType;
+import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapHierarchy;

@@ -26,7 +26,6 @@ import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
 
-import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;

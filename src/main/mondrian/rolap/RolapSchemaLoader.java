@@ -23,8 +23,8 @@ import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.server.Locus;
-import mondrian.spi.Dialect;
 import mondrian.spi.CellFormatter;
+import mondrian.spi.Dialect;
 import mondrian.spi.MemberFormatter;
 import mondrian.spi.PropertyFormatter;
 import mondrian.spi.impl.Scripts;
@@ -35,14 +35,15 @@ import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
+
 import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.impl.UnmodifiableArrayMap;
 import org.olap4j.metadata.*;
 
-import javax.sql.DataSource;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * Creates a schema from XML.

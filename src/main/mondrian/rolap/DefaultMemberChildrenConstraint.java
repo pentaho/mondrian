@@ -9,11 +9,11 @@
 */
 package mondrian.rolap;
 
-import java.util.List;
-
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
-import mondrian.rolap.aggmatcher.AggStar;
+
+import java.util.List;
 
 /**
  * Restricts the SQL result set to the parent member of a

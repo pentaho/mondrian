@@ -9,10 +9,12 @@
  */
 package mondrian.test;
 
+import mondrian.olap.Connection;
+import mondrian.olap.Util;
+import mondrian.spi.DynamicSchemaProcessor;
+
 import junit.framework.Assert;
 import junit.framework.TestCase;
-import mondrian.olap.*;
-import mondrian.spi.DynamicSchemaProcessor;
 
 /**
  * Unit test DynamicSchemaProcessor. Tests availability of properties that DSP's

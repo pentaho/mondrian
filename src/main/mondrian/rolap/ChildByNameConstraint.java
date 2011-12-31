@@ -9,11 +9,11 @@
 */
 package mondrian.rolap;
 
-import java.util.Arrays;
-
 import mondrian.olap.Id;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.sql.SqlQuery;
+
+import java.util.Arrays;
 
 /**
  * Constraint which optimizes the search for a child by name. This is used

@@ -10,12 +10,10 @@
 */
 package mondrian.rolap.sql;
 
-import java.util.List;
-
-import mondrian.rolap.RolapLevel;
-import mondrian.rolap.RolapMember;
-import mondrian.rolap.RolapStarSet;
+import mondrian.rolap.*;
 import mondrian.rolap.aggmatcher.AggStar;
+
+import java.util.List;
 
 /**
  * Restricts the SQL result of a MembersChildren query in SqlMemberSource.

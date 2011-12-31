@@ -10,10 +10,10 @@ package mondrian.olap4j;
 
 import mondrian.olap.OlapElement;
 
-import org.olap4j.metadata.NamedSet;
-import org.olap4j.metadata.Cube;
-import org.olap4j.mdx.ParseTreeNode;
 import org.olap4j.impl.Named;
+import org.olap4j.mdx.ParseTreeNode;
+import org.olap4j.metadata.Cube;
+import org.olap4j.metadata.NamedSet;
 
 /**
  * Implementation of {@link org.olap4j.metadata.NamedSet}

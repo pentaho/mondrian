@@ -10,20 +10,19 @@
 package mondrian.server;
 
 import mondrian.olap.*;
-import mondrian.olap.DriverManager;
 import mondrian.olap4j.MondrianOlap4jDriver;
 import mondrian.rolap.*;
 import mondrian.spi.CatalogLocator;
 import mondrian.tui.XmlaSupport;
 import mondrian.util.LockBox;
-import mondrian.xmla.*;
+import mondrian.xmla.DataSourcesConfig;
 
 import org.apache.log4j.Logger;
 
 import org.olap4j.*;
 import org.olap4j.impl.Olap4jUtil;
 
-import java.sql.*;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
 

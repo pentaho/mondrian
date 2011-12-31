@@ -10,17 +10,18 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
-import mondrian.rolap.*;
 import mondrian.recorder.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.*;
 
 import org.apache.log4j.Logger;
-import org.eigenbase.util.property.*;
-import org.eigenbase.util.property.Property;
 
-import javax.sql.DataSource;
-import java.util.*;
+import org.eigenbase.util.property.Property;
+import org.eigenbase.util.property.Trigger;
+
 import java.sql.SQLException;
+import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * Manages aggregate tables.

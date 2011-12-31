@@ -7,12 +7,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 */
-
 package mondrian.calc.impl;
 
-import junit.framework.TestCase;
-import mondrian.olap.type.NullType;
 import mondrian.olap.fun.FunUtil;
+import mondrian.olap.type.NullType;
+
+import junit.framework.TestCase;
 
 /**
  * Test for <code>ConstantCalc</code>

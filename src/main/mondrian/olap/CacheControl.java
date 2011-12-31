@@ -9,9 +9,10 @@
 */
 package mondrian.olap;
 
-import javax.sql.DataSource;
-import java.util.*;
 import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
+import javax.sql.DataSource;
 
 /**
  * API for controlling the contents of the cell cache and the member cache.

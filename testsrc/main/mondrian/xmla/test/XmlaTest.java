@@ -9,31 +9,30 @@
 */
 package mondrian.xmla.test;
 
-import mondrian.server.StringRepositoryContentFinder;
-import mondrian.xmla.*;
-import mondrian.xmla.Enumeration;
-import mondrian.xmla.impl.DefaultXmlaRequest;
-import mondrian.xmla.impl.DefaultXmlaResponse;
 import mondrian.olap.*;
+import mondrian.server.StringRepositoryContentFinder;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
+import mondrian.xmla.*;
+import mondrian.xmla.impl.DefaultXmlaRequest;
+import mondrian.xmla.impl.DefaultXmlaResponse;
 
 import junit.framework.*;
+
 import org.apache.log4j.Logger;
+
 import org.custommonkey.xmlunit.XMLAssert;
 import org.custommonkey.xmlunit.XMLUnit;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
+import org.w3c.dom.*;
 
+import java.io.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
 
 /**
  * Unit test for refined Mondrian's XML for Analysis API (package

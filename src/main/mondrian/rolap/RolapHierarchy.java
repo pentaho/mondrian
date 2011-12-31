@@ -12,6 +12,9 @@
 */
 package mondrian.rolap;
 
+import mondrian.calc.*;
+import mondrian.calc.impl.*;
+import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.Dimension;
 import mondrian.olap.DimensionType;
@@ -21,19 +24,16 @@ import mondrian.olap.Member;
 import mondrian.olap.Property;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.resource.MondrianResource;
-import mondrian.mdx.*;
-import mondrian.calc.*;
-import mondrian.calc.impl.*;
+import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.impl.Scripts;
 import mondrian.util.UnionIterator;
 
 import org.apache.log4j.Logger;
 
-import java.util.*;
 import java.io.PrintWriter;
+import java.util.*;
 
 /**
  * <code>RolapHierarchy</code> implements {@link Hierarchy} for a ROLAP database.

@@ -9,11 +9,10 @@
 */
 package mondrian.rolap;
 
-import java.util.*;
+import mondrian.olap.*;
 
-import mondrian.olap.Exp;
-import mondrian.olap.FunDef;
-import mondrian.olap.NativeEvaluator;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Composite of {@link RolapNative}s. Uses chain of responsibility

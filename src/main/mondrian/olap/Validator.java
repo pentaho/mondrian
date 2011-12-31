@@ -9,9 +9,9 @@
 */
 package mondrian.olap;
 
+import mondrian.mdx.ParameterExpr;
 import mondrian.olap.fun.Resolver;
 import mondrian.olap.type.Type;
-import mondrian.mdx.ParameterExpr;
 
 import java.util.List;
 

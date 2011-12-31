@@ -10,9 +10,9 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
-import mondrian.spi.Dialect;
 
 import java.util.List;
 

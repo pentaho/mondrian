@@ -13,6 +13,7 @@
 package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
+
 import org.olap4j.impl.ArrayNamedListImpl;
 import org.olap4j.impl.NamedListImpl;
 import org.olap4j.metadata.*;

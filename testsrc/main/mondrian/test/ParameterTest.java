@@ -11,18 +11,20 @@
 */
 package mondrian.test;
 
-import junit.framework.Assert;
 import mondrian.olap.*;
-import mondrian.olap.Connection;
 import mondrian.rolap.RolapConnectionProperties;
+
+import junit.framework.Assert;
+
 import org.eigenbase.util.property.Property;
+
 import org.olap4j.impl.Olap4jUtil;
 
-import java.sql.*;
-import java.util.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.*;
 
 /**
  * A <code>ParameterTest</code> is a test suite for functionality relating to

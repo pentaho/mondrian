@@ -25,6 +25,7 @@ import mondrian.util.Bug;
 import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
+
 import org.olap4j.impl.NamedListImpl;
 import org.olap4j.mdx.IdentifierNode;
 import org.olap4j.mdx.IdentifierSegment;

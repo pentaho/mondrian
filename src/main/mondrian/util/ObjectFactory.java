@@ -10,9 +10,8 @@
 package mondrian.util;
 
 import org.eigenbase.util.property.StringProperty;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
+
+import java.lang.reflect.*;
 import java.util.Properties;
 
 /**

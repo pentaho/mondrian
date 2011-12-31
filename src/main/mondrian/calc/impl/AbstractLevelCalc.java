@@ -9,11 +9,11 @@
 */
 package mondrian.calc.impl;
 
+import mondrian.calc.Calc;
+import mondrian.calc.LevelCalc;
 import mondrian.olap.Evaluator;
 import mondrian.olap.Exp;
 import mondrian.olap.type.LevelType;
-import mondrian.calc.LevelCalc;
-import mondrian.calc.Calc;
 
 /**
  * Abstract implementation of the {@link mondrian.calc.LevelCalc} interface.

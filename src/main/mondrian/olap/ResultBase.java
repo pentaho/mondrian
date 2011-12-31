@@ -12,12 +12,13 @@
 */
 package mondrian.olap;
 
-import java.util.List;
-
 import mondrian.server.Execution;
 import mondrian.server.Statement;
+
 import org.apache.log4j.Logger;
+
 import java.io.PrintWriter;
+import java.util.List;
 
 /**
  * Skeleton implementation of {@link Result}.

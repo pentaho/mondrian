@@ -9,9 +9,9 @@
 */
 package mondrian.rolap;
 
-import mondrian.test.TestContext;
-import mondrian.rolap.aggmatcher.*;
 import mondrian.olap.Result;
+import mondrian.rolap.aggmatcher.AggTableTestCase;
+import mondrian.test.TestContext;
 
 /**
  * Testcase for

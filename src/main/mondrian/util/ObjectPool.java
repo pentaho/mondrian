@@ -20,7 +20,6 @@
 // Created from package cern.colt.map by Richard Emberson, 2007/1/23.
 // For the source to the Colt project, go to:
 // http://dsd.lbl.gov/~hoschek/colt/
-
 package mondrian.util;
 
 import java.util.Iterator;

@@ -10,12 +10,13 @@
 package mondrian.olap4j;
 
 import mondrian.rolap.RolapConnection;
+
 import org.olap4j.*;
 
+import java.io.InputStream;
+import java.io.Reader;
 import java.sql.*;
 import java.util.*;
-import java.io.Reader;
-import java.io.InputStream;
 
 /**
  * Implementation of {@link Factory} for JDBC 4.0.

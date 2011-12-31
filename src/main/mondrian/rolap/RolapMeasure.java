@@ -13,7 +13,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.Member;
-import mondrian.spi.CellFormatter;
 
 /**
  * Interface implemented by all measures (both stored and calculated).

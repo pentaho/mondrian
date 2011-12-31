@@ -12,9 +12,9 @@
 */
 package mondrian.olap;
 
-import javax.sql.DataSource;
-import java.util.Locale;
 import java.io.PrintWriter;
+import java.util.Locale;
+import javax.sql.DataSource;
 
 /**
  * Connection to a multi-dimensional database.

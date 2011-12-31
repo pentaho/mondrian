@@ -10,11 +10,11 @@
 */
 package mondrian.test.build;
 
+import mondrian.olap.Util;
+
 import junit.framework.TestCase;
 
 import java.io.*;
-
-import mondrian.olap.Util;
 
 /**
  * Base class for tests that execute Ant targets.  Sub-classes

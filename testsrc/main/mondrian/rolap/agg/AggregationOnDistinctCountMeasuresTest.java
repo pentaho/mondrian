@@ -20,9 +20,9 @@ import mondrian.rolap.BatchTestCase;
 import mondrian.rolap.RolapCube;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
+import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
-import mondrian.spi.Dialect;
 
 import java.util.*;
 

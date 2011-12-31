@@ -9,19 +9,19 @@
 */
 package mondrian.rolap.aggmatcher;
 
-import javax.sql.DataSource;
+import mondrian.olap.*;
+import mondrian.rolap.RolapConnection;
+import mondrian.test.FoodMartTestCase;
+
+import org.apache.log4j.*;
+import org.apache.log4j.Level;
+
 import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.log4j.*;
-import org.apache.log4j.Level;
-
-import mondrian.olap.*;
-import mondrian.rolap.RolapConnection;
-import mondrian.test.FoodMartTestCase;
+import javax.sql.DataSource;
 
 
 /**

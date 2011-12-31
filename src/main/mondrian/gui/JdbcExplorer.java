@@ -13,10 +13,11 @@ import mondrian.gui.JdbcMetaData.DbColumn;
 
 import org.apache.log4j.Logger;
 
+import java.util.Enumeration;
+import java.util.List;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.*;
-import java.util.*;
 
 /**
  * @author sean

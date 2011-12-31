@@ -10,16 +10,13 @@
 //
 // jhyde, 21 December, 2001
 */
-
 package mondrian.rolap;
+
+import mondrian.olap.*;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-import mondrian.olap.DriverManager;
-import mondrian.olap.Id;
-import mondrian.olap.Level;
 
 /**
  * todo:

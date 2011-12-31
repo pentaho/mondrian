@@ -12,8 +12,8 @@ package mondrian.olap.fun;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.impl.ConstantCalc;
-import mondrian.mdx.ResolvedFunCall;
 import mondrian.mdx.DimensionExpr;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Dimension;
 import mondrian.olap.type.DimensionType;
 

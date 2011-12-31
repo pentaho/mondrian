@@ -10,8 +10,8 @@
 package mondrian.test;
 
 import mondrian.olap.*;
-import mondrian.util.Format;
 import mondrian.rolap.RolapConnectionProperties;
+import mondrian.util.Format;
 
 import java.util.Calendar;
 import java.util.Locale;

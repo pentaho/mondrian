@@ -11,11 +11,12 @@
 // jhyde, 3 March, 2002
 */
 package mondrian.olap.fun;
-import mondrian.olap.*;
-import mondrian.olap.type.Type;
+
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
+import mondrian.olap.type.Type;
 
 import java.io.PrintWriter;
 

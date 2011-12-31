@@ -9,26 +9,24 @@
 */
 package mondrian.test.loader;
 
-import mondrian.resource.MondrianResource;
 import mondrian.olap.Util;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapUtil;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 
+import org.apache.log4j.*;
+
 import java.io.*;
 import java.math.BigDecimal;
 import java.sql.*;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
+import java.text.*;
 import java.util.*;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
-import org.apache.log4j.*;
 
 /**
  * Utility to load the FoodMart dataset into an arbitrary JDBC database.

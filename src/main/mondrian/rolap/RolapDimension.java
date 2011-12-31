@@ -12,8 +12,9 @@
 */
 package mondrian.rolap;
 
-import org.apache.log4j.Logger;
 import mondrian.olap.*;
+
+import org.apache.log4j.Logger;
 
 import java.util.*;
 

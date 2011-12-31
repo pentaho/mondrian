@@ -7,9 +7,7 @@
 // Copyright (C) 2001-2005 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
 */
-
 package mondrian.olap;
 
 /**

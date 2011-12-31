@@ -7,34 +7,15 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.tui;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
-import java.util.Locale;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
 import java.security.Principal;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpServletRequest;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
 
 /**
  * Partial implementation of the {@link HttpServletRequest} where just

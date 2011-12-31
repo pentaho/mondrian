@@ -15,23 +15,17 @@ package mondrian.web.taglib;
 import mondrian.olap.*;
 
 import org.apache.log4j.Logger;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import org.w3c.dom.*;
+
+import java.io.*;
+import java.util.List;
+import javax.xml.parsers.*;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
-
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
-import java.io.StringReader;
-import java.util.List;
 
 /**
  * Transforms a mondrian result into a DOM (Document Object Model).

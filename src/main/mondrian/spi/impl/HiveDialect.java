@@ -8,13 +8,11 @@
 */
 package mondrian.spi.impl;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.Date;
-import java.sql.SQLException;
-import java.util.*;
-
 import mondrian.olap.Util;
+
+import java.sql.*;
+import java.sql.Date;
+import java.util.*;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the Hive database.

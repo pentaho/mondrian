@@ -9,12 +9,12 @@
 */
 package mondrian.olap;
 
+import mondrian.util.*;
+
 import junit.framework.TestCase;
 
-import java.util.*;
 import java.sql.Driver;
-
-import mondrian.util.*;
+import java.util.*;
 
 /**
  * Tests for methods in {@link mondrian.olap.Util} and, sometimes, classes in

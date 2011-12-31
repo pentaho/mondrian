@@ -10,10 +10,10 @@
 */
 package mondrian.test.clearview;
 
-import junit.framework.*;
-
 import mondrian.olap.MondrianProperties;
-import mondrian.test.*;
+import mondrian.test.DiffRepository;
+
+import junit.framework.TestSuite;
 
 /**
  * <code>BatchedFillTest</code> is a test suite which tests

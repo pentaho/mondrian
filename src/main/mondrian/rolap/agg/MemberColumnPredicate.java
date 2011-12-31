@@ -10,9 +10,7 @@
 package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
-import mondrian.rolap.RolapMember;
-import mondrian.rolap.RolapSchema;
-import mondrian.rolap.RolapStar;
+import mondrian.rolap.*;
 
 /**
  * Column constraint defined by a member.

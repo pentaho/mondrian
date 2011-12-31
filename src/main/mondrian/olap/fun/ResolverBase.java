@@ -12,8 +12,8 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.Syntax;
 import mondrian.olap.FunDef;
+import mondrian.olap.Syntax;
 
 /**
  * <code>ResolverBase</code> provides a skeleton implementation of

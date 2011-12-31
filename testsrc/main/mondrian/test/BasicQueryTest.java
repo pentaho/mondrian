@@ -11,35 +11,28 @@
 */
 package mondrian.test;
 
-import mondrian.olap.*;
+import mondrian.calc.ResultStyle;
 import mondrian.olap.Axis;
 import mondrian.olap.Cell;
 import mondrian.olap.Connection;
+import mondrian.olap.*;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
-import mondrian.spi.ProfileHandler;
-import mondrian.spi.UserDefinedFunction;
-import mondrian.spi.Dialect;
+import mondrian.spi.*;
 import mondrian.util.Bug;
-import mondrian.calc.ResultStyle;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.sql.*;
-import java.sql.DriverManager;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.regex.Pattern;
-import java.util.*;
 
 import junit.framework.Assert;
 
 import org.olap4j.*;
 import org.olap4j.layout.RectangularCellSetFormatter;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.sql.*;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.regex.Pattern;
 
 /**
  * <code>BasicQueryTest</code> is a test case which tests simple queries

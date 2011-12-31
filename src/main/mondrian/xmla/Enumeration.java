@@ -12,10 +12,11 @@
 package mondrian.xmla;
 
 import org.olap4j.impl.UnmodifiableArrayMap;
-import org.olap4j.metadata.*;
+import org.olap4j.metadata.XmlaConstant;
 import org.olap4j.metadata.XmlaConstants;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Contains inner classes which define enumerations used in XML for Analysis.

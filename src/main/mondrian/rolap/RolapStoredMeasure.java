@@ -10,8 +10,8 @@
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
+
 
 /**
  * A measure which is implemented by a SQL column or SQL expression (as opposed

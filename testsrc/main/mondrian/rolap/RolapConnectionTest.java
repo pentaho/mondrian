@@ -11,25 +11,19 @@
 */
 package mondrian.rolap;
 
-import junit.framework.TestCase;
 import mondrian.olap.*;
+import mondrian.spi.Dialect;
 import mondrian.test.TestContext;
 import mondrian.util.Pair;
-import mondrian.spi.Dialect;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.naming.spi.InitialContextFactory;
-import javax.naming.spi.InitialContextFactoryBuilder;
-import javax.naming.spi.NamingManager;
-import javax.sql.DataSource;
+import junit.framework.TestCase;
+
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Arrays;
+import java.util.*;
+import javax.naming.*;
+import javax.naming.spi.*;
+import javax.sql.DataSource;
 
 /**
  * Unit test for {@link RolapConnection}.

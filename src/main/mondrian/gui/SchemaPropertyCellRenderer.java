@@ -10,11 +10,11 @@
 */
 package mondrian.gui;
 
+import java.awt.*;
+import java.io.StringReader;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.TableCellRenderer;
-import java.awt.*;
-import java.io.StringReader;
 
 /**
  * @author sean

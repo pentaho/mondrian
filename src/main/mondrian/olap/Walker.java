@@ -10,8 +10,8 @@
 //
 // jhyde, 1 March, 1999
 */
-
 package mondrian.olap;
+
 import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.Stack;

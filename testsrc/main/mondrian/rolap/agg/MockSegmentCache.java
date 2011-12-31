@@ -9,13 +9,13 @@
 */
 package mondrian.rolap.agg;
 
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.*;
-
 import mondrian.olap.Util;
 import mondrian.rolap.agg.SegmentHeader.ConstrainedColumn;
 import mondrian.spi.SegmentCache;
+
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * Mock implementation of {@link SegmentCache} that is used for automated

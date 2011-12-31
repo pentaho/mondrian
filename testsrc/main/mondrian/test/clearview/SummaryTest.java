@@ -10,11 +10,11 @@
 */
 package mondrian.test.clearview;
 
-import junit.framework.*;
-
 import mondrian.olap.MondrianProperties;
-import mondrian.test.*;
+import mondrian.test.DiffRepository;
 import mondrian.util.Bug;
+
+import junit.framework.TestSuite;
 
 /**
  * <code>SummaryTest</code> is a test suite which tests scenarios of

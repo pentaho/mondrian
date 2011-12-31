@@ -11,10 +11,11 @@
 // jhyde, 3 March, 2002
  */
 package mondrian.olap;
-import mondrian.olap.fun.Resolver;
-import mondrian.olap.fun.FunInfo;
 
-import java.util.*;
+import mondrian.olap.fun.FunInfo;
+import mondrian.olap.fun.Resolver;
+
+import java.util.List;
 
 /**
  * List of all MDX functions.

@@ -10,10 +10,10 @@
 */
 package mondrian.test.clearview;
 
-import junit.framework.*;
-
-import mondrian.test.*;
+import mondrian.test.DiffRepository;
 import mondrian.util.Bug;
+
+import junit.framework.TestSuite;
 
 /**
  * <code>HangerDimensionTest</code> tests the extended syntax of Order

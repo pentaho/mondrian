@@ -10,9 +10,7 @@
 //
 // jhyde, 20 January, 1999
 */
-
 package mondrian.olap;
-
 
 /**
  * Lexical analyzer whose input is a string.

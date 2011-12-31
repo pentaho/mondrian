@@ -10,9 +10,9 @@
 package mondrian.rolap;
 
 import mondrian.calc.Calc;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.Exp;
 import mondrian.olap.fun.AggregateFunDef;
-import mondrian.mdx.ResolvedFunCall;
 
 /**
  * Implementation of {@link mondrian.rolap.RolapCalculation}

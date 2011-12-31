@@ -14,8 +14,6 @@ package mondrian.olap;
 
 import mondrian.parser.*;
 import mondrian.resource.MondrianResource;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
 import mondrian.server.Statement;
 
 import org.apache.log4j.Logger;

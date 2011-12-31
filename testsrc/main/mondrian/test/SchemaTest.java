@@ -9,32 +9,25 @@
 */
 package mondrian.test;
 
+import mondrian.olap.*;
+import mondrian.olap.Hierarchy;
+import mondrian.rolap.aggmatcher.AggTableManager;
+import mondrian.spi.Dialect;
+import mondrian.spi.PropertyFormatter;
+import mondrian.util.Bug;
+
 import junit.framework.Assert;
+
 import org.apache.log4j.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.varia.LevelRangeFilter;
 
-import org.olap4j.metadata.*;
-
-import mondrian.rolap.aggmatcher.AggTableManager;
-import mondrian.olap.*;
-import mondrian.util.Bug;
-import mondrian.olap.Axis;
-import mondrian.olap.Member;
-import mondrian.olap.Position;
-import mondrian.olap.Cube;
-import mondrian.olap.Dimension;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Property;
-import mondrian.olap.NamedSet;
-import mondrian.olap.Result;
-import mondrian.olap.Schema;
-import mondrian.spi.Dialect;
-import mondrian.spi.PropertyFormatter;
+import org.olap4j.metadata.NamedList;
 
 import java.io.StringWriter;
-import java.util.*;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Unit tests for various schema features.

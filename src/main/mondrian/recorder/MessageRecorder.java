@@ -7,7 +7,6 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.recorder;
 
 /**

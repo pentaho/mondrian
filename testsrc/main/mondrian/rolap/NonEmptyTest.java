@@ -10,29 +10,29 @@
 */
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import junit.framework.Assert;
 import mondrian.olap.*;
 import mondrian.olap.Level;
 import mondrian.rolap.RolapConnection.NonEmptyResult;
-import mondrian.rolap.RolapNative.Listener;
-import mondrian.rolap.RolapNative.NativeEvent;
-import mondrian.rolap.RolapNative.TupleEvent;
+import mondrian.rolap.RolapNative.*;
 import mondrian.rolap.cache.HardSmartCache;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
+import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
-import mondrian.spi.Dialect;
 import mondrian.util.Bug;
 import mondrian.util.Pair;
 
+import junit.framework.Assert;
+
 import org.apache.log4j.*;
 import org.apache.log4j.spi.LoggingEvent;
+
 import org.eigenbase.util.property.BooleanProperty;
 import org.eigenbase.util.property.StringProperty;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests for NON EMPTY Optimization, includes SqlConstraint type hierarchy and

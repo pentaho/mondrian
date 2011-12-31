@@ -10,10 +10,10 @@
 //
 // jhyde, 10 August, 2001
 */
-
 package mondrian.rolap;
 
-import mondrian.olap.*;
+import mondrian.olap.Member;
+import mondrian.olap.Util;
 
 import java.util.*;
 

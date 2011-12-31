@@ -10,6 +10,7 @@
 package mondrian.test;
 
 import mondrian.spi.Dialect;
+
 import org.olap4j.impl.Olap4jUtil;
 
 import java.util.Set;

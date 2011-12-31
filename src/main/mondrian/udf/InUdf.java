@@ -12,10 +12,8 @@ package mondrian.udf;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
 import mondrian.spi.UserDefinedFunction;
-import mondrian.util.*;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.List;
 
 /**
  * User-defined function <code>IN</code>.

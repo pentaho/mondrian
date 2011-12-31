@@ -9,11 +9,11 @@
 package mondrian.spi.impl;
 
 import mondrian.olap.Util;
-import mondrian.spi.*;
+import mondrian.spi.Dialect;
 
-import java.util.*;
 import java.sql.*;
 import java.sql.Date;
+import java.util.*;
 
 /**
  * Implementation of {@link Dialect} based on a JDBC connection and metadata.

@@ -10,13 +10,11 @@
 package mondrian.rolap;
 
 import mondrian.olap.Evaluator;
-import mondrian.rolap.sql.TupleConstraint;
-import mondrian.rolap.sql.MemberChildrenConstraint;
-import mondrian.rolap.sql.SqlQuery;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.sql.*;
 
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * TupleConstraint which does not restrict the result.

@@ -10,18 +10,7 @@
 //
 // Sean McCullough, 13 February, 2002, 10:25 PM
 */
-
 package mondrian.web.servlet;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Enumeration;
-
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import mondrian.olap.*;
 import mondrian.spi.CatalogLocator;
@@ -29,6 +18,13 @@ import mondrian.spi.impl.ServletContextCatalogLocator;
 import mondrian.web.taglib.ResultCache;
 
 import org.eigenbase.xom.StringEscaper;
+
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.List;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.*;
 
 /**
  * <code>MdxQueryServlet</code> is a servlet which receives MDX queries,

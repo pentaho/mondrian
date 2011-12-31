@@ -9,11 +9,10 @@
 */
 package mondrian.test;
 
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.SolveOrderMode;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 
-import static mondrian.olap.SolveOrderMode.*;
+import static mondrian.olap.SolveOrderMode.ABSOLUTE;
+import static mondrian.olap.SolveOrderMode.SCOPED;
 
 /**
  * <code>SolveOrderScopeIsolationTest</code> Test conformance to SSAS2005 solve

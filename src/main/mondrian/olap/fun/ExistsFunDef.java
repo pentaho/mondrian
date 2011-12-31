@@ -10,12 +10,13 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Definition of the <code>EXISTS</code> MDX function.

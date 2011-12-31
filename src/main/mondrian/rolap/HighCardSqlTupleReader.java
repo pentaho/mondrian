@@ -13,8 +13,7 @@ package mondrian.rolap;
 import mondrian.calc.TupleList;
 import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.calc.impl.UnaryTupleList;
-import mondrian.olap.Member;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.server.Locus;
@@ -23,8 +22,7 @@ import mondrian.util.Pair;
 import mondrian.util.TraversalList;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import javax.sql.DataSource;
 
 /**

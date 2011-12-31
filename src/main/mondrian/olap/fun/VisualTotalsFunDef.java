@@ -10,12 +10,13 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.calc.impl.*;
+import mondrian.calc.impl.AbstractListCalc;
+import mondrian.calc.impl.UnaryTupleList;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.type.*;
-import mondrian.rolap.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.*;
 
 import java.util.ArrayList;
 import java.util.List;

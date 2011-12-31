@@ -10,15 +10,15 @@
 //
 // jhyde, 21 December, 2001
 */
-
 package mondrian.rolap;
-import java.util.*;
 
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
-import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.rolap.sql.TupleConstraint;
 import mondrian.util.Pair;
+
+import java.util.*;
 
 /**
  * <code>CacheMemberReader</code> implements {@link MemberReader} by reading

@@ -12,10 +12,10 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
 import mondrian.calc.*;
 import mondrian.calc.impl.AbstractListCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 import mondrian.rolap.RolapEvaluator;
 
 

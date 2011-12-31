@@ -9,46 +9,24 @@
 */
 package mondrian.xmla.impl;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import mondrian.xmla.*;
+
+import org.olap4j.impl.Olap4jUtil;
+
+import org.w3c.dom.*;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+import java.io.*;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.WritableByteChannel;
+import java.nio.channels.*;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import mondrian.xmla.Enumeration;
-import mondrian.xmla.SaxWriter;
-import mondrian.xmla.XmlaConstants;
-import mondrian.xmla.XmlaException;
-import mondrian.xmla.XmlaRequest;
-import mondrian.xmla.XmlaRequestCallback;
-import mondrian.xmla.XmlaResponse;
-import mondrian.xmla.XmlaServlet;
-import mondrian.xmla.XmlaUtil;
-
-import org.olap4j.impl.Olap4jUtil;
-import org.w3c.dom.Attr;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
+import javax.xml.parsers.*;
 
 /**
  * Default implementation of XML/A servlet.

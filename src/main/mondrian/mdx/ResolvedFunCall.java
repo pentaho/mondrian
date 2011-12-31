@@ -8,13 +8,13 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.mdx;
+
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
-import mondrian.olap.fun.*;
-import mondrian.olap.type.Type;
 import mondrian.olap.*;
+import mondrian.olap.fun.FunUtil;
+import mondrian.olap.type.Type;
 
 import java.io.PrintWriter;
 

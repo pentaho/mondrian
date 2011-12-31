@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * A constraint which always returns true or false.
  *
- * @see Predicates#wildcard(mondrian.rolap.RolapSchema.PhysColumn)
+ * @see Predicates#wildcard(mondrian.rolap.RolapSchema.PhysColumn, boolean)
  *
  * @author jhyde
  * @version $Id$

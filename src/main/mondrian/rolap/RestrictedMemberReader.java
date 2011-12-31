@@ -11,14 +11,12 @@
 */
 package mondrian.rolap;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.sql.TupleConstraint;
 import mondrian.rolap.sql.MemberChildrenConstraint;
+import mondrian.rolap.sql.TupleConstraint;
+
+import java.util.*;
 
 /**
  * A <code>RestrictedMemberReader</code> reads only the members of a hierarchy

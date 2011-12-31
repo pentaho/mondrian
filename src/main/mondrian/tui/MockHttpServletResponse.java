@@ -7,25 +7,15 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.tui;
 
-import java.io.PrintWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.IOException;
-import java.util.Locale;
-import java.util.Collections;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.*;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * This is a partial implementation of the HttpServletResponse where just

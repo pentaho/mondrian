@@ -7,7 +7,6 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
@@ -19,13 +18,13 @@ import org.apache.log4j.Logger;
 
 import org.olap4j.impl.Olap4jUtil;
 
-import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.ref.SoftReference;
-import java.sql.Connection;
 import java.sql.*;
+import java.sql.Connection;
 import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * Metadata gleaned from JDBC about the tables and columns in the star schema.

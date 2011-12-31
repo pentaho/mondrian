@@ -9,14 +9,12 @@
 */
 package mondrian.olap.fun;
 
-import mondrian.olap.*;
-import mondrian.olap.type.Type;
 import mondrian.calc.*;
 import mondrian.calc.impl.DelegatingExpCompiler;
+import mondrian.olap.*;
+import mondrian.olap.type.Type;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * The <code>ResultStyleCompiler</code> can be used to assure that

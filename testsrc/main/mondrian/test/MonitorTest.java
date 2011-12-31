@@ -10,10 +10,7 @@
 package mondrian.test;
 
 import mondrian.olap.MondrianServer;
-import mondrian.server.monitor.ConnectionInfo;
-import mondrian.server.monitor.Monitor;
-import mondrian.server.monitor.ServerInfo;
-import mondrian.server.monitor.StatementInfo;
+import mondrian.server.monitor.*;
 
 import org.olap4j.CellSet;
 import org.olap4j.OlapStatement;

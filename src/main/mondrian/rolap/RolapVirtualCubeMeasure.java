@@ -10,7 +10,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.spi.CellFormatter;
 
 import java.util.Map;
 

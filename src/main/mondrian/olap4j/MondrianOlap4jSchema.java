@@ -9,14 +9,14 @@
 */
 package mondrian.olap4j;
 
-import org.olap4j.metadata.*;
-import org.olap4j.OlapException;
-import org.olap4j.impl.*;
-
-import java.util.*;
-
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Role;
+
+import org.olap4j.OlapException;
+import org.olap4j.impl.*;
+import org.olap4j.metadata.*;
+
+import java.util.*;
 
 /**
  * Implementation of {@link org.olap4j.metadata.Schema}

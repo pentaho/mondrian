@@ -10,6 +10,7 @@
 package mondrian.test;
 
 import mondrian.util.Bug;
+
 import org.olap4j.*;
 import org.olap4j.impl.ArrayMap;
 

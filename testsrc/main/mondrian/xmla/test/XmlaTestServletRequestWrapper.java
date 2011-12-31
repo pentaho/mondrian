@@ -9,14 +9,13 @@
 */
 package mondrian.xmla.test;
 
-import java.io.*;
+import mondrian.olap.Util;
+import mondrian.xmla.XmlaServlet;
 
+import java.io.*;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-
-import mondrian.xmla.XmlaServlet;
-import mondrian.olap.Util;
 
 /**
  * Dummy request for testing XmlaServlet. Provides a 'text/xml' content stream

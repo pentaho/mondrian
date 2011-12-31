@@ -9,10 +9,11 @@
 */
 package mondrian.xmla.impl;
 
-import java.io.*;
-
 import mondrian.olap.Util;
 import mondrian.xmla.*;
+
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * Default implementation of {@link mondrian.xmla.XmlaResponse}.

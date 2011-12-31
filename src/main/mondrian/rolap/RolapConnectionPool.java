@@ -11,12 +11,13 @@
 package mondrian.rolap;
 
 import mondrian.olap.Util;
+
 import org.apache.commons.dbcp.*;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
 
-import javax.sql.DataSource;
 import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * Singleton class that holds a connection pool.

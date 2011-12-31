@@ -9,8 +9,8 @@
 */
 package mondrian.rolap.aggmatcher;
 
-import mondrian.test.loader.CsvDBTestCase;
 import mondrian.olap.MondrianProperties;
+import mondrian.test.loader.CsvDBTestCase;
 
 /**
  * This abstract class can be used as the basis for writing aggregate table

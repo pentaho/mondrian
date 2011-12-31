@@ -16,12 +16,10 @@ import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.ServletContextCatalogLocator;
 import mondrian.xmla.XmlaHandler;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import javax.servlet.*;
 
 /**
  * Extension to {@link mondrian.xmla.XmlaServlet} that instantiates a

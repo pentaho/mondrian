@@ -9,16 +9,12 @@
 */
 package mondrian.gui;
 
+import org.apache.log4j.Logger;
+
+import java.sql.*;
+import java.util.*;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreePath;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Vector;
-
-import org.apache.log4j.Logger;
 
 /**
  *

@@ -14,13 +14,13 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.spi.DynamicSchemaProcessor;
 
-import javax.sql.DataSource;
 import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * A collection of schemas, identified by their connection properties

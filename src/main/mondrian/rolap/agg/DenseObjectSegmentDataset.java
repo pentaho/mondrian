@@ -12,11 +12,11 @@
 */
 package mondrian.rolap.agg;
 
-import java.util.SortedSet;
-
 import mondrian.olap.Util;
 import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
+
+import java.util.SortedSet;
 
 /**
  * Implementation of {@link mondrian.rolap.agg.DenseSegmentDataset} that stores

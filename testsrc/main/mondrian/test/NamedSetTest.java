@@ -11,7 +11,8 @@
 */
 package mondrian.test;
 
-import mondrian.olap.*;
+import mondrian.olap.Result;
+import mondrian.olap.Util;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 
 import java.io.InputStream;

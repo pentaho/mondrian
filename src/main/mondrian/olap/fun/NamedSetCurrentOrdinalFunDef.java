@@ -12,8 +12,8 @@ package mondrian.olap.fun;
 import mondrian.calc.Calc;
 import mondrian.calc.ExpCompiler;
 import mondrian.calc.impl.AbstractIntegerCalc;
-import mondrian.mdx.ResolvedFunCall;
 import mondrian.mdx.NamedSetExpr;
+import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 

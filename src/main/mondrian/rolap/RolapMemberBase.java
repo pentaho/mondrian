@@ -8,7 +8,6 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.rolap;
 
 import mondrian.calc.Calc;
@@ -22,6 +21,7 @@ import mondrian.util.*;
 
 import org.apache.commons.collections.map.Flat3Map;
 import org.apache.log4j.Logger;
+
 import org.eigenbase.util.property.StringProperty;
 
 import java.util.*;

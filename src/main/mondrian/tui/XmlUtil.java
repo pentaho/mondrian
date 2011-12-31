@@ -7,26 +7,28 @@
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
-
 package mondrian.tui;
 
 import mondrian.olap.Util;
+
 import org.apache.xerces.dom.DocumentImpl;
 import org.apache.xerces.impl.Constants;
 import org.apache.xerces.parsers.DOMParser;
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
 import org.apache.xpath.domapi.XPathEvaluatorImpl;
+
 import org.w3c.dom.*;
 import org.w3c.dom.xpath.*;
 import org.xml.sax.*;
 
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 import javax.xml.parsers.*;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
-import java.io.*;
-import java.util.*;
 
 /**
  * Some XML parsing, validation and transform utility methods used

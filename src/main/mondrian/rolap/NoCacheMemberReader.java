@@ -12,17 +12,15 @@
 */
 package mondrian.rolap;
 
-import mondrian.olap.Util;
-import mondrian.olap.Id;
-import mondrian.olap.Member;
+import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.util.ConcatenableList;
 
-import java.util.*;
-
 import org.apache.log4j.Logger;
+
+import java.util.*;
 
 /**
  * Implementation of {@link MemberReader} that

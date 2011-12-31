@@ -9,7 +9,8 @@
 */
 package mondrian.calc.impl;
 
-import mondrian.calc.*;
+import mondrian.calc.Calc;
+import mondrian.calc.MemberCalc;
 import mondrian.olap.*;
 import mondrian.olap.type.ScalarType;
 import mondrian.olap.type.Type;

@@ -8,14 +8,14 @@
 */
 package mondrian.spi.impl;
 
-import mondrian.spi.DialectFactory;
-import mondrian.spi.Dialect;
 import mondrian.olap.Util;
+import mondrian.spi.Dialect;
+import mondrian.spi.DialectFactory;
 
-import javax.sql.DataSource;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
+import javax.sql.DataSource;
 
 /**
  * Implementation of {@link mondrian.spi.DialectFactory} for subclasses

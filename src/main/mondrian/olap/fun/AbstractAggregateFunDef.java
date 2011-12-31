@@ -11,9 +11,9 @@ package mondrian.olap.fun;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.DelegatingTupleList;
+import mondrian.mdx.UnresolvedFunCall;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
-import mondrian.mdx.UnresolvedFunCall;
 import mondrian.rolap.*;
 
 import java.util.*;

@@ -12,19 +12,15 @@
 */
 package mondrian.web.taglib;
 
-import mondrian.olap.Connection;
-import mondrian.olap.DriverManager;
-import mondrian.olap.Query;
-import mondrian.olap.Result;
+import mondrian.olap.*;
 import mondrian.spi.impl.ServletContextCatalogLocator;
 
 import org.apache.log4j.Logger;
+
 import org.w3c.dom.Document;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
+import javax.servlet.http.*;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**

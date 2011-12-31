@@ -14,14 +14,15 @@ import mondrian.olap.Util;
 import mondrian.util.CompositeList;
 import mondrian.xmla.impl.DefaultSaxWriter;
 
+import org.apache.log4j.Logger;
+
 import org.olap4j.*;
 import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.metadata.*;
 import org.olap4j.metadata.Property.StandardCellProperty;
 import org.olap4j.metadata.Property.StandardMemberProperty;
-import org.xml.sax.SAXException;
 
-import org.apache.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

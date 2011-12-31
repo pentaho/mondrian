@@ -9,8 +9,8 @@
 */
 package mondrian.calc.impl;
 
-import mondrian.olap.*;
 import mondrian.calc.Calc;
+import mondrian.olap.*;
 
 /**
  * Calculation which retrieves the value of an underlying calculation

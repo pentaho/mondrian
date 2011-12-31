@@ -9,7 +9,8 @@
 */
 package mondrian.spi;
 
-import mondrian.olap.*;
+import mondrian.olap.Evaluator;
+import mondrian.olap.Syntax;
 import mondrian.olap.type.Type;
 
 import java.util.List;

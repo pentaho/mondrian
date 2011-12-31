@@ -10,10 +10,10 @@
 package mondrian.olap.fun;
 
 import mondrian.calc.*;
-import mondrian.olap.*;
-import mondrian.calc.impl.ValueCalc;
 import mondrian.calc.impl.AbstractDoubleCalc;
+import mondrian.calc.impl.ValueCalc;
 import mondrian.mdx.ResolvedFunCall;
+import mondrian.olap.*;
 
 /**
  * Definition of the <code>Median</code> MDX functions.

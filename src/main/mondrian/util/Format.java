@@ -10,8 +10,8 @@
 //
 // jhyde, 2 November, 2000
 */
-
 package mondrian.util;
+
 import mondrian.olap.Util;
 
 import java.io.PrintWriter;

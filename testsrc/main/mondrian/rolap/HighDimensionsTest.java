@@ -14,10 +14,12 @@ import mondrian.olap.*;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
 import mondrian.util.Bug;
+
 import junit.framework.Assert;
 
-import java.util.*;
-import java.lang.ref.*;
+import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Unit-test for non cacheable elementos of high dimensions.
