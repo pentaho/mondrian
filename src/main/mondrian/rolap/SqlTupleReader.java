@@ -15,11 +15,12 @@ import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.sql.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.sql.*;
 import mondrian.server.Locus;
+import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.Dialect;
 import mondrian.util.Pair;
 
@@ -29,6 +30,7 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * Reads the members of a single level (level.members) or of multiple levels
@@ -403,10 +405,11 @@ public class SqlTupleReader implements TupleReader {
                 assert sql != null && !sql.equals("");
                 stmt = RolapUtil.executeQuery(
                     dataSource, sql, types, maxRows, 0,
-                    new Locus(
+                    new SqlStatement.StatementLocus(
                         Locus.peek().execution,
                         "SqlTupleReader.readTuples " + partialTargets,
-                        message),
+                        message,
+                        SqlStatementEvent.Purpose.TUPLES, 0),
                     -1, -1);
                 resultSet = stmt.getResultSet();
             } else {

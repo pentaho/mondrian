@@ -13,8 +13,8 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.Member;
 import mondrian.rolap.*;
-
 import mondrian.xmla.XmlaHandler;
+
 import org.olap4j.Axis;
 import org.olap4j.Cell;
 import org.olap4j.*;
@@ -23,9 +23,9 @@ import org.olap4j.mdx.*;
 import org.olap4j.mdx.parser.*;
 import org.olap4j.mdx.parser.impl.DefaultMdxParserImpl;
 import org.olap4j.metadata.*;
-import org.olap4j.metadata.Schema;
 import org.olap4j.metadata.Database.AuthenticationMode;
 import org.olap4j.metadata.Database.ProviderType;
+import org.olap4j.metadata.Schema;
 import org.olap4j.type.*;
 import org.olap4j.type.DimensionType;
 
@@ -208,7 +208,10 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     public OlapStatement createStatement() {
-        return new MondrianOlap4jStatement(this);
+        final MondrianOlap4jStatement statement =
+            new MondrianOlap4jStatement(this);
+        mondrianServer.addStatement(statement);
+        return statement;
     }
 
     public ScenarioImpl createScenario() throws OlapException {
@@ -463,7 +466,10 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         String mdx)
         throws OlapException
     {
-        return factory.newPreparedStatement(mdx, this);
+        final MondrianOlap4jPreparedStatement preparedStatement =
+            factory.newPreparedStatement(mdx, this);
+        mondrianServer.addStatement(preparedStatement);
+        return preparedStatement;
     }
 
     public MdxParserFactory getParserFactory() {

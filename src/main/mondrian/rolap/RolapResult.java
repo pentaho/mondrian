@@ -12,6 +12,7 @@ package mondrian.rolap;
 
 import mondrian.calc.*;
 import mondrian.calc.impl.*;
+import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.DimensionType;
 import mondrian.olap.fun.*;
@@ -21,12 +22,10 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
-import mondrian.server.Statement;
 import mondrian.spi.CellFormatter;
 import mondrian.util.ConcatenableList;
 import mondrian.util.Format;
 import mondrian.util.ObjectPool;
-import mondrian.mdx.*;
 
 import org.apache.log4j.Logger;
 
@@ -91,7 +90,7 @@ public class RolapResult extends ResultBase {
             }
         }
         RolapCube cube = (RolapCube) query.getCube();
-        this.batchingReader = new FastBatchingCellReader(cube);
+        this.batchingReader = new FastBatchingCellReader(execution, cube);
 
         this.cellInfos =
             (query.axes.length > 4)
@@ -387,7 +386,7 @@ public class RolapResult extends ResultBase {
                     evaluator.addCalculation(
                         new RolapTupleCalculation(hierarchyList, calc), true);
                 }
-            } while (batchingReader.loadAggregations(query));
+            } while (phase());
 
             /////////////////////////////////////////////////////////////////
             // Execute Axes
@@ -438,7 +437,7 @@ public class RolapResult extends ResultBase {
                                     tupleIterable, false));
                     }
                 } while (redo);
-            } while (batchingReader.loadAggregations(query));
+            } while (phase());
 
             evaluator.restore(savepoint);
 
@@ -495,6 +494,20 @@ public class RolapResult extends ResultBase {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("RolapResult<init>: " + Util.printMemory());
             }
+        }
+    }
+
+    private boolean phase() {
+        if (batchingReader.isDirty()) {
+            execution.tracePhase(
+                batchingReader.getHitCount(),
+                batchingReader.getMissCount(),
+                batchingReader.getPendingCount());
+
+            batchingReader.loadAggregations();
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -591,7 +604,7 @@ public class RolapResult extends ResultBase {
                 calc,
                 axisMembers);
 
-            if (!batchingReader.loadAggregations(statement.getQuery())) {
+            if (!phase()) {
                 break;
             } else {
                 // Clear invalid expression result so that the next evaluation
@@ -807,7 +820,7 @@ public class RolapResult extends ResultBase {
 
             // Retrieve the aggregations collected.
             //
-            if (!batchingReader.loadAggregations(query)) {
+            if (!phase()) {
                 // We got all of the cells we needed, so the result must be
                 // correct.
                 return;
@@ -871,7 +884,7 @@ public class RolapResult extends ResultBase {
                 }
             }
 
-            if (!batchingReader.loadAggregations(evaluator.getQuery())) {
+            if (!phase()) {
                 break;
             } else {
                 // Clear invalid expression result so that the next evaluation
@@ -909,7 +922,7 @@ public class RolapResult extends ResultBase {
             RolapAxis axis = (RolapAxis) slicerAxis;
             TupleList tupleList = axis.getTupleList();
             for (List<Member> members : tupleList) {
-                getQuery().checkCancelOrTimeout();
+                execution.checkCancelOrTimeout();
                 revaluator.setContext(members);
                 Object o;
                 try {
@@ -1025,7 +1038,7 @@ public class RolapResult extends ResultBase {
                 for (final List<Member> tuple : subTuples) {
                     point.setAxis(axisOrdinal, pi);
                     revaluator.setContext(tuple);
-                    getQuery().checkCancelOrTimeout();
+                    execution.checkCancelOrTimeout();
                     executeStripe(axisOrdinal - 1, revaluator, pos);
                     pi++;
                 }
@@ -1052,7 +1065,7 @@ public class RolapResult extends ResultBase {
                 for (final List<Member> tuple : tupleList) {
                     point.setAxis(axisOrdinal, tupleIndex);
                     revaluator.setContext(tuple);
-                    getQuery().checkCancelOrTimeout();
+                    execution.checkCancelOrTimeout();
                     executeStripe(axisOrdinal - 1, revaluator, pos);
                     tupleIndex++;
                 }

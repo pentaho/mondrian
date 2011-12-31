@@ -10,41 +10,47 @@
 //
 // jhyde, 21 January, 1999
 */
-
 package mondrian.test;
-
-import java.io.PrintWriter;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Enumeration;
-import java.util.*;
-import java.util.regex.Pattern;
-
-import junit.framework.Test;
-import junit.framework.*;
 
 import mondrian.calc.impl.ConstantCalcTest;
 import mondrian.olap.*;
 import mondrian.olap.fun.*;
-import mondrian.olap.fun.vba.*;
+import mondrian.olap.fun.vba.ExcelTest;
+import mondrian.olap.fun.vba.VbaTest;
 import mondrian.olap.type.TypeTest;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.AggregationOnDistinctCountMeasuresTest;
 import mondrian.rolap.agg.SegmentCacheTest;
 import mondrian.rolap.agg.SegmentLoaderTest;
-import mondrian.rolap.aggmatcher.*;
+import mondrian.rolap.aggmatcher.AggGenTest;
+import mondrian.rolap.aggmatcher.DefaultRuleTest;
+import mondrian.rolap.aggmatcher.MultipleColsInTupleAggTest;
 import mondrian.rolap.sql.SelectNotInGroupByTest;
 import mondrian.rolap.sql.SqlQueryTest;
 import mondrian.test.build.CodeComplianceTest;
 import mondrian.test.clearview.*;
 import mondrian.test.comp.ResultComparatorTest;
-import mondrian.udf.*;
+import mondrian.udf.CurrentDateMemberUdfTest;
+import mondrian.udf.NullValueTest;
 import mondrian.util.*;
 import mondrian.xmla.*;
 import mondrian.xmla.impl.DynamicDatasourceXmlaServletTest;
 import mondrian.xmla.test.XmlaTest;
 
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
+
 import org.apache.log4j.Logger;
+
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Main test suite for Mondrian.
@@ -318,6 +324,7 @@ public class Main extends TestSuite {
             addTest(suite, SteelWheelsSchemaTest.class);
             addTest(suite, MultipleColsInTupleAggTest.class);
             addTest(suite, DynamicSchemaProcessorTest.class);
+            addTest(suite, MonitorTest.class);
             addTest(suite, CodeComplianceTest.class);
 
             boolean testNonEmpty = isRunOnce();

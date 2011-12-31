@@ -22,6 +22,7 @@ import mondrian.olap.fun.UdfResolver;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.ExplicitRules;
+import mondrian.server.Locus;
 import mondrian.spi.Dialect;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.MemberFormatter;
@@ -2896,14 +2897,25 @@ public class RolapSchemaLoader {
         final String queryString = buf.toString();
         final Query queryExp;
         try {
-            RolapConnection conn = schema.getInternalConnection();
-            queryExp = conn.parseQuery(queryString);
+            final RolapConnection conn = schema.getInternalConnection();
+            return Locus.execute(
+                conn,
+                "Validate calculated members in cube",
+                new Locus.Action<Query>() {
+                    public Query execute() {
+                        final Query queryExp =
+                            (Query) conn.parseStatement(
+                                Locus.peek().execution.getMondrianStatement(),
+                                queryString, null, false);
+                        queryExp.resolve();
+                        return queryExp;
+                    }
+                }
+            );
         } catch (Exception e) {
             throw MondrianResource.instance().UnknownNamedSetHasBadFormula.ex(
                 cube.getName(), e);
         }
-        queryExp.resolve();
-        return queryExp;
     }
 
     private void postNamedSet(

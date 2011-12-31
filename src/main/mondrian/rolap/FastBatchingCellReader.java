@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggGen;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.server.Execution;
 import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
@@ -38,6 +39,7 @@ public class FastBatchingCellReader implements CellReader {
         Logger.getLogger(FastBatchingCellReader.class);
 
     private final RolapCube cube;
+    private final Execution execution;
     private final Map<AggregationKey, Batch> batches;
 
     /**
@@ -46,7 +48,18 @@ public class FastBatchingCellReader implements CellReader {
      * FastBatchingCellReader has not told any lies during that operation, and
      * therefore the result is true. The field is also useful for debugging.
      */
-    private int requestCount;
+    private int missCount;
+
+    /**
+     * Number of occasions that a requested cell was already in cache.
+     */
+    private int hitCount;
+
+    /**
+     * Number of occasions that requested cell was in the process of being
+     * loaded into cache but not ready.
+     */
+    private int pendingCount;
 
     final AggregationManager aggMgr = AggregationManager.instance();
 
@@ -55,11 +68,16 @@ public class FastBatchingCellReader implements CellReader {
 
     /**
      * Indicates that the reader has given incorrect results.
+     *
+     * @see Util#deprecated(Object) I don't think this is ever set, other than
+     *   if there are cache misses; can remove
      */
     private boolean dirty;
 
-    public FastBatchingCellReader(RolapCube cube) {
+    public FastBatchingCellReader(Execution execution, RolapCube cube) {
         assert cube != null;
+        assert execution != null;
+        this.execution = execution;
         this.cube = cube;
         this.batches = new HashMap<AggregationKey, Batch>();
     }
@@ -79,9 +97,11 @@ public class FastBatchingCellReader implements CellReader {
         if (o == Boolean.TRUE) {
             // Aggregation is being loaded. (todo: Use better value, or
             // throw special exception)
+            ++pendingCount;
             return RolapUtil.valueNotReadyException;
         }
         if (o != null) {
+            ++hitCount;
             return o;
         }
         // if there is no such cell, record that we need to fetch it, and
@@ -91,14 +111,22 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     public int getMissCount() {
-        return requestCount;
+        return missCount;
+    }
+
+    public int getHitCount() {
+        return hitCount;
+    }
+
+    public int getPendingCount() {
+        return pendingCount;
     }
 
     public final void recordCellRequest(CellRequest request) {
         if (request.isUnsatisfiable()) {
             return;
         }
-        ++requestCount;
+        ++missCount;
 
         final AggregationKey key = new AggregationKey(request);
         Batch batch = batches.get(key);
@@ -137,12 +165,9 @@ public class FastBatchingCellReader implements CellReader {
     /**
      * Loads pending aggregations, if any.
      *
-     * @param query the parent query object that initiated this
-     * call
-     *
      * @return Whether any aggregations were loaded.
      */
-    boolean loadAggregations(Query query) {
+    boolean loadAggregations() {
         final long t1 = System.currentTimeMillis();
         if (!isDirty()) {
             return false;
@@ -155,12 +180,12 @@ public class FastBatchingCellReader implements CellReader {
             LOGGER.debug("Using grouping sets");
             List<CompositeBatch> groupedBatches = groupBatches(batchList);
             for (CompositeBatch batch : groupedBatches) {
-                loadAggregation(query, batch);
+                loadAggregation(batch);
             }
         } else {
             // Load batches in turn.
             for (Batch batch : batchList) {
-                loadAggregation(query, batch);
+                loadAggregation(batch);
             }
         }
 
@@ -175,9 +200,9 @@ public class FastBatchingCellReader implements CellReader {
         return true;
     }
 
-    private void loadAggregation(Query query, Loadable batch) {
-        if (query != null) {
-            query.checkCancelOrTimeout();
+    private void loadAggregation(Loadable batch) {
+        if (execution != null) {
+            execution.checkCancelOrTimeout();
         }
         batch.loadAggregation();
     }
@@ -309,11 +334,14 @@ public class FastBatchingCellReader implements CellReader {
                 new GroupingSetsCollector(true);
             this.detailedBatch.loadAggregation(batchCollector);
 
+            int cellRequestCount = 0;
             for (Batch batch : summaryBatches) {
                 batch.loadAggregation(batchCollector);
+                cellRequestCount += batch.cellRequestCount;
             }
 
             getSegmentLoader().load(
+                cellRequestCount,
                 batchCollector.getGroupingSets(),
                 pinnedSegments,
                 detailedBatch.batchKey.getCompoundPredicateList());
@@ -344,6 +372,7 @@ public class FastBatchingCellReader implements CellReader {
         final AggregationKey batchKey;
         // string representation; for debug; set lazily in toString
         private String string;
+        private int cellRequestCount;
 
         public Batch(CellRequest request) {
             columns = request.getConstrainedColumns();
@@ -371,6 +400,7 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         public final void add(CellRequest request) {
+            ++cellRequestCount;
             final int limit = request.getNumValues();
             for (int j = 0; j < limit; j++) {
                 valueSets[j].add(request.getValueAt(j));
@@ -456,6 +486,7 @@ public class FastBatchingCellReader implements CellReader {
                 for (RolapStar.Measure measure : distinctSqlMeasureList) {
                     RolapStar.Measure[] measures = {measure};
                     aggmgr.loadAggregation(
+                        cellRequestCount,
                         measures,
                         columns,
                         batchKey,
@@ -471,7 +502,9 @@ public class FastBatchingCellReader implements CellReader {
                 final RolapStar.Measure[] measures =
                     measuresList.toArray(new RolapStar.Measure[measureCount]);
                     aggmgr.loadAggregation(
-                        measures, columns,
+                        cellRequestCount,
+                        measures,
+                        columns,
                         batchKey,
                         predicates,
                         pinnedSegments,
@@ -518,6 +551,7 @@ public class FastBatchingCellReader implements CellReader {
                     distinctMeasuresList.toArray(
                         new RolapStar.Measure[distinctMeasuresList.size()]);
                 aggmgr.loadAggregation(
+                    cellRequestCount,
                     measures,
                     columns,
                     batchKey,

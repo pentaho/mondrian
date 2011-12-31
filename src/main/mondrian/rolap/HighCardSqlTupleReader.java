@@ -18,13 +18,14 @@ import mondrian.olap.Util;
 import mondrian.olap.fun.FunUtil;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.server.Locus;
+import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.util.Pair;
 import mondrian.util.TraversalList;
 
-import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.sql.DataSource;
 
 /**
  * Reads the members of a single level (level.members) or of multiple levels
@@ -78,10 +79,11 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                 List<SqlStatement.Type> types = pair.right;
                 stmt = RolapUtil.executeQuery(
                     dataSource, sql, types, maxRows, 0,
-                    new Locus(
+                    new SqlStatement.StatementLocus(
                         Locus.peek().execution,
                         "HighCardSqlTupleReader.readTuples " + partialTargets,
-                        message),
+                        message,
+                        SqlStatementEvent.Purpose.TUPLES, 0),
                     -1, -1);
             }
 

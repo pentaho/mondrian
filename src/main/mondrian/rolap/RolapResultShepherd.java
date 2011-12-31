@@ -3,27 +3,18 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011 Julian Hyde and others
+// Copyright (C) 2011-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.FutureTask;
-
-import mondrian.olap.MondrianException;
-import mondrian.olap.MondrianProperties;
-import mondrian.olap.QueryCanceledException;
-import mondrian.olap.QueryTimeoutException;
-import mondrian.olap.ResourceLimitExceededException;
-import mondrian.olap.Result;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.server.Execution;
 import mondrian.util.Pair;
+
+import java.util.List;
+import java.util.concurrent.*;
 
 /**
  * A utility class for {@link RolapConnection}. It specializes in
@@ -35,6 +26,7 @@ import mondrian.util.Pair;
  * <li>Bubble exceptions to the user thread as fast as they happen.</li>
  * <li>Gracefully cancel all SQL statements and cleanup in the background.</li>
  * </ul>
+ *
  * @author LBoudreau
  * @version $Id$
  */
@@ -75,7 +67,8 @@ class RolapResultShepherd {
                                 task.left.cancel(true);
                                 // Now try a graceful shutdown of the Execution
                                 // instance
-                                task.right.cleanStatements();
+                                task.right.cleanStatements(
+                                    Execution.State.CANCELED);
                             }
                         }
                         try {
@@ -111,7 +104,7 @@ class RolapResultShepherd {
         Execution execution,
         Callable<Result> callable)
     {
-     // We must wrap this execution into a task that so that we are able
+        // We must wrap this execution into a task that so that we are able
         // to monitor, cancel and detach from it.
         FutureTask<Result> task = new FutureTask<Result>(callable);
         // Register this task with the shepherd thread
@@ -155,4 +148,6 @@ class RolapResultShepherd {
         }
     }
 }
+
 // End RolapResultShepherd.java
+

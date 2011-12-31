@@ -9,11 +9,13 @@
 */
 package mondrian.test;
 
-import junit.framework.TestCase;
 import mondrian.olap.MondrianServer;
 import mondrian.server.StringRepositoryContentFinder;
 import mondrian.server.UrlRepositoryContentFinder;
 import mondrian.xmla.test.XmlaTestContext;
+
+import junit.framework.TestCase;
+
 import org.olap4j.OlapConnection;
 import org.olap4j.metadata.Catalog;
 import org.olap4j.metadata.NamedList;
@@ -36,7 +38,7 @@ public class MondrianServerTest extends TestCase {
         TestContext testContext = TestContext.instance();
         final MondrianServer server =
             MondrianServer.forConnection(testContext.getConnection());
-        final String id = server.getId();
+        final int id = server.getId();
         assertNotNull(id);
         server.shutdown();
     }
@@ -49,7 +51,7 @@ public class MondrianServerTest extends TestCase {
             MondrianServer.createWithRepository(
                 new StringRepositoryContentFinder("foo bar"),
                 null);
-        final String id = server.getId();
+        final int id = server.getId();
         assertNotNull(id);
         server.shutdown();
     }
@@ -64,7 +66,7 @@ public class MondrianServerTest extends TestCase {
                 new UrlRepositoryContentFinder(
                     "inline:" + xmlaTestContext.getDataSourcesString()),
                 null);
-        final String id = server.getId();
+        final int id = server.getId();
         assertNotNull(id);
         OlapConnection connection =
             server.getConnection("FoodMart", "FoodMart", null);

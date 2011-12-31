@@ -12,13 +12,13 @@
 */
 package mondrian.rolap;
 
-import mondrian.rolap.agg.*;
 import mondrian.olap.*;
 import mondrian.olap.Id.Segment;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
+import mondrian.rolap.agg.*;
 
-import java.util.*;
 import java.io.PrintWriter;
+import java.util.*;
 
 /**
  * <code>RolapAggregationManager</code> manages all {@link
@@ -626,11 +626,15 @@ public abstract class RolapAggregationManager {
     /**
      * Returns an API with which to explicitly manage the contents of the cache.
      *
+     * @param connection Server whose cache to control
      * @param pw Print writer, for tracing
      * @return CacheControl API
      */
-    public CacheControl getCacheControl(final PrintWriter pw) {
-        return new CacheControlImpl() {
+    public CacheControl getCacheControl(
+        RolapConnection connection,
+        final PrintWriter pw)
+    {
+        return new CacheControlImpl(connection) {
             protected void flushNonUnion(final CellRegion region) {
                 final List<RolapStar> starList = getStarList(region);
 

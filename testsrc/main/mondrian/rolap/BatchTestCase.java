@@ -9,24 +9,21 @@
 */
 package mondrian.rolap;
 
-import mondrian.test.FoodMartTestCase;
-import mondrian.test.TestContext;
-import mondrian.test.SqlPattern;
-import mondrian.rolap.RolapNative.Listener;
-import mondrian.rolap.RolapNative.NativeEvent;
-import mondrian.rolap.RolapNative.TupleEvent;
-import mondrian.rolap.agg.*;
 import mondrian.calc.ResultStyle;
 import mondrian.olap.*;
+import mondrian.rolap.RolapNative.*;
+import mondrian.rolap.agg.*;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.spi.Dialect;
-
-import java.util.List;
-import java.util.ArrayList;
+import mondrian.test.*;
 
 import org.apache.log4j.Logger;
+
 import org.eigenbase.util.property.IntegerProperty;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * To support all <code>Batch</code> related tests.
@@ -164,12 +161,16 @@ public class BatchTestCase extends FoodMartTestCase {
     }
 
     protected GroupingSet getGroupingSet(
-        String[] tableNames, String[] fieldNames, String[][] fieldValues,
-        String cubeName, String measure)
+        Execution execution,
+        String[] tableNames,
+        String[] fieldNames,
+        String[][] fieldValues,
+        String cubeName,
+        String measure)
     {
         FastBatchingCellReader.Batch batch =
             createBatch(
-                new FastBatchingCellReader(getCube(cubeName)),
+                new FastBatchingCellReader(execution, getCube(cubeName)),
                 tableNames, fieldNames,
                 fieldValues, cubeName,
                 measure);
@@ -260,21 +261,25 @@ public class BatchTestCase extends FoodMartTestCase {
             // behave exactly the same as the current DataSource.
             RolapUtil.threadHooks = new TriggerHook(trigger);
             Bomb bomb;
+            final Execution execution =
+                new Execution(
+                    ((RolapConnection) getConnection()).getInternalStatement(),
+                    1000);
             final Locus locus =
                 new Locus(
-                    new Execution(null, 1000),
+                    execution,
                     "BatchTestCase",
                     "BatchTestCase");
             try {
                 FastBatchingCellReader fbcr =
-                    new FastBatchingCellReader(getCube(cubeName));
+                    new FastBatchingCellReader(execution, getCube(cubeName));
                 for (CellRequest request : requests) {
                     fbcr.recordCellRequest(request);
                 }
                 // The FBCR will presume there is a current Locus in the stack,
                 // so let's create a mock one.
                 Locus.push(locus);
-                fbcr.loadAggregations(null);
+                fbcr.loadAggregations();
                 bomb = null;
             } catch (Bomb e) {
                 bomb = e;

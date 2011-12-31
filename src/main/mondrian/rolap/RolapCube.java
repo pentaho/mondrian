@@ -655,7 +655,7 @@ public class RolapCube extends CubeBase {
             createDummyExp(calc),
             new MemberProperty[0]);
         final Statement statement =
-            schema.getInternalConnection().createDummyStatement();
+            schema.getInternalConnection().getInternalStatement();
         try {
             final Query query =
                 new Query(

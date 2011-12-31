@@ -12,15 +12,18 @@ package mondrian.server;
 import mondrian.olap.MondrianServer;
 import mondrian.olap4j.CatalogFinder;
 import mondrian.rolap.*;
+import mondrian.server.monitor.*;
 import mondrian.spi.CatalogLocator;
 import mondrian.util.LockBox;
 import mondrian.xmla.*;
 
 import org.apache.log4j.Logger;
+
 import org.olap4j.OlapConnection;
 
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Implementation of {@link mondrian.olap.MondrianServer}.
@@ -34,19 +37,43 @@ class MondrianServerImpl
     implements CatalogFinder, XmlaHandler.ConnectionFactory
 {
     /**
+     * Id of server. Unique within JVM's lifetime. Not the same as the ID of
+     * the server within a lockbox.
+     */
+    private final int id = ID_GENERATOR.incrementAndGet();
+
+    /**
      * Within a server, registry of objects such as data sources and roles.
      * For convenience, all servers currently share the same lockbox.
      */
     private final LockBox lockBox;
 
-    private final LockBox.Entry entry;
-
     private final Repository repository;
 
     private final CatalogLocator catalogLocator;
 
+    /**
+     * Map of open connections, by id. Connections are added just after
+     * construction, and are removed when they call close. Garbage collection
+     * may cause a connection to be removed earlier.
+     */
+    private final Map<Integer, RolapConnection> connectionMap =
+        new WeakHashMap<Integer, RolapConnection>();
+
+    /**
+     * Map of open statements, by id. Statements are added just after
+     * construction, and are removed when they call close. Garbage collection
+     * may cause a connection to be removed earlier.
+     */
+    private final Map<Long, Statement> statementMap =
+        new WeakHashMap<Long, Statement>();
+
+    private final MonitorImpl monitor = new MonitorImpl();
+
     private static final Logger LOGGER =
         Logger.getLogger(MondrianServerImpl.class);
+
+    private static final AtomicInteger ID_GENERATOR = new AtomicInteger();
 
     private static final List<String> KEYWORD_LIST =
         Collections.unmodifiableList(Arrays.asList(
@@ -125,7 +152,6 @@ class MondrianServerImpl
         assert catalogLocator != null;
         this.repository = repository;
         this.catalogLocator = catalogLocator;
-        this.entry = registry.lockBox.register(this);
 
         // All servers in a JVM share the same lockbox. This is a bit more
         // forgiving to applications which have slightly mismatched
@@ -134,8 +160,14 @@ class MondrianServerImpl
         this.lockBox = registry.lockBox;
     }
 
-    public String getId() {
-        return entry.getMoniker();
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        shutdown();
+    }
+
+    public int getId() {
+        return id;
     }
 
     public List<String> getKeywords() {
@@ -194,7 +226,67 @@ class MondrianServerImpl
 
     @Override
     public void shutdown() {
+        monitor.shutdown();
         repository.shutdown();
+    }
+
+    @Override
+    public void addConnection(RolapConnection connection) {
+        connectionMap.put(
+            connection.getId(),
+            connection);
+        monitor.sendEvent(
+            new ConnectionStartEvent(
+                System.currentTimeMillis(),
+                connection.getServer().getId(),
+                connection.getId()));
+    }
+
+    @Override
+    public void removeConnection(RolapConnection connection) {
+        connectionMap.remove(connection.getId());
+        monitor.sendEvent(
+            new ConnectionEndEvent(
+                System.currentTimeMillis(),
+                connection.getServer().getId(),
+                connection.getId()));
+    }
+
+    @Override
+    public RolapConnection getConnection(int connectionId) {
+        return connectionMap.get(connectionId);
+    }
+
+    @Override
+    public void addStatement(Statement statement) {
+        statementMap.put(
+            statement.getId(),
+            statement);
+        final RolapConnection connection =
+            statement.getMondrianConnection();
+        monitor.sendEvent(
+            new StatementStartEvent(
+                System.currentTimeMillis(),
+                connection.getServer().getId(),
+                connection.getId(),
+                statement.getId()));
+    }
+
+    @Override
+    public void removeStatement(Statement statement) {
+        statementMap.remove(statement.getId());
+        final RolapConnection connection =
+            statement.getMondrianConnection();
+        monitor.sendEvent(
+            new StatementEndEvent(
+                System.currentTimeMillis(),
+                connection.getServer().getId(),
+                connection.getId(),
+                statement.getId()));
+    }
+
+    public Monitor getMonitor() {
+        return monitor;
     }
 
     public Map<String, RolapSchema> getRolapSchemas(
@@ -228,7 +320,7 @@ class MondrianServerImpl
             final RolapConnection mondrianConnection =
                 connection.unwrap(RolapConnection.class);
             final Statement statement =
-                mondrianConnection.createDummyStatement();
+                mondrianConnection.getInternalStatement();
             Execution execution = new Execution(statement, 0);
             execution.start();
             final Locus locus =

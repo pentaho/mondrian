@@ -11,8 +11,10 @@ package mondrian.olap;
 
 import mondrian.rolap.RolapConnection;
 import mondrian.server.*;
+import mondrian.server.monitor.Monitor;
 import mondrian.spi.CatalogLocator;
 import mondrian.util.LockBox;
+
 import org.olap4j.OlapConnection;
 
 import java.sql.SQLException;
@@ -65,9 +67,9 @@ public abstract class MondrianServer {
      * Returns the server with the given id.
      *
      * <p>If id is null, returns the catalog-less server. (The catalog-less
-     * server can also be acquired using its id.)
+     * server can also be acquired using its id.)</p>
      *
-     * If server is not found, returns null.
+     * <p>If server is not found, returns null.</p>
      *
      * @param instanceId Server instance id
      * @return Server, or null if no server with this id
@@ -78,6 +80,7 @@ public abstract class MondrianServer {
 
     /**
      * Disposes of a server and cleans up everything.
+     *
      * @param instanceId The instance ID of the server
      * to shutdown gracefully.
      */
@@ -90,11 +93,11 @@ public abstract class MondrianServer {
     }
 
     /**
-     * Returns a string uniquely identifying this server within its JVM.
+     * Returns an integer uniquely identifying this server within its JVM.
      *
      * @return Server's unique identifier
      */
-    public abstract String getId();
+    public abstract int getId();
 
     /**
      * Returns the version of this MondrianServer.
@@ -134,6 +137,7 @@ public abstract class MondrianServer {
      * @param roleName User role name
      * @return Connection
      * @throws SQLException If error occurs
+     * @throws SecurityException If security error occurs
      */
     public abstract OlapConnection getConnection(
         String catalogName,
@@ -161,6 +165,7 @@ public abstract class MondrianServer {
      * @param props Properties to pass down to the native driver.
      * @return Connection
      * @throws SQLException If error occurs
+     * @throws SecurityException If security error occurs
      */
     public abstract OlapConnection getConnection(
         String catalogName,
@@ -188,6 +193,46 @@ public abstract class MondrianServer {
      * and cleanup all potential memory leaks.
      */
     public abstract void shutdown();
+
+    /**
+     * Called just after a connection has been created.
+     *
+     * @param connection Connection
+     */
+    public abstract void addConnection(RolapConnection connection);
+
+    /**
+     * Called when a connection is closed.
+     *
+     * @param connection Connection
+     */
+    public abstract void removeConnection(RolapConnection connection);
+
+    /**
+     * Retrieves a connection.
+     *
+     * @param connectionId Connection id, per
+     *   {@link mondrian.rolap.RolapConnection#getId()}
+     *
+     * @return Connection, or null if connection is not registered
+     */
+    public abstract RolapConnection getConnection(int connectionId);
+
+    /**
+     * Called just after a statement has been created.
+     *
+     * @param statement Statement
+     */
+    public abstract void addStatement(Statement statement);
+
+    /**
+     * Called when a statement is closed.
+     *
+     * @param statement Statement
+     */
+    public abstract void removeStatement(Statement statement);
+
+    public abstract Monitor getMonitor();
 
     /**
      * Description of the version of the server.

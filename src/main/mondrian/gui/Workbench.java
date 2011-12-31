@@ -3,68 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
 // Copyright (C) 1999-2002 Kana Software, Inc.
 // Copyright (C) 2001-2011 Julian Hyde and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
-// You must accept the terms of that agreement to use this software.
 //
 // Created on September 26, 2002, 11:28 AM
 // Modified on 15-Jun-2003 by ebengtso
-//
- */
-
+*/
 package mondrian.gui;
-
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.MissingResourceException;
-import java.util.Properties;
-import java.util.ResourceBundle;
-
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JEditorPane;
-import javax.swing.JFileChooser;
-import javax.swing.JInternalFrame;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.SwingConstants;
-import javax.swing.event.InternalFrameAdapter;
-import javax.swing.event.InternalFrameEvent;
-import javax.swing.filechooser.FileSystemView;
-import javax.swing.plaf.basic.BasicArrowButton;
-import javax.swing.text.DefaultEditorKit;
-import javax.swing.tree.TreePath;
 
 import mondrian.olap.DriverManager;
 import mondrian.olap.MondrianProperties;
@@ -74,7 +23,9 @@ import mondrian.util.UnionIterator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+
 import org.eigenbase.xom.XMLOutput;
+
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.KettleEnvironment;
 import org.pentaho.di.core.database.DatabaseMeta;
@@ -83,11 +34,23 @@ import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.ui.database.DatabaseConnectionDialog;
 import org.pentaho.ui.database.Messages;
 import org.pentaho.ui.database.event.DataHandler;
-import org.pentaho.ui.xul.XulDomContainer;
-import org.pentaho.ui.xul.XulException;
-import org.pentaho.ui.xul.XulLoader;
+import org.pentaho.ui.xul.*;
 import org.pentaho.ui.xul.containers.XulDialog;
 import org.pentaho.ui.xul.swing.SwingXulLoader;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.List;
+import javax.swing.*;
+import javax.swing.event.InternalFrameAdapter;
+import javax.swing.event.InternalFrameEvent;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.plaf.basic.BasicArrowButton;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.tree.TreePath;
 
 /**
  * @author sean
@@ -2076,7 +2039,7 @@ public class Workbench extends javax.swing.JFrame {
             }
 
             // clear cache before connecting
-            AggregationManager.instance().getCacheControl(null)
+            AggregationManager.instance().getCacheControl(null, null)
                 .flushSchemaCache();
 
             DriverManager.getConnection(list, null);

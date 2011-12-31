@@ -13,15 +13,16 @@ import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.rolap.agg.SegmentHeader.ConstrainedColumn;
 import mondrian.server.Locus;
+import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.util.CombiningGenerator;
 import mondrian.util.Pair;
+
+import org.apache.log4j.Logger;
 
 import java.io.Serializable;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
-
-import org.apache.log4j.Logger;
 
 /**
  * <p>The <code>SegmentLoader</code> queries database and loads the data into
@@ -74,10 +75,15 @@ public class SegmentLoader {
      * In the example (A, B, C) is the detailed grouping set and (B, C) is
      * rolled-up using the detailed.
      *
+     * <p>Grouping sets are removed from the {@code groupingSets} list as they
+     * are loaded.</p>
+     *
+     * @param cellRequestCount Number of missed cells that led to this request
      * @param groupingSets   List of grouping sets whose segments are loaded
      * @param pinnedSegments Pinned segments
      */
     public void load(
+        int cellRequestCount,
         List<GroupingSet> groupingSets,
         RolapAggregationManager.PinSet pinnedSegments,
         List<StarPredicate> compoundPredicateList)
@@ -119,6 +125,7 @@ public class SegmentLoader {
                 SortedSet<Comparable<?>>[] axisValueSets =
                     getDistinctValueWorkspace(arity);
                 stmt = createExecuteSql(
+                    cellRequestCount,
                     groupingSetsList,
                     compoundPredicateList);
 
@@ -658,10 +665,13 @@ public class SegmentLoader {
      *
      * <p>This method may be overridden in tests.
      *
+     * @param cellRequestCount Number of missed cells that led to this request
      * @param groupingSetsList Grouping
+     * @param compoundPredicateList Compound predicate list
      * @return An executed SQL statement, or null
      */
     SqlStatement createExecuteSql(
+        int cellRequestCount,
         GroupingSetsList groupingSetsList,
         List<StarPredicate> compoundPredicateList)
     {
@@ -675,10 +685,12 @@ public class SegmentLoader {
             pair.right,
             0,
             0,
-            new Locus(
+            new SqlStatement.StatementLocus(
                 Locus.peek().execution,
                 "Segment.load",
-                "Error while loading segment"),
+                "Error while loading segment",
+                SqlStatementEvent.Purpose.CELL_SEGMENT,
+                cellRequestCount),
             -1,
             -1);
     }
@@ -692,12 +704,8 @@ public class SegmentLoader {
         List<Segment> segments = groupingSetsList.getDefaultSegments();
         int measureCount = segments.size();
         ResultSet rawRows = loadData(stmt, groupingSetsList);
-        final List<SqlStatement.Type> types =
-            stmt == null
-                ? Collections.nCopies(
-                    rawRows.getMetaData().getColumnCount(),
-                    SqlStatement.Type.OBJECT)
-                : stmt.guessTypes();
+        assert stmt != null;
+        final List<SqlStatement.Type> types = stmt.guessTypes();
         int arity = axisValueSets.length;
         final int groupingColumnStartIndex = arity + measureCount;
 
@@ -913,26 +921,6 @@ public class SegmentLoader {
         assert arity + measureCount + groupingFunctionsCount == types.size();
 
         return stmt.getResultSet();
-    }
-
-    RowList loadData2(
-        SqlStatement stmt,
-        GroupingSetsList groupingSetsList)
-        throws SQLException
-    {
-        int arity = groupingSetsList.getDefaultColumns().length;
-        int measureCount = groupingSetsList.getDefaultSegments().size();
-        int groupingFunctionsCount = groupingSetsList.getRollupColumns().size();
-        List<SqlStatement.Type> types = stmt.guessTypes();
-        assert arity + measureCount + groupingFunctionsCount == types.size();
-
-        final RowList rows = new RowList(types, 100);
-        final ResultSet resultSet = stmt.getResultSet();
-        while (resultSet.next()) {
-            ++stmt.rowCount;
-            rows.createRow(resultSet);
-        }
-        return rows;
     }
 
     SortedSet<Comparable<?>>[] getDistinctValueWorkspace(int arity) {

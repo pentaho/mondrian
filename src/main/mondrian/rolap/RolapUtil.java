@@ -12,25 +12,25 @@
 */
 package mondrian.rolap;
 
+import mondrian.calc.ExpCompiler;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
-
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.Statement;
+import mondrian.spi.Dialect;
+
 import org.apache.log4j.Logger;
+
 import org.eigenbase.util.property.StringProperty;
+
 import java.io.*;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.SQLException;
 import java.util.*;
-
-import mondrian.calc.ExpCompiler;
-import mondrian.spi.Dialect;
-
 import javax.sql.DataSource;
 
 /**
@@ -43,6 +43,8 @@ import javax.sql.DataSource;
 public class RolapUtil {
     public static final Logger MDX_LOGGER = Logger.getLogger("mondrian.mdx");
     public static final Logger SQL_LOGGER = Logger.getLogger("mondrian.sql");
+    public static final Logger MONITOR_LOGGER =
+        Logger.getLogger("mondrian.server.monitor");
     public static final Logger PROFILE_LOGGER =
         Logger.getLogger("mondrian.profile");
 
@@ -77,7 +79,7 @@ public class RolapUtil {
         RolapConnection connection,
         final SchemaReader schemaReader)
     {
-        final Statement statement = connection.createDummyStatement();
+        final Statement statement = connection.getInternalStatement();
         final Execution execution = new Execution(statement, 0);
         final Locus locus =
             new Locus(

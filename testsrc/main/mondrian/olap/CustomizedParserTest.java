@@ -9,9 +9,9 @@
 */
 package mondrian.olap;
 
+import mondrian.olap.fun.*;
 import mondrian.server.Statement;
 import mondrian.test.FoodMartTestCase;
-import mondrian.olap.fun.*;
 
 import java.util.*;
 
@@ -60,7 +60,7 @@ public class CustomizedParserTest extends FoodMartTestCase {
         String mdx = wrapExpr(expr);
         final ConnectionBase connectionBase = (ConnectionBase) getConnection();
         final Statement statement =
-            connectionBase.createDummyStatement();
+            connectionBase.getInternalStatement();
         try {
             return (Query) connectionBase.parseStatement(
                 statement, mdx, cftab, strictValidation);

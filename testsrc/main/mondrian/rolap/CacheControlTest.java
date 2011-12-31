@@ -10,14 +10,14 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.test.DiffRepository;
 import mondrian.test.FoodMartTestCase;
 import mondrian.test.TestContext;
-import mondrian.test.DiffRepository;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Unit-test for cache-flushing functionality.
@@ -253,7 +253,9 @@ public class CacheControlTest extends FoodMartTestCase {
     public void testCreateCellRegion() {
         // Execute a query.
         final TestContext testContext = getTestContext();
-        final CacheControl cacheControl = new CacheControlImpl();
+        final RolapConnection connection =
+            ((RolapConnection) testContext.getConnection());
+        final CacheControl cacheControl = new CacheControlImpl(connection);
         final CacheControl.CellRegion region =
             createCellRegion(testContext, cacheControl);
         assertNotNull(region);
@@ -688,7 +690,8 @@ public class CacheControlTest extends FoodMartTestCase {
         final Connection connection = testContext.getConnection();
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
         final SchemaReader schemaReader = salesCube.getSchemaReader(null);
-        final CacheControl cacheControl = new CacheControlImpl();
+        final CacheControl cacheControl =
+            new CacheControlImpl((RolapConnection) connection);
         final Member memberQ1 = schemaReader.getMemberByUniqueName(
             Id.Segment.toList("Time", "1997", "Q1"), true);
         final Member memberBeer = schemaReader.getMemberByUniqueName(
@@ -829,7 +832,8 @@ public class CacheControlTest extends FoodMartTestCase {
         final TestContext testContext = getTestContext();
         final Connection connection = testContext.getConnection();
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
-        final CacheControl cacheControl = new CacheControlImpl();
+        final CacheControl cacheControl =
+            new CacheControlImpl((RolapConnection) connection);
 
         // Region consists of [Time].[Time].[1997].[Q1] and its children, and
         // products [Beer] and [Dairy].
@@ -924,7 +928,8 @@ public class CacheControlTest extends FoodMartTestCase {
         final TestContext testContext = getTestContext();
         final Connection connection = testContext.getConnection();
         final Cube salesCube = connection.getSchema().lookupCube("Sales", true);
-        final CacheControl cacheControl = new CacheControlImpl();
+        final CacheControl cacheControl =
+            new CacheControlImpl((RolapConnection) connection);
         final SchemaReader schemaReader =
             salesCube.getSchemaReader(null).withLocus();
         final Member member = schemaReader.getMemberByUniqueName(ids, true);
@@ -953,7 +958,9 @@ public class CacheControlTest extends FoodMartTestCase {
         //          [Gender].[F])
         //       [Time].[Time].[1997].[Q1])
         //
-        final CacheControl cacheControl = new CacheControlImpl();
+        final CacheControl cacheControl =
+            new CacheControlImpl(
+                (RolapConnection) getTestContext().getConnection());
         final CacheControl.CellRegion region =
             cacheControl.createUnionRegion(
                 cacheControl.createCrossjoinRegion(
