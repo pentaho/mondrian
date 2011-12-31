@@ -299,8 +299,10 @@ public class Segment {
         buf.append(sep);
         buf.append("measure=");
         buf.append(
-            measure.getAggregator().getExpression(
-                measure.getExpression().toSql()));
+            measure.getExpression() == null
+                ? measure.getAggregator().getExpression("*")
+                : measure.getAggregator().getExpression(
+                    measure.getExpression().toSql()));
         return buf.toString();
     }
 

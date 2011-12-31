@@ -65,7 +65,14 @@ class MondrianOlap4jCube implements Cube, Named {
     public NamedList<Dimension> getDimensions() {
         NamedList<MondrianOlap4jDimension> list =
             new NamedListImpl<MondrianOlap4jDimension>();
-        for (mondrian.olap.Dimension dimension : cube.getDimensions()) {
+        final MondrianOlap4jConnection olap4jConnection =
+            olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
+        final mondrian.olap.SchemaReader schemaReader =
+            olap4jConnection.getMondrianConnection2().getSchemaReader()
+            .withLocus();
+        for (mondrian.olap.Dimension dimension
+            : schemaReader.getCubeDimensions(cube))
+        {
             list.add(
                 new MondrianOlap4jDimension(
                     olap4jSchema, dimension));
@@ -76,9 +83,16 @@ class MondrianOlap4jCube implements Cube, Named {
     public NamedList<Hierarchy> getHierarchies() {
         NamedList<MondrianOlap4jHierarchy> list =
             new NamedListImpl<MondrianOlap4jHierarchy>();
-        for (mondrian.olap.Dimension dimension : cube.getDimensions()) {
+        final MondrianOlap4jConnection olap4jConnection =
+            olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
+        final mondrian.olap.SchemaReader schemaReader =
+            olap4jConnection.getMondrianConnection2().getSchemaReader()
+            .withLocus();
+        for (mondrian.olap.Dimension dimension
+            : schemaReader.getCubeDimensions(cube))
+        {
             for (mondrian.olap.Hierarchy hierarchy
-                : dimension.getHierarchyList())
+                : schemaReader.getDimensionHierarchies(dimension))
             {
                 list.add(
                     new MondrianOlap4jHierarchy(
@@ -89,12 +103,33 @@ class MondrianOlap4jCube implements Cube, Named {
     }
 
     public List<Measure> getMeasures() {
-        final MondrianOlap4jLevel measuresLevel =
-            (MondrianOlap4jLevel)
-                getDimensions().get("Measures").getDefaultHierarchy()
-                    .getLevels().get(0);
+        final Dimension dimension =
+            (MondrianOlap4jDimension)
+                getDimensions().get("Measures");
+        if (dimension == null) {
+            return Collections.emptyList();
+        }
+        final MondrianOlap4jConnection olap4jConnection =
+            olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData.olap4jConnection;
         try {
-            return Olap4jUtil.cast(measuresLevel.getMembers());
+            final mondrian.olap.SchemaReader schemaReader =
+                olap4jConnection.getMondrianConnection().getSchemaReader()
+                .withLocus();
+            final MondrianOlap4jLevel measuresLevel =
+                (MondrianOlap4jLevel)
+                    dimension.getDefaultHierarchy()
+                        .getLevels().get(0);
+            final List<Measure> measaures =
+                new ArrayList<Measure>();
+            List<mondrian.olap.Member> levelMembers =
+                schemaReader.getLevelMembers(
+                    measuresLevel.level,
+                    true);
+            for (mondrian.olap.Member member : levelMembers) {
+                measaures.add(
+                    (Measure)olap4jConnection.toOlap4j(member));
+            }
+            return measaures;
         } catch (OlapException e) {
             // OlapException not possible, since measures are stored in memory.
             // Demote from checked to unchecked exception.

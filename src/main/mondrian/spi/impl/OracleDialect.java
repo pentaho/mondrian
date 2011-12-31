@@ -8,11 +8,12 @@
 */
 package mondrian.spi.impl;
 
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.regex.*;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the Oracle database.
@@ -82,13 +83,20 @@ public class OracleDialect extends JdbcDialectImpl {
     @Override
     public String generateRegularExpression(
         String source,
-        String javaRegExp)
+        String javaRegex)
     {
-        final Matcher flagsMatcher = flagsPattern.matcher(javaRegExp);
-        final StringBuilder suffixSb = new StringBuilder();
+        try {
+            Pattern.compile(javaRegex);
+        } catch (PatternSyntaxException e) {
+            // Not a valid Java regex. Too risky to continue.
+            return null;
+        }
+        final Matcher flagsMatcher = flagsPattern.matcher(javaRegex);
+        final String suffix;
         if (flagsMatcher.matches()) {
             // We need to convert leading flags into oracle
             // specific flags
+            final StringBuilder suffixSb = new StringBuilder();
             final String flags = flagsMatcher.group(2);
             if (flags.contains("i")) {
                 suffixSb.append("i");
@@ -99,19 +107,21 @@ public class OracleDialect extends JdbcDialectImpl {
             if (flags.contains("m")) {
                 suffixSb.append("m");
             }
-            javaRegExp =
-                javaRegExp.replace(
-                    flagsMatcher.group(1),
-                    "");
+            suffix = suffixSb.toString();
+            javaRegex =
+                javaRegex.substring(0, flagsMatcher.start(1))
+                + javaRegex.substring(flagsMatcher.end(1));
+        } else {
+            suffix = "";
         }
-        final Matcher escapeMatcher = escapePattern.matcher(javaRegExp);
+        final Matcher escapeMatcher = escapePattern.matcher(javaRegex);
         if (escapeMatcher.matches()) {
             // We need to convert escape characters \E and \Q into
             // oracle compatible escapes.
             String sequence = escapeMatcher.group(2);
             sequence = sequence.replaceAll("\\\\", "\\\\");
-            javaRegExp =
-                javaRegExp.replace(
+            javaRegex =
+                javaRegex.replace(
                     escapeMatcher.group(1),
                     sequence);
         }
@@ -119,11 +129,33 @@ public class OracleDialect extends JdbcDialectImpl {
         sb.append("REGEXP_LIKE(");
         sb.append(source);
         sb.append(", ");
-        quoteStringLiteral(sb, javaRegExp);
+        quoteStringLiteral(sb, javaRegex);
         sb.append(", ");
-        quoteStringLiteral(sb, suffixSb.toString());
+        quoteStringLiteral(sb, suffix);
         sb.append(")");
         return sb.toString();
+    }
+
+    public void quoteDateLiteral(StringBuilder buf, String value) {
+        Date date;
+        try {
+            /*
+             * The format of the 'value' parameter is not certain.
+             * Some JDBC drivers will return a timestamp even though
+             * we ask for a date (oracle is one of them). We must try to
+             * convert both formats.
+             */
+            date = Date.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            try {
+                date =
+                    new Date(Timestamp.valueOf(value).getTime());
+            } catch (IllegalArgumentException ex2) {
+                throw new NumberFormatException(
+                    "Illegal DATE literal:  " + value);
+            }
+        }
+        quoteDateLiteral(buf, value, date);
     }
 }
 

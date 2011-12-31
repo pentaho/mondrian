@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -15,6 +15,7 @@ import java.util.List;
 import mondrian.olap.*;
 import mondrian.olap.type.MemberType;
 import mondrian.olap.type.StringType;
+import mondrian.rolap.RolapStar.Column;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.mdx.DimensionExpr;
@@ -277,12 +278,67 @@ public class RolapNativeSql {
                 // We must use, in order of priority,
                 //  - caption requested: caption->name->key
                 //  - name requested: name->key
-                String sourceExp =
+                RolapSchema.PhysColumn expression =
                     useCaption
                         ? rolapLevel.attribute.captionExp == null
-                            ? rolapLevel.attribute.nameExp.toSql()
-                            : rolapLevel.attribute.captionExp.toSql()
-                        : rolapLevel.attribute.nameExp.toSql();
+                            ? rolapLevel.attribute.nameExp
+                            : rolapLevel.attribute.captionExp
+                        : rolapLevel.attribute.nameExp;
+                /*
+                 * If an aggregation table is used, it might be more efficient
+                 * to use only the aggregate table and not the hierarchy table.
+                 * Try to lookup the column bit key. If that fails, we will
+                 * link the aggregate table to the hierarchy table. If no
+                 * aggregate table is used, we can use the column expression
+                 * directly.
+                 */
+                String sourceExp;
+                if (aggStar != null
+                    && rolapLevel instanceof RolapCubeLevel
+                    && rolapLevel.attribute.keyList.size() == 1
+                    && rolapLevel.attribute.keyList.get(0) == expression)
+                {
+                    // The following is disabled until we sort out AggStars.
+                    // "col" will always come out null.
+                    int bitPos = -100;
+                    /*
+                    final RolapCubeLevel cubeLevel =
+                        (RolapCubeLevel) rolapLevel;
+                    RolapStar.Column starColumn =
+                        measureGroup.getRolapStarColumn(
+                            cubeLevel.cubeDimension,
+                            column,
+                            false);
+                    int bitPos = starColumn.getBitPosition();
+                    AggStar.Table.Column aggColumn =
+                        aggStar.lookupColumn(bitPos);
+                    */
+
+                    mondrian.rolap.aggmatcher.AggStar.Table.Column col =
+                        aggStar.lookupColumn(bitPos);
+                    if (col != null) {
+                        sourceExp = col.generateExprString(sqlQuery);
+                    } else {
+                        // FIXME:
+                        /*
+                        // Make sure the level table is part of the query.
+                        rolapLevel.getHierarchy().addToFrom(
+                            sqlQuery,
+                            expression);
+                        */
+                        sourceExp = expression.toSql();
+                    }
+                } else if (aggStar != null) {
+                    // FIXME:
+                    /*
+                    // Make sure the level table is part of the query.
+                    rolapLevel.getHierarchy().addToFrom(sqlQuery, expression);
+                    */
+                    sourceExp = expression.toSql();
+                } else {
+                    sourceExp = expression.toSql();
+                }
+
                 // The dialect might require the use of the alias rather
                 // then the column exp.
                 if (dialect.requiresHavingAlias()) {

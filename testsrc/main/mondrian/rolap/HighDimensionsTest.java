@@ -233,82 +233,77 @@ public class HighDimensionsTest extends FoodMartTestCase {
         final int resultLimit)
         throws Exception
     {
-        final int old = MondrianProperties.instance().ResultLimit.get();
+        propSaver.set(MondrianProperties.instance().ResultLimit, resultLimit);
+        final TestContext testContext =
+            TestContext.instance().createSubstitutingCube(
+                "Sales Ragged",
+                "<Dimension name=\"Promotions\" highCardinality=\"true\" "
+                + "foreignKey=\"promotion_id\">"
+                + "    <Hierarchy hasAll=\"true\" "
+                + "            allMemberName=\"All Promotions\" "
+                + "            primaryKey=\"promotion_id\">"
+                + "        <Table name=\"promotion\"/>"
+                + "        <Level name=\"Promotion Name\" "
+                + "                column=\"promotion_name\" "
+                + "                uniqueMembers=\"true\"/>"
+                + "    </Hierarchy>"
+                + "</Dimension>");
+
+        final Connection connection = testContext.getConnection();
+        final Query query = connection.parseQuery(queryString);
+        query.setResultStyle(ResultStyle.ITERABLE);
+        Result result = connection.execute(query);
+        StringBuffer buffer = new StringBuffer();
+        StringBuffer buffer2 = new StringBuffer();
+
+        final List<SoftReference> softReferences =
+                new ArrayList<SoftReference>();
+        // Tests results aren't got from database before this point
+        int ii = 0;
+        for (final Position o
+            : result.getAxes()[axisIndex].getPositions())
+        {
+            assertNotNull(o.get(0));
+            buffer2.append(result.getCell(
+                new int[]{0, ii}).getValue().toString());
+            ii++;
+            softReferences.add(new SoftReference(o.get(0)));
+            buffer.append(o.get(0).toString());
+        }
+        assertEquals(buffer.toString().length(), results.length());
+        if (results2 != null) {
+            assertEquals(buffer2.toString().length(), results2.length());
+        }
+        buffer2 = null;
+        buffer = null;
+
+        if (!shouldForget) {
+            return;
+        }
+
+        // Tests that really results over ResultLimit are erased from
+        // memory
+        final List overloader = new ArrayList();
         try {
-            MondrianProperties.instance().ResultLimit.set(resultLimit);
-            final TestContext testContext =
-                TestContext.instance().createSubstitutingCube(
-                    "Sales Ragged",
-                    "<Dimension name=\"Promotions\" highCardinality=\"true\" "
-                    + "foreignKey=\"promotion_id\">"
-                    + "    <Hierarchy hasAll=\"true\" "
-                    + "            allMemberName=\"All Promotions\" "
-                    + "            primaryKey=\"promotion_id\">"
-                    + "        <Table name=\"promotion\"/>"
-                    + "        <Level name=\"Promotion Name\" "
-                    + "                column=\"promotion_name\" "
-                    + "                uniqueMembers=\"true\"/>"
-                    + "    </Hierarchy>"
-                    + "</Dimension>");
-
-            final Connection connection = testContext.getConnection();
-            final Query query = connection.parseQuery(queryString);
-            query.setResultStyle(ResultStyle.ITERABLE);
-            Result result = connection.execute(query);
-            StringBuffer buffer = new StringBuffer();
-            StringBuffer buffer2 = new StringBuffer();
-
-            final List<SoftReference> softReferences =
-                    new ArrayList<SoftReference>();
-            // Tests results aren't got from database before this point
-            int ii = 0;
-            for (final Position o
-                : result.getAxes()[axisIndex].getPositions())
-            {
-                assertNotNull(o.get(0));
-                buffer2.append(result.getCell(
-                    new int[]{0, ii}).getValue().toString());
-                ii++;
-                softReferences.add(new SoftReference(o.get(0)));
-                buffer.append(o.get(0).toString());
+            for (;;) {
+                overloader.add(new long[99999999]);
             }
-            assertEquals(buffer.toString().length(), results.length());
-            if (results2 != null) {
-                assertEquals(buffer2.toString().length(), results2.length());
-            }
-            buffer2 = null;
-            buffer = null;
+        } catch (OutOfMemoryError out) {
+            // OK, outofmemory
+        }
+        System.gc();
 
-            if (!shouldForget) {
-                return;
-            }
-
-            // Tests that really results over ResultLimit are erased from
-            // memory
-            final List overloader = new ArrayList();
+        for (int i = 4; i < ii - 40; i++) {
+            assertNull(softReferences.get(i).get());
+        }
+        for (int i = 4; i < ii - 40; i++) {
             try {
-                for (;;) {
-                    overloader.add(new long[99999999]);
-                }
-            } catch (OutOfMemoryError out) {
-                // OK, outofmemory
+                result.getAxes()[axisIndex].getPositions().get(i).get(0);
+                Assert.fail("Expected exception");
+            } catch (RuntimeException nsee) {
+                // Everything is ok: RuntimeException of type
+                // RuntimeException is expected.
             }
-            System.gc();
-
-            for (int i = 4; i < ii - 40; i++) {
-                assertNull(softReferences.get(i).get());
-            }
-            for (int i = 4; i < ii - 40; i++) {
-                try {
-                    result.getAxes()[axisIndex].getPositions().get(i).get(0);
-                    Assert.fail("Expected exception");
-                } catch (RuntimeException nsee) {
-                    // Everything is ok: RuntimeException of type
-                    // RuntimeException is expected.
-                }
-            }
-        } finally {
-            MondrianProperties.instance().ResultLimit.set(old);
         }
     }
 

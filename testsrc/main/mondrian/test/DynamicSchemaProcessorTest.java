@@ -31,7 +31,17 @@ public class DynamicSchemaProcessorTest
 
     public static final String FRAGMENT_TWO =
         "\">\n"
-        + "<Cube name=\"Sales\">\n" + " <Table name=\"sales_fact_1997\"/>"
+        + "<Cube name=\"Sales\">\n"
+        + " <Table name=\"sales_fact_1997\">"
+        + "   <AggExclude name=\"agg_pl_01_sales_fact_1997\" />"
+        + "   <AggExclude name=\"agg_ll_01_sales_fact_1997\" />"
+        + "   <AggExclude name=\"agg_lc_100_sales_fact_1997\" />"
+        + "   <AggExclude name=\"agg_lc_06_sales_fact_1997\" />"
+        + "   <AggExclude name=\"agg_l_04_sales_fact_1997\" />"
+        + "   <AggExclude name=\"agg_l_03_sales_fact_1997\" />"
+        + "   <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\" />"
+        + "   <AggExclude name=\"agg_c_10_sales_fact_1997\" />"
+        + "</Table>"
         + " <Dimension name=\"Fake\"><Hierarchy hasAll=\"true\">"
         + "  <Level name=\"blah\" column=\"store_id\"/>"
         + " </Hierarchy></Dimension>"

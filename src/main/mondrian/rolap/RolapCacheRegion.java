@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2009 Julian Hyde
+// Copyright (C) 2007-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -102,6 +102,22 @@ public class RolapCacheRegion {
      */
     public Collection<StarPredicate> getPredicates() {
         return predicates.values();
+    }
+
+    /**
+     * Returns the list of all column predicates.
+     *
+     * @return List of all column predicates
+     */
+    public Collection<StarColumnPredicate> getColumnPredicates() {
+        final List<StarColumnPredicate> list =
+                new ArrayList<StarColumnPredicate>();
+        for (StarPredicate predicate : predicates.values()) {
+            if (predicate instanceof StarColumnPredicate) {
+                list.add((StarColumnPredicate) predicate);
+            }
+        }
+        return list;
     }
 }
 

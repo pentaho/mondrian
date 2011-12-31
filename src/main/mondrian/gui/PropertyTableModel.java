@@ -211,10 +211,36 @@ public class PropertyTableModel extends javax.swing.table.AbstractTableModel {
                     f2.set(target, null);
                 }
 
+//            } else if ((target instanceof MondrianGuiDef.UserDefinedFunction)
+//                && (pName.equals("script")))
+//            {
+//                ((MondrianGuiDef.UserDefinedFunction) target).script =
+//                    (MondrianGuiDef.Script) value;
+//            } else if ((target instanceof MondrianGuiDef.MemberFormatter)
+//                && (pName.equals("script")))
+//            {
+//                ((MondrianGuiDef.MemberFormatter) target).script =
+//                    (MondrianGuiDef.Script) value;
+//            } else if ((target instanceof MondrianGuiDef.CellFormatter)
+//                && (pName.equals("script")))
+//            {
+//                ((MondrianGuiDef.CellFormatter) target).script =
+//                    (MondrianGuiDef.Script) value;
+//            } else if ((target instanceof MondrianGuiDef.PropertyFormatter)
+//                && (pName.equals("script")))
+//            {
+//                ((MondrianGuiDef.PropertyFormatter) target).script =
+//                    (MondrianGuiDef.Script) value;
+
             } else if ((target instanceof MondrianGuiDef.Level)
-                       && (pName.equals("ordinalExp")))
+                && (pName.equals("ordinalExp")))
             {
                 ((MondrianGuiDef.Level) target).ordinalExp.expressions[0] =
+                    (MondrianGuiDef.SQL) value;
+            } else if ((target instanceof MondrianGuiDef.Level)
+                && (pName.equals("captionExp")))
+            {
+                ((MondrianGuiDef.Level) target).captionExp.expressions[0] =
                     (MondrianGuiDef.SQL) value;
             } else if ((target instanceof MondrianGuiDef.Table
                         && pName.equals("name"))

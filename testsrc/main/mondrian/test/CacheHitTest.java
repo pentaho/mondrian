@@ -174,9 +174,9 @@ public class CacheHitTest extends FoodMartTestCase {
         throws Exception
     {
         TestResult tres = new TestResult();
-        boolean origCacheHitCounters =
-            MondrianProperties.instance().EnableCacheHitCounters.get();
-        MondrianProperties.instance().EnableCacheHitCounters.set(true);
+        propSaver.set(
+            MondrianProperties.instance().EnableCacheHitCounters,
+            true);
 
         AggregationManager aggMngr = AggregationManager.instance();
         assert aggMngr instanceof CountingAggregationManager;
@@ -190,8 +190,6 @@ public class CacheHitTest extends FoodMartTestCase {
             test.testAt(testIdx).run(tres);
         }
         report((CountingAggregationManager) aggMngr);
-        MondrianProperties.instance().EnableCacheHitCounters.set(
-            origCacheHitCounters);
     }
 
     /**
@@ -206,9 +204,9 @@ public class CacheHitTest extends FoodMartTestCase {
         throws Exception
     {
         TestResult tres = new TestResult();
-        boolean origCacheHitCounters =
-            MondrianProperties.instance().EnableCacheHitCounters.get();
-        MondrianProperties.instance().EnableCacheHitCounters.set(true);
+        propSaver.set(
+            MondrianProperties.instance().EnableCacheHitCounters,
+            true);
 
         AggregationManager aggMngr = AggregationManager.instance();
         assert aggMngr instanceof CountingAggregationManager;
@@ -222,8 +220,6 @@ public class CacheHitTest extends FoodMartTestCase {
             }
         }
         report((CountingAggregationManager) aggMngr);
-        MondrianProperties.instance().EnableCacheHitCounters.set(
-            origCacheHitCounters);
     }
 
     /**

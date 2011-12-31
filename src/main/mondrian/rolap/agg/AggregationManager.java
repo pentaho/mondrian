@@ -15,6 +15,7 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.*;
 import mondrian.rolap.*;
+import mondrian.rolap.SqlStatement.Type;
 import mondrian.rolap.aggmatcher.AggStar;
 
 import mondrian.util.Pair;
@@ -158,14 +159,6 @@ public class AggregationManager extends RolapAggregationManager {
         BitKey levelBitKey = groupingSetsList.getDefaultLevelBitKey();
         BitKey measureBitKey = groupingSetsList.getDefaultMeasureBitKey();
 
-        List<SqlStatement.Type> types = new ArrayList<SqlStatement.Type>();
-        for (int levelId : levelBitKey) {
-            types.add(star.getColumn(levelId).getInternalType());
-        }
-        for (int measureId : measureBitKey) {
-            types.add(star.getColumn(measureId).getInternalType());
-        }
-
         // Check if using aggregates is enabled.
         boolean hasCompoundPredicates = false;
         if (compoundPredicateList != null && compoundPredicateList.size() > 0) {
@@ -211,15 +204,15 @@ public class AggregationManager extends RolapAggregationManager {
                 AggQuerySpec aggQuerySpec =
                     new AggQuerySpec(
                         aggStar, rollup[0], groupingSetsList);
-                String sql = aggQuerySpec.generateSqlQuery();
+                Pair<String, List<Type>> sql = aggQuerySpec.generateSqlQuery();
 
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
                         "generateSqlQuery: sql="
-                        + sql);
+                        + sql.left);
                 }
 
-                return Pair.of(sql, types);
+                return sql;
             }
 
             // No match, fall through and use fact table.

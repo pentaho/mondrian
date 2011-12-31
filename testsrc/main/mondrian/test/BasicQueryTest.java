@@ -27,6 +27,12 @@ import mondrian.calc.ResultStyle;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.*;
+import java.sql.DriverManager;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.regex.Pattern;
 import java.util.*;
 
@@ -5680,48 +5686,48 @@ public class BasicQueryTest extends FoodMartTestCase {
 
         // Now set property
 
-        boolean savedInvalidProp = props.IgnoreInvalidMembersDuringQuery.get();
-        String savedAlertProp = props.AlertNativeEvaluationUnsupported.get();
-        try {
-            props.IgnoreInvalidMembersDuringQuery.set(true);
-            assertQueryReturns(
-                mdx,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Time].[Time].[1997].[Q1]}\n"
-                + "Row #0: 66,291\n");
+        propSaver.set(
+            props.IgnoreInvalidMembersDuringQuery,
+            true);
 
-            // Illegal member in slicer
-            assertQueryReturns(
-                mdx3,
-                "Axis #0:\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Row #0: \n");
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "Row #0: 66,291\n");
 
-            // Verify that invalid members in query do NOT prevent
-            // usage of native NECJ (LER-5165).
-            props.AlertNativeEvaluationUnsupported.set("ERROR");
-            assertQueryReturns(
-                mdx2,
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Time].[Time].[1997].[Q1], [Customer].[Customers].[USA].[CA]}\n"
-                + "{[Time].[Time].[1997].[Q1], [Customer].[Customers].[USA].[OR]}\n"
-                + "{[Time].[Time].[1997].[Q1], [Customer].[Customers].[USA].[WA]}\n"
-                + "Row #0: 16,890\n"
-                + "Row #1: 19,287\n"
-                + "Row #2: 30,114\n");
-        } finally {
-            props.IgnoreInvalidMembersDuringQuery.set(savedInvalidProp);
-            props.AlertNativeEvaluationUnsupported.set(savedAlertProp);
-        }
+        // Illegal member in slicer
+        assertQueryReturns(
+            mdx3,
+            "Axis #0:\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Row #0: \n");
+
+        // Verify that invalid members in query do NOT prevent
+        // usage of native NECJ (LER-5165).
+
+        propSaver.set(
+            props.AlertNativeEvaluationUnsupported,
+            "ERROR");
+
+        assertQueryReturns(
+            mdx2,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1], [Customers].[USA].[CA]}\n"
+            + "{[Time].[1997].[Q1], [Customers].[USA].[OR]}\n"
+            + "{[Time].[1997].[Q1], [Customers].[USA].[WA]}\n"
+            + "Row #0: 16,890\n"
+            + "Row #1: 19,287\n"
+            + "Row #2: 30,114\n");
     }
 
     public void testMemberOrdinalCaching() {
@@ -5894,15 +5900,11 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "  {[Product].members} ON ROWS\n"
             + "FROM [Sales]";
         Throwable throwable = null;
-        int origTimeout = props.QueryTimeout.get();
+        propSaver.set(props.QueryTimeout, 2);
         try {
-            props.QueryTimeout.set(2);
             tc.executeQuery(query);
         } catch (Throwable ex) {
             throwable = ex;
-        } finally {
-            // reset the timeout back to the original value
-            props.QueryTimeout.set(origTimeout);
         }
         TestContext.checkThrowable(
             throwable, "Query timeout of 2 seconds reached");
@@ -6085,25 +6087,23 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "select crossjoin({[Time].[*SUBTOTAL_MEMBER_SEL~SUM]}, {[Store].[*SUBTOTAL_MEMBER_SEL~SUM]}) "
             + "on columns from [Sales]";
 
+        propSaver.set(props.IterationLimit, 11);
+
         Throwable throwable = null;
-        int origLimit = props.IterationLimit.get();
         try {
-            props.IterationLimit.set(11);
             Connection connection = getConnection();
             Query query = connection.parseQuery(queryString);
             query.setResultStyle(ResultStyle.LIST);
             connection.execute(query);
         } catch (Throwable ex) {
             throwable = ex;
-        } finally {
-            // reset the timeout back to the original value
-            props.IterationLimit.set(origLimit);
         }
 
         TestContext.checkThrowable(
             throwable, "Number of iterations exceeded limit of 11");
 
         // make sure the query runs without the limit set
+        propSaver.reset();
         executeQuery(queryString);
     }
 
@@ -6689,31 +6689,24 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testEmptyAggregationListDueToFilterDoesNotThrowException() {
-        boolean ignoreMeasureForNonJoiningDimension =
-            props.IgnoreMeasureForNonJoiningDimension.get();
-        props.IgnoreMeasureForNonJoiningDimension.set(true);
-        try {
-            assertQueryReturns(
-                "WITH \n"
-                + "MEMBER [GENDER].[AGG] "
-                + "AS 'AGGREGATE(FILTER([S1], (NOT ISEMPTY([MEASURES].[STORE SALES]))))' "
-                + "SET [S1] "
-                + "AS 'CROSSJOIN({[GENDER].[GENDER].MEMBERS},{[STORE].[CANADA].CHILDREN})' "
-                + "SELECT\n"
-                + "{[MEASURES].[STORE SALES]} ON COLUMNS,\n"
-                + "{[GENDER].[AGG]} ON ROWS\n"
-                + "FROM [WAREHOUSE AND SALES]",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Store Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Customer].[Gender].[AGG]}\n"
-                + "Row #0: \n");
-        } finally {
-            props.IgnoreMeasureForNonJoiningDimension.set(
-                ignoreMeasureForNonJoiningDimension);
-        }
+        propSaver.set(props.IgnoreMeasureForNonJoiningDimension, true);
+        assertQueryReturns(
+            "WITH \n"
+            + "MEMBER [GENDER].[AGG] "
+            + "AS 'AGGREGATE(FILTER([S1], (NOT ISEMPTY([MEASURES].[STORE SALES]))))' "
+            + "SET [S1] "
+            + "AS 'CROSSJOIN({[GENDER].[GENDER].MEMBERS},{[STORE].[CANADA].CHILDREN})' "
+            + "SELECT\n"
+            + "{[MEASURES].[STORE SALES]} ON COLUMNS,\n"
+            + "{[GENDER].[AGG]} ON ROWS\n"
+            + "FROM [WAREHOUSE AND SALES]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Gender].[AGG]}\n"
+            + "Row #0: \n");
     }
 
     /**
@@ -7142,6 +7135,52 @@ public class BasicQueryTest extends FoodMartTestCase {
                 e,
                 "MDX object '[Measures].[Store Margin]' not found in cube 'Sales'");
         }
+    }
+
+    /**
+     * This is a test for MONDRIAN-1014. Executing a statement
+     * twice concurrently would fail because the statement wasn't
+     * cleaning up properly its execution context.
+     */
+    public void testConcurrentStatementRun() throws Exception {
+        final OlapConnection olapConnection =
+            TestContext.instance().getOlap4jConnection();
+
+        final ExecutorService es =
+            Executors.newCachedThreadPool(
+                new ThreadFactory() {
+                    public Thread newThread(Runnable r) {
+                        final Thread thread =
+                            Executors.defaultThreadFactory().newThread(r);
+                        thread.setName(
+                            "mondrian.test.BasicQueryTest.testConcurrentStatementRun");
+                        thread.setDaemon(true);
+                        return thread;
+                    }
+                });
+
+        final OlapStatement stmt = olapConnection.createStatement();
+
+        es.submit(
+            new Callable<CellSet>() {
+                public CellSet call() throws Exception {
+                    return stmt.executeOlapQuery(
+                        "select {Crossjoin([Store].Members, [Customers].Members)} on columns from [Sales]");
+                }
+            });
+
+        // Give some time to the first query so it enters a "running" state.
+        Thread.sleep(1000);
+
+        es.submit(
+            new Callable<CellSet>() {
+                public CellSet call() throws Exception {
+                    return stmt.executeOlapQuery(
+                        "select {Crossjoin([Store].Members, [Customers].Members)} on columns from [Sales]");
+                }
+            }).get();
+
+        es.shutdownNow();
     }
 }
 

@@ -203,6 +203,10 @@ public class SqlStatement {
             } catch (SQLException e2) {
                 // ignore
             }
+            if (haveSemaphore) {
+                haveSemaphore = false;
+                querySemaphore.leave();
+            }
             throw handle(e);
         } finally {
             RolapUtil.SQL_LOGGER.debug(currId + ": " + status);
@@ -341,6 +345,7 @@ public class SqlStatement {
         if (suggestedType != null) {
             return suggestedType;
         }
+        final String typeName = metaData.getColumnTypeName(i + 1);
         final int columnType = metaData.getColumnType(i + 1);
         int precision;
         int scale;
@@ -352,10 +357,28 @@ public class SqlStatement {
         case Types.NUMERIC:
             precision = metaData.getPrecision(i + 1);
             scale = metaData.getScale(i + 1);
-            if (precision == 0 && scale == 0) {
-                // In Oracle, the NUMBER datatype with no precision or scale
-                // (not NUMBER(p) or NUMBER(p, s)) means floating point.
-                return Type.DOUBLE;
+            if (precision == 0
+                && (scale == 0 || scale == -127)
+                && (typeName.equalsIgnoreCase("NUMBER")
+                    || (typeName.equalsIgnoreCase("NUMERIC"))))
+            {
+                // In Oracle and Greenplum the NUMBER/NUMERIC datatype with no
+                // precision or scale (not NUMBER(p) or NUMBER(p, s)) means
+                // floating point. Some drivers represent this with scale 0,
+                // others scale -127.
+                //
+                // There is a further problem. In GROUPING SETS queries, Oracle
+                // loosens the type of columns compared to mere GROUP BY
+                // queries. We need integer GROUP BY columns to remain integers,
+                // otherwise the segments won't be found; but if we convert
+                // measure (whose column names are like "m0", "m1") to integers,
+                // data loss will occur.
+                final String columnName = metaData.getColumnName(i + 1);
+                if (columnName.startsWith("m")) {
+                    return Type.OBJECT;
+                } else {
+                    return Type.INT;
+                }
             }
             return getDecimalType(precision, scale);
         case Types.DECIMAL:

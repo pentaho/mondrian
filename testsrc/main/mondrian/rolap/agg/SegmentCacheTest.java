@@ -23,14 +23,51 @@ public class SegmentCacheTest extends BasicQueryTest {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MondrianProperties.instance()
-            .SegmentCache.set(MockSegmentCache.class.getName());
+        propSaver.set(
+            MondrianProperties.instance().DisableCaching,
+            true);
+        AggregationManager.instance()
+            .getCacheControl(null).flushSchemaCache();
+        propSaver.set(
+            MondrianProperties.instance().SegmentCache,
+            MockSegmentCache.class.getName());
     }
     @Override
     protected void tearDown() throws Exception {
+        propSaver.reset();
+        AggregationManager.instance().getCacheControl(null).flushSchemaCache();
         super.tearDown();
-        MondrianProperties.instance()
-            .SegmentCache.set("");
+    }
+    public void testCompoundPredicatesCollision() {
+        String query =
+            "SELECT [Gender].[All Gender] ON 0, [MEASURES].[CUSTOMER COUNT] ON 1 FROM SALES";
+        String query2 =
+            "WITH MEMBER GENDER.X AS 'AGGREGATE({[GENDER].[GENDER].members} * "
+            + "{[STORE].[ALL STORES].[USA].[CA]})', solve_order=100 "
+            + "SELECT GENDER.X ON 0, [MEASURES].[CUSTOMER COUNT] ON 1 FROM SALES";
+        String result =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[All Gender]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Row #0: 5,581\n";
+        String result2 =
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[X]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Row #0: 2,716\n";
+        assertQueryReturns(query, result);
+        assertQueryReturns(query2, result2);
+    }
+    public void testDisableCache() {
+        assertTrue(SegmentCacheWorker.isCacheEnabled());
+        propSaver.reset();
+        assertFalse(SegmentCacheWorker.isCacheEnabled());
     }
 }
 // End SegmentCacheTest.java

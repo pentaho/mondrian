@@ -10,11 +10,10 @@ package mondrian.spi.impl;
 
 import mondrian.olap.Util;
 
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.sql.*;
+import java.util.regex.*;
 
 /**
  * Implementation of {@link mondrian.spi.Dialect} for the MySQL database.
@@ -273,31 +272,34 @@ public class MySqlDialect extends JdbcDialectImpl {
 
     public String generateRegularExpression(
         String source,
-        String javaRegExp)
+        String javaRegex)
     {
-        final Matcher flagsMatcher = flagsPattern.matcher(javaRegExp);
-        if (flagsMatcher.matches()) {
-            javaRegExp =
-                javaRegExp.replace(
-                    flagsMatcher.group(1),
-                    "");
+        try {
+            Pattern.compile(javaRegex);
+        } catch (PatternSyntaxException e) {
+            // Not a valid Java regex. Too risky to continue.
+            return null;
         }
-        final Matcher escapeMatcher = escapePattern.matcher(javaRegExp);
+        final Matcher flagsMatcher = flagsPattern.matcher(javaRegex);
+        if (flagsMatcher.matches()) {
+            javaRegex =
+                javaRegex.substring(0, flagsMatcher.start(1))
+                + javaRegex.substring(flagsMatcher.end(1));
+        }
+        final Matcher escapeMatcher = escapePattern.matcher(javaRegex);
         if (escapeMatcher.matches()) {
             String sequence = escapeMatcher.group(2);
             sequence = sequence.replaceAll("\\\\", "\\\\");
-            javaRegExp =
-                javaRegExp.replace(
-                    escapeMatcher.group(1),
-                    sequence.toUpperCase());
+            javaRegex =
+                javaRegex.substring(0, escapeMatcher.start(1))
+                + sequence.toUpperCase()
+                + javaRegex.substring(escapeMatcher.end(1));
         }
         final StringBuilder sb = new StringBuilder();
         sb.append("UPPER(");
         sb.append(source);
         sb.append(") REGEXP ");
-        sb.append("'");
-        sb.append(javaRegExp);
-        sb.append("'");
+        quoteStringLiteral(sb, javaRegex);
         return sb.toString();
     }
 }

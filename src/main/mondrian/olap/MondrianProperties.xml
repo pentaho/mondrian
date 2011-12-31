@@ -242,22 +242,29 @@ mondrian.foodmart.jdbcPassword=<i>password</i><br/>
 mondrian.jdbcDrivers=com.ncr.teradata.TeraDriver<br/>
 driver.classpath=/some/path/terajdbc/classes/terajdbc4.jar</code></blockquote>
 
+<h3>Vertica</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:vertica://xxx.xxx.xxx.xxx:<i>port</i>/<i>dbName</i><br/>
+mondrian.foodmart.jdbcUser=<i>user</i><br/>
+mondrian.foodmart.jdbcPassword=<i>password</i><br/>
+mondrian.jdbcDrivers=com.vertica.Driver<br/>
+driver.classpath=/some/path/vertica.jar</code></blockquote>
+
+<h3>Vertorwise</h3>
+<blockquote><code>
+mondrian.foodmart.jdbcURL=jdbc:ingres://xxx.xxx.xxx.xxx<i>port</i>/<i>dbName</i><br/>
+mondrian.foodmart.jdbcUser=<i>user</i><br/>
+mondrian.foodmart.jdbcPassword=<i>password</i><br/>
+mondrian.jdbcDrivers=com.ingres.jdbc.IngresDriver <br/>
+driver.classpath=/some/path/iijdbc.jar</code></blockquote>
+
         </Description>
         <Type>String</Type>
         <Default>jdbc:odbc:MondrianFoodMart</Default>
     </PropertyDefinition>
     <PropertyDefinition>
-        <Name>TestJdbcURL</Name>
-        <Path>mondrian.test.jdbcURL</Path>
-        <Description>
-Property containing the JDBC URL of a test database.
-It does not default.
-        </Description>
-        <Type>String</Type>
-    </PropertyDefinition>
-    <PropertyDefinition>
         <Name>TestJdbcUser</Name>
-        <Path>mondrian.test.jdbcUser</Path>
+        <Path>mondrian.foodmart.jdbcUser</Path>
         <Category>Testing</Category>
         <Description>
 Property containing the JDBC user of a test database.
@@ -267,7 +274,7 @@ The default value is null, to cope with DBMSs that don't need this.
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>TestJdbcPassword</Name>
-        <Path>mondrian.test.jdbcPassword</Path>
+        <Path>mondrian.foodmart.jdbcPassword</Path>
         <Category>Testing</Category>
         <Description>
 Property containing the JDBC password of a test database.

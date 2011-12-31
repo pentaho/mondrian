@@ -1897,7 +1897,7 @@ public class NonEmptyTest extends BatchTestCase {
             + " or (\"store\".\"store_state\" = 'WA' and \"store\".\"store_city\" = 'Tacoma')) "
             + "and (\"product_class\".\"product_family\" = 'Food') "
             + "group by \"store\".\"store_country\", \"store\".\"store_state\", \"store\".\"store_city\", \"product_class\".\"product_family\" "
-            + "order by \"store\".\"store_country\" ASC, \"store\".\"store_state\" ASC, \"store\".\"store_city\" ASC, \"product_class\".\"product_family\" ASC";
+            + "order by CASE WHEN \"store\".\"store_country\" IS NULL THEN 1 ELSE 0 END, \"store\".\"store_country\" ASC, CASE WHEN \"store\".\"store_state\" IS NULL THEN 1 ELSE 0 END, \"store\".\"store_state\" ASC, CASE WHEN \"store\".\"store_city\" IS NULL THEN 1 ELSE 0 END, \"store\".\"store_city\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
             "select "
@@ -2011,8 +2011,8 @@ public class NonEmptyTest extends BatchTestCase {
             + "((\"warehouse\".\"wa_address1\" = '5617 Saclan Terrace' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"warehouse_name\" = 'Arnold and Sons') "
             + "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"wa_address2\" is null and \"warehouse\".\"warehouse_name\" = 'Jones International')) "
             + "and (\"product_class\".\"product_family\" = 'Food') group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"wa_address1\", "
-            + "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, "
-            + "\"warehouse\".\"wa_address1\" ASC, \"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
+            + "\"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
+            + "order by CASE WHEN \"warehouse\".\"wa_address3\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address3\" ASC, CASE WHEN \"warehouse\".\"wa_address2\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address2\" ASC, CASE WHEN \"warehouse\".\"wa_address1\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address1\" ASC, CASE WHEN \"warehouse\".\"warehouse_name\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_name\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
             "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`wa_address1` as `c2`, `warehouse`.`warehouse_name` as `c3`, "
@@ -2101,8 +2101,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "or (\"warehouse\".\"wa_address1\" = '3377 Coachman Place' and \"warehouse\".\"warehouse_fax\" = '971-555-6213' and \"warehouse\".\"warehouse_name\" = 'Jones International')) "
             + "and (\"product_class\".\"product_family\" = 'Food') "
             + "group by \"warehouse\".\"warehouse_fax\", \"warehouse\".\"wa_address1\", \"warehouse\".\"warehouse_name\", \"product_class\".\"product_family\" "
-            + "order by \"warehouse\".\"warehouse_fax\" ASC, \"warehouse\".\"wa_address1\" ASC, "
-            + "\"warehouse\".\"warehouse_name\" ASC, \"product_class\".\"product_family\" ASC";
+            + "order by CASE WHEN \"warehouse\".\"warehouse_fax\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_fax\" ASC, CASE WHEN \"warehouse\".\"wa_address1\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address1\" ASC, CASE WHEN \"warehouse\".\"warehouse_name\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_name\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
             "select `warehouse`.`warehouse_fax` as `c0`, `warehouse`.`wa_address1` as `c1`, "
@@ -2195,8 +2194,7 @@ public class NonEmptyTest extends BatchTestCase {
             + "\"warehouse\".\"wa_address2\" is null and \"warehouse\".\"wa_address3\" is null) and "
             + "(\"product_class\".\"product_family\" = 'Food') "
             + "group by \"warehouse\".\"wa_address3\", \"warehouse\".\"wa_address2\", \"warehouse\".\"warehouse_fax\", \"product_class\".\"product_family\" "
-            + "order by \"warehouse\".\"wa_address3\" ASC, \"warehouse\".\"wa_address2\" ASC, \"warehouse\".\"warehouse_fax\" ASC, "
-            + "\"product_class\".\"product_family\" ASC";
+            + "order by CASE WHEN \"warehouse\".\"wa_address3\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address3\" ASC, CASE WHEN \"warehouse\".\"wa_address2\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"wa_address2\" ASC, CASE WHEN \"warehouse\".\"warehouse_fax\" IS NULL THEN 1 ELSE 0 END, \"warehouse\".\"warehouse_fax\" ASC, CASE WHEN \"product_class\".\"product_family\" IS NULL THEN 1 ELSE 0 END, \"product_class\".\"product_family\" ASC";
 
         String necjSqlMySql =
             "select `warehouse`.`wa_address3` as `c0`, `warehouse`.`wa_address2` as `c1`, `warehouse`.`warehouse_fax` as `c2`, "
@@ -4284,7 +4282,11 @@ public class NonEmptyTest extends BatchTestCase {
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
         final String sqlOracle =
-            "select \"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" in ('M', 'F')) group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST";
+            MondrianProperties.instance().UseAggregates.get()
+                ? "select \"customer\".\"country\" as \"c0\","
+                    + " \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"agg_l_03_sales_fact_1997\" \"agg_l_03_sales_fact_1997\" where \"agg_l_03_sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" in ('M', 'F')) group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST"
+                : "select \"customer\".\"country\" as \"c0\","
+                    + " \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"sales_fact_1997\" \"sales_fact_1997\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" in ('M', 'F')) group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST";
         assertQuerySql(
             mdx,
             new SqlPattern[]{
@@ -4303,34 +4305,37 @@ public class NonEmptyTest extends BatchTestCase {
             + "non empty [Customers].[name].members on 1 "
             + "from Sales";
         final String sqlOracle =
-            "select \"customer\".\"country\" as \"c0\", "
-            + "\"customer\".\"state_province\" as \"c1\", "
-            + "\"customer\".\"city\" as \"c2\", "
-            + "\"customer\".\"customer_id\" as \"c3\", "
-            + "\"fname\" || \" \" || \"lname\" as \"c4\", "
-            + "\"fname\" || \" \" || \"lname\" as \"c5\", "
-            + "\"customer\".\"gender\" as \"c6\", "
-            + "\"customer\".\"marital_status\" as \"c7\", "
-            + "\"customer\".\"education\" as \"c8\", "
-            + "\"customer\".\"yearly_income\" as \"c9\" "
-            + "from \"customer\" \"customer\", "
-            + "\"sales_fact_1997\" \"sales_fact_1997\" "
-            + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-            + "and (\"customer\".\"gender\" = \"M\") "
-            + "and (\"customer\".\"marital_status\" = \"M\") "
-            + "group by \"customer\".\"country\", "
-            + "\"customer\".\"state_province\", "
-            + "\"customer\".\"city\", "
-            + "\"customer\".\"customer_id\", "
-            + "\"fname\" || \" \" || \"lname\", "
-            + "\"customer\".\"gender\", "
-            + "\"customer\".\"marital_status\", "
-            + "\"customer\".\"education\", "
-            + "\"customer\".\"yearly_income\" "
-            + "order by \"customer\".\"country\" ASC NULLS LAST, "
-            + "\"customer\".\"state_province\" ASC NULLS LAST, "
-            + "\"customer\".\"city\" ASC NULLS LAST, "
-            + "\"fname\" || \" \" || \"lname\" ASC NULLS LAST";
+            MondrianProperties.instance().UseAggregates.get()
+                ? "select \"customer\".\"country\" as \"c0\","
+                    + " \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", \"fname\" || ' ' || \"lname\" as \"c4\", \"fname\" || ' ' || \"lname\" as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" \"customer\", \"agg_l_03_sales_fact_1997\" \"agg_l_03_sales_fact_1997\" where \"agg_l_03_sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and (\"customer\".\"gender\" = 'M') and (\"customer\".\"marital_status\" = 'M') group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", \"fname\" || ' ' || \"lname\", \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, \"fname\" || ' ' || \"lname\" ASC NULLS LAST"
+                : "select \"customer\".\"country\" as \"c0\", "
+                + "\"customer\".\"state_province\" as \"c1\", "
+                + "\"customer\".\"city\" as \"c2\", "
+                + "\"customer\".\"customer_id\" as \"c3\", "
+                + "\"fname\" || \" \" || \"lname\" as \"c4\", "
+                + "\"fname\" || \" \" || \"lname\" as \"c5\", "
+                + "\"customer\".\"gender\" as \"c6\", "
+                + "\"customer\".\"marital_status\" as \"c7\", "
+                + "\"customer\".\"education\" as \"c8\", "
+                + "\"customer\".\"yearly_income\" as \"c9\" "
+                + "from \"customer\" \"customer\", "
+                + "\"sales_fact_1997\" \"sales_fact_1997\" "
+                + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
+                + "and (\"customer\".\"gender\" = \"M\") "
+                + "and (\"customer\".\"marital_status\" = \"M\") "
+                + "group by \"customer\".\"country\", "
+                + "\"customer\".\"state_province\", "
+                + "\"customer\".\"city\", "
+                + "\"customer\".\"customer_id\", "
+                + "\"fname\" || \" \" || \"lname\", "
+                + "\"customer\".\"gender\", "
+                + "\"customer\".\"marital_status\", "
+                + "\"customer\".\"education\", "
+                + "\"customer\".\"yearly_income\" "
+                + "order by \"customer\".\"country\" ASC NULLS LAST, "
+                + "\"customer\".\"state_province\" ASC NULLS LAST, "
+                + "\"customer\".\"city\" ASC NULLS LAST, "
+                + "\"fname\" || \" \" || \"lname\" ASC NULLS LAST";
         SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
             sqlOracle,
@@ -4339,6 +4344,11 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testNonUniformNestedMeasureConstraintsGetOptimized() {
+        if (MondrianProperties.instance().UseAggregates.get()) {
+            // This test can't work with aggregates becaused
+            // the aggregate table doesn't include member properties.
+            return;
+        }
         String mdx =
             "with member [Measures].[unit sales Male] as '([Measures].[Unit Sales],[Gender].[Gender].[M])' "
             + "member [Measures].[unit sales Female] as '([Measures].[Unit Sales],[Gender].[Gender].[F])' "

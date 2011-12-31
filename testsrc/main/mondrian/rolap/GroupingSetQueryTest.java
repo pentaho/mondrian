@@ -83,7 +83,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
     public void testGroupingSetsWithAggregateOverDefaultMember() {
         // testcase for MONDRIAN-705
         if (getTestContext().getDialect().supportsGroupingSets()) {
-            prop.EnableGroupingSets.set(true);
+            propSaver.set(prop.EnableGroupingSets, true);
         }
         assertQueryReturns(
             "with member [Gender].[agg] as ' "
@@ -106,7 +106,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
     }
 
     public void testGroupingSetForSingleColumnConstraint() {
-        prop.DisableCaching.setString("false");
+        propSaver.set(prop.DisableCaching, false);
 
         CellRequest request1 = createRequest(
             cubeNameSales2, measureUnitSales, tableCustomer, fieldGender, "M");
@@ -124,7 +124,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 + "grouping(\"customer\".\"gender\") as \"g0\" "
                 + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
                 + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "group by grouping sets ((\"customer\".\"gender\"),())",
+                + "group by grouping sets ((\"customer\".\"gender\"), ())",
                 26)
         };
 
@@ -162,7 +162,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 26)
         };
 
-        prop.EnableGroupingSets.set(true);
+        propSaver.set(prop.EnableGroupingSets, true);
 
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             assertRequestSql(
@@ -174,7 +174,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 patternsWithGsets);
         }
 
-        prop.EnableGroupingSets.set(false);
+        propSaver.set(prop.EnableGroupingSets, false);
 
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             assertRequestSql(
@@ -205,7 +205,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             cubeNameSales,
             measureUnitSales, null, "", "");
 
-        prop.EnableGroupingSets.set(true);
+        propSaver.set(prop.EnableGroupingSets, true);
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
@@ -232,7 +232,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             return;
         }
-        prop.EnableGroupingSets.set(true);
+        propSaver.set(prop.EnableGroupingSets, true);
         CellRequest request1 = createRequest(
             cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
@@ -253,7 +253,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             new CellRequest[] {request1, request2},
             patternsWithGsets);
 
-        prop.EnableGroupingSets.set(false);
+        propSaver.set(prop.EnableGroupingSets, false);
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
@@ -278,7 +278,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             return;
         }
-        prop.EnableGroupingSets.set(true);
+        propSaver.set(prop.EnableGroupingSets, true);
 
         CellRequest request1 = createRequest(
             cubeNameSales2,
@@ -306,7 +306,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 + "sum(\"sales_fact_1997\".\"store_sales\") as \"m1\", grouping(\"customer\".\"gender\") as \"g0\" "
                 + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
                 + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "group by grouping sets ((\"customer\".\"gender\"),())",
+                + "group by grouping sets ((\"customer\".\"gender\"), ())",
                 26)
         };
         assertRequestSql(
@@ -314,7 +314,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 request1, request2, request3, request4, request5, request6},
             patternsWithGsets);
 
-        prop.EnableGroupingSets.set(false);
+        propSaver.set(prop.EnableGroupingSets, false);
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
@@ -342,7 +342,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             return;
         }
-        prop.EnableGroupingSets.set(true);
+        propSaver.set(prop.EnableGroupingSets, true);
         CellRequest request1 = createRequest(
             cubeNameSales2,
             measureUnitSales, tableCustomer, fieldGender, "M");
@@ -369,7 +369,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 + "grouping(\"customer\".\"gender\") as \"g0\" "
                 + "from \"customer\" =as= \"customer\", \"sales_fact_1997\" =as= \"sales_fact_1997\" "
                 + "where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "group by grouping sets ((\"customer\".\"gender\"),())",
+                + "group by grouping sets ((\"customer\".\"gender\"), ())",
                 26),
 
             new SqlPattern(
@@ -386,7 +386,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 request1, request2, request3, request4, request5, request6},
             patternWithGsets);
 
-        prop.EnableGroupingSets.set(false);
+        propSaver.set(prop.EnableGroupingSets, false);
 
         SqlPattern[] patternWithoutGsets = {
             new SqlPattern(
@@ -411,7 +411,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
         if (prop.ReadAggregates.get() && prop.UseAggregates.get()) {
             return;
         }
-        prop.EnableGroupingSets.set(true);
+        propSaver.set(prop.EnableGroupingSets, true);
         CellRequest request1 = createRequest(
             cubeNameSales2,
             measureUnitSales, new String[]{tableCustomer, tableTime},
@@ -436,7 +436,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
                 + "from \"time_by_day\" =as= \"time_by_day\", \"sales_fact_1997\" =as= \"sales_fact_1997\", \"customer\" =as= \"customer\" "
                 + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 "
                 + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "group by grouping sets ((\"time_by_day\".\"the_year\",\"customer\".\"gender\"),(\"time_by_day\".\"the_year\"))",
+                + "group by grouping sets ((\"time_by_day\".\"the_year\", \"customer\".\"gender\"), (\"time_by_day\".\"the_year\"))",
             150)
         };
 
@@ -453,7 +453,7 @@ public class GroupingSetQueryTest extends BatchTestCase {
             new CellRequest[] {request3, request1, request2},
             patternsWithGsets);
 
-        prop.EnableGroupingSets.set(false);
+        propSaver.set(prop.EnableGroupingSets, false);
 
         SqlPattern[] patternsWithoutGsets = {
             new SqlPattern(
@@ -531,13 +531,13 @@ public class GroupingSetQueryTest extends BatchTestCase {
         // related to it (2207515)
         SqlPattern[] patternsGSEnabled = patternsGSDisabled;
 
-        prop.EnableGroupingSets.set(true);
+        propSaver.set(prop.EnableGroupingSets, true);
 
         assertRequestSql(
             new CellRequest[] {request3, request1, request2},
             patternsGSEnabled);
 
-        prop.EnableGroupingSets.set(false);
+        propSaver.set(prop.EnableGroupingSets, false);
 
         assertRequestSql(
             new CellRequest[]{request3, request1, request2},

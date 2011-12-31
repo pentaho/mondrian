@@ -50,17 +50,6 @@ public class Checkin_7634 extends CsvDBTestCase {
         super(name);
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        crossJoinSize =
-            MondrianProperties.instance().CrossJoinOptimizerSize.get();
-    }
-
-    protected void tearDown() throws Exception {
-        MondrianProperties.instance().CrossJoinOptimizerSize.set(crossJoinSize);
-        super.tearDown();
-    }
-
     public void testCrossJoin() throws Exception {
         // explicit use of [Product].[Class1]
         String mdx =
@@ -73,14 +62,17 @@ public class Checkin_7634 extends CsvDBTestCase {
 
 
         // Execute query but do not used the CrossJoin nonEmptyList optimization
-        MondrianProperties.instance().CrossJoinOptimizerSize.set(
+        propSaver.set(
+            MondrianProperties.instance().CrossJoinOptimizerSize,
             Integer.MAX_VALUE);
         Result result1 = getCubeTestContext().executeQuery(mdx);
         String resultString1 = TestContext.toString(result1);
 
         // Execute query using the new version of the CrossJoin
         // nonEmptyList optimization
-        MondrianProperties.instance().CrossJoinOptimizerSize.set(0);
+        propSaver.set(
+            MondrianProperties.instance().CrossJoinOptimizerSize,
+            Integer.MAX_VALUE);
         Result result2 = getCubeTestContext().executeQuery(mdx);
         String resultString2 = TestContext.toString(result2);
 

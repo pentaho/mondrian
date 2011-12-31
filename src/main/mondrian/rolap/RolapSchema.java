@@ -13,10 +13,12 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.CacheControl.CellRegion;
 import mondrian.olap.Member;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.rolap.sql.SqlQuery;
@@ -200,6 +202,13 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     }
 
     protected void finalCleanUp() {
+        final CacheControl cacheControl =
+            AggregationManager.instance().getCacheControl(null);
+        for (Cube cube : getCubes()) {
+            CellRegion cr =
+                cacheControl.createMeasuresRegion(cube);
+            cacheControl.flush(cr);
+        }
         if (aggTableManager != null) {
             aggTableManager.finalCleanUp();
             aggTableManager = null;
@@ -840,6 +849,14 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         return changeListener;
     }
 
+    /**
+     * Returns the checksum of this schema. Returns
+     * <code>null</code> {@link RolapConnectionProperties#UseContentChecksum}
+     * is set to false.
+     */
+    public String getChecksum() {
+        return md5Bytes;
+    }
 
     /**
      * Connection for purposes of parsing and validation. Careful! It won't

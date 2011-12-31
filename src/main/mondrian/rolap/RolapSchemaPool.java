@@ -156,6 +156,11 @@ class RolapSchemaPool {
                     clazz.getConstructor();
                 final DynamicSchemaProcessor dynProc = ctor.newInstance();
                 catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
+
+                // Use the content of the catalog to find the schema.
+                // Previously we'd use the key, but we didn't include
+                // DynamicSchemaProcessor, and that would give false hits.
+                key = catalogStr;
             } catch (Exception e) {
                 throw Util.newError(
                     e,

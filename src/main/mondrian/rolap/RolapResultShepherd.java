@@ -59,6 +59,9 @@ class RolapResultShepherd {
     static {
         executor.execute(
             new Runnable() {
+                private final int delay =
+                    MondrianProperties.instance()
+                        .RolapConnectionShepherdThreadPollingInterval.get();
                 public void run() {
                     while (true) {
                         for (Pair<FutureTask<Result>, Execution> task
@@ -76,11 +79,9 @@ class RolapResultShepherd {
                             }
                         }
                         try {
-                            Thread.sleep(
-                                MondrianProperties.instance()
-                                .RolapConnectionShepherdThreadPollingInterval
-                                .get());
+                            Thread.sleep(delay);
                         } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
                             return;
                         }
                     }
@@ -124,6 +125,9 @@ class RolapResultShepherd {
             executor.execute(task);
             return task.get();
         } catch (Exception e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
             // Let the Execution throw whatever it wants to, this way the
             // API contract is respected. The program should in most cases
             // stop here as most exceptions will originate from the Execution

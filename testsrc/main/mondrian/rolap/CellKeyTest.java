@@ -295,9 +295,9 @@ public class CellKeyTest extends FoodMartTestCase {
          * members), native evaluation produces results in a different order
          * from the non-native evaluation.
          */
-        boolean origExpandNonNative =
-            MondrianProperties.instance().ExpandNonNative.get();
-        MondrianProperties.instance().ExpandNonNative.set(false);
+        propSaver.set(
+            MondrianProperties.instance().ExpandNonNative,
+            false);
 
         TestContext testContext =
             TestContext.instance().create(
@@ -309,7 +309,6 @@ public class CellKeyTest extends FoodMartTestCase {
                 null);
 
         testContext.assertQueryReturns(query, result);
-        MondrianProperties.instance().ExpandNonNative.set(origExpandNonNative);
     }
 }
 

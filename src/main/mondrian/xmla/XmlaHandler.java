@@ -25,6 +25,8 @@ import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.UndeclaredThrowableException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.*;
@@ -73,6 +75,31 @@ public class XmlaHandler {
         } catch (SQLException e) {
             // Connection cannot provide an XmlaExtra. Fall back and give a
             // default implementation.
+        } catch (UndeclaredThrowableException ute) {
+            //
+            // Note: this is necessary because we use a dynamic proxy for the
+            // connection.
+            // I could not catch and un-wrap the Undeclared Throwable within
+            // the proxy.
+            // The exception comes out here and I couldn't find any better
+            // ways to deal with it.
+            //
+            // The undeclared throwable contains an Invocation Target Exception
+            // which in turns contains the real exception thrown by the "unwrap"
+            // method, for example OlapException.
+            //
+
+            Throwable cause = ute.getCause();
+            if (cause instanceof InvocationTargetException) {
+                cause = cause.getCause();
+            }
+
+            // this maintains the original behaviour: don't catch exceptions
+            // that are not subclasses of SQLException
+
+            if (! (cause instanceof SQLException)) {
+                throw ute;
+            }
         }
         return new XmlaExtraImpl();
     }
@@ -114,15 +141,22 @@ public class XmlaHandler {
             props.put(JDBC_PASSWORD, request.getPassword());
         }
 
-        // [MROSSI] getConnection does not take a dataSourceInfo. I think
-        // it was a bug.
-        //
-        // String dataSourceInfo =
-        //   properties.get(PropertyDefinition.DataSourceInfo.name());
-        //
-        final String catalog =
-            request.getProperties().get(PropertyDefinition.Catalog.name());
-        return getConnection(catalog, null, request.getRoleName(), props);
+        final String databaseName =
+           request
+               .getProperties()
+                   .get(PropertyDefinition.DataSourceInfo.name());
+
+        final String catalogName =
+            request
+                .getProperties()
+                    .get(PropertyDefinition.Catalog.name());
+
+        return
+            getConnection(
+                databaseName,
+                catalogName,
+                request.getRoleName(),
+                props);
     }
 
     private enum SetType {

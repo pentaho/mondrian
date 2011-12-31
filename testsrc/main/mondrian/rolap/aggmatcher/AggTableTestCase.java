@@ -19,15 +19,13 @@ import mondrian.olap.MondrianProperties;
  * the reloading of the aggregate tables after the CSV tables are loaded.
  * The particular cube definition and CSV file to use are abstract methods.
  *
- * @author <a>Richard M. Emberson</a>
+ * @author Richard M. Emberson
  * @version  $Id$
  */
 public abstract class AggTableTestCase extends CsvDBTestCase {
 
     private static final String DIRECTORY =
         "testsrc/main/mondrian/rolap/aggmatcher";
-
-    protected final MondrianProperties props = MondrianProperties.instance();
 
     public AggTableTestCase() {
         super();
@@ -41,12 +39,7 @@ public abstract class AggTableTestCase extends CsvDBTestCase {
         super.setUp();
 
         // turn off caching
-        propSaver.set(props.DisableCaching, true);
-
-        // re-read aggregates
-        propSaver.set(props.UseAggregates, true);
-        propSaver.set(props.ReadAggregates, false);
-        propSaver.set(props.ReadAggregates, true);
+        propSaver.set(propSaver.properties.DisableCaching, true);
     }
 
     protected String getDirectoryName() {

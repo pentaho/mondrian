@@ -21,8 +21,6 @@ import mondrian.spi.DialectManager;
 import mondrian.util.Pair;
 
 import javax.sql.DataSource;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.*;
 
 /**
@@ -86,8 +84,8 @@ public class SqlQuery {
     private final ClauseList groupBy;
     private final ClauseList having;
     private final ClauseList orderBy;
-    private final List<ClauseList> groupingSet;
-    private final ClauseList groupingFunction;
+    private final List<ClauseList> groupingSets;
+    private final ClauseList groupingFunctions;
 
     private final List<SqlStatement.Type> types =
         new ArrayList<SqlStatement.Type>();
@@ -113,6 +111,8 @@ public class SqlQuery {
     private final Map<String, String> columnAliases =
         new HashMap<String, String>();
 
+    private static final String INDENT = "    ";
+
     /**
      * Base constructor used by all other constructors to create an empty
      * instance.
@@ -128,14 +128,14 @@ public class SqlQuery {
         this.select = new ClauseList(true);
         this.from = new FromClauseList(true);
 
-        this.groupingFunction = new ClauseList(false);
+        this.groupingFunctions = new ClauseList(false);
         this.where = new ClauseList(false);
         this.groupBy = new ClauseList(false);
         this.having = new ClauseList(false);
         this.orderBy = new ClauseList(false);
         this.fromAliases = new ArrayList<String>();
         this.buf = new StringBuilder(128);
-        this.groupingSet = new ArrayList<ClauseList>();
+        this.groupingSets = new ArrayList<ClauseList>();
         this.dialect = dialect;
 
         // REVIEW emcdermid 10-Jul-2009: It might be okay to allow
@@ -393,7 +393,7 @@ public class SqlQuery {
         final String expression,
         SqlStatement.Type type)
     {
-        final String alias = addSelect(expression, type, null);
+        final String alias = addSelect(expression, type);
         addGroupBy(expression, alias);
         return alias;
     }
@@ -538,99 +538,64 @@ public class SqlQuery {
 
     public String toString()
     {
-        if (generateFormattedSql) {
-            StringWriter sw = new StringWriter(256);
-            PrintWriter pw = new PrintWriter(sw);
-            print(pw, "");
-            pw.flush();
-            return sw.toString();
-
-        } else {
-            buf.setLength(0);
-
-            select.toBuffer(
-                buf,
-                distinct ? "select distinct " : "select ", ", ");
-            buf.append(getGroupingFunction(""));
-            from.toBuffer(buf, fromAliases);
-            where.toBuffer(buf, " where ", " and ");
-            if (hasGroupingSet()) {
-                StringWriter stringWriter = new StringWriter();
-                printGroupingSets(new PrintWriter(stringWriter), "");
-                buf.append(stringWriter.toString());
-            } else {
-                groupBy.toBuffer(buf, " group by ", ", ");
-            }
-            having.toBuffer(buf, " having ", " and ");
-            orderBy.toBuffer(buf, " order by ", ", ");
-
-            return buf.toString();
-        }
-    }
-
-    /**
-     * Prints this SqlQuery to a PrintWriter with each clause on a separate
-     * line, and with the specified indentation prefix.
-     *
-     * @param pw Print writer
-     * @param prefix Prefix for each line
-     */
-    public void print(PrintWriter pw, String prefix) {
-        select.print(
-            pw, generateFormattedSql, prefix,
-            distinct ? "select distinct " : "select ",
-            ", ");
-        pw.print(getGroupingFunction(prefix));
-        from.print(pw, generateFormattedSql, prefix, "from ", ", ");
-        where.print(
-            pw, generateFormattedSql, prefix, "where ", " and ");
-        if (hasGroupingSet()) {
-            printGroupingSets(pw, prefix);
-        } else {
-            groupBy.print(pw, generateFormattedSql, prefix, "group by ", ", ");
-        }
-        having.print(pw, generateFormattedSql, prefix, "having ", " and ");
-        orderBy.print(pw, generateFormattedSql, prefix, "order by ", ", ");
-    }
-
-    private String getGroupingFunction(String prefix) {
-        if (!hasGroupingSet()) {
-            return "";
-        }
-        StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < groupingFunction.size(); i++) {
-            if (generateFormattedSql) {
-                buf.append("    ").append(prefix);
-            }
-            buf.append(", ");
-            buf.append("grouping(");
-            buf.append(groupingFunction.get(i));
-            buf.append(") as ");
-            dialect.quoteIdentifier("g" + i, buf);
-            if (generateFormattedSql) {
-                buf.append(Util.nl);
-            }
-        }
+        buf.setLength(0);
+        toBuffer(buf, "");
         return buf.toString();
     }
 
-
-    private void printGroupingSets(PrintWriter pw, String prefix) {
-        pw.print(" group by grouping sets (");
-        for (int i = 0; i < groupingSet.size(); i++) {
-            if (i > 0) {
-                pw.print(",");
-            }
-            pw.print("(");
-            groupingSet.get(i).print(
-                pw, generateFormattedSql, prefix, "", ",", "", "");
-            pw.print(")");
+    /**
+     * Writes this SqlQuery to a StringBuilder with each clause on a separate
+     * line, and with the specified indentation prefix.
+     *
+     * @param buf String builder
+     * @param prefix Prefix for each line
+     */
+    public void toBuffer(StringBuilder buf, String prefix) {
+        final String first = distinct ? "select distinct " : "select ";
+        select.toBuffer(buf, generateFormattedSql, prefix, first, ", ", "", "");
+        groupingFunctionsToBuffer(buf, prefix);
+        from.toBuffer(
+            buf, generateFormattedSql, prefix, " from ", ", ", "", "");
+        where.toBuffer(
+            buf, generateFormattedSql, prefix, " where ", " and ", "", "");
+        if (groupingSets.isEmpty()) {
+            groupBy.toBuffer(
+                buf, generateFormattedSql, prefix, " group by ", ", ", "", "");
+        } else {
+            ClauseList.listToBuffer(
+                buf,
+                groupingSets,
+                generateFormattedSql,
+                prefix,
+                " group by grouping sets (",
+                ", ",
+                ")");
         }
-        pw.print(")");
+        having.toBuffer(
+            buf, generateFormattedSql, prefix, " having ", " and ", "", "");
+        orderBy.toBuffer(
+            buf, generateFormattedSql, prefix, " order by ", ", ", "", "");
     }
 
-    private boolean hasGroupingSet() {
-        return !groupingSet.isEmpty();
+    private void groupingFunctionsToBuffer(StringBuilder buf, String prefix) {
+        if (groupingSets.isEmpty()) {
+            return;
+        }
+        int n = 0;
+        for (String groupingFunction : groupingFunctions) {
+            if (generateFormattedSql) {
+                buf.append(",")
+                    .append(Util.nl)
+                    .append(INDENT)
+                    .append(prefix);
+            } else {
+                buf.append(", ");
+            }
+            buf.append("grouping(")
+                .append(groupingFunction)
+                .append(") as ");
+            dialect.quoteIdentifier("g" + n++, buf);
+        }
     }
 
     public Dialect getDialect() {
@@ -648,11 +613,11 @@ public class SqlQuery {
         for (String columnExp : groupingColumnsExpr) {
             groupingList.add(columnExp);
         }
-        groupingSet.add(groupingList);
+        groupingSets.add(groupingList);
     }
 
     public void addGroupingFunction(String columnExpr) {
-        groupingFunction.add(columnExpr);
+        groupingFunctions.add(columnExpr);
 
         // A grouping function will end up in the select clause implicitly. It
         // needs a corresponding type.
@@ -668,9 +633,9 @@ public class SqlQuery {
     }
 
     public Pair<String, List<SqlStatement.Type>> toSqlAndTypes() {
-        assert types.size() == select.size() + groupingFunction.size()
+        assert types.size() == select.size() + groupingFunctions.size()
             : types.size() + " types, "
-              + (select.size() + groupingFunction.size())
+              + (select.size() + groupingFunctions.size())
               + " select items in query " + this;
         return Pair.of(toString(), types);
     }
@@ -797,65 +762,85 @@ public class SqlQuery {
             return false;
         }
 
-        void toBuffer(
+        final void toBuffer(
+            StringBuilder buf,
+            boolean generateFormattedSql,
+            String prefix,
+            String first,
+            String sep,
+            String last,
+            String empty)
+        {
+            if (isEmpty()) {
+                buf.append(empty);
+                return;
+            }
+            first = foo(generateFormattedSql, prefix, first);
+            sep = foo(generateFormattedSql, prefix, sep);
+            toBuffer(buf, first, sep, last);
+        }
+
+        static String foo(
+            boolean generateFormattedSql,
+            String prefix,
+            String s)
+        {
+            if (generateFormattedSql) {
+                if (s.startsWith(" ")) {
+                    // E.g. " and "
+                    s = Util.nl + prefix + s.substring(1);
+                }
+                if (s.endsWith(" ")) {
+                    // E.g. ", "
+                    s =
+                        s.substring(0, s.length() - 1) + Util.nl + prefix
+                        +  INDENT;
+                } else if (s.endsWith("(")) {
+                    // E.g. "("
+                    s = s + Util.nl + prefix + INDENT;
+                }
+            }
+            return s;
+        }
+
+        final void toBuffer(
             final StringBuilder buf,
             final String first,
-            final String sep)
+            final String sep,
+            final String last)
         {
             int n = 0;
+            buf.append(first);
             for (String s : this) {
-                if (n++ == 0) {
-                    buf.append(first);
-                } else {
+                if (n++ > 0) {
                     buf.append(sep);
                 }
                 buf.append(s);
             }
+            buf.append(last);
         }
 
-        void print(
-            final PrintWriter pw,
+        static void listToBuffer(
+            StringBuilder buf,
+            List<ClauseList> clauseListList,
             boolean generateFormattedSql,
-            final String prefix,
-            final String first,
-            final String sep)
+            String prefix,
+            String first,
+            String sep,
+            String last)
         {
-            print(pw, generateFormattedSql, prefix, first, sep, "", "");
-        }
-
-        void print(
-            final PrintWriter pw,
-            boolean generateFormattedSql,
-            final String prefix,
-            final String first,
-            final String sep,
-            final String suffix,
-            final String last)
-        {
-            String subprefix = prefix + "    ";
+            first = foo(generateFormattedSql, prefix, first);
+            sep = foo(generateFormattedSql, prefix, sep);
+            buf.append(first);
             int n = 0;
-            for (String s : this) {
-                if (n++ == 0) {
-                    if (generateFormattedSql) {
-                        pw.print(prefix);
-                    }
-                    pw.print(first);
-                } else {
-                    pw.print(sep);
+            for (ClauseList clauseList : clauseListList) {
+                if (n++ > 0) {
+                    buf.append(sep);
                 }
-                if (generateFormattedSql) {
-                    pw.println();
-                    pw.print(subprefix);
-                }
-                pw.print(s);
-                if (generateFormattedSql) {
-                    pw.print(suffix);
-                }
+                clauseList.toBuffer(
+                    buf, false, prefix, "(", ", ", ")", "()");
             }
-            pw.print(last);
-            if (n > 0 && generateFormattedSql) {
-                pw.println();
-            }
+            buf.append(last);
         }
     }
 

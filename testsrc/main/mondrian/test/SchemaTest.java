@@ -2962,7 +2962,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "  </Dimension>\n");
         testContext.assertQueryThrows(
             "select {[Big numbers].members} on 0 from [Sales]",
-            "Invalid value 'char' for attribute 'internalType' of element 'Level'. Valid values are: [int, double, Object, String, long]");
+            "In Schema: In Cube: In Dimension: In Hierarchy: In Level: Value 'char' of attribute 'internalType' has illegal value 'char'.  Legal values: {int, long, Object, String}");
     }
 
     public void testAllLevelName() {
@@ -3647,9 +3647,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
     /**
      * Unit test for bug
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-747">
-     * MONDRIAN-747, "When using DimensionUsage to join a shared dimension into
-     * a cube at a level other than its leaf level, Mondrian gives wrong
-     * results."</a>.
+     * MONDRIAN-747, "When joining a shared dimension into a cube at a level
+     * other than its leaf level, Mondrian gives wrong results"</a>.
      */
     public void testBugMondrian747() {
         // Test case requires a pecular inline view, and it works on dialects
@@ -3716,6 +3715,92 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "    </VirtualCubeMeasure> \n"
             + "  </VirtualCube> \n"
             + "</Schema>");
+
+        if (!Bug.BugMondrian747Fixed
+            && MondrianProperties.instance().EnableGroupingSets.get())
+        {
+            // With grouping sets enabled, MONDRIAN-747 behavior is even worse.
+            return;
+        }
+
+        // [Store].[All Stores] and [Store].[USA] should be 266,773. A higher
+        // value would indicate that there is a cartesian product going on --
+        // because "store_state" is not unique in "store" table.
+        final String x = !Bug.BugMondrian747Fixed
+            ? "1,379,620"
+            : "266,773";
+        testContext.assertQueryReturns(
+            "select non empty {[Measures].[unitsales2]} on 0,\n"
+            + " non empty [Store].members on 1\n"
+            + "from [cube2]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[unitsales2]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n"
+            + "Row #0: 266,773\n"
+            + "Row #1: " + x + "\n"
+            + "Row #2: 373,740\n"
+            + "Row #3: 135,318\n"
+            + "Row #4: 870,562\n");
+
+        // No idea why, but this value comes out TOO LOW. FIXME.
+        final String y = !Bug.BugMondrian747Fixed
+            && MondrianProperties.instance().ReadAggregates.get()
+            && MondrianProperties.instance().UseAggregates.get()
+            ? "20,957"
+            : "266,773";
+        testContext.assertQueryReturns(
+            "select non empty {[Measures].[unitsales1]} on 0,\n"
+            + " non empty [Store].members on 1\n"
+            + "from [cube1]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[unitsales1]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[OR].[Portland]}\n"
+            + "{[Store].[USA].[OR].[Salem]}\n"
+            + "{[Store].[USA].[WA]}\n"
+            + "{[Store].[USA].[WA].[Bellingham]}\n"
+            + "{[Store].[USA].[WA].[Bremerton]}\n"
+            + "{[Store].[USA].[WA].[Seattle]}\n"
+            + "{[Store].[USA].[WA].[Spokane]}\n"
+            + "{[Store].[USA].[WA].[Tacoma]}\n"
+            + "{[Store].[USA].[WA].[Walla Walla]}\n"
+            + "{[Store].[USA].[WA].[Yakima]}\n"
+            + "Row #0: " + y + "\n"
+            + "Row #1: 266,773\n"
+            + "Row #2: 74,748\n"
+            + "Row #3: 21,333\n"
+            + "Row #4: 25,663\n"
+            + "Row #5: 25,635\n"
+            + "Row #6: 2,117\n"
+            + "Row #7: 67,659\n"
+            + "Row #8: 26,079\n"
+            + "Row #9: 41,580\n"
+            + "Row #10: 124,366\n"
+            + "Row #11: 2,237\n"
+            + "Row #12: 24,576\n"
+            + "Row #13: 25,011\n"
+            + "Row #14: 23,591\n"
+            + "Row #15: 35,257\n"
+            + "Row #16: 2,203\n"
+            + "Row #17: 11,491\n");
+
         testContext.assertQueryReturns(
             "select non empty {[Measures].[unitsales2], [Measures].[unitsales1]} on 0,\n"
             + " non empty [Store].[Stores].members on 1\n"
@@ -3745,7 +3830,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "{[Store].[USA].[WA].[Walla Walla]}\n"
             + "{[Store].[USA].[WA].[Yakima]}\n"
             + "Row #0: 266,773\n"
-            + "Row #0: 266,773\n"
+            + "Row #0: " + y + "\n"
             + "Row #1: 1,379,620\n"
             + "Row #1: 266,773\n"
             + "Row #2: 373,740\n"

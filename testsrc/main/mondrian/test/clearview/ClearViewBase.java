@@ -124,19 +124,14 @@ public abstract class ClearViewBase extends BatchTestCase {
 
         // Set some properties to match the way we configure them
         // for ClearView.
-        boolean origExpandNonNative =
-            MondrianProperties.instance().ExpandNonNative.get();
-        MondrianProperties.instance().ExpandNonNative.set(true);
+        propSaver.set(
+            MondrianProperties.instance().ExpandNonNative,
+            true);
 
-        try {
-            String mdx = diffRepos.expand(null, "${mdx}");
-            String result = Util.nl + TestContext.toString(
-                testContext.executeQuery(mdx));
-            diffRepos.assertEquals("result", "${result}", result);
-        } finally {
-            MondrianProperties.instance().ExpandNonNative.set(
-                origExpandNonNative);
-        }
+        String mdx = diffRepos.expand(null, "${mdx}");
+        String result = Util.nl + TestContext.toString(
+            testContext.executeQuery(mdx));
+        diffRepos.assertEquals("result", "${result}", result);
     }
 
     protected void assertQuerySql(boolean flushCache)

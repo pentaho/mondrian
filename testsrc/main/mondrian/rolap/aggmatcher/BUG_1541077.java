@@ -37,14 +37,14 @@ public class BUG_1541077 extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(props.UseAggregates, false);
+        propSaver.set(propSaver.properties.UseAggregates, false);
 
         String mdx =
             "select {[Measures].[Store Count]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
-        propSaver.set(props.UseAggregates, true);
+        propSaver.set(propSaver.properties.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
@@ -58,14 +58,14 @@ public class BUG_1541077 extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(props.UseAggregates, false);
+        propSaver.set(propSaver.properties.UseAggregates, false);
 
         String mdx =
             "select {[Measures].[Sales Count]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
-        propSaver.set(props.UseAggregates, true);
+        propSaver.set(propSaver.properties.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
@@ -79,14 +79,14 @@ public class BUG_1541077 extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(props.UseAggregates, false);
+        propSaver.set(propSaver.properties.UseAggregates, false);
 
         String mdx =
             "select {[Measures].[Total Amount]} on columns from Cheques";
         Result result = getCubeTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
-        propSaver.set(props.UseAggregates, true);
+        propSaver.set(propSaver.properties.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
@@ -100,7 +100,7 @@ public class BUG_1541077 extends AggTableTestCase {
         }
 
         // get value without aggregates
-        propSaver.set(props.UseAggregates, false);
+        propSaver.set(propSaver.properties.UseAggregates, false);
 
         String mdx = "select {[Measures].[Avg Amount]} on columns from Cheques";
 
@@ -108,7 +108,7 @@ public class BUG_1541077 extends AggTableTestCase {
         Object v = result.getCell(new int[]{0}).getFormattedValue();
 
         // get value with aggregates
-        propSaver.set(props.UseAggregates, true);
+        propSaver.set(propSaver.properties.UseAggregates, true);
 
         Result result1 = getCubeTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getFormattedValue();

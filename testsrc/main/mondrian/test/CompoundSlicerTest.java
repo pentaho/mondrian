@@ -689,7 +689,7 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "where ([Measures].[Avg Unit Sales], [Customers].[OR and CA])",
             "Axis #0:\n"
             + "{[Measures].[Avg Unit Sales], [Customer].[Customers].[OR and CA]}\n"
-            + "3.092");
+            + "3.094");
     }
 
     /**

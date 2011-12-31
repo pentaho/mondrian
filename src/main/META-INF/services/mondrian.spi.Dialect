@@ -7,7 +7,6 @@ mondrian.spi.impl.GreenplumDialect
 mondrian.spi.impl.HsqldbDialect
 mondrian.spi.impl.InfobrightDialect
 mondrian.spi.impl.InformixDialect
-mondrian.spi.impl.IngresDialect
 mondrian.spi.impl.InterbaseDialect
 mondrian.spi.impl.LucidDbDialect
 mondrian.spi.impl.MicrosoftSqlServerDialect
@@ -19,3 +18,6 @@ mondrian.spi.impl.PostgreSqlDialect
 mondrian.spi.impl.SqlStreamDialect
 mondrian.spi.impl.SybaseDialect
 mondrian.spi.impl.TeradataDialect
+mondrian.spi.impl.VectorwiseDialect
+mondrian.spi.impl.VerticaDialect
+mondrian.spi.impl.IngresDialect

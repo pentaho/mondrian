@@ -21,8 +21,6 @@ import mondrian.server.Locus;
 import mondrian.spi.DataSourceChangeListener;
 import mondrian.spi.Dialect;
 import org.apache.log4j.Logger;
-import org.eigenbase.util.property.Property;
-import org.eigenbase.util.property.TriggerBase;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
@@ -44,39 +42,6 @@ import java.util.*;
  */
 public class RolapStar {
     private static final Logger LOGGER = Logger.getLogger(RolapStar.class);
-
-    /**
-     * Controls the aggregate data cache for all RolapStars.
-     * An administrator or tester might selectively enable or
-     * disable in memory caching to allow direct measurement of database
-     * performance.
-     */
-    private static boolean disableCaching =
-        MondrianProperties.instance().DisableCaching.get();
-
-    static {
-        // Trigger is used to lookup and change the value of the
-        // variable that controls aggregate data caching
-        // Using a trigger means we don't have to look up the property eveytime.
-        MondrianProperties.instance().DisableCaching.addTrigger(
-            new TriggerBase(true) {
-                public void execute(Property property, String value) {
-                    disableCaching = property.booleanValue();
-                    // must flush all caches
-                    if (disableCaching) {
-                        // REVIEW: could replace following code with call to
-                        // CacheControl.flush(CellRegion)
-                        for (RolapSchema schema : RolapSchema.getRolapSchemas())
-                        {
-                            for (RolapStar star : schema.getStars()) {
-                                star.clearCachedAggregations(true);
-                            }
-                        }
-                    }
-                }
-            }
-        );
-    }
 
     private final RolapSchema schema;
 
@@ -348,6 +313,10 @@ public class RolapStar {
         return this.cacheAggregations;
     }
 
+    boolean isCacheDisabled() {
+        return MondrianProperties.instance().DisableCaching.get();
+    }
+
     /**
      * Clears the aggregate cache. This only does something if aggregate caching
      * is disabled (see {@link #setCacheAggregations(boolean)}).
@@ -356,7 +325,7 @@ public class RolapStar {
      *   settings.  If false, clears only cache from the current thread
      */
     public void clearCachedAggregations(boolean forced) {
-        if (forced || !cacheAggregations || RolapStar.disableCaching) {
+        if (forced || !cacheAggregations || isCacheDisabled()) {
             if (LOGGER.isDebugEnabled()) {
                 StringBuilder buf = new StringBuilder(100);
                 buf.append("RolapStar.clearCachedAggregations: schema=");
@@ -397,7 +366,7 @@ public class RolapStar {
 
             // Let the change listener get the opportunity to register the
             // first time the aggregation is used
-            if ((this.cacheAggregations) && (!RolapStar.disableCaching)) {
+            if ((this.cacheAggregations) && (!isCacheDisabled())) {
                 if (changeListener != null) {
                     Util.discard(
                         changeListener.isAggregationChanged(aggregation));
@@ -422,7 +391,7 @@ public class RolapStar {
             return aggregation;
         }
 
-        if (cacheAggregations && !RolapStar.disableCaching) {
+        if (cacheAggregations && !isCacheDisabled()) {
             // Look in global cache
             synchronized (sharedAggregations) {
                 aggregation = sharedAggregations.get(aggregationKey);
@@ -454,7 +423,7 @@ public class RolapStar {
         clearAggregationRequests();
 
         if (changeListener != null) {
-            if (cacheAggregations && !RolapStar.disableCaching) {
+            if (cacheAggregations && !isCacheDisabled()) {
                 synchronized (sharedAggregations) {
                     for (Map.Entry<AggregationKey, Aggregation> e
                         : sharedAggregations.entrySet())
@@ -490,7 +459,7 @@ public class RolapStar {
         // Need synchronized access to both aggregationRequests as to
         // aggregations, synchronize this instead
         synchronized (this) {
-            if (cacheAggregations && !RolapStar.disableCaching) {
+            if (cacheAggregations && !isCacheDisabled()) {
                 // Push pending modifications other thread could not push
                 // to global cache, because it was in use
                 Iterator<Map.Entry<AggregationKey, Aggregation>>
@@ -544,7 +513,7 @@ public class RolapStar {
         Aggregation localAggregation,
         Map<AggregationKey, Aggregation> destAggregations)
     {
-        if (cacheAggregations && !RolapStar.disableCaching) {
+        if (cacheAggregations && !isCacheDisabled()) {
             synchronized (destAggregations) {
                 boolean found = false;
                 Iterator<Map.Entry<AggregationKey, Aggregation>>

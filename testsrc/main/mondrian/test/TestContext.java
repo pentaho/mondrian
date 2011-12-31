@@ -378,17 +378,25 @@ public class TestContext {
     public static String getRawFoodMartSchema() {
         synchronized (SnoopingSchemaProcessor.class) {
             if (unadulteratedFoodMartSchema == null) {
-                TestContext context =
-                    instance()
-                        .withSchemaProcessor(SnoopingSchemaProcessor.class);
-                final Connection connection = context.getConnection();
-                connection.close();
-                unadulteratedFoodMartSchema =
-                    SnoopingSchemaProcessor.catalogContent;
+                unadulteratedFoodMartSchema = instance().getRawSchema();
             }
         }
-
         return unadulteratedFoodMartSchema;
+    }
+
+    /**
+     * Returns the definition of the schema.
+     *
+     * @return XML definition of the FoodMart schema
+     */
+    public String getRawSchema() {
+        final Connection connection =
+            withSchemaProcessor(SnoopingSchemaProcessor.class)
+                .getConnection();
+        connection.close();
+        String schema = SnoopingSchemaProcessor.THREAD_RESULT.get();
+        SnoopingSchemaProcessor.THREAD_RESULT.remove();
+        return schema;
     }
 
     /**
@@ -2316,14 +2324,17 @@ public class TestContext {
     public static class SnoopingSchemaProcessor
         extends FilterDynamicSchemaProcessor
     {
-        private static String catalogContent;
+        public static final ThreadLocal<String> THREAD_RESULT =
+            new ThreadLocal<String>();
 
         protected String filter(
             String schemaUrl,
             Util.PropertyList connectInfo,
             InputStream stream) throws Exception
         {
-            catalogContent = super.filter(schemaUrl, connectInfo, stream);
+            String catalogContent =
+                super.filter(schemaUrl, connectInfo, stream);
+            THREAD_RESULT.set(catalogContent);
             return catalogContent;
         }
     }

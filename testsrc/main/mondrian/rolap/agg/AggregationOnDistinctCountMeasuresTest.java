@@ -278,9 +278,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testDistinctCountOnTuplesWithSomeNonJoiningDimensions() {
-        boolean orginalPropertyValue =
-            props.IgnoreMeasureForNonJoiningDimension.get();
-        props.IgnoreMeasureForNonJoiningDimension.set(false);
+        propSaver.set(
+            props.IgnoreMeasureForNonJoiningDimension, false);
         String mdx =
             "WITH MEMBER WAREHOUSE.X as 'Aggregate({WAREHOUSE.[STATE PROVINCE].MEMBERS}*"
             + "{[Gender].Members})'"
@@ -296,9 +295,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "{[Warehouse].[Warehouses].[X]}\n"
             + "Row #0: \n";
         assertQueryReturns(mdx, expectedResult);
-        props.IgnoreMeasureForNonJoiningDimension.set(true);
+        propSaver.set(
+            props.IgnoreMeasureForNonJoiningDimension, true);
         assertQueryReturns(mdx, expectedResult);
-        props.IgnoreMeasureForNonJoiningDimension.set(orginalPropertyValue);
     }
 
     public void testAggregationListOptimizationForChildren() {
@@ -636,37 +635,23 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOnCJofMembersGeneratesOptimalQuery() {
-        String oraTeraSql;
-        if (props.EnableGroupingSets.get()) {
-            oraTeraSql =
-                "select \"store\".\"store_name\" as \"c0\","
-                + " \"time_by_day\".\"the_year\" as \"c1\","
-                + " \"customer\".\"gender\" as \"c2\","
-                + " count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\","
-                + " grouping(\"customer\".\"gender\") as \"g0\" "
-                + "from \"store\" =as= \"store\","
-                + " \"sales_fact_1997\" =as= \"sales_fact_1997\","
-                + " \"time_by_day\" =as= \"time_by_day\","
-                + " \"customer\" =as= \"customer\" "
-                + "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
-                + "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-                + "and \"time_by_day\".\"the_year\" = 1997 "
-                + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "group by grouping sets ((\"store\".\"store_name\",\"time_by_day\".\"the_year\",\"customer\".\"gender\"),"
-                + "(\"store\".\"store_name\",\"time_by_day\".\"the_year\"))";
-        } else {
-            oraTeraSql =
-                "select \"store\".\"store_state\" as \"c0\","
-                + " \"time_by_day\".\"the_year\" as \"c1\","
-                + " count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
-                + "from \"store\" =as= \"store\","
-                + " \"sales_fact_1997\" =as= \"sales_fact_1997\","
-                + " \"time_by_day\" =as= \"time_by_day\" "
-                + "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
-                + "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-                + "and \"time_by_day\".\"the_year\" = 1997 "
-                + "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
-        }
+        // Mondrian does not use GROUPING SETS for distinct-count measures.
+        // So, this test should not use GROUPING SETS, even if they are enabled.
+        // See change 12310, bug MONDRIAN-470 (aka SF.net 2207515).
+        Util.discard(props.EnableGroupingSets);
+
+        String oraTeraSql =
+            "select \"store\".\"store_state\" as \"c0\","
+            + " \"time_by_day\".\"the_year\" as \"c1\","
+            + " count(distinct \"sales_fact_1997\".\"customer_id\") as \"m0\" "
+            + "from \"store\" =as= \"store\","
+            + " \"sales_fact_1997\" =as= \"sales_fact_1997\","
+            + " \"time_by_day\" =as= \"time_by_day\" "
+            + "where \"sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" "
+            + "and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
+            + "and \"time_by_day\".\"the_year\" = 1997 "
+            + "group by \"store\".\"store_state\", \"time_by_day\".\"the_year\"";
+
         SqlPattern[] patterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ORACLE, oraTeraSql, oraTeraSql),

@@ -64,6 +64,9 @@ public class Property extends EnumeratedValues.BasicValue {
         TYPE_STRING,
         TYPE_NUMERIC,
         TYPE_BOOLEAN,
+        TYPE_DATE,
+        TYPE_TIME,
+        TYPE_TIMESTAMP,
         TYPE_OTHER
     }
 

@@ -432,8 +432,9 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
                     Object[] args)
                     throws Throwable
                 {
-                    if (OlapConnection.class.isAssignableFrom(
-                            method.getClass()))
+                    if ("unwrap".equals(method.getName())
+                        || OlapConnection.class
+                        .isAssignableFrom(method.getDeclaringClass()))
                     {
                         return method.invoke(olapConnection, args);
                     } else {

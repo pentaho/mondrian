@@ -174,8 +174,11 @@ public class Aggregation {
             // Segments are loaded using group by grouping sets
             // by CompositeBatch.loadAggregation
         } else {
+            final List<GroupingSet> gsList =
+                new ArrayList<GroupingSet>();
+            gsList.add(groupingSet);
             new SegmentLoader().load(
-                Collections.singletonList(groupingSet),
+                gsList,
                 pinnedSegments,
                 compoundPredicateList);
         }
@@ -457,9 +460,6 @@ public class Aggregation {
                 cacheControl.trace(
                     "discard segment - it has no columns in common: "
                     + segment);
-                // Removes the segment from the external cache, if any.
-                SegmentCacheWorker.remove(
-                    SegmentHeader.forSegment(segment));
                 continue;
             }
 
@@ -566,11 +566,6 @@ public class Aggregation {
                 final Object[] axisKeys = axis.getKeys();
 
                 if (axisBitSet.cardinality() == 0) {
-                    // If one axis is empty, the entire segment is empty.
-                    // Discard it.
-                    // Removes the segment from the external cache, if any.
-                    SegmentCacheWorker.remove(
-                        SegmentHeader.forSegment(segment));
                     continue segmentLoop;
                 }
 
@@ -625,9 +620,6 @@ public class Aggregation {
             // throw away a segment which has a few cells left.
             int remainingCellCount = segment.getCellCount();
             if (remainingCellCount - cellCount <= 0) {
-                // Removes the segment from the external cache, if any.
-                SegmentCacheWorker.remove(
-                    SegmentHeader.forSegment(segment));
                 continue;
             }
 
@@ -666,12 +658,12 @@ public class Aggregation {
                     bestColumnPredicate,
                     excludedRegions);
 
-            // Removes the segment from the external cache, if any.
-            SegmentCacheWorker.remove(
-                SegmentHeader.forSegment(segment));
-
             newSegmentRefs.add(new SoftReference<Segment>(newSegment));
         }
+
+        // Flush the external cache regions
+        SegmentCacheWorker.flush(
+            SegmentHeader.forCacheRegion(cacheRegion));
 
         // Replace list of segments.
         // FIXME: Synchronize.

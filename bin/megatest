@@ -67,7 +67,7 @@ marmalade)
   jdkList="jdk1.4 jdk1.5 jdk1.6 openjdk1.6"
   ;;
 marmite)
-  databaseList="derby hsqldb mysql"
+  databaseList="derby hsqldb mysql oracle"
   jdkList="jdk1.4 jdk1.5 jdk1.6 openjdk1.6 ibmjdk1.6"
   ;;
 ATRHisv1)
@@ -227,19 +227,14 @@ doTest2() {
   oracle)
     (
       #export ORACLE_HOME=G:/oracle/product/10.1.0/Db_1
-      if [ -n "$ORACLE_HOME" ]; then
-        echo driver.classpath=${ORACLE_HOME}/jdbc/lib/ojdbc14.jar
-      else
-        # If Oracle is not installed, you must copy Oracle's JDBC driver into
-        # testlib.
-        if [ ! -f testlib/ojdbc14.jar ]; then
-          echo "Oracle JDBC not found"
-          exit 1
-        fi
-        echo driver.classpath=${MONDRIAN_DIR}/testlib/ojdbc14.jar
+      driver="$(chooseOracleDriver $jdk)"
+      if [ ! -f "$driver" ]; then
+        echo "Oracle JDBC driver not found"
+        exit 1
       fi
-      jdbcURL=jdbc:oracle:thin:foodmart/foodmart@//marmalade:1521/XE
+      jdbcURL=jdbc:oracle:thin:foodmart/foodmart@//$(uname -n):1521/XE
       jdbcDrivers=oracle.jdbc.OracleDriver
+      echo driver.classpath=${driver}
       echo mondrian.foodmart.jdbcURL=${jdbcURL}
       echo mondrian.jdbcDrivers=${jdbcDrivers}
       echo mondrian.foodmart.jdbcUser=foodmart
@@ -431,6 +426,28 @@ chooseJavaHome() {
     (*) echo "Unknown java version $jdk"; exit 1 ;;
     esac;;
   esac
+}
+
+# Returns a path of an Oracle JDBC driver for a given JDK.
+# E.g. "/u01/app/oracle/product/11.2.0/jdbc/lib/ojdbc6.jar"
+chooseOracleDriver()
+{
+  for b in "$ORACLE_HOME/jdbc/lib" testlib; do
+    case "$jdk" in
+    (jdk1.6|openjdk1.6|ibmjdk1.6)
+      files="ojdbc6.jar ojdbc5.jar ojdbc14.jar";;
+    (jdk1.5)
+      files="ojdbc5.jar ojdbc14.jar";;
+    (jdk1.4|*)
+      files="ojdbc14.jar";;
+    esac
+    for f in $files; do
+      if [ -f "$b/$f" ]; then
+        echo "$b/$f"
+        return
+      fi
+    done
+  done
 }
 
 olap4j() {
@@ -1000,4 +1017,3 @@ CYGWIN*)
 esac
 
 # End megatest
-

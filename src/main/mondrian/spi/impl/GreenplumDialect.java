@@ -3,6 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2008-2009 Millersoft
+// Copyright (C) 2011-2011 Juian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -54,16 +55,28 @@ public class GreenplumDialect extends PostgreSqlDialect {
         return true;
     }
 
-    public boolean allowsCountDistinct() {
+    public boolean requiresGroupByAlias() {
+        return true;
+    }
+
+    public boolean requiresAliasForFromQuery() {
         return false;
     }
 
-    public boolean allowsFromQuery() {
+    public boolean allowsCountDistinct() {
         return true;
+    }
+
+    public boolean allowsFromQuery() {
+        return false;
     }
 
     public DatabaseProduct getDatabaseProduct() {
         return DatabaseProduct.GREENPLUM;
+    }
+
+    public String generateCountExpression(String exp) {
+        return caseWhenElse(exp + " ISNULL", "'0'", "TEXT(" + exp + ")");
     }
 
     public boolean allowsRegularExpressionInWhereClause() {

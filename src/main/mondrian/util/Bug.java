@@ -137,6 +137,15 @@ public class Bug {
 
     /**
      * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-485">bug MONDRIAN-485,
+     * "Member key treated as member name in WHERE"</a>
+     * is fixed. This bug is a placeholder for all support for keys in
+     * member names (e.g. "[Product].[Product Name].&12345").
+     */
+    public static final boolean BugMondrian485Fixed = false;
+
+    /**
+     * Whether
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-486">bug MONDRIAN-486,
      * "HighCardinalityTest test cases disabled"</a>
      * is fixed.
@@ -200,6 +209,14 @@ public class Bug {
      * is fixed.
      */
     public static final boolean BugMondrian687Fixed = false;
+
+    /**
+     * Whether bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-747">
+     * MONDRIAN-747, "When joining a shared dimension into a cube at a level
+     * other than its leaf level, Mondrian gives wrong results"</a> is fixed.
+     */
+    public static final boolean BugMondrian747Fixed = false;
 
     /**
      * Whether

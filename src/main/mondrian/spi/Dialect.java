@@ -716,6 +716,16 @@ public interface Dialect {
     boolean allowsRegularExpressionInWhereClause();
 
     /**
+     * Some databases, like Greenplum, don't include nulls as part
+     * of the results of a COUNT sql call. This allows dialects
+     * to wrap the count expression in something before it is used
+     * in the query.
+     * @param exp The expression to wrap.
+     * @return A valid expression to use for a count operation.
+     */
+    String generateCountExpression(String exp);
+
+    /**
      * Must generate a String representing a regular expression match
      * operation between a string literal and a Java regular expression.
      * The string literal might be a column identifier or some other
@@ -804,7 +814,8 @@ public interface Dialect {
         SQLSTREAM,
         SYBASE,
         TERADATA,
-        VERTICA;
+        VERTICA,
+        VECTORWISE;
 
         /**
          * Return the root of the family of products this database product

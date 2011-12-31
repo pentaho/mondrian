@@ -9,21 +9,46 @@
 */
 package mondrian.xmla.impl;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
-import java.util.*;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
-import javax.xml.parsers.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
-import mondrian.xmla.*;
 import mondrian.xmla.Enumeration;
+import mondrian.xmla.SaxWriter;
+import mondrian.xmla.XmlaConstants;
+import mondrian.xmla.XmlaException;
+import mondrian.xmla.XmlaRequest;
+import mondrian.xmla.XmlaRequestCallback;
+import mondrian.xmla.XmlaResponse;
+import mondrian.xmla.XmlaServlet;
+import mondrian.xmla.XmlaUtil;
 
 import org.olap4j.impl.Olap4jUtil;
-import org.w3c.dom.*;
-import org.xml.sax.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Default implementation of XML/A servlet.
@@ -42,25 +67,13 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
     private static final String REQUIRE_AUTHENTICATED_SESSIONS =
         "requireAuthenticatedSessions";
 
-    /**
-     * Simba O2X for some reason attempts to create many new xmla sessions
-     * during the same user interactions. We can mitigate that by creating a
-     * session id which is a direct hash function of the credentials supplied
-     * and the remote host IP.
-     */
-    private static final String REUSE_SESSION_IDS = "reuseSessionIds";
-
     private DocumentBuilderFactory domFactory = null;
 
     private boolean requireAuthenticatedSessions = false;
-    private boolean reuseSessionIds = false;
 
     /**
      * Session properties, keyed by session ID. Currently just username and
      * password.
-     *
-     * <p>NOTE: There is no mechanism to remove entries from this map,
-     * so it will get larger if the server is up for a long time.</p>
      */
     private final Map<String, SessionInfo> sessionInfos =
         new HashMap<String, SessionInfo>();
@@ -71,12 +84,9 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
         this.requireAuthenticatedSessions =
             Boolean.parseBoolean(
                 servletConfig.getInitParameter(REQUIRE_AUTHENTICATED_SESSIONS));
-        this.reuseSessionIds =
-            Boolean.parseBoolean(
-                servletConfig.getInitParameter(REUSE_SESSION_IDS));
     }
 
-    protected DocumentBuilderFactory getDocumentBuilderFactory() {
+    protected static DocumentBuilderFactory getDocumentBuilderFactory() {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setIgnoringComments(true);
         factory.setIgnoringElementContentWhitespace(true);
@@ -237,6 +247,7 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
             if ((hdrElem == null) || (! hdrElem.hasChildNodes())) {
                 return;
             }
+
             String encoding = response.getCharacterEncoding();
 
             byte[] bytes = null;
@@ -275,16 +286,16 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
                         username.getChildNodes().item(0).getNodeValue();
                     context.put(CONTEXT_XMLA_USERNAME, userNameStr);
                     String passwordStr = "";
+
                     if (password.getChildNodes().item(0) != null) {
                         passwordStr =
                             password.getChildNodes().item(0).getNodeValue();
-                        context.put(CONTEXT_XMLA_PASSWORD, passwordStr);
                     }
-                    // [MROSSI] TODO we'd need to inject the HttpServletRequest
-                    // into this method context.put("remote_host",
-                    // request.getRemoteHost());
+
+                    context.put(CONTEXT_XMLA_PASSWORD, passwordStr);
+
                     if ("".equals(passwordStr) || null == passwordStr) {
-                        LOGGER.error(
+                        LOGGER.warn(
                             "Security header for user [" + userNameStr
                             + "] provided without password");
                     }
@@ -316,7 +327,6 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
 
                 String sessionIdStr;
                 if (localName.equals(XMLA_BEGIN_SESSION)) {
-                    // generate SessionId
                     sessionIdStr = generateSessionId(context);
 
                     context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
@@ -325,9 +335,16 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
                         CONTEXT_XMLA_SESSION_STATE_BEGIN);
 
                 } else if (localName.equals(XMLA_SESSION)) {
-                    // extract the SessionId attrs value and put into
-                    // context
-                    sessionIdStr = getSessionId(e, context);
+                    sessionIdStr = getSessionIdFromRequest(e, context);
+
+                    SessionInfo sessionInfo = getSessionInfo(sessionIdStr);
+
+                    if (sessionInfo != null) {
+                        context.put(CONTEXT_XMLA_USERNAME, sessionInfo.user);
+                        context.put(
+                            CONTEXT_XMLA_PASSWORD,
+                            sessionInfo.password);
+                    }
 
                     context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
                     context.put(
@@ -335,24 +352,11 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
                         CONTEXT_XMLA_SESSION_STATE_WITHIN);
 
                 } else if (localName.equals(XMLA_END_SESSION)) {
-                    // extract the SessionId attrs value and put into
-                    // context
-                    sessionIdStr = getSessionId(e, context);
-
-                    SessionInfo sessionInfo =
-                        getSessionInfo(sessionIdStr);
-                    if (sessionInfo != null) {
-                        context.put(CONTEXT_XMLA_USERNAME, sessionInfo.user);
-                        context.put(
-                            CONTEXT_XMLA_PASSWORD, sessionInfo.password);
-                    }
-                    context.put(CONTEXT_XMLA_SESSION_ID, sessionIdStr);
+                    sessionIdStr = getSessionIdFromRequest(e, context);
                     context.put(
                         CONTEXT_XMLA_SESSION_STATE,
                         CONTEXT_XMLA_SESSION_STATE_END);
 
-                    // remove session info
-                    removeSessionInfo(sessionIdStr);
                 } else {
                     // error
                     String msg =
@@ -390,6 +394,7 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
                         "New authenticated session; storing credentials ["
                         + username + "/********] for session id ["
                         + sessionId + "]");
+
                     saveSessionInfo(
                         username,
                         password,
@@ -416,11 +421,6 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
         }
     }
 
-    private void removeSessionInfo(String sessionIdStr) {
-        synchronized (sessionInfos) {
-            sessionInfos.remove(sessionIdStr);
-        }
-    }
 
     protected String generateSessionId(Map<String, Object> context) {
         for (XmlaRequestCallback callback : getCallbacks()) {
@@ -429,47 +429,17 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
                 return sessionId;
             }
         }
-        /*
-         * Fallback to the default session ID generation algorithm.
-         */
-        if (reuseSessionIds) {
-            // This is how we use the same session id (key to retrieve a
-            // connection) for requests with the same username coming from
-            // the same remote host. The password can't be part of the
-            // string because if you use Simba and you don't tick "save
-            // password" in the login dialog then Simba only sends the
-            // password with the first session that it opens - after which
-            // it sends something like the following:
-            //
-            // <Header>
-            //   <Security xmlns="http://schemas.xmlsoap.org/ws/2002/04/secext">
-            //        <UsernameToken>
-            //            <Username>michele</Username>
-            //            <Password Type="PasswordText"/>
-            //        </UsernameToken>
-            //    </Security>
-            //    <BeginSession
-            //      xmlns="urn:schemas-microsoft-com:xml-analysis"
-            //      mustUnderstand="1"/>
-            // </Header>
-            //
-            // Note the Password element with no value in it.
-            String sessionString =
-                "session_"
-                + context.get(CONTEXT_XMLA_USERNAME)
-                + "_"
-                + "_"
-                + context.get("remote_host");
-            return Long.toString(sessionString.hashCode(), 35);
-        } else {
-            // Generate a semi-random new session ID.
-            return Long.toString(
-                -17L * System.nanoTime() + 11L * System.currentTimeMillis(),
-                35);
-        }
+
+
+        // Generate a pseudo-random new session ID.
+        return Long.toString(17L * System.nanoTime()
+                +
+                3L * System.currentTimeMillis(), 35);
     }
 
-    protected String getSessionId(Element e, Map<String, Object> context)
+
+    private static String getSessionIdFromRequest(Element e,
+            Map<String, Object> context)
         throws Exception
     {
         // extract the SessionId attrs value and put into context
@@ -482,8 +452,9 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
                 + XMLA_SESSION_ID
                 + " attribute");
         }
-        String value = attr.getValue();
-        if (value == null) {
+
+        String sessionId = attr.getValue();
+        if (sessionId == null) {
             throw new SAXException(
                 "Invalid XML/A message: "
                 + XMLA_SESSION
@@ -491,7 +462,7 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
                 + XMLA_SESSION_ID
                 + " attribute but no attribute value");
         }
-        return value;
+        return sessionId;
     }
 
     protected void handleSoapBody(
@@ -842,18 +813,26 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
     }
 
     private SessionInfo getSessionInfo(String sessionId) {
-        SessionInfo sessionInfo;
+        if (sessionId == null) {
+            return null;
+        }
+
+        SessionInfo sessionInfo = null;
+
         synchronized (sessionInfos) {
             sessionInfo = sessionInfos.get(sessionId);
         }
+
         if (sessionInfo == null) {
             LOGGER.error(
-                "No login credentials for found for session [" + sessionId
-                + "]");
+                "No login credentials for found for session ["+
+                sessionId + "]");
         } else {
             LOGGER.debug(
-                "Found existing credentials for session id ["
-                + sessionId + "], username=[" + sessionInfo.user + "]");
+                "Found credentials for session id ["
+                + sessionId
+                + "], username=[" + sessionInfo.user
+                + "] in servlet cache");
         }
         return sessionInfo;
     }
@@ -873,30 +852,30 @@ public abstract class DefaultXmlaServlet extends XmlaServlet {
                 // but without a password.)
                 if (password != null && password.length() > 0) {
                     sessionInfo =
-                        new SessionInfo(sessionId, username, password);
+                        new SessionInfo(username, password);
                     sessionInfos.put(sessionId, sessionInfo);
                 }
             } else {
                 // A credentials object was stored against the provided session
                 // ID but the username didn't match, so create a new holder.
-                sessionInfo = new SessionInfo(sessionId, username, password);
+                sessionInfo = new SessionInfo(username, password);
                 sessionInfos.put(sessionId, sessionInfo);
             }
             return sessionInfo;
         }
     }
-
+    /**
+     * Holds authentication credentials of a XMLA session.
+     */
     private static class SessionInfo {
-        final String id;
         final String user;
         final String password;
 
-        public SessionInfo(String id, String user, String password) {
-            this.id = id;
+        public SessionInfo(String user, String password)
+        {
             this.user = user;
             this.password = password;
         }
     }
 }
-
 // End DefaultXmlaServlet.java

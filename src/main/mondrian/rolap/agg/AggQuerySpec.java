@@ -14,8 +14,10 @@ package mondrian.rolap.agg;
 
 import mondrian.rolap.RolapStar;
 import mondrian.rolap.StarColumnPredicate;
+import mondrian.rolap.SqlStatement.Type;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
 
@@ -107,10 +109,10 @@ class AggQuerySpec {
         return segment0.axes[i].getPredicate();
     }
 
-    public String generateSqlQuery() {
+    public Pair<String, List<Type>> generateSqlQuery() {
         SqlQuery sqlQuery = newSqlQuery();
         generateSql(sqlQuery);
-        return sqlQuery.toString();
+        return sqlQuery.toSqlAndTypes();
     }
 
     private void addGroupingSets(SqlQuery sqlQuery) {
@@ -167,17 +169,19 @@ class AggQuerySpec {
 
             // some DB2 (AS400) versions throw an error, if a column alias is
             // there and *not* used in a subsequent order by/group by
-            final String alias;
+            final String alias0;
             switch (sqlQuery.getDialect().getDatabaseProduct()) {
             case DB2_AS400:
             case DB2_OLD_AS400:
-                alias = sqlQuery.addSelect(expr, null, null);
+                alias0 = null;
                 break;
             default:
-                alias = sqlQuery.addSelect(expr, null, getColumnAlias(i));
+                alias0 = getColumnAlias(i);
                 break;
             }
 
+            final String alias =
+                sqlQuery.addSelect(expr, column.getInternalType(), alias0);
             if (rollup) {
                 sqlQuery.addGroupBy(expr, alias);
             }

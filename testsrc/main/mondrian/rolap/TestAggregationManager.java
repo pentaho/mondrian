@@ -896,6 +896,9 @@ public class TestAggregationManager extends BatchTestCase {
         {
             return;
         }
+        if (!(MondrianProperties.instance().EnableNativeCrossJoin.get())) {
+            return;
+        }
         SqlPattern[] patterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS,
@@ -916,7 +919,7 @@ public class TestAggregationManager extends BatchTestCase {
                 + "where `agg_c_14_sales_fact_1997`.`the_year` = 1998 "
                 + "and `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id` "
                 + "group by `store`.`store_country` "
-                + "order by ISNULL(`store`.`store_country`), `store`.`store_country` ASC",
+                + "order by ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC",
                 26)};
 
         assertQuerySql(
@@ -1232,6 +1235,9 @@ public class TestAggregationManager extends BatchTestCase {
         {
             return;
         }
+        if (!(MondrianProperties.instance().EnableNativeCrossJoin.get())) {
+            return;
+        }
         TestContext.instance().flushSchemaCache();
 
         String cube = "<Cube name=\"Sales_Prod_Ord\">\n"
@@ -1246,7 +1252,7 @@ public class TestAggregationManager extends BatchTestCase {
         + "          uniqueMembers=\"true\"/>\n"
         + "      <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
         + "          uniqueMembers=\"false\"/>\n"
-        + "      <Level name=\"Product Category\" table=\"product_class\" captionColumn=\"product_department\" column=\"product_category\"\n"
+        + "      <Level name=\"Product Category\" table=\"product_class\" captionColumn=\"product_family\" column=\"product_category\"\n"
         + "          uniqueMembers=\"false\"/>\n"
         + "      <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
         + "          uniqueMembers=\"false\"/>\n"
@@ -1284,48 +1290,11 @@ public class TestAggregationManager extends BatchTestCase {
         // first check that the sql is generated correctly
 
         SqlPattern[] patterns = {
-                new SqlPattern(
-                    ACCESS_MYSQL,
-                    "select "
-                    + "`product_class`.`product_family` as `c0`, "
-                    + "`product_class`.`product_department` as `c1`, "
-                    + "`product_class`.`product_category` as `c2`, "
-                    + "`product_class`.`product_department` as `c3`, "
-                    + "`agg_g_ms_pcat_sales_fact_1997`.`gender` as `c4` "
-                    + "from "
-                    + "`agg_g_ms_pcat_sales_fact_1997` as "
-                    + "`agg_g_ms_pcat_sales_fact_1997`, "
-                    + "`product_class` as `product_class` "
-                    + "where "
-                    + "`product_class`.`product_family` = "
-                    + "`agg_g_ms_pcat_sales_fact_1997`.`product_family` "
-                    + "and `product_class`.`product_department` = "
-                    + "`agg_g_ms_pcat_sales_fact_1997`.`product_department` "
-                    + "and `product_class`.`product_category` = "
-                    + "`agg_g_ms_pcat_sales_fact_1997`.`product_category` "
-                    + "and (`agg_g_ms_pcat_sales_fact_1997`.`product_category`"
-                    + " = 'Meat' "
-                    + "and "
-                    + "`agg_g_ms_pcat_sales_fact_1997`.`product_department`"
-                    + " = 'Deli' "
-                    + "and `agg_g_ms_pcat_sales_fact_1997`.`product_family`"
-                    + " = 'Food') "
-                    + "and (`agg_g_ms_pcat_sales_fact_1997`.`gender` = 'M') "
-                    + "group by "
-                    + "`product_class`.`product_family`, "
-                    + "`product_class`.`product_department`, "
-                    + "`product_class`.`product_category`, "
-                    + "`agg_g_ms_pcat_sales_fact_1997`.`gender` "
-                    + "order by ISNULL(`product_class`.`product_family`), "
-                    + "`product_class`.`product_family` ASC, "
-                    + "ISNULL(`product_class`.`product_department`), "
-                    + "`product_class`.`product_department` ASC, "
-                    + "ISNULL(`product_class`.`product_category`), "
-                    + "`product_class`.`product_category` ASC, "
-                    + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), "
-                    + "`agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
-                    null)
-            };
+            new SqlPattern(
+                ACCESS_MYSQL,
+                "select `agg_g_ms_pcat_sales_fact_1997`.`product_family` as `c0`, `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c1`, `product_class`.`product_category` as `c2`, `product_class`.`product_family` as `c3`, `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c4` from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997`, `product_class` as `product_class` where `product_class`.`product_category` = `agg_g_ms_pcat_sales_fact_1997`.`product_category` and (`agg_g_ms_pcat_sales_fact_1997`.`product_category` = 'Meat' and `agg_g_ms_pcat_sales_fact_1997`.`product_department` = 'Deli' and `agg_g_ms_pcat_sales_fact_1997`.`product_family` = 'Food') and (`agg_g_ms_pcat_sales_fact_1997`.`gender` = 'M') group by `agg_g_ms_pcat_sales_fact_1997`.`product_family`, `agg_g_ms_pcat_sales_fact_1997`.`product_department`, `product_class`.`product_category`, `product_class`.`product_family`, `agg_g_ms_pcat_sales_fact_1997`.`gender` order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_family`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_family` ASC, ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`product_department`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`product_department` ASC, ISNULL(`product_class`.`product_category`) ASC, `product_class`.`product_category` ASC, ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
+                null)
+        };
 
         assertQuerySqlOrNot(
             testContext, query, patterns, false, false, false);
@@ -1341,12 +1310,12 @@ public class TestAggregationManager extends BatchTestCase {
             + "Row #0: 4,705\n");
 
         Result result = testContext.executeQuery(query);
-        // this verifies that the caption for meat is deli
+        // this verifies that the caption for meat is Food
         assertEquals(
             "Meat",
             result.getAxes()[1].getPositions().get(0).get(0).getName());
         assertEquals(
-            "Deli",
+            "Food",
             result.getAxes()[1].getPositions().get(0).get(0).getCaption());
 
         // Test children
@@ -1374,7 +1343,9 @@ public class TestAggregationManager extends BatchTestCase {
         {
             return;
         }
-
+        if (!(MondrianProperties.instance().EnableNativeCrossJoin.get())) {
+            return;
+        }
         // flush cache, to be sure sql is executed
         TestContext.instance().flushSchemaCache();
 
@@ -1405,9 +1376,9 @@ public class TestAggregationManager extends BatchTestCase {
                 + "`agg_g_ms_pcat_sales_fact_1997`.`gender`, "
                 + "`agg_g_ms_pcat_sales_fact_1997`.`marital_status` "
                 + "order by "
-                + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), "
+                + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, "
                 + "`agg_g_ms_pcat_sales_fact_1997`.`gender` ASC, "
-                + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`marital_status`), "
+                + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`marital_status`) ASC, "
                 + "`agg_g_ms_pcat_sales_fact_1997`.`marital_status` ASC",
                 null)
         };
@@ -1449,9 +1420,9 @@ public class TestAggregationManager extends BatchTestCase {
                 + "group by "
                 + "`store`.`store_country`, `store`.`store_state` "
                 + "order by "
-                + "ISNULL(`store`.`store_country`), "
+                + "ISNULL(`store`.`store_country`) ASC, "
                 + "`store`.`store_country` ASC, "
-                + "ISNULL(`store`.`store_state`), "
+                + "ISNULL(`store`.`store_state`) ASC, "
                 + "`store`.`store_state` ASC",
                 null)
         };
@@ -1483,7 +1454,9 @@ public class TestAggregationManager extends BatchTestCase {
         {
             return;
         }
-
+        if (!(MondrianProperties.instance().EnableNativeCrossJoin.get())) {
+            return;
+        }
         // flush cache to be sure sql is executed
         TestContext.instance().flushSchemaCache();
 
@@ -1496,7 +1469,7 @@ public class TestAggregationManager extends BatchTestCase {
                 + "as `agg_g_ms_pcat_sales_fact_1997` "
                 + "group by "
                 + "`agg_g_ms_pcat_sales_fact_1997`.`gender`"
-                + " order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`), `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
+                + " order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
                 null)
         };
 

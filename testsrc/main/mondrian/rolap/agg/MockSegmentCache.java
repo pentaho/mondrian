@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 import mondrian.olap.Util;
+import mondrian.rolap.agg.SegmentHeader.ConstrainedColumn;
 import mondrian.spi.SegmentCache;
 
 /**
@@ -29,6 +30,8 @@ import mondrian.spi.SegmentCache;
 public class MockSegmentCache implements SegmentCache {
     private static final Map<SegmentHeader, SegmentBody> cache =
         new ConcurrentHashMap<SegmentHeader, SegmentBody>();
+
+    private final static int maxElements = 100;
 
     /**
      * Executor for the tests. Thread-factory ensures that thread does not
@@ -101,6 +104,11 @@ public class MockSegmentCache implements SegmentCache {
             new Callable<Boolean>() {
                 public Boolean call() throws Exception {
                     cache.put(header, body);
+                    if (cache.size() > maxElements) {
+                        // Cache is full. pop one out at random.
+                        cache.remove(
+                            Math.floor(maxElements * Math.random()));
+                    }
                     return true;
                 }
             });
@@ -120,6 +128,30 @@ public class MockSegmentCache implements SegmentCache {
             new Callable<Boolean>() {
                 public Boolean call() throws Exception {
                     cache.remove(header);
+                    return true;
+                }
+            });
+    }
+
+    public Future<Boolean> flush(final ConstrainedColumn[] region) {
+        return executor.submit(
+            new Callable<Boolean>() {
+                public Boolean call() throws Exception {
+                    final Set<SegmentHeader> toEvict =
+                        new HashSet<SegmentHeader>();
+                    for (SegmentHeader sh : cache.keySet()) {
+                        final List<ConstrainedColumn> cc2 =
+                            Arrays.asList(region);
+                        for (ConstrainedColumn cc : region) {
+                            if (cc2.contains(cc.getColumnExpression())) {
+                                // Must flush.
+                                toEvict.add(sh);
+                            }
+                        }
+                    }
+                    for (SegmentHeader sh : toEvict) {
+                        cache.remove(sh);
+                    }
                     return true;
                 }
             });

@@ -642,8 +642,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         final Role role;
         final RolapConnection connection1 = getMondrianConnection();
         if (roleName == null) {
-            role = connection1.getSchema()
-                .getInternalConnection().getRole();
+            role = Util.createRootRole(connection1.getSchema());
             assert role != null;
         } else {
             role = connection1.getSchema().lookupRole(roleName);

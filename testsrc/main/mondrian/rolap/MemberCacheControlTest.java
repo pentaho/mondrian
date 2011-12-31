@@ -427,12 +427,6 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                 caMember.getLevel().getChildLevel(),
                 "Berkeley",
                 null);
-        final RolapMember store987Member =
-            (RolapMember) hierarchy.createMember(
-                berkeleyMember,
-                berkeleyMember.getLevel().getChildLevel(),
-                "Store 987",
-                null);
         final RolapBaseCubeMeasure unitSalesCubeMember =
             (RolapBaseCubeMeasure) findMember(
                 tc, "Sales", "Measures", "Unit Sales");
@@ -446,6 +440,59 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                 yearCubeMember
             };
 
+        tc.assertQueryReturns(
+            "select {[Retail].[City].Members} on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Retail].[BC].[Vancouver]}\n"
+            + "{[Retail].[BC].[Victoria]}\n"
+            + "{[Retail].[CA].[Alameda]}\n"
+            + "{[Retail].[CA].[Beverly Hills]}\n"
+            + "{[Retail].[CA].[Los Angeles]}\n"
+            + "{[Retail].[CA].[San Diego]}\n"
+            + "{[Retail].[CA].[San Francisco]}\n"
+            + "{[Retail].[DF].[Mexico City]}\n"
+            + "{[Retail].[DF].[San Andres]}\n"
+            + "{[Retail].[Guerrero].[Acapulco]}\n"
+            + "{[Retail].[Jalisco].[Guadalajara]}\n"
+            + "{[Retail].[OR].[Portland]}\n"
+            + "{[Retail].[OR].[Salem]}\n"
+            + "{[Retail].[Veracruz].[Orizaba]}\n"
+            + "{[Retail].[WA].[Bellingham]}\n"
+            + "{[Retail].[WA].[Bremerton]}\n"
+            + "{[Retail].[WA].[Seattle]}\n"
+            + "{[Retail].[WA].[Spokane]}\n"
+            + "{[Retail].[WA].[Tacoma]}\n"
+            + "{[Retail].[WA].[Walla Walla]}\n"
+            + "{[Retail].[WA].[Yakima]}\n"
+            + "{[Retail].[Yucatan].[Merida]}\n"
+            + "{[Retail].[Zacatecas].[Camacho]}\n"
+            + "{[Retail].[Zacatecas].[Hidalgo]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 21,333\n"
+            + "Row #0: 25,663\n"
+            + "Row #0: 25,635\n"
+            + "Row #0: 2,117\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 26,079\n"
+            + "Row #0: 41,580\n"
+            + "Row #0: \n"
+            + "Row #0: 2,237\n"
+            + "Row #0: 24,576\n"
+            + "Row #0: 25,011\n"
+            + "Row #0: 23,591\n"
+            + "Row #0: 35,257\n"
+            + "Row #0: 2,203\n"
+            + "Row #0: 11,491\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n");
         tc.assertAxisReturns(
             "[Retail].[CA].Children",
             "[Retail].[CA].[Alameda]\n"
@@ -469,17 +516,10 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                 .getCellFromCache(
                     AggregationManager.makeRequest(cacheRegionMembers)));
 
-        // Now tell the cache that [CA].[Berkeley] and
-        // [CA].[Berkeley].[Store 987] are new.
+        // Now tell the cache that [CA].[Berkeley] is new
         final CacheControl.MemberEditCommand command =
-            cc.createCompoundCommand(
-                cc.createAddCommand(berkeleyMember),
-                cc.createAddCommand(store987Member));
+            cc.createAddCommand(berkeleyMember);
         cc.execute(command);
-
-        final List<RolapMember> berkeleyChildren =
-            memberCache.getChildrenFromCache(berkeleyMember, null);
-        assertEquals(1, berkeleyChildren.size());
 
         // test that cells have been removed
         assertNull(
@@ -494,9 +534,62 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             + "[Retail].[CA].[San Diego]\n"
             + "[Retail].[CA].[San Francisco]\n"
             + "[Retail].[CA].[Berkeley]");
-        tc.assertAxisReturns(
-            "[Retail].[CA].[Berkeley].Children",
-            "[Retail].[CA].[Berkeley].[Store 987]");
+
+        tc.assertQueryReturns(
+            "select {[Retail].[City].Members} on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Retail].[BC].[Vancouver]}\n"
+            + "{[Retail].[BC].[Victoria]}\n"
+            + "{[Retail].[CA].[Alameda]}\n"
+            + "{[Retail].[CA].[Berkeley]}\n"
+            + "{[Retail].[CA].[Beverly Hills]}\n"
+            + "{[Retail].[CA].[Los Angeles]}\n"
+            + "{[Retail].[CA].[San Diego]}\n"
+            + "{[Retail].[CA].[San Francisco]}\n"
+            + "{[Retail].[DF].[Mexico City]}\n"
+            + "{[Retail].[DF].[San Andres]}\n"
+            + "{[Retail].[Guerrero].[Acapulco]}\n"
+            + "{[Retail].[Jalisco].[Guadalajara]}\n"
+            + "{[Retail].[OR].[Portland]}\n"
+            + "{[Retail].[OR].[Salem]}\n"
+            + "{[Retail].[Veracruz].[Orizaba]}\n"
+            + "{[Retail].[WA].[Bellingham]}\n"
+            + "{[Retail].[WA].[Bremerton]}\n"
+            + "{[Retail].[WA].[Seattle]}\n"
+            + "{[Retail].[WA].[Spokane]}\n"
+            + "{[Retail].[WA].[Tacoma]}\n"
+            + "{[Retail].[WA].[Walla Walla]}\n"
+            + "{[Retail].[WA].[Yakima]}\n"
+            + "{[Retail].[Yucatan].[Merida]}\n"
+            + "{[Retail].[Zacatecas].[Camacho]}\n"
+            + "{[Retail].[Zacatecas].[Hidalgo]}\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 21,333\n"
+            + "Row #0: 25,663\n"
+            + "Row #0: 25,635\n"
+            + "Row #0: 2,117\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 26,079\n"
+            + "Row #0: 41,580\n"
+            + "Row #0: \n"
+            + "Row #0: 2,237\n"
+            + "Row #0: 24,576\n"
+            + "Row #0: 25,011\n"
+            + "Row #0: 23,591\n"
+            + "Row #0: 35,257\n"
+            + "Row #0: 2,203\n"
+            + "Row #0: 11,491\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: \n");
 
         tc.assertQueryReturns(
             "select [Retail].Children on 0 from [Sales]",
@@ -734,10 +827,10 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         try {
             cc.execute(command);
             fail("Should have failed due to improper level");
-        } catch (IllegalArgumentException e) {
+        } catch (MondrianException e) {
             assertEquals(
                 "new parent belongs to different level than old",
-                e.getMessage());
+                e.getCause().getMessage());
         }
 
         // The list of SF children should still contain 1 element

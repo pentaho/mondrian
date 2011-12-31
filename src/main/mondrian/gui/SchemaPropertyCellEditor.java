@@ -364,6 +364,18 @@ public class SchemaPropertyCellEditor
             listEditor.setSelectedItem((String) value);
             activeEditor = listEditor;
 
+        } else if (targetClassz == MondrianGuiDef.Level.class
+            && propertyName.equals("internalType"))
+        {
+            listEditor.setEditable(false);
+            listEditor.setToolTipText(null);
+            listEditor.removeActionListener(al);
+            listEditor.setModel(
+                new DefaultComboBoxModel(
+                    MondrianGuiDef.Level._internalType_values));
+            listEditor.setSelectedItem((String) value);
+            activeEditor = listEditor;
+
         } else if (targetClassz == MondrianGuiDef.Dimension.class
                    && propertyName.equals("type"))
         {
@@ -393,8 +405,8 @@ public class SchemaPropertyCellEditor
             activeEditor = listEditor;
 
         } else if ((tableModel.target instanceof MondrianGuiDef.Grant
-                    || tableModel.target instanceof MondrianGuiDef.MemberGrant)
-                   && propertyName.equals("access"))
+            || tableModel.target instanceof MondrianGuiDef.MemberGrant)
+            && propertyName.equals("access"))
         {
             listEditor.setEditable(false);
             listEditor.setToolTipText(null);
@@ -402,22 +414,26 @@ public class SchemaPropertyCellEditor
 
             ComboBoxModel cAccess =
                 new DefaultComboBoxModel(
-                    MondrianGuiDef.SchemaGrant._access_values);
+                    new String[]{"all", "none"});
 
             if (targetClassz == MondrianGuiDef.SchemaGrant.class) {
                 cAccess = new DefaultComboBoxModel(
                     new String[]{
-                        "all", "none", "all_dimensions"
+                        "all", "custom", "none", "all_dimensions"
                     });
             } else if (targetClassz == MondrianGuiDef.CubeGrant.class
                        || targetClassz == MondrianGuiDef.DimensionGrant.class
                        || targetClassz == MondrianGuiDef.MemberGrant.class)
             {
-                cAccess = new DefaultComboBoxModel(new String[]{"all", "none"});
-            } else if (targetClassz == MondrianGuiDef.HierarchyGrant.class) {
+                cAccess =
+                    new DefaultComboBoxModel(
+                        new String[]{"all", "custom", "none"});
+            } else if (targetClassz == MondrianGuiDef.HierarchyGrant.class
+                || targetClassz == MondrianGuiDef.DimensionGrant.class)
+            {
                 cAccess = new DefaultComboBoxModel(
                     new String[]{
-                        "all", "none", "custom"
+                        "all", "custom", "none"
                     });
             }
             listEditor.setModel(cAccess);
@@ -886,6 +902,21 @@ public class SchemaPropertyCellEditor
                 new PropertyTableModel(
                     workbench,
                     ((MondrianGuiDef.OrdinalExpression) value).expressions[0],
+                    SchemaExplorer.DEF_SQL);
+            ptm.setParentTarget(((PropertyTableModel) table.getModel()).target);
+            tableEditor.setModel(ptm);
+            activeEditor = tableEditor;
+        } else if (value.getClass() == MondrianGuiDef.CaptionExpression.class) {
+            SchemaPropertyCellEditor spce =
+                new SchemaPropertyCellEditor(workbench);
+            tableEditor.setDefaultEditor(Object.class, spce);
+            SchemaPropertyCellRenderer spcr =
+                new SchemaPropertyCellRenderer(workbench);
+            tableEditor.setDefaultRenderer(Object.class, spcr);
+            PropertyTableModel ptm =
+                new PropertyTableModel(
+                    workbench,
+                    ((MondrianGuiDef.CaptionExpression) value).expressions[0],
                     SchemaExplorer.DEF_SQL);
             ptm.setParentTarget(((PropertyTableModel) table.getModel()).target);
             tableEditor.setModel(ptm);

@@ -134,7 +134,7 @@ class SqlMemberSource
                     boolean isEqual = true;
                     for (int i = 0; i < nColumns; i++) {
                         String colStr = resultSet.getString(i + 1);
-                        if (!colStr.equals(colStrings[i])) {
+                        if (!Util.equals(colStr, colStrings[i])) {
                             isEqual = false;
                         }
                         colStrings[i] = colStr;
@@ -189,13 +189,13 @@ class SqlMemberSource
         final RolapSchema.SqlQueryBuilder queryBuilder =
             new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
         if (!sqlQuery.getDialect().allowsFromQuery()) {
-            StringBuilder columnList = new StringBuilder();
+            List<String> columnList = new ArrayList<String>();
             int columnCount = 0;
             for (RolapSchema.PhysColumn column : attribute.keyList) {
                 if (columnCount > 0) {
                     if (sqlQuery.getDialect().allowsCompoundCountDistinct()) {
-                        columnList.append(", ");
-                    } else {
+                        // no op.
+                    } else if (true) {
                         // for databases where both SELECT-in-FROM and
                         // COUNT DISTINCT do not work, we do not
                         // generate any count and do the count
@@ -213,16 +213,30 @@ class SqlMemberSource
                 {
                     keyExp = "convert(varchar, " + columnList + ")";
                 }
-                columnList.append(keyExp);
+                columnList.add(keyExp);
+
                 ++columnCount;
             }
             if (mustCount[0]) {
-                final String str = columnList.toString();
-                sqlQuery.addSelect(str, null);
-                sqlQuery.addOrderBy(str, true, false, true);
+                for (String colDef : columnList) {
+                    final String exp =
+                        sqlQuery.getDialect().generateCountExpression(colDef);
+                    sqlQuery.addSelect(exp, null);
+                    sqlQuery.addOrderBy(exp, true, false, true);
+                }
             } else {
+                int i = 0;
+                StringBuilder sb = new StringBuilder();
+                for (String colDef : columnList) {
+                    if (i > 0) {
+                        sb.append(", ");
+                    }
+                    sb.append(
+                        sqlQuery.getDialect()
+                            .generateCountExpression(colDef));
+                }
                 sqlQuery.addSelect(
-                    "count(DISTINCT " + columnList + ")", null);
+                    "count(DISTINCT " + sb.toString() + ")", null);
             }
             return sqlQuery.toString();
 
@@ -653,6 +667,7 @@ class SqlMemberSource
             queryBuilder.addToFrom(exp);
             final String s = exp.toSql();
             int ordinal = layoutBuilder.lookup(s);
+
             // Some dialects allow us to eliminate properties from the
             // group by that are functionally dependent on the level value
             final Sgo sgo;

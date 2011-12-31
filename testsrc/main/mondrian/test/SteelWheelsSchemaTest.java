@@ -90,7 +90,8 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #0: 692\n");
 
         testContext.assertQueryReturns(
-            "select [Markets].[Territory].Members on 0 from [SteelWheelsSales]",
+            "select [Markets].[Territory].Members on 0 from "
+            + "[SteelWheelsSales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -162,10 +163,12 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
         checkCellZero(
             testContext,
             "With \n"
-            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Sales]', FORMAT_STRING = '#,###', SOLVE_ORDER=400\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures]"
+            + ".[Sales]', FORMAT_STRING = '#,###', SOLVE_ORDER=400\n"
             + "Select\n"
             + " {[Measures].[*FORMATTED_MEASURE_0]} on columns,"
-            + " [Product].[All Products] * [Customers].[All Customers] on rows\n"
+            + " [Product].[All Products] * [Customers].[All Customers] on "
+            + "rows\n"
             + "From [SteelWheelsSales]");
     }
 
@@ -180,18 +183,20 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
      * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-756">
      * MONDRIAN-756, "Error in RolapResult.replaceNonAllMembers leads to
      * NPE"</a>.
+     *
+     * @see #testBugMondrian805() duplicate bug MONDRIAN-805
      */
     public void testBugMondrian756() {
         TestContext testContext0 = getTestContext();
+        if (!testContext0.databaseIsValid()) {
+            return;
+        }
         final Util.PropertyList propertyList =
             testContext0.getConnectionProperties().clone();
         propertyList.put(
             RolapConnectionProperties.DynamicSchemaProcessor.name(),
             Mondrian756SchemaProcessor.class.getName());
         TestContext testContext = testContext0.withProperties(propertyList);
-        if (!testContext.databaseIsValid()) {
-            return;
-        }
         testContext.assertQueryReturns(
             "select NON EMPTY {[Measures].[Quantity]} ON COLUMNS,\n"
             + "NON EMPTY {[Markets].[APAC]} ON ROWS\n"
@@ -200,10 +205,7 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             "Axis #0:\n"
             + "{[Time].[Time].[2004]}\n"
             + "Axis #1:\n"
-            + "{[Measures].[Quantity]}\n"
-            + "Axis #2:\n"
-            + "{[Markets].[APAC]}\n"
-            + "Row #0: 5,938\n");
+            + "Axis #2:\n");
     }
 
     public static class Mondrian756SchemaProcessor
@@ -219,6 +221,84 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             return Util.replace(
                 schema, " hasAll=\"true\"", " hasAll=\"false\"");
         }
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-756">
+     * MONDRIAN-756, "Error in RolapResult.replaceNonAllMembers leads to
+     * NPE"</a>.
+     *
+     * @see #testBugMondrian805() duplicate bug MONDRIAN-805
+     */
+    public void testBugMondrian756b() {
+        final TestContext testContext0 = getTestContext();
+        if (!testContext0.databaseIsValid()) {
+            return;
+        }
+        String schema = testContext0.getRawSchema()
+            .replaceAll(
+                " hasAll=\"true\"",
+                " hasAll=\"false\"");
+        final TestContext testContext = testContext0.withSchema(schema);
+        testContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Quantity]} ON COLUMNS,\n"
+            + "NON EMPTY {[Markets].[APAC]} ON ROWS\n"
+            + "from [SteelWheelsSales]\n"
+            + "where [Time].[2004]",
+            "Axis #0:\n"
+            + "{[Time].[2004]}\n"
+            + "Axis #1:\n"
+            + "Axis #2:\n");
+    }
+
+    /**
+     * Test case for
+     * bug <a href="http://jira.pentaho.com/browse/MONDRIAN-805">MONDRIAN-805,
+     * "Two dimensions with hasAll=false fail"</a>.
+     */
+    public void testBugMondrian805() {
+        final TestContext testContext0 = getTestContext();
+        if (!testContext0.databaseIsValid()) {
+            return;
+        }
+        String schema = testContext0.getRawSchema()
+            .replaceAll(
+                "<Hierarchy hasAll=\"true\" allMemberName=\"All Markets\" ",
+                "<Hierarchy hasAll=\"false\" allMemberName=\"All Markets\" ")
+            .replaceAll(
+                "<Hierarchy hasAll=\"true\" allMemberName=\"All Status Types\" ",
+                "<Hierarchy hasAll=\"false\" allMemberName=\"All Status Types\" ");
+        final TestContext testContext = testContext0.withSchema(schema);
+        testContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Quantity]} ON COLUMNS, \n"
+            + "  NON EMPTY {([Markets].[APAC], [Customers].[All Customers], "
+            + "[Product].[All Products], [Time].[All Years])} ON ROWS \n"
+            + "from [SteelWheelsSales] \n"
+            + "WHERE [Order Status].[Cancelled]",
+            "Axis #0:\n"
+            + "{[Order Status].[Cancelled]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Quantity]}\n"
+            + "Axis #2:\n"
+            + "{[Markets].[APAC], [Customers].[All Customers], [Product].[All Products], [Time].[All Years]}\n"
+            + "Row #0: 596\n");
+
+        // same query, pivoted
+        testContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Quantity]} ON COLUMNS, \n"
+            + "  NON EMPTY {([Customers].[All Customers], "
+            + "[Product].[All Products], "
+            + "[Time].[All Years], [Order Status].[Cancelled])} ON ROWS \n"
+            + "from [SteelWheelsSales] \n"
+            + "where [Markets].[APAC]",
+            "Axis #0:\n"
+            + "{[Markets].[APAC]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Quantity]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[All Customers], [Product].[All Products], "
+            + "[Time].[All Years], [Order Status].[Cancelled]}\n"
+            + "Row #0: 596\n");
     }
 
     public void testMondrianBug476_770_957() throws Exception {
@@ -420,6 +500,58 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #4: 0\n"
             + "Row #5: 0\n"
             + "Row #6: 0\n");
+    }
+
+    /**
+     * This tests MONDRIAN-626. A Parameter type of date or timestamp
+     * was causing an exception because those types were not implemented
+     * correctly.
+     */
+    public void testPropertyWithParameterOfTimestampType() throws Exception {
+        final TestContext testContext = getTestContext();
+        if (!testContext.databaseIsValid()) {
+            return;
+        }
+        TestContext context =
+            createContext(
+                getTestContext(),
+                "<Schema name=\"FooBar\">\n"
+                + "    <Cube name=\"Foo\">\n"
+                + "        <Table name=\"orderfact\"></Table>\n"
+                + "        <Dimension foreignKey=\"ORDERNUMBER\" name=\"Orders\">\n"
+                + "            <Hierarchy hasAll=\"true\" allMemberName=\"All Orders\" primaryKey=\"ORDERNUMBER\">\n"
+                + "                <Table name=\"orders\">\n"
+                + "                </Table>\n"
+                + "                <Level name=\"Order\" column=\"ORDERNUMBER\" type=\"Integer\" uniqueMembers=\"true\">\n"
+                + "                    <Property name=\"OrderDate\" column=\"ORDERDATE\" type=\"Timestamp\"/>\n"
+                + "                </Level>\n"
+                + "            </Hierarchy>\n"
+                + "        </Dimension>\n"
+                + "        <Dimension foreignKey=\"CUSTOMERNUMBER\" name=\"Customers\">\n"
+                + "            <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"CUSTOMERNUMBER\">\n"
+                + "                <Table name=\"customer_w_ter\">\n"
+                + "                </Table>\n"
+                + "                <Level name=\"Customer\" column=\"CUSTOMERNAME\" type=\"String\" uniqueMembers=\"true\" levelType=\"Regular\" hideMemberIf=\"Never\">\n"
+                + "                </Level>\n"
+                + "            </Hierarchy>\n"
+                + "        </Dimension>\n"
+                + "        <Measure name=\"Quantity\" column=\"QUANTITYORDERED\" formatString=\"#,###\" aggregator=\"sum\">\n"
+                + "        </Measure>\n"
+                + "        <Measure name=\"Sales\" column=\"TOTALPRICE\" formatString=\"#,###\" aggregator=\"sum\">\n"
+                + "        </Measure>\n"
+                + "    </Cube>\n"
+                + "</Schema>\n");
+        context.assertQueryReturns(
+            "with member [Measures].[Date] as 'Format([Orders].CurrentMember.Properties(\"OrderDate\"), \"yyyy-mm-dd\")'\n"
+            + "select {[Orders].[Order].[10421]} on rows,\n"
+            + "{[Measures].[Date]} on columns from [Foo]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Date]}\n"
+            + "Axis #2:\n"
+            + "{[Orders].[10421]}\n"
+            + "Row #0: 2005-05-29\n");
     }
 }
 

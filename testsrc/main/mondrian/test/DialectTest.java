@@ -181,6 +181,8 @@ public class DialectTest extends TestCase {
                 ".*Syntax error: expected something between the word 'customer_id' and ','\\..*",
                 // netezza
                 "(?s).*ERROR:  Function 'COUNT', number of parameters greater than the maximum \\(1\\).*",
+                // Vertica
+                "ERROR: function count\\(int, int\\) does not exist, or permission is denied for count\\(int, int\\)",
             };
             assertQueryFails(sql, errs);
         }
@@ -405,6 +407,8 @@ public class DialectTest extends TestCase {
                 // Greenplum / Postgres
                 "ERROR: ORDER BY on a UNION/INTERSECT/EXCEPT result must be on "
                 + "one of the result columns.*",
+                // Vectorwise
+                "Parse error in StringBuffer at line 0, column 525\\: \\<missing\\>\\.",
             };
             assertQueryFails(sql, errs);
         }
@@ -468,6 +472,8 @@ public class DialectTest extends TestCase {
                 NEOVIEW_SYNTAX_ERROR,
                 // netezza
                 "(?s).*found \"SETS\" \\(at char 135\\) expecting `EXCEPT' or `FOR' or `INTERSECT' or `ORDER' or `UNION'.*",
+                // Vertica
+                "line 3, There is no such function as \\'grouping\\'\\.",
             };
             assertQueryFails(sql, errs);
         }
@@ -880,6 +886,8 @@ public class DialectTest extends TestCase {
                 // Greenplum
                 "ERROR: column \"time_by_day.the_month\" must appear in the "
                 + "GROUP BY clause or be used in an aggregate function",
+                // Vectorwise
+                "line 1, The columns in the SELECT clause must be contained in the GROUP BY clause\\."
             };
             assertQueryFails(sql, errs);
         }
@@ -908,6 +916,8 @@ public class DialectTest extends TestCase {
             String[] errs = {
                 // mysql
                 "Unknown column 'customer\\.fname' in 'having clause'",
+                // vectorwise
+                "No conversion defined for result data type\\.",
             };
             assertQueryFails(sb.toString(), errs);
         }
@@ -941,6 +951,82 @@ public class DialectTest extends TestCase {
                 dialect.generateRegularExpression(
                     "Foo",
                     "(?i).*\\QBar\\E.*"));
+        }
+    }
+
+    public void testRegularExpressionSqlInjection() throws SQLException {
+        // bug mondrian-983
+        // We know that mysql's dialect can handle this regex
+        boolean couldTranslate =
+            checkRegex("(?i).*\\Qa\"\"\\); window.alert(\"\"woot');\\E.*");
+        switch (getDialect().getDatabaseProduct()) {
+        case MYSQL:
+            assertTrue(couldTranslate);
+            break;
+        }
+
+        // On mysql, this gives error:
+        //   Got error 'repetition-operator operand invalid' from regexp
+        //
+        // Ideally, we would detect that the regex cannot be translated to
+        // SQL (perhaps because it's not a valid java regex). Currently the
+        // database gives an error, and that's better than nothing.
+        Throwable throwable = null;
+        try {
+            couldTranslate =
+                checkRegex(
+                    "\"(?i).*\\Qa\"\"\\); window.alert(\"\"woot');\\E.*\"");
+        } catch (SQLException e) {
+            throwable = e;
+        }
+        switch (getDialect().getDatabaseProduct()) {
+        case MYSQL:
+            assertNotNull(throwable);
+            assertTrue(couldTranslate);
+            assertTrue(
+                throwable.getMessage().contains(
+                    "Got error 'repetition-operator operand invalid' from "
+                    + "regexp"));
+            break;
+        default:
+            // As far as we know, all other databases either handle this regex
+            // just fine or our dialect for that database refuses to translate
+            // the regex to SQL.
+            assertNull(throwable);
+        }
+
+        // Every dialect should refuse to translate an invalid regex.
+        couldTranslate = checkRegex("ab[cd");
+        assertFalse(couldTranslate);
+    }
+
+    /**
+     * Translates a regular expression into SQL and executes the query.
+     * Returns whether the dialect was able to translate the regex.
+     *
+     * @param regex Java regular expression string
+     * @return Whether dialect could translate regex to SQL.
+     * @throws SQLException on error
+     */
+    private boolean checkRegex(String regex) throws SQLException {
+        Dialect dialect = getDialect();
+        final String sqlRegex =
+            dialect.generateRegularExpression(
+                dialect.quoteIdentifier("customer", "fname"),
+                regex);
+        if (sqlRegex != null) {
+            String sql =
+                "select * from "
+                + dialect.quoteIdentifier("customer")
+                + " where "
+                + sqlRegex;
+            final ResultSet resultSet =
+                getConnection().createStatement().executeQuery(sql);
+            assertFalse(resultSet.next());
+            resultSet.close();
+            return true;
+        } else {
+            return false;
         }
     }
 }

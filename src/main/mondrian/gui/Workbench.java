@@ -47,6 +47,7 @@ import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
+import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JEditorPane;
@@ -63,6 +64,7 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.tree.TreePath;
 
 import mondrian.olap.DriverManager;
 import mondrian.olap.MondrianProperties;
@@ -395,7 +397,25 @@ public class Workbench extends javax.swing.JFrame {
             new javax.swing.JMenuItem(new DefaultEditorKit.CopyAction());
         pasteMenuItem =
             new javax.swing.JMenuItem(new DefaultEditorKit.PasteAction());
-        deleteMenuItem = new javax.swing.JMenuItem();
+        deleteMenuItem =
+            new javax.swing.JMenuItem(
+                new AbstractAction(
+                    getResourceConverter().getString(
+                        "workbench.menu.delete", "Delete"))
+                {
+                    public void actionPerformed(ActionEvent e) {
+                        JInternalFrame jf = desktopPane.getSelectedFrame();
+                        if (jf != null && jf.getContentPane()
+                            .getComponent(0) instanceof SchemaExplorer)
+                        {
+                            SchemaExplorer se =
+                                (SchemaExplorer) jf.getContentPane()
+                                    .getComponent(0);
+                            TreePath tpath = se.tree.getSelectionPath();
+                            se.delete(tpath);
+                        }
+                    }
+                });
         aboutMenuItem = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
         viewMenu = new javax.swing.JMenu();
@@ -728,9 +748,6 @@ public class Workbench extends javax.swing.JFrame {
                 "workbench.menu.paste", "Paste"));
         editMenu.add(pasteMenuItem);
 
-        deleteMenuItem.setText(
-            getResourceConverter().getString(
-                "workbench.menu.delete", "Delete"));
         editMenu.add(deleteMenuItem);
 
         menuBar.add(editMenu);

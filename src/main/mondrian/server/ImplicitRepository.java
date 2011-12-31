@@ -64,8 +64,8 @@ public class ImplicitRepository implements Repository {
 
     public OlapConnection getConnection(
         MondrianServer server,
+        String databaseName,
         String catalogName,
-        String schemaName,
         String roleName,
         Properties props)
     {

@@ -205,6 +205,13 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     {
     }
 
+    public void putChildren(
+        final RolapLevel level,
+        final TupleConstraint constraint,
+        final List<RolapMember> children)
+    {
+    }
+
     public RolapMember getLeadMember(RolapMember member, int n) {
         if (n == 0 || member.isNull()) {
             return member;

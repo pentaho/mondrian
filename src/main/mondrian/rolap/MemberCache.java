@@ -139,6 +139,20 @@ interface MemberCache {
         RolapMember member,
         MemberChildrenConstraint constraint,
         List<RolapMember> children);
+
+    /**
+     * Registers that the children of <code>level</code> are
+     * <code>children</code> (a list of {@link RolapMember}s).
+     *
+     * @param level the parent level
+     * @param constraint the condition that was used when the members were
+     *   fetched. May be null for all members (no constraint)
+     * @param children list of children
+     */
+    void putChildren(
+        RolapLevel level,
+        TupleConstraint constraint,
+        List<RolapMember> children);
 }
 
 
