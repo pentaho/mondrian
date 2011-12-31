@@ -32,8 +32,8 @@ public class StarPredicates {
 
             switch (listColumnPredicate.getPredicates().size()) {
             case 0:
-                return new LiteralStarPredicate(
-                    predicate.getConstrainedColumn(), false);
+                return new LiteralColumnPredicate(
+                    predicate.getColumn(), false);
             case 1:
                 return listColumnPredicate.getPredicates().get(0);
             default:
