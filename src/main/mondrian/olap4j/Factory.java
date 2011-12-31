@@ -76,6 +76,15 @@ interface Factory {
         MondrianOlap4jStatement olap4jStatement);
 
     /**
+     * Creates a statement.
+     *
+     * @param olap4jConnection Connection
+     * @return Statement
+     */
+    MondrianOlap4jStatement newStatement(
+        MondrianOlap4jConnection olap4jConnection);
+
+    /**
      * Creates a prepared statement.
      *
      * @param mdx MDX query text

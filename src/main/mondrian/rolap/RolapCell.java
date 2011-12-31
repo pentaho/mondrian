@@ -86,16 +86,7 @@ public class RolapCell implements Cell {
         return (ci.value instanceof Throwable);
     }
 
-    /**
-     * Create an sql query that, when executed, will return the drill through
-     * data for this cell. If the parameter extendedContext is true, then the
-     * query will include all the levels (i.e. columns) of non-constraining
-     * members (i.e. members which are at the "All" level).
-     * If the parameter extendedContext is false, the query will exclude
-     * the levels (columns) of non-constraining members.
-     */
     public String getDrillThroughSQL(boolean extendedContext) {
-        RolapAggregationManager aggMan = AggregationManager.instance();
         final Member[] currentMembers = getMembersForDrillThrough();
         // Create a StarPredicate to represent the compound slicer
         // (if necessary)
@@ -109,17 +100,21 @@ public class RolapCell implements Cell {
         CellRequest cellRequest =
             RolapAggregationManager.makeDrillThroughRequest(
                 currentMembers, extendedContext, result.getCube());
-        return (cellRequest == null)
-            ? null
-            : aggMan.getDrillThroughSql(
-                cellRequest,
-                starPredicateSlicer,
-                false);
+        if (cellRequest == null) {
+            return null;
+        }
+        final RolapConnection connection =
+            result.getExecution().getMondrianStatement()
+                .getMondrianConnection();
+        final RolapAggregationManager aggMgr =
+            connection.getServer().getAggregationManager();
+        return aggMgr.getDrillThroughSql(
+            cellRequest,
+            starPredicateSlicer,
+            false);
     }
 
-
     public int getDrillThroughCount() {
-        RolapAggregationManager aggMan = AggregationManager.instance();
         final Member[] currentMembers = getMembersForDrillThrough();
         // Create a StarPredicate to represent the compound
         // slicer (if necessary)
@@ -136,11 +131,13 @@ public class RolapCell implements Cell {
         if (cellRequest == null) {
             return -1;
         }
-        RolapConnection connection =
+        final RolapConnection connection =
             result.getExecution().getMondrianStatement()
                 .getMondrianConnection();
+        final RolapAggregationManager aggMgr =
+            connection.getServer().getAggregationManager();
         final String sql =
-            aggMan.getDrillThroughSql(
+            aggMgr.getDrillThroughSql(
                 cellRequest,
                 starPredicateSlicer,
                 true);

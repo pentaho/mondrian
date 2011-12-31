@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,8 +14,7 @@ package mondrian.rolap.agg;
 
 import mondrian.rolap.*;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A <code>CellRequest</code> contains the context necessary to get a cell
@@ -115,8 +114,11 @@ public final class CellRequest {
      * <p>Creating CellRequests is one of the top hotspots in Mondrian.
      * Therefore we initialize the map to null, and don't create a map until
      * we add the first entry.
+     *
+     * <p>The map (when not null) is sorted by key, to allow more rapid
+     * comparison with maps of other requests and with existing segments.</p>
      */
-    private Map<BitKey, StarPredicate> compoundPredicateMap = null;
+    private SortedMap<BitKey, StarPredicate> compoundPredicateMap = null;
 
     /**
      * Whether the request is impossible to satisfy. This is set to 'true' if
@@ -219,7 +221,7 @@ public final class CellRequest {
         StarPredicate compoundPredicate)
     {
         if (compoundPredicateMap == null) {
-            compoundPredicateMap = new LinkedHashMap<BitKey, StarPredicate>();
+            compoundPredicateMap = new TreeMap<BitKey, StarPredicate>();
         }
         compoundPredicateMap.put(compoundBitKey, compoundPredicate);
     }
@@ -260,7 +262,7 @@ public final class CellRequest {
      *
      * @return predicate map, or null if empty
      */
-    Map<BitKey, StarPredicate> getCompoundPredicateMap() {
+    SortedMap<BitKey, StarPredicate> getCompoundPredicateMap() {
         return compoundPredicateMap;
     }
 

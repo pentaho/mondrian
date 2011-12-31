@@ -54,6 +54,19 @@ public class SegmentLoader {
             MondrianProperties.instance().RollupAnalyzerNumberThreads.get(),
             "mondrian.rolap.agg.SegmentLoader$ExecutorThread");
 
+    private final AggregationManager aggMgr;
+    private final List<SegmentCacheWorker> segmentCacheWorkers;
+
+    /**
+     * Creates a SegmentLoader.
+     *
+     * @param aggMgr Aggregation manager
+     */
+    public SegmentLoader(AggregationManager aggMgr) {
+        this.aggMgr = aggMgr;
+        this.segmentCacheWorkers = aggMgr.segmentCacheWorkers;
+    }
+
     /**
      * Loads data for all the segments of the GroupingSets. If the grouping sets
      * list contains more than one Grouping Set then data is loaded using the
@@ -182,6 +195,7 @@ public class SegmentLoader {
      * Tries to load the segments from the cache. If a segment
      * can be loaded successfully, it will be removed from the
      * list passed as the groupingSets argument.
+     *
      * @param groupingSets List of segments to lookup.
      * @param pinnedSegments PinSet of segments to keep a hard
      * link to in memory.
@@ -191,22 +205,21 @@ public class SegmentLoader {
         List<StarPredicate> compoundPredicateList,
         RolapAggregationManager.PinSet pinnedSegments)
     {
-        if (!SegmentCacheWorker.isCacheEnabled()) {
-            return;
-        }
-        final List<GroupingSet> gsToRemove =
-            new ArrayList<GroupingSet>();
-        for (GroupingSet groupingSet : groupingSets) {
-            final List<Segment> segmentsToRemove =
-                new ArrayList<Segment>();
+        for (SegmentCacheWorker segmentCacheWorker : segmentCacheWorkers) {
+            final List<GroupingSet> gsToRemove =
+                new ArrayList<GroupingSet>();
+            for (GroupingSet groupingSet : groupingSets) {
+                final List<Segment> segmentsToRemove =
+                    new ArrayList<Segment>();
 
-            for (Segment segment : groupingSet.getSegments()) {
-                final SegmentHeader sh =
-                    SegmentHeader.forSegment(segment, compoundPredicateList);
-
-                if (SegmentCacheWorker.contains(sh)) {
-                    final SegmentBody sb =
-                        SegmentCacheWorker.get(sh);
+                for (Segment segment : groupingSet.getSegments()) {
+                    final SegmentHeader sh =
+                        SegmentHeader.forSegment(
+                            segment, compoundPredicateList);
+                    if (!segmentCacheWorker.contains(sh)) {
+                        continue;
+                    }
+                    final SegmentBody sb = segmentCacheWorker.get(sh);
                     // Make sure to dereference as the cache might have removed
                     // the data between calls to contains() and get().
                     if (sb != null) {
@@ -223,18 +236,19 @@ public class SegmentLoader {
                         segmentsToRemove.add(segment);
                     }
                 }
+                groupingSet.getSegments().removeAll(segmentsToRemove);
+                if (groupingSet.getSegments().size() == 0) {
+                    gsToRemove.add(groupingSet);
+                }
             }
-            groupingSet.getSegments().removeAll(segmentsToRemove);
-            if (groupingSet.getSegments().size() == 0) {
-                gsToRemove.add(groupingSet);
-            }
+            groupingSets.removeAll(gsToRemove);
         }
-        groupingSets.removeAll(gsToRemove);
     }
 
     /**
      * Tries to load segments by performing a rollup operation
      * on pre-existing segments.
+     *
      * @param groupingSets List of segments to lookup.
      * @param pinnedSegments PinSet of segments to keep a hard
      * link to in memory.
@@ -244,157 +258,165 @@ public class SegmentLoader {
         List<StarPredicate> compoundPredicateList,
         RolapAggregationManager.PinSet pinnedSegments)
     {
-        if (!SegmentCacheWorker.isCacheEnabled()) {
-            return;
-        }
-        List<GroupingSet> gsToRemove =
-            new ArrayList<GroupingSet>();
-        for (final GroupingSet groupingSet : groupingSets) {
-            Iterator<Segment> iterator = groupingSet.getSegments().iterator();
-            segLoop:
-            while (iterator.hasNext()) {
-                final Segment segRef = iterator.next();
-                final SegmentHeader headerRef =
-                    SegmentHeader.forSegment(segRef, compoundPredicateList);
-
-                /*
-                 * First step is to build a set of segments which have the
-                 * same dimensionality as the segment we're trying to load.
-                 */
-                final Set<SegmentHeader> matchingSegments =
-                    new HashSet<SegmentHeader>();
-
-                final List<Callable<Boolean>> matchingTasks =
-                    new ArrayList<Callable<Boolean>>();
-                for (final SegmentHeader header
-                        : SegmentCacheWorker.getSegmentHeaders())
-                {
-                    matchingTasks.add(
-                        new Callable<Boolean>() {
-                            public Boolean call() throws Exception {
-                                if (header.isSubset(segRef)) {
-                                    matchingSegments.add(header);
-                                }
-                                return true;
-                            }
-                    });
-                }
-                Util.executeDistributedTasks(
-                    matchingTasks,
-                    executor,
-                    false);
-
-                if (matchingSegments.size() == 0) {
-                    /*
-                     * No rollup is possible as no matching aggregations
-                     * were found.
-                     */
-                    continue segLoop;
-                }
-
-                /*
-                 * For each of the constrained column of the segment
-                 * currently loaded, we will change its predicate to a
-                 * wildcard and see if that matches segments from the
-                 * caches.
-                 */
-
-                // First get a list of all columns that we can turn
-                // into wildcards.
-                Set<ConstrainedColumn> columnsToTurnWildcard =
-                    new LinkedHashSet<ConstrainedColumn>();
-                for (ConstrainedColumn cc
-                    : headerRef.getConstrainedColumns())
-                {
-                    if (cc.values.length > 1
-                        || (cc.values.length == 1 && cc.values[0] != null))
+        for (SegmentCacheWorker segmentCacheWorker : segmentCacheWorkers) {
+            final List<GroupingSet> gsToRemove = new ArrayList<GroupingSet>();
+            for (final GroupingSet groupingSet : groupingSets) {
+                final List<Segment> segmentsToRemove = new ArrayList<Segment>();
+                for (Segment segment : groupingSet.getSegments()) {
+                    if (loadSegmentFromCacheRollup(
+                            compoundPredicateList,
+                            pinnedSegments,
+                            segmentCacheWorker,
+                            segment))
                     {
-                        columnsToTurnWildcard.add(cc);
+                        // Remove this segment from the list of segments to
+                        // load.
+                        segmentsToRemove.add(segment);
                     }
                 }
-
-                if (columnsToTurnWildcard.size() == 0) {
-                    // None of the columns can be turned into a wildcard.
-                    // Cannot rollup this one.
-                    continue segLoop;
+                groupingSet.getSegments().removeAll(segmentsToRemove);
+                if (groupingSet.getSegments().size() == 0) {
+                    gsToRemove.add(groupingSet);
                 }
-
-                if (columnsToTurnWildcard.size() > 8) {
-                    // Trying to do this operation on segments that have
-                    // more than 8 or so constrained columns that we can turn
-                    // into wildcards is pointless as it would generate so many
-                    // combinations that computing all of them would require
-                    // more time than simply getting them from SQL.
-                    continue segLoop;
-                }
-
-                // Now we create a list of all the possible combinations
-                // of columns being turned into wildcards and search if
-                // that matches a segment from the caches. We will analyze the
-                // combinations by distributing the load across threads.
-                List<Callable<SegmentHeader>> comboTasks =
-                    new ArrayList<Callable<SegmentHeader>>();
-                for (final List<ConstrainedColumn> combo
-                    : CombiningGenerator.of(columnsToTurnWildcard))
-                {
-                    if (combo.size() < 1) {
-                        continue;
-                    }
-                    comboTasks.add(
-                        new Callable<SegmentHeader>() {
-                            public SegmentHeader call() throws Exception {
-                                return
-                                    analyzeCombo(
-                                        headerRef,
-                                        combo,
-                                        matchingSegments);
-                            }
-                    });
-                }
-                final SegmentHeader matchingComboHeader =
-                    Util.executeDistributedTasks(
-                        comboTasks,
-                        executor,
-                        true);
-
-                if (matchingComboHeader == null) {
-                    // Nothing matches.
-                    continue segLoop;
-                }
-
-                // A match was found.
-                final SegmentBody sb =
-                    SegmentCacheWorker.get(matchingComboHeader);
-
-                // The segment might have been flushed since. Better
-                // to be sure than sorry.
-                if (sb == null) {
-                    continue segLoop;
-                }
-
-                // Load the axis keys for this segment
-                for (int i = 0; i < segRef.axes.length; i++) {
-                    Aggregation.Axis axis = segRef.axes[i];
-                    axis.loadKeys(
-                        sb.getAxisValueSets()[i],
-                        sb.getNullAxisFlags()[i]);
-                }
-
-                // Create the dataset object for this segment.
-                final SegmentDataset dataSet =
-                    sb.createSegmentDataset(segRef);
-
-                // Set the data object.
-                segRef.setData(dataSet, pinnedSegments);
-
-                // Remove this segment from the list of segments to load.
-                iterator.remove();
             }
-            if (groupingSet.getSegments().size() == 0) {
-                gsToRemove.add(groupingSet);
+            groupingSets.removeAll(gsToRemove);
+        }
+    }
+
+    private boolean loadSegmentFromCacheRollup(
+        List<StarPredicate> compoundPredicateList,
+        RolapAggregationManager.PinSet pinnedSegments,
+        SegmentCacheWorker segmentCacheWorker,
+        final Segment segRef)
+    {
+        final SegmentHeader headerRef =
+            SegmentHeader.forSegment(segRef, compoundPredicateList);
+
+        // First step is to build a set of segments which have the
+        // same dimensionality as the segment we're trying to load.
+        final Set<SegmentHeader> matchingSegments =
+            new HashSet<SegmentHeader>();
+
+        final List<Callable<Boolean>> matchingTasks =
+            new ArrayList<Callable<Boolean>>();
+        for (final SegmentHeader header
+            : segmentCacheWorker.getSegmentHeaders())
+        {
+            matchingTasks.add(
+                new Callable<Boolean>() {
+                    public Boolean call() throws Exception {
+                        if (header.isSubset(segRef)) {
+                            matchingSegments.add(header);
+                        }
+                        return true;
+                    }
+            });
+        }
+        Util.executeDistributedTasks(
+            matchingTasks,
+            executor,
+            false);
+
+        if (matchingSegments.size() == 0) {
+            // No rollup is possible as no matching aggregations
+            // were found.
+            return false;
+        }
+
+        // For each of the constrained column of the segment
+        // currently loaded, we will change its predicate to a
+        // wildcard and see if that matches segments from the
+        // caches.
+
+        // First get a list of all columns that we can turn
+        // into wildcards.
+        Set<ConstrainedColumn> columnsToTurnWildcard =
+            new LinkedHashSet<ConstrainedColumn>();
+        for (ConstrainedColumn cc
+            : headerRef.getConstrainedColumns())
+        {
+            if (cc.values.length > 1
+                || (cc.values.length == 1 && cc.values[0] != null))
+            {
+                columnsToTurnWildcard.add(cc);
             }
         }
-        groupingSets.removeAll(gsToRemove);
+
+        if (columnsToTurnWildcard.size() == 0) {
+            // None of the columns can be turned into a wildcard.
+            // Cannot rollup this one.
+            return false;
+        }
+
+        if (columnsToTurnWildcard.size() > 8) {
+            // Trying to do this operation on segments that have
+            // more than 8 or so constrained columns that we can turn
+            // into wildcards is pointless as it would generate so many
+            // combinations that computing all of them would require
+            // more time than simply getting them from SQL.
+            return false;
+        }
+
+        // Now we create a list of all the possible combinations
+        // of columns being turned into wildcards and search if
+        // that matches a segment from the caches. We will analyze the
+        // combinations by distributing the load across threads.
+        List<Callable<SegmentHeader>> comboTasks =
+            new ArrayList<Callable<SegmentHeader>>();
+        for (final List<ConstrainedColumn> combo
+            : CombiningGenerator.of(columnsToTurnWildcard))
+        {
+            if (combo.size() < 1) {
+                continue;
+            }
+            comboTasks.add(
+                new Callable<SegmentHeader>() {
+                    public SegmentHeader call() throws Exception {
+                        return
+                            analyzeCombo(
+                                headerRef,
+                                combo,
+                                matchingSegments);
+                    }
+            });
+        }
+        final SegmentHeader matchingComboHeader =
+            Util.executeDistributedTasks(
+                comboTasks,
+                executor,
+                true);
+
+        if (matchingComboHeader == null) {
+            // Nothing matches.
+            return false;
+        }
+
+        // A match was found.
+        final SegmentBody sb =
+            segmentCacheWorker.get(matchingComboHeader);
+
+        // The segment might have been flushed since. Better
+        // to be sure than sorry.
+        if (sb == null) {
+            return false;
+        }
+
+        // Load the axis keys for this segment
+        for (int i = 0; i < segRef.axes.length; i++) {
+            Aggregation.Axis axis = segRef.axes[i];
+            axis.loadKeys(
+                sb.getAxisValueSets()[i],
+                sb.getNullAxisFlags()[i]);
+        }
+
+        // Create the dataset object for this segment.
+        final SegmentDataset dataSet =
+            sb.createSegmentDataset(segRef);
+
+        // Set the data object.
+        segRef.setData(dataSet, pinnedSegments);
+
+        return true;
     }
 
     private SegmentHeader analyzeCombo(
@@ -410,7 +432,7 @@ public class SegmentLoader {
                     cc.columnExpression,
                     new Object[] { true }));
         }
-        // Get a header key for that 'theorical' segment.
+        // Get a header key for that 'theoretical' segment.
         SegmentHeader combHeader =
             headerRef.clone(
                 newColValues.toArray(
@@ -436,18 +458,17 @@ public class SegmentLoader {
         SortedSet<Comparable<?>>[] axisValueSets,
         boolean[] nullAxisFlags)
     {
-        if (!SegmentCacheWorker.isCacheEnabled()) {
-            return;
-        }
-        for (final GroupingSet groupingSet : groupingSets) {
-            for (Segment segment : groupingSet.getSegments()) {
-                final SegmentHeader sh =
-                    SegmentHeader.forSegment(segment, compoundPredicates);
-                final SegmentBody sb =
-                    segment.getData().createSegmentBody(
-                        axisValueSets,
-                        nullAxisFlags);
-                SegmentCacheWorker.put(sh, sb);
+        for (SegmentCacheWorker segmentCacheWorker : segmentCacheWorkers) {
+            for (final GroupingSet groupingSet : groupingSets) {
+                for (Segment segment : groupingSet.getSegments()) {
+                    final SegmentHeader sh =
+                        SegmentHeader.forSegment(segment, compoundPredicates);
+                    final SegmentBody sb =
+                        segment.getData().createSegmentBody(
+                            axisValueSets,
+                            nullAxisFlags);
+                    segmentCacheWorker.put(sh, sb);
+                }
             }
         }
     }
@@ -680,7 +701,7 @@ public class SegmentLoader {
     {
         RolapStar star = groupingSetsList.getStar();
         Pair<String, List<SqlStatement.Type>> pair =
-            AggregationManager.instance().generateSql(
+            aggMgr.generateSql(
                 groupingSetsList, compoundPredicateList);
         return RolapUtil.executeQuery(
             star.getDataSource(),

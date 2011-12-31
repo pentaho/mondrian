@@ -9,9 +9,16 @@
 */
 package mondrian.util;
 
+import mondrian.olap.Util;
+import mondrian.resource.MondrianResource;
+
+import org.apache.log4j.Logger;
+
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.util.Random;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.*;
 
 /**
  * Implementation of {@link UtilCompatible} which runs in
@@ -27,6 +34,8 @@ import java.util.Random;
  * @since Feb 5, 2007
  */
 public class UtilCompatibleJdk14 implements UtilCompatible {
+    private final static Logger LOGGER =
+        Logger.getLogger(Util.class);
     private static String previousUuid = "";
     private static final String UUID_BASE =
         Long.toHexString(new Random().nextLong());
@@ -98,6 +107,66 @@ public class UtilCompatibleJdk14 implements UtilCompatible {
 
     public <T> void threadLocalRemove(ThreadLocal<T> threadLocal) {
         // nothing: ThreadLocal.remove() does not exist until JDK 1.5
+    }
+
+    public Util.MemoryInfo getMemoryInfo() {
+        return new Util.MemoryInfo() {
+            public Usage get() {
+                return new Usage() {
+                    public long getUsed() {
+                        return 0;
+                    }
+
+                    public long getCommitted() {
+                        return 0;
+                    }
+
+                    public long getMax() {
+                        return 0;
+                    }
+                };
+            }
+        };
+    }
+
+    public Timer newTimer(String name, boolean isDaemon) {
+        return new Timer(isDaemon);
+    }
+
+    public void cancelAndCloseStatement(Statement stmt) {
+        try {
+            stmt.cancel();
+        } catch (SQLException e) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    MondrianResource.instance()
+                        .ExecutionStatementCleanupException
+                            .ex(e.getMessage(), e),
+                    e);
+            }
+        }
+        try {
+            stmt.close();
+        } catch (SQLException e) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    MondrianResource.instance()
+                        .ExecutionStatementCleanupException
+                            .ex(e.getMessage(), e),
+                    e);
+            }
+        }
+    }
+
+    public <T> Set<T> newIdentityHashSet() {
+        return Util.newIdentityHashSetFake();
+    }
+
+    public <T extends Comparable<T>> int binarySearch(
+        T[] ts, int start, int end, T t)
+    {
+        return Collections.binarySearch(
+            Arrays.asList(ts).subList(start, end), t);
     }
 }
 

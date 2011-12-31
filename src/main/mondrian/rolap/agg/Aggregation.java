@@ -57,7 +57,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class Aggregation {
 
-    private final MondrianServer server;
+    private final AggregationManager aggMgr;
 
     private final List<StarPredicate> compoundPredicateList;
     private final RolapStar star;
@@ -74,7 +74,8 @@ public class Aggregation {
      * this list is not synchronized in the code.  This is the only mutable
      * field in the class.
      */
-    private final List<SoftReference<Segment>> segmentRefs;
+    private final List<SoftReference<Segment>> segmentRefs =
+        new CopyOnWriteArrayList<SoftReference<Segment>>();
 
     /**
      * Timestamp of when the aggregation was created. (We use
@@ -99,30 +100,23 @@ public class Aggregation {
     /**
      * Creates an Aggregation.
      *
-     * @param server Server this aggregation belongs to
+     * @param aggMgr Aggregation manager
      *
      * @param aggregationKey the key specifying the axes, the context and
      *                       the RolapStar for this Aggregation
      */
     public Aggregation(
-        MondrianServer server,
+        AggregationManager aggMgr,
         AggregationKey aggregationKey)
     {
-        this.server = server;
+        this.aggMgr = aggMgr;
         this.compoundPredicateList = aggregationKey.getCompoundPredicateList();
         this.star = aggregationKey.getStar();
         this.constrainedColumnsBitKey =
             aggregationKey.getConstrainedColumnsBitKey();
-        this.segmentRefs = getThreadSafeListImplementation();
         this.maxConstraints =
             MondrianProperties.instance().MaxConstraints.get();
         this.creationTimestamp = new Date();
-    }
-
-    private CopyOnWriteArrayList<SoftReference<Segment>>
-    getThreadSafeListImplementation()
-    {
-        return new CopyOnWriteArrayList<SoftReference<Segment>>();
     }
 
     /**
@@ -183,7 +177,7 @@ public class Aggregation {
             final List<GroupingSet> gsList =
                 new ArrayList<GroupingSet>();
             gsList.add(groupingSet);
-            new SegmentLoader().load(
+            new SegmentLoader(aggMgr).load(
                 cellRequestCount,
                 gsList,
                 pinnedSegments,
@@ -375,6 +369,13 @@ public class Aggregation {
                         true);
             }
         }
+
+        // Now do simple structural optimizations, e.g. convert a list predicate
+        // with one element to a value predicate.
+        for (int i = 0; i < newPredicates.length; i++) {
+            newPredicates[i] = StarPredicates.optimize(newPredicates[i]);
+        }
+
         return newPredicates;
     }
 
@@ -669,8 +670,11 @@ public class Aggregation {
         }
 
         // Flush the external cache regions
-        SegmentCacheWorker.flush(
-            SegmentHeader.forCacheRegion(cacheRegion));
+        for (SegmentCacheWorker segmentCacheWorker : aggMgr.segmentCacheWorkers)
+        {
+            segmentCacheWorker.flush(
+                SegmentHeader.forCacheRegion(cacheRegion));
+        }
 
         // Replace list of segments.
         // FIXME: Synchronize.
@@ -780,6 +784,13 @@ public class Aggregation {
         private final StarColumnPredicate predicate;
 
         /**
+         * Whether predicate is always true.
+         */
+        private final boolean predicateAlwaysTrue;
+
+        private final Set<Object> predicateValues;
+
+        /**
          * Map holding the position of each key value.
          *
          * <p>TODO: Hold keys in a sorted array, then deduce ordinal by doing
@@ -809,7 +820,6 @@ public class Aggregation {
          */
         Axis(RolapStar.Column column, StarColumnPredicate predicate) {
             this(column, predicate, null);
-            assert predicate != null;
         }
 
         /**
@@ -839,6 +849,36 @@ public class Aggregation {
                 }
             }
             this.column = column;
+            this.predicateAlwaysTrue =
+                predicate instanceof LiteralStarPredicate
+                    && ((LiteralStarPredicate) predicate).getValue();
+            this.predicateValues = predicateValueSet(predicate);
+        }
+
+        private static Set<Object> predicateValueSet(
+            StarColumnPredicate predicate)
+        {
+            if (!(predicate instanceof ListColumnPredicate)) {
+                return null;
+            }
+            ListColumnPredicate listColumnPredicate =
+                (ListColumnPredicate) predicate;
+            final List<StarColumnPredicate> predicates =
+                listColumnPredicate.getPredicates();
+            if (predicates.size() < 10) {
+                return null;
+            }
+            final HashSet<Object> set = new HashSet<Object>();
+            for (StarColumnPredicate subPredicate : predicates) {
+                if (subPredicate instanceof ValueColumnPredicate) {
+                    ValueColumnPredicate valueColumnPredicate =
+                        (ValueColumnPredicate) subPredicate;
+                    valueColumnPredicate.values(set);
+                } else {
+                    return null;
+                }
+            }
+            return set;
         }
 
         StarColumnPredicate getPredicate() {
@@ -908,8 +948,12 @@ public class Aggregation {
          * @param key Key
          * @return Whether this axis would contain <code>key</code>
          */
-        boolean contains(Object key) {
-            return predicate.evaluate(key);
+        public final boolean wouldContain(Object key) {
+            return // predicate.evaluate(key);
+                predicateAlwaysTrue
+                   || (predicateValues != null
+                ? predicateValues.contains(key)
+                : predicate.evaluate(key));
         }
 
         /**

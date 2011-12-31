@@ -13,6 +13,8 @@ import mondrian.calc.TupleCollections;
 import mondrian.calc.TupleList;
 import mondrian.calc.impl.*;
 import mondrian.olap.*;
+import mondrian.rolap.RolapConnection;
+import mondrian.server.Locus;
 
 import java.util.*;
 
@@ -171,6 +173,46 @@ public class TupleListTest extends FoodMartTestCase {
             fm.toString());
 
         checkProject(fm);
+    }
+
+    /**
+     * This is a test for MONDRIAN-1040. The DelegatingTupleList.slice()
+     * method was mixing up the column and index variables.
+     */
+    public void testDelegatingTupleListSlice() {
+        // Functional test.
+        assertQueryReturns(
+            "select {[Measures].[Store Sales]} ON COLUMNS, Hierarchize(Except({[Customers].[All Customers], [Customers].[All Customers].Children}, {[Customers].[All Customers]})) ON ROWS from [Sales] ",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[Canada]}\n"
+            + "{[Customers].[Mexico]}\n"
+            + "{[Customers].[USA]}\n"
+            + "Row #0: \n"
+            + "Row #1: \n"
+            + "Row #2: 565,238.13\n");
+        Locus.execute(
+            (RolapConnection)getTestContext().getConnection(),
+            "testDelegatingTupleListSlice",
+            new Locus.Action<Void>() {
+                public Void execute() {
+                    // Unit test
+                    final Member genderFMember = xxx("[Gender].[F]");
+                    final Member storeUsaMember = xxx("[Store].[USA]");
+                    final List<List<Member>> arrayList =
+                        new ArrayList<List<Member>>();
+                    final TupleList fm =
+                        new DelegatingTupleList(2, arrayList);
+                    fm.addTuple(genderFMember, storeUsaMember);
+                    final List<Member> sliced = fm.slice(0);
+                    assertEquals(2, sliced.size());
+                    assertEquals(1, fm.size());
+                    return null;
+                }
+            });
     }
 
     private void checkProject(TupleList fm) {

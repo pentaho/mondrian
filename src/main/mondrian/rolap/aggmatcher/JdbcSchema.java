@@ -357,6 +357,10 @@ public class JdbcSchema {
                 // level
                 public RolapStar.Column rColumn;
 
+                // agg stuff
+                public boolean collapsed = false;
+                public RolapLevel level = null;
+
                 // for subtables
                 public RolapStar.Table rTable;
                 public String rightJoinConditionColumnName;

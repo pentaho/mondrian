@@ -9,8 +9,13 @@
 */
 package mondrian.util;
 
+import mondrian.olap.Util;
+
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.sql.Statement;
+import java.util.Set;
+import java.util.Timer;
 
 /**
  * Interface containing methods which are implemented differently in different
@@ -41,6 +46,13 @@ public interface UtilCompatible {
     String generateUuidString();
 
     /**
+     * Cancels and closes a SQL Statement object. If errors are encountered,
+     * they should be logged under {@link Util}.
+     * @param stmt The statement to close.
+     */
+    void cancelAndCloseStatement(Statement stmt);
+
+    /**
      * Compiles a script to yield a Java interface.
      *
      * @param iface Interface script should implement
@@ -54,7 +66,50 @@ public interface UtilCompatible {
         String script,
         String engineName);
 
+    /**
+     * Removes a thread local from the current thread.
+     *
+     * <p>From JDK 1.5 onwards, calls {@link ThreadLocal#remove()}; before
+     * that, no-ops.</p>
+     *
+     * @param threadLocal Thread local
+     * @param <T> Type
+     */
     <T> void threadLocalRemove(ThreadLocal<T> threadLocal);
+
+    /**
+     * Creates a hash set that, like {@link java.util.IdentityHashMap},
+     * compares keys using identity.
+     *
+     * @param <T> Element type
+     * @return Set
+     */
+    <T> Set<T> newIdentityHashSet();
+
+    /**
+     * As {@link Arrays#binarySearch(Object[], int, int, Object)}, but
+     * available pre-JDK 1.6.
+     */
+    <T extends Comparable<T>> int binarySearch(T[] ts, int start, int end, T t);
+
+    /**
+     * Creates an object from which to get information about system memory
+     * use. From JDK 1.5 onwards, uses
+     * {@link java.lang.management.MemoryPoolMXBean}.
+     *
+     * @return Memory info
+     */
+    Util.MemoryInfo getMemoryInfo();
+
+    /**
+     * Equivalent to {@link Timer#Timer(String, boolean)}.
+     * (Introduced in JDK 1.5.)
+     *
+     * @param name the name of the associated thread
+     * @param isDaemon true if the associated thread should run as a daemon
+     * @return timer
+     */
+    Timer newTimer(String name, boolean isDaemon);
 }
 
 // End UtilCompatible.java

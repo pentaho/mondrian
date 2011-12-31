@@ -13,7 +13,6 @@ import mondrian.tui.XmlaSupport;
 import org.olap4j.driver.xmla.XmlaOlap4jServerInfos;
 import org.olap4j.driver.xmla.proxy.XmlaOlap4jProxy;
 
-import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.*;
 import javax.servlet.Servlet;
@@ -31,8 +30,8 @@ public class MondrianInprocProxy
 {
     private final Map<String, String> catalogNameUrls;
     private final String urlString;
-    private final HashMap<List<String>,WeakReference<Servlet>> servletCache =
-        new HashMap<List<String>, WeakReference<Servlet>>();
+    private final Map<List<String>, Servlet> servletCache =
+        new HashMap<List<String>, Servlet>();
 
     /**
      * Creates and initializes a MondrianInprocProxy.

@@ -1893,12 +1893,21 @@ Revision is $Id$
                 The name of the Dimension Hierarchy level.
             </Doc>
         </Attribute>
+        <Attribute name="collapsed" required="false" type="Boolean" default="true">
+            <Doc>
+                Whether this is a collapsed level. The parents of that level
+                are also present in the aggregation table.
+            </Doc>
+        </Attribute>
         <Code>
             public String getNameAttribute() {
                 return name;
             }
             public String getColumnName() {
                 return column;
+            }
+            public boolean isCollapsed() {
+                return collapsed;
             }
         </Code>
     </Element>

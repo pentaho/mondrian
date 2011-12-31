@@ -70,14 +70,12 @@ public class DelegatingTupleList extends AbstractTupleList
             public Member get(int index) {
                 return list.get(index).get(column);
             }
-
             @Override
             public int size() {
                 return list.size();
             }
-
             public Member set(int index, Member element) {
-                return list.get(column).set(index, element);
+                return list.get(index).set(column, element);
             };
         };
     }

@@ -32,7 +32,7 @@ import java.util.List;
  * @version $Id$
  * @since May 24, 2007
  */
-class MondrianOlap4jStatement
+abstract class MondrianOlap4jStatement
     extends StatementImpl
     implements OlapStatement, mondrian.server.Statement
 {

@@ -11,6 +11,7 @@ package mondrian.tui;
 
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
+import mondrian.server.MondrianServerRegistry;
 import mondrian.server.StringRepositoryContentFinder;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.CatalogLocatorImpl;
@@ -28,8 +29,8 @@ import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import java.io.*;
-import java.lang.ref.WeakReference;
 import java.util.*;
+
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.xml.parsers.ParserConfigurationException;
@@ -659,8 +660,37 @@ public class XmlaSupport {
         throws IOException, ServletException, SAXException
     {
         String requestText = XmlaSupport.readFile(file);
+        return
+            processSoapXmla(
+                requestText, connectString,
+                catalogNameUrls, cbClassName, null, null);
+    }
+
+    public static byte[] processSoapXmla(
+        File file,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        String cbClassName,
+        Map<List<String>, Servlet> servletCache)
+        throws IOException, ServletException, SAXException
+    {
+        String requestText = XmlaSupport.readFile(file);
+        return
+            processSoapXmla(
+                requestText, connectString, catalogNameUrls, cbClassName,
+                null, servletCache);
+    }
+
+    public static byte[] processSoapXmla(
+        Document doc,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        String cbClassName,
+        Role role)
+        throws IOException, ServletException, SAXException
+    {
         return processSoapXmla(
-            requestText, connectString, catalogNameUrls, cbClassName, null,
+            doc, connectString, catalogNameUrls, cbClassName, role,
             null);
     }
 
@@ -670,7 +700,7 @@ public class XmlaSupport {
         Map<String, String> catalogNameUrls,
         String cbClassName,
         Role role,
-        Map<List<String>, WeakReference<Servlet>> servletCache)
+        Map<List<String>, Servlet> servletCache)
         throws IOException, ServletException, SAXException
     {
         String requestText = XmlUtil.toString(doc, false);
@@ -684,8 +714,22 @@ public class XmlaSupport {
         String connectString,
         Map<String, String> catalogNameUrls,
         String cbClassName,
+        Role role)
+        throws IOException, ServletException, SAXException
+    {
+        return
+            processSoapXmla(
+                requestText, connectString,
+                catalogNameUrls, cbClassName, role, null);
+    }
+
+    public static byte[] processSoapXmla(
+        String requestText,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        String cbClassName,
         Role role,
-        Map<List<String>, WeakReference<Servlet>> servletCache)
+        Map<List<String>, Servlet> servletCache)
         throws IOException, ServletException, SAXException
     {
         // read soap file
@@ -732,35 +776,36 @@ public class XmlaSupport {
         String cbClassName)
         throws IOException, ServletException, SAXException
     {
+        return makeServlet(connectString, catalogNameUrls, cbClassName, null);
+    }
+
+    public static Servlet makeServlet(
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        String cbClassName,
+        Map<List<String>, Servlet> servletCache)
+        throws IOException, ServletException, SAXException
+    {
         // Create datasource file and put datasource xml into it.
         // Mark it as delete on exit.
         String dataSourceText =
             XmlaSupport.getDataSourcesText(connectString, catalogNameUrls);
 
-        return getServlet(cbClassName, dataSourceText, null);
+        return getServlet(cbClassName, dataSourceText, servletCache);
     }
 
     private static Servlet getServlet(
         String cbClassName,
         String dataSourceText,
-        Map<List<String>, WeakReference<Servlet>> cache)
+        Map<List<String>, Servlet> cache)
         throws ServletException
     {
-        if (cache != null) {
-            List<String> key =
-                Arrays.asList(
-                    cbClassName,
-                    dataSourceText);
-            final WeakReference<Servlet> servletRef = cache.get(key);
-            Servlet servlet;
-            if (servletRef != null) {
-                servlet = servletRef.get();
-                if (servlet != null) {
-                    return servlet;
-                }
-            }
-            servlet = getServlet(cbClassName, dataSourceText, null);
-            cache.put(key, new WeakReference<Servlet>(servlet));
+        final List<String> key =
+            Arrays.asList(
+                dataSourceText);
+        Servlet servlet = cache.get(key);
+        if (servlet != null) {
+            return servlet;
         }
         MockServletContext servletContext = new MockServletContext();
         MockServletConfig servletConfig = new MockServletConfig(servletContext);
@@ -771,8 +816,11 @@ public class XmlaSupport {
         servletConfig.addInitParameter(
             XmlaServlet.PARAM_DATASOURCES_CONFIG,
             "inline:" + dataSourceText);
-        Servlet servlet = new MondrianXmlaServlet();
+        servlet = new MondrianXmlaServlet();
         servlet.init(servletConfig);
+        if (cache != null) {
+            cache.put(key, servlet);
+        }
         return servlet;
     }
 
@@ -848,8 +896,24 @@ public class XmlaSupport {
         Map<String, String> catalogNameUrls)
         throws IOException, SAXException, XOMException
     {
-        return processXmla(file, connectString, catalogNameUrls, null);
+        return
+            processXmla(
+                file, connectString, catalogNameUrls,
+                (Map<List<String>, MondrianServer>)null);
     }
+
+    public static byte[] processXmla(
+        File file,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        Map<List<String>, MondrianServer> cache)
+        throws IOException, SAXException, XOMException
+    {
+        return
+            processXmla(
+                file, connectString, catalogNameUrls, null, cache);
+    }
+
     public static byte[] processXmla(
         File file,
         String connectString,
@@ -857,8 +921,25 @@ public class XmlaSupport {
         Role role)
         throws IOException, SAXException, XOMException
     {
+        return
+            processXmla(
+                file,
+                connectString,
+                catalogNameUrls,
+                role,
+                null);
+    }
+
+    public static byte[] processXmla(
+        File file,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        Role role,
+        Map<List<String>, MondrianServer> cache)
+        throws IOException, SAXException, XOMException
+    {
         String requestText = XmlaSupport.readFile(file);
-        return processXmla(requestText, connectString, catalogNameUrls);
+        return processXmla(requestText, connectString, catalogNameUrls, cache);
     }
 
     public static byte[] processXmla(
@@ -867,8 +948,23 @@ public class XmlaSupport {
         Map<String, String> catalogNameUrls)
         throws IOException, SAXException, XOMException
     {
+        return
+            processXmla(
+                requestText, connectString, catalogNameUrls,
+                (Map<List<String>, MondrianServer>)null);
+    }
+
+    public static byte[] processXmla(
+        String requestText,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        Map<List<String>, MondrianServer> cache)
+        throws IOException, SAXException, XOMException
+    {
         Document requestDoc = XmlUtil.parseString(requestText);
-        return processXmla(requestDoc, connectString, catalogNameUrls, null);
+        return
+            processXmla(
+                requestDoc, connectString, catalogNameUrls, null, cache);
     }
 
     public static byte[] processXmla(
@@ -878,8 +974,24 @@ public class XmlaSupport {
         Role role)
         throws IOException, XOMException
     {
+        return
+            processXmla(
+                requestDoc, connectString,
+                catalogNameUrls, role, null);
+    }
+
+    public static byte[] processXmla(
+        Document requestDoc,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        Role role,
+        Map<List<String>, MondrianServer> cache)
+        throws IOException, XOMException
+    {
         Element requestElem = requestDoc.getDocumentElement();
-        return processXmla(requestElem, connectString, catalogNameUrls, role);
+        return
+            processXmla(
+                requestElem, connectString, catalogNameUrls, role, cache);
     }
 
     public static byte[] processXmla(
@@ -889,19 +1001,46 @@ public class XmlaSupport {
         Role role)
         throws IOException, XOMException
     {
-        // make request
-        final MondrianServer server =
-            MondrianServer.createWithRepository(
+        return
+            processXmla(
+                requestElem, connectString,
+                catalogNameUrls, role, null);
+    }
+
+    public static byte[] processXmla(
+        Element requestElem,
+        String connectString,
+        Map<String, String> catalogNameUrls,
+        Role role,
+        Map<List<String>, MondrianServer> cache)
+        throws IOException, XOMException
+    {
+        Util.PropertyList propertyList =
+            Util.parseConnectString(connectString);
+        final List<String> cacheKey =
+            Arrays.asList(
+                propertyList.toString(),
+                catalogNameUrls.toString());
+        MondrianServer server = cache.get(cacheKey);
+        if (server == null) {
+            server = MondrianServer.createWithRepository(
                 new StringRepositoryContentFinder(
                     getDataSourcesText(
                         connectString, catalogNameUrls)),
                 getCatalogLocator());
+        }
+        if (cache != null) {
+            cache.put(
+                cacheKey,
+                server);
+        }
+
+        // make request
         final XmlaHandler handler =
             new XmlaHandler(
                 (XmlaHandler.ConnectionFactory) server,
                 "xmla");
 
-        Util.PropertyList propertyList = Util.parseConnectString(connectString);
         String roleName =
             propertyList.get(RolapConnectionProperties.Role.name());
 

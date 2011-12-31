@@ -456,17 +456,14 @@ public class BatchTestCase extends FoodMartTestCase {
                 final Result result = connection.execute(query);
                 Util.discard(result);
                 bomb = null;
-            } catch (Exception e) {
+            } catch (Bomb e) {
+                bomb = e;
+            } catch (RuntimeException e) {
                 // Walk up the exception tree and see if the root cause
                 // was a SQL bomb.
-                Throwable node = e;
-                while (node.getCause() != null
-                    && node != node.getCause())
-                {
-                    node = node.getCause();
-                }
-                if (node instanceof Bomb) {
-                    bomb = (Bomb) node;
+                bomb = Util.getMatchingCause(e, Bomb.class);
+                if (bomb == null) {
+                    throw e;
                 }
             } finally {
                 RolapUtil.threadHooks = null;

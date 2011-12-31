@@ -1,0 +1,100 @@
+# multiple_cols_in_tuple_agg_tbls.csv
+# @version  $Id:$
+## TableName: foo_fact
+## ColumnNames: line_id,unit_sales
+## ColumnTypes: INTEGER,INTEGER
+## NosOfRows: 4
+1,10
+2,20
+3,40
+4,80
+# line
+## TableName: line
+## ColumnNames: line_id,line_name
+## ColumnTypes: INTEGER,VARCHAR(30)
+## NosOfRows: 4
+1,line one
+2,line two
+3,line Three
+4,line Four
+# line tenant
+## TableName: line_tenant
+## ColumnNames: line_id,tenant_id
+## ColumnTypes: INTEGER,INTEGER
+## NosOfRows: 4
+1,1
+2,1
+3,2
+4,2
+# tenant
+## TableName: tenant
+## ColumnNames: tenant_id,tenant_name
+## ColumnTypes: INTEGER,VARCHAR(30)
+## NosOfRows: 2
+1,tenant one
+2,tenant two
+# line_class
+## TableName: line_class
+## ColumnNames: line_class_id,line_class_name
+## ColumnTypes: INTEGER,VARCHAR(30)
+## NosOfRows: 2
+1,line class one
+2,line class two
+# line line class
+## TableName: line_line_class
+## ColumnNames: line_id,line_class_id
+## ColumnTypes: INTEGER,INTEGER
+## NosOfRows: 4
+1,1
+2,1
+3,2
+4,2
+# distributor
+## TableName: distributor
+## ColumnNames: distributor_id,distributor_name
+## ColumnTypes: INTEGER,VARCHAR(30)
+## NosOfRows: 2
+1,distributor one
+2,distributor two
+# line class distributor
+## TableName: line_class_distributor
+## ColumnNames: line_class_id,distributor_id
+## ColumnTypes: INTEGER,INTEGER
+## NosOfRows: 2
+1,1
+2,2
+# network
+## TableName: network
+## ColumnNames: network_id,network_name
+## ColumnTypes: INTEGER,VARCHAR(30)
+## NosOfRows: 2
+1,network one
+2,network two
+# line class network
+## TableName: line_class_network
+## ColumnNames: line_class_id,network_id
+## ColumnTypes: INTEGER,INTEGER
+## NosOfRows: 2
+1,1
+2,2
+# agg_tenant
+## TableName: agg_tenant
+## ColumnNames: tenant_id,unit_sales,fact_count
+## ColumnTypes: INTEGER,INTEGER,INTEGER
+## NosOfRows: 2
+1,31,2
+2,121,2
+# agg_line_class
+## TableName: agg_line_class
+## ColumnNames: line_class_id,unit_sales,fact_count
+## ColumnTypes: INTEGER,INTEGER,INTEGER
+## NosOfRows: 2
+1,31,2
+2,121,2
+# agg_10_foo_fact
+## TableName: agg_10_foo_fact
+## ColumnNames: line_class_id,unit_sales,fact_count
+## ColumnTypes: INTEGER,INTEGER,INTEGER
+## NosOfRows: 2
+1,32,2
+2,122,2

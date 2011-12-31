@@ -233,7 +233,7 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
         out.write(ds2.toXML().getBytes());
         out.close();
 
-        final boolean b1 = finder.reloadDataSources();
+        finder.reloadDataSources();
         assertTrue(
             finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
         assertTrue(
@@ -245,7 +245,7 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
         out.write(ds1.toXML().getBytes());
         out.flush();
 
-        final boolean b2 = finder.reloadDataSources();
+        finder.reloadDataSources();
         assertTrue(
             finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_0_NAME));
         assertTrue(
@@ -277,7 +277,7 @@ public class DynamicDatasourceXmlaServletTest extends TestCase {
         out.write(ds2.toXML().getBytes());
         out.close();
 
-        final boolean b = finder.reloadDataSources();
+        finder.reloadDataSources();
         assertTrue(
             finder.containsCatalog(DATASOURCE_1_NAME, CATALOG_1_NAME));
         assertTrue(

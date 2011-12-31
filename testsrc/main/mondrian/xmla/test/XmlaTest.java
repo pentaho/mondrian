@@ -55,6 +55,8 @@ public class XmlaTest extends TestCase {
     }
 
     private final static XmlaTestContext context = new XmlaTestContext();
+    private XmlaHandler handler;
+    private MondrianServer server;
 
     public XmlaTest(String name) {
         super(name);
@@ -65,12 +67,20 @@ public class XmlaTest extends TestCase {
         super.setUp();
         DiffRepository diffRepos = getDiffRepos();
         diffRepos.setCurrentTestCaseName(getName());
+        server = MondrianServer.createWithRepository(
+            new StringRepositoryContentFinder(
+                context.getDataSourcesString()),
+            XmlaTestContext.CATALOG_LOCATOR);
+        handler = new XmlaHandler(
+            (XmlaHandler.ConnectionFactory) server,
+            "xmla");
     }
 
     // implement TestCase
     protected void tearDown() throws Exception {
         DiffRepository diffRepos = getDiffRepos();
         diffRepos.setCurrentTestCaseName(null);
+        server.shutdown();
         super.tearDown();
     }
 
@@ -131,17 +141,8 @@ public class XmlaTest extends TestCase {
         parentNode.removeChild(node);
     }
 
-    private static Element executeRequest(Element requestElem) {
+    private Element executeRequest(Element requestElem) {
         ByteArrayOutputStream resBuf = new ByteArrayOutputStream();
-        MondrianServer server =
-            MondrianServer.createWithRepository(
-                new StringRepositoryContentFinder(
-                    context.getDataSourcesString()),
-                XmlaTestContext.CATALOG_LOCATOR);
-        XmlaHandler handler =
-            new XmlaHandler(
-                (XmlaHandler.ConnectionFactory) server,
-                "xmla");
         XmlaRequest request =
             new DefaultXmlaRequest(requestElem, null, null, null, null);
         XmlaResponse response =

@@ -101,10 +101,6 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
     }
 
     public boolean evaluate(Object value) {
-        // NOTE: If we know that every predicate in the list is a
-        // ValueColumnPredicate, we could optimize the evaluate method by
-        // building a value list at construction time. But it's a tradeoff,
-        // considering the extra time and space required.
         for (StarColumnPredicate childPredicate : children) {
             if (childPredicate.evaluate(value)) {
                 return true;
@@ -135,9 +131,9 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
                             childrenHashMap.get(key);
                         if (predList == null) {
                             predList = new ArrayList<StarColumnPredicate>();
+                            childrenHashMap.put(key, predList);
                         }
                         predList.add(thisChild);
-                        childrenHashMap.put(key, predList);
                     }
                 }
 

@@ -1096,7 +1096,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n"
-            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude pattern=\"agg_lc_06_sales_fact_1997\"/>\n"
+            + "  </Table>"
             + "  <Dimension name=\"Store\" foreignKey=\"store_id\">\n"
             + "    <Hierarchy hasAll=\"true\" primaryKeyTable=\"store\" primaryKey=\"store_id\">\n"
             + "      <Join leftKey=\"region_id\" rightKey=\"region_id\">\n"
@@ -1163,7 +1165,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n"
-            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude pattern=\"agg_lc_06_sales_fact_1997\"/>\n"
+            + "  </Table>"
             + "<Dimension name=\"Store\" foreignKey=\"store_id\">\n"
 
             + "<Hierarchy hasAll=\"true\" primaryKeyTable=\"store\" primaryKey=\"store_id\">\n"
@@ -1218,7 +1222,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n"
-            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude pattern=\"agg_lc_06_sales_fact_1997\"/>\n"
+            + "  </Table>"
             + "<Dimension name=\"Store\" foreignKey=\"store_id\">\n"
             + "<Hierarchy hasAll=\"true\" primaryKeyTable=\"store\" primaryKey=\"store_id\">\n"
             + "    <Join leftKey=\"region_id\" rightKey=\"region_id\">\n"
@@ -1272,7 +1278,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name=\"AliasedDimensionsTesting\" defaultMeasure=\"Supply Time\">\n"
-            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude pattern=\"agg_lc_06_sales_fact_1997\"/>\n"
+            + "  </Table>"
             + "<Dimension name=\"Store\" foreignKey=\"store_id\">\n"
             + "<Hierarchy hasAll=\"true\" primaryKeyTable=\"store\" primaryKey=\"store_id\">\n"
             + "    <Join leftKey=\"region_id\" rightKey=\"region_id\">\n"
@@ -1963,6 +1971,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
                 + "    <AggExclude pattern=\"agg_l_04_sales_fact_1997\"/>\n"
                 + "    <AggExclude pattern=\"agg_pl_01_sales_fact_1997\"/>\n"
                 + "    <AggExclude pattern=\"agg_lc_06_sales_fact_1997\"/>\n"
+                + "    <AggExclude pattern=\"agg_lc_100_sales_fact_1997\"/>\n"
                 + "    <AggName name=\"agg_c_10_sales_fact_1997\">\n"
                 + "      <AggFactCount column=\"fact_count\"/>\n"
                 + "      <AggMeasure name=\"[Measures].[Store Cost]\" column=\"store_cost\" />\n"
@@ -2007,9 +2016,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'month_of_year' with unknown usage.\n"
             + "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'quarter' with unknown usage.\n"
             + "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'the_year' with unknown usage.\n"
-            + "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'unit_sales' with unknown usage.\n"
-            + "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_lc_100_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'customer_id' with unknown usage.\n"
-            + "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_lc_100_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'unit_sales' with unknown usage.\n",
+            + "WARN - Recognizer.checkUnusedColumns: Candidate aggregate table 'agg_c_10_sales_fact_1997' for fact table 'sales_fact_1997' has a column 'unit_sales' with unknown usage.\n",
             sw.toString());
     }
 
@@ -4331,6 +4338,445 @@ Test that get error if a dimension has more than one hierarchy with same name.
             assertEquals("Samosa", level.getName());
             assertTrue(testValue.equals(level.isVisible()));
         }
+    }
+
+    public void testNonCollapsedAggregate() throws Exception {
+        if (MondrianProperties.instance().UseAggregates.get() == false
+            && MondrianProperties.instance().ReadAggregates.get() == false)
+        {
+            return;
+        }
+        final String cube =
+            "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_c_14_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\"/>"
+            + "    <AggName name=\"agg_l_05_sales_fact_1997\">"
+            + "        <AggFactCount column=\"fact_count\"/>\n"
+            + "        <AggIgnoreColumn column=\"customer_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"promotion_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_sales\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_cost\"/>\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\" />\n"
+            + "        <AggLevel name=\"[Product].[Product Id]\" column=\"product_id\" collapsed=\"false\"/>\n"
+            + "    </AggName>\n"
+            + "</Table>\n"
+            + "<Dimension foreignKey=\"product_id\" name=\"Product\">\n"
+            + "<Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "  <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + " <Table name=\"product\"/>\n"
+            + " <Table name=\"product_class\"/>\n"
+            + "  </Join>\n"
+            + "  <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"Product Id\" table=\"product\" column=\"product_id\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>\n"
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube>\n";
+        final TestContext context =
+            TestContext.instance().create(
+                null, cube, null, null, null, null);
+        context.assertQueryReturns(
+            "select {[Product].[Product Family].Members} on rows, {[Measures].[Unit Sales]} on columns from [Foo]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #1: 191,940\n"
+            + "Row #2: 50,236\n");
+    }
+
+    public void testNonCollapsedAggregateOnNonUniqueLevelFails()
+        throws Exception
+    {
+        if (MondrianProperties.instance().UseAggregates.get() == false
+            && MondrianProperties.instance().ReadAggregates.get() == false)
+        {
+            return;
+        }
+        final String cube =
+            "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_c_14_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\"/>"
+            + "    <AggName name=\"agg_l_05_sales_fact_1997\">"
+            + "        <AggFactCount column=\"fact_count\"/>\n"
+            + "        <AggIgnoreColumn column=\"customer_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"promotion_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_sales\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_cost\"/>\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\" />\n"
+            + "        <AggLevel name=\"[Product].[Product Name]\" column=\"product_id\" collapsed=\"false\"/>\n"
+            + "    </AggName>\n"
+            + "</Table>\n"
+            + "<Dimension foreignKey=\"product_id\" name=\"Product\">\n"
+            + "<Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "  <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + " <Table name=\"product\"/>\n"
+            + " <Table name=\"product_class\"/>\n"
+            + "  </Join>\n"
+            + "  <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Id\" table=\"product\" column=\"product_id\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>\n"
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube>\n";
+        final TestContext context =
+            TestContext.instance().create(
+                null, cube, null, null, null, null);
+        context.assertQueryThrows(
+            "select {[Product].[Product Family].Members} on rows, {[Measures].[Unit Sales]} on columns from [Foo]",
+            "mondrian.olap.MondrianException: Mondrian Error:Too many errors, '1', while loading/reloading aggregates.");
+    }
+
+    public void testTwoNonCollapsedAggregate() throws Exception {
+        if (MondrianProperties.instance().UseAggregates.get() == false
+            && MondrianProperties.instance().ReadAggregates.get() == false)
+        {
+            return;
+        }
+        final String cube =
+            "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_c_14_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\"/>"
+            + "    <AggName name=\"agg_l_05_sales_fact_1997\">"
+            + "        <AggFactCount column=\"fact_count\"/>\n"
+            + "        <AggIgnoreColumn column=\"customer_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"promotion_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_sales\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_cost\"/>\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\" />\n"
+            + "        <AggLevel name=\"[Product].[Product Id]\" column=\"product_id\" collapsed=\"false\"/>\n"
+            + "        <AggLevel name=\"[Store].[Store Id]\" column=\"store_id\" collapsed=\"false\"/>\n"
+            + "    </AggName>\n"
+            + "</Table>\n"
+            + "<Dimension foreignKey=\"product_id\" name=\"Product\">\n"
+            + "<Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "  <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + " <Table name=\"product\"/>\n"
+            + " <Table name=\"product_class\"/>\n"
+            + "  </Join>\n"
+            + "  <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"Product Id\" table=\"product\" column=\"product_id\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>\n"
+            + "  <Dimension name=\"Store\" foreignKey=\"store_id\" >\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\"\n"
+            + "        primaryKeyTable=\"store\">\n"
+            + "      <Join leftKey=\"region_id\" rightKey=\"region_id\">\n"
+            + "        <Table name=\"store\"/>\n"
+            + "        <Table name=\"region\"/>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Store Region\" table=\"region\" column=\"sales_city\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Store Id\" table=\"store\" column=\"store_id\"\n"
+            + "          uniqueMembers=\"true\">\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube>\n";
+        final TestContext context =
+            TestContext.instance().create(
+                null, cube, null, null, null, null);
+        context.assertQueryReturns(
+            "select {Crossjoin([Product].[Product Family].Members, [Store].[Store Id].Members)} on rows, {[Measures].[Unit Sales]} on columns from [Foo]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink], [Store].[Acapulco].[1]}\n"
+            + "{[Product].[Drink], [Store].[Bellingham].[2]}\n"
+            + "{[Product].[Drink], [Store].[Beverly Hills].[6]}\n"
+            + "{[Product].[Drink], [Store].[Bremerton].[3]}\n"
+            + "{[Product].[Drink], [Store].[Camacho].[4]}\n"
+            + "{[Product].[Drink], [Store].[Guadalajara].[5]}\n"
+            + "{[Product].[Drink], [Store].[Hidalgo].[12]}\n"
+            + "{[Product].[Drink], [Store].[Hidalgo].[18]}\n"
+            + "{[Product].[Drink], [Store].[Los Angeles].[7]}\n"
+            + "{[Product].[Drink], [Store].[Merida].[8]}\n"
+            + "{[Product].[Drink], [Store].[Mexico City].[9]}\n"
+            + "{[Product].[Drink], [Store].[None].[0]}\n"
+            + "{[Product].[Drink], [Store].[Orizaba].[10]}\n"
+            + "{[Product].[Drink], [Store].[Portland].[11]}\n"
+            + "{[Product].[Drink], [Store].[Salem].[13]}\n"
+            + "{[Product].[Drink], [Store].[San Andres].[21]}\n"
+            + "{[Product].[Drink], [Store].[San Diego].[24]}\n"
+            + "{[Product].[Drink], [Store].[San Francisco].[14]}\n"
+            + "{[Product].[Drink], [Store].[Seattle].[15]}\n"
+            + "{[Product].[Drink], [Store].[Spokane].[16]}\n"
+            + "{[Product].[Drink], [Store].[Tacoma].[17]}\n"
+            + "{[Product].[Drink], [Store].[Vancouver].[19]}\n"
+            + "{[Product].[Drink], [Store].[Victoria].[20]}\n"
+            + "{[Product].[Drink], [Store].[Walla Walla].[22]}\n"
+            + "{[Product].[Drink], [Store].[Yakima].[23]}\n"
+            + "{[Product].[Food], [Store].[Acapulco].[1]}\n"
+            + "{[Product].[Food], [Store].[Bellingham].[2]}\n"
+            + "{[Product].[Food], [Store].[Beverly Hills].[6]}\n"
+            + "{[Product].[Food], [Store].[Bremerton].[3]}\n"
+            + "{[Product].[Food], [Store].[Camacho].[4]}\n"
+            + "{[Product].[Food], [Store].[Guadalajara].[5]}\n"
+            + "{[Product].[Food], [Store].[Hidalgo].[12]}\n"
+            + "{[Product].[Food], [Store].[Hidalgo].[18]}\n"
+            + "{[Product].[Food], [Store].[Los Angeles].[7]}\n"
+            + "{[Product].[Food], [Store].[Merida].[8]}\n"
+            + "{[Product].[Food], [Store].[Mexico City].[9]}\n"
+            + "{[Product].[Food], [Store].[None].[0]}\n"
+            + "{[Product].[Food], [Store].[Orizaba].[10]}\n"
+            + "{[Product].[Food], [Store].[Portland].[11]}\n"
+            + "{[Product].[Food], [Store].[Salem].[13]}\n"
+            + "{[Product].[Food], [Store].[San Andres].[21]}\n"
+            + "{[Product].[Food], [Store].[San Diego].[24]}\n"
+            + "{[Product].[Food], [Store].[San Francisco].[14]}\n"
+            + "{[Product].[Food], [Store].[Seattle].[15]}\n"
+            + "{[Product].[Food], [Store].[Spokane].[16]}\n"
+            + "{[Product].[Food], [Store].[Tacoma].[17]}\n"
+            + "{[Product].[Food], [Store].[Vancouver].[19]}\n"
+            + "{[Product].[Food], [Store].[Victoria].[20]}\n"
+            + "{[Product].[Food], [Store].[Walla Walla].[22]}\n"
+            + "{[Product].[Food], [Store].[Yakima].[23]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Acapulco].[1]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Bellingham].[2]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Beverly Hills].[6]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Bremerton].[3]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Camacho].[4]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Guadalajara].[5]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Hidalgo].[12]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Hidalgo].[18]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Los Angeles].[7]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Merida].[8]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Mexico City].[9]}\n"
+            + "{[Product].[Non-Consumable], [Store].[None].[0]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Orizaba].[10]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Portland].[11]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Salem].[13]}\n"
+            + "{[Product].[Non-Consumable], [Store].[San Andres].[21]}\n"
+            + "{[Product].[Non-Consumable], [Store].[San Diego].[24]}\n"
+            + "{[Product].[Non-Consumable], [Store].[San Francisco].[14]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Seattle].[15]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Spokane].[16]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Tacoma].[17]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Vancouver].[19]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Victoria].[20]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Walla Walla].[22]}\n"
+            + "{[Product].[Non-Consumable], [Store].[Yakima].[23]}\n"
+            + "Row #0: \n"
+            + "Row #1: 208\n"
+            + "Row #2: 1,945\n"
+            + "Row #3: 2,288\n"
+            + "Row #4: \n"
+            + "Row #5: \n"
+            + "Row #6: \n"
+            + "Row #7: \n"
+            + "Row #8: 2,422\n"
+            + "Row #9: \n"
+            + "Row #10: \n"
+            + "Row #11: \n"
+            + "Row #12: \n"
+            + "Row #13: 2,371\n"
+            + "Row #14: 3,735\n"
+            + "Row #15: \n"
+            + "Row #16: 2,560\n"
+            + "Row #17: 175\n"
+            + "Row #18: 2,213\n"
+            + "Row #19: 2,238\n"
+            + "Row #20: 3,092\n"
+            + "Row #21: \n"
+            + "Row #22: \n"
+            + "Row #23: 191\n"
+            + "Row #24: 1,159\n"
+            + "Row #25: \n"
+            + "Row #26: 1,587\n"
+            + "Row #27: 15,438\n"
+            + "Row #28: 17,809\n"
+            + "Row #29: \n"
+            + "Row #30: \n"
+            + "Row #31: \n"
+            + "Row #32: \n"
+            + "Row #33: 18,294\n"
+            + "Row #34: \n"
+            + "Row #35: \n"
+            + "Row #36: \n"
+            + "Row #37: \n"
+            + "Row #38: 18,632\n"
+            + "Row #39: 29,905\n"
+            + "Row #40: \n"
+            + "Row #41: 18,369\n"
+            + "Row #42: 1,555\n"
+            + "Row #43: 18,159\n"
+            + "Row #44: 16,925\n"
+            + "Row #45: 25,453\n"
+            + "Row #46: \n"
+            + "Row #47: \n"
+            + "Row #48: 1,622\n"
+            + "Row #49: 8,192\n"
+            + "Row #50: \n"
+            + "Row #51: 442\n"
+            + "Row #52: 3,950\n"
+            + "Row #53: 4,479\n"
+            + "Row #54: \n"
+            + "Row #55: \n"
+            + "Row #56: \n"
+            + "Row #57: \n"
+            + "Row #58: 4,947\n"
+            + "Row #59: \n"
+            + "Row #60: \n"
+            + "Row #61: \n"
+            + "Row #62: \n"
+            + "Row #63: 5,076\n"
+            + "Row #64: 7,940\n"
+            + "Row #65: \n"
+            + "Row #66: 4,706\n"
+            + "Row #67: 387\n"
+            + "Row #68: 4,639\n"
+            + "Row #69: 4,428\n"
+            + "Row #70: 6,712\n"
+            + "Row #71: \n"
+            + "Row #72: \n"
+            + "Row #73: 390\n"
+            + "Row #74: 2,140\n");
+    }
+
+    public void testCollapsedError() throws Exception {
+        if (MondrianProperties.instance().UseAggregates.get() == false
+            && MondrianProperties.instance().ReadAggregates.get() == false)
+        {
+            return;
+        }
+        final String cube =
+            "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_c_14_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\"/>"
+            + "    <AggName name=\"agg_l_05_sales_fact_1997\">"
+            + "        <AggFactCount column=\"fact_count\"/>\n"
+            + "        <AggIgnoreColumn column=\"customer_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"promotion_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_sales\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_cost\"/>\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\" />\n"
+            + "        <AggLevel name=\"[Product].[Product Id]\" column=\"product_id\" collapsed=\"true\"/>\n"
+            + "    </AggName>\n"
+            + "</Table>\n"
+            + "<Dimension foreignKey=\"product_id\" name=\"Product\">\n"
+            + "<Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "  <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + " <Table name=\"product\"/>\n"
+            + " <Table name=\"product_class\"/>\n"
+            + "  </Join>\n"
+            + "  <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"Product Id\" table=\"product\" column=\"product_id\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>\n"
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube>\n";
+        final TestContext context =
+            TestContext.instance().create(
+                null, cube, null, null, null, null);
+        context.assertQueryThrows(
+            "select {[Product].[Product Family].Members} on rows, {[Measures].[Unit Sales]} on columns from [Foo]",
+            "Too many errors, '1', while loading/reloading aggregates.");
+    }
+
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1047">MONDRIAN-1047,
+     * "IllegalArgumentException when cube has closure tables and many
+     * levels"</a>.
+     */
+    public void testBugMondrian1047() {
+        // Test case only works under MySQL, due to how columns are quoted.
+        switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case MYSQL:
+            break;
+        default:
+            return;
+        }
+        TestContext testContext =
+            TestContext.instance().createSubstitutingCube(
+                "HR",
+                TestContext.repeatString(
+                    100,
+                    "<Dimension name='Position %1$d' foreignKey='employee_id'>\n"
+                    + "  <Hierarchy hasAll='true' allMemberName='All Position' primaryKey='employee_id'>\n"
+                    + "    <Table name='employee'/>\n"
+                    + "    <Level name='Position Title' uniqueMembers='false' ordinalColumn='position_id'>\n"
+                    + "      <KeyExpression><SQL dialect='generic'>`position_title` + %1$d</SQL></KeyExpression>\n"
+                    + "    </Level>\n"
+                    + "  </Hierarchy>\n"
+                    + "</Dimension>"),
+                null);
+        testContext.assertQueryReturns(
+            "select from [HR]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "$39,431.67");
     }
 
     /**

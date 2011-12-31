@@ -193,6 +193,9 @@ FNR == 1 {
     }
 }
 
+/^package / {
+    thisPackage = $2;
+}
 /^package / && previousLineWasEmpty {
     error(fname, FNR, "'package' declaration must not occur after empty line");
 }
@@ -207,19 +210,23 @@ FNR == 1 {
     thisImport = $2;
     gsub(/;/, "", thisImport);
     gsub(/\*/, "", thisImport);
-    if (thisImport ~ /^mondrian/) {
-        importGroup = "a";
+    if (thisPackage ~ /^mondrian.*/ && thisImport ~ /^mondrian.*/ \
+        || thisPackage ~ /^org.olap4j.*/ && thisImport ~ /^org.olap4j.*/)
+    {
+        importGroup = "a";       
     } else if (thisImport ~ /^static/) {
         importGroup = "z";
-    } else if (thisImport ~ /^java/) {
+    } else if (thisImport ~ /^java.*/) {
         importGroup = "y";
-    } else if (thisImport ~ /^junit/) {
+    } else if (thisImport ~ /^junit.*/) {
         importGroup = "b";
-    } else if (thisImport ~ /^org.apache/) {
+    } else if (thisImport ~ /^mondrian.*/) {
+        importGroup = "bb";
+    } else if (thisImport ~ /^org.apache.*/) {
         importGroup = "c";
-    } else if (thisImport ~ /^org.eigenbase/) {
+    } else if (thisImport ~ /^org.eigenbase.*/) {
         importGroup = "d";
-    } else if (thisImport ~ /^org.olap4j/) {
+    } else if (thisImport ~ /^org.olap4j.*/) {
         importGroup = "e";
     } else {
         importGroup = "f";

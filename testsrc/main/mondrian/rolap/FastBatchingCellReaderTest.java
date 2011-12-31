@@ -1125,7 +1125,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     }
 
     public void testCompositeBatchLoadAggregation() {
-        FastBatchingCellReader fbcr = new FastBatchingCellReader(e, salesCube);
+        final FastBatchingCellReader fbcr =
+            new FastBatchingCellReader(e, salesCube);
 
         FastBatchingCellReader.Batch summaryBatch =
             createBatch(
@@ -1166,7 +1167,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         FastBatchingCellReader.CompositeBatch compositeBatch =
             fbcr.new CompositeBatch(detailedBatch) {
                 SegmentLoader getSegmentLoader() {
-                    return new SegmentLoader() {
+                    return new SegmentLoader(fbcr.aggMgr) {
                         public void load(
                             int cellRequestCount, List<GroupingSet> sets,
                             RolapAggregationManager.PinSet pinnedSegments,

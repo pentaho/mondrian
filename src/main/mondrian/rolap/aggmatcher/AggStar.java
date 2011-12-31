@@ -10,6 +10,7 @@
 package mondrian.rolap.aggmatcher;
 
 import mondrian.olap.*;
+import mondrian.olap.MondrianDef.AggLevel;
 import mondrian.recorder.MessageRecorder;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
@@ -25,6 +26,7 @@ import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+
 import javax.sql.DataSource;
 
 /**
@@ -206,6 +208,18 @@ public class AggStar extends RolapStar {
      */
     private final BitKey distinctMeasureBitKey;
     private final AggStar.Table.Column[] columns;
+    /**
+     * A map of bit positions to columns which need to
+     * be joined and are not collapsed. If the aggregate table
+     * includes an {@link AggLevel} element which is not
+     * collapsed, it will appear in that list. We use this
+     * list later on to create the join paths in AggQuerySpec.
+     */
+    private final Map<Integer, AggStar.Table.Column> levelColumnsToJoin;
+
+    /**
+     * An approximate number of rows present in this aggregate table.
+     */
     private final int approxRowCount;
 
     AggStar(
@@ -223,6 +237,7 @@ public class AggStar extends RolapStar {
         this.distinctMeasureBitKey = bitKey.emptyCopy();
         this.aggTable = new AggStar.FactTable(aggTable);
         this.columns = new AggStar.Table.Column[star.getColumnCount()];
+        this.levelColumnsToJoin = new HashMap<Integer, AggStar.Table.Column>();
     }
 
     public RolapStar.Table getFactTable() {
@@ -398,7 +413,10 @@ public class AggStar extends RolapStar {
      * the array of columns.
      */
     public AggStar.Table.Column lookupColumn(final int bitPos) {
-        return columns[bitPos];
+        if (columns[bitPos] != null) {
+            return columns[bitPos];
+        }
+        return levelColumnsToJoin.get(bitPos);
     }
 
     /**
@@ -639,21 +657,28 @@ public class AggStar extends RolapStar {
          */
         final class Level extends Column {
             private final RolapStar.Column starColumn;
+            private final boolean collapsed;
 
             private Level(
                 final String name,
                 final RolapSchema.PhysExpr expression,
                 final int bitPosition,
-                RolapStar.Column starColumn)
+                RolapStar.Column starColumn,
+                boolean collapsed)
             {
                 super(name, expression, starColumn.getDatatype(), bitPosition);
                 this.starColumn = starColumn;
+                this.collapsed = collapsed;
                 AggStar.this.levelBitKey.set(bitPosition);
             }
 
             @Override
             public SqlStatement.Type getInternalType() {
                 return starColumn.getInternalType();
+            }
+
+            public boolean isCollapsed() {
+                return collapsed;
             }
         }
 
@@ -863,7 +888,8 @@ public class AggStar extends RolapStar {
                     name,
                     expression,
                     bitPosition,
-                    column);
+                    column,
+                    false);
                 addLevel(level);
             }
         }
@@ -1269,8 +1295,73 @@ public class AggStar extends RolapStar {
                     name,
                     expression,
                     bitPosition,
-                    usage.rColumn);
+                    usage.rColumn,
+                    usage.collapsed);
             addLevel(level);
+            /*
+             * If we are dealing with a non-collapsed level, we have to
+             * modify the bit key of the AggStar and create a column
+             * object for each parent level so that the AggQuerySpec
+             * can correctly link up to the other tables.
+             */
+            if (!usage.collapsed) {
+                // We must also update the bit key with
+                // the parent levels of any non-collapsed level.
+                RolapLevel parentLevel = usage.level.getParentLevel();
+                while (!parentLevel.isAll()) {
+                    /*
+                     * Find the bit for this AggStar's bit key for each parent
+                     * level. There is no need to modify the AggStar's bit key
+                     * directly here, because the constructor of Column
+                     * will do that for us later on.
+                     */
+                    final RolapSchema.PhysColumn key0 =
+                        parentLevel.getAttribute().keyList.get(0);
+                    final BitKey bk = AggStar.this.star.getBitKey(
+                        new String[] {key0.relation.getAlias()},
+                        new String[] {key0.name});
+                    final int bitPos = bk.nextSetBit(0);
+                    if (bitPos == -1) {
+                        throw new MondrianException(
+                            "Failed to match non-collapsed aggregate level with a column from the RolapStar.");
+                    }
+                    /*
+                     * Now we will create the Column object to return to the
+                     * AggQuerySpec. We will use the convertTable() method
+                     * because it is convenient and it is capable to convert
+                     * our base table into a series of parent-child tables
+                     * with their join paths figured out.
+                     */
+                    DimTable columnTable =
+                        convertTable(
+                            AggStar.this.star.getColumn(bitPosition)
+                                .getTable(),
+                            null);
+                    /*
+                     * Make sure to return the last child table, since
+                     * AggQuerySpec will take care of going up the
+                     * parent-child hierarchy and do all the work for us.
+                     */
+                    while (columnTable.getChildTables().size() > 0) {
+                        columnTable = columnTable.getChildTables().get(0);
+                    }
+                    final DimTable finalColumnTable = columnTable;
+                    levelColumnsToJoin.put(
+                        bitPos,
+                        new Column(
+                            key0.name,
+                            key0,
+                            AggStar.this.star.getColumn(bitPos).getDatatype(),
+                            bitPos)
+                        {
+                            public Table getTable() {
+                                return finalColumnTable;
+                            }
+                        });
+                    // Do the next parent level.
+                    parentLevel = parentLevel.getParentLevel();
+                }
+            }
         }
 
         public void print(final PrintWriter pw, final String prefix) {

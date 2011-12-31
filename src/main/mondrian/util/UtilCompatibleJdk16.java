@@ -10,6 +10,13 @@
 package mondrian.util;
 
 import mondrian.olap.Util;
+import mondrian.resource.MondrianResource;
+
+import org.apache.log4j.Logger;
+
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.*;
 
 import javax.script.*;
 
@@ -27,6 +34,8 @@ import javax.script.*;
  * @version $Id$
  */
 public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
+    private final static Logger LOGGER =
+        Logger.getLogger(Util.class);
     public <T> T compileScript(
         Class<T> iface,
         String script,
@@ -43,6 +52,47 @@ public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
                 e,
                 "Error while compiling script to implement " + iface + " SPI");
         }
+    }
+    @Override
+    public void cancelAndCloseStatement(Statement stmt) {
+        try {
+            if (!stmt.isClosed()) {
+                stmt.cancel();
+            }
+        } catch (SQLException e) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    MondrianResource.instance()
+                        .ExecutionStatementCleanupException
+                            .ex(e.getMessage(), e),
+                    e);
+            }
+        }
+        try {
+            if (!stmt.isClosed()) {
+                stmt.close();
+            }
+        } catch (SQLException e) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    MondrianResource.instance()
+                        .ExecutionStatementCleanupException
+                            .ex(e.getMessage(), e),
+                    e);
+            }
+        }
+    }
+
+    @Override
+    public <T> Set<T> newIdentityHashSet() {
+        return Collections.newSetFromMap(
+            new IdentityHashMap<T, Boolean>());
+    }
+
+    public <T extends Comparable<T>> int binarySearch(
+        T[] ts, int start, int end, T t)
+    {
+        return Arrays.binarySearch(ts, start, end, t);
     }
 }
 

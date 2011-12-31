@@ -2038,10 +2038,6 @@ public class Workbench extends javax.swing.JFrame {
                 list.put("JdbcPassword", jdbcPassword);
             }
 
-            // clear cache before connecting
-            AggregationManager.instance().getCacheControl(null, null)
-                .flushSchemaCache();
-
             DriverManager.getConnection(list, null);
         } catch (Exception ex) {
             LOGGER.error(

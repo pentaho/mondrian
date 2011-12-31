@@ -32,6 +32,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     private Execution execution;
     private Locus locus;
+    private AggregationManager aggMgr;
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -40,6 +41,8 @@ public class SegmentLoaderTest extends BatchTestCase {
             ((RolapConnection) getConnection()).getInternalStatement();
         execution = new Execution(statement, 1000);
         locus = new Locus(execution, null, null);
+        aggMgr = execution.getMondrianStatement().getMondrianConnection()
+            .getServer().getAggregationManager();
 
         Locus.push(locus);
     }
@@ -85,7 +88,7 @@ public class SegmentLoaderTest extends BatchTestCase {
             new ArrayList<GroupingSet>();
         groupingSets.add(groupingSetsInfo);
         groupingSets.add(groupableSetsInfo);
-        SegmentLoader loader = new SegmentLoader() {
+        SegmentLoader loader = new SegmentLoader(aggMgr) {
             SqlStatement createExecuteSql(
                 int cellRequestCount,
                 final GroupingSetsList groupingSetsList,
@@ -152,7 +155,7 @@ public class SegmentLoaderTest extends BatchTestCase {
             new ArrayList<GroupingSet>();
         groupingSets.add(groupingSetsInfo);
         groupingSets.add(groupableSetsInfo);
-        SegmentLoader loader = new SegmentLoader() {
+        SegmentLoader loader = new SegmentLoader(aggMgr) {
             SqlStatement createExecuteSql(
                 int cellRequestCount,
                 GroupingSetsList groupingSetsList,
@@ -179,7 +182,7 @@ public class SegmentLoaderTest extends BatchTestCase {
             new ArrayList<GroupingSet>();
         groupingSets.add(groupingSetsInfo);
         groupingSets.add(groupableSetsInfo);
-        SegmentLoader loader = new SegmentLoader() {
+        SegmentLoader loader = new SegmentLoader(aggMgr) {
             SqlStatement createExecuteSql(
                 int cellRequestCount,
                 GroupingSetsList groupingSetsList,
@@ -231,7 +234,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         ArrayList<GroupingSet> groupingSets =
             new ArrayList<GroupingSet>();
         groupingSets.add(groupingSetsInfo);
-        SegmentLoader loader = new SegmentLoader() {
+        SegmentLoader loader = new SegmentLoader(aggMgr) {
             SqlStatement createExecuteSql(
                 int cellRequestCount,
                 GroupingSetsList groupingSetsList,
@@ -269,7 +272,7 @@ public class SegmentLoaderTest extends BatchTestCase {
                 0,
                 new GroupingSetsList(groupingSets),
                 getData(true));
-        SegmentLoader loader = new SegmentLoader() {
+        SegmentLoader loader = new SegmentLoader(aggMgr) {
             @Override
             SqlStatement createExecuteSql(
                 int cellRequestCount,
@@ -345,7 +348,7 @@ public class SegmentLoaderTest extends BatchTestCase {
                 new GroupingSetsList(
                     Collections.singletonList(groupingSetsInfo)),
                 trim(5, getDataWithNullInAxisColumn(false)));
-        SegmentLoader loader = new SegmentLoader() {
+        SegmentLoader loader = new SegmentLoader(aggMgr) {
             @Override
             SqlStatement createExecuteSql(
                 int cellRequestCount,
@@ -388,7 +391,7 @@ public class SegmentLoaderTest extends BatchTestCase {
                 new GroupingSetsList(
                     Collections.singletonList(groupingSetsInfo)),
                 data);
-        SegmentLoader loader = new SegmentLoader() {
+        SegmentLoader loader = new SegmentLoader(aggMgr) {
             @Override
             SqlStatement createExecuteSql(
                 int cellRequestCount,
@@ -499,7 +502,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         assertTrue(rowList.next());
         assertEquals(
             BitKey.Factory.makeBitKey(4),
-            new SegmentLoader().getRollupBitKey(4, rowList, 5));
+            new SegmentLoader(aggMgr).getRollupBitKey(4, rowList, 5));
 
         data = new Object[]{
             "1997", "Food", "Deli", null, "12037", 0, 0, 0, 1
@@ -509,7 +512,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         key.set(3);
         assertEquals(
             key,
-            new SegmentLoader().getRollupBitKey(4, rowList, 5));
+            new SegmentLoader(aggMgr).getRollupBitKey(4, rowList, 5));
 
         data = new Object[] {
             "1997", null, "Deli", null, "12037", 0, 1, 0, 1
@@ -520,7 +523,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         key.set(3);
         assertEquals(
             key,
-            new SegmentLoader().getRollupBitKey(4, rowList, 5));
+            new SegmentLoader(aggMgr).getRollupBitKey(4, rowList, 5));
     }
 
     public void testGroupingSetsUtilForMissingGroupingBitKeys() {
@@ -753,7 +756,7 @@ public class SegmentLoaderTest extends BatchTestCase {
     public void testSetFailOnStillLoadingSegments() {
         List<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
         groupingSets.add(getDefaultGroupingSet());
-        new SegmentLoader().setFailOnStillLoadingSegments(
+        new SegmentLoader(aggMgr).setFailOnStillLoadingSegments(
             new GroupingSetsList(groupingSets));
 
         for (GroupingSet groupingSet : groupingSets) {
@@ -765,7 +768,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         groupingSets = new ArrayList<GroupingSet>();
         groupingSets.add(getDefaultGroupingSet());
         groupingSets.add(getGroupingSetRollupOnGender());
-        new SegmentLoader().setFailOnStillLoadingSegments(
+        new SegmentLoader(aggMgr).setFailOnStillLoadingSegments(
             new GroupingSetsList(groupingSets));
         for (GroupingSet groupingSet : groupingSets) {
             for (Segment segment : groupingSet.getSegments()) {

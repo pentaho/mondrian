@@ -37,6 +37,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Statement;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
@@ -101,12 +102,19 @@ public class Util extends XOMUtil {
             "IBM Corporation");
 
     /**
-     * What version of JDBC? Returns 4 in JDK 1.6 and higher, 3 otherwise.
+     * What version of JDBC?
+     * Returns:<ul>
+     *     <li>0x0401 in JDK 1.7 and higher</li>
+     *     <li>0x0400 in JDK 1.6</li>
+     *     <li>0x0300 otherwise</li>
+     * </ul>
      */
     public static final int JdbcVersion =
-        System.getProperty("java.version").compareTo("1.6") >= 0
-            ? 4
-            : 3;
+        System.getProperty("java.version").compareTo("1.7") >= 0
+            ? 0x0401
+            : System.getProperty("java.version").compareTo("1.6") >= 0
+            ? 0x0400
+            : 0x0300;
 
     /**
      * Whether the code base has re-engineered using retroweaver.
@@ -1606,6 +1614,21 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Closes and cancels a {@link Statement} using the correct methods
+     * available on the current Java runtime.
+     * <p>If errors are encountered while canceling or closing a statement,
+     * the message is logged in {@link Util}.
+     * @param stmt The statement to cancel and close.
+     */
+    public static void cancelAndCloseStatement(Statement stmt) {
+        compatible.cancelAndCloseStatement(stmt);
+    }
+
+    public static MemoryInfo getMemoryInfo() {
+        return compatible.getMemoryInfo();
+    }
+
+    /**
      * Converts a list of a string.
      *
      * For example,
@@ -2059,6 +2082,85 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Equivalent to {@link Timer#Timer(String, boolean)}.
+     * (Introduced in JDK 1.5.)
+     *
+     * @param name the name of the associated thread
+     * @param isDaemon true if the associated thread should run as a daemon
+     * @return timer
+     */
+    public static Timer newTimer(String name, boolean isDaemon) {
+        return compatible.newTimer(name, isDaemon);
+    }
+
+    public static <T> Set<T> newIdentityHashSetFake() {
+        final HashMap<T, Boolean> map = new HashMap<T, Boolean>();
+        return new Set<T>() {
+            public int size() {
+                return map.size();
+            }
+
+            public boolean isEmpty() {
+                return map.isEmpty();
+            }
+
+            public boolean contains(Object o) {
+                return map.containsKey(o);
+            }
+
+            public Iterator<T> iterator() {
+                return map.keySet().iterator();
+            }
+
+            public Object[] toArray() {
+                return map.keySet().toArray();
+            }
+
+            public <T> T[] toArray(T[] a) {
+                return map.keySet().toArray(a);
+            }
+
+            public boolean add(T t) {
+                return map.put(t, Boolean.TRUE) == null;
+            }
+
+            public boolean remove(Object o) {
+                return map.remove(o) == Boolean.TRUE;
+            }
+
+            public boolean containsAll(Collection<?> c) {
+                return map.keySet().containsAll(c);
+            }
+
+            public boolean addAll(Collection<? extends T> c) {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean retainAll(Collection<?> c) {
+                throw new UnsupportedOperationException();
+            }
+
+            public boolean removeAll(Collection<?> c) {
+                throw new UnsupportedOperationException();
+            }
+
+            public void clear() {
+                map.clear();
+            }
+        };
+    }
+
+    /**
+     * As {@link Arrays#binarySearch(Object[], int, int, Object)}, but
+     * available pre-JDK 1.6.
+     */
+    public static <T extends Comparable<T>> int binarySearch(
+        T[] ts, int start, int end, T t)
+    {
+        return compatible.binarySearch(ts, start, end, t);
+    }
+
+    /**
      * Compares two integers using the same algorithm as
      * {@link Integer#compareTo(Integer)}.
      *
@@ -2252,6 +2354,29 @@ public class Util extends XOMUtil {
             return (prependClassName)
                 ? err.getClass().getName() + ": " + errMsg
                 : errMsg;
+        }
+    }
+
+    /**
+     * If one of the causes of an exception is of a particular class, returns
+     * that cause. Otherwise returns null.
+     *
+     * @param e Exception
+     * @param clazz Desired class
+     * @param <T> Class
+     * @return Cause of given class, or null
+     */
+    public static <T extends Throwable>
+    T getMatchingCause(Throwable e, Class<T> clazz) {
+        for (;;) {
+            if (clazz.isInstance(e)) {
+                return clazz.cast(e);
+            }
+            final Throwable cause = e.getCause();
+            if (cause == null || cause == e) {
+                return null;
+            }
+            e = cause;
         }
     }
 
@@ -3948,6 +4073,21 @@ public class Util extends XOMUtil {
                 return true;
             }
         };
+
+    /**
+     * Information about memory usage.
+     *
+     * @see mondrian.olap.Util#getMemoryInfo()
+     */
+    public interface MemoryInfo {
+        Usage get();
+
+        public interface Usage {
+            long getUsed();
+            long getCommitted();
+            long getMax();
+        }
+    }
 }
 
 // End Util.java

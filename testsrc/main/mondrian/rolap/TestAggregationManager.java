@@ -59,38 +59,37 @@ public class TestAggregationManager extends BatchTestCase {
     public TestAggregationManager(String name) {
         super(name);
     }
+
     public TestAggregationManager() {
         super();
     }
 
     public void testFemaleUnitSales() {
+        final FastBatchingCellReader fbcr =
+            new FastBatchingCellReader(execution, getCube("Sales"));
         CellRequest request = createRequest(
             "Sales", "[Measures].[Unit Sales]", "customer", "gender", "F");
-        final RolapAggregationManager aggMan = AggregationManager.instance();
-        Object value = aggMan.getCellFromCache(request);
+        Object value = fbcr.aggMgr.getCellFromCache(request);
         assertNull(value); // before load, the cell is not found
-        FastBatchingCellReader fbcr =
-            new FastBatchingCellReader(execution, getCube("Sales"));
         fbcr.recordCellRequest(request);
         fbcr.loadAggregations();
-        value = aggMan.getCellFromCache(request); // after load, cell is found
+        value = fbcr.aggMgr.getCellFromCache(request); // after load, cell found
         assertTrue(value instanceof Number);
         assertEquals(131558, ((Number) value).intValue());
     }
 
     public void testFemaleCustomerCount() {
+        final FastBatchingCellReader fbcr =
+            new FastBatchingCellReader(execution, getCube("Sales"));
         CellRequest request =
             createRequest(
                 "Sales", "[Measures].[Customer Count]",
                 "customer", "gender", "F");
-        final RolapAggregationManager aggMan = AggregationManager.instance();
-        FastBatchingCellReader fbcr =
-            new FastBatchingCellReader(execution, getCube("Sales"));
-        Object value = aggMan.getCellFromCache(request);
+        Object value = fbcr.aggMgr.getCellFromCache(request);
         assertNull(value); // before load, the cell is not found
         fbcr.recordCellRequest(request);
         fbcr.loadAggregations();
-        value = aggMan.getCellFromCache(request); // after load, cell is found
+        value = fbcr.aggMgr.getCellFromCache(request); // after load, cell found
         assertTrue(value instanceof Number);
         assertEquals(2755, ((Number) value).intValue());
     }
@@ -124,27 +123,26 @@ public class TestAggregationManager extends BatchTestCase {
                 "customer", "gender", "F",
                 makeConstraintYearQuarterMonth(Q1M1Q2M5));
 
-        final RolapAggregationManager aggMan = AggregationManager.instance();
-
-        Object value = aggMan.getCellFromCache(request1);
-        assertNull(value); // before load, the cell is not found
-
         FastBatchingCellReader fbcr =
             new FastBatchingCellReader(execution, getCube("Sales"));
+
+        Object value = fbcr.aggMgr.getCellFromCache(request1);
+        assertNull(value); // before load, the cell is not found
+
         fbcr.recordCellRequest(request1);
         fbcr.recordCellRequest(request2);
         fbcr.recordCellRequest(request3);
         fbcr.loadAggregations();
 
-        value = aggMan.getCellFromCache(request1); // after load, cell is found
+        value = fbcr.aggMgr.getCellFromCache(request1); // after load, found
         assertTrue(value instanceof Number);
         assertEquals(694, ((Number) value).intValue());
 
-        value = aggMan.getCellFromCache(request2); // after load, cell is found
+        value = fbcr.aggMgr.getCellFromCache(request2); // after load, found
         assertTrue(value instanceof Number);
         assertEquals(672, ((Number) value).intValue());
 
-        value = aggMan.getCellFromCache(request3); // after load, cell is found
+        value = fbcr.aggMgr.getCellFromCache(request3); // after load, found
         assertTrue(value instanceof Number);
         assertEquals(1122, ((Number) value).intValue());
         // Note: 1122 != (694 + 672)
@@ -1826,6 +1824,160 @@ public class TestAggregationManager extends BatchTestCase {
             true,
             false,
             false);
+    }
+
+    public void testNonCollapsedAggregate() throws Exception {
+        propSaver.set(MondrianProperties.instance().UseAggregates, true);
+        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        final String cube =
+            "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_c_14_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\"/>"
+            + "    <AggName name=\"agg_l_05_sales_fact_1997\">"
+            + "        <AggFactCount column=\"fact_count\"/>\n"
+            + "        <AggIgnoreColumn column=\"customer_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"promotion_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_sales\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_cost\"/>\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\" />\n"
+            + "        <AggLevel name=\"[Product].[Product Id]\" column=\"product_id\" collapsed=\"false\"/>\n"
+            + "    </AggName>\n"
+            + "</Table>\n"
+            + "<Dimension foreignKey=\"product_id\" name=\"Product\">\n"
+            + "<Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "  <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + " <Table name=\"product\"/>\n"
+            + " <Table name=\"product_class\"/>\n"
+            + "  </Join>\n"
+            + "  <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"Product Id\" table=\"product\" column=\"product_id\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>\n"
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube>\n";
+        final TestContext context =
+            TestContext.instance().create(
+                null, cube, null, null, null, null);
+        final String mdx =
+            "select {[Product].[Product Family].Members} on rows, {[Measures].[Unit Sales]} on columns from [Foo]";
+        final String sqlOracle =
+            "select \"product_class\".\"product_family\" as \"c0\", sum(\"agg_l_05_sales_fact_1997\".\"unit_sales\") as \"m0\" from \"product_class\" \"product_class\", \"product\" \"product\", \"agg_l_05_sales_fact_1997\" \"agg_l_05_sales_fact_1997\" where \"agg_l_05_sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" group by \"product_class\".\"product_family\"";
+        final String sqlMysql =
+            "select `product_class`.`product_family` as `c0`, sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0` from `product_class` as `product_class`, `product` as `product`, `agg_l_05_sales_fact_1997` as `agg_l_05_sales_fact_1997` where `agg_l_05_sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` group by `product_class`.`product_family`";
+        assertQuerySqlOrNot(
+            context,
+            mdx,
+            new SqlPattern[] {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.ORACLE,
+                    sqlOracle,
+                    sqlOracle.length()),
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysql,
+                    sqlMysql.length())
+            },
+            false, false, true);
+    }
+
+    public void testTwoNonCollapsedAggregate() throws Exception {
+        propSaver.set(MondrianProperties.instance().UseAggregates, true);
+        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        final String cube =
+            "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\">\n"
+            + "    <AggExclude name=\"agg_g_ms_pcat_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_c_14_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_pl_01_sales_fact_1997\"/>"
+            + "    <AggExclude name=\"agg_ll_01_sales_fact_1997\"/>"
+            + "    <AggName name=\"agg_l_05_sales_fact_1997\">"
+            + "        <AggFactCount column=\"fact_count\"/>\n"
+            + "        <AggIgnoreColumn column=\"customer_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"promotion_id\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_sales\"/>\n"
+            + "        <AggIgnoreColumn column=\"store_cost\"/>\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"unit_sales\" />\n"
+            + "        <AggLevel name=\"[Product].[Product Id]\" column=\"product_id\" collapsed=\"false\"/>\n"
+            + "        <AggLevel name=\"[Store].[Store Id]\" column=\"store_id\" collapsed=\"false\"/>\n"
+            + "    </AggName>\n"
+            + "</Table>\n"
+            + "<Dimension foreignKey=\"product_id\" name=\"Product\">\n"
+            + "<Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
+            + "  <Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">\n"
+            + " <Table name=\"product\"/>\n"
+            + " <Table name=\"product_class\"/>\n"
+            + "  </Join>\n"
+            + "  <Level name=\"Product Family\" table=\"product_class\" column=\"product_family\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"Product Department\" table=\"product_class\" column=\"product_department\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Category\" table=\"product_class\" column=\"product_category\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
+            + "   uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
+            + "  <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "  <Level name=\"Product Id\" table=\"product\" column=\"product_id\"\n"
+            + "   uniqueMembers=\"true\"/>\n"
+            + "</Hierarchy>\n"
+            + "</Dimension>\n"
+            + "  <Dimension name=\"Store\" foreignKey=\"store_id\" >\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\"\n"
+            + "        primaryKeyTable=\"store\">\n"
+            + "      <Join leftKey=\"region_id\" rightKey=\"region_id\">\n"
+            + "        <Table name=\"store\"/>\n"
+            + "        <Table name=\"region\"/>\n"
+            + "      </Join>\n"
+            + "      <Level name=\"Store Region\" table=\"region\" column=\"sales_city\"\n"
+            + "          uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Store Id\" table=\"store\" column=\"store_id\"\n"
+            + "          uniqueMembers=\"true\">\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "<Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "</Cube>\n";
+        final TestContext context =
+            TestContext.instance().create(
+                null, cube, null, null, null, null);
+        final String mdx =
+            "select {Crossjoin([Product].[Product Family].Members, [Store].[Store Id].Members)} on rows, {[Measures].[Unit Sales]} on columns from [Foo]";
+        final String sqlOracle =
+            "select \"product_class\".\"product_family\" as \"c0\", \"store\".\"store_id\" as \"c1\", sum(\"agg_l_05_sales_fact_1997\".\"unit_sales\") as \"m0\" from \"product_class\" \"product_class\", \"product\" \"product\", \"agg_l_05_sales_fact_1997\" \"agg_l_05_sales_fact_1997\", \"store\" \"store\" where \"agg_l_05_sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and \"agg_l_05_sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" group by \"product_class\".\"product_family\", \"store\".\"store_id\"";
+        final String sqlMysql =
+            "select `product_class`.`product_family` as `c0`, `store`.`store_id` as `c1`, sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0` from `product_class` as `product_class`, `product` as `product`, `agg_l_05_sales_fact_1997` as `agg_l_05_sales_fact_1997`, `store` as `store` where `agg_l_05_sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and `agg_l_05_sales_fact_1997`.`store_id` = `store`.`store_id` group by `product_class`.`product_family`, `store`.`store_id`";
+        assertQuerySqlOrNot(
+            context,
+            mdx,
+            new SqlPattern[] {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.ORACLE,
+                    sqlOracle,
+                    sqlOracle.length()),
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysql,
+                    sqlMysql.length())
+            },
+            false, false, true);
     }
 
     /**

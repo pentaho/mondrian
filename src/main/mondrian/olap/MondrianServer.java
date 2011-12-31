@@ -10,6 +10,8 @@
 package mondrian.olap;
 
 import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapResultShepherd;
+import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.*;
 import mondrian.server.monitor.Monitor;
 import mondrian.spi.CatalogLocator;
@@ -111,6 +113,8 @@ public abstract class MondrianServer {
      * @return list of MDX keywords
      */
     public abstract List<String> getKeywords();
+
+    public abstract RolapResultShepherd getResultShepherd();
 
     /**
      * Returns the lock box that can be used to pass objects via their string
@@ -231,6 +235,8 @@ public abstract class MondrianServer {
     public abstract void removeStatement(Statement statement);
 
     public abstract Monitor getMonitor();
+
+    public abstract AggregationManager getAggregationManager();
 
     /**
      * Description of the version of the server.

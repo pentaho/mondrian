@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -46,13 +46,16 @@ public class AggregationKey
 
     private final BitKey constrainedColumnsBitKey;
 
-    /*
-    * This map must be deternimistic; otherwise different runs generate SQL
-    * statements in different orders.
-    *
-     * TODO: change this to SortedMap to speed up comparison.
+    /**
+     * Map from BitKey (representing a group of columns that forms a
+     * compound key) to StarPredicate (representing the predicate
+     * defining the compound member).
+     *
+     * <p>The fact that the map is sorted also ensures that it is deternimistic;
+     * otherwise different runs might generate SQL statements with their clauses
+     * in different orders.
      */
-    private final Map<BitKey, StarPredicate> compoundPredicateMap;
+    private final SortedMap<BitKey, StarPredicate> compoundPredicateMap;
 
     private int hashCode;
 
@@ -105,8 +108,8 @@ public class AggregationKey
      * @return Whether compound predicate maps are equal
      */
     private static boolean equal(
-        final Map<BitKey, StarPredicate> map1,
-        final Map<BitKey, StarPredicate> map2)
+        final SortedMap<BitKey, StarPredicate> map1,
+        final SortedMap<BitKey, StarPredicate> map2)
     {
         if (map1 == null) {
             return map2 == null;
@@ -117,12 +120,23 @@ public class AggregationKey
         if (map1.size() != map2.size()) {
             return false;
         }
-        for (BitKey bitKey : map1.keySet()) {
-            StarPredicate thisPred = map1.get(bitKey);
-            StarPredicate otherPred = map2.get(bitKey);
-            if (thisPred == null
-                || otherPred == null
-                || !thisPred.equalConstraint(otherPred))
+        final Iterator<Map.Entry<BitKey, StarPredicate>> iter1 =
+            map1.entrySet().iterator();
+        final Iterator<Map.Entry<BitKey, StarPredicate>> iter2 =
+            map2.entrySet().iterator();
+        while (iter1.hasNext() && iter2.hasNext()) {
+            final Map.Entry<BitKey, StarPredicate> entry1 = iter1.next();
+            final Map.Entry<BitKey, StarPredicate> entry2 = iter2.next();
+            final BitKey bitKey1 = entry1.getKey();
+            final BitKey bitKey2 = entry2.getKey();
+            if (!bitKey1.equals(bitKey2)) {
+                return false;
+            }
+            StarPredicate pred1 = entry1.getValue();
+            StarPredicate pred2 = entry2.getValue();
+            if (pred1 == null
+                || pred2 == null
+                || !pred1.equalConstraint(pred2))
             {
                 return false;
             }

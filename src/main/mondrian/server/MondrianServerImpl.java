@@ -9,10 +9,13 @@
 */
 package mondrian.server;
 
+import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianServer;
 import mondrian.olap4j.CatalogFinder;
 import mondrian.rolap.RolapConnection;
+import mondrian.rolap.RolapResultShepherd;
 import mondrian.rolap.RolapSchema;
+import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.monitor.*;
 import mondrian.spi.CatalogLocator;
 import mondrian.util.LockBox;
@@ -53,6 +56,8 @@ class MondrianServerImpl
 
     private final CatalogLocator catalogLocator;
 
+    private final RolapResultShepherd shepherd;
+
     /**
      * Map of open connections, by id. Connections are added just after
      * construction, and are removed when they call close. Garbage collection
@@ -70,6 +75,10 @@ class MondrianServerImpl
         new WeakHashMap<Long, Statement>();
 
     private final MonitorImpl monitor = new MonitorImpl();
+
+    private final AggregationManager aggMgr;
+
+    private boolean shutdown = false;
 
     private static final Logger LOGGER =
         Logger.getLogger(MondrianServerImpl.class);
@@ -159,6 +168,10 @@ class MondrianServerImpl
         // specifications of the servers where they create and retrieve the
         // entry.
         this.lockBox = registry.lockBox;
+
+        this.aggMgr = new AggregationManager();
+
+        this.shepherd = new RolapResultShepherd();;
     }
 
     @Override
@@ -171,12 +184,27 @@ class MondrianServerImpl
         return id;
     }
 
+    @Override
+    public RolapResultShepherd getResultShepherd() {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
+        return this.shepherd;
+    }
+
     public List<String> getKeywords() {
         return KEYWORD_LIST;
     }
 
     public LockBox getLockBox() {
         return lockBox;
+    }
+
+    public AggregationManager getAggregationManager() {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
+        return aggMgr;
     }
 
     @Override
@@ -186,6 +214,9 @@ class MondrianServerImpl
         String roleName)
         throws SQLException
     {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
         return this.getConnection(
             databaseName, catalogName, roleName,
             new Properties());
@@ -199,6 +230,9 @@ class MondrianServerImpl
         Properties props)
         throws SQLException
     {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
         return repository.getConnection(
             this, databaseName, catalogName, roleName, props);
     }
@@ -206,6 +240,9 @@ class MondrianServerImpl
     public List<String> getCatalogNames(
         RolapConnection connection)
     {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
         return
             repository.getCatalogNames(
                 connection,
@@ -217,22 +254,40 @@ class MondrianServerImpl
     public List<Map<String, Object>> getDatabases(
         RolapConnection connection)
     {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
         return repository.getDatabases(connection);
     }
 
     @Override
     public CatalogLocator getCatalogLocator() {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
         return catalogLocator;
     }
 
     @Override
     public void shutdown() {
+        if (this == MondrianServerRegistry.INSTANCE.staticServer) {
+            LOGGER.warn("Can't shutdown the static server.");
+            return;
+        }
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
+        this.shutdown  = true;
         monitor.shutdown();
         repository.shutdown();
+        shepherd.shutdown();
     }
 
     @Override
     public void addConnection(RolapConnection connection) {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
         connectionMap.put(
             connection.getId(),
             connection);
@@ -245,6 +300,9 @@ class MondrianServerImpl
 
     @Override
     public void removeConnection(RolapConnection connection) {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
         connectionMap.remove(connection.getId());
         monitor.sendEvent(
             new ConnectionEndEvent(
@@ -255,11 +313,17 @@ class MondrianServerImpl
 
     @Override
     public RolapConnection getConnection(int connectionId) {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
         return connectionMap.get(connectionId);
     }
 
     @Override
     public void addStatement(Statement statement) {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
         statementMap.put(
             statement.getId(),
             statement);
@@ -275,6 +339,9 @@ class MondrianServerImpl
 
     @Override
     public void removeStatement(Statement statement) {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
         statementMap.remove(statement.getId());
         final RolapConnection connection =
             statement.getMondrianConnection();
@@ -287,6 +354,9 @@ class MondrianServerImpl
     }
 
     public Monitor getMonitor() {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
         return monitor;
     }
 
@@ -294,6 +364,9 @@ class MondrianServerImpl
         RolapConnection connection,
         String catalogName)
     {
+        if (shutdown) {
+            throw new MondrianException("Server already shutdown.");
+        }
         return
             repository.getRolapSchemas(
                 connection,

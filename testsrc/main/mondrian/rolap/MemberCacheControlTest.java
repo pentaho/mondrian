@@ -510,11 +510,12 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         // Load cell data and check it is in cache
         executeQuery(
             "select {[Measures].[Unit Sales]} on columns, {[Retail].[CA]} on rows from [Sales]");
+        final AggregationManager aggMgr =
+            ((RolapConnection) conn).getServer().getAggregationManager();
         assertEquals(
             Double.valueOf("74748"),
-            AggregationManager.instance()
-                .getCellFromCache(
-                    AggregationManager.makeRequest(cacheRegionMembers)));
+            aggMgr.getCellFromCache(
+                AggregationManager.makeRequest(cacheRegionMembers)));
 
         // Now tell the cache that [CA].[Berkeley] is new
         final CacheControl.MemberEditCommand command =
@@ -523,7 +524,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
         // test that cells have been removed
         assertNull(
-            AggregationManager.instance().getCellFromCache(
+            aggMgr.getCellFromCache(
                 AggregationManager.makeRequest(cacheRegionMembers)));
 
         tc.assertAxisReturns(
@@ -665,11 +666,12 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         // Load cell data and check it is in cache
         executeQuery(
             "select {[Measures].[Unit Sales]} on columns, {[Retail].[CA].[Alameda]} on rows from [Sales]");
+        final AggregationManager aggMgr =
+            ((RolapConnection) conn).getServer().getAggregationManager();
         assertEquals(
             Double.valueOf("2117"),
-            AggregationManager.instance()
-                .getCellFromCache(
-                    AggregationManager.makeRequest(cacheRegionMembers)));
+            aggMgr.getCellFromCache(
+                AggregationManager.makeRequest(cacheRegionMembers)));
 
         // Now tell the cache that [CA].[San Francisco] has been removed.
         final CacheControl.MemberEditCommand command =
@@ -683,7 +685,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
         // test that cells have been removed
         assertNull(
-            AggregationManager.instance().getCellFromCache(
+            aggMgr.getCellFromCache(
                 AggregationManager.makeRequest(cacheRegionMembers)));
 
         // The list of children should be updated.

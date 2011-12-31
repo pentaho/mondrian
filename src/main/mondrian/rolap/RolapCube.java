@@ -89,6 +89,8 @@ public class RolapCube extends CubeBase {
     private final List<RolapMeasureGroup> measureGroupList =
         new ArrayList<RolapMeasureGroup>();
 
+    private BitKey closureColumnBitKey;
+
     /**
      * Creates a <code>RolapCube</code> from a regular cube.
      *
@@ -352,6 +354,16 @@ public class RolapCube extends CubeBase {
                 new MeasureMemberSource(measuresHierarchy, measureList)));
 
         this.measuresHierarchy.setDefaultMember(defaultMeasure);
+
+        // Initialize closure bit key only when we know how many columns are in
+        // the star.
+        if (!isVirtual()) {
+            closureColumnBitKey =
+                BitKey.Factory.makeBitKey(
+                    measureGroupList.get(0).getStar().getColumnCount());
+        } else {
+            closureColumnBitKey = null;
+        }
     }
 
     public RolapSchema getSchema() {

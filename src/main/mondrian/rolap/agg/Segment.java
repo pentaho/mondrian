@@ -340,7 +340,7 @@ public class Segment {
             Object key = keys[i];
             int offset = axes[i].getOffset(key);
             if (offset < 0) {
-                if (axes[i].getPredicate().evaluate(key)) {
+                if (axes[i].wouldContain(key)) {
                     // see whether this segment should contain this value
                     missed++;
                     continue;
@@ -381,7 +381,7 @@ public class Segment {
         Util.assertTrue(keys.length == axes.length);
         for (int i = 0; i < keys.length; i++) {
             Object key = keys[i];
-            if (!axes[i].getPredicate().evaluate(key)) {
+            if (!axes[i].wouldContain(key)) {
                 return false;
             }
         }
@@ -393,8 +393,8 @@ public class Segment {
      */
     private boolean isExcluded(Object[] keys) {
         // Performance critical: cannot use foreach
-        //noinspection ForLoopReplaceableByForEach
         final int n = excludedRegions.size();
+        //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < n; i++) {
             Region excludedRegion = excludedRegions.get(i);
             if (excludedRegion.wouldContain(keys)) {

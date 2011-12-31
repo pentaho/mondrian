@@ -26,7 +26,7 @@ public class SegmentCacheTest extends BasicQueryTest {
         propSaver.set(
             MondrianProperties.instance().DisableCaching,
             true);
-        AggregationManager.instance() .getCacheControl(null, null)
+        getTestContext().getConnection().getCacheControl(null)
             .flushSchemaCache();
         propSaver.set(
             MondrianProperties.instance().SegmentCache,
@@ -36,7 +36,7 @@ public class SegmentCacheTest extends BasicQueryTest {
     @Override
     protected void tearDown() throws Exception {
         propSaver.reset();
-        AggregationManager.instance().getCacheControl(null, null)
+        getTestContext().getConnection().getCacheControl(null)
             .flushSchemaCache();
         super.tearDown();
     }
@@ -67,10 +67,6 @@ public class SegmentCacheTest extends BasicQueryTest {
         assertQueryReturns(query, result);
         assertQueryReturns(query2, result2);
     }
-    public void testDisableCache() {
-        assertTrue(SegmentCacheWorker.isCacheEnabled());
-        propSaver.reset();
-        assertFalse(SegmentCacheWorker.isCacheEnabled());
-    }
 }
+
 // End SegmentCacheTest.java
