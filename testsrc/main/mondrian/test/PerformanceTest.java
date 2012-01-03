@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2011 Julian Hyde
+// Copyright (C) 2009-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -501,6 +501,7 @@ public class PerformanceTest extends FoodMartTestCase {
     public void testBugMondrian981() {
         if (!LOGGER.isDebugEnabled()) {
             // Too slow to run as part of standard regress until bug is fixed.
+            return;
         }
         // To see the cartesian-product nature of this bug, try commenting out
         // various of the following HierarchyGrants.
