@@ -168,7 +168,7 @@ public class ArraySortedSet<E extends Comparable<E>>
      *
      * @param arrayToMerge Other set to combine with this
      * @return Set containing union of the elements of inputs
-     * 
+     *
      * @see Util#intersect(java.util.SortedSet, java.util.SortedSet)
      */
     public ArraySortedSet<E> merge(

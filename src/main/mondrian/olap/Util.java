@@ -2178,13 +2178,13 @@ public class Util extends XOMUtil {
 
     /**
      * Returns the intersection of two sorted sets. Does not modify either set.
-     * 
+     *
      * <p>Optimized for the case that both sets are {@link ArraySortedSet}.</p>
-     * 
+     *
      * @param set1 First set
      * @param set2 Second set
      * @return Intersection of the sets
-    */
+     */
     public static <E extends Comparable> SortedSet<E> intersect(
         SortedSet<E> set1,
         SortedSet<E> set2)
