@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,13 +29,15 @@ abstract class DenseNativeSegmentDataset extends DenseSegmentDataset {
     /**
      * Creates a DenseNativeSegmentDataset.
      *
-     * @param segment Segment
-     * @param size Number of coordinates
+     * @param axes Segment axes, containing actual column values
+     * @param nullIndicators Null indicators
      */
-    DenseNativeSegmentDataset(Segment segment, int size) {
-        super(segment);
-        this.nullIndicators = new BitSet(size);
-        this.nullIndicators.set(0, size, false);
+    DenseNativeSegmentDataset(
+        SegmentAxis[] axes,
+        BitSet nullIndicators)
+    {
+        super(axes);
+        this.nullIndicators = nullIndicators;
     }
 
     public boolean isNull(CellKey key) {

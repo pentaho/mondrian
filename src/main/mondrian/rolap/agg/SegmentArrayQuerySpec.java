@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2010 Julian Hyde and others
+// Copyright (C) 2005-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -62,22 +62,16 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     private boolean isValid(boolean fail) {
         assert segments.size() > 0;
         for (Segment segment : segments) {
-            if (segment.aggregation != segment0.aggregation) {
+            int n = segment.predicates.length;
+            if (n != segment0.predicates.length) {
                 assert !fail;
                 return false;
             }
-            int n = segment.axes.length;
-            if (n != segment0.axes.length) {
-                assert !fail;
-                return false;
-            }
-            for (int j = 0; j < segment.axes.length; j++) {
+            for (int j = 0; j < segment.predicates.length; j++) {
                 // We only require that the two arrays have the same
                 // contents, we but happen to know they are the same array,
                 // because we constructed them at the same time.
-                if (segment.axes[j].getPredicate()
-                    != segment0.axes[j].getPredicate())
-                {
+                if (segment.predicates[j] != segment0.predicates[j]) {
                     assert !fail;
                     return false;
                 }
@@ -99,7 +93,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     }
 
     public RolapStar.Column[] getColumns() {
-        return segment0.aggregation.getColumns();
+        return segment0.getColumns();
     }
 
     /**
@@ -112,7 +106,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     }
 
     public StarColumnPredicate getColumnPredicate(final int i) {
-        return segment0.axes[i].getPredicate();
+        return segment0.predicates[i];
     }
 
     protected List<StarPredicate> getPredicateList() {

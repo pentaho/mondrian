@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
-// Copyright (C) 2011-2011 Julian Hyde
+// Copyright (C) 2011-2012 Julian Hyde
 // All Rights Reserved.
 */
 package mondrian.server.monitor;
@@ -25,6 +25,8 @@ public interface Visitor<T> {
     T visit(SqlStatementStartEvent event);
     T visit(SqlStatementExecuteEvent event);
     T visit(SqlStatementEndEvent event);
+    T visit(CellCacheSegmentCreateEvent event);
+    T visit(CellCacheSegmentDeleteEvent event);
 }
 
 // End Visitor.java

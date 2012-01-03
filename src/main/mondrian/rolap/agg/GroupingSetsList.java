@@ -3,14 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde and others
+// Copyright (C) 2007-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.BitKey;
-import mondrian.rolap.RolapStar;
+import mondrian.rolap.*;
 
 import java.util.*;
 
@@ -83,7 +82,7 @@ final class GroupingSetsList {
             new ArrayList<RolapStar.Column[]>();
         for (GroupingSet aggBatchDetail : groupingSets) {
             groupingColumns.add(
-                aggBatchDetail.segment0.aggregation.getColumns());
+                aggBatchDetail.segment0.getColumns());
         }
         return groupingColumns;
     }
@@ -168,8 +167,12 @@ final class GroupingSetsList {
         return columnIndexToGroupingIndexMap[columnIndex];
     }
 
-    public Aggregation.Axis[] getDefaultAxes() {
+    public SegmentAxis[] getDefaultAxes() {
         return getDefaultGroupingSet().getAxes();
+    }
+
+    public StarColumnPredicate[] getDefaultPredicates() {
+        return getDefaultGroupingSet().getPredicates();
     }
 
     protected GroupingSet getDefaultGroupingSet() {
@@ -177,7 +180,7 @@ final class GroupingSetsList {
     }
 
     public RolapStar.Column[] getDefaultColumns() {
-        return getDefaultGroupingSet().segment0.aggregation.getColumns();
+        return getDefaultGroupingSet().segment0.getColumns();
     }
 
     public List<Segment> getDefaultSegments() {
@@ -193,7 +196,7 @@ final class GroupingSetsList {
     }
 
     public RolapStar getStar() {
-        return getDefaultGroupingSet().segment0.aggregation.getStar();
+        return getDefaultGroupingSet().segment0.getStar();
     }
 
     public List<GroupingSet> getGroupingSets() {
@@ -212,15 +215,17 @@ final class GroupingSetsList {
     static class Cohort
     {
         final List<SegmentDataset> segmentDatasetList;
+        final SegmentAxis[] axes;
         // workspace
         final int[] pos;
 
         Cohort(
             List<SegmentDataset> segmentDatasetList,
-            int arity)
+            SegmentAxis[] axes)
         {
             this.segmentDatasetList = segmentDatasetList;
-            this.pos = new int[arity];
+            this.axes = axes;
+            this.pos = new int[axes.length];
         }
     }
 }

@@ -242,19 +242,6 @@ public class InlineTableTest extends FoodMartTestCase {
         if (MondrianProperties.instance().EnableGroupingSets.get()) {
             return;
         }
-
-        // Access & Oracle return date literals as timestamp values, which
-        // results in extra fields when converted to a string.
-        final String extra;
-        switch (testContext.getDialect().getDatabaseProduct()) {
-        case ACCESS:
-        case ORACLE:
-            extra = " 00:00:00.0";
-            break;
-        default:
-            extra = "";
-            break;
-        }
         testContext.assertQueryReturns(
             "select {[Alternative Promotion].Members} ON COLUMNS\n"
             + "from [" + cubeName + "] ",
@@ -262,8 +249,8 @@ public class InlineTableTest extends FoodMartTestCase {
             + "{}\n"
             + "Axis #1:\n"
             + "{[Alternative Promotion].[All Alternative Promotions]}\n"
-            + "{[Alternative Promotion].[2008-04-29" + extra + "]}\n"
-            + "{[Alternative Promotion].[2007-01-20" + extra + "]}\n"
+            + "{[Alternative Promotion].[2008-04-29]}\n"
+            + "{[Alternative Promotion].[2007-01-20]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: \n"
             + "Row #0: \n");

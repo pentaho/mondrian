@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2011 Julian Hyde and others
+// Copyright (C) 2004-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1082,6 +1082,238 @@ public class UtilTestCase extends TestCase {
             i++;
         }
         assertEquals(1 << 20, i);
+    }
+
+    /**
+     * Unit test for {@link ByteString}.
+     */
+    public void testByteString() {
+        final ByteString empty0 = new ByteString(new byte[]{});
+        final ByteString empty1 = new ByteString(new byte[]{});
+        assertTrue(empty0.equals(empty1));
+        assertEquals(empty0.hashCode(), empty1.hashCode());
+        assertEquals("", empty0.toString());
+        assertEquals(0, empty0.length());
+        assertEquals(0, empty0.compareTo(empty0));
+        assertEquals(0, empty0.compareTo(empty1));
+
+        final ByteString two =
+            new ByteString(new byte[]{ (byte) 0xDE, (byte) 0xAD});
+        assertFalse(empty0.equals(two));
+        assertFalse(two.equals(empty0));
+        assertEquals("dead", two.toString());
+        assertEquals(2, two.length());
+        assertEquals(0, two.compareTo(two));
+        assertTrue(empty0.compareTo(two) < 0);
+        assertTrue(two.compareTo(empty0) > 0);
+
+        final ByteString three =
+            new ByteString(new byte[]{ (byte) 0xDE, (byte) 0x02, (byte) 0xAD});
+        assertEquals(3, three.length());
+        assertEquals("de02ad", three.toString());
+        assertTrue(two.compareTo(three) < 0);
+        assertTrue(three.compareTo(two) > 0);
+        assertEquals(0x02, three.byteAt(1));
+
+        final HashSet<ByteString> set = new HashSet<ByteString>();
+        set.addAll(Arrays.asList(empty0, two, three, two, empty1, three));
+        assertEquals(3, set.size());
+    }
+
+    public void testArraySortedSet() {
+        String[] abce = {"a", "b", "c", "e"};
+        final SortedSet<String> abceSet =
+            new ArraySortedSet<String>(abce);
+
+        // test size, isEmpty, contains
+        assertEquals(4, abceSet.size());
+        assertFalse(abceSet.isEmpty());
+        assertEquals("a", abceSet.first());
+        assertEquals("e", abceSet.last());
+        assertTrue(abceSet.contains("a"));
+        assertFalse(abceSet.contains("aa"));
+        assertFalse(abceSet.contains("z"));
+        assertFalse(abceSet.contains(null));
+        checkToString("[a, b, c, e]", abceSet);
+
+        // test iterator
+        String z = "";
+        for (String s : abceSet) {
+            z += s + ";";
+        }
+        assertEquals("a;b;c;e;", z);
+
+        // empty set
+        String[] empty = {};
+        final SortedSet<String> emptySet =
+            new ArraySortedSet<String>(empty);
+        int n = 0;
+        for (String s : emptySet) {
+            ++n;
+        }
+        assertEquals(0, n);
+        assertEquals(0, emptySet.size());
+        assertTrue(emptySet.isEmpty());
+        try {
+            String s = emptySet.first();
+            fail("expected exception, got " + s);
+        } catch (NoSuchElementException e) {
+            // ok
+        }
+        try {
+            String s = emptySet.last();
+            fail("expected exception, got " + s);
+        } catch (NoSuchElementException e) {
+            // ok
+        }
+        assertFalse(emptySet.contains("a"));
+        assertFalse(emptySet.contains("aa"));
+        assertFalse(emptySet.contains("z"));
+        checkToString("[]", emptySet);
+
+        // same hashCode etc. as similar hashset
+        final HashSet<String> abcHashset = new HashSet<String>();
+        abcHashset.addAll(Arrays.asList(abce));
+        assertEquals(abcHashset, abceSet);
+        assertEquals(abceSet, abcHashset);
+        assertEquals(abceSet.hashCode(), abcHashset.hashCode());
+
+        // subset to end
+        final Set<String> subsetEnd = new ArraySortedSet<String>(abce, 1, 4);
+        checkToString("[b, c, e]", subsetEnd);
+        assertEquals(3, subsetEnd.size());
+        assertFalse(subsetEnd.isEmpty());
+        assertTrue(subsetEnd.contains("c"));
+        assertFalse(subsetEnd.contains("a"));
+        assertFalse(subsetEnd.contains("z"));
+
+        // subset from start
+        final Set<String> subsetStart = new ArraySortedSet<String>(abce, 0, 2);
+        checkToString("[a, b]", subsetStart);
+        assertEquals(2, subsetStart.size());
+        assertFalse(subsetStart.isEmpty());
+        assertTrue(subsetStart.contains("a"));
+        assertFalse(subsetStart.contains("c"));
+
+        // subset from neither start or end
+        final Set<String> subset = new ArraySortedSet<String>(abce, 1, 2);
+        checkToString("[b]", subset);
+        assertEquals(1, subset.size());
+        assertFalse(subset.isEmpty());
+        assertTrue(subset.contains("b"));
+        assertFalse(subset.contains("a"));
+        assertFalse(subset.contains("e"));
+
+        // empty subset
+        final Set<String> subsetEmpty = new ArraySortedSet<String>(abce, 1, 1);
+        checkToString("[]", subsetEmpty);
+        assertEquals(0, subsetEmpty.size());
+        assertTrue(subsetEmpty.isEmpty());
+        assertFalse(subsetEmpty.contains("e"));
+
+        // subsets based on elements, not ordinals
+        assertEquals(abceSet.subSet("a", "c"), subsetStart);
+        assertEquals("[a, b, c]", abceSet.subSet("a", "d").toString());
+        assertFalse(abceSet.subSet("a", "e").equals(subsetStart));
+        assertFalse(abceSet.subSet("b", "c").equals(subsetStart));
+        assertEquals("[c, e]", abceSet.subSet("c", "z").toString());
+        assertEquals("[e]", abceSet.subSet("d", "z").toString());
+        assertFalse(abceSet.subSet("e", "c").equals(subsetStart));
+        assertEquals("[]", abceSet.subSet("e", "c").toString());
+        assertFalse(abceSet.subSet("z", "c").equals(subsetStart));
+        assertEquals("[]", abceSet.subSet("z", "c").toString());
+
+        // merge
+        final ArraySortedSet<String> ar1 = new ArraySortedSet<String>(abce);
+        final ArraySortedSet<String> ar2 =
+            new ArraySortedSet<String>(
+                new String[] {"d"});
+        final ArraySortedSet<String> ar3 =
+            new ArraySortedSet<String>(
+                new String[] {"b", "c"});
+        checkToString("[a, b, c, e]", ar1);
+        checkToString("[d]", ar2);
+        checkToString("[b, c]", ar3);
+        checkToString("[a, b, c, d, e]", ar1.merge(ar2));
+        checkToString("[a, b, c, e]", ar1.merge(ar3));
+    }
+
+    private void checkToString(String expected, Set<String> set) {
+        assertEquals(expected, set.toString());
+
+        final List<String> list = new ArrayList<String>();
+        list.addAll(set);
+        assertEquals(expected, list.toString());
+
+        list.clear();
+        for (String s : set) {
+            list.add(s);
+        }
+        assertEquals(expected, list.toString());
+    }
+
+
+    public void testIntersectSortedSet() {
+        final ArraySortedSet<String> ace =
+            new ArraySortedSet(new String[]{ "a", "c", "e"});
+        final ArraySortedSet<String> cd =
+            new ArraySortedSet(new String[]{ "c", "d"});
+        final ArraySortedSet<String> bdf =
+            new ArraySortedSet(new String[]{ "b", "d", "f"});
+        final ArraySortedSet<String> bde =
+            new ArraySortedSet(new String[]{ "b", "d", "e"});
+        final ArraySortedSet<String> empty =
+            new ArraySortedSet(new String[]{});
+        checkToString("[a, c, e]", Util.intersect(ace, ace));
+        checkToString("[c]", Util.intersect(ace, cd));
+        checkToString("[]", Util.intersect(ace, empty));
+        checkToString("[]", Util.intersect(empty, ace));
+        checkToString("[]", Util.intersect(empty, empty));
+        checkToString("[]", Util.intersect(ace, bdf));
+        checkToString("[e]", Util.intersect(ace, bde));
+    }
+
+    /**
+     * Unit test for {@link Triple}.
+     */
+    public void testTriple() {
+        if (Util.PreJdk15) {
+            // Boolean is not Comparable until JDK 1.5. Triple works, but this
+            // test does not.
+            return;
+        }
+        final Triple<Integer, String, Boolean> triple0 =
+            Triple.of(5, "foo", true);
+        final Triple<Integer, String, Boolean> triple1 =
+            Triple.of(5, "foo", false);
+        final Triple<Integer, String, Boolean> triple2 =
+            Triple.of(5, "foo", true);
+        final Triple<Integer, String, Boolean> triple3 =
+            Triple.of(null, "foo", true);
+
+        assertEquals(triple0,  triple0);
+        assertFalse(triple0.equals(triple1));
+        assertFalse(triple1.equals(triple0));
+        assertFalse(triple0.hashCode() == triple1.hashCode());
+        assertEquals(triple0, triple2);
+        assertEquals(triple0.hashCode(), triple2.hashCode());
+        assertEquals(triple3, triple3);
+        assertFalse(triple0.equals(triple3));
+        assertFalse(triple3.equals(triple0));
+        assertFalse(triple0.hashCode() == triple3.hashCode());
+
+        final SortedSet<Triple<Integer, String, Boolean>> set =
+            new TreeSet<Triple<Integer, String, Boolean>>(
+                Arrays.asList(triple0, triple1, triple2, triple3, triple1));
+        assertEquals(3, set.size());
+        assertEquals(
+            "[<null, foo, true>, <5, foo, false>, <5, foo, true>]",
+            set.toString());
+
+        assertEquals("<5, foo, true>", triple0.toString());
+        assertEquals("<5, foo, false>", triple1.toString());
+        assertEquals("<5, foo, true>", triple2.toString());
+        assertEquals("<null, foo, true>", triple3.toString());
     }
 }
 

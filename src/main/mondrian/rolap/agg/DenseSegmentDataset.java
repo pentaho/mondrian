@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2011 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -30,24 +30,24 @@ import java.util.Map;
  * @version $Id$
  */
 abstract class DenseSegmentDataset implements SegmentDataset {
-    private final Segment segment;
+    private final SegmentAxis[] axes;
     protected final int[] axisMultipliers;
 
     /**
      * Creates a DenseSegmentDataset.
      *
-     * @param segment Segment
+     * @param axes Segment axes, containing actual column values
      */
-    DenseSegmentDataset(Segment segment) {
-        this.segment = segment;
+    DenseSegmentDataset(SegmentAxis[] axes) {
+        this.axes = axes;
         this.axisMultipliers = computeAxisMultipliers();
     }
 
     private int[] computeAxisMultipliers() {
-        final int[] axisMultipliers = new int[segment.axes.length];
+        final int[] axisMultipliers = new int[axes.length];
         int multiplier = 1;
-        for (int i = segment.axes.length - 1; i >= 0; --i) {
-            final Aggregation.Axis axis = segment.axes[i];
+        for (int i = axes.length - 1; i >= 0; --i) {
+            final SegmentAxis axis = axes[i];
             axisMultipliers[i] = multiplier;
             multiplier *= axis.getKeys().length;
         }
@@ -73,7 +73,7 @@ abstract class DenseSegmentDataset implements SegmentDataset {
         int offset = 0;
 outer:
         for (int i = 0; i < keys.length; i++) {
-            Aggregation.Axis axis = segment.axes[i];
+            SegmentAxis axis = axes[i];
             Object[] ks = axis.getKeys();
             final int axisLength = ks.length;
             offset *= axisLength;
@@ -119,7 +119,7 @@ outer:
         private final int[] ordinals;
 
         DenseSegmentDatasetIterator() {
-            ordinals = new int[segment.axes.length];
+            ordinals = new int[axes.length];
             ordinals[ordinals.length - 1] = -1;
         }
 
@@ -131,7 +131,7 @@ outer:
             ++i;
             int k = ordinals.length - 1;
             while (k >= 0) {
-                if (ordinals[k] < segment.axes[k].getKeys().length - 1) {
+                if (ordinals[k] < axes[k].getKeys().length - 1) {
                     ++ordinals[k];
                     break;
                 } else {

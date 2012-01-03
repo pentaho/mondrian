@@ -82,71 +82,82 @@ class RolapNamedSetEvaluator
                 "Named set " + namedSet.getName() + ": starting evaluation");
         }
         list = DUMMY_LIST; // recursion detection
-        final Calc calc =
-            rrer.getCompiled(namedSet.getExp(), false, ResultStyle.ITERABLE);
-        TupleIterable iterable =
-            (TupleIterable)
-            rrer.result.evaluateExp(
-                calc,
-                rrer.result.slicerEvaluator);
-        final TupleList rawList;
+        try {
+            final Calc calc =
+                rrer.getCompiled(
+                    namedSet.getExp(), false, ResultStyle.ITERABLE);
+            TupleIterable iterable =
+                (TupleIterable)
+                    rrer.result.evaluateExp(
+                        calc,
+                        rrer.result.slicerEvaluator);
 
-        // Axes can be in two forms: list or iterable. If iterable, we
-        // need to materialize it, to ensure that all cell values are in
-        // cache.
-        if (iterable instanceof TupleList) {
-            rawList = (TupleList) iterable;
-        } else {
-            rawList = TupleCollections.createList(iterable.getArity());
-            TupleCursor cursor = iterable.tupleCursor();
-            while (cursor.forward()) {
-                rawList.addCurrent(cursor);
-            }
-        }
-        if (RolapResult.LOGGER.isDebugEnabled()) {
-            final StringBuilder buf = new StringBuilder();
-            buf.append(this);
-            buf.append(": ");
-            buf.append("Named set ");
-            buf.append(namedSet.getName());
-            buf.append(" evaluated to:");
-            buf.append(Util.nl);
-            int arity = calc.getType().getArity();
-            int rowCount = 0;
-            final int maxRowCount = 100;
-            if (arity == 1) {
-                for (Member t : rawList.slice(0)) {
-                    if (rowCount++ > maxRowCount) {
-                        buf.append("...");
-                        buf.append(Util.nl);
-                        break;
-                    }
-                    buf.append(t);
-                    buf.append(Util.nl);
-                }
+            // Axes can be in two forms: list or iterable. If iterable, we
+            // need to materialize it, to ensure that all cell values are in
+            // cache.
+            final TupleList rawList;
+            if (iterable instanceof TupleList) {
+                rawList = (TupleList) iterable;
             } else {
-                for (List<Member> t : rawList) {
-                    if (rowCount++ > maxRowCount) {
-                        buf.append("...");
-                        buf.append(Util.nl);
-                        break;
-                    }
-                    int k = 0;
-                    for (Member member : t) {
-                        if (k++ > 0) {
-                            buf.append(", ");
-                        }
-                        buf.append(member);
-                    }
-                    buf.append(Util.nl);
+                rawList = TupleCollections.createList(iterable.getArity());
+                TupleCursor cursor = iterable.tupleCursor();
+                while (cursor.forward()) {
+                    rawList.addCurrent(cursor);
                 }
             }
-            RolapResult.LOGGER.debug(buf);
+            if (RolapResult.LOGGER.isDebugEnabled()) {
+                RolapResult.LOGGER.debug(generateDebugMessage(calc, rawList));
+            }
+            // Wrap list so that currentOrdinal is updated whenever the list
+            // is accessed. The list is immutable, because we don't override
+            // AbstractList.set(int, Object).
+            this.list = rawList.withPositionCallback(this);
+        } finally {
+            if (this.list == DUMMY_LIST) {
+                this.list = null;
+            }
         }
-        // Wrap list so that currentOrdinal is updated whenever the list
-        // is accessed. The list is immutable, because we don't override
-        // AbstractList.set(int, Object).
-        this.list = rawList.withPositionCallback(this);
+    }
+
+    private String generateDebugMessage(Calc calc, TupleList rawList) {
+        final StringBuilder buf = new StringBuilder();
+        buf.append(this);
+        buf.append(": ");
+        buf.append("Named set ");
+        buf.append(namedSet.getName());
+        buf.append(" evaluated to:");
+        buf.append(Util.nl);
+        int arity = calc.getType().getArity();
+        int rowCount = 0;
+        final int maxRowCount = 100;
+        if (arity == 1) {
+            for (Member t : rawList.slice(0)) {
+                if (rowCount++ > maxRowCount) {
+                    buf.append("...");
+                    buf.append(Util.nl);
+                    break;
+                }
+                buf.append(t);
+                buf.append(Util.nl);
+            }
+        } else {
+            for (List<Member> t : rawList) {
+                if (rowCount++ > maxRowCount) {
+                    buf.append("...");
+                    buf.append(Util.nl);
+                    break;
+                }
+                int k = 0;
+                for (Member member : t) {
+                    if (k++ > 0) {
+                        buf.append(", ");
+                    }
+                    buf.append(member);
+                }
+                buf.append(Util.nl);
+            }
+        }
+        return buf.toString();
     }
 
     public int currentOrdinal() {

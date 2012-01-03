@@ -14,6 +14,9 @@ import mondrian.calc.TupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.FunUtil;
+import mondrian.spi.Dialect;
+
+import java.util.List;
 
 /**
  * Describes an aggregation operator, such as "sum" or "count".
@@ -34,6 +37,40 @@ public abstract class RolapAggregator
                 Evaluator evaluator, TupleList members, Calc exp)
             {
                 return FunUtil.sum(evaluator, members, exp);
+            }
+            public boolean supportsFastAggregates(Dialect.Datatype dataType) {
+                switch (dataType) {
+                case Integer:
+                case Numeric:
+                    return true;
+                default:
+                    return false;
+                }
+            };
+            public Object aggregate(List<Object> rawData) {
+                assert rawData.size() > 0;
+                if (rawData.get(0) instanceof Integer) {
+                    int totalValue = 0;
+                    for (Object data : rawData) {
+                        totalValue += (Integer)data;
+                    }
+                    return totalValue;
+                }
+                if (rawData.get(0) instanceof Double) {
+                    double totalValue = 0d;
+                    for (Object data : rawData) {
+                        totalValue += (Double)data;
+                    }
+                    return totalValue;
+                }
+                if (rawData.get(0) instanceof Long) {
+                    long totalValue = 0l;
+                    for (Object data : rawData) {
+                        totalValue += (Long)data;
+                    }
+                    return totalValue;
+                }
+                throw new IllegalArgumentException();
             }
         };
 
@@ -57,6 +94,40 @@ public abstract class RolapAggregator
             {
                 return FunUtil.min(evaluator, members, exp);
             }
+            public boolean supportsFastAggregates(Dialect.Datatype dataType) {
+                switch (dataType) {
+                case Integer:
+                case Numeric:
+                    return true;
+                default:
+                    return false;
+                }
+            };
+            public Object aggregate(List<Object> rawData) {
+                assert rawData.size() > 0;
+                if (rawData.get(0) instanceof Integer) {
+                    int min = Integer.MAX_VALUE;
+                    for (Object data : rawData) {
+                        min = Math.min(min, (Integer)data);
+                    }
+                    return min;
+                }
+                if (rawData.get(0) instanceof Double) {
+                    double min = Double.MAX_VALUE;
+                    for (Object data : rawData) {
+                        min = Math.min(min, (Double)data);
+                    }
+                    return min;
+                }
+                if (rawData.get(0) instanceof Long) {
+                    long min = Long.MAX_VALUE;
+                    for (Object data : rawData) {
+                        min = Math.min(min, (Long)data);
+                    }
+                    return min;
+                }
+                throw new IllegalArgumentException();
+            }
         };
 
     public static final RolapAggregator Max =
@@ -65,6 +136,40 @@ public abstract class RolapAggregator
                 Evaluator evaluator, TupleList members, Calc exp)
             {
                 return FunUtil.max(evaluator, members, exp);
+            }
+            public boolean supportsFastAggregates(Dialect.Datatype dataType) {
+                switch (dataType) {
+                case Integer:
+                case Numeric:
+                    return true;
+                default:
+                    return false;
+                }
+            };
+            public Object aggregate(List<Object> rawData) {
+                assert rawData.size() > 0;
+                if (rawData.get(0) instanceof Integer) {
+                    int min = Integer.MIN_VALUE;
+                    for (Object data : rawData) {
+                        min = Math.max(min, (Integer)data);
+                    }
+                    return min;
+                }
+                if (rawData.get(0) instanceof Double) {
+                    double min = Double.MIN_VALUE;
+                    for (Object data : rawData) {
+                        min = Math.max(min, (Double)data);
+                    }
+                    return min;
+                }
+                if (rawData.get(0) instanceof Long) {
+                    long min = Long.MIN_VALUE;
+                    for (Object data : rawData) {
+                        min = Math.max(min, (Long)data);
+                    }
+                    return min;
+                }
+                throw new IllegalArgumentException();
             }
         };
 
@@ -276,6 +381,17 @@ public abstract class RolapAggregator
      */
     public Aggregator getRollup() {
         return this;
+    }
+
+    /**
+     * By default, fast rollup is not supported for all classes.
+     */
+    public boolean supportsFastAggregates(Dialect.Datatype dataType) {
+        return false;
+    }
+
+    public Object aggregate(List<Object> rawData) {
+        throw new UnsupportedOperationException();
     }
 }
 

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2011 Julian Hyde and others
+// Copyright (C) 2004-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -24,6 +24,8 @@ import org.eigenbase.util.property.IntegerProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
  * To support all <code>Batch</code> related tests.
@@ -65,8 +67,8 @@ public class BatchTestCase extends FoodMartTestCase {
     protected final String measureUnitSales = "[Measures].[Unit Sales]";
     protected String fieldGender = "gender";
 
-    protected FastBatchingCellReader.Batch createBatch(
-        FastBatchingCellReader fbcr,
+    protected BatchLoader.Batch createBatch(
+        BatchLoader fbcr,
         String[] tableNames, String[] fieldNames, String[][] fieldValues,
         String cubeName, String measure)
     {
@@ -74,7 +76,7 @@ public class BatchTestCase extends FoodMartTestCase {
         for (int i = 0; i < tableNames.length; i++) {
             values.add(fieldValues[i][0]);
         }
-        FastBatchingCellReader.Batch batch = fbcr.new Batch(
+        BatchLoader.Batch batch = fbcr.new Batch(
             createRequest(
                 cubeName, measure, tableNames, fieldNames,
                 values.toArray(new String[values.size()])));
@@ -85,8 +87,8 @@ public class BatchTestCase extends FoodMartTestCase {
         return batch;
     }
 
-    protected FastBatchingCellReader.Batch createBatch(
-        FastBatchingCellReader fbcr,
+    protected BatchLoader.Batch createBatch(
+        BatchLoader fbcr,
         String[] tableNames, String[] fieldNames, String[][] fieldValues,
         String cubeName, String measure, CellRequestConstraint constraint)
     {
@@ -94,7 +96,7 @@ public class BatchTestCase extends FoodMartTestCase {
         for (int i = 0; i < tableNames.length; i++) {
             values.add(fieldValues[i][0]);
         }
-        FastBatchingCellReader.Batch batch = fbcr.new Batch(
+        BatchLoader.Batch batch = fbcr.new Batch(
             createRequest(
                 cubeName, measure, tableNames, fieldNames,
                 values.toArray(new String[values.size()]), constraint));
@@ -106,7 +108,7 @@ public class BatchTestCase extends FoodMartTestCase {
     }
 
     private void addRequests(
-        FastBatchingCellReader.Batch batch,
+        BatchLoader.Batch batch,
         String cubeName,
         String measure,
         String[] tableNames,
@@ -132,7 +134,7 @@ public class BatchTestCase extends FoodMartTestCase {
     }
 
     private void addRequests(
-        FastBatchingCellReader.Batch batch,
+        BatchLoader.Batch batch,
         String cubeName,
         String measure,
         String[] tableNames,
@@ -168,14 +170,24 @@ public class BatchTestCase extends FoodMartTestCase {
         String cubeName,
         String measure)
     {
-        FastBatchingCellReader.Batch batch =
+        final RolapCube cube = getCube(cubeName);
+        final BatchLoader fbcr =
+            new BatchLoader(
+                Locus.peek(),
+                execution.getMondrianStatement().getMondrianConnection()
+                    .getServer().getAggregationManager().cacheMgr,
+                cube.getStar().getSqlQueryDialect(),
+                cube);
+        BatchLoader.Batch batch =
             createBatch(
-                new FastBatchingCellReader(execution, getCube(cubeName)),
+                fbcr,
                 tableNames, fieldNames,
                 fieldValues, cubeName,
                 measure);
         GroupingSetsCollector collector = new GroupingSetsCollector(true);
-        batch.loadAggregation(collector);
+        final List<Future<Map<Segment, SegmentWithData>>> segmentFutures =
+            new ArrayList<Future<Map<Segment, SegmentWithData>>>();
+        batch.loadAggregation(collector, segmentFutures);
         return collector.getGroupingSets().get(0);
     }
 
@@ -259,12 +271,16 @@ public class BatchTestCase extends FoodMartTestCase {
             // Create a dummy DataSource which will throw a 'bomb' if it is
             // asked to execute a particular SQL statement, but will otherwise
             // behave exactly the same as the current DataSource.
-            RolapUtil.threadHooks = new TriggerHook(trigger);
+            RolapUtil.setHook(new TriggerHook(trigger));
             Bomb bomb;
             final Execution execution =
                 new Execution(
                     ((RolapConnection) getConnection()).getInternalStatement(),
                     1000);
+            final AggregationManager aggMgr =
+                execution.getMondrianStatement()
+                    .getMondrianConnection()
+                    .getServer().getAggregationManager();
             final Locus locus =
                 new Locus(
                     execution,
@@ -272,7 +288,8 @@ public class BatchTestCase extends FoodMartTestCase {
                     "BatchTestCase");
             try {
                 FastBatchingCellReader fbcr =
-                    new FastBatchingCellReader(execution, getCube(cubeName));
+                    new FastBatchingCellReader(
+                        execution, getCube(cubeName), aggMgr);
                 for (CellRequest request : requests) {
                     fbcr.recordCellRequest(request);
                 }
@@ -284,7 +301,7 @@ public class BatchTestCase extends FoodMartTestCase {
             } catch (Bomb e) {
                 bomb = e;
             } finally {
-                RolapUtil.threadHooks = null;
+                RolapUtil.setHook(null);
                 Locus.pop(locus);
             }
             if (!negative && bomb == null) {
@@ -441,8 +458,7 @@ public class BatchTestCase extends FoodMartTestCase {
             // Create a dummy DataSource which will throw a 'bomb' if it is
             // asked to execute a particular SQL statement, but will otherwise
             // behave exactly the same as the current DataSource.
-            RolapUtil.threadHooks = new TriggerHook(trigger);
-
+            RolapUtil.setHook(new TriggerHook(trigger));
             Bomb bomb = null;
             try {
                 if (bypassSchemaCache) {
@@ -466,7 +482,7 @@ public class BatchTestCase extends FoodMartTestCase {
                     throw e;
                 }
             } finally {
-                RolapUtil.threadHooks = null;
+                RolapUtil.setHook(null);
             }
             if (negative) {
                 if (bomb != null) {

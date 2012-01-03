@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde and others
+// Copyright (C) 2007-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -36,7 +36,7 @@ import javax.sql.DataSource;
  * the elapsed time and number of rows fetched.
  *
  * <p>There are a few obligations on the caller. The caller must:<ul>
- * <li>call the {@link #handle(Exception)} method if one of the contained
+ * <li>call the {@link #handle(Throwable)} method if one of the contained
  *     objects (say the {@link java.sql.ResultSet}) gives an error;
  * <li>call the {@link #close()} method if all operations complete
  *     successfully.
@@ -144,7 +144,7 @@ public class SqlStatement {
             }
 
             // Execute hook.
-            RolapUtil.ExecuteQueryHook hook = RolapUtil.threadHooks;
+            RolapUtil.ExecuteQueryHook hook = RolapUtil.getHook();
             if (hook != null) {
                 hook.onExecuteQuery(sql);
             }
@@ -218,7 +218,7 @@ public class SqlStatement {
             for (Type type : guessTypes()) {
                 accessors.add(createAccessor(accessors.size(), type));
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             status = ", failed (" + e + ")";
             try {
                 if (statement != null) {
@@ -231,7 +231,11 @@ public class SqlStatement {
                 haveSemaphore = false;
                 querySemaphore.leave();
             }
-            throw handle(e);
+            if (e instanceof Error) {
+                throw (Error) e;
+            } else {
+                throw handle(e);
+            }
         } finally {
             RolapUtil.SQL_LOGGER.debug(id + ": " + status);
 
@@ -329,7 +333,7 @@ public class SqlStatement {
      * @param e Exception
      * @return Runtime exception
      */
-    public RuntimeException handle(Exception e) {
+    public RuntimeException handle(Throwable e) {
         RuntimeException runtimeException =
             Util.newError(e, locus.message + "; sql=[" + sql + "]");
         try {

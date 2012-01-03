@@ -278,6 +278,7 @@ class MondrianServerImpl
             throw new MondrianException("Server already shutdown.");
         }
         this.shutdown  = true;
+        aggMgr.shutdown();
         monitor.shutdown();
         repository.shutdown();
         shepherd.shutdown();

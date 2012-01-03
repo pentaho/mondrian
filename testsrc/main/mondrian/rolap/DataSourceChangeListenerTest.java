@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2007-2008 Bart Pappyn
-// Copyright (C) 2007-2011 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -99,7 +99,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
         // to execute a particular SQL statement, but will otherwise behave
         // exactly the same as the current DataSource.
         SqlLogger sqlLogger = new SqlLogger();
-        RolapUtil.threadHooks = sqlLogger;
+        RolapUtil.setHook(sqlLogger);
 
         try {
             String s1, s2, s3, s4, s5, s6;
@@ -198,7 +198,7 @@ public class DataSourceChangeListenerTest extends FoodMartTestCase {
             RolapStar star = getStar("Sales");
             star.setChangeListener(null);
 
-            RolapUtil.threadHooks = null;
+            RolapUtil.setHook(null);
         }
     }
 

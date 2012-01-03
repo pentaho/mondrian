@@ -9,7 +9,7 @@
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
   == (C) Copyright 2000-2002 Kana Software, Inc.
-  == (C) Copyright 2002-2010 Julian Hyde and others
+  == (C) Copyright 2002-2012 Julian Hyde and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -829,12 +829,6 @@
 <exception id="7000652" name="SegmentCacheLookupTimeout">
     <text>
         Timeout reached while performing a segment lookup in SegmentCache.
-    </text>
-</exception>
-
-<exception id="7000653" name="SegmentCacheScanTimeout">
-    <text>
-        Timeout reached while getting a list of segment headers from the SegmentCache.
     </text>
 </exception>
 

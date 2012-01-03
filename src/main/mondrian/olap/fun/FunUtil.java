@@ -934,6 +934,8 @@ public class FunUtil extends Util {
             return FunUtil.compareValues(
                 ((Number) value0).doubleValue(),
                 ((Number) value1).doubleValue());
+        } else if (value0 instanceof Date) {
+            return ((Date) value0).compareTo((Date) value1);
         } else if (value0 instanceof OrderKey) {
             return ((OrderKey) value0).compareTo(value1);
         } else {

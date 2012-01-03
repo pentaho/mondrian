@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde and others
+// Copyright (C) 2006-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,6 +13,9 @@ import mondrian.olap.*;
 import mondrian.olap.CacheControl.MemberEditCommand;
 import mondrian.rolap.RolapSchema.Pool;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
+import mondrian.server.Statement;
 import mondrian.test.*;
 
 import java.io.PrintWriter;
@@ -33,6 +36,7 @@ import java.util.*;
  * @since Jan 2008
  */
 public class MemberCacheControlTest extends FoodMartTestCase {
+    private Locus locus;
 
     // TODO: add multi-thread tests.
     // TODO: test set properties negative: refer to invalid property
@@ -53,11 +57,18 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             MondrianProperties.instance().EnableRolapCubeMemberCache,
             false);
         Pool.instance().clear();
+
+        final RolapConnection conn = (RolapConnection) getConnection();
+        final Statement statement = conn.getInternalStatement();
+        final Execution execution = new Execution(statement, 0);
+        locus = new Locus(execution, getName(), null);
+        Locus.push(locus);
     }
 
     protected void tearDown() throws Exception {
         super.tearDown();
         Pool.instance().clear();
+        Locus.pop(locus);
     }
 
     // ~ Utility methods ------------------------------------------------------
@@ -515,7 +526,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             ((RolapConnection) conn).getServer().getAggregationManager();
         assertEquals(
             Double.valueOf("74748"),
-            aggMgr.getCellFromCache(
+            aggMgr.getCellFromAllCaches(
                 AggregationManager.makeRequest(cacheRegionMembers)));
 
         // Now tell the cache that [CA].[Berkeley] is new
@@ -525,7 +536,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
         // test that cells have been removed
         assertNull(
-            aggMgr.getCellFromCache(
+            aggMgr.getCellFromAllCaches(
                 AggregationManager.makeRequest(cacheRegionMembers)));
 
         tc.assertAxisReturns(
@@ -671,7 +682,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             ((RolapConnection) conn).getServer().getAggregationManager();
         assertEquals(
             Double.valueOf("2117"),
-            aggMgr.getCellFromCache(
+            aggMgr.getCellFromAllCaches(
                 AggregationManager.makeRequest(cacheRegionMembers)));
 
         // Now tell the cache that [CA].[San Francisco] has been removed.
@@ -686,7 +697,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
         // test that cells have been removed
         assertNull(
-            aggMgr.getCellFromCache(
+            aggMgr.getCellFromAllCaches(
                 AggregationManager.makeRequest(cacheRegionMembers)));
 
         // The list of children should be updated.

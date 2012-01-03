@@ -341,6 +341,28 @@ public final class CellRequest {
     }
 
     /**
+     * Builds a map of column names to values, as specified
+     * by this cell request object.
+     */
+    public Map<String, Comparable<?>> getMappedCellValues() {
+        final Map<String, Comparable<?>> map =
+            new HashMap<String, Comparable<?>>();
+        final RolapStar.Column[] columns =
+            this.getConstrainedColumns();
+        final Object[] values = this.getSingleValues();
+        for (int i = 0; i < columns.length; i++) {
+            RolapStar.Column column = columns[i];
+            final Object o = values[i];
+            map.put(
+                column.getExpression().getGenericExpression(),
+                o == RolapUtil.sqlNullValue
+                    ? null
+                    : (Comparable<?>) o);
+        }
+        return map;
+    }
+
+    /**
      * Returns whether this cell request is impossible to satisfy.
      * This occurs when the same column has two or more inconsistent
      * constraints.

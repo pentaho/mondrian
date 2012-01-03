@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -19,6 +19,7 @@ import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 import mondrian.olap.type.ScalarType;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
+import mondrian.rolap.agg.CellRequestQuantumExceededException;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.spi.CellFormatter;
@@ -91,7 +92,8 @@ public class RolapResult extends ResultBase {
             }
         }
         RolapCube cube = (RolapCube) query.getCube();
-        this.batchingReader = new FastBatchingCellReader(execution, cube);
+        this.batchingReader =
+            new FastBatchingCellReader(execution, cube, aggMgr);
 
         this.cellInfos =
             (query.axes.length > 4)
@@ -109,9 +111,6 @@ public class RolapResult extends ResultBase {
             // nothing happens.
             // Clear the local cache before a query has run
             cube.clearCachedAggregations();
-            // Check if there are modifications to the global aggregate cache
-            cube.checkAggregateModifications();
-
 
             /////////////////////////////////////////////////////////////////
             //
@@ -390,50 +389,54 @@ public class RolapResult extends ResultBase {
             //
             final int savepoint = evaluator.savepoint();
             do {
-                boolean redo;
-                do {
-                    evaluator.restore(savepoint);
-                    redo = false;
-                    for (int i = 0; i < axes.length; i++) {
-                        RolapEvaluator e = slicerEvaluator.push();
-                        QueryAxis axis = query.axes[i];
-                        final Calc calc = query.axisCalcs[i];
-                        TupleIterable tupleIterable =
-                            evalExecute(
-                                nonAllMembers,
-                                nonAllMembers.size() - 1,
-                                evaluator,
-                                axis,
-                                calc);
+                try {
+                    boolean redo;
+                    do {
+                        evaluator.restore(savepoint);
+                        redo = false;
+                        for (int i = 0; i < axes.length; i++) {
+                            QueryAxis axis = query.axes[i];
+                            final Calc calc = query.axisCalcs[i];
+                            TupleIterable tupleIterable =
+                                evalExecute(
+                                    nonAllMembers,
+                                    nonAllMembers.size() - 1,
+                                    evaluator,
+                                    axis,
+                                    calc);
 
-                        if (!nonAllMembers.isEmpty()) {
-                            final TupleIterator tupleIterator =
-                                tupleIterable.tupleIterator();
-                            if (tupleIterator.hasNext()) {
-                                List<Member> tuple0 = tupleIterator.next();
-                                // Only need to process the first tuple on the
-                                // axis.
-                                for (Member m : tuple0) {
-                                    if (m.isCalculated()) {
-                                        CalculatedMeasureVisitor visitor =
-                                            new CalculatedMeasureVisitor();
-                                        m.getExpression().accept(visitor);
-                                        Dimension dimension = visitor.dimension;
-                                        if (removeDimension(
-                                                dimension, nonAllMembers))
-                                        {
-                                            redo = true;
+                            if (!nonAllMembers.isEmpty()) {
+                                final TupleIterator tupleIterator =
+                                    tupleIterable.tupleIterator();
+                                if (tupleIterator.hasNext()) {
+                                    List<Member> tuple0 = tupleIterator.next();
+                                    // Only need to process the first tuple on
+                                    // the axis.
+                                    for (Member m : tuple0) {
+                                        if (m.isCalculated()) {
+                                            CalculatedMeasureVisitor visitor =
+                                                new CalculatedMeasureVisitor();
+                                            m.getExpression().accept(visitor);
+                                            Dimension dimension =
+                                                visitor.dimension;
+                                            if (removeDimension(
+                                                    dimension, nonAllMembers))
+                                            {
+                                                redo = true;
+                                            }
                                         }
                                     }
                                 }
                             }
+                            this.axes[i] =
+                                new RolapAxis(
+                                    TupleCollections.materialize(
+                                        tupleIterable, false));
                         }
-                        this.axes[i] =
-                            new RolapAxis(
-                                TupleCollections.materialize(
-                                    tupleIterable, false));
-                    }
-                } while (redo);
+                    } while (redo);
+                } catch (CellRequestQuantumExceededException e) {
+                    // Safe to ignore. Need to call 'phase' and loop again.
+                }
             } while (phase());
 
             evaluator.restore(savepoint);
@@ -478,10 +481,6 @@ public class RolapResult extends ResultBase {
             throw ex;
         } finally {
             if (normalExecution) {
-                // Push all modifications to the aggregate cache to the global
-                // cache so each thread can start using it
-                cube.pushAggregateModificationsToGlobalCache();
-
                 // Expression cache duration is for each query. It is time to
                 // clear out the whole expression cache at the end of a query.
                 evaluator.clearExpResultCache(true);
@@ -499,8 +498,7 @@ public class RolapResult extends ResultBase {
                 batchingReader.getMissCount(),
                 batchingReader.getPendingCount());
 
-            batchingReader.loadAggregations();
-            return true;
+            return batchingReader.loadAggregations();
         } else {
             return false;
         }
@@ -591,13 +589,20 @@ public class RolapResult extends ResultBase {
         evaluator.setCellReader(batchingReader);
         while (true) {
             axisMembers.clearAxisCount();
-            evalLoad(
-                nonAllMembers,
-                nonAllMembers.size() - 1,
-                evaluator,
-                axis,
-                calc,
-                axisMembers);
+            try {
+                evalLoad(
+                    nonAllMembers,
+                    nonAllMembers.size() - 1,
+                    evaluator,
+                    axis,
+                    calc,
+                    axisMembers);
+            } catch (CellRequestQuantumExceededException e) {
+                // Safe to ignore. Need to call 'phase' and loop again.
+                // Decrement count because it wasn't a recursive formula that
+                // caused the iteration.
+                --attempt;
+            }
 
             if (!phase()) {
                 break;
@@ -817,7 +822,14 @@ public class RolapResult extends ResultBase {
         while (true) {
             evaluator.setCellReader(batchingReader);
             final int savepoint = evaluator.savepoint();
-            executeStripe(query.axes.length - 1, evaluator, pos);
+            try {
+                executeStripe(query.axes.length - 1, evaluator, pos);
+            } catch (CellRequestQuantumExceededException e) {
+                // Safe to ignore. Need to call 'phase' and loop again.
+                // Decrement count because it wasn't a recursive formula that
+                // caused the iteration.
+                --count;
+            }
             evaluator.restore(savepoint);
 
             // Retrieve the aggregations collected.
@@ -1961,6 +1973,7 @@ public class RolapResult extends ResultBase {
 
         return list;
     }
+
 }
 
 // End RolapResult.java

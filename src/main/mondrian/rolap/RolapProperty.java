@@ -56,9 +56,10 @@ class RolapProperty extends Property {
         PropertyFormatter formatter,
         String caption,
         Boolean dependsOnLevelValue,
-        boolean internal)
+        boolean internal,
+        String description)
     {
-        super(name, type, -1, internal, false, false, null);
+        super(name, type, -1, internal, false, false, description);
         this.exp = exp;
         this.caption = caption;
         this.formatter = formatter;

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -384,7 +384,8 @@ public class RolapLevel extends LevelBase {
             list.add(
                 new RolapProperty(
                     Property.NAME.name, Property.Datatype.TYPE_STRING,
-                    nameExp, null, null, null, true));
+                    nameExp, null, null, null, true,
+                    Property.NAME.description));
         }
         for (int i = 0; i < xmlLevel.properties.length; i++) {
             MondrianDef.Property xmlProperty = xmlLevel.properties[i];
@@ -427,7 +428,8 @@ public class RolapLevel extends LevelBase {
                     formatter,
                     xmlProperty.caption,
                     xmlLevel.properties[i].dependsOnLevelValue,
-                    false));
+                    false,
+                    xmlProperty.description));
         }
         return list.toArray(new RolapProperty[list.size()]);
     }

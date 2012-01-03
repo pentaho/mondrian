@@ -3,20 +3,21 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011 Julian Hyde and others
+// Copyright (C) 2011-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.agg;
 
 import mondrian.rolap.CellKey;
+import mondrian.util.Pair;
 
-import java.util.Map;
-import java.util.SortedSet;
+import java.util.*;
 
 /**
  * Implementation of a segment body which stores the data of a
  * sparse segment data set into a dense array of java objects.
+ *
  * @author LBoudreau
  * @version $Id$
  */
@@ -27,34 +28,39 @@ class SparseSegmentBody extends AbstractSegmentBody {
 
     SparseSegmentBody(
         Map<CellKey, Object> dataToSave,
-        SortedSet<Comparable<?>>[] axisValueSets,
-        boolean[] nullAxisFlags)
+        List<Pair<SortedSet<Comparable<?>>, Boolean>> axes)
     {
-        super(axisValueSets, nullAxisFlags);
+        super(axes);
 
         this.keys = new CellKey[dataToSave.size()];
-        System.arraycopy(
-            dataToSave.keySet().toArray(),
-            0,
-            this.keys,
-            0,
-            dataToSave.size());
-
         this.data = new Object[dataToSave.size()];
-        System.arraycopy(
-            dataToSave.values().toArray(),
-            0,
-            this.data,
-            0,
-            dataToSave.size());
-    }
-    public SegmentDataset createSegmentDataset(Segment segment) {
-        SparseSegmentDataset ds =
-            new SparseSegmentDataset(segment);
-        for (int i = 0; i < keys.length; i++) {
-            ds.put(this.keys[i], this.data[i]);
+        int i = 0;
+        for (Map.Entry<CellKey, Object> entry : dataToSave.entrySet()) {
+            keys[i] = entry.getKey();
+            data[i] = entry.getValue();
+            ++i;
         }
-        return ds;
+    }
+
+    @Override
+    protected int getSize() {
+        return keys.length;
+    }
+
+    @Override
+    protected Object getObject(int i) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Map<CellKey, Object> getValueMap() {
+        final Map<CellKey, Object> map =
+            new HashMap<CellKey, Object>(keys.length * 3 / 2);
+        for (int i = 0; i < keys.length; i++) {
+            map.put(keys[i], data[i]);
+        }
+        return map;
     }
 }
+
 // End SparseSegmentBody.java

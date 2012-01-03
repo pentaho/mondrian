@@ -15,8 +15,10 @@ package mondrian.rolap.agg;
 
 import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
+import mondrian.spi.SegmentBody;
+import mondrian.util.Pair;
 
-import java.util.SortedSet;
+import java.util.*;
 
 /**
  * Implementation of {@link mondrian.rolap.agg.DenseSegmentDataset} that stores
@@ -29,14 +31,27 @@ class DenseDoubleSegmentDataset extends DenseNativeSegmentDataset {
     final double[] values; // length == m[0] * ... * m[axes.length-1]
 
     /**
-     * Creates a DenseSegmentDataset.
+     * Creates a DenseDoubleSegmentDataset.
      *
-     * @param segment Segment
+     * @param axes Segment axes, containing actual column values
      * @param size Number of coordinates
      */
-    DenseDoubleSegmentDataset(Segment segment, int size) {
-        super(segment, size);
-        this.values = new double[size];
+    DenseDoubleSegmentDataset(SegmentAxis[] axes, int size) {
+        this(axes, new double[size], new BitSet(size));
+    }
+
+    /**
+     * Creates a populated DenseDoubleSegmentDataset.
+     *
+     * @param axes Segment axes, containing actual column values
+     * @param values Cell values; not copied
+     * @param nullIndicators Null indicators
+     */
+    DenseDoubleSegmentDataset(
+        SegmentAxis[] axes, double[] values, BitSet nullIndicators)
+    {
+        super(axes, nullIndicators);
+        this.values = values;
     }
 
     public double getDouble(CellKey key) {
@@ -92,16 +107,12 @@ class DenseDoubleSegmentDataset extends DenseNativeSegmentDataset {
     }
 
     public SegmentBody createSegmentBody(
-        SortedSet<Comparable<?>>[] axisValueSets,
-        boolean[] nullAxisFlags)
+        List<Pair<SortedSet<Comparable<?>>, Boolean>> axes)
     {
-        return
-            new DenseDoubleSegmentBody(
-                nullIndicators,
-                values,
-                getSize(),
-                axisValueSets,
-                nullAxisFlags);
+        return new DenseDoubleSegmentBody(
+            nullIndicators,
+            values,
+            axes);
     }
 }
 

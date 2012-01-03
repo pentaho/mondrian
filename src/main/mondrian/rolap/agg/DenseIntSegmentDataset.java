@@ -12,11 +12,12 @@
 */
 package mondrian.rolap.agg;
 
-
 import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
+import mondrian.spi.SegmentBody;
+import mondrian.util.Pair;
 
-import java.util.SortedSet;
+import java.util.*;
 
 /**
  * Implementation of {@link DenseSegmentDataset} that stores
@@ -35,12 +36,27 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
     /**
      * Creates a DenseIntSegmentDataset.
      *
-     * @param segment Segment
+     * @param axes Segment axes, containing actual column values
      * @param size Number of coordinates
      */
-    DenseIntSegmentDataset(Segment segment, int size) {
-        super(segment, size);
-        this.values = new int[size];
+    DenseIntSegmentDataset(SegmentAxis[] axes, int size) {
+        this(axes, new int[size], new BitSet(size));
+    }
+
+    /**
+     * Creates a populated DenseIntSegmentDataset.
+     *
+     * @param axes Segment axes, containing actual column values
+     * @param values Cell values; not copied
+     * @param nullIndicators Null indicators
+     */
+    DenseIntSegmentDataset(
+        SegmentAxis[] axes,
+        int[] values,
+        BitSet nullIndicators)
+    {
+        super(axes, nullIndicators);
+        this.values = values;
     }
 
     public int getInt(CellKey key) {
@@ -106,16 +122,12 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
     }
 
     public SegmentBody createSegmentBody(
-        SortedSet<Comparable<?>>[] axisValueSets,
-        boolean[] nullAxisFlags)
+        List<Pair<SortedSet<Comparable<?>>, Boolean>> axes)
     {
-        return
-            new DenseIntSegmentBody(
-                nullIndicators,
-                values,
-                getSize(),
-                axisValueSets,
-                nullAxisFlags);
+        return new DenseIntSegmentBody(
+            nullIndicators,
+            values,
+            axes);
     }
 }
 

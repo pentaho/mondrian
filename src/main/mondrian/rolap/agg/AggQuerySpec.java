@@ -77,11 +77,11 @@ class AggQuerySpec {
     }
 
     public int getColumnCount() {
-        return segment0.aggregation.getColumns().length;
+        return segment0.getColumns().length;
     }
 
     public AggStar.Table.Column getColumn(final int i) {
-        RolapStar.Column[] columns = segment0.aggregation.getColumns();
+        RolapStar.Column[] columns = segment0.getColumns();
         int bitPos = columns[i].getBitPosition();
         AggStar.Table.Column column = aggStar.lookupColumn(bitPos);
 
@@ -106,7 +106,7 @@ class AggQuerySpec {
      * @return Constraint on column
      */
     public StarColumnPredicate getPredicate(int i) {
-        return segment0.axes[i].getPredicate();
+        return segment0.predicates[i];
     }
 
     public Pair<String, List<Type>> generateSqlQuery() {

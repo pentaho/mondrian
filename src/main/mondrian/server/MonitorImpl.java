@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
-// Copyright (C) 2011-2011 Julian Hyde
+// Copyright (C) 2011-2012 Julian Hyde
 // All Rights Reserved.
 */
 package mondrian.server;
@@ -190,11 +190,6 @@ class MonitorImpl
             new MutableStatementInfo(null, -1);
         private final MutableConnectionInfo aggConn =
             new MutableConnectionInfo();
-        private int segmentCount; // TODO: populate
-        private int segmentCreateCount; // TODO: populate
-        private int aggregateCount; // TODO: populate
-        private int cellCount; // TODO: populate
-        private int cellCoordinateCount; // TODO: populate
 
         public ServerInfo fix() {
             Util.MemoryInfo.Usage memoryUsage = MEMORY_INFO.get();
@@ -218,11 +213,14 @@ class MonitorImpl
                 memoryUsage.getUsed(),
                 memoryUsage.getCommitted(),
                 memoryUsage.getMax(),
-                segmentCount,
-                segmentCreateCount,
-                aggregateCount,
-                cellCount,
-                cellCoordinateCount);
+                (aggExec.cellCacheSegmentCreateCount
+                 - aggExec.cellCacheSegmentDeleteCount),
+                aggExec.cellCacheSegmentCreateCount,
+                aggExec.cellCacheSegmentCreateViaExternalCount,
+                aggExec.cellCacheSegmentCreateViaRollupCount,
+                aggExec.cellCacheSegmentCreateViaSqlCount,
+                aggExec.cellCacheSegmentCellCount,
+                aggExec.cellCacheSegmentCoordinateSum);
         }
     }
 
@@ -319,6 +317,13 @@ class MonitorImpl
         private int cellCacheHitCountDelta;
         private int cellCacheMissCountDelta;
         private int cellCachePendingCountDelta;
+        private int cellCacheSegmentCreateCount;
+        private int cellCacheSegmentCreateViaRollupCount;
+        private int cellCacheSegmentCreateViaSqlCount;
+        private int cellCacheSegmentCreateViaExternalCount;
+        private int cellCacheSegmentDeleteCount;
+        private int cellCacheSegmentCoordinateSum;
+        private int cellCacheSegmentCellCount;
 
         public MutableExecutionInfo(
             MutableStatementInfo stmt,
@@ -388,7 +393,15 @@ class MonitorImpl
             new HashMap<Long, MutableStatementInfo>();
 
         private final Map<Long, MutableExecutionInfo> executionMap =
-            new WeakHashMap<Long, MutableExecutionInfo>();
+            new HashMap<Long, MutableExecutionInfo>();
+
+        /**
+         * Holds info for executions that have ended. Cell cache events may
+         * arrive late, and this map lets them get into the system. One day
+         * we may purge executions if the map gets too large.
+         */
+        private final Map<Long, MutableExecutionInfo> retiredExecutionMap =
+            new HashMap<Long, MutableExecutionInfo>();
 
         /**
          * Method for debugging that does nothing, but is a place to put a break
@@ -539,6 +552,7 @@ class MonitorImpl
             if (exec == null) {
                 return missing(event);
             }
+            retiredExecutionMap.put(exec.executionId, exec);
             foo(exec, event);
             foo(exec.stmt.aggExec, event);
             foo(exec.stmt.conn.aggExec, event);
@@ -571,6 +585,69 @@ class MonitorImpl
             exec.cellCacheHitCountDelta = 0;
             exec.cellCacheMissCountDelta = 0;
             exec.cellCachePendingCountDelta = 0;
+        }
+
+        public Object visit(CellCacheSegmentCreateEvent event) {
+            MutableExecutionInfo exec =
+                executionMap.get(event.executionId);
+            if (exec == null) {
+                // Cache events can sometimes arrive after the execution has
+                // ended. So, look into the retired map.
+                exec = retiredExecutionMap.get(event.executionId);
+                if (exec == null) {
+                    return missing(event);
+                }
+            }
+
+            foo(exec, event);
+            foo(exec.stmt.aggExec, event);
+            foo(exec.stmt.conn.aggExec, event);
+            foo(server.aggExec, event);
+            return null;
+        }
+
+        private void foo(
+            MutableExecutionInfo exec,
+            CellCacheSegmentCreateEvent event)
+        {
+            ++exec.cellCacheSegmentCreateCount;
+            exec.cellCacheSegmentCoordinateSum += event.coordinateCount;
+            exec.cellCacheSegmentCellCount += event.actualCellCount;
+            switch (event.source) {
+            case ROLLUP:
+                ++exec.cellCacheSegmentCreateViaRollupCount;
+                break;
+            case EXTERNAL:
+                ++exec.cellCacheSegmentCreateViaExternalCount;
+                break;
+            case SQL:
+                ++exec.cellCacheSegmentCreateViaSqlCount;
+                break;
+            default:
+                throw Util.unexpected(event.source);
+            }
+        }
+
+        public Object visit(CellCacheSegmentDeleteEvent event) {
+            final MutableExecutionInfo exec =
+                executionMap.get(event.executionId);
+            if (exec == null) {
+                return missing(event);
+            }
+
+            foo(exec, event);
+            foo(exec.stmt.aggExec, event);
+            foo(exec.stmt.conn.aggExec, event);
+            foo(server.aggExec, event);
+            return null;
+        }
+
+        private void foo(
+            MutableExecutionInfo exec,
+            CellCacheSegmentDeleteEvent event)
+        {
+            ++exec.cellCacheSegmentDeleteCount;
+            exec.cellCacheSegmentCoordinateSum -= event.coordinateCount;
         }
 
         public Object visit(SqlStatementStartEvent event) {

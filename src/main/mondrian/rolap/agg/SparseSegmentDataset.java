@@ -12,9 +12,10 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.Util;
 import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
+import mondrian.spi.SegmentBody;
+import mondrian.util.Pair;
 
 import java.util.*;
 
@@ -34,10 +35,24 @@ import java.util.*;
  * @version $Id$
  */
 class SparseSegmentDataset implements SegmentDataset {
-    final Map<CellKey, Object> values = new HashMap<CellKey, Object>();
+    private final Map<CellKey, Object> values;
 
-    SparseSegmentDataset(Segment segment) {
-        Util.discard(segment);
+    /**
+     * Creates an empty SparseSegmentDataset.
+     */
+    SparseSegmentDataset() {
+        this(new HashMap<CellKey, Object>());
+    }
+
+    /**
+     * Creates a SparseSegmentDataset with a given value map. The map is not
+     * copied; a reference to the map is retained inside the dataset, and
+     * therefore the contents of the dataset will change if the map is modified.
+     *
+     * @param values Value map
+     */
+    SparseSegmentDataset(Map<CellKey, Object> values) {
+        this.values = values;
     }
 
     public Object getObject(CellKey pos) {
@@ -90,14 +105,11 @@ class SparseSegmentDataset implements SegmentDataset {
     }
 
     public SegmentBody createSegmentBody(
-        SortedSet<Comparable<?>>[] axisValueSets,
-        boolean[] nullAxisFlags)
+        List<Pair<SortedSet<Comparable<?>>, Boolean>> axes)
     {
-        return
-            new SparseSegmentBody(
-                values,
-                axisValueSets,
-                nullAxisFlags);
+        return new SparseSegmentBody(
+            values,
+            axes);
     }
 }
 

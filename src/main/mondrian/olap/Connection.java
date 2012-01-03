@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -15,6 +15,8 @@ package mondrian.olap;
 import java.io.PrintWriter;
 import java.util.Locale;
 import javax.sql.DataSource;
+
+import javax.validation.constraints.*;
 
 /**
  * Connection to a multi-dimensional database.
@@ -126,7 +128,7 @@ public interface Connection {
      *
      * @param pw Writer to which to write logging information; may be null
      */
-    CacheControl getCacheControl(PrintWriter pw);
+    CacheControl getCacheControl(@Null PrintWriter pw);
 
     /**
      * Returns the data source this connection uses to create connections

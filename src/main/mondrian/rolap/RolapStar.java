@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -18,25 +18,27 @@ import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.server.Locus;
-import mondrian.spi.DataSourceChangeListener;
-import mondrian.spi.Dialect;
+import mondrian.spi.*;
 import mondrian.util.Bug;
+import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.ref.SoftReference;
 import java.sql.Connection;
 import java.sql.*;
 import java.util.*;
+
 import javax.sql.DataSource;
 
 /**
  * A <code>RolapStar</code> is a star schema. It is the means to read cell
  * values.
  *
- * <p>todo: put this in package which specicializes in relational aggregation,
- * doesn't know anything about hierarchies etc.
+ * <p>todo: Move this class into a package that specializes in relational
+ * aggregation, doesn't know anything about hierarchies etc.
  *
  * @author jhyde
  * @since 12 August, 2001
@@ -51,41 +53,6 @@ public class RolapStar {
     private DataSource dataSource;
 
     private final Table factTable;
-
-    /** Holds all global aggregations of this star. */
-    private final Map<AggregationKey, Aggregation> sharedAggregations;
-
-    /** Holds all thread-local aggregations of this star. */
-    private final ThreadLocal<Map<AggregationKey, Aggregation>>
-        localAggregations =
-            new ThreadLocal<Map<AggregationKey, Aggregation>>() {
-            protected Map<AggregationKey, Aggregation> initialValue() {
-                return new HashMap<AggregationKey, Aggregation>();
-            }
-        };
-
-    /**
-     * Holds all pending aggregations of this star that are waiting to
-     * be pushed into the global cache.  They cannot be pushed yet, because
-     * the aggregates in question are currently in use by other threads.
-     */
-    private final Map<AggregationKey, Aggregation> pendingAggregations;
-
-    /**
-     * Holds all requests for aggregations.
-     */
-    private final List<AggregationKey> aggregationRequests;
-
-    /**
-     * Holds all requests of aggregations per thread.
-     */
-    private final ThreadLocal<List<AggregationKey>>
-        localAggregationRequests =
-            new ThreadLocal<List<AggregationKey>>() {
-            protected List<AggregationKey> initialValue() {
-                return new ArrayList<AggregationKey>();
-            }
-        };
 
     /**
      * Number of columns (column and columnName).
@@ -139,9 +106,6 @@ public class RolapStar {
         this.factNode =
             new StarNetworkNode(null, factTable.alias, null, null, null);
 
-        this.sharedAggregations = new HashMap<AggregationKey, Aggregation>();
-        this.pendingAggregations = new HashMap<AggregationKey, Aggregation>();
-        this.aggregationRequests = new ArrayList<AggregationKey>();
         this.sqlQueryDialect = schema.getDialect();
         this.changeListener = schema.getDataSourceChangeListener();
     }
@@ -150,6 +114,107 @@ public class RolapStar {
         return schema.getInternalConnection().getServer()
             .getAggregationManager();
     }
+
+    /**
+     * Retrieves the value of the cell identified by a cell request, if it
+     * can be found in the local cache of the current statement (thread).
+     *
+     * <p>If it is not in the local cache, returns null. The client's next
+     * step will presumably be to request a segment that contains the cell
+     * from the global cache, external cache, or by issuing a SQL statement.
+     *
+     * <p>Returns {@link Util#nullValue} if a segment contains the cell and the
+     * cell's value is null.
+     *
+     * <p>If <code>pinSet</code> is not null, pins the segment that holds it
+     * into the local cache. <code>pinSet</code> ensures that a segment is
+     * only pinned once.
+     *
+     * @param request Cell request
+     *
+     * @param pinSet Set into which to pin the segment; or null
+     *
+     * @return Cell value, or {@link Util#nullValue} if the cell value is null,
+     * or null if the cell is not in any segment in the local cache.
+     */
+    public Object getCellFromCache(
+        CellRequest request,
+        RolapAggregationManager.PinSet pinSet)
+    {
+        // REVIEW: Is it possible to optimize this so not every cell lookup
+        // causes an AggregationKey to be created?
+        AggregationKey aggregationKey = new AggregationKey(request);
+
+        final Bar bar = localBars.get();
+        for (SegmentWithData segment : Util.GcIterator.over(bar.segmentRefs)) {
+            if (!segment.getConstrainedColumnsBitKey().equals(
+                    request.getConstrainedColumnsBitKey()))
+            {
+                continue;
+            }
+
+            if (!segment.matches(aggregationKey, request.getMeasure())) {
+                continue;
+            }
+
+            Object o = segment.getCellValue(request.getSingleValues());
+            if (o != null) {
+                if (pinSet != null) {
+                    ((AggregationManager.PinSetImpl) pinSet).add(segment);
+                }
+                return o;
+            }
+        }
+        // No segment contains the requested cell.
+        return null;
+    }
+
+    public Object getCellFromAllCaches(final CellRequest request) {
+        // First, try the local/thread cache.
+        Object result = getCellFromCache(request, null);
+        if (result != null) {
+            return result;
+        }
+        // Now ask the segment cache manager.
+        return getCellFromExternalCache(request);
+    }
+
+    private Object getCellFromExternalCache(CellRequest request) {
+        final SegmentWithData segment =
+            getAggregationManager().cacheMgr.peek(request);
+        if (segment == null) {
+            return null;
+        }
+        return segment.getCellValue(request.getSingleValues());
+    }
+
+    public void register(SegmentWithData segment) {
+        localBars.get().segmentRefs.add(
+            new SoftReference<SegmentWithData>(segment));
+    }
+
+    /**
+     * Temporary. Contains the local cache for a particular thread. Because
+     * it is accessed via a thread-local, the data structures can be accessed
+     * without acquiring locks.
+     *
+     * @see Util#deprecated(Object)
+     */
+    public static class Bar {
+        /** Holds all thread-local aggregations of this star. */
+        private final Map<AggregationKey, Aggregation> aggregations =
+            new HashMap<AggregationKey, Aggregation>();
+
+        private final List<SoftReference<SegmentWithData>> segmentRefs =
+            new ArrayList<SoftReference<SegmentWithData>>();
+    }
+
+    private final ThreadLocal<Bar> localBars =
+        new ThreadLocal<Bar>() {
+            protected Bar initialValue() {
+                return new Bar();
+            }
+        };
 
     private static class StarNetworkNode {
         private StarNetworkNode parent;
@@ -481,15 +546,8 @@ public class RolapStar {
                 LOGGER.debug(buf.toString());
             }
 
-            if (forced) {
-                synchronized (sharedAggregations) {
-                    sharedAggregations.clear();
-                }
-                localAggregations.get().clear();
-            } else {
-                // Only clear aggregation cache for the currect thread context.
-                localAggregations.get().clear();
-            }
+            // Clear aggregation cache for the currect thread context.
+            localBars.get().aggregations.clear();
         }
     }
 
@@ -499,254 +557,45 @@ public class RolapStar {
      *
      * <p>When a new aggregation is created, it is marked as thread local.
      *
-     * @param aggregationKey this is the contrained column bitkey
+     * @param aggregationKey this is the constrained column bitkey
      */
     public Aggregation lookupOrCreateAggregation(
         AggregationKey aggregationKey)
     {
-        Aggregation aggregation = lookupAggregation(aggregationKey);
-
-        if (aggregation == null) {
-            aggregation =
-                new Aggregation(
-                    getAggregationManager(),
-                    aggregationKey);
-
-            this.localAggregations.get().put(aggregationKey, aggregation);
-
-            // Let the change listener get the opportunity to register the
-            // first time the aggregation is used
-            if ((this.cacheAggregations) && (!isCacheDisabled())) {
-                if (changeListener != null) {
-                    Util.discard(
-                        changeListener.isAggregationChanged(aggregation));
-                }
-            }
-        }
-        return aggregation;
-    }
-
-    /**
-     * Looks for an existing aggregation over a given set of columns, or
-     * returns <code>null</code> if there is none.
-     *
-     * <p>Thread local cache is taken first.
-     *
-     * <p>Must be called from synchronized context.
-     */
-    public Aggregation lookupAggregation(AggregationKey aggregationKey) {
-        // First try thread local cache
-        Aggregation aggregation = localAggregations.get().get(aggregationKey);
+        Aggregation aggregation = lookupSegment(aggregationKey);
         if (aggregation != null) {
             return aggregation;
         }
 
-        if (cacheAggregations && !isCacheDisabled()) {
-            // Look in global cache
-            synchronized (sharedAggregations) {
-                aggregation = sharedAggregations.get(aggregationKey);
-                if (aggregation != null) {
-                    // Keep track of global aggregates that a query is using
-                    recordAggregationRequest(aggregationKey);
-                }
-            }
-        }
+        aggregation =
+            new Aggregation(
+                aggregationKey);
 
+        localBars.get().aggregations.put(aggregationKey, aggregation);
+
+        // Let the change listener get the opportunity to register the
+        // first time the aggregation is used
+        if (this.cacheAggregations
+            && !isCacheDisabled()
+            && changeListener != null)
+        {
+            Util.discard(
+                changeListener.isAggregationChanged(aggregation));
+        }
         return aggregation;
     }
 
     /**
-     * Checks whether an aggregation has changed since the last the time
-     * loaded.
+     * Looks for an existing aggregation over a given set of columns, in the
+     * local segment cache, returning <code>null</code> if there is none.
      *
-     * <p>If so, a new thread local aggregation will be made and added after
-     * the query has finished.
+     * <p>Must be called from synchronized context.
      *
-     * <p>This method should be called before a query is executed and afterwards
-     * the function {@link #pushAggregateModificationsToGlobalCache()} should
-     * be called.
+     * @see Util#deprecated(Object)  currently always returns null -- remove
      */
-    public void checkAggregateModifications() {
-        // Clear own aggregation requests at the beginning of a query
-        // made by request to materialize results after RolapResult constructor
-        // is finished
-        clearAggregationRequests();
-
-        if (changeListener != null) {
-            if (cacheAggregations && !isCacheDisabled()) {
-                synchronized (sharedAggregations) {
-                    for (Map.Entry<AggregationKey, Aggregation> e
-                        : sharedAggregations.entrySet())
-                    {
-                        AggregationKey aggregationKey = e.getKey();
-
-                        Aggregation aggregation = e.getValue();
-                        if (changeListener.isAggregationChanged(aggregation)) {
-                            // Create new thread local aggregation
-                            // This thread will renew aggregations
-                            // And these will be checked in if all queries
-                            // that are currently using these aggregates
-                            // are finished
-                            aggregation =
-                                new Aggregation(
-                                    getAggregationManager(),
-                                    aggregationKey);
-
-                            localAggregations.get().put(
-                                aggregationKey, aggregation);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Checks whether changed modifications may be pushed into global cache.
-     *
-     * <p>The method checks whether there are other running queries that are
-     * using the requested modifications.  If this is the case, modifications
-     * are not pushed yet.
-     */
-    public void pushAggregateModificationsToGlobalCache() {
-        // Need synchronized access to both aggregationRequests as to
-        // aggregations, synchronize this instead
-        synchronized (this) {
-            if (cacheAggregations && !isCacheDisabled()) {
-                // Push pending modifications other thread could not push
-                // to global cache, because it was in use
-                Iterator<Map.Entry<AggregationKey, Aggregation>>
-                    it = pendingAggregations.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<AggregationKey, Aggregation> e = it.next();
-                    AggregationKey aggregationKey = e.getKey();
-                    Aggregation aggregation = e.getValue();
-                    // In case this aggregation is not requested by anyone
-                    // this aggregation may be pushed into global cache
-                    // otherwise put it in pending cache, that will be pushed
-                    // when another query finishes
-                    if (!isAggregationRequested(aggregationKey)) {
-                        pushAggregateModification(
-                            aggregationKey, aggregation, sharedAggregations);
-                        it.remove();
-                    }
-                }
-                // Push thread local modifications
-                it = localAggregations.get().entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<AggregationKey, Aggregation> e = it.next();
-                    AggregationKey aggregationKey = e.getKey();
-                    Aggregation aggregation = e.getValue();
-                    // In case this aggregation is not requested by anyone
-                    // this aggregation may be pushed into global cache
-                    // otherwise put it in pending cache, that will be pushed
-                    // when another query finishes
-                    Map<AggregationKey, Aggregation> targetMap;
-                    if (isAggregationRequested(aggregationKey)) {
-                        targetMap = pendingAggregations;
-                    } else {
-                        targetMap = sharedAggregations;
-                    }
-                    pushAggregateModification(
-                        aggregationKey, aggregation, targetMap);
-                }
-                localAggregations.get().clear();
-            }
-            // Clear own aggregation requests
-            clearAggregationRequests();
-        }
-    }
-
-    /**
-     * Pushes aggregations in destination aggregations, replacing older
-     * entries.
-     */
-    private void pushAggregateModification(
-        AggregationKey localAggregationKey,
-        Aggregation localAggregation,
-        Map<AggregationKey, Aggregation> destAggregations)
-    {
-        if (cacheAggregations && !isCacheDisabled()) {
-            synchronized (destAggregations) {
-                boolean found = false;
-                Iterator<Map.Entry<AggregationKey, Aggregation>>
-                        it = destAggregations.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<AggregationKey, Aggregation> e =
-                        it.next();
-                    AggregationKey aggregationKey = e.getKey();
-                    Aggregation aggregation = e.getValue();
-
-                    if (localAggregationKey.equals(aggregationKey)) {
-                        if (localAggregation.getCreationTimestamp().after(
-                                aggregation.getCreationTimestamp()))
-                        {
-                            it.remove();
-                        } else {
-                            // Entry is newer, do not replace
-                            found = true;
-                        }
-                        break;
-                    }
-                }
-                if (!found) {
-                    destAggregations.put(localAggregationKey, localAggregation);
-                }
-            }
-        }
-    }
-
-    /**
-     * Records global cache requests per thread.
-     */
-    private void recordAggregationRequest(AggregationKey aggregationKey) {
-        if (!localAggregationRequests.get().contains(aggregationKey)) {
-            synchronized (aggregationRequests) {
-                aggregationRequests.add(aggregationKey);
-            }
-            // Store own request for cleanup afterwards
-            localAggregationRequests.get().add(aggregationKey);
-        }
-    }
-
-    /**
-     * Checks whether an aggregation is requested by another thread.
-     */
-    private boolean isAggregationRequested(AggregationKey aggregationKey) {
-        synchronized (aggregationRequests) {
-            return aggregationRequests.contains(aggregationKey);
-        }
-    }
-
-    /**
-     * Clears the aggregation requests created by the current thread.
-     */
-    private void clearAggregationRequests() {
-        synchronized (aggregationRequests) {
-            if (localAggregationRequests.get().isEmpty()) {
-                return;
-            }
-            // Build a set of requests for efficient probing. Negligible cost
-            // if this thread's localAggregationRequests is small, but avoids a
-            // quadratic algorithm if it is large.
-            Set<AggregationKey> localAggregationRequestSet =
-                new HashSet<AggregationKey>(localAggregationRequests.get());
-            Iterator<AggregationKey> iter = aggregationRequests.iterator();
-            while (iter.hasNext()) {
-                AggregationKey aggregationKey = iter.next();
-                if (localAggregationRequestSet.contains(aggregationKey)) {
-                    iter.remove();
-                    // Make sure that bitKey is not removed more than once:
-                    // other occurrences might exist for other threads.
-                    localAggregationRequestSet.remove(aggregationKey);
-                    if (localAggregationRequestSet.isEmpty()) {
-                        // Nothing further to do
-                        break;
-                    }
-                }
-            }
-            localAggregationRequests.get().clear();
-        }
+    public Aggregation lookupSegment(AggregationKey aggregationKey) {
+        // First try thread local cache
+        return localBars.get().aggregations.get(aggregationKey);
     }
 
     /** For testing purposes only.  */
@@ -954,40 +803,6 @@ public class RolapStar {
             for (AggStar aggStar : getAggStars()) {
                 aggStar.print(pw, subprefix);
             }
-        }
-
-        List<Aggregation> aggregationList =
-            new ArrayList<Aggregation>(sharedAggregations.values());
-        Collections.sort(
-            aggregationList,
-            new Comparator<Aggregation>() {
-                public int compare(Aggregation o1, Aggregation o2) {
-                    return o1.getConstrainedColumnsBitKey().compareTo(
-                        o2.getConstrainedColumnsBitKey());
-                }
-            }
-       );
-
-        for (Aggregation aggregation : aggregationList) {
-            aggregation.print(pw);
-        }
-    }
-
-    /**
-     * Flushes the contents of a given region of cells from this star.
-     *
-     * @param cacheControl Cache control API
-     * @param region Predicate defining a region of cells
-     */
-    public void flush(
-        CacheControl cacheControl,
-        CacheControl.CellRegion region)
-    {
-        // Translate the region into a set of (column, value) constraints.
-        final RolapCacheRegion cacheRegion =
-            RolapAggregationManager.makeCacheRegion(this, region);
-        for (Aggregation aggregation : sharedAggregations.values()) {
-            aggregation.flush(cacheControl, cacheRegion);
         }
     }
 

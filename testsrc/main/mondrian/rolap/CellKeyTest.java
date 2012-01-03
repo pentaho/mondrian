@@ -241,6 +241,55 @@ public class CellKeyTest extends FoodMartTestCase {
         assertTrue("CellKey equals", key.equals(copy));
     }
 
+    public void testFour() {
+        CellKey key = CellKey.Generator.newCellKey(4);
+
+        assertTrue("CellKey size", key.size() == 4);
+
+        CellKey copy = key.copy();
+        assertTrue("CellKey equals", key.equals(copy));
+
+        int[] ordinals = key.getOrdinals();
+        copy = CellKey.Generator.newCellKey(ordinals);
+        assertTrue("CellKey equals", key.equals(copy));
+
+        boolean gotException = false;
+        try {
+            key.setAxis(4, 1);
+        } catch (Exception ex) {
+            gotException = true;
+        }
+        assertTrue("CellKey axis too big", gotException);
+
+        gotException = false;
+        try {
+            key.setOrdinals(new int[5]);
+        } catch (Exception ex) {
+            gotException = true;
+        }
+        assertTrue("CellKey array too big", gotException);
+
+        gotException = false;
+        try {
+            key.setOrdinals(new int[1]);
+        } catch (Exception ex) {
+            gotException = true;
+        }
+        assertTrue("CellKey array too small", gotException);
+
+        key.setAxis(0, 1);
+        key.setAxis(1, 3);
+        key.setAxis(2, 5);
+        key.setAxis(3, 7);
+
+        copy = key.copy();
+        assertTrue("CellKey equals", key.equals(copy));
+
+        ordinals = key.getOrdinals();
+        copy = CellKey.Generator.newCellKey(ordinals);
+        assertTrue("CellKey equals", key.equals(copy));
+    }
+
     public void testCellLookup() {
         if (!isDefaultNullMemberRepresentation()) {
             return;
@@ -309,6 +358,13 @@ public class CellKeyTest extends FoodMartTestCase {
                 null);
 
         testContext.assertQueryReturns(query, result);
+    }
+
+    public void testSize() {
+        for (int i = 1; i < 20; i++) {
+            assertEquals(i, CellKey.Generator.newCellKey(new int[i]).size());
+            assertEquals(i, CellKey.Generator.newCellKey(i).size());
+        }
     }
 }
 

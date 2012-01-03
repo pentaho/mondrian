@@ -36,6 +36,7 @@ import javax.script.*;
 public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
     private final static Logger LOGGER =
         Logger.getLogger(Util.class);
+
     public <T> T compileScript(
         Class<T> iface,
         String script,
@@ -53,6 +54,7 @@ public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
                 "Error while compiling script to implement " + iface + " SPI");
         }
     }
+
     @Override
     public void cancelAndCloseStatement(Statement stmt) {
         try {

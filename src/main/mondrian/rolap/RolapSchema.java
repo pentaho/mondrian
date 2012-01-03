@@ -24,6 +24,7 @@ import mondrian.spi.*;
 import mondrian.spi.MemberFormatter;
 import mondrian.spi.PropertyFormatter;
 import mondrian.spi.impl.Scripts;
+import mondrian.util.ByteString;
 
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.log4j.Logger;
@@ -38,8 +39,6 @@ import java.io.*;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import javax.sql.DataSource;
 
@@ -108,7 +107,9 @@ public class RolapSchema implements Schema {
      */
     private Role defaultRole;
 
-    private final String md5Bytes;
+    private ByteString md5Bytes;
+
+    private final boolean useContentChecksum;
 
     /**
      * A schema's aggregation information
@@ -184,16 +185,21 @@ public class RolapSchema implements Schema {
      * @param connectInfo Connect properties
      * @param dataSource Data source
      * @param md5Bytes MD5 hash
+     * @param useContentChecksum Whether to use content checksum
      */
     private RolapSchema(
         final String key,
         final Util.PropertyList connectInfo,
         final DataSource dataSource,
-        final String md5Bytes)
+        final ByteString md5Bytes,
+        boolean useContentChecksum)
     {
         this.id = Util.generateUuidString();
         this.key = key;
         this.md5Bytes = md5Bytes;
+        this.useContentChecksum = useContentChecksum;
+        assert !(useContentChecksum && md5Bytes == null);
+
         // the order of the next two lines is important
         this.defaultRole = Util.createRootRole(this);
         final MondrianServer internalServer = MondrianServer.forId(null);
@@ -217,24 +223,15 @@ public class RolapSchema implements Schema {
      */
     private RolapSchema(
         String key,
-        String md5Bytes,
+        ByteString md5Bytes,
         String catalogUrl,
         String catalogStr,
         Util.PropertyList connectInfo,
         DataSource dataSource)
     {
-        this(key, connectInfo, dataSource, md5Bytes);
+        this(key, connectInfo, dataSource, md5Bytes, md5Bytes != null);
         load(catalogUrl, catalogStr);
-    }
-
-    private RolapSchema(
-        String key,
-        String catalogUrl,
-        Util.PropertyList connectInfo,
-        DataSource dataSource)
-    {
-        this(key, connectInfo, dataSource, null);
-        load(catalogUrl, null);
+        assert this.md5Bytes != null;
     }
 
     /**
@@ -336,12 +333,15 @@ public class RolapSchema implements Schema {
     }
 
     protected void finalCleanUp() {
-        final CacheControl cacheControl =
-            internalConnection.getCacheControl(null);
-        for (Cube cube : getCubes()) {
-            CellRegion cr =
-                cacheControl.createMeasuresRegion(cube);
-            cacheControl.flush(cr);
+        if (internalConnection != null) {
+            // REVIEW: Is this supposed to happen???
+            final CacheControl cacheControl =
+                internalConnection.getCacheControl(null);
+            for (Cube cube : getCubes()) {
+                CellRegion cr =
+                    cacheControl.createMeasuresRegion(cube);
+                cacheControl.flush(cr);
+            }
         }
         if (aggTableManager != null) {
             aggTableManager.finalCleanUp();
@@ -393,21 +393,21 @@ public class RolapSchema implements Schema {
                     }
                 }
 
-                if (getLogger().isDebugEnabled()) {
+                // Compute catalog string, if needed for debug or for computing
+                // Md5 hash.
+                if (getLogger().isDebugEnabled() || md5Bytes == null) {
                     try {
-                        StringBuilder buf = new StringBuilder(1000);
-                        InputStream debugIn = Util.readVirtualFile(catalogUrl);
-                        int n;
-                        while ((n = debugIn.read()) != -1) {
-                            buf.append((char) n);
-                        }
-                        getLogger().debug(
-                            "RolapSchema.load: content: \n" + buf.toString());
+                        catalogStr = Util.readVirtualFileAsString(catalogUrl);
                     } catch (java.io.IOException ex) {
                         getLogger().debug("RolapSchema.load: ex=" + ex);
+                        catalogStr = "?";
                     }
                 }
 
+                if (getLogger().isDebugEnabled()) {
+                    getLogger().debug(
+                        "RolapSchema.load: content: \n" + catalogStr);
+                }
             } else {
                 if (getLogger().isDebugEnabled()) {
                     getLogger().debug(
@@ -415,6 +415,13 @@ public class RolapSchema implements Schema {
                 }
 
                 def = xmlParser.parse(catalogStr);
+            }
+
+            if (md5Bytes == null) {
+                // If a null catalogStr was passed in, we should have
+                // computed it above by re-reading the catalog URL.
+                assert catalogStr != null;
+                md5Bytes = new ByteString(Util.digestMd5(catalogStr));
             }
 
             xmlSchema = new MondrianDef.Schema(def);
@@ -867,37 +874,21 @@ public class RolapSchema implements Schema {
      * <p>To lookup a schema, call <code>Pool.instance().{@link #get}</code>.
      */
     static class Pool {
-        private final MessageDigest md;
 
         private static Pool pool = new Pool();
 
-        private Map<String, SoftReference<RolapSchema>> mapUrlToSchema =
+        private final Map<String, SoftReference<RolapSchema>> mapUrlToSchema =
             new HashMap<String, SoftReference<RolapSchema>>();
 
+        private final Map<ByteString, SoftReference<RolapSchema>>
+            mapMd5ToSchema =
+            new HashMap<ByteString, SoftReference<RolapSchema>>();
 
         private Pool() {
-            // Initialize the MD5 digester.
-            try {
-                md = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException e) {
-                throw new RuntimeException(e);
-            }
         }
 
         static Pool instance() {
             return pool;
-        }
-
-        /**
-         * Creates an MD5 hash of String.
-         *
-         * @param value String to create one way hash upon.
-         * @return MD5 hash.
-         */
-        private synchronized String encodeMD5(final String value) {
-            md.reset();
-            final byte[] bytes = md.digest(value.getBytes());
-            return (bytes != null) ? new String(bytes) : null;
         }
 
         synchronized RolapSchema get(
@@ -1029,27 +1020,14 @@ public class RolapSchema implements Schema {
                 // mapUrlToSchema Map. We must then also during the
                 // remove operation make sure we remove both.
 
-                String md5Bytes = null;
+                ByteString md5Bytes = null;
                 try {
                     if (catalogStr == null) {
                         // Use VFS to get the content
-                        InputStream in = null;
-                        try {
-                            in = Util.readVirtualFile(catalogUrl);
-                            StringBuilder buf = new StringBuilder(1000);
-                            int n;
-                            while ((n = in.read()) != -1) {
-                                buf.append((char) n);
-                            }
-                            catalogStr = buf.toString();
-                        } finally {
-                            if (in != null) {
-                                in.close();
-                            }
-                        }
+                        catalogStr = Util.readVirtualFileAsString(catalogUrl);
                     }
 
-                    md5Bytes = encodeMD5(catalogStr);
+                    md5Bytes = new ByteString(Util.digestMd5(catalogStr));
                 } catch (Exception ex) {
                     // Note, can not throw an Exception from this method
                     // but just to show that all is not well in Mudville
@@ -1060,21 +1038,21 @@ public class RolapSchema implements Schema {
 
                 if (md5Bytes != null) {
                     SoftReference<RolapSchema> ref =
-                        mapUrlToSchema.get(md5Bytes);
+                        mapMd5ToSchema.get(md5Bytes);
                     if (ref != null) {
                         schema = ref.get();
                         if (schema == null) {
                             // clear out the reference since schema is null
                             mapUrlToSchema.remove(key);
-                            mapUrlToSchema.remove(md5Bytes);
+                            mapMd5ToSchema.remove(md5Bytes);
                         }
                     }
                 }
 
                 if (schema == null
                     || md5Bytes == null
-                    || schema.md5Bytes == null
-                    || ! schema.md5Bytes.equals(md5Bytes))
+                    || !schema.useContentChecksum
+                    || !schema.md5Bytes.equals(md5Bytes))
                 {
                     schema = new RolapSchema(
                         key,
@@ -1087,7 +1065,7 @@ public class RolapSchema implements Schema {
                     SoftReference<RolapSchema> ref =
                         new SoftReference<RolapSchema>(schema);
                     if (md5Bytes != null) {
-                        mapUrlToSchema.put(md5Bytes, ref);
+                        mapMd5ToSchema.put(md5Bytes, ref);
                     }
                     mapUrlToSchema.put(key, ref);
 
@@ -1114,21 +1092,13 @@ public class RolapSchema implements Schema {
                 }
 
                 if (schema == null) {
-                    if (catalogStr == null) {
-                        schema = new RolapSchema(
-                            key,
-                            catalogUrl,
-                            connectInfo,
-                            dataSource);
-                    } else {
-                        schema = new RolapSchema(
-                            key,
-                            null,
-                            catalogUrl,
-                            catalogStr,
-                            connectInfo,
-                            dataSource);
-                    }
+                    schema = new RolapSchema(
+                        key,
+                        null,
+                        catalogUrl,
+                        catalogStr,
+                        connectInfo,
+                        dataSource);
 
                     mapUrlToSchema.put(
                         key,
@@ -1196,9 +1166,7 @@ public class RolapSchema implements Schema {
             if (ref != null) {
                 RolapSchema schema = ref.get();
                 if (schema != null) {
-                    if (schema.md5Bytes != null) {
-                        mapUrlToSchema.remove(schema.md5Bytes);
-                    }
+                    mapMd5ToSchema.remove(schema.md5Bytes);
                     schema.finalCleanUp();
                 }
             }
@@ -1219,34 +1187,21 @@ public class RolapSchema implements Schema {
                 }
             }
             mapUrlToSchema.clear();
+            mapMd5ToSchema.clear();
             JdbcSchema.clearAllDBs();
         }
 
         /**
-         * This returns an iterator over a copy of the RolapSchema's container.
+         * Returns a list of schemas in this pool.
          *
-         * @return Iterator over RolapSchemas
+         * @return List of schemas in this pool
          */
         synchronized List<RolapSchema> getRolapSchemas() {
             List<RolapSchema> list = new ArrayList<RolapSchema>();
-            for (Iterator<SoftReference<RolapSchema>> it =
-                mapUrlToSchema.values().iterator(); it.hasNext();)
+            for (RolapSchema schema
+                : Util.GcIterator.over(mapUrlToSchema.values()))
             {
-                SoftReference<RolapSchema> ref = it.next();
-                RolapSchema schema = ref.get();
-                // Schema is null if already garbage collected
-                if (schema != null) {
-                    list.add(schema);
-                } else {
-                    // We will remove the stale reference
-                    try {
-                        it.remove();
-                    } catch (Exception ex) {
-                        // Should not happen, so
-                        // warn but otherwise ignore
-                        LOGGER.warn(ex);
-                    }
-                }
+                list.add(schema);
             }
             return list;
         }
@@ -1713,10 +1668,12 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
 
     /**
      * Returns the checksum of this schema. Returns
-     * <code>null</code> {@link RolapConnectionProperties#UseContentChecksum}
+     * <code>null</code> if {@link RolapConnectionProperties#UseContentChecksum}
      * is set to false.
+     *
+     * @return MD5 checksum of this schema
      */
-    public String getChecksum() {
+    public ByteString getChecksum() {
         return md5Bytes;
     }
 
@@ -1851,25 +1808,6 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
 
     public Collection<RolapStar> getStars() {
         return getRolapStarRegistry().getStars();
-    }
-
-    /**
-     * Checks whether there are modifications in the aggregations cache.
-     */
-    public void checkAggregateModifications() {
-        for (RolapStar star : getStars()) {
-            star.checkAggregateModifications();
-        }
-    }
-
-    /**
-     * Pushes all modifications of the aggregations to global cache,
-     * so other queries can start using the new cache
-     */
-    public void pushAggregateModificationsToGlobalCache() {
-        for (RolapStar star : getStars()) {
-            star.pushAggregateModificationsToGlobalCache();
-        }
     }
 
     final RolapNativeRegistry nativeRegistry = new RolapNativeRegistry();

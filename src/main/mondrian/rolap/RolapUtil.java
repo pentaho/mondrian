@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -57,7 +57,7 @@ public class RolapUtil {
      * Hook to run when a query is executed. This should not be
      * used at runtime but only for testing.
      */
-    static ExecuteQueryHook threadHooks = null;
+    private static ExecuteQueryHook queryHook = null;
 
     /**
      * Special value represents a null key.
@@ -102,6 +102,27 @@ public class RolapUtil {
                 }
             }
         );
+    }
+
+    /**
+     * Sets the query-execution hook used by tests. This method and
+     * {@link #setHook(mondrian.rolap.RolapUtil.ExecuteQueryHook)} are
+     * synchronized to ensure a memory barrier.
+     *
+     * @return Query execution hook
+     */
+    public static synchronized ExecuteQueryHook getHook() {
+        return queryHook;
+    }
+
+    public static synchronized void setHook(ExecuteQueryHook hook) {
+        queryHook = hook;
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private final static class RolapUtilComparable
