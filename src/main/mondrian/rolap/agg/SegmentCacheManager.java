@@ -195,6 +195,9 @@ import java.util.concurrent.*;
  * region. {@link SegmentHeader#excludedRegions} should be a list of
  * {@link SegmentColumn} arrays.</p>
  *
+ * <p>23. All code that calls {@link Future#get} should probably handle
+ * {@link CancellationException}.</p>
+ *
  *
  * @author jhyde
  * @version $Id$

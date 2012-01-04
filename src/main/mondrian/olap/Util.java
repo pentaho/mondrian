@@ -232,9 +232,9 @@ public class Util extends XOMUtil {
     /**
      * Creates an {@link ExecutorService} object backed by a thread pool
      * with a fixed number of threads..
-     * @param maxNbThreads Maximum number of concurrent
+     * @param maximumPoolSize Maximum number of concurrent
      * threads.
-     * @param minNbThreads Minimum number of concurrent
+     * @param corePoolSize Minimum number of concurrent
      * threads to maintain in the pool, even if they are
      * idle.
      * @param keepAliveTime Time, in seconds, for which to
@@ -246,15 +246,22 @@ public class Util extends XOMUtil {
      * @return An executor service preconfigured.
      */
     public static ExecutorService getExecutorService(
-        int maxNbThreads,
-        int minNbThreads,
+        int maximumPoolSize,
+        int corePoolSize,
         long keepAliveTime,
         int queueLength,
         final String name)
     {
+        if (Util.PreJdk16) {
+            // On JDK1.5, if you specify corePoolSize=0, nothing gets executed.
+            // Bummer.
+            corePoolSize = Math.max(corePoolSize, 1);
+        }
         return new ThreadPoolExecutor(
-            minNbThreads, maxNbThreads,
-            keepAliveTime, TimeUnit.SECONDS,
+            corePoolSize,
+            maximumPoolSize,
+            keepAliveTime,
+            TimeUnit.SECONDS,
             queueLength < 0
                 ? new LinkedBlockingQueue<Runnable>()
                 : new ArrayBlockingQueue<Runnable>(queueLength),
