@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde and others
+// Copyright (C) 2007-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -127,7 +127,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 "does not start with '" + CONNECT_STRING_PREFIX + "'");
         }
         Util.PropertyList list = Util.parseConnectString(x);
-        final Map<String, String> map = Util.toMap(info);
+        final Map<String, String> map = Olap4jUtil.toMap(info);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             list.put(entry.getKey(), entry.getValue());
         }
@@ -701,33 +701,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         return connection1;
     }
 
-    /**
-     * Returns an unmodifiable view of the specified list.  This method allows
-     * modules to provide users with "read-only" access to internal
-     * lists.  Query operations on the returned list "read through" to the
-     * specified list, and attempts to modify the returned list, whether
-     * direct or via its iterator, result in an
-     * <tt>UnsupportedOperationException</tt>.<p>
-     *
-     * The returned list will be serializable if the specified list
-     * is serializable. Similarly, the returned list will implement
-     * {@link RandomAccess} if the specified list does.
-     *
-     * <p>The equivalent of
-     * {@link java.util.Collections#unmodifiableList(java.util.List)}.
-     *
-     * @param  list the list for which an unmodifiable view is to be returned.
-     * @return an unmodifiable view of the specified list.
-     */
-    static <T> NamedList<T> unmodifiableNamedList(
-        final NamedList<? extends T> list)
-    {
-        mondrian.util.Bug.olap4jUpgrade("remove this method and 2 classes");
-        return list instanceof RandomAccess
-        ? new UnmodifiableNamedRandomAccessList<T>(list)
-        : new UnmodifiableNamedList<T>(list);
-    }
-
     // inner classes
 
     /**
@@ -1021,126 +994,6 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
             return new IdentifierNode(
                 list.toArray(
                     new IdentifierSegment[list.size()]));
-        }
-    }
-
-    private static class UnmodifiableNamedList<T> implements NamedList<T> {
-        private final NamedList<? extends T> list;
-
-        UnmodifiableNamedList(NamedList<? extends T> list) {
-            this.list = list;
-        }
-
-        public T get(String s) {
-            return list.get(s);
-        }
-
-        public int indexOfName(String s) {
-            return list.indexOfName(s);
-        }
-
-        public int size() {
-            return list.size();
-        }
-
-        public boolean isEmpty() {
-            return list.isEmpty();
-        }
-
-        public boolean contains(Object o) {
-            return list.contains(o);
-        }
-
-        public Iterator<T> iterator() {
-            return Collections.unmodifiableList(list).iterator();
-        }
-
-        public Object[] toArray() {
-            return list.toArray();
-        }
-
-        public <T2> T2[] toArray(T2[] a) {
-            //noinspection SuspiciousToArrayCall
-            return list.toArray(a);
-        }
-
-        public boolean add(T t) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean remove(Object o) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean containsAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean addAll(Collection<? extends T> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean addAll(int index, Collection<? extends T> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean removeAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean retainAll(Collection<?> c) {
-            throw new UnsupportedOperationException();
-        }
-
-        public void clear() {
-            throw new UnsupportedOperationException();
-        }
-
-        public T get(int index) {
-            return list.get(index);
-        }
-
-        public T set(int index, T element) {
-            throw new UnsupportedOperationException();
-        }
-
-        public void add(int index, T element) {
-            throw new UnsupportedOperationException();
-        }
-
-        public T remove(int index) {
-            throw new UnsupportedOperationException();
-        }
-
-        public int indexOf(Object o) {
-            return list.indexOf(0);
-        }
-
-        public int lastIndexOf(Object o) {
-            return list.lastIndexOf(o);
-        }
-
-        public ListIterator<T> listIterator() {
-            return Collections.unmodifiableList(list).listIterator();
-        }
-
-        public ListIterator<T> listIterator(int index) {
-            return Collections.unmodifiableList(list).listIterator(index);
-        }
-
-        public List<T> subList(int fromIndex, int toIndex) {
-            // TODO: NamedList.subList should return NamedList.
-            return Collections.unmodifiableList(
-                list.subList(fromIndex, toIndex));
-        }
-    }
-
-    private static class UnmodifiableNamedRandomAccessList<T>
-        extends UnmodifiableNamedList<T>
-        implements RandomAccess
-    {
-        UnmodifiableNamedRandomAccessList(NamedList<? extends T> list) {
-            super(list);
         }
     }
 }

@@ -1,8 +1,9 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011-2011 Julian Hyde
+// Copyright (C) 2011-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -15,6 +16,8 @@ import mondrian.server.UrlRepositoryContentFinder;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.ServletContextCatalogLocator;
 import mondrian.xmla.XmlaHandler;
+
+import org.olap4j.impl.Olap4jUtil;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -132,7 +135,7 @@ public class MondrianXmlaServlet extends DefaultXmlaServlet {
             } else {
                 paramValue = Util.replaceProperties(
                     paramValue,
-                    Util.toMap(System.getProperties()));
+                    Olap4jUtil.toMap(System.getProperties()));
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
                         "XmlaServlet.makeDataSources: paramValue="

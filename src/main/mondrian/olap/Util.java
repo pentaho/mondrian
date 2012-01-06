@@ -1837,28 +1837,6 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Converts a locale identifier (LCID) as used by Windows into a Java
-     * locale.
-     *
-     * <p>For example, {@code lcidToLocale(1033)} returns "en_US", because
-     * 1033 (hex 0409) is US english.</p>
-     *
-     * @param lcid Locale identifier
-     * @return Locale
-     * @throws RuntimeException if locale id is unkown
-     *
-     * @deprecated Soon to be moved to Olap4jUtil.
-     */
-    public static Locale lcidToLocale(short lcid) {
-        // Most common case first, to avoid instantiating the full map.
-        if (lcid == 0x0409) {
-            return Locale.US;
-        }
-        Bug.olap4jUpgrade("move LcidLocale ot Olap4jUtil");
-        return LcidLocale.instance().toLocale(lcid);
-    }
-
-    /**
      * Converts a list of olap4j-style segments to a list of mondrian-style
      * segments.
      *

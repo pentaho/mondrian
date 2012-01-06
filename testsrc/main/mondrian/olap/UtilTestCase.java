@@ -1018,16 +1018,6 @@ public class UtilTestCase extends TestCase {
     }
 
     /**
-     * Unit test for {@link Util#lcidToLocale(short)}.
-     */
-    public void testLcid() {
-        assertEquals("en_US", Util.lcidToLocale((short) 0x0409).toString());
-        assertEquals("en_US", Util.lcidToLocale((short) 1033).toString());
-        assertEquals("fr", Util.lcidToLocale((short) 0x040c).toString());
-        assertEquals("en_GB", Util.lcidToLocale((short) 2057).toString());
-    }
-
-    /**
      * Unit test for {@link CombiningGenerator}.
      */
     public void testCombiningGenerator() {

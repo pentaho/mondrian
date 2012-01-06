@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -11,7 +11,6 @@ package mondrian.tui;
 
 import mondrian.olap.*;
 import mondrian.rolap.RolapConnectionProperties;
-import mondrian.server.MondrianServerRegistry;
 import mondrian.server.StringRepositoryContentFinder;
 import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.CatalogLocatorImpl;
@@ -24,6 +23,8 @@ import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
+
+import org.olap4j.impl.Olap4jUtil;
 
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -268,7 +269,7 @@ public class XmlaSupport {
             dataSourcesConfigString =
                 Util.replaceProperties(
                     dataSourcesConfigString,
-                    Util.toMap(System.getProperties()));
+                    Olap4jUtil.toMap(System.getProperties()));
 
             if (logger.isDebugEnabled()) {
                 logger.debug(

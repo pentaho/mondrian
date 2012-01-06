@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2011 Julian Hyde
+// Copyright (C) 2003-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -14,6 +14,7 @@ import mondrian.olap.Util;
 import org.apache.log4j.Logger;
 
 import org.olap4j.OlapConnection;
+import org.olap4j.impl.LcidLocale;
 import org.olap4j.metadata.Catalog;
 
 import java.sql.SQLException;
@@ -152,7 +153,7 @@ abstract class Rowset implements XmlaConstants {
                     // First check for a numeric locale id (LCID) as used by
                     // Windows.
                     final short lcid = Short.valueOf(value);
-                    final Locale locale = Util.lcidToLocale(lcid);
+                    final Locale locale = LcidLocale.lcidToLocale(lcid);
                     if (locale != null) {
                         extraProperties.put(
                             XmlaHandler.JDBC_LOCALE, locale.toString());
