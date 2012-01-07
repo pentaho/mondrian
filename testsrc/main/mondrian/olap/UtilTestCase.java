@@ -368,11 +368,12 @@ public class UtilTestCase extends TestCase {
         // probably a bug in the test, not the JDK.)
         assertEquals(expected, original.replaceAll(seek, replace));
 
-        // Check the StringBuffer version of replace.
+        // Check the StringBuilder version of replace.
         StringBuilder buf = new StringBuilder(original);
         StringBuilder buf2 = Util.replace(buf, 0, seek, replace);
-        assertTrue(buf == buf2);
         assertEquals(expected, buf.toString());
+        assertEquals(expected, buf2.toString());
+        assertTrue(buf == buf2);
 
         // Check the String version of replace.
         assertEquals(expected, Util.replace(original, seek, replace));
@@ -1110,6 +1111,27 @@ public class UtilTestCase extends TestCase {
         assertEquals(3, set.size());
     }
 
+    /**
+     * Unit test for {@link Util#binarySearch}.
+     */
+    public void testBinarySearch() {
+        final String[] abce = {"a", "b", "c", "e"};
+        assertEquals(0, Util.binarySearch(abce, 0, 4, "a"));
+        assertEquals(1, Util.binarySearch(abce, 0, 4, "b"));
+        assertEquals(1, Util.binarySearch(abce, 1, 4, "b"));
+        assertEquals(-4, Util.binarySearch(abce, 0, 4, "d"));
+        assertEquals(-4, Util.binarySearch(abce, 1, 4, "d"));
+        assertEquals(-4, Util.binarySearch(abce, 2, 4, "d"));
+        assertEquals(-4, Util.binarySearch(abce, 2, 3, "d"));
+        assertEquals(-4, Util.binarySearch(abce, 2, 3, "e"));
+        assertEquals(-4, Util.binarySearch(abce, 2, 3, "f"));
+        assertEquals(-5, Util.binarySearch(abce, 0, 4, "f"));
+        assertEquals(-5, Util.binarySearch(abce, 2, 4, "f"));
+    }
+
+    /**
+     * Unit test for {@link mondrian.util.ArraySortedSet}.
+     */
     public void testArraySortedSet() {
         String[] abce = {"a", "b", "c", "e"};
         final SortedSet<String> abceSet =
