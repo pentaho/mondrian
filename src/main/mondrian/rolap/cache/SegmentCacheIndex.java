@@ -13,7 +13,6 @@ import mondrian.rolap.BitKey;
 import mondrian.rolap.agg.SegmentBuilder;
 import mondrian.spi.*;
 import mondrian.util.ByteString;
-import mondrian.util.SlotFuture;
 
 import java.io.PrintWriter;
 import java.util.List;
@@ -103,13 +102,16 @@ public interface SegmentCacheIndex {
     /**
      * Adds a header to the index.
      *
+     * <p>If {@code loading} is true, there must follow a call to
+     * {@link #loadSucceeded} or {@link #loadFailed}.</p>
+     *
      * @param header Segment header
-     * @param bodyFuture Future that will be informed when the segment has
+     * @param loading Whether segment is pending a load from SQL
      * @param converter Segment converter
      */
     void add(
         SegmentHeader header,
-        SlotFuture<SegmentBody> bodyFuture,
+        boolean loading,
         SegmentBuilder.SegmentConverter converter);
 
     /**

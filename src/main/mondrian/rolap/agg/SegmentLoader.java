@@ -46,7 +46,7 @@ import java.util.concurrent.*;
  */
 public class SegmentLoader {
 
-    private final static Logger LOGGER = Logger.getLogger(SegmentLoader.class);
+    private static final Logger LOGGER = Logger.getLogger(SegmentLoader.class);
 
     private final SegmentCacheManager cacheMgr;
 
@@ -103,7 +103,7 @@ public class SegmentLoader {
             for (Segment segment : groupingSet.getSegments()) {
                 cacheMgr.segmentIndex.add(
                     segment.getHeader(),
-                    new SlotFuture<SegmentBody>(),
+                    true,
                     new SegmentBuilder.StarSegmentConverter(
                         segment.measure,
                         compoundPredicateList));
@@ -877,7 +877,7 @@ public class SegmentLoader {
      * Collection of rows, each with a set of columns of type Object, double, or
      * int. Native types are not boxed.
      */
-    static protected class RowList {
+    protected static class RowList {
         private final Column[] columns;
         private int rowCount = 0;
         private int capacity = 0;

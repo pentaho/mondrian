@@ -49,8 +49,8 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
     private final Map<List, FuzzyFactInfo> fuzzyFactMap =
         new HashMap<List, FuzzyFactInfo>();
 
-    private final Map<SegmentHeader, SlotFuture<SegmentBody>> headerMap =
-        new HashMap<SegmentHeader, SlotFuture<SegmentBody>>();
+    private final Map<SegmentHeader, HeaderInfo> headerMap =
+        new HashMap<SegmentHeader, HeaderInfo>();
 
     private final Thread thread;
 
@@ -128,10 +128,24 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
 
     public void add(
         SegmentHeader header,
-        SlotFuture<SegmentBody> bodyFuture,
+        boolean loading,
         SegmentBuilder.SegmentConverter converter)
     {
         checkThread();
+
+        final HeaderInfo headerInfo = headerMap.get(header);
+        if (headerInfo != null) {
+            if (loading && headerInfo.slot == null) {
+                headerInfo.slot = new SlotFuture<SegmentBody>();
+            }
+            return;
+        }
+        headerMap.put(
+            header,
+            new HeaderInfo(
+                loading
+                    ? new SlotFuture<SegmentBody>()
+                    : null));
 
         final List bitkeyKey = makeBitkeyKey(header);
         List<SegmentHeader> headerList = bitkeyMap.get(bitkeyKey);
@@ -160,33 +174,47 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             fuzzyFactMap.put(fuzzyFactKey, fuzzyFactInfo);
         }
         fuzzyFactInfo.headerList.add(header);
-
-        if (bodyFuture != null) {
-            final SlotFuture<SegmentBody> previous =
-                headerMap.put(header, bodyFuture);
-            assert previous == null;
-        }
     }
 
     public void loadSucceeded(SegmentHeader header, SegmentBody body) {
         checkThread();
 
-        final SlotFuture<SegmentBody> bodyFuture = headerMap.remove(header);
-        assert bodyFuture != null;
-        bodyFuture.put(body);
+        final HeaderInfo headerInfo = headerMap.get(header);
+        assert headerInfo != null
+            : "segment header " + header.getUniqueID() + " is missing";
+        assert headerInfo.slot != null
+            : "segment header " + header.getUniqueID() + " is not loading";
+        headerInfo.slot.put(body);
+        if (headerInfo.removeAfterLoad) {
+            remove(header);
+        }
     }
 
     public void loadFailed(SegmentHeader header, Throwable throwable) {
         checkThread();
 
-        final SlotFuture<SegmentBody> bodyFuture = headerMap.remove(header);
-        assert bodyFuture != null;
-        bodyFuture.fail(throwable);
+        final HeaderInfo headerInfo = headerMap.get(header);
+        assert headerInfo != null
+            : "segment header " + header.getUniqueID() + " is missing";
+        assert headerInfo.slot != null
+            : "segment header " + header.getUniqueID() + " is not loading";
+        headerInfo.slot.fail(throwable);
         remove(header);
     }
 
     public void remove(SegmentHeader header) {
         checkThread();
+
+        final HeaderInfo headerInfo = headerMap.get(header);
+        if (headerInfo == null) {
+            return;
+        }
+        if (headerInfo.slot != null) {
+            // Cannot remove while load is pending; flag for removal after load
+            headerInfo.removeAfterLoad = true;
+        } else {
+            headerMap.remove(header);
+        }
 
         final List factKey = makeFactKey(header);
         final FactInfo factInfo = factMap.get(factKey);
@@ -340,7 +368,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
     public Future<SegmentBody> getFuture(SegmentHeader header) {
         checkThread();
 
-        return headerMap.get(header);
+        return headerMap.get(header).slot;
     }
 
     public SegmentBuilder.SegmentConverter getConverter(
@@ -572,12 +600,12 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
      * prove covering, it is sufficient to prove that all combinations involving
      * Canada are covered.</p>
      *
-     * @param coords Coordinates
+     * @param coordinates Coordinates
      * @param list List to write candidates to
      * @param headers Headers of candidate segments
      */
     private void findRollupCandidatesAmong(
-        Map<String, Comparable<?>> coords,
+        Map<String, Comparable<?>> coordinates,
         List<List<SegmentHeader>> list,
         List<SegmentHeader> headers)
     {
@@ -598,12 +626,13 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
                 final SegmentColumn constrainedColumn =
                     header.getConstrainedColumn(column.columnExpression);
 
-                // REVIEW: How are null key values represented in coords?
+                // REVIEW: How are null key values represented in coordinates?
                 // Assuming that they are represented by null ref.
-                if (coords.containsKey(column.columnExpression)) {
+                if (coordinates.containsKey(column.columnExpression)) {
                     // Matching column. Will not be aggregated away. Needs
                     // to be in range.
-                    Comparable<?> value = coords.get(column.columnExpression);
+                    Comparable<?> value =
+                        coordinates.get(column.columnExpression);
                     if (value == null) {
                         value = RolapUtil.sqlNullValue;
                     }
@@ -738,7 +767,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         // the segment that contains the most value combinations that we are are
         // not currently covering.
         final CartesianProductList<Comparable> tuples =
-            new CartesianProductList(valueLists);
+            new CartesianProductList<Comparable>(valueLists);
         final List<SegmentHeader> usedSegments = new ArrayList<SegmentHeader>();
         final List<SegmentHeader> unusedSegments =
             new ArrayList<SegmentHeader>(headers);
@@ -809,6 +838,15 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             new ArrayList<SegmentHeader>();
 
         FuzzyFactInfo() {
+        }
+    }
+
+    private static class HeaderInfo {
+        private SlotFuture<SegmentBody> slot;
+        private boolean removeAfterLoad;
+
+        HeaderInfo(SlotFuture<SegmentBody> slot) {
+            this.slot = slot;
         }
     }
 }

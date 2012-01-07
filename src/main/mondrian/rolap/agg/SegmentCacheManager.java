@@ -198,6 +198,8 @@ import java.util.concurrent.*;
  * <p>23. All code that calls {@link Future#get} should probably handle
  * {@link CancellationException}.</p>
  *
+ * <p>24. Obsolete {@link #handler}. Indirection doesn't win anything.</p>
+ *
  *
  * @author jhyde
  * @version $Id$
@@ -317,13 +319,15 @@ public class SegmentCacheManager {
     }
 
     /**
-     * Removes a segment from segment index and cache.
+     * Removes a segment from segment index.
      *
-     * @param cacheMgr Cache manager
+     * <p>Call is asynchronous. It comes back immediately.</p>
+     *
+     * <p>Does not remove it from the external cache.</p>
+     *
      * @param header segment header
      */
     public void remove(
-        SegmentCacheManager cacheMgr,
         SegmentHeader header)
     {
         ACTOR.event(
@@ -331,7 +335,7 @@ public class SegmentCacheManager {
             new SegmentRemoveEvent(
                 System.currentTimeMillis(),
                 Locus.peek(),
-                cacheMgr,
+                this,
                 header));
     }
 
@@ -495,7 +499,7 @@ public class SegmentCacheManager {
         }
 
         public void visit(ExternalSegmentCreatedEvent event) {
-            event.cacheMgr.segmentIndex.add(event.header, null, null);
+            event.cacheMgr.segmentIndex.add(event.header, false, null);
 
             event.locus.getServer().getMonitor().sendEvent(
                 new CellCacheSegmentCreateEvent(
@@ -575,7 +579,7 @@ public class SegmentCacheManager {
             // segments for the region's measures.
             if (flushRegion.length == 0) {
                 for (SegmentHeader header : headers) {
-                    cacheMgr.remove(cacheMgr, header);
+                    cacheMgr.remove(header);
                 }
                 return new FlushResult(
                     Collections.<Callable<Boolean>>emptyList());
@@ -594,7 +598,7 @@ public class SegmentCacheManager {
                     cacheControlImpl.trace(
                         "discard segment - it cannot be constrained and maintain consistency: "
                         + header.getDescription());
-                    cacheMgr.remove(cacheMgr, header);
+                    cacheMgr.remove(header);
                     continue;
                 }
                 final SegmentHeader newHeader =
@@ -622,7 +626,7 @@ public class SegmentCacheManager {
                         });
                 }
                 cacheMgr.segmentIndex.remove(header);
-                cacheMgr.segmentIndex.add(newHeader, null, null);
+                cacheMgr.segmentIndex.add(newHeader, false, null);
             }
 
             // Done
@@ -1183,12 +1187,15 @@ public class SegmentCacheManager {
             // Is there a pending segment? (A segment that has been created and
             // is loading via SQL.)
             for (SegmentHeader header : headers) {
-                converterMap.put(
-                    SegmentCacheIndexImpl.makeConverterKey(header),
-                    getConverter(header));
-                headerMap.put(
-                    header,
-                    segmentIndex.getFuture(header));
+                final Future<SegmentBody> bodyFuture =
+                    segmentIndex.getFuture(header);
+                if (bodyFuture != null) {
+                    converterMap.put(
+                        SegmentCacheIndexImpl.makeConverterKey(header),
+                        getConverter(header));
+                    headerMap.put(
+                        header, bodyFuture);
+                }
             }
 
             return new PeekResponse(headerMap, converterMap);

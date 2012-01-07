@@ -209,16 +209,26 @@ public class FastBatchingCellReader implements CellReader {
         if (!isDirty()) {
             return false;
         }
-        BatchLoader.LoadBatchResponse response =
-            cacheMgr.execute(
-                new BatchLoader.LoadBatchCommand(
-                    Locus.peek(),
-                    cacheMgr,
-                    getDialect(),
-                    cube,
-                    new ArrayList<CellRequest>(cellRequests)));
 
-        for (;;) {
+        // List of futures yielding segments populated by SQL statements. If
+        // loading requires several iterations, we just append to the list. We
+        // don't mind if it takes a while for SQL statements to return.
+        final List<Future<Map<Segment, SegmentWithData>>> sqlSegmentMapFutures =
+            new ArrayList<Future<Map<Segment, SegmentWithData>>>();
+
+        final List<CellRequest> cellRequests1 =
+            new ArrayList<CellRequest>(cellRequests);
+
+        for (int iteration = 0;; ++iteration) {
+            final BatchLoader.LoadBatchResponse response =
+                cacheMgr.execute(
+                    new BatchLoader.LoadBatchCommand(
+                        Locus.peek(),
+                        cacheMgr,
+                        getDialect(),
+                        cube,
+                        Collections.unmodifiableList(cellRequests1)));
+
             int failureCount = 0;
 
             // Segments that have been retrieved from cache this cycle. Allows
@@ -237,6 +247,7 @@ public class FastBatchingCellReader implements CellReader {
             for (SegmentHeader header : response.cacheSegments) {
                 final SegmentBody body = cacheMgr.compositeCache.get(header);
                 if (body == null) {
+                    cacheMgr.remove(header);
                     failedSegments.add(header);
                     ++failureCount;
                     continue;
@@ -302,12 +313,32 @@ public class FastBatchingCellReader implements CellReader {
             // Wait for SQL statements to end -- but only if there are no
             // failures.
             //
-            // If there are failures, it's more urgent that we create and
-            // execute a follow-up request. We will wait for the pending SQL
-            // statements at the end of that.
-            if (failureCount == 0) {
+            // If there are failures, and its the first iteration, it's more
+            // urgent that we create and execute a follow-up request. We will
+            // wait for the pending SQL statements at the end of that.
+            //
+            // If there are failures on later iterations, wait for SQL
+            // statements to end. The cache might be porous. SQL might be the
+            // only way to make progress.
+            sqlSegmentMapFutures.addAll(response.sqlSegmentMapFutures);
+            if (failureCount == 0 || iteration > 0) {
+                // Wait on segments being loaded by someone else.
+                for (Map.Entry<SegmentHeader, Future<SegmentBody>> entry
+                    : response.futures.entrySet())
+                {
+                    final SegmentHeader header = entry.getKey();
+                    final Future<SegmentBody> bodyFuture = entry.getValue();
+                    final SegmentBody body = Util.safeGet(
+                        bodyFuture,
+                        "Waiting for someone else's segment to load via SQL");
+                    final SegmentWithData segmentWithData =
+                        response.convert(header, body);
+                    segmentWithData.getStar().register(segmentWithData);
+                }
+
+                // Wait on segments being loaded by SQL statements we asked for.
                 for (Future<Map<Segment, SegmentWithData>> sqlSegmentMapFuture
-                    : response.sqlSegmentMapFutures)
+                    : sqlSegmentMapFutures)
                 {
                     final Map<Segment, SegmentWithData> segmentMap =
                         Util.safeGet(
@@ -328,21 +359,36 @@ public class FastBatchingCellReader implements CellReader {
 
             // Figure out which cell requests are not satisfied by any of the
             // segments retrieved.
-            List<CellRequest> unsatisfied = new ArrayList<CellRequest>();
-            for (CellRequest cellRequest : cellRequests) {
+            @SuppressWarnings("unchecked")
+            List<CellRequest> old = new ArrayList<CellRequest>(cellRequests1);
+            cellRequests1.clear();
+            for (CellRequest cellRequest : old) {
                 if (cellRequest.getMeasure().getStar()
                     .getCellFromCache(cellRequest, null) == null)
                 {
-                    unsatisfied.add(cellRequest);
+                    cellRequests1.add(cellRequest);
                 }
             }
 
-            if (unsatisfied.isEmpty()) {
+            if (cellRequests1.isEmpty()) {
                 break;
             }
 
-            // Form and execute a new request.
-            throw new UnsupportedOperationException(); // TODO:
+            if (cellRequests1.size() >= old.size()
+                && iteration > 10)
+            {
+                throw Util.newError(
+                    "Cache round-trip did not resolve any cell requests. "
+                    + "Iteration #" + iteration
+                    + "; request count " + cellRequests1.size()
+                    + "; requested headers: " + response.cacheSegments.size()
+                    + "; requested rollups: " + response.rollups.size()
+                    + "; requested SQL: "
+                    + response.sqlSegmentMapFutures.size());
+            }
+
+            // Continue loop; form and execute a new request with the smaller
+            // set of cell requests.
         }
 
         dirty = false;
@@ -395,9 +441,11 @@ public class FastBatchingCellReader implements CellReader {
             return body;
         }
         body = cacheMgr.compositeCache.get(header);
-        if (body != null) {
-            headerBodies.put(header, body);
+        if (body == null) {
+            cacheMgr.remove(header);
+            return null;
         }
+        headerBodies.put(header, body);
         return body;
     }
 
@@ -444,8 +492,8 @@ class BatchLoader {
     private final Set<SegmentHeader> cacheHeaders =
         new LinkedHashSet<SegmentHeader>();
 
-    private final List<Future<SegmentBody>> futures =
-        new ArrayList<Future<SegmentBody>>();
+    private final Map<SegmentHeader, Future<SegmentBody>> futures =
+        new HashMap<SegmentHeader, Future<SegmentBody>>();
 
     private final List<RollupInfo> rollups = new ArrayList<RollupInfo>();
 
@@ -521,7 +569,7 @@ class BatchLoader {
             if (future != null) {
                 // Segment header is in cache, body is being loaded. Worker will
                 // need to wait for load to complete.
-                futures.add(future);
+                futures.put(headerInCache, future);
             } else {
                 // Segment is in cache.
                 cacheHeaders.add(headerInCache);
@@ -668,7 +716,8 @@ class BatchLoader {
             new ArrayList<SegmentHeader>(cacheHeaders),
             rollups,
             converterMap,
-            segmentMapFutures);
+            segmentMapFutures,
+            futures);
     }
 
     static List<CompositeBatch> groupBatches(List<Batch> batchList) {
@@ -875,18 +924,22 @@ class BatchLoader {
 
         final Map<List, SegmentBuilder.SegmentConverter> converterMap;
 
+        final Map<SegmentHeader, Future<SegmentBody>> futures;
+
         LoadBatchResponse(
             List<CellRequest> cellRequests,
             List<SegmentHeader> cacheSegments,
             List<RollupInfo> rollups,
             Map<List, SegmentBuilder.SegmentConverter> converterMap,
-            List<Future<Map<Segment, SegmentWithData>>> sqlSegmentMapFutures)
+            List<Future<Map<Segment, SegmentWithData>>> sqlSegmentMapFutures,
+            Map<SegmentHeader, Future<SegmentBody>> futures)
         {
             this.cellRequests = cellRequests;
             this.sqlSegmentMapFutures = sqlSegmentMapFutures;
             this.cacheSegments = cacheSegments;
             this.rollups = rollups;
             this.converterMap = converterMap;
+            this.futures = futures;
         }
 
         public SegmentWithData convert(
