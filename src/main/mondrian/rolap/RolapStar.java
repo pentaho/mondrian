@@ -20,7 +20,6 @@ import mondrian.rolap.sql.SqlQuery;
 import mondrian.server.Locus;
 import mondrian.spi.*;
 import mondrian.util.Bug;
-import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
 
@@ -189,7 +188,8 @@ public class RolapStar {
     }
 
     public void register(SegmentWithData segment) {
-        localBars.get().segmentRefs.add(
+        final Bar bar = localBars.get();
+        bar.segmentRefs.add(
             new SoftReference<SegmentWithData>(segment));
     }
 
@@ -546,8 +546,10 @@ public class RolapStar {
                 LOGGER.debug(buf.toString());
             }
 
-            // Clear aggregation cache for the currect thread context.
-            localBars.get().aggregations.clear();
+            // Clear aggregation cache for the current thread context.
+            final Bar bar = localBars.get();
+            bar.aggregations.clear();
+            bar.segmentRefs.clear();
         }
     }
 

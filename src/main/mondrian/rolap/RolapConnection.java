@@ -666,6 +666,7 @@ public class RolapConnection extends ConnectionBase {
             Result result;
             try {
                 statement.start(execution);
+                ((RolapCube) query.getCube()).clearCachedAggregations(true);
                 result = new RolapResult(execution, true);
                 int i = 0;
                 for (QueryAxis axis : query.getAxes()) {
@@ -676,6 +677,7 @@ public class RolapConnection extends ConnectionBase {
                 }
             } finally {
                 Locus.pop(locus);
+                ((RolapCube) query.getCube()).clearCachedAggregations(true);
             }
             statement.end(execution);
             return result;

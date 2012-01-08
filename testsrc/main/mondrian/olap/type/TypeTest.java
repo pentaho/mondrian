@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2011 Julian Hyde
+// Copyright (C) 2008-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -26,14 +26,9 @@ import java.util.List;
  */
 
 public class TypeTest extends TestCase {
-    TestContext testContext = null;
-
-    protected void setUp() throws Exception {
-        testContext = TestContext.instance();
-    }
 
     public void testConversions() {
-        final Connection connection = testContext.getConnection();
+        final Connection connection = getTestContext().getConnection();
         Cube salesCube =
             getCubeWithName("Sales", connection.getSchema().getCubes());
         assertTrue(salesCube != null);
@@ -159,6 +154,10 @@ public class TypeTest extends TestCase {
                 }
             }
         }
+    }
+
+    protected TestContext getTestContext() {
+        return TestContext.instance();
     }
 
     public void testCommonTypeWhenSetTypeHavingMemberTypeAndTupleType() {
@@ -299,11 +298,11 @@ public class TypeTest extends TestCase {
             "Sales",
             getSchemaReader().getCubes());
         return salesCube.getSchemaReader(
-            testContext.getConnection().getRole()).withLocus();
+            getTestContext().getConnection().getRole()).withLocus();
     }
 
     private SchemaReader getSchemaReader() {
-        return testContext.getConnection().getSchemaReader().withLocus();
+        return getTestContext().getConnection().getSchemaReader().withLocus();
     }
 
     private Cube getCubeWithName(String cubeName, Cube[] cubes) {

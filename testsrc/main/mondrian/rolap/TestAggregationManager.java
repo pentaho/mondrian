@@ -58,6 +58,12 @@ public class TestAggregationManager extends BatchTestCase {
     @Override
     protected void tearDown() throws Exception {
         Locus.pop(locus);
+
+        // allow gc
+        locus = null;
+        execution = null;
+        aggMgr = null;
+
         super.tearDown();
     }
 

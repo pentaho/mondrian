@@ -468,6 +468,7 @@ demo/access/MondrianFoodMart.mdb"/>
 
     <target name="all" depends="
 compile,
+compile.tests,
 unzip-databases"/>
 
     <target name="unzip-databases" depends="

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -69,6 +69,12 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().EnableNativeCrossJoin, true);
         propSaver.set(
             MondrianProperties.instance().EnableNativeNonEmpty, true);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        localTestContext = null; // allow gc
     }
 
     @Override
