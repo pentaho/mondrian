@@ -330,7 +330,7 @@ public class SegmentLoaderTest extends BatchTestCase {
             }
         };
         int axisCount = 4;
-        SortedSet<Comparable<?>>[] axisValueSet =
+        SortedSet<Comparable>[] axisValueSet =
             loader.getDistinctValueWorkspace(axisCount);
         boolean[] axisContainsNull = new boolean[axisCount];
 
@@ -354,13 +354,13 @@ public class SegmentLoaderTest extends BatchTestCase {
         list.next();
         assertEquals(bitKeyForSummaryRow, list.getObject(5));
 
-        SortedSet<Comparable<?>> yearAxis = axisValueSet[0];
+        SortedSet<Comparable> yearAxis = axisValueSet[0];
         assertEquals(1, yearAxis.size());
-        SortedSet<Comparable<?>> productFamilyAxis = axisValueSet[1];
+        SortedSet<Comparable> productFamilyAxis = axisValueSet[1];
         assertEquals(3, productFamilyAxis.size());
-        SortedSet<Comparable<?>> productDepartmentAxis = axisValueSet[2];
+        SortedSet<Comparable> productDepartmentAxis = axisValueSet[2];
         assertEquals(4, productDepartmentAxis.size());
-        SortedSet<Comparable<?>> genderAxis = axisValueSet[3];
+        SortedSet<Comparable> genderAxis = axisValueSet[3];
         assertEquals(2, genderAxis.size());
 
         assertFalse(axisContainsNull[0]);
@@ -406,7 +406,7 @@ public class SegmentLoaderTest extends BatchTestCase {
             }
         };
         int axisCount = 4;
-        SortedSet<Comparable<?>>[] axisValueSet =
+        SortedSet<Comparable>[] axisValueSet =
             loader.getDistinctValueWorkspace(axisCount);
         boolean[] axisContainsNull = new boolean[axisCount];
         List<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
@@ -451,7 +451,7 @@ public class SegmentLoaderTest extends BatchTestCase {
         List<GroupingSet> groupingSets = new ArrayList<GroupingSet>();
         groupingSets.add(groupingSetsInfo);
 
-        SortedSet<Comparable<?>>[] axisValueSet =
+        SortedSet<Comparable>[] axisValueSet =
             loader.getDistinctValueWorkspace(4);
         SegmentLoader.RowList list =
             loader.processData(
@@ -464,13 +464,13 @@ public class SegmentLoaderTest extends BatchTestCase {
         int lengthOfRowWithoutBitKey = 5;
         assertEquals(lengthOfRowWithoutBitKey, list.getTypes().size());
 
-        SortedSet<Comparable<?>> yearAxis = axisValueSet[0];
+        SortedSet<Comparable> yearAxis = axisValueSet[0];
         assertEquals(1, yearAxis.size());
-        SortedSet<Comparable<?>> productFamilyAxis = axisValueSet[1];
+        SortedSet<Comparable> productFamilyAxis = axisValueSet[1];
         assertEquals(1, productFamilyAxis.size());
-        SortedSet<Comparable<?>> productDepartmentAxis = axisValueSet[2];
+        SortedSet<Comparable> productDepartmentAxis = axisValueSet[2];
         assertEquals(2, productDepartmentAxis.size());
-        SortedSet<Comparable<?>> genderAxis = axisValueSet[3];
+        SortedSet<Comparable> genderAxis = axisValueSet[3];
         assertEquals(2, genderAxis.size());
     }
 
@@ -809,13 +809,13 @@ public class SegmentLoaderTest extends BatchTestCase {
     }
 
     private void verifyYearAxis(SegmentAxis axis) {
-        Comparable<?>[] keys = axis.getKeys();
+        Comparable[] keys = axis.getKeys();
         assertEquals(1, keys.length);
         assertEquals("1997", keys[0].toString());
     }
 
     private void verifyProductFamilyAxis(SegmentAxis axis) {
-        Comparable<?>[] keys = axis.getKeys();
+        Comparable[] keys = axis.getKeys();
         assertEquals(3, keys.length);
         assertEquals("Drink", keys[0].toString());
         assertEquals("Food", keys[1].toString());
@@ -823,13 +823,13 @@ public class SegmentLoaderTest extends BatchTestCase {
     }
 
     private void verifyProductDepartmentAxis(SegmentAxis axis) {
-        Comparable<?>[] keys = axis.getKeys();
+        Comparable[] keys = axis.getKeys();
         assertEquals(4, keys.length);
         assertEquals("Canned_Products", keys[0].toString());
     }
 
     private void verifyGenderAxis(SegmentAxis axis) {
-        Comparable<?>[] keys = axis.getKeys();
+        Comparable[] keys = axis.getKeys();
         assertEquals(2, keys.length);
         assertEquals("F", keys[0].toString());
         assertEquals("M", keys[1].toString());
