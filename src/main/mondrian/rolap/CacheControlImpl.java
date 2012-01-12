@@ -448,25 +448,25 @@ public class CacheControlImpl implements CacheControl {
                     if (region.dimension.isMeasures()) {
                         return;
                     }
-                    final Map<String, Set<Comparable<?>>> levels =
-                        new HashMap<String, Set<Comparable<?>>>();
+                    final Map<String, Set<Comparable>> levels =
+                        new HashMap<String, Set<Comparable>>();
                     for (Member member : region.memberList) {
                         final String ccName =
                             ((RolapLevel)member.getLevel())
                                 .getKeyExp().getGenericExpression();
                         if (!levels.containsKey(ccName)) {
-                            levels.put(ccName, new HashSet<Comparable<?>>());
+                            levels.put(ccName, new HashSet<Comparable>());
                         }
                         levels.get(ccName).add(
-                            (Comparable<?>)((RolapMember)member).getKey());
+                            (Comparable)((RolapMember)member).getKey());
                     }
-                    for (Entry<String, Set<Comparable<?>>> entry
+                    for (Entry<String, Set<Comparable>> entry
                         : levels.entrySet())
                     {
                         // Now sort and convert to an ArraySortedSet.
-                        final Comparable<?>[] keys =
+                        final Comparable[] keys =
                             entry.getValue().toArray(
-                                new Comparable<?>[entry.getValue().size()]);
+                                new Comparable[entry.getValue().size()]);
                         if (keys.length == 1 && keys[0].equals(true)) {
                             list.add(
                                 new SegmentColumn(

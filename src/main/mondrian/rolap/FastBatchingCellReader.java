@@ -525,7 +525,7 @@ class BatchLoader {
         final AggregationKey key = new AggregationKey(request);
 
         // Is request matched by one of the headers we intend to load?
-        final Map<String, Comparable<?>> mappedCellValues =
+        final Map<String, Comparable> mappedCellValues =
             request.getMappedCellValues();
         final List<String> compoundPredicates =
             AggregationKey.getCompoundPredicateStringList(

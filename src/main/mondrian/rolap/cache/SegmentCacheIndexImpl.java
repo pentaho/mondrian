@@ -94,7 +94,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         String measureName,
         String rolapStarFactTableName,
         BitKey constrainedColsBitKey,
-        Map<String, Comparable<?>> coordinates,
+        Map<String, Comparable> coordinates,
         List<String> compoundPredicates)
     {
         checkThread();
@@ -248,18 +248,18 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
 
     public static boolean matches(
         SegmentHeader header,
-        Map<String, Comparable<?>> coords,
+        Map<String, Comparable> coords,
         List<String> compoundPredicates)
     {
         if (!header.compoundPredicates.equals(compoundPredicates)) {
             return false;
         }
-        for (Map.Entry<String, Comparable<?>> entry : coords.entrySet()) {
+        for (Map.Entry<String, Comparable> entry : coords.entrySet()) {
             // Check if the segment explicitly excludes this coordinate.
             final SegmentColumn excludedColumn =
                 header.getExcludedRegion(entry.getKey());
             if (excludedColumn != null) {
-                final SortedSet<Comparable<?>> values =
+                final SortedSet<Comparable> values =
                     excludedColumn.getValues();
                 if (values == null || values.contains(entry.getValue())) {
                     return false;
@@ -276,7 +276,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
                 // of mixed-dimensionality headers is being scanned.
                 return false;
             }
-            final SortedSet<Comparable<?>> values =
+            final SortedSet<Comparable> values =
                 constrainedColumn.getValues();
             if (values != null
                 && !values.contains(entry.getValue()))
@@ -338,15 +338,15 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
                 // This allows flush operations to be valid.
                 return true;
             }
-            final SortedSet<Comparable<?>> regionValues =
+            final SortedSet<Comparable> regionValues =
                 regionColumn.getValues();
-            final SortedSet<Comparable<?>> headerValues =
+            final SortedSet<Comparable> headerValues =
                 regionColumn.getValues();
             if (headerValues == null || regionValues == null) {
                 // This is a wildcard, so it always intersects.
                 return true;
             }
-            for (Comparable<?> myValue : regionValues) {
+            for (Comparable myValue : regionValues) {
                 if (headerValues.contains(myValue)) {
                     return true;
                 }
@@ -506,7 +506,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         String measureName,
         String rolapStarFactTableName,
         BitKey constrainedColsBitKey,
-        Map<String, Comparable<?>> coordinates,
+        Map<String, Comparable> coordinates,
         List<String> compoundPredicates)
     {
         final List factKey = makeFactKey(
@@ -605,7 +605,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
      * @param headers Headers of candidate segments
      */
     private void findRollupCandidatesAmong(
-        Map<String, Comparable<?>> coordinates,
+        Map<String, Comparable> coordinates,
         List<List<SegmentHeader>> list,
         List<SegmentHeader> headers)
     {
@@ -631,7 +631,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
                 if (coordinates.containsKey(column.columnExpression)) {
                     // Matching column. Will not be aggregated away. Needs
                     // to be in range.
-                    Comparable<?> value =
+                    Comparable value =
                         coordinates.get(column.columnExpression);
                     if (value == null) {
                         value = RolapUtil.sqlNullValue;
@@ -709,7 +709,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
                         }
                     }
                 } else {
-                    for (Comparable<?> value : column1.getValues()) {
+                    for (Comparable value : column1.getValues()) {
                         BitSet bitSet = valueMap.get(value);
                         if (bitSet == null) {
                             bitSet = new BitSet();
@@ -805,7 +805,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             String columnName = columns.get(i);
             final SegmentColumn column =
                 segment.getConstrainedColumn(columnName);
-            final SortedSet<Comparable<?>> valueSet = column.getValues();
+            final SortedSet<Comparable> valueSet = column.getValues();
             if (valueSet != null && !valueSet.contains(values.get(i))) {
                 return false;
             }

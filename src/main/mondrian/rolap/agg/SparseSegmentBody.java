@@ -28,7 +28,7 @@ class SparseSegmentBody extends AbstractSegmentBody {
 
     SparseSegmentBody(
         Map<CellKey, Object> dataToSave,
-        List<Pair<SortedSet<Comparable<?>>, Boolean>> axes)
+        List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
         super(axes);
 

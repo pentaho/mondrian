@@ -115,7 +115,7 @@ public class SegmentBuilder {
             new ArrayList<StarColumnPredicate>();
         for (int i = 0; i < constrainedColumns.length; i++) {
             RolapStar.Column constrainedColumn = constrainedColumns[i];
-            final SortedSet<Comparable<?>> values =
+            final SortedSet<Comparable> values =
                 header.getConstrainedColumns().get(i).values;
             StarColumnPredicate predicate;
             if (values == null) {
@@ -176,8 +176,8 @@ public class SegmentBuilder {
     {
         class AxisInfo {
             SegmentColumn column;
-            SortedSet<Comparable<?>> requestedValues;
-            SortedSet<Comparable<?>> valueSet;
+            SortedSet<Comparable> requestedValues;
+            SortedSet<Comparable> valueSet;
             Comparable[] values;
             boolean hasNull;
             int src;
@@ -202,20 +202,20 @@ public class SegmentBuilder {
         for (Map.Entry<SegmentHeader, SegmentBody> entry : map.entrySet()) {
             final SegmentHeader header = entry.getKey();
             for (AxisInfo axis : axes) {
-                final SortedSet<Comparable<?>> values =
+                final SortedSet<Comparable> values =
                     entry.getValue().getAxisValueSets()[axis.src];
                 final SegmentColumn headerColumn =
                     header.getConstrainedColumn(axis.column.columnExpression);
                 final boolean hasNull =
                     entry.getValue().getNullAxisFlags()[axis.src];
-                final SortedSet<Comparable<?>> requestedValues =
+                final SortedSet<Comparable> requestedValues =
                     headerColumn.getValues();
                 if (axis.valueSet == null) {
-                    axis.valueSet = new TreeSet<Comparable<?>>(values);
+                    axis.valueSet = new TreeSet<Comparable>(values);
                     axis.hasNull = hasNull;
                     axis.requestedValues = requestedValues;
                 } else {
-                    final SortedSet<Comparable<?>> filteredValues;
+                    final SortedSet<Comparable> filteredValues;
                     final boolean filteredHasNull;
                     if (axis.requestedValues == null) {
                         filteredValues = values;
@@ -267,14 +267,14 @@ public class SegmentBuilder {
             new HashMap<CellKey, List<Object>>();
         for (Map.Entry<SegmentHeader, SegmentBody> entry : map.entrySet()) {
             final int[] pos = new int[axes.length];
-            final Comparable<?>[][] valueArrays =
+            final Comparable[][] valueArrays =
                 new Comparable[firstHeader.getConstrainedColumns().size()][];
             final SegmentBody body = entry.getValue();
 
             // Copy source value sets into arrays. For axes that are being
             // projected away, store null.
             z = 0;
-            for (SortedSet<Comparable<?>> set : body.getAxisValueSets()) {
+            for (SortedSet<Comparable> set : body.getAxisValueSets()) {
                 valueArrays[z] = keepColumns.contains(
                     firstHeader.getConstrainedColumns().get(z).columnExpression)
                         ? set.toArray(new Comparable[set.size()])
@@ -285,12 +285,12 @@ public class SegmentBuilder {
             for (Map.Entry<CellKey, Object> vEntry : v.entrySet()) {
                 z = 0;
                 for (int i = 0; i < vEntry.getKey().size(); i++) {
-                    final Comparable<?>[] valueArray = valueArrays[i];
+                    final Comparable[] valueArray = valueArrays[i];
                     if (valueArray == null) {
                         continue;
                     }
                     final int ordinal = vEntry.getKey().getOrdinals()[i];
-                    final Comparable<?> value = valueArray[ordinal];
+                    final Comparable value = valueArray[ordinal];
                     int targetOrdinal;
                     if (value == null) {
                         targetOrdinal = axes[z].valueSet.size();
@@ -312,13 +312,13 @@ public class SegmentBuilder {
         }
 
         // Build the axis list.
-        final List<Pair<SortedSet<Comparable<?>>, Boolean>> axisList =
-            new ArrayList<Pair<SortedSet<Comparable<?>>, Boolean>>();
+        final List<Pair<SortedSet<Comparable>, Boolean>> axisList =
+            new ArrayList<Pair<SortedSet<Comparable>, Boolean>>();
         final BitSet nullIndicators = new BitSet(axes.length);
         int nbValues = 1;
         for (int i = 0; i < axes.length; i++) {
             axisList.add(
-                new Pair<SortedSet<Comparable<?>>, Boolean>(
+                new Pair<SortedSet<Comparable>, Boolean>(
                     axes[i].valueSet, axes[i].hasNull));
             nullIndicators.set(i, axes[i].hasNull);
             nbValues *= axes[i].values.length;
@@ -438,7 +438,7 @@ public class SegmentBuilder {
     }
 
     private static int[] computeAxisMultipliers(
-        List<Pair<SortedSet<Comparable<?>>, Boolean>> axes)
+        List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
         final int[] axisMultipliers = new int[axes.size()];
         int multiplier = 1;
@@ -553,11 +553,11 @@ public class SegmentBuilder {
         List<SegmentColumn> ccs =
             new ArrayList<SegmentColumn>();
         for (StarColumnPredicate predicate : predicates) {
-            final List<Comparable<?>> values =
-                new ArrayList<Comparable<?>>();
+            final List<Comparable> values =
+                new ArrayList<Comparable>();
             predicate.values(Util.cast(values));
-            final Comparable<?>[] valuesArray =
-                values.toArray(new Comparable<?>[values.size()]);
+            final Comparable[] valuesArray =
+                values.toArray(new Comparable[values.size()]);
             if (valuesArray.length == 1 && valuesArray[0].equals(true)) {
                 ccs.add(
                     new SegmentColumn(

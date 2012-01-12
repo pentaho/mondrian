@@ -179,7 +179,7 @@ public class SegmentLoader {
         Throwable throwable = null;
         try {
             int arity = defaultColumns.length;
-            SortedSet<Comparable<?>>[] axisValueSets =
+            SortedSet<Comparable>[] axisValueSets =
                 getDistinctValueWorkspace(arity);
             stmt = createExecuteSql(
                 cellRequestCount,
@@ -356,7 +356,7 @@ public class SegmentLoader {
     }
 
     private boolean setAxisDataAndDecideSparseUse(
-        SortedSet<Comparable<?>>[] axisValueSets,
+        SortedSet<Comparable>[] axisValueSets,
         boolean[] axisContainsNull,
         GroupingSetsList groupingSetsList,
         RowList rows)
@@ -368,7 +368,7 @@ public class SegmentLoader {
         boolean sparse = false;
         int n = 1;
         for (int i = 0; i < axes.length; i++) {
-            SortedSet<Comparable<?>> valueSet = axisValueSets[i];
+            SortedSet<Comparable> valueSet = axisValueSets[i];
             axes[i] =
                 new SegmentAxis(
                     groupingSetsList.getDefaultPredicates()[i],
@@ -423,9 +423,9 @@ public class SegmentLoader {
                 final SegmentBody body =
                     segmentWithData.getData().createSegmentBody(
                         new AbstractList<
-                                Pair<SortedSet<Comparable<?>>, Boolean>>()
+                                Pair<SortedSet<Comparable>, Boolean>>()
                         {
-                            public Pair<SortedSet<Comparable<?>>, Boolean> get(
+                            public Pair<SortedSet<Comparable>, Boolean> get(
                                 int index)
                             {
                                 return segmentWithData.axes[index]
@@ -506,7 +506,7 @@ public class SegmentLoader {
 
     private void setAxisDataToGroupableList(
         GroupingSetsList groupingSetsList,
-        SortedSet<Comparable<?>> valueSet,
+        SortedSet<Comparable> valueSet,
         boolean axisContainsNull,
         RolapStar.Column column)
     {
@@ -565,7 +565,7 @@ public class SegmentLoader {
     RowList processData(
         SqlStatement stmt,
         final boolean[] axisContainsNull,
-        final SortedSet<Comparable<?>>[] axisValueSets,
+        final SortedSet<Comparable>[] axisValueSets,
         final GroupingSetsList groupingSetsList) throws SQLException
     {
         List<Segment> segments = groupingSetsList.getDefaultSegments();
@@ -617,7 +617,7 @@ public class SegmentLoader {
                         // We assume that all values are Comparable. Boolean
                         // wasn't Comparable until JDK 1.5, but we can live with
                         // that bug because JDK 1.4 is no longer important.
-                        axisValueSets[axisIndex].add((Comparable<?>) o);
+                        axisValueSets[axisIndex].add((Comparable) o);
                     }
                     processedRows.setObject(columnIndex, o);
                     break;
@@ -793,14 +793,14 @@ public class SegmentLoader {
         return stmt.getResultSet();
     }
 
-    SortedSet<Comparable<?>>[] getDistinctValueWorkspace(int arity) {
+    SortedSet<Comparable>[] getDistinctValueWorkspace(int arity) {
         // Workspace to build up lists of distinct values for each axis.
-        SortedSet<Comparable<?>>[] axisValueSets = new SortedSet[arity];
+        SortedSet<Comparable>[] axisValueSets = new SortedSet[arity];
         for (int i = 0; i < axisValueSets.length; i++) {
             axisValueSets[i] =
                 Util.PreJdk15
-                    ? new TreeSet<Comparable<?>>(BooleanComparator.INSTANCE)
-                    : new TreeSet<Comparable<?>>();
+                    ? new TreeSet<Comparable>(BooleanComparator.INSTANCE)
+                    : new TreeSet<Comparable>();
         }
         return axisValueSets;
     }

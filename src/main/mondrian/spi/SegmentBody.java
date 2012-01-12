@@ -54,7 +54,7 @@ public interface SegmentBody extends Serializable {
      *
      * @return An array of SortedSets which was cached previously.
      */
-    SortedSet<Comparable<?>>[] getAxisValueSets();
+    SortedSet<Comparable>[] getAxisValueSets();
 
     /**
      * Returns an array of boolean values which identify which

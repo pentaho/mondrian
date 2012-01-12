@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2002-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -344,9 +344,9 @@ public final class CellRequest {
      * Builds a map of column names to values, as specified
      * by this cell request object.
      */
-    public Map<String, Comparable<?>> getMappedCellValues() {
-        final Map<String, Comparable<?>> map =
-            new HashMap<String, Comparable<?>>();
+    public Map<String, Comparable> getMappedCellValues() {
+        final Map<String, Comparable> map =
+            new HashMap<String, Comparable>();
         final RolapStar.Column[] columns =
             this.getConstrainedColumns();
         final Object[] values = this.getSingleValues();
@@ -357,7 +357,7 @@ public final class CellRequest {
                 column.getExpression().getGenericExpression(),
                 o == RolapUtil.sqlNullValue
                     ? null
-                    : (Comparable<?>) o);
+                    : (Comparable) o);
         }
         return map;
     }

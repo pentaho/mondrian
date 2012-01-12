@@ -550,7 +550,7 @@ public class Aggregation {
                 if (axis == null) {
                     evaluatePredicate(axisOrdinal + 1);
                 } else {
-                    final Comparable<?>[] keys = axis.getKeys();
+                    final Comparable[] keys = axis.getKeys();
                     for (int keyOrdinal = 0;
                         keyOrdinal < keys.length;
                         keyOrdinal++)

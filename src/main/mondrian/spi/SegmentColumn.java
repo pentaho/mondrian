@@ -31,7 +31,7 @@ public class SegmentColumn implements Serializable {
     private static final long serialVersionUID = -5227838916517784720L;
     public final String columnExpression;
     public final int valueCount;
-    public final SortedSet<Comparable<?>> values;
+    public final SortedSet<Comparable> values;
     private final int hashCode;
 
     /**
@@ -55,7 +55,7 @@ public class SegmentColumn implements Serializable {
     public SegmentColumn(
         String columnExpression,
         int valueCount,
-        SortedSet<Comparable<?>> valueList)
+        SortedSet<Comparable> valueList)
     {
         this.columnExpression = columnExpression;
         this.valueCount = valueCount;
@@ -104,7 +104,7 @@ public class SegmentColumn implements Serializable {
      * Returns an array of predicate values for this column.
      * @return An array of object values.
      */
-    public SortedSet<Comparable<?>> getValues() {
+    public SortedSet<Comparable> getValues() {
         return values;
     }
 

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -39,21 +39,20 @@ public class SegmentAxis {
 
     /**
      * Map holding the position of each key value.
-     * <p/>
+     *
      * <p>TODO: Hold keys in a sorted array, then deduce ordinal by doing
      * binary search.
      */
-    private final Map<Comparable<?>, Integer> mapKeyToOffset;
+    private final Map<Comparable, Integer> mapKeyToOffset;
 
     /**
      * Actual key values retrieved.
      */
-    private final Comparable<?>[] keys;
+    private final Comparable[] keys;
 
     private static final Integer ZERO = Integer.valueOf(0);
     private static final Integer ONE = Integer.valueOf(1);
-    private static final Comparable<?>[] NO_COMPARABLES =
-        new Comparable<?>[0];
+    private static final Comparable[] NO_COMPARABLES = new Comparable[0];
 
     /**
      * Internal constructor.
@@ -77,7 +76,7 @@ public class SegmentAxis {
         } else {
             this.keys = keys;
             mapKeyToOffset =
-                new HashMap<Comparable<?>, Integer>(keys.length * 3 / 2);
+                new HashMap<Comparable, Integer>(keys.length * 3 / 2);
             for (int i = 0; i < keys.length; i++) {
                 mapKeyToOffset.put(keys[i], i);
             }
@@ -139,21 +138,21 @@ public class SegmentAxis {
      */
     public SegmentAxis(
         StarColumnPredicate predicate,
-        SortedSet<Comparable<?>> keySet,
+        SortedSet<Comparable> keySet,
         boolean hasNull)
     {
         this(predicate, toArray(keySet, hasNull), true);
     }
 
-    private static Comparable<?>[] toArray(
-        SortedSet<Comparable<?>> keySet,
+    private static Comparable[] toArray(
+        SortedSet<Comparable> keySet,
         boolean hasNull)
     {
         int size = keySet.size();
         if (hasNull) {
             size++;
         }
-        Comparable<?>[] keys = keySet.toArray(new Comparable<?>[size]);
+        Comparable[] keys = keySet.toArray(new Comparable[size]);
         if (hasNull) {
             keys[size - 1] = RolapUtil.sqlNullValue;
         }
@@ -164,7 +163,7 @@ public class SegmentAxis {
         return predicate;
     }
 
-    final Comparable<?>[] getKeys() {
+    final Comparable[] getKeys() {
         return keys;
     }
 
@@ -213,7 +212,7 @@ public class SegmentAxis {
     }
 
     @SuppressWarnings({"unchecked"})
-    public Pair<SortedSet<Comparable<?>>, Boolean> getValuesAndIndicator() {
+    public Pair<SortedSet<Comparable>, Boolean> getValuesAndIndicator() {
         if (keys.length > 0
             && keys[keys.length - 1] == RolapUtil.sqlNullValue)
         {

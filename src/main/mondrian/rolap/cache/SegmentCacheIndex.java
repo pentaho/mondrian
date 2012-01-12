@@ -48,7 +48,7 @@ public interface SegmentCacheIndex {
         String measureName,
         String rolapStarFactTableName,
         BitKey constrainedColsBitKey,
-        Map<String, Comparable<?>> coordinates,
+        Map<String, Comparable> coordinates,
         List<String> compoundPredicates);
 
     /**
@@ -74,7 +74,7 @@ public interface SegmentCacheIndex {
         String measureName,
         String rolapStarFactTableName,
         BitKey constrainedColsBitKey,
-        Map<String, Comparable<?>> coordinates,
+        Map<String, Comparable> coordinates,
         List<String> compoundPredicates);
 
     /**

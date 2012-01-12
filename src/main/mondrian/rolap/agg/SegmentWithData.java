@@ -3,8 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2010-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -261,10 +260,10 @@ public class SegmentWithData extends Segment {
             if (j == bestColumn) {
                 newPredicate = bestPredicate;
             }
-            final Comparable<?>[] axisKeys = axis.getKeys();
+            final Comparable[] axisKeys = axis.getKeys();
             BitSet keepBitSet = axisKeepBitSets[j];
             int firstClearBit = keepBitSet.nextClearBit(0);
-            Comparable<?>[] newAxisKeys;
+            Comparable[] newAxisKeys;
             if (firstClearBit >= axisKeys.length) {
                 // Keep everything
                 newAxisKeys = axisKeys;
@@ -283,7 +282,7 @@ public class SegmentWithData extends Segment {
                 }
                 newAxisKeys =
                     newAxisKeyList.toArray(
-                        new Comparable<?>[newAxisKeyList.size()]);
+                        new Comparable[newAxisKeyList.size()]);
                 assert newAxisKeys.length > 0;
             }
             final SegmentAxis newAxis =
