@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2011 Julian Hyde
+// Copyright (C) 2005-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -34,6 +34,12 @@ import java.util.*;
  * @version $Id$
  */
 public class RolapCell implements Cell {
+    /**
+     * @see mondrian.util.Bug#olap4jUpgrade Use
+     * {@link mondrian.xmla.XmlaConstants}.ActionType.DRILLTHROUGH when present
+     */
+    private static final int MDACTION_TYPE_DRILLTHROUGH = 0x100;
+
     private final RolapResult result;
     protected final int[] pos;
     protected RolapResult.CellInfo ci;
@@ -523,6 +529,10 @@ public class RolapCell implements Cell {
             case Property.SOLVE_ORDER_ORDINAL:
                 defaultValue = 0;
                 break;
+            case Property.ACTION_TYPE_ORDINAL:
+                return canDrillThrough() ? MDACTION_TYPE_DRILLTHROUGH : 0;
+            case Property.DRILLTHROUGH_COUNT_ORDINAL:
+                return canDrillThrough() ? getDrillThroughCount() : -1;
             default:
                 // fall through
             }

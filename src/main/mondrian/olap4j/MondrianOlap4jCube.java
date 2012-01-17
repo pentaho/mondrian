@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -32,7 +32,10 @@ import java.util.*;
  * @version $Id$
  * @since May 24, 2007
  */
-class MondrianOlap4jCube implements Cube, Named {
+class MondrianOlap4jCube
+    extends MondrianOlap4jMetadataElement
+    implements Cube, Named
+{
     final mondrian.olap.Cube cube;
     final MondrianOlap4jSchema olap4jSchema;
 
@@ -103,9 +106,7 @@ class MondrianOlap4jCube implements Cube, Named {
     }
 
     public List<Measure> getMeasures() {
-        final Dimension dimension =
-            (MondrianOlap4jDimension)
-                getDimensions().get("Measures");
+        final Dimension dimension = getDimensions().get("Measures");
         if (dimension == null) {
             return Collections.emptyList();
         }
@@ -119,17 +120,17 @@ class MondrianOlap4jCube implements Cube, Named {
                 (MondrianOlap4jLevel)
                     dimension.getDefaultHierarchy()
                         .getLevels().get(0);
-            final List<Measure> measaures =
+            final List<Measure> measures =
                 new ArrayList<Measure>();
             List<mondrian.olap.Member> levelMembers =
                 schemaReader.getLevelMembers(
                     measuresLevel.level,
                     true);
             for (mondrian.olap.Member member : levelMembers) {
-                measaures.add(
-                    (Measure)olap4jConnection.toOlap4j(member));
+                measures.add(
+                    (Measure) olap4jConnection.toOlap4j(member));
             }
-            return measaures;
+            return measures;
         } catch (OlapException e) {
             // OlapException not possible, since measures are stored in memory.
             // Demote from checked to unchecked exception.
@@ -162,8 +163,7 @@ class MondrianOlap4jCube implements Cube, Named {
 
     public String getCaption() {
         return cube.getLocalized(
-            OlapElement.LocalizedProperty.CAPTION,
-            olap4jSchema.getLocale());
+            OlapElement.LocalizedProperty.CAPTION, olap4jSchema.getLocale());
     }
 
     public String getDescription() {
@@ -309,6 +309,10 @@ class MondrianOlap4jCube implements Cube, Named {
 
     public boolean isDrillThroughEnabled() {
         return true;
+    }
+
+    protected OlapElement getOlapElement() {
+        return cube;
     }
 }
 

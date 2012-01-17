@@ -4137,7 +4137,7 @@ public class Util extends XOMUtil {
      * correctly with {@link RolapUtil#sqlNullValue}.
      */
     public static class SqlNullSafeComparator
-        implements Comparator<Comparable<?>>
+        implements Comparator<Comparable>
     {
         public static final SqlNullSafeComparator instance =
             new SqlNullSafeComparator();
@@ -4145,14 +4145,14 @@ public class Util extends XOMUtil {
         private SqlNullSafeComparator() {
         }
 
-        public int compare(Comparable<?> o1, Comparable<?> o2) {
+        public int compare(Comparable o1, Comparable o2) {
             if (o1 == RolapUtil.sqlNullValue) {
                 return -1;
             }
             if (o2 == RolapUtil.sqlNullValue) {
                 return 1;
             }
-            return ((Comparable) o1).compareTo(o2);
+            return o1.compareTo(o2);
         }
     }
 }

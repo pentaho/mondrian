@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2000-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -124,7 +124,10 @@ public class Formula extends QueryPart {
         if (isMember) {
             Exp formatExp = getFormatExp(validator);
             if (formatExp != null) {
-                mdxMember.setProperty(Property.FORMAT_EXP.name, formatExp);
+                mdxMember.setProperty(
+                    Property.FORMAT_EXP_PARSED.name, formatExp);
+                mdxMember.setProperty(
+                    Property.FORMAT_EXP.name, Util.unparse(formatExp));
             }
 
             final List<MemberProperty> memberPropertyList =
@@ -606,7 +609,8 @@ public class Formula extends QueryPart {
         }
 
         private Exp getFormula(Member member) {
-            return (Exp) member.getPropertyValue(Property.FORMAT_EXP.name);
+            return (Exp)
+                member.getPropertyValue(Property.FORMAT_EXP_PARSED.name);
         }
     }
 }

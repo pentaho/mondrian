@@ -1,8 +1,9 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -59,6 +60,10 @@ class MondrianOlap4jCellSetAxisMetaData implements CellSetAxisMetaData {
                 olap4jProperty =
                     Util.lookup(
                         Property.StandardMemberProperty.class, names[0]);
+                if (olap4jProperty == null) {
+                    olap4jProperty =
+                        MondrianOlap4jProperty.MEMBER_EXTENSIONS.get(names[0]);
+                }
             }
             if (olap4jProperty == null) {
                 final UnresolvedFunCall call =

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2011 Julian Hyde
+// Copyright (C) 2010-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -17,6 +17,7 @@ import mondrian.xmla.RowsetDefinition;
 import mondrian.xmla.XmlaHandler;
 
 import org.olap4j.*;
+import org.olap4j.metadata.*;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Hierarchy;
 import org.olap4j.metadata.Level;
@@ -281,6 +282,25 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
             MondrianServer.forConnection(
                 olap4jConnection.getMondrianConnection());
         return server.getDatabases(olap4jConnection.getMondrianConnection());
+    }
+
+    public Map<String, Object> getAnnotationMap(MetadataElement element)
+        throws SQLException
+    {
+        if (element instanceof OlapWrapper) {
+            OlapWrapper wrapper = (OlapWrapper) element;
+            if (wrapper.isWrapperFor(Annotated.class)) {
+                final Annotated annotated = wrapper.unwrap(Annotated.class);
+                final Map<String, Object> map = new HashMap<String, Object>();
+                for (Map.Entry<String, Annotation> entry
+                    : annotated.getAnnotationMap().entrySet())
+                {
+                    map.put(entry.getKey(), entry.getValue().getValue());
+                }
+                return map;
+            }
+        }
+        return Collections.emptyMap();
     }
 }
 

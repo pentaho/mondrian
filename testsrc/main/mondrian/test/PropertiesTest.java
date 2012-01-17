@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -219,6 +219,36 @@ public class PropertiesTest extends FoodMartTestCase {
         for (String prop : props) {
             assertEquals("[" + prop + "]", axesProperties[i++].toString());
         }
+    }
+
+    /**
+     * Tests the ability to project non-standard member properties.
+     */
+    public void testMemberProperties() {
+        Result result = executeQuery(
+            "SELECT {[Store].Children} DIMENSION PROPERTIES\n"
+            + " CATALOG_NAME, PARENT_UNIQUE_NAME, [Store Type], FORMAT_EXP\n"
+            + " ON COLUMNS\n"
+            + "FROM [Sales]");
+        QueryAxis[] axes = result.getQuery().getAxes();
+        Id[] axesProperties = axes[0].getDimensionProperties();
+
+        assertEquals(4, axesProperties.length);
+    }
+
+    /**
+     * Tests the ability to project non-standard member properties.
+     */
+    public void testMemberPropertiesBad() {
+        Result result = executeQuery(
+            "SELECT {[Store].Children} DIMENSION PROPERTIES\n"
+            + " CATALOG_NAME, PARENT_UNIQUE_NAME, [Store Type], BAD\n"
+            + " ON COLUMNS\n"
+            + "FROM [Sales]");
+        QueryAxis[] axes = result.getQuery().getAxes();
+        Id[] axesProperties = axes[0].getDimensionProperties();
+
+        assertEquals(4, axesProperties.length);
     }
 
     public void testMandatoryCellProperties() {
