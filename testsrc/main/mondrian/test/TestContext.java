@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2002-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -407,7 +407,7 @@ public class TestContext {
         String measureDefs,
         String memberDefs,
         String namedSetDefs,
-        Map<String, String> measureGroupContents)
+        Map<String, String> dimensionLinks)
     {
         String s = rawSchema;
 
@@ -483,6 +483,26 @@ public class TestContext {
             }
             s = s.substring(0, i)
                 + namedSetDefs
+                + s.substring(i);
+        }
+
+        if (dimensionLinks == null) {
+            dimensionLinks = Collections.emptyMap();
+        }
+        for (Map.Entry<String, String> entry : dimensionLinks.entrySet()) {
+            int i =
+                s.indexOf(
+                    "<MeasureGroup name='" + entry.getKey() + "' ",
+                    h);
+            if (i < 0 || i > end) {
+                continue;
+            }
+            i = s.indexOf("</DimensionLinks>", i);
+            if (i < 0 || i > end) {
+                continue;
+            }
+            s = s.substring(0, i)
+                + entry.getValue()
                 + s.substring(i);
         }
 
@@ -1467,6 +1487,10 @@ public class TestContext {
         }
     }
 
+    public String getCatalogContent() {
+        return schema;
+    }
+
     /**
      * Wrapper around a string that indicates that all line endings have been
      * converted to platform-specific line endings.
@@ -2188,6 +2212,7 @@ public class TestContext {
                 }
                 if (errorLoc != null) {
                     int errorStart = -1;
+                    final String schema = getCatalogContent();
                     while ((errorStart =
                         schema.indexOf(errorLoc, errorStart + 1)) >= 0)
                     {
@@ -2318,7 +2343,7 @@ public class TestContext {
 
     /**
      * Returns count copies of a string. Format strings within string are
-     * substituted, per {@link String#format}.
+     * substituted, per {@link java.lang.String#format}.
      *
      * @param count Number of copies
      * @param format String template

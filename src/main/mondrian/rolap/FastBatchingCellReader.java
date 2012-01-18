@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2011 Julian Hyde and others
+// Copyright (C) 2004-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,12 +13,16 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggGen;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.cache.SegmentCacheIndexImpl;
 import mondrian.server.Execution;
-import mondrian.spi.Dialect;
+import mondrian.server.Locus;
+import mondrian.spi.*;
+import mondrian.util.*;
 
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.Future;
 
 /**
  * A <code>FastBatchingCellReader</code> doesn't really Read cells: when asked
@@ -34,13 +38,10 @@ import java.util.*;
  * fact that a cell was requested.</p>
  */
 public class FastBatchingCellReader implements CellReader {
-
     private static final Logger LOGGER =
         Logger.getLogger(FastBatchingCellReader.class);
 
     private final RolapCube cube;
-    private final Execution execution;
-    private final Map<AggregationKey, Batch> batches;
 
     /**
      * Records the number of requests. The field is used for correctness: if
@@ -61,27 +62,38 @@ public class FastBatchingCellReader implements CellReader {
      */
     private int pendingCount;
 
-    final AggregationManager aggMgr;
+    private final AggregationManager aggMgr;
+
+    private final SegmentCacheManager cacheMgr;
 
     private final RolapAggregationManager.PinSet pinnedSegments;
 
     /**
      * Indicates that the reader has given incorrect results.
-     *
-     * @see Util#deprecated(Object) I don't think this is ever set, other than
-     *   if there are cache misses; can remove
      */
     private boolean dirty;
 
-    public FastBatchingCellReader(Execution execution, RolapCube cube) {
+    private final List<CellRequest> cellRequests = new ArrayList<CellRequest>();
+
+    /**
+     * Creates a FastBatchingCellReader.
+     *
+     * @param execution Execution that calling statement belongs to. Allows us
+     *                  to check for cancel
+     * @param cube      Cube that requests belong to
+     * @param aggMgr    Aggregation manager
+     */
+    public FastBatchingCellReader(
+        Execution execution,
+        RolapCube cube,
+        AggregationManager aggMgr)
+    {
         assert cube != null;
         assert execution != null;
-        this.execution = execution;
         this.cube = cube;
-        this.batches = new HashMap<AggregationKey, Batch>();
-        aggMgr = execution.getMondrianStatement().getMondrianConnection()
-            .getServer().getAggregationManager();
-        pinnedSegments = aggMgr.createPinSet();
+        this.aggMgr = aggMgr;
+        cacheMgr = aggMgr.cacheMgr;
+        pinnedSegments = this.aggMgr.createPinSet();
     }
 
     public Object get(RolapEvaluator evaluator) {
@@ -96,16 +108,29 @@ public class FastBatchingCellReader implements CellReader {
         // contains it.
         final Object o = aggMgr.getCellFromCache(request, pinnedSegments);
 
-        if (o == Boolean.TRUE) {
-            // Aggregation is being loaded. (todo: Use better value, or
-            // throw special exception)
-            ++pendingCount;
-            return RolapUtil.valueNotReadyException;
-        }
+        assert o != Boolean.TRUE : "getCellFromCache no longer returns TRUE";
         if (o != null) {
             ++hitCount;
             return o;
         }
+
+        // If this query has not had any cache misses, it's worth doing a
+        // synchronous request for the cell segment. If it is in the cache, it
+        // will be worth the wait, because we can avoid the effort of batching
+        // up requests that could have been satisfied by the same segment.
+        if (missCount == 0) {
+            SegmentWithData segmentWithData = cacheMgr.peek(request);
+            if (segmentWithData != null) {
+                segmentWithData.getStar().register(segmentWithData);
+                final Object o2 =
+                    aggMgr.getCellFromCache(request, pinnedSegments);
+                if (o2 != null) {
+                    ++hitCount;
+                    return o2;
+                }
+            }
+        }
+
         // if there is no such cell, record that we need to fetch it, and
         // return 'error'
         recordCellRequest(request);
@@ -125,16 +150,487 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     public final void recordCellRequest(CellRequest request) {
-        if (request.isUnsatisfiable()) {
+        assert !request.isUnsatisfiable();
+        ++missCount;
+        cellRequests.add(request);
+        if (cellRequests.size() % 5000 == 0) {
+            // Signal that it's time to ask the cache manager if it has cells
+            // we need in the cache. Not really an exception.
+            throw CellRequestQuantumExceededException.INSTANCE;
+        }
+    }
+
+    /**
+     * Returns whether this reader has told a lie. This is the case if there
+     * are pending batches to load or if {@link #setDirty(boolean)} has been
+     * called.
+     */
+    public boolean isDirty() {
+        return dirty || !cellRequests.isEmpty();
+    }
+
+    /**
+     * Resolves any pending cell reads using the cache. After calling this
+     * method, all cells requested in a given batch are loaded into this
+     * statement's local cache.
+     *
+     * <p>The method is implemented by making an asynchronous call to the cache
+     * manager. The result is a list of segments that satisfies every cell
+     * request.</p>
+     *
+     * <p>The client should put the resulting segments into its "query local"
+     * cache, to ensure that future cells in that segment can be answered
+     * without a call to the cache manager. (That is probably 1000x faster.)</p>
+     *
+     * <p>The cache manager does not inform where client where each segment
+     * came from. There are several possibilities:</p>
+     *
+     * <ul>
+     *     <li>Segment was already in cache (header and body)</li>
+     *     <li>Segment is in the process of being loaded by executing a SQL
+     *     statement (probably due to a request from another client)</li>
+     *     <li>Segment is in an external cache (that is, header is in the cache,
+     *        body is not yet)</li>
+     *     <li>Segment can be created by rolling up one or more cache segments.
+     *        (And of course each of these segments might be "paged out".)</li>
+     *     <li>By executing a SQL {@code GROUP BY} statement</li>
+     * </ul>
+     *
+     * <p>Furthermore, segments in external cache may take some time to retrieve
+     * (a LAN round trip, say 1 millisecond, is a reasonable guess); and the
+     * request may fail. (It depends on the cache, but caches are at liberty
+     * to 'forget' segments.) So, any strategy that relies on cache segments
+     * should be able to fall back. Even if there are fall backs, only one call
+     * needs to be made to the cache manager.</p>
+     *
+     * @return Whether any aggregations were loaded.
+     */
+    boolean loadAggregations() {
+        if (!isDirty()) {
+            return false;
+        }
+
+        // List of futures yielding segments populated by SQL statements. If
+        // loading requires several iterations, we just append to the list. We
+        // don't mind if it takes a while for SQL statements to return.
+        final List<Future<Map<Segment, SegmentWithData>>> sqlSegmentMapFutures =
+            new ArrayList<Future<Map<Segment, SegmentWithData>>>();
+
+        final List<CellRequest> cellRequests1 =
+            new ArrayList<CellRequest>(cellRequests);
+
+        for (int iteration = 0;; ++iteration) {
+            final BatchLoader.LoadBatchResponse response =
+                cacheMgr.execute(
+                    new BatchLoader.LoadBatchCommand(
+                        Locus.peek(),
+                        cacheMgr,
+                        getDialect(),
+                        cube,
+                        Collections.unmodifiableList(cellRequests1)));
+
+            int failureCount = 0;
+
+            // Segments that have been retrieved from cache this cycle. Allows
+            // us to reduce calls to the external cache.
+            Map<SegmentHeader, SegmentBody> headerBodies =
+                new HashMap<SegmentHeader, SegmentBody>();
+
+            // Segments that could not be loaded. Will need to tell cache mgr to
+            // remove them from the index.
+            final Set<SegmentHeader> failedSegments =
+                new HashSet<SegmentHeader>();
+
+            // Load each suggested segment from cache, and place it in
+            // thread-local cache. Note that this step can't be done by the
+            // cacheMgr -- it's our cache.
+            for (SegmentHeader header : response.cacheSegments) {
+                final SegmentBody body = cacheMgr.compositeCache.get(header);
+                if (body == null) {
+                    cacheMgr.remove(header);
+                    failedSegments.add(header);
+                    ++failureCount;
+                    continue;
+                }
+                headerBodies.put(header, body);
+                final SegmentWithData segmentWithData =
+                    response.convert(header, body);
+                segmentWithData.getStar().register(segmentWithData);
+            }
+
+            // Perform each suggested rollup.
+
+            // Rollups that failed. If there are any, we may need to re-process
+            // some cell requests.
+            final List<BatchLoader.RollupInfo> failedRollups =
+                new ArrayList<BatchLoader.RollupInfo>();
+
+            // Rollups that succeeded. Will tell cache mgr to put the headers
+            // into the index and the header/bodies in cache.
+            final Map<SegmentHeader, SegmentBody> succeededRollups =
+                new HashMap<SegmentHeader, SegmentBody>();
+
+            for (BatchLoader.RollupInfo rollup : response.rollups) {
+                // Gather the required segments.
+                Map<SegmentHeader, SegmentBody> map =
+                    findResidentRollupCandidate(headerBodies, rollup);
+                if (map == null) {
+                    // None of the candidate segment-sets for this rollup was
+                    // all present in the cache.
+                    failedRollups.add(rollup);
+                    ++failureCount;
+                    continue;
+                }
+
+                final Set<String> keepColumns = new HashSet<String>();
+                for (RolapStar.Column column : rollup.constrainedColumns) {
+                    keepColumns.add(
+                        column.getExpression().toSql());
+                }
+                Pair<SegmentHeader, SegmentBody> rollupHeaderBody =
+                    SegmentBuilder.rollup(
+                        map,
+                        keepColumns,
+                        rollup.constrainedColumnsBitKey,
+                        rollup.measure.getAggregator().getRollup());
+
+                final SegmentHeader header = rollupHeaderBody.left;
+                final SegmentBody body = rollupHeaderBody.right;
+
+                if (headerBodies.containsKey(header)) {
+                    // We had already created this segment, somehow.
+                    continue;
+                }
+
+                headerBodies.put(header, body);
+                succeededRollups.put(header, body);
+
+                final SegmentWithData segmentWithData =
+                    response.convert(header, body);
+                segmentWithData.getStar().register(segmentWithData);
+            }
+
+            // Wait for SQL statements to end -- but only if there are no
+            // failures.
+            //
+            // If there are failures, and its the first iteration, it's more
+            // urgent that we create and execute a follow-up request. We will
+            // wait for the pending SQL statements at the end of that.
+            //
+            // If there are failures on later iterations, wait for SQL
+            // statements to end. The cache might be porous. SQL might be the
+            // only way to make progress.
+            sqlSegmentMapFutures.addAll(response.sqlSegmentMapFutures);
+            if (failureCount == 0 || iteration > 0) {
+                // Wait on segments being loaded by someone else.
+                for (Map.Entry<SegmentHeader, Future<SegmentBody>> entry
+                    : response.futures.entrySet())
+                {
+                    final SegmentHeader header = entry.getKey();
+                    final Future<SegmentBody> bodyFuture = entry.getValue();
+                    final SegmentBody body = Util.safeGet(
+                        bodyFuture,
+                        "Waiting for someone else's segment to load via SQL");
+                    final SegmentWithData segmentWithData =
+                        response.convert(header, body);
+                    segmentWithData.getStar().register(segmentWithData);
+                }
+
+                // Wait on segments being loaded by SQL statements we asked for.
+                for (Future<Map<Segment, SegmentWithData>> sqlSegmentMapFuture
+                    : sqlSegmentMapFutures)
+                {
+                    final Map<Segment, SegmentWithData> segmentMap =
+                        Util.safeGet(
+                            sqlSegmentMapFuture,
+                            "Waiting for segment to load via SQL");
+                    for (SegmentWithData segmentWithData : segmentMap.values())
+                    {
+                        segmentWithData.getStar().register(segmentWithData);
+                    }
+                    // TODO: also pass back SegmentHeader and SegmentBody,
+                    // and add these to headerBodies. Might help?
+                }
+            }
+
+            if (failureCount == 0) {
+                break;
+            }
+
+            // Figure out which cell requests are not satisfied by any of the
+            // segments retrieved.
+            @SuppressWarnings("unchecked")
+            List<CellRequest> old = new ArrayList<CellRequest>(cellRequests1);
+            cellRequests1.clear();
+            for (CellRequest cellRequest : old) {
+                if (cellRequest.getMeasure().getStar()
+                    .getCellFromCache(cellRequest, null) == null)
+                {
+                    cellRequests1.add(cellRequest);
+                }
+            }
+
+            if (cellRequests1.isEmpty()) {
+                break;
+            }
+
+            if (cellRequests1.size() >= old.size()
+                && iteration > 10)
+            {
+                throw Util.newError(
+                    "Cache round-trip did not resolve any cell requests. "
+                    + "Iteration #" + iteration
+                    + "; request count " + cellRequests1.size()
+                    + "; requested headers: " + response.cacheSegments.size()
+                    + "; requested rollups: " + response.rollups.size()
+                    + "; requested SQL: "
+                    + response.sqlSegmentMapFutures.size());
+            }
+
+            // Continue loop; form and execute a new request with the smaller
+            // set of cell requests.
+        }
+
+        dirty = false;
+        cellRequests.clear();
+        return true;
+    }
+
+    /**
+     * Finds a segment-list among a list of candidate segment-lists
+     * for which the bodies of all segments are in cache. Returns a map
+     * from segment-to-body if found, or null if not found.
+     *
+     * @param headerBodies Cache of bodies previously retrieved from external
+     *                     cache
+     *
+     * @param rollup       Specifies what segments to roll up, and the
+     *                     target dimensionality
+     *
+     * @return Collection of segment headers and bodies suitable for rollup,
+     * or null
+     */
+    private Map<SegmentHeader, SegmentBody> findResidentRollupCandidate(
+        Map<SegmentHeader, SegmentBody> headerBodies,
+        BatchLoader.RollupInfo rollup)
+    {
+        candidateLoop:
+        for (List<SegmentHeader> headers : rollup.candidateLists) {
+            final Map<SegmentHeader, SegmentBody> map =
+                new HashMap<SegmentHeader, SegmentBody>();
+            for (SegmentHeader header : headers) {
+                SegmentBody body = loadSegmentFromCache(headerBodies, header);
+                if (body == null) {
+                    // To proceed with a candidate, require all headers to
+                    // be in cache.
+                    continue candidateLoop;
+                }
+                map.put(header, body);
+            }
+            return map;
+        }
+        return null;
+    }
+
+    private SegmentBody loadSegmentFromCache(
+        Map<SegmentHeader, SegmentBody> headerBodies,
+        SegmentHeader header)
+    {
+        SegmentBody body = headerBodies.get(header);
+        if (body != null) {
+            return body;
+        }
+        body = cacheMgr.compositeCache.get(header);
+        if (body == null) {
+            cacheMgr.remove(header);
+            return null;
+        }
+        headerBodies.put(header, body);
+        return body;
+    }
+
+    /**
+     * Returns the SQL dialect. Overridden in some unit tests.
+     *
+     * @return Dialect
+     */
+    Dialect getDialect() {
+        return cube.getSchema().getDialect();
+    }
+
+    /**
+     * Sets the flag indicating that the reader has told a lie.
+     */
+    void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
+}
+
+/**
+ * Context for processing a request to the cache manager for segments matching a
+ * collection of cell requests. All methods except the constructor are executed
+ * by the cache manager's dedicated thread.
+ */
+class BatchLoader {
+    private static final Logger LOGGER =
+        Logger.getLogger(FastBatchingCellReader.class);
+
+    private final Locus locus;
+    private final SegmentCacheManager cacheMgr;
+    private final Dialect dialect;
+    private final RolapCube cube;
+
+    private final Map<AggregationKey, Batch> batches =
+        new HashMap<AggregationKey, Batch>();
+
+    private final Set<SegmentHeader> cacheHeaders =
+        new LinkedHashSet<SegmentHeader>();
+
+    private final Map<SegmentHeader, Future<SegmentBody>> futures =
+        new HashMap<SegmentHeader, Future<SegmentBody>>();
+
+    private final List<RollupInfo> rollups = new ArrayList<RollupInfo>();
+
+    private final Set<BitKey> rollupBitmaps = new HashSet<BitKey>();
+
+    private final Map<List, SegmentBuilder.SegmentConverter> converterMap =
+        new HashMap<List, SegmentBuilder.SegmentConverter>();
+
+    public BatchLoader(
+        Locus locus,
+        SegmentCacheManager cacheMgr,
+        Dialect dialect,
+        RolapCube cube)
+    {
+        this.locus = locus;
+        this.cacheMgr = cacheMgr;
+        this.dialect = dialect;
+        this.cube = cube;
+    }
+
+    final boolean shouldUseGroupingFunction() {
+        return MondrianProperties.instance().EnableGroupingSets.get()
+            && dialect.supportsGroupingSets();
+    }
+
+    private void recordCellRequest2(final CellRequest request) {
+        // If there is a segment matching these criteria, write it to the list
+        // of found segments, and remove the cell request from the list.
+        final AggregationKey key = new AggregationKey(request);
+
+        // Is request matched by one of the headers we intend to load?
+        final Map<String, Comparable> mappedCellValues =
+            request.getMappedCellValues();
+        final List<String> compoundPredicates =
+            AggregationKey.getCompoundPredicateStringList(
+                key.getStar(),
+                key.getCompoundPredicateList());
+        for (SegmentHeader header : cacheHeaders) {
+            if (SegmentCacheIndexImpl.matches(
+                    header,
+                    mappedCellValues,
+                    compoundPredicates))
+            {
+                // It's likely that the header will be in the cache, so this
+                // request will be satisfied. If not, the header will be removed
+                // from the segment index, and we'll be back.
+                return;
+            }
+        }
+        final RolapStar.Measure measure = request.getMeasure();
+        final RolapStar star = measure.getStar();
+        final RolapSchema schema = star.getSchema();
+        final List<SegmentHeader> headersInCache =
+            cacheMgr.segmentIndex.locate(
+                schema.getName(),
+                schema.getChecksum(),
+                measure.getCubeName(),
+                measure.getName(),
+                star.getFactTable().getAlias(),
+                request.getConstrainedColumnsBitKey(),
+                mappedCellValues,
+                compoundPredicates);
+
+        // Ask for the first segment to be loaded from cache. (If it's no longer
+        // in cache, we'll be back, and presumably we'll try the second
+        // segment.)
+        final SegmentBuilder.SegmentConverterImpl converter =
+            new SegmentBuilder.SegmentConverterImpl(key, request);
+        if (!headersInCache.isEmpty()) {
+            final SegmentHeader headerInCache = headersInCache.get(0);
+            final Future<SegmentBody> future =
+                cacheMgr.segmentIndex.getFuture(headerInCache);
+            if (future != null) {
+                // Segment header is in cache, body is being loaded. Worker will
+                // need to wait for load to complete.
+                futures.put(headerInCache, future);
+            } else {
+                // Segment is in cache.
+                cacheHeaders.add(headerInCache);
+            }
+            cacheMgr.segmentIndex.setConverter(
+                headerInCache.schemaName,
+                headerInCache.schemaChecksum,
+                headerInCache.cubeName,
+                headerInCache.rolapStarFactTableName,
+                headerInCache.measureName,
+                headerInCache.compoundPredicates,
+                converter);
+            converterMap.put(
+                SegmentCacheIndexImpl.makeConverterKey(request, key),
+                converter);
             return;
         }
-        ++missCount;
 
-        final AggregationKey key = new AggregationKey(request);
+        // Try to roll up if the measure's rollup aggregator supports
+        // "fast" aggregation from raw objects.
+        //
+        // Do not try to roll up if this request has already chosen a rollup
+        // with the same target dimensionality. It is quite likely that the
+        // other rollup will satisfy this request, and it's complicated to be
+        // 100% sure. If we're wrong, we'll be back.
+        if (measure.getAggregator().getRollup().supportsFastAggregates(
+                measure.getDatatype())
+            && !rollupBitmaps.contains(request.getConstrainedColumnsBitKey()))
+        {
+            // Don't even bother doing a segment lookup if we can't
+            // rollup that measure.
+            final List<List<SegmentHeader>> rollup =
+                cacheMgr.segmentIndex.findRollupCandidates(
+                    schema.getName(),
+                    schema.getChecksum(),
+                    measure.getCubeName(),
+                    measure.getName(),
+                    star.getFactTable().getAlias(),
+                    request.getConstrainedColumnsBitKey(),
+                    mappedCellValues,
+                    AggregationKey.getCompoundPredicateStringList(
+                        star,
+                        key.getCompoundPredicateList()));
+            if (!rollup.isEmpty()) {
+                rollups.add(
+                    new RollupInfo(
+                        request,
+                        rollup));
+                rollupBitmaps.add(request.getConstrainedColumnsBitKey());
+                converterMap.put(
+                    SegmentCacheIndexImpl.makeConverterKey(request, key),
+                    new SegmentBuilder.StarSegmentConverter(
+                        measure,
+                        key.getCompoundPredicateList()));
+                return;
+            }
+        }
+
+        // Finally, add to a batch. It will turn in to a SQL request.
         Batch batch = batches.get(key);
         if (batch == null) {
             batch = new Batch(request);
             batches.put(key, batch);
+            converterMap.put(
+                SegmentCacheIndexImpl.makeConverterKey(request, key),
+                converter);
 
             if (LOGGER.isDebugEnabled()) {
                 StringBuilder buf = new StringBuilder(100);
@@ -142,9 +638,9 @@ public class FastBatchingCellReader implements CellReader {
                 buf.append(request.getConstrainedColumnsBitKey());
                 buf.append(Util.nl);
 
-                final RolapStar.Column[] columns =
-                    request.getConstrainedColumns();
-                for (RolapStar.Column column : columns) {
+                for (RolapStar.Column column
+                    : request.getConstrainedColumns())
+                {
                     buf.append("  ");
                     buf.append(column);
                     buf.append(Util.nl);
@@ -156,66 +652,76 @@ public class FastBatchingCellReader implements CellReader {
     }
 
     /**
-     * Returns whether this reader has told a lie. This is the case if there
-     * are pending batches to load or if {@link #setDirty(boolean)} has been
-     * called.
-     */
-    public boolean isDirty() {
-        return dirty || !batches.isEmpty();
-    }
-
-    /**
-     * Loads pending aggregations, if any.
+     * Determines which segments need to be loaded from external cache,
+     * created using roll up, or created using SQL to satisfy a given list
+     * of cell requests.
      *
-     * @return Whether any aggregations were loaded.
+     * @return List of segment futures. Each segment future may or may not be
+     *    already present (it depends on the current location of the segment
+     *    body). Each future will return a not-null segment (or throw).
      */
-    boolean loadAggregations() {
+    LoadBatchResponse load(List<CellRequest> cellRequests) {
+        // Check for cancel/timeout. The request might have been on the queue
+        // for a while.
+        if (locus.execution != null) {
+            locus.execution.checkCancelOrTimeout();
+        }
+
         final long t1 = System.currentTimeMillis();
-        if (!isDirty()) {
-            return false;
+
+        // Now we're inside the cache manager, we can see which of our cell
+        // requests can be answered from cache. Those that can will be added
+        // to the segments list; those that can not will be converted into
+        // batches and rolled up or loaded using SQL.
+        for (CellRequest cellRequest : cellRequests) {
+            recordCellRequest2(cellRequest);
         }
 
         // Sort the batches into deterministic order.
-        List<Batch> batchList = new ArrayList<Batch>(batches.values());
+        List<Batch> batchList =
+            new ArrayList<Batch>(batches.values());
         Collections.sort(batchList, BatchComparator.instance);
+        final List<Future<Map<Segment, SegmentWithData>>> segmentMapFutures =
+            new ArrayList<Future<Map<Segment, SegmentWithData>>>();
         if (shouldUseGroupingFunction()) {
             LOGGER.debug("Using grouping sets");
             List<CompositeBatch> groupedBatches = groupBatches(batchList);
             for (CompositeBatch batch : groupedBatches) {
-                loadAggregation(batch);
+                batch.load(segmentMapFutures);
             }
         } else {
             // Load batches in turn.
             for (Batch batch : batchList) {
-                loadAggregation(batch);
+                batch.loadAggregation(segmentMapFutures);
             }
         }
 
-        batches.clear();
-        dirty = false;
-
         if (LOGGER.isDebugEnabled()) {
             final long t2 = System.currentTimeMillis();
-            LOGGER.debug("loadAggregation (millis): " + (t2 - t1));
+            LOGGER.debug("load (millis): " + (t2 - t1));
         }
 
-        return true;
+        // Create a response and return it to the client. The response is a
+        // bunch of work to be done (waiting for segments to load from SQL, to
+        // come from cache, and so forth) on the client's time. Some of the bets
+        // may not come off, in which case, the client will send us another
+        // request.
+        return new LoadBatchResponse(
+            cellRequests,
+            new ArrayList<SegmentHeader>(cacheHeaders),
+            rollups,
+            converterMap,
+            segmentMapFutures,
+            futures);
     }
 
-    private void loadAggregation(Loadable batch) {
-        if (execution != null) {
-            execution.checkCancelOrTimeout();
-        }
-        batch.loadAggregation();
-    }
-
-    List<CompositeBatch> groupBatches(List<Batch> batchList) {
+    static List<CompositeBatch> groupBatches(List<Batch> batchList) {
         Map<AggregationKey, CompositeBatch> batchGroups =
             new HashMap<AggregationKey, CompositeBatch>();
         for (int i = 0; i < batchList.size(); i++) {
-            for (int j = i + 1; j < batchList.size() && i < batchList.size();) {
-                FastBatchingCellReader.Batch iBatch = batchList.get(i);
-                FastBatchingCellReader.Batch jBatch = batchList.get(j);
+            for (int j = i + 1; j < batchList.size();) {
+                final Batch iBatch = batchList.get(i);
+                final Batch jBatch = batchList.get(j);
                 if (iBatch.canBatch(jBatch)) {
                     batchList.remove(j);
                     addToCompositeBatch(batchGroups, iBatch, jBatch);
@@ -238,7 +744,7 @@ public class FastBatchingCellReader implements CellReader {
         return Arrays.asList(compositeBatches);
     }
 
-    private void wrapNonBatchedBatchesWithCompositeBatches(
+    private static void wrapNonBatchedBatchesWithCompositeBatches(
         List<Batch> batchList,
         Map<AggregationKey, CompositeBatch> batchGroups)
     {
@@ -249,8 +755,7 @@ public class FastBatchingCellReader implements CellReader {
         }
     }
 
-
-    void addToCompositeBatch(
+    static void addToCompositeBatch(
         Map<AggregationKey, CompositeBatch> batchGroups,
         Batch detailedBatch,
         Batch summaryBatch)
@@ -262,7 +767,7 @@ public class FastBatchingCellReader implements CellReader {
             batchGroups.put(detailedBatch.batchKey, compositeBatch);
         }
 
-        FastBatchingCellReader.CompositeBatch compositeBatchOfSummaryBatch =
+        CompositeBatch compositeBatchOfSummaryBatch =
             batchGroups.remove(summaryBatch.batchKey);
 
         if (compositeBatchOfSummaryBatch != null) {
@@ -272,46 +777,47 @@ public class FastBatchingCellReader implements CellReader {
         }
     }
 
-    boolean shouldUseGroupingFunction() {
-        return MondrianProperties.instance().EnableGroupingSets.get()
-            && doesDBSupportGroupingSets();
-    }
-
     /**
-     * Uses Dialect to identify if grouping sets is supported by the
-     * database.
+     * Command that loads the segments required for a collection of cell
+     * requests. Returns the collection of segments.
      */
-    boolean doesDBSupportGroupingSets() {
-        return getDialect().supportsGroupingSets();
-    }
+    public static class LoadBatchCommand
+        implements SegmentCacheManager.Command<LoadBatchResponse>
+    {
+        private final Locus locus;
+        private final SegmentCacheManager cacheMgr;
+        private final Dialect dialect;
+        private final RolapCube cube;
+        private final List<CellRequest> cellRequests;
 
-    /**
-     * Returns the SQL dialect. Overridden in some unit tests.
-     *
-     * @return Dialect
-     */
-    Dialect getDialect() {
-        final Member measure0 = cube.getMeasures().get(0);
-        RolapStoredMeasure measure = (RolapStoredMeasure) measure0;
-        final RolapStar star = measure.getStarMeasure().getStar();
-        if (star != null) {
-            return star.getSqlQueryDialect();
-        } else {
-            return cube.getSchema().getDialect();
+        public LoadBatchCommand(
+            Locus locus,
+            SegmentCacheManager cacheMgr,
+            Dialect dialect,
+            RolapCube cube,
+            List<CellRequest> cellRequests)
+        {
+            this.locus = locus;
+            this.cacheMgr = cacheMgr;
+            this.dialect = dialect;
+            this.cube = cube;
+            this.cellRequests = cellRequests;
         }
-    }
 
-    /**
-     * Sets the flag indicating that the reader has told a lie.
-     */
-    void setDirty(boolean dirty) {
-        this.dirty = dirty;
+        public LoadBatchResponse call() {
+            return new BatchLoader(locus, cacheMgr, dialect, cube)
+                .load(cellRequests);
+        }
+
+        public Locus getLocus() {
+            return locus;
+        }
     }
 
     /**
      * Set of Batches which can grouped together.
      */
-    class CompositeBatch implements Loadable {
+    static class CompositeBatch {
         /** Batch with most number of constraint columns */
         final Batch detailedBatch;
 
@@ -331,41 +837,118 @@ public class FastBatchingCellReader implements CellReader {
             summaryBatches.addAll(summaryBatch.summaryBatches);
         }
 
-        public void loadAggregation() {
+        public void load(
+            List<Future<Map<Segment, SegmentWithData>>> segmentFutures)
+        {
             GroupingSetsCollector batchCollector =
                 new GroupingSetsCollector(true);
-            this.detailedBatch.loadAggregation(batchCollector);
+            this.detailedBatch.loadAggregation(batchCollector, segmentFutures);
 
             int cellRequestCount = 0;
             for (Batch batch : summaryBatches) {
-                batch.loadAggregation(batchCollector);
+                batch.loadAggregation(batchCollector, segmentFutures);
                 cellRequestCount += batch.cellRequestCount;
             }
 
             getSegmentLoader().load(
                 cellRequestCount,
                 batchCollector.getGroupingSets(),
-                pinnedSegments,
-                detailedBatch.batchKey.getCompoundPredicateList());
+                detailedBatch.batchKey.getCompoundPredicateList(),
+                segmentFutures);
         }
 
         SegmentLoader getSegmentLoader() {
-            return new SegmentLoader(aggMgr);
+            return new SegmentLoader(detailedBatch.getCacheMgr());
         }
     }
 
     private static final Logger BATCH_LOGGER = Logger.getLogger(Batch.class);
 
-    /**
-     * Encapsulates a common property of {@link Batch} and
-     * {@link CompositeBatch}, namely, that they can be asked to load their
-     * aggregations into the cache.
-     */
-    interface Loadable {
-        void loadAggregation();
+    public static class RollupInfo {
+        final RolapStar.Column[] constrainedColumns;
+        final BitKey constrainedColumnsBitKey;
+        final RolapStar.Measure measure;
+        final List<List<SegmentHeader>> candidateLists;
+
+        RollupInfo(
+            CellRequest request,
+            List<List<SegmentHeader>> candidateLists)
+        {
+            this.candidateLists = candidateLists;
+            constrainedColumns = request.getConstrainedColumns();
+            constrainedColumnsBitKey = request.getConstrainedColumnsBitKey();
+            measure = request.getMeasure();
+        }
     }
 
-    class Batch implements Loadable {
+    /**
+     * Request sent from cache manager to a worker to load segments into
+     * the cache, create segments by rolling up, and to wait for segments
+     * being loaded via SQL.
+     */
+    static class LoadBatchResponse {
+        /**
+         * List of segments that are being loaded using SQL.
+         *
+         * <p>Other workers are executing the SQL. When done, they will write a
+         * segment body or an error into the respective futures. The thread
+         * processing this request will wait on those futures, once all segments
+         * have successfully arrived from cache.</p>
+         */
+        final List<Future<Map<Segment, SegmentWithData>>> sqlSegmentMapFutures;
+
+        /**
+         * List of segments we are trying to load from the cache.
+         */
+        final List<SegmentHeader> cacheSegments;
+
+        /**
+         * List of cell requests that will be satisfied by segments we are
+         * trying to load from the cache (or create by rolling up).
+         */
+        final List<CellRequest> cellRequests;
+
+        /**
+         * List of segments to be created from segments in the cache, provided
+         * that the cache segments come through.
+         *
+         * <p>If they do not, we will need to tell the cache manager to remove
+         * the pending segments.</p>
+         */
+        final List<RollupInfo> rollups;
+
+        final Map<List, SegmentBuilder.SegmentConverter> converterMap;
+
+        final Map<SegmentHeader, Future<SegmentBody>> futures;
+
+        LoadBatchResponse(
+            List<CellRequest> cellRequests,
+            List<SegmentHeader> cacheSegments,
+            List<RollupInfo> rollups,
+            Map<List, SegmentBuilder.SegmentConverter> converterMap,
+            List<Future<Map<Segment, SegmentWithData>>> sqlSegmentMapFutures,
+            Map<SegmentHeader, Future<SegmentBody>> futures)
+        {
+            this.cellRequests = cellRequests;
+            this.sqlSegmentMapFutures = sqlSegmentMapFutures;
+            this.cacheSegments = cacheSegments;
+            this.rollups = rollups;
+            this.converterMap = converterMap;
+            this.futures = futures;
+        }
+
+        public SegmentWithData convert(
+            SegmentHeader header,
+            SegmentBody body)
+        {
+            final SegmentBuilder.SegmentConverter converter =
+                converterMap.get(
+                    SegmentCacheIndexImpl.makeConverterKey(header));
+            return converter.convert(header, body);
+        }
+    }
+
+    public class Batch {
         // the CellRequest's constrained columns
         final RolapStar.Column[] columns;
         final List<RolapStar.Measure> measuresList =
@@ -375,6 +958,8 @@ public class FastBatchingCellReader implements CellReader {
         // string representation; for debug; set lazily in toString
         private String string;
         private int cellRequestCount;
+        private List<StarColumnPredicate[]> tuples =
+            new ArrayList<StarColumnPredicate[]>();
 
         public Batch(CellRequest request) {
             columns = request.getConstrainedColumns();
@@ -403,10 +988,15 @@ public class FastBatchingCellReader implements CellReader {
 
         public final void add(CellRequest request) {
             ++cellRequestCount;
-            final int limit = request.getNumValues();
-            for (int j = 0; j < limit; j++) {
-                valueSets[j].add(request.getValueAt(j));
+            final int valueCount = request.getNumValues();
+            final StarColumnPredicate[] tuple =
+                new StarColumnPredicate[valueCount];
+            for (int j = 0; j < valueCount; j++) {
+                final StarColumnPredicate value = request.getValueAt(j);
+                valueSets[j].add(value);
+                tuple[j] = value;
             }
+            tuples.add(tuple);
             final RolapStar.Measure measure = request.getMeasure();
             if (!measuresList.contains(measure)) {
                 assert (measuresList.size() == 0)
@@ -434,14 +1024,21 @@ public class FastBatchingCellReader implements CellReader {
             return batchKey.getConstrainedColumnsBitKey();
         }
 
-        public final void loadAggregation() {
+        public SegmentCacheManager getCacheMgr() {
+            return cacheMgr;
+        }
+
+        public final void loadAggregation(
+            List<Future<Map<Segment, SegmentWithData>>> segmentFutures)
+        {
             GroupingSetsCollector collectorWithGroupingSetsTurnedOff =
                 new GroupingSetsCollector(false);
-            loadAggregation(collectorWithGroupingSetsTurnedOff);
+            loadAggregation(collectorWithGroupingSetsTurnedOff, segmentFutures);
         }
 
         final void loadAggregation(
-            GroupingSetsCollector groupingSetsCollector)
+            GroupingSetsCollector groupingSetsCollector,
+            List<Future<Map<Segment, SegmentWithData>>> segmentFutures)
         {
             if (MondrianProperties.instance().GenerateAggregateSql.get()) {
                 generateAggregateSql();
@@ -455,8 +1052,6 @@ public class FastBatchingCellReader implements CellReader {
 
             // If the database cannot execute "count(distinct ...)", split the
             // distinct aggregations out.
-            final Dialect dialect = getDialect();
-
             int distinctMeasureCount = getDistinctMeasureCount(measuresList);
             boolean tooManyDistinctMeasures =
                 distinctMeasureCount > 0
@@ -466,13 +1061,15 @@ public class FastBatchingCellReader implements CellReader {
 
             if (tooManyDistinctMeasures) {
                 doSpecialHandlingOfDistinctCountMeasures(
-                    aggMgr, predicates, groupingSetsCollector);
+                    predicates,
+                    groupingSetsCollector,
+                    segmentFutures);
             }
 
             // Load agg(distinct <SQL expression>) measures individually
             // for DBs that does allow multiple distinct SQL measures.
             if (!dialect.allowsMultipleDistinctSqlMeasures()) {
-                // Note that the intention was orignially to capture the
+                // Note that the intention was originally to capture the
                 // subquery SQL measures and separate them out; However,
                 // without parsing the SQL string, Mondrian cannot distinguish
                 // between "col1" + "col2" and subquery. Here the measure list
@@ -484,44 +1081,43 @@ public class FastBatchingCellReader implements CellReader {
                 List<RolapStar.Measure> distinctSqlMeasureList =
                     getDistinctSqlMeasures(measuresList);
                 for (RolapStar.Measure measure : distinctSqlMeasureList) {
-                    RolapStar.Measure[] measures = {measure};
-                    aggMgr.loadAggregation(
+                    AggregationManager.loadAggregation(
+                        cacheMgr,
                         cellRequestCount,
-                        measures,
+                        Collections.singletonList(measure),
                         columns,
                         batchKey,
                         predicates,
-                        pinnedSegments,
-                        groupingSetsCollector);
+                        groupingSetsCollector,
+                        segmentFutures);
                     measuresList.remove(measure);
                 }
             }
 
             final int measureCount = measuresList.size();
             if (measureCount > 0) {
-                final RolapStar.Measure[] measures =
-                    measuresList.toArray(new RolapStar.Measure[measureCount]);
-                    aggMgr.loadAggregation(
-                        cellRequestCount,
-                        measures,
-                        columns,
-                        batchKey,
-                        predicates,
-                        pinnedSegments,
-                        groupingSetsCollector);
+                AggregationManager.loadAggregation(
+                    cacheMgr,
+                    cellRequestCount,
+                    measuresList,
+                    columns,
+                    batchKey,
+                    predicates,
+                    groupingSetsCollector,
+                    segmentFutures);
             }
 
             if (BATCH_LOGGER.isDebugEnabled()) {
                 final long t2 = System.currentTimeMillis();
                 BATCH_LOGGER.debug(
-                    "Batch.loadAggregation (millis) " + (t2 - t1));
+                    "Batch.load (millis) " + (t2 - t1));
             }
         }
 
         private void doSpecialHandlingOfDistinctCountMeasures(
-            AggregationManager aggmgr,
             StarColumnPredicate[] predicates,
-            GroupingSetsCollector groupingSetsCollector)
+            GroupingSetsCollector groupingSetsCollector,
+            List<Future<Map<Segment, SegmentWithData>>> segmentFutures)
         {
             while (true) {
                 // Scan for a measure based upon a distinct aggregation.
@@ -547,17 +1143,15 @@ public class FastBatchingCellReader implements CellReader {
 
                 // Load all the distinct measures based on the same expression
                 // together
-                final RolapStar.Measure[] measures =
-                    distinctMeasuresList.toArray(
-                        new RolapStar.Measure[distinctMeasuresList.size()]);
-                aggmgr.loadAggregation(
+                AggregationManager.loadAggregation(
+                    cacheMgr,
                     cellRequestCount,
-                    measures,
+                    distinctMeasuresList,
                     columns,
                     batchKey,
                     predicates,
-                    pinnedSegments,
-                    groupingSetsCollector);
+                    groupingSetsCollector,
+                    segmentFutures);
             }
         }
 
@@ -593,7 +1187,6 @@ public class FastBatchingCellReader implements CellReader {
         }
 
         private void generateAggregateSql() {
-            final RolapCube cube = FastBatchingCellReader.this.cube;
             if (cube == null || cube.isVirtual()) {
                 final StringBuilder buf = new StringBuilder(64);
                 buf.append(
@@ -604,7 +1197,10 @@ public class FastBatchingCellReader implements CellReader {
 
             } else {
                 final AggGen aggGen =
-                    new AggGen(cube.getName(), cube.getStar(), columns);
+                    new AggGen(
+                        cube.getName(),
+                        cube.getMeasureGroups().get(0).getStar(),
+                        columns);
                 if (aggGen.isReady()) {
                     // PRINT TO STDOUT - DO NOT USE BATCH_LOGGER
                     System.out.println(
@@ -837,7 +1433,7 @@ public class FastBatchingCellReader implements CellReader {
          * @return AggStar
          */
         private AggStar getAgg(boolean[] rollup) {
-            return aggMgr.findAgg(
+            return AggregationManager.findAgg(
                 getStar(),
                 getConstrainedColumnsBitKey(),
                 makeMeasureBitKey(),
@@ -988,6 +1584,7 @@ public class FastBatchingCellReader implements CellReader {
             }
         }
     }
+
 }
 
 // End FastBatchingCellReader.java

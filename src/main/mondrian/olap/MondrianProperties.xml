@@ -4,7 +4,7 @@
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
   == You must accept the terms of that agreement to use this software.
-  == Copyright (C) 2011-2011 Julian Hyde
+  == Copyright (C) 2011-2012 Julian Hyde
   == All Rights Reserved.
   ==
   == Definitions of configuration properties used by Mondrian. From this file,
@@ -303,66 +303,6 @@ Specify the value as a fully qualified class name, such as
 is an implementation of {@link mondrian.spi.SegmentCache}.
         </Description>
         <Type>String</Type>
-    </PropertyDefinition>
-    <PropertyDefinition>
-        <Name>SegmentCacheReadTimeout</Name>
-        <Path>mondrian.rolap.SegmentCacheReadTimeout</Path>
-        <Description>
-<p>Property which defines the timeout for
-{@link mondrian.spi.SegmentCache#get(mondrian.rolap.agg.SegmentHeader)}
-in milliseconds. Defaults to 5000.</p>
-
-<p>This is an internal control property. The timeout value
-won't be passed to the underlying
-{@link mondrian.spi.SegmentCache} SPI.</p>
-        </Description>
-        <Type>int</Type>
-        <Default>5000</Default>
-    </PropertyDefinition>
-    <PropertyDefinition>
-        <Name>SegmentCacheWriteTimeout</Name>
-        <Path>mondrian.rolap.SegmentCacheWriteTimeout</Path>
-        <Description>
-<p>Property which defines the timeout for
-{@link mondrian.spi.SegmentCache#put(mondrian.rolap.agg.SegmentHeader, mondrian.rolap.agg.SegmentBody)}
-in milliseconds. Defaults to 5000.</p>
-
-<p>This is an internal control property. The timeout value
-won't be passed to the underlying
-{@link mondrian.spi.SegmentCache} SPI.</p>
-        </Description>
-        <Type>int</Type>
-        <Default>5000</Default>
-    </PropertyDefinition>
-    <PropertyDefinition>
-        <Name>SegmentCacheLookupTimeout</Name>
-        <Path>mondrian.rolap.SegmentCacheLookupTimeout</Path>
-        <Description>
-<p>Property which defines the timeout for
-{@link mondrian.spi.SegmentCache#contains(mondrian.rolap.agg.SegmentHeader)}
-in milliseconds. Defaults to 5000.</p>
-
-<p>This is an internal control property. The timeout value
-won't be passed to the underlying
-{@link mondrian.spi.SegmentCache} SPI.</p>
-        </Description>
-        <Type>int</Type>
-        <Default>5000</Default>
-    </PropertyDefinition>
-    <PropertyDefinition>
-        <Name>SegmentCacheScanTimeout</Name>
-        <Path>mondrian.rolap.SegmentCacheScanTimeout</Path>
-        <Description>
-<p>Property which defines the timeout for
-{@link mondrian.spi.SegmentCache#getSegmentHeaders()}
-in milliseconds. Defaults to 5000.</p>
-
-<p>This is an internal control property. The timeout value
-won't be passed to the underlying
-{@link mondrian.spi.SegmentCache} SPI.</p>
-        </Description>
-        <Type>int</Type>
-        <Default>5000</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>SparseSegmentCountThreshold</Name>

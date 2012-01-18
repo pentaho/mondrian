@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -13,6 +13,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.util.Lazy;
 
 import org.apache.log4j.Logger;
 
@@ -71,7 +72,7 @@ class RolapDimension extends DimensionBase {
      *
      * <p>NOTE: We currently assume that it is unique, but we do not enforce it.
      */
-    RolapSchema.PhysKey key;
+    Lazy<RolapSchema.PhysKey> key;
 
     RolapDimension(
         RolapSchema schema,
@@ -133,7 +134,10 @@ class RolapDimension extends DimensionBase {
         final RolapSchema.PhysSchemaGraph graph =
             column.relation.getSchema().getGraph();
         try {
-            return graph.findPath(key.relation, column.relation);
+            final RolapSchema.PhysRelation relation =
+                RolapSchemaLoader.uniqueRelation(this);
+            assert relation != null; // should have checked during schema load
+            return graph.findPath(relation, column.relation);
         } catch (RolapSchema.PhysSchemaException e) {
             // TODO: pre-compute path for all attributes, so this error could
             // never be the result of a user error in the schema definition

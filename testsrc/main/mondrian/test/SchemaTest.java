@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -22,6 +22,7 @@ import org.apache.log4j.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.varia.LevelRangeFilter;
 
+import org.olap4j.impl.ArrayMap;
 import org.olap4j.metadata.NamedList;
 
 import java.io.StringWriter;
@@ -486,6 +487,20 @@ Test that get error if a dimension has more than one hierarchy with same name.
         testContext.assertSchemaError(
             "Dimension or DimensionUsage must have foreignKey \\(at ${pos}\\)",
             "<Dimension name=\"Store\">");
+    }
+
+    public void testDimensionRequiresHierarchy() {
+        final TestContext testContext =
+            TestContext.instance().createSubstitutingCube(
+                "Sales",
+                "<Dimension name='Store' key='Store Id'>\n"
+                + "  <Attributes>\n"
+                + "    <Attribute name='Store Id' table='store' keyColumn='store_id'/>\n"
+                + "  </Attributes>\n"
+                + "</Dimension>");
+        testContext.assertSchemaError(
+            "Dimension 'Store' must have at least one hierarchy \\(or attribute hierarchy\\).*",
+            "<Dimension name='Store' key='Store Id'>");
     }
 
     /**
@@ -1760,25 +1775,15 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "</Cube>", null, null, null, null);
 
         testContext.assertQueryReturns(
-            "select\n"
-            + " {[Time].[1997], [Time].[1997].[Q3]} on columns,\n"
+            "select\n" + " {[Time].[1997], [Time].[1997].[Q3]} on columns,\n"
             + " {[Store].[USA].Children} on rows\n"
-            + "From [Warehouse (based on view)]\n"
-            + "where [Warehouse].[USA]",
-            "Axis #0:\n"
-            + "{[Warehouse].[Warehouses].[USA]}\n"
-            + "Axis #1:\n"
-            + "{[Time].[Time].[1997]}\n"
-            + "{[Time].[Time].[1997].[Q3]}\n"
-            + "Axis #2:\n"
-            + "{[Store].[USA].[CA]}\n"
-            + "{[Store].[USA].[OR]}\n"
-            + "{[Store].[USA].[WA]}\n"
-            + "Row #0: 25,789.086\n"
-            + "Row #0: 8,624.791\n"
-            + "Row #1: 17,606.904\n"
-            + "Row #1: 3,812.023\n"
-            + "Row #2: 45,647.262\n"
+            + "From [Warehouse (based on view)]\n" + "where [Warehouse].[USA]",
+            "Axis #0:\n" + "{[Warehouse].[Warehouses].[USA]}\n" + "Axis #1:\n"
+            + "{[Time].[Time].[1997]}\n" + "{[Time].[Time].[1997].[Q3]}\n"
+            + "Axis #2:\n" + "{[Store].[USA].[CA]}\n" + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n" + "Row #0: 25,789.086\n"
+            + "Row #0: 8,624.791\n" + "Row #1: 17,606.904\n"
+            + "Row #1: 3,812.023\n" + "Row #2: 45,647.262\n"
             + "Row #2: 12,664.162\n");
     }
 
@@ -1879,10 +1884,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
             null,
             "  <Measure name=\"Customer Count2\" column=\"customer_id\"\n"
             + "      aggregator=\"distinct count\" formatString=\"#,###\"/>\n"
-            + "  <CalculatedMember\n"
-            + "      name=\"Half Customer Count\"\n"
-            + "      dimension=\"Measures\"\n"
-            + "      visible=\"false\"\n"
+            + "  <CalculatedMember\n" + "      name=\"Half Customer Count\"\n"
+            + "      dimension=\"Measures\"\n" + "      visible=\"false\"\n"
             + "      formula=\"[Measures].[Customer Count2] / 2\">\n"
             + "  </CalculatedMember>");
         testContext.assertQueryReturns(
@@ -1893,28 +1896,15 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + " {[Store].[USA].Children} ON 1\n"
             + "FROM [Sales]\n"
             + "WHERE ([Gender].[M])",
-            "Axis #0:\n"
-            + "{[Customer].[Gender].[M]}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "{[Measures].[Customer Count]}\n"
+            "Axis #0:\n" + "{[Customer].[Gender].[M]}\n" + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n" + "{[Measures].[Customer Count]}\n"
             + "{[Measures].[Customer Count2]}\n"
-            + "{[Measures].[Half Customer Count]}\n"
-            + "Axis #2:\n"
-            + "{[Store].[USA].[CA]}\n"
-            + "{[Store].[USA].[OR]}\n"
-            + "{[Store].[USA].[WA]}\n"
-            + "Row #0: 37,989\n"
-            + "Row #0: 1,389\n"
-            + "Row #0: 1,389\n"
-            + "Row #0: 695\n"
-            + "Row #1: 34,623\n"
-            + "Row #1: 536\n"
-            + "Row #1: 536\n"
-            + "Row #1: 268\n"
-            + "Row #2: 62,603\n"
-            + "Row #2: 901\n"
-            + "Row #2: 901\n"
+            + "{[Measures].[Half Customer Count]}\n" + "Axis #2:\n"
+            + "{[Store].[USA].[CA]}\n" + "{[Store].[USA].[OR]}\n"
+            + "{[Store].[USA].[WA]}\n" + "Row #0: 37,989\n" + "Row #0: 1,389\n"
+            + "Row #0: 1,389\n" + "Row #0: 695\n" + "Row #1: 34,623\n"
+            + "Row #1: 536\n" + "Row #1: 536\n" + "Row #1: 268\n"
+            + "Row #2: 62,603\n" + "Row #2: 901\n" + "Row #2: 901\n"
             + "Row #2: 451\n");
     }
 
@@ -2103,19 +2093,18 @@ Test that get error if a dimension has more than one hierarchy with same name.
         final String cubeName = "Store_NullsCollation";
         TestContext testContext = TestContext.instance().create(
             null,
-            "<Cube name=\"" + cubeName + "\">\n"
-            + "  <Table name=\"store\"/>\n"
+            "<Cube name=\"" + cubeName + "\">\n" + "  <Table name=\"store\"/>\n"
             + "  <Dimension name=\"Store\" foreignKey=\"store_id\">\n"
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
             + "      <Level name=\"Store Name\" column=\"store_name\"  uniqueMembers=\"true\">\n"
             + "        <Property name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\"/>\n"
-            + "      </Level>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
+            + "      </Level>\n" + "    </Hierarchy>\n" + "  </Dimension>\n"
             + "  <Measure name=\"Store Sqft\" column=\"store_sqft\" aggregator=\"sum\"\n"
-            + "      formatString=\"#,###\"/>\n"
-            + "</Cube>",
-            null, null, null, null);
+            + "      formatString=\"#,###\"/>\n" + "</Cube>",
+            null,
+            null,
+            null,
+            null);
         final List<Exception> exceptionList = testContext.getSchemaWarnings();
         testContext.assertContains(
             exceptionList,
@@ -2169,16 +2158,17 @@ Test that get error if a dimension has more than one hierarchy with same name.
             TestContext.instance().create(
                 null,
                 "<Cube name=\"Sales2\" defaultMeasure=\"Unit Sales\">"
-                + "  <Table name=\"sales_fact_1997\">\n"
-                + "  </Table>\n"
+                + "  <Table name=\"sales_fact_1997\">\n" + "  </Table>\n"
                 + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
                 + "  <DimensionUsage name=\"Product\" source=\"Product\" foreignKey=\"product_id\"/>\n"
                 + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
                 + "      formatString=\"Standard\"/>\n"
                 + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
-                + "      formatString=\"#,###.00\"/>\n"
-                + "</Cube>",
-                null, null, null, null);
+                + "      formatString=\"#,###.00\"/>\n" + "</Cube>",
+                null,
+                null,
+                null,
+                null);
 
         // With bug, and with aggregates enabled, query against Sales returns
         // 565,238, which is actually the total for [Store Sales]. I think the
@@ -2332,8 +2322,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
             throwable = e;
         }
         TestContext.checkThrowable(
-            throwable,
-            "Must specify fact table of cube 'Cube with caption'");
+            throwable, "Must specify fact table of cube 'Cube with caption'");
     }
 
     public void testCubeCaption() throws SQLException {
@@ -2363,15 +2352,14 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "<Cube name=\"NoDim\" defaultMeasure=\"Unit Sales\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
             + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
-            + "      formatString=\"Standard\"/>\n"
-            + "</Cube>",
-            null, null, null, null);
+            + "      formatString=\"Standard\"/>\n" + "</Cube>",
+            null,
+            null,
+            null,
+            null);
         testContext.assertQueryReturns(
             "select {[Measures].[Unit Sales]} on columns from [NoDim]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
+            "Axis #0:\n" + "{}\n" + "Axis #1:\n" + "{[Measures].[Unit Sales]}\n"
             + "Row #0: 266,773\n");
     }
 
@@ -2418,11 +2406,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
         testContext.assertQueryReturns(
             "select {[Measures]} on columns from [OneCalcMeasure]\n"
             + "where [Promotion].[Media Type].[TV]",
-            "Axis #0:\n"
-            + "{[Promotion].[Media Type].[TV]}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Fact Count]}\n"
-            + "Row #0: 1,171\n");
+            "Axis #0:\n" + "{[Promotion].[Media Type].[TV]}\n" + "Axis #1:\n"
+            + "{[Measures].[Fact Count]}\n" + "Row #0: 1,171\n");
     }
 
     /**
@@ -2580,18 +2565,19 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "select {[Gender2].members} on columns from [GenderCube]");
 
         TestContext.assertEqualsVerbose(
-            "[Gender2].[All Gender]\n"
-            + "[Gender2].[F]\n"
-            + "[Gender2].[M]",
+            "[Gender2].[All Gender]\n" + "[Gender2].[F]\n" + "[Gender2].[M]",
             TestContext.toString(
                 result.getAxes()[0].getPositions()));
     }
 
     public void testInvalidSchemaAccess() {
         final TestContext testContext = TestContext.instance().create(
-            null, null, null, null, null,
-            "<Role name=\"Role1\">\n"
-            + "  <SchemaGrant access=\"invalid\"/>\n"
+            null,
+            null,
+            null,
+            null,
+            null,
+            "<Role name=\"Role1\">\n" + "  <SchemaGrant access=\"invalid\"/>\n"
             + "</Role>")
             .withRole("Role1");
         testContext.assertQueryThrows(
@@ -2612,14 +2598,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "  <Level name=\"Years\" column=\"the_year\" uniqueMembers=\"true\" levelType=\"TimeYears\"/>"
             + "  <Level name=\"Quarters\" column=\"quarter\" uniqueMembers=\"false\" levelType=\"TimeQuarters\"/>"
             + "  <Level name=\"Months\" column=\"month_of_year\" uniqueMembers=\"false\" levelType=\"TimeMonths\"/>"
-            + "</Hierarchy>"
-            + "</Dimension>"
+            + "</Hierarchy>" + "</Dimension>"
             + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
             + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" "
             + "   formatString=\"Standard\"/>\n"
             + "  <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\""
-            + "   formatString=\"#,###.00\"/>\n"
-            + "</Cube>",
+            + "   formatString=\"#,###.00\"/>\n" + "</Cube>",
             null,
             null,
             null,
@@ -2628,33 +2612,27 @@ Test that get error if a dimension has more than one hierarchy with same name.
         testContext.assertQueryReturns(
             "select [TIME.CALENDAR].[All TIME(CALENDAR)] on columns\n"
             + "from [Sales Special Time]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
+            "Axis #0:\n" + "{}\n" + "Axis #1:\n"
             + "{[TIME].[CALENDAR].[All TIME(CALENDAR)]}\n"
             + "Row #0: 266,773\n");
     }
 
     public void testUnionRole() {
         final TestContext testContext = TestContext.instance().create(
-            null, null, null, null, null,
-            "<Role name=\"Role1\">\n"
-            + "  <SchemaGrant access=\"all\"/>\n"
-            + "</Role>\n"
-            + "<Role name=\"Role2\">\n"
-            + "  <SchemaGrant access=\"all\"/>\n"
-            + "</Role>\n"
-            + "<Role name=\"Role1Plus2\">\n"
-            + "  <Union>\n"
+            null,
+            null,
+            null,
+            null,
+            null,
+            "<Role name=\"Role1\">\n" + "  <SchemaGrant access=\"all\"/>\n"
+            + "</Role>\n" + "<Role name=\"Role2\">\n"
+            + "  <SchemaGrant access=\"all\"/>\n" + "</Role>\n"
+            + "<Role name=\"Role1Plus2\">\n" + "  <Union>\n"
             + "    <RoleUsage roleName=\"Role1\"/>\n"
-            + "    <RoleUsage roleName=\"Role2\"/>\n"
-            + "  </Union>\n"
-            + "</Role>\n"
-            + "<Role name=\"Role1Plus2Plus1\">\n"
-            + "  <Union>\n"
+            + "    <RoleUsage roleName=\"Role2\"/>\n" + "  </Union>\n"
+            + "</Role>\n" + "<Role name=\"Role1Plus2Plus1\">\n" + "  <Union>\n"
             + "    <RoleUsage roleName=\"Role1Plus2\"/>\n"
-            + "    <RoleUsage roleName=\"Role1\"/>\n"
-            + "  </Union>\n"
+            + "    <RoleUsage roleName=\"Role1\"/>\n" + "  </Union>\n"
             + "</Role>\n").withRole("Role1Plus2Plus1");
         testContext.assertQueryReturns(
             "select from [Sales]",
@@ -2702,7 +2680,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
     public void testVirtualCubeNamedSetSupportInSchema() {
         TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Warehouse and Sales",
-            null, null, null,
+            null,
+            null,
+            null,
             "<NamedSet name=\"Non CA State Stores\" "
             + "formula=\"EXCEPT({[Store].[Store Country].[USA].children},{[Store].[Store Country].[USA].[CA]})\"/>");
         testContext.assertQueryReturns(
@@ -2725,20 +2705,13 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "Row #0: 192,025\n");
 
         testContext.assertQueryReturns(
-            "WITH "
-            + "MEMBER "
-            + "[Store].[Total Non CA State] AS \n"
+            "WITH " + "MEMBER " + "[Store].[Total Non CA State] AS \n"
             + "'SUM({[Non CA State Stores]})'\n"
             + "SELECT {[Store].[Store Country].[USA],[Store].[Total Non CA State]} ON 0,"
             + "{[Measures].[Unit Sales]} ON 1 FROM [Warehouse and Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Store].[USA]}\n"
-            + "{[Store].[Total Non CA State]}\n"
-            + "Axis #2:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "Row #0: 266,773\n"
+            "Axis #0:\n" + "{}\n" + "Axis #1:\n" + "{[Store].[USA]}\n"
+            + "{[Store].[Total Non CA State]}\n" + "Axis #2:\n"
+            + "{[Measures].[Unit Sales]}\n" + "Row #0: 266,773\n"
             + "Row #0: 192,025\n");
     }
 
@@ -2868,18 +2841,10 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "Row #0: \n");
         testContext.assertQueryReturns(
             "select hierarchize({[Binary].members}) on 0 from [Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Binary].[Ben]}\n"
-            + "{[Binary].[Ben].[2]}\n"
-            + "{[Binary].[Bill]}\n"
-            + "{[Binary].[Bill].[3]}\n"
-            + "{[Binary].[Bill].[4]}\n"
-            + "Row #0: \n"
-            + "Row #0: \n"
-            + "Row #0: \n"
-            + "Row #0: \n"
+            "Axis #0:\n" + "{}\n" + "Axis #1:\n" + "{[Binary].[Ben]}\n"
+            + "{[Binary].[Ben].[2]}\n" + "{[Binary].[Bill]}\n"
+            + "{[Binary].[Bill].[3]}\n" + "{[Binary].[Bill].[4]}\n"
+            + "Row #0: \n" + "Row #0: \n" + "Row #0: \n" + "Row #0: \n"
             + "Row #0: \n");
     }
 
@@ -3018,37 +2983,24 @@ Test that get error if a dimension has more than one hierarchy with same name.
         // from email from peter tran dated 2008/9/8
         // TODO: schema syntax to create attribute hierarchy
         assertQueryReturns(
-            "WITH \n"
-            + " MEMBER\n"
-            + "  Measures.SalesPerWorkingDay AS \n"
-            + "    IIF(\n"
-            + "     Count(\n"
-            + "      Filter(\n"
+            "WITH \n" + " MEMBER\n" + "  Measures.SalesPerWorkingDay AS \n"
+            + "    IIF(\n" + "     Count(\n" + "      Filter(\n"
             + "        Descendants(\n"
             + "          [Date].[Calendar].CurrentMember\n"
-            + "          ,[Date].[Calendar].[Date]\n"
-            + "          ,SELF)\n"
+            + "          ,[Date].[Calendar].[Date]\n" + "          ,SELF)\n"
             + "       ,  [Date].[Day of Week].CurrentMember.Name <> \"1\"\n"
-            + "      )\n"
-            + "    ) = 0\n"
-            + "     ,NULL\n"
-            + "     ,[Measures].[Internet Sales Amount]\n"
-            + "      /\n"
-            + "       Count(\n"
-            + "         Filter(\n"
+            + "      )\n" + "    ) = 0\n" + "     ,NULL\n"
+            + "     ,[Measures].[Internet Sales Amount]\n" + "      /\n"
+            + "       Count(\n" + "         Filter(\n"
             + "           Descendants(\n"
             + "             [Date].[Calendar].CurrentMember\n"
             + "             ,[Date].[Calendar].[Date]\n"
             + "             ,SELF)\n"
             + "          ,  [Date].[Day of Week].CurrentMember.Name <> \"1\"\n"
-            + "         )\n"
-            + "       )\n"
-            + "    )\n"
-            + "   '\n"
+            + "         )\n" + "       )\n" + "    )\n" + "   '\n"
             + "SELECT [Measures].[SalesPerWorkingDay]  ON 0\n"
             + ", [Date].[Calendar].[Month].MEMBERS ON 1\n"
-            + "FROM [Adventure Works]",
-            "x");
+            + "FROM [Adventure Works]", "x");
     }
 
     /**
@@ -3077,17 +3029,138 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "select non empty {[Measures].[Unit Sales]} on 0,\n"
             + " non empty Filter({[Product truncated].Members}, [Measures].[Unit Sales] > 10000) on 1\n"
             + "from [Sales]",
-            "Axis #0:\n"
-            + "{}\n"
-            + "Axis #1:\n"
-            + "{[Measures].[Unit Sales]}\n"
-            + "Axis #2:\n"
-            + "{[Product truncated].[All Product truncateds]}\n"
+            "Axis #0:\n" + "{}\n" + "Axis #1:\n" + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n" + "{[Product truncated].[All Product truncateds]}\n"
             + "{[Product truncated].[Fresh Vegetables]}\n"
-            + "{[Product truncated].[Fresh Fruit]}\n"
-            + "Row #0: 266,773\n"
-            + "Row #1: 20,739\n"
-            + "Row #2: 11,767\n");
+            + "{[Product truncated].[Fresh Fruit]}\n" + "Row #0: 266,773\n"
+            + "Row #1: 20,739\n" + "Row #2: 11,767\n");
+    }
+
+    /**
+     * Tests whether the agg mgr behaves correctly if a cell request causes
+     * a column to be constrained multiple times. This happens if two levels
+     * map to the same column via the same join-path. If the constraints are
+     * inconsistent, no data will be returned.
+     */
+    public void testMultipleConstraintsOnSameColumn() {
+        final String cubeName = "Sales_withCities";
+        final TestContext testContext = TestContext.instance().create(
+            null,
+            "<Cube name='" + cubeName + "'>\n"
+            + "  <Dimensions>\n"
+            + "    <Dimension source='Time'/>\n"
+            + "    <Dimension name='City' table='customer' key='Name'>\n"
+            + "      <Attributes>\n"
+            + "        <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name'/>\n"
+            + "        <Attribute name='City' keyColumn='city'/>\n"
+            + "      </Attributes>\n"
+            + "      <Hierarchies>\n"
+            + "        <Hierarchy name='Cities' hasAll='true' allMemberName='All Cities'>\n"
+            + "          <Level attribute='City'/>\n"
+            + "        </Hierarchy>\n"
+            + "      </Hierarchies>\n"
+            + "    </Dimension>\n"
+            + "    <Dimension name='Customer' table='customer' key='Name'>\n"
+            + "      <Attributes>\n"
+            + "        <Attribute name='Country' keyColumn='country'/>\n"
+            + "        <Attribute name='State Province' keyColumn='state_province'/>\n"
+            + "        <Attribute name='City'>\n"
+            + "          <Key>\n"
+            + "            <Column name='state_province'/>\n"
+            + "            <Column name='city'/>\n"
+            + "          </Key>\n"
+            + "          <Name>\n"
+            + "            <Column name='city'/>\n"
+            + "          </Name>\n"
+            + "        </Attribute>\n"
+            + "        <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name'/>\n"
+            + "      </Attributes>\n"
+            + "      <Hierarchies>\n"
+            + "        <Hierarchy name='Customers' allMemberName='All Customers'>\n"
+            + "          <Level attribute='Country'/>\n"
+            + "          <Level attribute='State Province'/>\n"
+            + "          <Level attribute='City'/>\n"
+            + "          <Level attribute='Name'/>\n"
+            + "        </Hierarchy>\n"
+            + "      </Hierarchies>\n"
+            + "    </Dimension>\n"
+            + "  </Dimensions>\n"
+            + "  <MeasureGroups>\n"
+            + "    <MeasureGroup name='sales' table='sales_fact_1997'>\n"
+            + "      <Measures>\n"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard' visible='false'/>\n"
+            + "        <Measure name='Store Sales' column='store_sales' aggregator='sum' formatString='#,###.00'/>\n"
+            + "      </Measures>\n"
+            + "      <DimensionLinks>\n"
+            + "        <RegularDimensionLink dimension='Time' foreignKeyColumn='time_id'/>\n"
+            + "        <RegularDimensionLink dimension='Customer' foreignKeyColumn='customer_id'/>\n"
+            + "        <RegularDimensionLink dimension='City' foreignKeyColumn='customer_id'/>\n"
+            + "      </DimensionLinks>\n"
+            + "    </MeasureGroup>\n"
+            + "  </MeasureGroups>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+
+        testContext.assertQueryReturns(
+            "select {\n"
+            + " [Customers].[USA],\n"
+            + " [Customers].[USA].[OR],\n"
+            + " [Customers].[USA].[CA],\n"
+            + " [Customers].[USA].[CA].[Altadena],\n"
+            + " [Customers].[USA].[CA].[Burbank],\n"
+            + " [Customers].[USA].[CA].[Burbank].[Alma Son]} ON COLUMNS\n"
+            + "from ["
+            + cubeName
+            + "] \n"
+            + "where ([Cities].[All Cities].[Burbank], [Measures].[Store Sales])",
+            "Axis #0:\n"
+            + "{[City].[Cities].[Burbank], [Measures].[Store Sales]}\n"
+            + "Axis #1:\n"
+            + "{[Customer].[Customers].[USA]}\n"
+            + "{[Customer].[Customers].[USA].[OR]}\n"
+            + "{[Customer].[Customers].[USA].[CA]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Altadena]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank].[Alma Son]}\n"
+            + "Row #0: 6,577.33\n"
+            + "Row #0: \n"
+            + "Row #0: 6,577.33\n"
+            + "Row #0: \n"
+            + "Row #0: 6,577.33\n"
+            + "Row #0: 36.50\n");
+    }
+
+    /**
+     * Tests that get error if there is not a link for a particular dimension.
+     *
+     * @see mondrian.test.BasicQueryTest#testBug1630754()
+     */
+    public void testMissingDimensionLink() {
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
+            "Sales",
+            "  <Dimension name='Customer_2' key='Id' table='customer'>\n"
+            + "    <Attributes>\n"
+            + "      <Attribute name='Name1' keyColumn='customer_id' uniqueMembers='true'/>\n"
+            + "      <Attribute name='Name2' keyColumn='customer_id' uniqueMembers='true'/>\n"
+            + "      <Attribute name='Id' keyColumn='customer_id' uniqueMembers='true'/>\n"
+            + "    </Attributes>\n"
+            + "    <Hierarchies>\n"
+            + "      <Hierarchy name='Customer' allMemberName='All Customers' primaryKey='customer_id' >\n"
+            + "        <Level attribute='Name1'/>"
+            + "        <Level attribute='Name2'/>"
+            + "      </Hierarchy>\n"
+            + "    </Hierarchies>\n"
+            + "  </Dimension>");
+
+        // No link for 'Customer_2'.
+        final List<Exception> exceptionList = testContext.getSchemaWarnings();
+        testContext.assertContains(
+            exceptionList,
+            "No link for 'Customer_2' dimension",
+            "<Dimension name=\"Store\" ...");
     }
 
     // TODO: enable this test as part of PhysicalSchema work
@@ -3116,8 +3189,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
         }
         // neither a source column or source expression specified
         TestContext.checkThrowable(
-            throwable,
-            "Alias not unique");
+            throwable, "Alias not unique");
     }
 
     /**
@@ -5235,7 +5307,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * Tests that mondrian gives an error if a level is not functionally
      * dependent on the level immediately below it.
      */
-    public void testSnowflakeNotFunctionallyDepdendent() {
+    public void testSnowflakeNotFunctionallyDependent() {
         final String cubeName = "SalesNotFD";
         final TestContext testContext = TestContext.instance().create(
             null,
@@ -5265,6 +5337,41 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "Key of level [Store].[Store Region] is not functionally dependent "
             + "on key of parent level: Needed to find exactly one path from "
             + "region to store, but found 0");
+    }
+
+    /**
+     * Unit test for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-661">
+     * MONDRIAN-661, "Name expressions in snowflake hierarchies do not work,
+     * unfriendly exception occurs"</a>.
+     *
+     * <p>NOTE: bug is not marked fixed yet.</p>
+     */
+    public void testSnowFlakeNameExpressions() {
+        final TestContext testContext =
+            TestContext.instance().createSubstitutingCube(
+                "Sales",
+                "<Dimension name=\"Product with inline\" foreignKey=\"product_id\">"
+                + "<Hierarchy hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">"
+                + "<Join leftKey=\"product_class_id\" rightKey=\"product_class_id\">"
+                + "<Table name=\"product\"/>"
+                + "<Table name=\"product_class\"/>" + "</Join>"
+                + "<Level name=\"Product Family\" table=\"product_class\" column=\"product_family\" uniqueMembers=\"true\"/>"
+                + "<Level name=\"Product Department\" table=\"product_class\" column=\"product_department\" uniqueMembers=\"false\"/>"
+                + "<Level name=\"Product Category\" table=\"product_class\" column=\"product_category\" uniqueMembers=\"false\"/>"
+                + "<Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\" uniqueMembers=\"false\"/>"
+                + "<Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>"
+                + "<Level name=\"Product Name\" table=\"product\" column=\"product_name\" uniqueMembers=\"true\">"
+                + "<NameExpression><SQL dialect=\"mysql\">`product_name`</SQL>"
+                + "</NameExpression>" + "</Level>" + "</Hierarchy>"
+                + "</Dimension>");
+        testContext.assertQueryReturns(
+            "select {[Product with inline].[All Product with inlines].[Drink].[Dairy].[Dairy].[Milk].[Club].Children} on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product with inline].[All Product with inlines]}\n"
+            + "Row #0: 266,773\n");
     }
 
     public void testCubeWithPhysSchema() {
@@ -5569,6 +5676,23 @@ Test that get error if a dimension has more than one hierarchy with same name.
     // TODO: test that <Property attribute='foo'/>, attribute 'foo' must exist
 
     // TODO: test that properties are unique within an attribute
+
+    // TODO: test, and write documentation for, how to define a boolean
+    // attribute. (See Store.Store.Has coffee bar for an example.) Does one
+    // use ColumnDef.type='Boolean' or Attribute.datatype='Boolean'?
+    // Is Attribute.datatype obsolete?
+
+    // TODO: test that it is an error if you define a FactDimensionLink
+    // and the dimension's fact table is not the same as the measure group's
+    // fact table
+
+    // TODO: Feature: If a dimension has only one attribute, you don't need
+    // to specify Dimension.key
+
+    // TODO: Feature: Default value for Attribute.hasHierarchy should be
+    // true if the attribute is not included in any other hierarchies.
+
+    // TODO: default value for MeasureGroup.name is .table.
 }
 
 // End SchemaTest.java

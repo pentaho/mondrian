@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -46,23 +46,23 @@ public class RolapLevel extends LevelBase {
     static final RolapProperty KEY_PROPERTY =
         new RolapProperty(
             Property.KEY.name, null, null, Property.Datatype.TYPE_STRING, null,
-            null, true);
+            null, true, null);
 
     static final RolapProperty NAME_PROPERTY =
         new RolapProperty(
             Property.NAME.name, null, null, Property.Datatype.TYPE_STRING, null,
-            null, true);
+            null, true, null);
 
     static final RolapProperty CAPTION_PROPERTY =
         new RolapProperty(
             Property.CAPTION.name, null, null, Property.Datatype.TYPE_STRING,
-            null, null, true);
+            null, null, true, null);
 
     // TODO: proper name
     static final RolapProperty ORDINAL_PROPERTY =
         new RolapProperty(
             "$ordinal", null, null, Property.Datatype.TYPE_STRING, null, null,
-            true);
+            true, null);
 
     /**
      * Creates a level.

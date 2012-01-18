@@ -34,6 +34,8 @@ usage() {
     echo "--lenient"
     echo "    Does not apply rules to components which are not known to"
     echo "    be in compliance. The perforce trigger uses this option."
+    echo "--strict"
+    echo "    Stricter than usual; the opposite of lenient."
 }
 
 doCheck() {
@@ -158,7 +160,7 @@ doCheck() {
     else
         gawk -f "$CHECKFILE_AWK" \
             -v fname="$filePath" \
-            -v lenient="$lenient" \
+            -v strict="$strict" \
             -v maxLineLength="$maxLineLength" \
             "$file"
     fi
@@ -169,7 +171,7 @@ doCheckDeferred() {
         maxLineLength=80
         cat "${deferred_file}" |
         xargs -P $(expr ${CORE_COUNT} \* 2) -n 100 gawk -f "$CHECKFILE_AWK" \
-            -v lenient="$lenient" \
+            -v strict="$strict" \
             -v maxLineLength="$maxLineLength"
    fi
    rm -f "${deferred_file}"
@@ -196,9 +198,9 @@ if [ "$1" == --test ]; then
     shift
 fi
 
-lenient=
+strict=1
 if [ "$1" == --lenient ]; then
-    lenient=true
+    strict=0
     shift
 fi
 
@@ -207,9 +209,8 @@ if [ "$1" == --help ]; then
     exit 0
 fi
 
-strict=
 if [ "$1" == --strict ]; then
-    strict=true
+    strict=2
     shift
 fi
 
@@ -295,6 +296,7 @@ status=0
 if [ -s /tmp/checkFile_output_$$.txt ]; then
     status=1
 fi
+rm -f /tmp/checkFile_output_$$.txt
 
 exit $status
 

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -19,6 +19,7 @@ import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapCubeDimension;
+import mondrian.rolap.RolapUtil;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.util.*;
 
@@ -31,6 +32,7 @@ import org.eigenbase.xom.XOMUtil;
 import org.olap4j.mdx.*;
 
 import java.io.*;
+import java.lang.ref.Reference;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
@@ -182,19 +184,34 @@ public class Util extends XOMUtil {
 
     /**
      * Parses a string and returns a SHA-256 checksum of it.
-     * @param source The source string to parse.
+     *
+     * @param value The source string to parse.
      * @return A checksum of the source string.
      */
-    public static byte[] checksumSha256(String source) {
-        MessageDigest algorithm;
+    public static byte[] digestSha256(String value) {
+        final MessageDigest algorithm;
         try {
             algorithm = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        algorithm.reset();
-        algorithm.update(source.getBytes());
-        return algorithm.digest();
+        return algorithm.digest(value.getBytes());
+    }
+
+    /**
+     * Creates an MD5 hash of a String.
+     *
+     * @param value String to create one way hash upon.
+     * @return MD5 hash.
+     */
+    public static byte[] digestMd5(final String value) {
+        final MessageDigest algorithm;
+        try {
+            algorithm = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+        return algorithm.digest(value.getBytes());
     }
 
     /**
@@ -207,20 +224,56 @@ public class Util extends XOMUtil {
      */
     public static ExecutorService getExecutorService(
         final int maxNbThreads,
+        String name)
+    {
+        return getExecutorService(maxNbThreads, 0, 1, -1, name);
+    }
+
+    /**
+     * Creates an {@link ExecutorService} object backed by a thread pool
+     * with a fixed number of threads..
+     * @param maximumPoolSize Maximum number of concurrent
+     * threads.
+     * @param corePoolSize Minimum number of concurrent
+     * threads to maintain in the pool, even if they are
+     * idle.
+     * @param keepAliveTime Time, in seconds, for which to
+     * keep alive unused threads.
+     * @param queueLength Maximum number of tasks that can be
+     * put in the queue of tasks to be executed. <code>-1</code>
+     * means no limit.
+     * @param name The name of the threads.
+     * @return An executor service preconfigured.
+     */
+    public static ExecutorService getExecutorService(
+        int maximumPoolSize,
+        int corePoolSize,
+        long keepAliveTime,
+        int queueLength,
         final String name)
     {
-        return Executors.newFixedThreadPool(
-            maxNbThreads,
+        if (Util.PreJdk16) {
+            // On JDK1.5, if you specify corePoolSize=0, nothing gets executed.
+            // Bummer.
+            corePoolSize = Math.max(corePoolSize, 1);
+        }
+        return new ThreadPoolExecutor(
+            corePoolSize,
+            maximumPoolSize,
+            keepAliveTime,
+            TimeUnit.SECONDS,
+            queueLength < 0
+                ? new LinkedBlockingQueue<Runnable>()
+                : new ArrayBlockingQueue<Runnable>(queueLength),
             new ThreadFactory() {
                 public Thread newThread(Runnable r) {
-                    final Thread thread =
+                    final Thread t =
                         Executors.defaultThreadFactory().newThread(r);
-                    thread.setDaemon(true);
-                    thread.setName(name);
-                    return thread;
+                    t.setDaemon(true);
+                    t.setName(name);
+                    return t;
                 }
-            }
-        );
+            });
     }
 
     /**
@@ -1840,28 +1893,6 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Converts a locale identifier (LCID) as used by Windows into a Java
-     * locale.
-     *
-     * <p>For example, {@code lcidToLocale(1033)} returns "en_US", because
-     * 1033 (hex 0409) is US english.</p>
-     *
-     * @param lcid Locale identifier
-     * @return Locale
-     * @throws RuntimeException if locale id is unkown
-     *
-     * @deprecated Soon to be moved to Olap4jUtil.
-     */
-    public static Locale lcidToLocale(short lcid) {
-        // Most common case first, to avoid instantiating the full map.
-        if (lcid == 0x0409) {
-            return Locale.US;
-        }
-        Bug.olap4jUpgrade("move LcidLocale ot Olap4jUtil");
-        return LcidLocale.instance().toLocale(lcid);
-    }
-
-    /**
      * Converts a list of olap4j-style segments to a list of mondrian-style
      * segments.
      *
@@ -2082,15 +2113,29 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Equivalent to {@link Timer#Timer(String, boolean)}.
-     * (Introduced in JDK 1.5.)
+     * Calls {@link java.util.concurrent.Future#get()} and converts any
+     * throwable into a non-checked exception.
      *
-     * @param name the name of the associated thread
-     * @param isDaemon true if the associated thread should run as a daemon
-     * @return timer
+     * @param future Future
+     * @param message Message to qualify wrapped exception
+     * @param <T> Result type
+     * @return Result
      */
-    public static Timer newTimer(String name, boolean isDaemon) {
-        return compatible.newTimer(name, isDaemon);
+    public static <T> T safeGet(Future<T> future, String message) {
+        try {
+            return future.get();
+        } catch (InterruptedException e) {
+            throw newError(e, message);
+        } catch (ExecutionException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            } else if (cause instanceof Error) {
+                throw (Error) cause;
+            } else {
+                throw newError(cause, message);
+            }
+        }
     }
 
     public static <T> Set<T> newIdentityHashSetFake() {
@@ -2151,13 +2196,82 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * As {@link Arrays#binarySearch(Object[], int, int, Object)}, but
+     * Equivalent to {@link Timer#Timer(String, boolean)}.
+     * (Introduced in JDK 1.5.)
+     *
+     * @param name the name of the associated thread
+     * @param isDaemon true if the associated thread should run as a daemon
+     * @return timer
+     */
+    public static Timer newTimer(String name, boolean isDaemon) {
+        return compatible.newTimer(name, isDaemon);
+    }
+
+    /**
+     * As Arrays#binarySearch(Object[], int, int, Object), but
      * available pre-JDK 1.6.
      */
     public static <T extends Comparable<T>> int binarySearch(
         T[] ts, int start, int end, T t)
     {
         return compatible.binarySearch(ts, start, end, t);
+    }
+
+    /**
+     * Returns the intersection of two sorted sets. Does not modify either set.
+     *
+     * <p>Optimized for the case that both sets are {@link ArraySortedSet}.</p>
+     *
+     * @param set1 First set
+     * @param set2 Second set
+     * @return Intersection of the sets
+     */
+    public static <E extends Comparable> SortedSet<E> intersect(
+        SortedSet<E> set1,
+        SortedSet<E> set2)
+    {
+        if (set1.isEmpty()) {
+            return set1;
+        }
+        if (set2.isEmpty()) {
+            return set2;
+        }
+        if (!(set1 instanceof ArraySortedSet)
+            || !(set2 instanceof ArraySortedSet))
+        {
+            final TreeSet<E> set = new TreeSet<E>(set1);
+            set.removeAll(set2);
+            return set;
+        }
+        final Comparable<?>[] result =
+            new Comparable[Math.min(set1.size(), set2.size())];
+        final Iterator<E> it1 = set1.iterator();
+        final Iterator<E> it2 = set2.iterator();
+        int i = 0;
+        E e1 = it1.next();
+        E e2 = it2.next();
+        for (;;) {
+            final int compare = e1.compareTo(e2);
+            if (compare == 0) {
+                result[i++] = e1;
+                if (!it1.hasNext() || !it2.hasNext()) {
+                    break;
+                }
+                e1 = it1.next();
+                e2 = it2.next();
+            } else if (compare == 1) {
+                if (!it2.hasNext()) {
+                    break;
+                }
+                e2 = it2.next();
+            } else {
+                if (!it1.hasNext()) {
+                    break;
+                }
+                e1 = it1.next();
+            }
+        }
+        return new ArraySortedSet(result, 0, i);
     }
 
     /**
@@ -2188,6 +2302,11 @@ public class Util extends XOMUtil {
         public String toString() {
             return "#ERR";
         }
+    }
+
+    @SuppressWarnings({"unchecked"})
+    public static <T> T[] genericArray(Class<T> clazz, int size) {
+        return (T[]) Array.newInstance(clazz, size);
     }
 
     /**
@@ -3019,13 +3138,39 @@ public class Util extends XOMUtil {
         final char[] buffer = new char[bufferSize];
         final StringBuilder buf = new StringBuilder(bufferSize);
 
-        int len = rdr.read(buffer);
-        while (len != -1) {
+        int len;
+        while ((len = rdr.read(buffer)) != -1) {
             buf.append(buffer, 0, len);
-            len = rdr.read(buffer);
+        }
+        return buf.toString();
+    }
+
+    /**
+     * Reads an input stream until it returns EOF and returns the contents as an
+     * array of bytes.
+     *
+     * @param in  Input stream
+     * @param bufferSize size of buffer to allocate for reading.
+     * @return content of stream as an array of bytes
+     * @throws IOException on I/O error
+     */
+    public static byte[] readFully(final InputStream in, final int bufferSize)
+        throws IOException
+    {
+        if (bufferSize <= 0) {
+            throw new IllegalArgumentException(
+                "Buffer size must be greater than 0");
         }
 
-        return buf.toString();
+        final byte[] buffer = new byte[bufferSize];
+        final ByteArrayOutputStream baos =
+            new ByteArrayOutputStream(bufferSize);
+
+        int len;
+        while ((len = in.read(buffer)) != -1) {
+            baos.write(buffer, 0, len);
+        }
+        return baos.toByteArray();
     }
 
     /**
@@ -3123,7 +3268,7 @@ public class Util extends XOMUtil {
      *
      * @param url String
      * @return Apache VFS FileContent for further processing
-     * @throws FileSystemException
+     * @throws FileSystemException on error
      */
     public static InputStream readVirtualFile(String url)
         throws FileSystemException
@@ -3195,6 +3340,25 @@ public class Util extends XOMUtil {
         }
 
         return fileContent.getInputStream();
+    }
+
+    public static String readVirtualFileAsString(
+        String catalogUrl)
+        throws IOException
+    {
+        InputStream in = readVirtualFile(catalogUrl);
+        try {
+            final byte[] bytes = Util.readFully(in, 1024);
+            final char[] chars = new char[bytes.length];
+            for (int i = 0; i < chars.length; i++) {
+                chars[i] = (char) bytes[i];
+            }
+            return new String(chars);
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
     }
 
     /**
@@ -3495,6 +3659,17 @@ public class Util extends XOMUtil {
     }
 
     /**
+     * Creates a hash set that, like {@link java.util.IdentityHashMap},
+     * compares keys using identity.
+     *
+     * @param <T> Element type
+     * @return Set
+     */
+    public static <T> Set<T> newIdentityHashSet() {
+        return compatible.newIdentityHashSet();
+    }
+
+    /**
      * Creates a new udf instance from the given udf class.
      *
      * @param udfClass the class to create new instance for
@@ -3725,6 +3900,7 @@ public class Util extends XOMUtil {
         }
         return null;
     }
+
     public static abstract class AbstractFlatList<T>
         implements List<T>, RandomAccess
     {
@@ -4046,6 +4222,72 @@ public class Util extends XOMUtil {
         }
     }
 
+    /**
+     * Garbage-collecting iterator. Iterates over a collection of references,
+     * and if any of the references has been garbage-collected, removes it from
+     * the collection.
+     *
+     * @param <T> Element type
+     */
+    public static class GcIterator<T> implements Iterator<T> {
+        private final Iterator<? extends Reference<T>> iterator;
+        private boolean hasNext;
+        private T next;
+
+        public GcIterator(Iterator<? extends Reference<T>> iterator) {
+            this.iterator = iterator;
+            this.hasNext = true;
+            moveToNext();
+        }
+
+        /**
+         * Creates an iterator over a collection of references.
+         *
+         * @param referenceIterable Collection of references
+         * @param <T2> element type
+         * @return iterable over collection
+         */
+        public static <T2> Iterable<T2> over(
+            final Iterable<? extends Reference<T2>> referenceIterable)
+        {
+            return new Iterable<T2>() {
+                public Iterator<T2> iterator() {
+                    return new GcIterator<T2>(referenceIterable.iterator());
+                }
+            };
+        }
+
+        private void moveToNext() {
+            while (iterator.hasNext()) {
+                final Reference<T> ref = iterator.next();
+                next = ref.get();
+                if (next != null) {
+                    return;
+                }
+                iterator.remove();
+            }
+            hasNext = false;
+        }
+
+        public boolean hasNext() {
+            return hasNext;
+        }
+
+        public T next() {
+            final T next1 = next;
+            moveToNext();
+            return next1;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public static interface Functor0<RT> {
+        RT apply();
+    }
+
     public static interface Functor1<RT, PT> {
         RT apply(PT param);
     }
@@ -4086,6 +4328,31 @@ public class Util extends XOMUtil {
             long getUsed();
             long getCommitted();
             long getMax();
+        }
+    }
+
+    /**
+     * A {@link Comparator} implementation which can deal
+     * correctly with {@link RolapUtil#sqlNullValue}.
+     */
+    public static class SqlNullSafeComparator
+        implements Comparator<Comparable>
+    {
+        public static final SqlNullSafeComparator instance =
+            new SqlNullSafeComparator();
+
+        private SqlNullSafeComparator() {
+        }
+
+        public int compare(Comparable o1, Comparable o2) {
+            if (o1 == RolapUtil.sqlNullValue) {
+                return -1;
+            }
+            if (o2 == RolapUtil.sqlNullValue) {
+                return 1;
+            }
+            //noinspection unchecked
+            return o1.compareTo(o2);
         }
     }
 }

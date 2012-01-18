@@ -3,13 +3,15 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2011 Julian Hyde
+// Copyright (C) 2010-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.server;
 
 import mondrian.olap.Util;
+
+import org.olap4j.impl.Olap4jUtil;
 
 import java.io.IOException;
 
@@ -43,8 +45,7 @@ public class UrlRepositoryContentFinder
     public String getContent() {
         try {
             return Util.readURL(
-                url,
-                Util.toMap(System.getProperties()));
+                url, Olap4jUtil.toMap(System.getProperties()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

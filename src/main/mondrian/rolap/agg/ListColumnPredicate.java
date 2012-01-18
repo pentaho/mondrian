@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2011 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -40,6 +40,12 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
     private HashMap<Integer, List<StarColumnPredicate>> childrenHashMap;
 
     /**
+     * Set of child values, if all child predicates are value predicates; null
+     * otherwise.
+     */
+    private final Set<Object> values;
+
+    /**
      * Pre-computed hash code for this list column predicate
      */
     private int hashValue;
@@ -58,6 +64,21 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
         this.children = list;
         childrenHashMap = null;
         hashValue = 0;
+        values = createValues(list);
+    }
+
+    private static Set<Object> createValues(List<StarColumnPredicate> list) {
+        final HashSet<Object> set = new HashSet<Object>();
+        for (StarColumnPredicate predicate : list) {
+            if (predicate instanceof ValueColumnPredicate) {
+                set.add(((ValueColumnPredicate) predicate).getValue());
+            } else {
+                // One of the children is not a value predicate. We will have to
+                // evaluate the predicate long-hand.
+                return null;
+            }
+        }
+        return set;
     }
 
     /**
@@ -95,8 +116,12 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
     }
 
     public void values(Collection<Object> collection) {
-        for (StarColumnPredicate child : children) {
-            child.values(collection);
+        if (values != null) {
+            collection.addAll(values);
+        } else {
+            for (StarColumnPredicate child : children) {
+                child.values(collection);
+            }
         }
     }
 

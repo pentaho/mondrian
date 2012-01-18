@@ -44,6 +44,28 @@ public class AccessDialect extends JdbcDialectImpl {
         return "IIF(" + cond + "," + thenExpr + "," + elseExpr + ")";
     }
 
+    public void quoteDateLiteral(StringBuilder buf, String value) {
+        Date date;
+        try {
+            /*
+             * The format of the 'value' parameter is not certain.
+             * Some JDBC drivers will return a timestamp even though
+             * we ask for a date (access is one of them). We must try to
+             * convert both formats.
+             */
+            date = Date.valueOf(value);
+        } catch (IllegalArgumentException ex) {
+            try {
+                date =
+                    new Date(Timestamp.valueOf(value).getTime());
+            } catch (IllegalArgumentException ex2) {
+                throw new NumberFormatException(
+                    "Illegal DATE literal:  " + value);
+            }
+        }
+        quoteDateLiteral(buf, value, date);
+    }
+
     protected void quoteDateLiteral(
         StringBuilder buf,
         String value,

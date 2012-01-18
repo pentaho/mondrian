@@ -3,14 +3,12 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011-2011 Julian Hyde
+// Copyright (C) 2011-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.xmla.impl;
 
-import mondrian.olap.Util;
-import mondrian.util.Bug;
 import mondrian.xmla.XmlaHandler;
 import mondrian.xmla.XmlaRequest;
 
@@ -20,6 +18,7 @@ import org.apache.log4j.Logger;
 
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapWrapper;
+import org.olap4j.impl.Olap4jUtil;
 
 import java.lang.reflect.*;
 import java.sql.Connection;
@@ -389,12 +388,9 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
             }
         }
 
-        Bug.olap4jUpgrade(
-            "move Util.toMap to Olap4jUtil; this file should no longer "
-            + "depend on mondrian.util");
-
         // Get system properties.
-        Map<String, String> systemProps = Util.toMap(System.getProperties());
+        final Map<String, String> systemProps =
+            Olap4jUtil.toMap(System.getProperties());
         for (Map.Entry<String, String> entry : systemProps.entrySet()) {
             String sk = entry.getKey();
             if (sk.startsWith(prefix)) {

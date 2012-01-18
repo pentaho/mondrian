@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2010 Julian Hyde and others
+// Copyright (C) 2002-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -14,9 +14,10 @@ package mondrian.rolap.agg;
 
 import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
+import mondrian.spi.SegmentBody;
+import mondrian.util.Pair;
 
-import java.util.Map;
-import java.util.SortedSet;
+import java.util.*;
 
 /**
  * A <code>SegmentDataset</code> holds the values in a segment.
@@ -92,17 +93,18 @@ public interface SegmentDataset extends Iterable<Map.Entry<CellKey, Object>> {
     SqlStatement.Type getType();
 
     /**
-     * Must return an immutable, final and serializable implementation
+     * Return an immutable, final and serializable implementation
      * of a SegmentBody in order to cache this dataset.
-     * @param axisValueSets An array of SortedSets of Comparables. This is
-     * supplied by the {@link SegmentLoader}.
-     * @param nullAxisFlags An array of booleans indicating which segment axis
-     * has null values. This is supplied by the {@link SegmentLoader}.
-     * @see SegmentBody#createSegmentDataset(Segment)
-     * @return A {@link SegmentBody} object.
+     *
+     * @param axes An array with, for each axis, the set of axis values, sorted
+     *     in natural order, and a flag saying whether the null value is also
+     *     present.
+     *     This is supplied by the {@link SegmentLoader}.
+     *
+     * @return A {@link SegmentBody}.
      */
     SegmentBody createSegmentBody(
-        SortedSet<Comparable<?>>[] axisValueSets,
-        boolean[] nullAxisFlags);
+        List<Pair<SortedSet<Comparable>, Boolean>> axes);
 }
+
 // End SegmentDataset.java

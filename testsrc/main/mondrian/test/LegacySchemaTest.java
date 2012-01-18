@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011-2011 Julian Hyde
+// Copyright (C) 2011-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -261,6 +261,164 @@ public class LegacySchemaTest extends FoodMartTestCase {
         TestContext.checkThrowable(
             throwable,
             "must contain either a source column or a source expression, but not both");
+    }
+
+    /**
+     * Tests bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-105">MONDRIAN-105,
+     * "bug with hierarchy with no all member when in query"</a>. It caused a
+     * dimension with no 'all' member to be constrained twice.
+     */
+    public void testDimWithoutAll() {
+        // Create a test context with a new ""Sales_DimWithoutAll" cube, and
+        // which evaluates expressions against that cube.
+        final String schema = TestContext.instance().getSchema(
+            null,
+            "<Cube name='Sales_DimWithoutAll'>\n"
+            + "  <Table name='sales_fact_1997'/>\n"
+            + "  <Dimension name='Product' foreignKey='product_id'>\n"
+            + "    <Hierarchy hasAll='false' primaryKey='product_id' primaryKeyTable='product'>\n"
+            + "      <Join leftKey='product_class_id' rightKey='product_class_id'>\n"
+            + "        <Table name='product'/>\n"
+            + "        <Table name='product_class'/>\n"
+            + "      </Join>\n"
+            + "      <Level name='Product Family' table='product_class' column='product_family'\n"
+            + "          uniqueMembers='true'/>\n"
+            + "      <Level name='Product Department' table='product_class' column='product_department'\n"
+            + "          uniqueMembers='false'/>\n"
+            + "      <Level name='Product Category' table='product_class' column='product_category'\n"
+            + "          uniqueMembers='false'/>\n"
+            + "      <Level name='Product Subcategory' table='product_class' column='product_subcategory'\n"
+            + "          uniqueMembers='false'/>\n"
+            + "      <Level name='Brand Name' table='product' column='brand_name' uniqueMembers='false'/>\n"
+            + "      <Level name='Product Name' table='product' column='product_name'\n"
+            + "          uniqueMembers='true'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name='Gender' foreignKey='customer_id'>\n"
+            + "    <Hierarchy hasAll='false' primaryKey='customer_id'>\n"
+            + "    <Table name='customer'/>\n"
+            + "      <Level name='Gender' column='gender' uniqueMembers='true'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+            + "      formatString='Standard' visible='false'/>\n"
+            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'\n"
+            + "      formatString='#,###.00'/>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+        TestContext testContext =
+            TestContext.instance()
+                .withSchema(schema)
+                .withCube("Sales_DimWithoutAll");
+        // the default member of the Gender dimension is the first member
+        testContext.assertExprReturns("[Gender].CurrentMember.Name", "F");
+        testContext.assertExprReturns("[Product].CurrentMember.Name", "Drink");
+        // There is no all member.
+        testContext.assertExprThrows(
+            "([Gender].[All Gender], [Measures].[Unit Sales])",
+            "MDX object '[Gender].[All Gender]' not found in cube 'Sales_DimWithoutAll'");
+        testContext.assertExprThrows(
+            "([Gender].[All Genders], [Measures].[Unit Sales])",
+            "MDX object '[Gender].[All Genders]' not found in cube 'Sales_DimWithoutAll'");
+        // evaluated in the default context: [Product].[Drink], [Gender].[F]
+        testContext.assertExprReturns("[Measures].[Unit Sales]", "12,202");
+        // evaluated in the same context: [Product].[Drink], [Gender].[F]
+        testContext.assertExprReturns(
+            "([Gender].[F], [Measures].[Unit Sales])", "12,202");
+        // evaluated at in the context: [Product].[Drink], [Gender].[M]
+        testContext.assertExprReturns(
+            "([Gender].[M], [Measures].[Unit Sales])", "12,395");
+        // evaluated in the context:
+        // [Product].[Food].[Canned Foods], [Gender].[F]
+        testContext.assertExprReturns(
+            "([Product].[Food].[Canned Foods], [Measures].[Unit Sales])",
+            "9,407");
+        testContext.assertExprReturns(
+            "([Product].[Food].[Dairy], [Measures].[Unit Sales])", "6,513");
+        testContext.assertExprReturns(
+            "([Product].[Drink].[Dairy], [Measures].[Unit Sales])", "1,987");
+    }
+
+    /**
+     * Tests whether the agg mgr behaves correctly if a cell request causes
+     * a column to be constrained multiple times. This happens if two levels
+     * map to the same column via the same join-path. If the constraints are
+     * inconsistent, no data will be returned.
+     */
+    public void testMultipleConstraintsOnSameColumn() {
+        final String cubeName = "Sales_withCities";
+        final TestContext testContext = TestContext.instance().create(
+            null,
+            "<Cube name='" + cubeName + "'>\n"
+            + "  <Table name='sales_fact_1997'/>\n"
+            + "  <DimensionUsage name='Time' source='Time' foreignKey='time_id'/>\n"
+            + "  <Dimension name='Cities' foreignKey='customer_id'>\n"
+            + "    <Hierarchy hasAll='true' allMemberName='All Cities' primaryKey='customer_id'>\n"
+            + "      <Table name='customer'/>\n"
+            + "      <Level name='City' column='city' uniqueMembers='true'/> \n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name='Customers' foreignKey='customer_id'>\n"
+            + "    <Hierarchy hasAll='true' allMemberName='All Customers' primaryKey='customer_id'>\n"
+            + "      <Table name='customer'/>\n"
+            + "      <Level name='Country' column='country' uniqueMembers='true'/>\n"
+            + "      <Level name='State Province' column='state_province' uniqueMembers='true'/>\n"
+            + "      <Level name='City' column='city' uniqueMembers='false'/>\n"
+            + "      <Level name='Name' column='fullname' uniqueMembers='true'>\n"
+            + "        <Property name='Gender' column='gender'/>\n"
+            + "        <Property name='Marital Status' column='marital_status'/>\n"
+            + "        <Property name='Education' column='education'/>\n"
+            + "        <Property name='Yearly Income' column='yearly_income'/>\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name='Gender' foreignKey='customer_id'>\n"
+            + "    <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
+            + "    <Table name='customer'/>\n"
+            + "      <Level name='Gender' column='gender' uniqueMembers='true'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>"
+            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+            + "      formatString='Standard' visible='false'/>\n"
+            + "  <Measure name='Store Sales' column='store_sales' aggregator='sum'\n"
+            + "      formatString='#,###.00'/>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null);
+
+        testContext.assertQueryReturns(
+            "select {\n"
+            + " [Customers].[USA],\n"
+            + " [Customers].[USA].[OR],\n"
+            + " [Customers].[USA].[CA],\n"
+            + " [Customers].[USA].[CA].[Altadena],\n"
+            + " [Customers].[USA].[CA].[Burbank],\n"
+            + " [Customers].[USA].[CA].[Burbank].[Alma Son]} ON COLUMNS\n"
+            + "from ["
+            + cubeName
+            + "] \n"
+            + "where ([Cities].[All Cities].[Burbank], [Measures].[Store Sales])",
+            "Axis #0:\n"
+            + "{[Cities].[Burbank], [Measures].[Store Sales]}\n"
+            + "Axis #1:\n"
+            + "{[Customer].[Customers].[USA]}\n"
+            + "{[Customer].[Customers].[USA].[OR]}\n"
+            + "{[Customer].[Customers].[USA].[CA]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Altadena]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank].[Alma Son]}\n"
+            + "Row #0: 6,577.33\n"
+            + "Row #0: \n"
+            + "Row #0: 6,577.33\n"
+            + "Row #0: \n"
+            + "Row #0: 6,577.33\n"
+            + "Row #0: 36.50\n");
     }
 }
 

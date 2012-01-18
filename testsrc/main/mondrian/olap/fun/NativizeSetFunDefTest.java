@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2011 Julian Hyde and others
+// Copyright (C) 2009-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -10,6 +10,8 @@ package mondrian.olap.fun;
 
 import mondrian.olap.*;
 import mondrian.rolap.BatchTestCase;
+import mondrian.rolap.RolapConnection;
+import mondrian.server.Locus;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
@@ -1512,8 +1514,18 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         final String query,
         final String expectedQuery)
     {
+        final RolapConnection connection =
+            (RolapConnection) testContext.getConnection();
         String actualOutput =
-            testContext.getConnection().parseQuery(query).toString();
+            Locus.execute(
+                connection,
+                NativizeSetFunDefTest.class.getName(),
+                new Locus.Action<String>() {
+                    public String execute() {
+                        return connection.parseQuery(query).toString();
+                    }
+                }
+            );
         if (!Util.nl.equals("\n")) {
             actualOutput = actualOutput.replace(Util.nl, "\n");
         }

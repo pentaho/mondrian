@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -40,8 +40,7 @@ import java.util.regex.Pattern;
  * @since Feb 5, 2007
  */
 public class UtilCompatibleJdk15 implements UtilCompatible {
-    private final static Logger LOGGER =
-        Logger.getLogger(Util.class);
+    private static final Logger LOGGER = Logger.getLogger(Util.class);
 
     /**
      * This generates a BigDecimal with a precision reflecting
@@ -171,8 +170,9 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
     public <T extends Comparable<T>> int binarySearch(
         T[] ts, int start, int end, T t)
     {
-        return Collections.binarySearch(
+        final int i = Collections.binarySearch(
             Arrays.asList(ts).subList(start, end), t);
+        return (i < 0) ? (i - start) : (i + start);
     }
 }
 

@@ -3,18 +3,16 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2010-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 21 March, 2002
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.Util;
 import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
+import mondrian.spi.SegmentBody;
+import mondrian.util.Pair;
 
 import java.util.*;
 
@@ -34,10 +32,24 @@ import java.util.*;
  * @version $Id$
  */
 class SparseSegmentDataset implements SegmentDataset {
-    final Map<CellKey, Object> values = new HashMap<CellKey, Object>();
+    private final Map<CellKey, Object> values;
 
-    SparseSegmentDataset(Segment segment) {
-        Util.discard(segment);
+    /**
+     * Creates an empty SparseSegmentDataset.
+     */
+    SparseSegmentDataset() {
+        this(new HashMap<CellKey, Object>());
+    }
+
+    /**
+     * Creates a SparseSegmentDataset with a given value map. The map is not
+     * copied; a reference to the map is retained inside the dataset, and
+     * therefore the contents of the dataset will change if the map is modified.
+     *
+     * @param values Value map
+     */
+    SparseSegmentDataset(Map<CellKey, Object> values) {
+        this.values = values;
     }
 
     public Object getObject(CellKey pos) {
@@ -90,14 +102,11 @@ class SparseSegmentDataset implements SegmentDataset {
     }
 
     public SegmentBody createSegmentBody(
-        SortedSet<Comparable<?>>[] axisValueSets,
-        boolean[] nullAxisFlags)
+        List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
-        return
-            new SparseSegmentBody(
-                values,
-                axisValueSets,
-                nullAxisFlags);
+        return new SparseSegmentBody(
+            values,
+            axes);
     }
 }
 

@@ -3,13 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2011-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.agg;
 
-import java.util.SortedSet;
+import mondrian.rolap.CellKey;
+import mondrian.spi.SegmentBody;
+import mondrian.util.Pair;
+
+import java.util.*;
 
 /**
  * Abstract implementation of a SegmentBody.
@@ -20,24 +24,118 @@ import java.util.SortedSet;
 abstract class AbstractSegmentBody implements SegmentBody {
     private static final long serialVersionUID = -7094121704771005640L;
 
-    private final SortedSet<Comparable<?>>[] axisValueSets;
+    protected final SortedSet<Comparable>[] axisValueSets;
     private final boolean[] nullAxisFlags;
 
     public AbstractSegmentBody(
-        SortedSet<Comparable<?>>[] axisValueSets,
-        boolean[] nullAxisFlags)
+        List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
         super();
-        this.axisValueSets = axisValueSets.clone();
-        this.nullAxisFlags = nullAxisFlags.clone();
+        //noinspection unchecked
+        this.axisValueSets = new SortedSet[axes.size()];
+        this.nullAxisFlags = new boolean[axes.size()];
+        for (int i = 0; i < axes.size(); i++) {
+            Pair<SortedSet<Comparable>, Boolean> pair = axes.get(i);
+            axisValueSets[i] = pair.left;
+            nullAxisFlags[i] = pair.right;
+        }
     }
 
-    public SortedSet<Comparable<?>>[] getAxisValueSets() {
+    public SortedSet<Comparable>[] getAxisValueSets() {
         return axisValueSets;
     }
 
     public boolean[] getNullAxisFlags() {
         return nullAxisFlags;
+    }
+
+    public Map<CellKey, Object> getValueMap() {
+        return new AbstractMap<CellKey, Object>() {
+            public Set<Entry<CellKey, Object>> entrySet() {
+                return new AbstractSet<Entry<CellKey, Object>>() {
+                    public Iterator<Entry<CellKey, Object>> iterator() {
+                        return new SegmentBodyIterator();
+                    }
+
+                    public int size() {
+                        return getSize();
+                    }
+                };
+            }
+        };
+    }
+
+    public Object getValueArray() {
+        throw new UnsupportedOperationException(
+            "This method is only supported for dense segments");
+    }
+
+    public BitSet getIndicators() {
+        throw new UnsupportedOperationException(
+            "This method is only supported for dense segments "
+            + "of native values");
+    }
+
+    protected abstract int getSize();
+
+    protected abstract Object getObject(int i);
+
+    /**
+     * Iterator over all (cellkey, value) pairs in this data set.
+     */
+    private class SegmentBodyIterator
+        implements Iterator<Map.Entry<CellKey, Object>>
+    {
+        private int i = -1;
+        private final int[] ordinals;
+        private final int size = getSize();
+        private boolean hasNext = true;
+        private Object next;
+
+        SegmentBodyIterator() {
+            ordinals = new int[axisValueSets.length];
+            ordinals[ordinals.length - 1] = -1;
+            moveToNext();
+        }
+
+        public boolean hasNext() {
+            return hasNext;
+        }
+
+        public Map.Entry<CellKey, Object> next() {
+            Pair<CellKey, Object> o =
+                Pair.of(CellKey.Generator.newCellKey(ordinals), next);
+            moveToNext();
+            return o;
+        }
+
+        private void moveToNext() {
+            for (;;) {
+                ++i;
+                if (i >= size) {
+                    hasNext = false;
+                    return;
+                }
+                int k = ordinals.length - 1;
+                while (k >= 0) {
+                    if (ordinals[k] < axisValueSets[k].size() - 1) {
+                        ++ordinals[k];
+                        break;
+                    } else {
+                        ordinals[k] = 0;
+                        --k;
+                    }
+                }
+                next = getObject(i);
+                if (next != null) {
+                    return;
+                }
+            }
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 }
 

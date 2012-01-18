@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2011 Julian Hyde and others
+// Copyright (C) 2010-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -28,7 +28,7 @@ import mondrian.spi.Dialect;
 import mondrian.spi.MemberFormatter;
 import mondrian.spi.PropertyFormatter;
 import mondrian.spi.impl.Scripts;
-import mondrian.util.Pair;
+import mondrian.util.*;
 
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.log4j.Logger;
@@ -88,8 +88,7 @@ public class RolapSchemaLoader {
 
     private final Map<
         Pair<RolapMeasureGroup, RolapCubeDimension>,
-        RolapSchema.PhysPath>
-        dimensionPaths =
+        RolapSchema.PhysPath> dimensionPaths =
         new HashMap<
             Pair<RolapMeasureGroup, RolapCubeDimension>,
             RolapSchema.PhysPath>();
@@ -119,9 +118,9 @@ public class RolapSchemaLoader {
      */
     private RolapSchema load(
         final String key,
-        final String md5Bytes,
+        ByteString md5Bytes,
         final String catalogUrl,
-        final String catalogStr,
+        String catalogStr,
         final Util.PropertyList connectInfo,
         final DataSource dataSource)
     {
@@ -143,32 +142,40 @@ public class RolapSchemaLoader {
                     }
                 }
 
-                if (LOGGER.isDebugEnabled()) {
+                // Compute catalog string, if needed for debug or for computing
+                // Md5 hash.
+                if (LOGGER.isDebugEnabled() || md5Bytes == null) {
                     try {
-                        final InputStream debugIn =
-                            Util.readVirtualFile(catalogUrl);
-                        final ByteArrayOutputStream baos =
-                            new ByteArrayOutputStream(1024);
-                        Util.readFully(debugIn, 1024, baos);
-                        LOGGER.debug(
-                            "RolapSchema.load: content: \n" + baos.toString());
+                        catalogStr = Util.readVirtualFileAsString(catalogUrl);
                     } catch (java.io.IOException ex) {
-                        LOGGER.debug("RolapSchema.load: ex=" + ex);
+                        getLogger().debug("RolapSchema.load: ex=" + ex);
+                        catalogStr = "?";
                     }
                 }
 
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(
+                        "RolapSchema.load: content: \n" + catalogStr);
+                }
             } else {
-                if (getLogger().isDebugEnabled()) {
-                    getLogger().debug(
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(
                         "RolapSchema.load: catalogStr: \n" + catalogStr);
                 }
 
                 def = xmlParser.parse(catalogStr);
             }
 
+            if (md5Bytes == null) {
+                // If a null catalogStr was passed in, we should have
+                // computed it above by re-reading the catalog URL.
+                assert catalogStr != null;
+                md5Bytes = new ByteString(Util.digestMd5(catalogStr));
+            }
+
             MondrianDef.Schema xmlSchema = new MondrianDef.Schema(def);
 
-            if (getLogger().isDebugEnabled()) {
+            if (LOGGER.isDebugEnabled()) {
                 StringWriter sw = new StringWriter(4096);
                 PrintWriter pw = new PrintWriter(sw);
                 pw.println("RolapSchema.load: dump xmlschema");
@@ -181,7 +188,12 @@ public class RolapSchemaLoader {
                 createAnnotationMap(xmlSchema.getAnnotations());
             schema =
                 new RolapSchema(
-                    key, connectInfo, dataSource, md5Bytes, xmlSchema.name,
+                    key,
+                    connectInfo,
+                    dataSource,
+                    md5Bytes,
+                    md5Bytes != null,
+                    xmlSchema.name,
                     annotationMap);
             validator.putXml(schema, xmlSchema);
 
@@ -818,6 +830,8 @@ public class RolapSchemaLoader {
      */
     void initCube(RolapCube cube)
     {
+        dimensionPaths.clear();
+
         final MondrianDef.Schema xmlSchema = validator.getXml(schema);
         final MondrianDef.Cube xmlCube = validator.getXml(cube);
         final NamedList<MondrianDef.Dimension> xmlCubeDimensions =
@@ -966,7 +980,7 @@ public class RolapSchemaLoader {
                             "Dimension '" + xmlDimensionLink.dimension
                             + "' not found in this cube, but there is a schema "
                             + "dimension of that name. Did you intend to "
-                            + "create cube dimension refering that schema "
+                            + "create cube dimension referring to that schema "
                             + "dimension?",
                             xmlDimensionLink,
                             "dimension");
@@ -1454,6 +1468,17 @@ public class RolapSchemaLoader {
                 xmlRegularDimensionLink.foreignKeyColumn,
                 xmlRegularDimensionLink.foreignKey);
 
+        if (dimension.rolapDimension.keyAttribute == null) {
+            getHandler().error(
+                "Dimension '"
+                + dimension.getName()
+                + "' is used in a dimension link but has no key attribute. Please "
+                + "specify key.",
+                xmlRegularDimensionLink,
+                null);
+            return;
+        }
+
         final List<RolapSchema.PhysColumn> keyList =
             dimension.rolapDimension.keyAttribute.keyList;
 
@@ -1557,7 +1582,7 @@ public class RolapSchemaLoader {
 
         final RolapSchema.PhysPathBuilder pathBuilderOrig =
             new RolapSchema.PhysPathBuilder(fact)
-                .add(dimension.rolapDimension.key, foreignKeyList);
+                .add(dimension.rolapDimension.key.get(), foreignKeyList);
         RolapSchema.PhysPath path = pathBuilderOrig.clone().done();
 
         measureGroup.addLink(dimension, path);
@@ -1647,9 +1672,13 @@ public class RolapSchemaLoader {
 
     private void addFactLink(
         RolapMeasureGroup measureGroup,
-        RolapDimension dimension)
+        RolapCubeDimension dimension)
     {
-        measureGroup.addLink(dimension, RolapSchema.PhysPath.EMPTY);
+        final RolapSchema.PhysPath path =
+            new RolapSchema.PhysPathBuilder(measureGroup.getFactRelation())
+                .done();
+        measureGroup.addLink(dimension, path);
+        dimensionPaths.put(Pair.of(measureGroup, dimension), path);
     }
 
     /**
@@ -1804,7 +1833,7 @@ public class RolapSchemaLoader {
             xmlDimension.type == null
                 ? DimensionType.StandardDimension
                 : DimensionType.valueOf(xmlDimension.type);
-        RolapDimension dimension =
+        final RolapDimension dimension =
             new RolapDimension(
                 schema,
                 xmlDimension.name,
@@ -1833,6 +1862,7 @@ public class RolapSchemaLoader {
         }
 
         // Attributes and parent-child links.
+        int attributeHierarchyCount = 0;
         for (RolapAttribute attribute : attributeList) {
             final MondrianDef.Attribute xmlAttribute =
                 validator.getXml(attribute, true);
@@ -1848,6 +1878,10 @@ public class RolapSchemaLoader {
                 }
             }
 
+            if (xmlAttribute.hasHierarchy) {
+                ++attributeHierarchyCount;
+            }
+
             createProperties(
                 physSchemaBuilder,
                 dimension,
@@ -1857,30 +1891,48 @@ public class RolapSchemaLoader {
                 attribute.getExplicitProperties());
         }
 
-        // Check key.
-        if (xmlDimension.key == null) {
-            getHandler().error(
-                "Key attribute must be specified for dimension '"
-                + xmlDimension.name
-                + "'",
-                xmlDimension,
-                null);
-            return null;
+        // Resolve key, if specified.
+        //
+        // Dimensions usually have a key. But they don't need one if they
+        // are only going to be used as degenerate dimensions. So we will check
+        // when the dimension is used.
+        if (xmlDimension.key != null) {
+            dimension.keyAttribute =
+                dimension.attributeMap.get(xmlDimension.key);
+            if (dimension.keyAttribute == null) {
+                getHandler().error(
+                    "Key attribute '"
+                    + xmlDimension.key
+                    + "' is not a valid attribute of this dimension",
+                    xmlDimension,
+                    "key");
+                return null;
+            }
+            if (uniqueRelation(dimension) == null) {
+                getHandler().error(
+                    "Columns in key of dimension's key attribute '"
+                    + xmlDimension.key
+                    + "' do not belong to same relation",
+                    xmlDimension,
+                    "key");
+                return null;
+            }
         }
-        dimension.keyAttribute = dimension.attributeMap.get(xmlDimension.key);
-        if (dimension.keyAttribute == null) {
-            getHandler().error(
-                "Key attribute '"
-                + xmlDimension.key
-                + "' is not a valid attribute of this dimension",
-                xmlDimension,
-                "key");
-            return null;
-        }
-        dimension.key = lookupKey(xmlDimension, dimension);
-        if (dimension.key == null) {
-            return null;
-        }
+
+        // Use a Lazy variable to initialize dimension's key on first use.
+        // Degenerate dimensions don't need keys.
+        // But regular dimensions do, and they need to be validated using
+        // information only available right here.
+        dimension.key =
+            new Lazy<RolapSchema.PhysKey>(
+                new Util.Functor0<RolapSchema.PhysKey>() {
+                    public RolapSchema.PhysKey apply() {
+                        return lookupKey(
+                            xmlDimension,
+                            dimension);
+                    }
+                }
+            );
 
         for (MondrianDef.Hierarchy xmlHierarchy : xmlDimension.getHierarchies())
         {
@@ -1930,6 +1982,64 @@ public class RolapSchemaLoader {
             }
         }
 
+        for (RolapAttribute attribute : attributeList) {
+            final MondrianDef.Attribute xmlAttribute =
+                validator.getXml(attribute, true);
+            if (xmlAttribute.hasHierarchy == null
+                ? countHierarchies(dimension.getRolapHierarchyList(), attribute)
+                  == 0
+                : xmlAttribute.hasHierarchy)
+            {
+                // Create attribute hierarchy.
+                final String uniqueName =
+                    Util.makeFqName(dimension, xmlAttribute.name);
+                RolapHierarchy hierarchy =
+                    new RolapHierarchy(
+                        dimension,
+                        xmlAttribute.name,
+                        uniqueName,
+                        xmlAttribute.visible,
+                        xmlAttribute.caption,
+                        xmlAttribute.description,
+                        true, // REVIEW: add Attribute@hierarchyHasAll?
+                        null,
+                        Collections.<String, Annotation>emptyMap());
+                dimension.addHierarchy(hierarchy);
+                hierarchy.initHierarchy(
+                    this,
+                    null, // REVIEW: add Attribute@hierarchyAllLevelName?
+                    null, // REVIEW: add Attribute@hierarchyAllMemberName?
+                    null); // REVIEW: add Attribute@hierarchyAllMemberCaption?
+                hierarchy.init1(
+                    this,
+                    null);
+                hierarchy.levelList.add(
+                    new RolapLevel(
+                        hierarchy,
+                        xmlAttribute.name,
+                        xmlAttribute.visible,
+                        xmlAttribute.caption,
+                        xmlAttribute.description,
+                        hierarchy.hasAll() ? 1 : 0,
+                        attribute,
+                        RolapLevel.HideMemberCondition.Never,
+                        Collections.<String, Annotation>emptyMap()));
+            }
+        }
+
+        if (dimension.getHierarchyList().isEmpty()
+            && attributeHierarchyCount == 0)
+        {
+            getHandler().error(
+                "Dimension '"
+                + dimension.getName()
+                + "' must have at least one hierarchy (or attribute "
+                + "hierarchy).",
+                xmlDimension,
+                null);
+            return null;
+        }
+
         validateDimensionType(dimension);
 
         // wrap the shared or regular dimension with a
@@ -1955,12 +2065,44 @@ public class RolapSchemaLoader {
     }
 
     /**
-     * Finds a key that is on the has the same columns, in the same order, as
-     * the attribute's list of key columns.
+     * Returns the number of hierarchies that a given attribute appears as a
+     * level of.
      *
-     * <p>If not found, posts an error and returns null.
+     * @param hierarchyList List of hierarchies
+     * @param attribute Attribute
+     * @return number of levels using attribute
+     */
+    private int countHierarchies(
+        List<RolapHierarchy> hierarchyList, RolapAttribute attribute)
+    {
+        int n = 0;
+        for (RolapHierarchy hierarchy : hierarchyList) {
+            for (RolapLevel level : hierarchy.getRolapLevelList()) {
+                if (level.attribute == attribute) {
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Returns the key by which a dimension is to be linked to a fact table
+     * (or fact tables). The key must contain the same columns as the key of the
+     * key attribute. It must also be a key defined on its table.
      *
-     * @param xmlDimension XML dimension definition
+     * <p>Finds a key that is on the has the same columns, in the same order, as
+     * the attribute's list of key columns.</p>
+     *
+     * <p>NOTE: We currently assume that it is unique, but we do not enforce
+     * it.</p>
+     *
+     * <p>If not found, posts an error and returns null.</p>
+     *
+     * <p>We do not store the key as part of a dimension, because some
+     * dimensions are degenerate (i.e. reside in fact table) and so do not need
+     * a key.</p>
+     *
      * @param dimension Dimension
      * @return Key, or null if not found
      */
@@ -1969,8 +2111,7 @@ public class RolapSchemaLoader {
         RolapDimension dimension)
     {
         // Find the unique relation of the attribute's list of key columns.
-        final RolapSchema.PhysRelation relation =
-            uniqueRelation(xmlDimension, dimension);
+        final RolapSchema.PhysRelation relation = uniqueRelation(dimension);
         if (relation == null) {
             return null;
         }
@@ -1987,8 +2128,7 @@ public class RolapSchemaLoader {
         return null;
     }
 
-    private RolapSchema.PhysRelation uniqueRelation(
-        MondrianDef.Dimension xmlDimension,
+    static RolapSchema.PhysRelation uniqueRelation(
         RolapDimension dimension)
     {
         final Set<RolapSchema.PhysRelation> relations =
@@ -1996,15 +2136,7 @@ public class RolapSchemaLoader {
         for (RolapSchema.PhysColumn key : dimension.keyAttribute.keyList) {
             relations.add(key.relation);
         }
-        if (relations.size() != 1) {
-            getHandler().error(
-                "Columns in key of dimension's key attribute '"
-                + xmlDimension.key
-                + "' do not belong to same relation",
-                xmlDimension,
-                "key");
-        }
-        return relations.iterator().next();
+        return relations.size() != 1 ? null : relations.iterator().next();
     }
 
     private void validateDimensionType(
@@ -2172,6 +2304,9 @@ public class RolapSchemaLoader {
         final RolapAttribute attribute =
             new RolapAttribute(
                 xmlAttribute.name,
+                xmlAttribute.visible,
+                xmlAttribute.caption,
+                xmlAttribute.description,
                 keyList,
                 nameExpr,
                 captionExpr,
@@ -2466,7 +2601,8 @@ public class RolapSchemaLoader {
                     dialectToPropertyDatatype(sourceAttribute.getDatatype()),
                     makePropertyFormatter(xmlProperty),
                     xmlProperty.caption,
-                    false);
+                    false,
+                    xmlProperty.description);
             validator.putXml(property, xmlProperty);
             propertyList.add(property);
         }
@@ -2564,7 +2700,7 @@ public class RolapSchemaLoader {
      */
     static RolapSchema createSchema(
         final String key,
-        final String md5Bytes,
+        final ByteString md5Bytes,
         final String catalogUrl,
         final String catalogStr,
         final Util.PropertyList connectInfo,
@@ -4008,6 +4144,7 @@ public class RolapSchemaLoader {
             map.put(metaElement, xml);
         }
     }
+
 }
 
 // End RolapSchemaLoader.java

@@ -52,9 +52,10 @@ class RolapProperty extends Property {
         Datatype type,
         PropertyFormatter formatter,
         String caption,
-        boolean internal)
+        boolean internal,
+        String description)
     {
-        super(name, type, -1, internal, false, false, null);
+        super(name, type, -1, internal, false, false, description);
         this.owningAttribute = owningAttribute;
         this.attribute = sourceAttribute;
         this.caption = caption;

@@ -648,6 +648,13 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
+        <Attribute name="visible" type="Boolean"
+                   required="false" default="true">
+            <Doc>
+                Whether this attribute is visible in the user-interface.
+                Default true.
+            </Doc>
+        </Attribute>
         <Attribute name="levelType" required="false" default="Regular">
             <Doc>
                 Whether this is a regular or a time-related level.
@@ -732,6 +739,13 @@ Revision is $Id$
             <Value>Date</Value>
             <Value>Time</Value>
             <Value>Timestamp</Value>
+        </Attribute>
+        <Attribute name="hasHierarchy" type="Boolean" required="false" default="false">
+            <Doc>
+                Whether this attribute has its own hierarchy. The hierarchy
+                has the same name as the attribute, a single level with the
+                same name as the attribute.
+            </Doc>
         </Attribute>
 
         <Array name="children" type="AttributeElement">
@@ -2653,7 +2667,8 @@ Revision is $Id$
     <Element type="FactDimensionLink" class="DimensionLink">
         <Doc>
             Dimension that is trivially linked to a measure group because
-            the dimension table is the fact table.
+            the dimension table is the fact table. This is also known as
+            a 'degenerate dimension'.
         </Doc>
     </Element>
 

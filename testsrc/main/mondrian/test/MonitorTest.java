@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
-// Copyright (C) 2011-2011 Julian Hyde
+// Copyright (C) 2011-2012 Julian Hyde
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -123,7 +123,6 @@ public class MonitorTest extends FoodMartTestCase {
         println(
             "number of segments: " + server.segmentCount
             + ", ever created: " + server.segmentCreateCount
-            + ", number of aggregates: " + server.aggregateCount
             + ", number of cells: " + server.cellCount
             + ", number of cell coordinates: " + server.cellCoordinateCount
             + ", average cell dimensionality: "

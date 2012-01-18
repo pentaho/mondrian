@@ -70,7 +70,8 @@ class IntersectFunDef extends FunDefBase
                 // identical using hashCode and equals, we want to retrieve
                 // the actual key, and java.util.Set only has containsKey.
                 RetrievableSet<List<Member>> rightSet =
-                    new RetrievableHashSet<List<Member>>(rightList.size());
+                    new RetrievableHashSet<List<Member>>(
+                        rightList.size() * 3 / 2);
                 for (List<Member> tuple : rightList) {
                     rightSet.add(tuple);
                 }

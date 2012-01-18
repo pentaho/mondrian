@@ -273,6 +273,33 @@ public class PropertiesTest extends FoodMartTestCase {
                 0.1);
         }
     }
+
+    public void testPropertyDescription() throws Exception {
+        TestContext context = getTestContext().create(
+            null,
+            "<Cube name=\"Foo\" defaultMeasure=\"Unit Sales\">\n"
+            + "  <Table name=\"sales_fact_1997\"/>\n"
+            + "  <Dimension name=\"Promotions\" foreignKey=\"promotion_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Promotions\" primaryKey=\"promotion_id\" defaultMember=\"[All Promotions]\">\n"
+            + "      <Table name=\"promotion\"/>\n"
+            + "      <Level name=\"Promotion Name\" column=\"promotion_name\" uniqueMembers=\"true\">\n"
+            + "   <Property name=\"BarProp\" column=\"promotion_name\" description=\"BaconDesc\"/>\n"
+            + "   </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n"
+            + "</Cube>\n",
+            null, null, null, null);
+        assertEquals(
+            "BaconDesc",
+            context.getOlap4jConnection().getOlapSchema()
+                .getCubes().get("Foo")
+                .getDimensions().get("Promotions")
+                .getHierarchies().get(0)
+                .getLevels().get(1)
+                .getProperties().get("BarProp")
+                .getDescription());
+    }
 }
 
 // End PropertiesTest.java

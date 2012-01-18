@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,8 +25,8 @@ import java.util.Arrays;
  *
  * <p>It is important that CellKey is memory-efficient, and that the
  * {@link Object#hashCode} and {@link Object#equals} methods are extremely
- * efficient. There are particular implementations for the
- * most likely cases where the number of axes is 1, 2 and 3 as well as a general
+ * efficient. There are particular implementations for the most likely cases
+ * where the number of axes is 1, 2, 3 and 4 as well as a general
  * implementation.
  *
  * <p>To create a key, call the
@@ -125,6 +125,8 @@ public interface CellKey extends Serializable {
                 return new Two(0, 0);
             case 3:
                 return new Three(0, 0, 0);
+            case 4:
+                return new Four(0, 0, 0, 0);
             default:
                 return new Many(new int[size]);
             }
@@ -146,6 +148,8 @@ public interface CellKey extends Serializable {
                 return new Two(pos[0], pos[1]);
             case 3:
                 return new Three(pos[0], pos[1], pos[2]);
+            case 4:
+                return new Four(pos[0], pos[1], pos[2], pos[3]);
             default:
                 return new Many(pos.clone());
             }
@@ -484,6 +488,118 @@ public interface CellKey extends Serializable {
             ordinal0 = pos[0];
             ordinal1 = pos[1];
             ordinal2 = pos[2];
+        }
+    }
+
+    class Four implements CellKey {
+        private static final long serialVersionUID = -2645858781233421151L;
+        private int ordinal0;
+        private int ordinal1;
+        private int ordinal2;
+        private int ordinal3;
+
+        /**
+         * Creates a Four.
+         */
+        private Four(
+            int ordinal0,
+            int ordinal1,
+            int ordinal2,
+            int ordinal3)
+        {
+            this.ordinal0 = ordinal0;
+            this.ordinal1 = ordinal1;
+            this.ordinal2 = ordinal2;
+            this.ordinal3 = ordinal3;
+        }
+
+        public String toString() {
+            return
+                "(" + ordinal0 + ", " + ordinal1
+                + ", " + ordinal2 + ", " + ordinal3 + ")";
+        }
+
+        public Four copy() {
+            return new Four(ordinal0, ordinal1, ordinal2, ordinal3);
+        }
+
+        public int getOffset(int[] axisMultipliers) {
+            return ordinal0 * axisMultipliers[0]
+                + ordinal1 * axisMultipliers[1]
+                + ordinal2 * axisMultipliers[2]
+                + ordinal3;
+        }
+
+        public boolean equals(Object o) {
+            // here we cheat, we know that all CellKey's will be the same size
+            if (o instanceof Four) {
+                Four other = (Four) o;
+                return (other.ordinal0 == this.ordinal0)
+                    && (other.ordinal1 == this.ordinal1)
+                    && (other.ordinal2 == this.ordinal2)
+                    && (other.ordinal3 == this.ordinal3);
+            } else {
+                return false;
+            }
+        }
+
+        public int hashCode() {
+            int h0 = 17 + ordinal0;
+            int h1 = h0 * 37 + ordinal1;
+            int h2 = h1 * 37 + ordinal2;
+            return h2 * 37 + ordinal3;
+        }
+
+        public int getAxis(int axis) {
+            switch (axis) {
+            case 0:
+                return ordinal0;
+            case 1:
+                return ordinal1;
+            case 2:
+                return ordinal2;
+            case 3:
+                return ordinal3;
+            default:
+                throw new ArrayIndexOutOfBoundsException(axis);
+            }
+        }
+
+        public void setAxis(int axis, int value) {
+            switch (axis) {
+            case 0:
+                ordinal0 = value;
+                break;
+            case 1:
+                ordinal1 = value;
+                break;
+            case 2:
+                ordinal2 = value;
+                break;
+            case 3:
+                ordinal3 = value;
+                break;
+            default:
+                throw new ArrayIndexOutOfBoundsException(axis);
+            }
+        }
+
+        public int size() {
+            return 4;
+        }
+
+        public int[] getOrdinals() {
+            return new int[] {ordinal0, ordinal1, ordinal2, ordinal3};
+        }
+
+        public void setOrdinals(int[] pos) {
+            if (pos.length != 4) {
+                throw new IllegalArgumentException();
+            }
+            ordinal0 = pos[0];
+            ordinal1 = pos[1];
+            ordinal2 = pos[2];
+            ordinal3 = pos[3];
         }
     }
 

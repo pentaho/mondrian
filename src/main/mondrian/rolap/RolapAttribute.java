@@ -3,17 +3,18 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2010 Julian Hyde
+// Copyright (C) 2010-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
-import mondrian.olap.Property;
-import mondrian.olap.Util;
+import mondrian.olap.*;
 import mondrian.spi.Dialect;
 import mondrian.spi.MemberFormatter;
 import mondrian.util.CompositeList;
+
+import org.apache.log4j.Logger;
 
 import org.olap4j.metadata.Level;
 
@@ -27,7 +28,8 @@ import java.util.List;
  * @version $Id$
  * @author jhyde
  */
-public class RolapAttribute {
+public class RolapAttribute extends OlapElementBase {
+    private static final Logger LOGGER = Logger.getLogger(RolapAttribute.class);
 
     // Add intrinsic property NAME.
     // TODO: make key, parent etc. all properties
@@ -36,6 +38,7 @@ public class RolapAttribute {
             RolapLevel.NAME_PROPERTY);
 
     final String name;
+    final String description;
 
     /**
      * The column (or columns) that yields the attribute's key. The columns may
@@ -86,6 +89,9 @@ public class RolapAttribute {
      * key expression. (Provided that the key has just one column.)</p>
      *
      * @param name Name
+     * @param visible Whether visible in user-interface
+     * @param caption Caption
+     * @param description Description
      * @param keyList List of key columns
      * @param nameExp Name column
      * @param captionExp Caption column
@@ -97,6 +103,9 @@ public class RolapAttribute {
      */
     public RolapAttribute(
         String name,
+        boolean visible,
+        String caption,
+        String description,
         List<RolapSchema.PhysColumn> keyList,
         RolapSchema.PhysColumn nameExp,
         RolapSchema.PhysColumn captionExp,
@@ -106,6 +115,9 @@ public class RolapAttribute {
         Level.Type levelType,
         int approxRowCount)
     {
+        this.visible = visible;
+        this.caption = caption;
+        this.description = description;
         assert levelType != null;
         assert name != null;
         switch (levelType)  {
@@ -131,6 +143,42 @@ public class RolapAttribute {
         } else {
             this.orderByList = this.keyList;
         }
+    }
+
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
+    public String getUniqueName() {
+        // REVIEW: Do we need this method? Can't implement unless attributes
+        // have a fixed dimension.
+        throw new UnsupportedOperationException();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public OlapElement lookupChild(
+        SchemaReader schemaReader, Id.Segment s, MatchType matchType)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getQualifiedName() {
+        throw new UnsupportedOperationException();
+    }
+
+    public Hierarchy getHierarchy() {
+        throw new UnsupportedOperationException();
+    }
+
+    public Dimension getDimension() {
+        throw new UnsupportedOperationException();
     }
 
     public List<RolapProperty> getExplicitProperties() {

@@ -3,30 +3,28 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2010-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 21 March, 2002
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.Util;
 import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
+import mondrian.spi.SegmentBody;
+import mondrian.util.Pair;
 
+import java.util.List;
 import java.util.SortedSet;
 
 /**
- * Implementation of {@link mondrian.rolap.agg.DenseSegmentDataset} that stores
+ * Implementation of {@link SegmentDataset} that stores
  * values of type {@link Object}.
  *
  * <p>The storage requirements are as follows. Table requires 1 word per
- * cell.</p>
+ * cell (a pointer), plus the storage for the value.</p>
  *
  * @author jhyde
- * @since 21 March, 2002
  * @version $Id$
  */
 class DenseObjectSegmentDataset extends DenseSegmentDataset {
@@ -35,13 +33,22 @@ class DenseObjectSegmentDataset extends DenseSegmentDataset {
     /**
      * Creates a DenseSegmentDataset.
      *
-     * @param segment Segment
+     * @param axes Segment axes, containing actual column values
      * @param size Number of coordinates
      */
-    DenseObjectSegmentDataset(Segment segment, int size) {
-        super(segment);
-        Util.discard(size);
-        this.values = new Object[size];
+    DenseObjectSegmentDataset(SegmentAxis[] axes, int size) {
+        this(axes, new Object[size]);
+    }
+
+    /**
+     * Creates and populates a DenseSegmentDataset. The data set is not copied.
+     *
+     * @param axes Axes
+     * @param values Data set
+     */
+    DenseObjectSegmentDataset(SegmentAxis[] axes, Object[] values) {
+        super(axes);
+        this.values = values;
     }
 
     public Object getObject(CellKey key) {
@@ -86,15 +93,11 @@ class DenseObjectSegmentDataset extends DenseSegmentDataset {
     }
 
     public SegmentBody createSegmentBody(
-        SortedSet<Comparable<?>>[] axisValueSets,
-        boolean[] nullAxisFlags)
+        List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
-        return
-            new DenseObjectSegmentBody(
-                values,
-                getSize(),
-                axisValueSets,
-                nullAxisFlags);
+        return new DenseObjectSegmentBody(
+            values,
+            axes);
     }
 }
 

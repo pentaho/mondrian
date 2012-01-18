@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde and others
+// Copyright (C) 2006-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,9 +12,12 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.Id.Quoting;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.agg.SegmentCacheManager;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
+import mondrian.spi.SegmentColumn;
+import mondrian.util.ArraySortedSet;
 
 import org.eigenbase.util.property.BooleanProperty;
 
@@ -22,6 +25,7 @@ import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import javax.sql.DataSource;
 
@@ -169,7 +173,19 @@ public class CacheControlImpl implements CacheControl {
         return new MemberCellRegion(measures, false);
     }
 
-    public void flush(CellRegion region) {
+    public void flush(final CellRegion region) {
+        Locus.execute(
+            connection,
+            "Flush",
+            new Locus.Action<Void>() {
+                public Void execute() {
+                    flushInternal(region);
+                    return null;
+                }
+            });
+    }
+
+    private void flushInternal(CellRegion region) {
         if (region instanceof EmptyCellRegion) {
             return;
         }
@@ -402,7 +418,7 @@ public class CacheControlImpl implements CacheControl {
      * @param region Cell region
      * @return List of members mentioned in cell region specification
      */
-    static List<Member> findMeasures(CellRegion region) {
+    public static List<Member> findMeasures(CellRegion region) {
         final List<Member> list = new ArrayList<Member>();
         final CellRegionVisitor visitor =
             new CellRegionVisitorImpl() {
@@ -423,7 +439,74 @@ public class CacheControlImpl implements CacheControl {
         return list;
     }
 
-    static List<RolapStar> getStarList(CellRegion region) {
+    public static SegmentColumn[] findAxisValues(CellRegion region) {
+        final List<SegmentColumn> list =
+            new ArrayList<SegmentColumn>();
+        final CellRegionVisitor visitor =
+            new CellRegionVisitorImpl() {
+                public void visit(MemberCellRegion region) {
+                    if (region.dimension.isMeasures()) {
+                        return;
+                    }
+                    final Map<String, Set<Comparable>> levels =
+                        new HashMap<String, Set<Comparable>>();
+                    for (Member member : region.memberList) {
+                        // FIXME: assumes non-composite key
+                        final String ccName =
+                            ((RolapLevel)member.getLevel()).getAttribute()
+                                .keyList.get(0).toSql();
+                        if (!levels.containsKey(ccName)) {
+                            levels.put(ccName, new HashSet<Comparable>());
+                        }
+                        levels.get(ccName).add(
+                            (Comparable)((RolapMember)member).getKey());
+                    }
+                    for (Entry<String, Set<Comparable>> entry
+                        : levels.entrySet())
+                    {
+                        // Now sort and convert to an ArraySortedSet.
+                        final Comparable[] keys =
+                            entry.getValue().toArray(
+                                new Comparable[entry.getValue().size()]);
+                        if (keys.length == 1 && keys[0].equals(true)) {
+                            list.add(
+                                new SegmentColumn(
+                                    entry.getKey(),
+                                    -1,
+                                    null));
+                        } else {
+                            Arrays.sort(
+                                keys,
+                                Util.SqlNullSafeComparator.instance);
+                            //noinspection unchecked
+                            list.add(
+                                new SegmentColumn(
+                                    entry.getKey(),
+                                    -1,
+                                    new ArraySortedSet(keys)));
+                        }
+                    }
+                }
+
+                public void visit(MemberRangeCellRegion region) {
+                    // We translate all ranges into wildcards.
+                    //
+                    // FIXME: Optimize this by resolving the list of members
+                    // into an actual list of values for ConstrainedColumn
+                    //
+                    // FIXME: Don't assume key is non-composite.
+                    list.add(
+                        new SegmentColumn(
+                            region.level.getAttribute().keyList.get(0).toSql(),
+                            -1,
+                            null));
+                }
+            };
+        ((CellRegionImpl) region).accept(visitor);
+        return list.toArray(new SegmentColumn[list.size()]);
+    }
+
+    public static List<RolapStar> getStarList(CellRegion region) {
         // Figure out which measure (therefore star) it belongs to.
         List<RolapStar> starList = new ArrayList<RolapStar>();
         final List<Member> measuresList = findMeasures(region);
@@ -441,13 +524,25 @@ public class CacheControlImpl implements CacheControl {
     }
 
     public void printCacheState(
-        PrintWriter pw,
+        final PrintWriter pw,
         CellRegion region)
     {
         List<RolapStar> starList = getStarList(region);
         for (RolapStar star : starList) {
             star.print(pw, "", false);
         }
+        final SegmentCacheManager manager =
+            MondrianServer.forConnection(connection)
+                .getAggregationManager().cacheMgr;
+        Locus.execute(
+            Execution.NONE,
+            "CacheControlImpl.printCacheState",
+            new Locus.Action<Object>() {
+                public Object execute() {
+                    return manager.execute(
+                        new PrintCacheStateCommand(manager, pw, Locus.peek()));
+                }
+            });
     }
 
     public MemberSet createMemberSet(Member member, boolean descendants)
@@ -1438,6 +1533,33 @@ public class CacheControlImpl implements CacheControl {
             for (MemberEditCommandPlus command : commandList) {
                 command.commit();
             }
+        }
+    }
+
+    private static class PrintCacheStateCommand
+        implements SegmentCacheManager.Command<Void>
+    {
+        private final SegmentCacheManager manager;
+        private final PrintWriter pw;
+        private final Locus locus;
+
+        public PrintCacheStateCommand(
+            SegmentCacheManager manager,
+            PrintWriter pw,
+            Locus locus)
+        {
+            this.manager = manager;
+            this.pw = pw;
+            this.locus = locus;
+        }
+
+        public Void call() {
+            manager.segmentIndex.printCacheState(pw);
+            return null;
+        }
+
+        public Locus getLocus() {
+            return locus;
         }
     }
 

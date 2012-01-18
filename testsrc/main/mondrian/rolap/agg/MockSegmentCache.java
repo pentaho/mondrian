@@ -3,15 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011-2011 Julian Hyde and others
+// Copyright (C) 2011-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
-import mondrian.rolap.agg.SegmentHeader.ConstrainedColumn;
-import mondrian.spi.SegmentCache;
+import mondrian.spi.*;
 
 import java.io.*;
 import java.util.*;
@@ -31,36 +30,22 @@ public class MockSegmentCache implements SegmentCache {
     private static final Map<SegmentHeader, SegmentBody> cache =
         new ConcurrentHashMap<SegmentHeader, SegmentBody>();
 
+    private final List<SegmentCacheListener> listeners =
+        new CopyOnWriteArrayList<SegmentCacheListener>();
+
+    private Random rnd;
+
     private final static int maxElements = 100;
 
-    /**
-     * Executor for the tests. Thread-factory ensures that thread does not
-     * prevent shutdown.
-     */
-    private static final ExecutorService executor =
-        Util.getExecutorService(
-            1,
-            "mondrian.rolap.agg.MockSegmentCache$ExecutorThread");
-
-    public Future<Boolean> contains(final SegmentHeader header) {
-        return executor.submit(
-            new Callable<Boolean>() {
-                public Boolean call() throws Exception {
-                    return cache.containsKey(header);
-                }
-            });
+    public boolean contains(SegmentHeader header) {
+        return cache.containsKey(header);
     }
 
-    public Future<SegmentBody> get(final SegmentHeader header) {
-        return executor.submit(
-            new Callable<SegmentBody>() {
-                public SegmentBody call() throws Exception {
-                    return cache.get(header);
-                }
-            });
+    public SegmentBody get(SegmentHeader header) {
+        return cache.get(header);
     }
 
-    public Future<Boolean> put(
+    public boolean put(
         final SegmentHeader header,
         final SegmentBody body)
     {
@@ -100,65 +85,103 @@ public class MockSegmentCache implements SegmentCache {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return executor.submit(
-            new Callable<Boolean>() {
-                public Boolean call() throws Exception {
-                    cache.put(header, body);
-                    if (cache.size() > maxElements) {
-                        // Cache is full. pop one out at random.
-                        cache.remove(
-                            Math.floor(maxElements * Math.random()));
-                    }
+        cache.put(header, body);
+        fireSegmentCacheEvent(
+            new SegmentCache.SegmentCacheListener.SegmentCacheEvent()
+            {
+                public boolean isLocal() {
                     return true;
                 }
-            });
-    }
-
-    public Future<List<SegmentHeader>> getSegmentHeaders() {
-        return executor.submit(
-            new Callable<List<SegmentHeader>>() {
-                public List<SegmentHeader> call() throws Exception {
-                    return new ArrayList<SegmentHeader>(cache.keySet());
+                public SegmentHeader getSource() {
+                    return header;
+                }
+                public EventType getEventType() {
+                    return
+                        SegmentCacheListener.SegmentCacheEvent
+                            .EventType.ENTRY_CREATED;
                 }
             });
+        if (cache.size() > maxElements) {
+            // Cache is full. pop one out at random.
+            if (rnd == null) {
+                rnd = new Random();
+            }
+            int index = rnd.nextInt(maxElements);
+            for (Iterator<SegmentHeader> iterator = cache.keySet().iterator();
+                 iterator.hasNext();)
+            {
+                Util.discard(iterator.next());
+                if (index-- == 0) {
+                    iterator.remove();
+                    break;
+                }
+            }
+            fireSegmentCacheEvent(
+                new SegmentCache.SegmentCacheListener.SegmentCacheEvent()
+                {
+                    public boolean isLocal() {
+                        return true;
+                    }
+                    public SegmentHeader getSource() {
+                        return header;
+                    }
+                    public EventType getEventType() {
+                        return
+                            SegmentCacheListener.SegmentCacheEvent
+                                .EventType.ENTRY_DELETED;
+                    }
+                });
+        }
+        return true;
     }
 
-    public Future<Boolean> remove(final SegmentHeader header) {
-        return executor.submit(
-            new Callable<Boolean>() {
-                public Boolean call() throws Exception {
-                    cache.remove(header);
+    public List<SegmentHeader> getSegmentHeaders() {
+        return new ArrayList<SegmentHeader>(cache.keySet());
+    }
+
+    public boolean remove(final SegmentHeader header) {
+        cache.remove(header);
+        fireSegmentCacheEvent(
+            new SegmentCache.SegmentCacheListener.SegmentCacheEvent()
+            {
+                public boolean isLocal() {
                     return true;
                 }
-            });
-    }
-
-    public Future<Boolean> flush(final ConstrainedColumn[] region) {
-        return executor.submit(
-            new Callable<Boolean>() {
-                public Boolean call() throws Exception {
-                    final Set<SegmentHeader> toEvict =
-                        new HashSet<SegmentHeader>();
-                    for (SegmentHeader sh : cache.keySet()) {
-                        final List<ConstrainedColumn> cc2 =
-                            Arrays.asList(region);
-                        for (ConstrainedColumn cc : region) {
-                            if (cc2.contains(cc.getColumnExpression())) {
-                                // Must flush.
-                                toEvict.add(sh);
-                            }
-                        }
-                    }
-                    for (SegmentHeader sh : toEvict) {
-                        cache.remove(sh);
-                    }
-                    return true;
+                public SegmentHeader getSource() {
+                    return header;
+                }
+                public EventType getEventType() {
+                    return
+                        SegmentCacheListener.SegmentCacheEvent
+                            .EventType.ENTRY_DELETED;
                 }
             });
+        return true;
     }
 
     public void tearDown() {
+        listeners.clear();
         cache.clear();
+    }
+
+    public void addListener(SegmentCacheListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(SegmentCacheListener listener) {
+        listeners.remove(listener);
+    }
+
+    public boolean supportsRichIndex() {
+        return true;
+    }
+
+    public void fireSegmentCacheEvent(
+        SegmentCache.SegmentCacheListener.SegmentCacheEvent event)
+    {
+        for (SegmentCacheListener listener : listeners) {
+            listener.handle(event);
+        }
     }
 }
 

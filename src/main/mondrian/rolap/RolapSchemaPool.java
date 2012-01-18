@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,12 +13,10 @@ import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.spi.DynamicSchemaProcessor;
+import mondrian.util.ByteString;
 
-import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import javax.sql.DataSource;
 
@@ -29,36 +27,19 @@ import javax.sql.DataSource;
  * <p>To lookup a schema, call <code>Pool.instance().{@link #get}</code>.
  */
 class RolapSchemaPool {
-    private final MessageDigest md;
-
     private static RolapSchemaPool pool = new RolapSchemaPool();
 
     private final Map<String, SoftReference<RolapSchema>> mapUrlToSchema =
         new HashMap<String, SoftReference<RolapSchema>>();
 
+    private final Map<ByteString, SoftReference<RolapSchema>> mapMd5ToSchema =
+        new HashMap<ByteString, SoftReference<RolapSchema>>();
+
     RolapSchemaPool() {
-        // Initialize the MD5 digester.
-        try {
-            md = MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     static RolapSchemaPool instance() {
         return pool;
-    }
-
-    /**
-     * Creates an MD5 hash of String.
-     *
-     * @param value String to create one way hash upon.
-     * @return MD5 hash.
-     */
-    private synchronized String encodeMD5(final String value) {
-        md.reset();
-        final byte[] bytes = md.digest(value.getBytes());
-        return (bytes != null) ? new String(bytes) : null;
     }
 
     synchronized RolapSchema get(
@@ -190,27 +171,14 @@ class RolapSchemaPool {
             // mapUrlToSchema Map. We must then also during the
             // remove operation make sure we remove both.
 
-            String md5Bytes = null;
+            ByteString md5Bytes = null;
             try {
                 if (catalogStr == null) {
                     // Use VFS to get the content
-                    InputStream in = null;
-                    try {
-                        in = Util.readVirtualFile(catalogUrl);
-                        StringBuilder buf = new StringBuilder(1000);
-                        int n;
-                        while ((n = in.read()) != -1) {
-                            buf.append((char) n);
-                        }
-                        catalogStr = buf.toString();
-                    } finally {
-                        if (in != null) {
-                            in.close();
-                        }
-                    }
+                    catalogStr = Util.readVirtualFileAsString(catalogUrl);
                 }
 
-                md5Bytes = encodeMD5(catalogStr);
+                md5Bytes = new ByteString(Util.digestMd5(catalogStr));
             } catch (Exception ex) {
                 // Note, can not throw an Exception from this method
                 // but just to show that all is not well in Mudville
@@ -220,22 +188,21 @@ class RolapSchemaPool {
             }
 
             if (md5Bytes != null) {
-                SoftReference<RolapSchema> ref =
-                    mapUrlToSchema.get(md5Bytes);
+                SoftReference<RolapSchema> ref = mapMd5ToSchema.get(md5Bytes);
                 if (ref != null) {
                     schema = ref.get();
                     if (schema == null) {
                         // clear out the reference since schema is null
                         mapUrlToSchema.remove(key);
-                        mapUrlToSchema.remove(md5Bytes);
+                        mapMd5ToSchema.remove(md5Bytes);
                     }
                 }
             }
 
             if (schema == null
                 || md5Bytes == null
-                || schema.md5Bytes == null
-                || ! schema.md5Bytes.equals(md5Bytes))
+                || !schema.useContentChecksum
+                || !schema.md5Bytes.equals(md5Bytes))
             {
                 schema = RolapSchemaLoader.createSchema(
                     key,
@@ -248,7 +215,7 @@ class RolapSchemaPool {
                 SoftReference<RolapSchema> ref =
                     new SoftReference<RolapSchema>(schema);
                 if (md5Bytes != null) {
-                    mapUrlToSchema.put(md5Bytes, ref);
+                    mapMd5ToSchema.put(md5Bytes, ref);
                 }
                 mapUrlToSchema.put(key, ref);
 
@@ -349,9 +316,7 @@ class RolapSchemaPool {
         if (ref != null) {
             RolapSchema schema = ref.get();
             if (schema != null) {
-                if (schema.md5Bytes != null) {
-                    mapUrlToSchema.remove(schema.md5Bytes);
-                }
+                mapMd5ToSchema.remove(schema.md5Bytes);
                 schema.finalCleanUp();
             }
         }
@@ -372,34 +337,20 @@ class RolapSchemaPool {
             }
         }
         mapUrlToSchema.clear();
+        mapMd5ToSchema.clear();
         JdbcSchema.clearAllDBs();
     }
 
     /**
-     * Returns an iterator over a copy of the RolapSchema's container.
+     * Returns a list of schemas in this pool.
      *
-     * @return Iterator over RolapSchemas
+     * @return List of schemas in this pool
      */
     synchronized List<RolapSchema> getRolapSchemas() {
         List<RolapSchema> list = new ArrayList<RolapSchema>();
-        for (Iterator<SoftReference<RolapSchema>> it =
-            mapUrlToSchema.values().iterator(); it.hasNext();)
+        for (RolapSchema schema : Util.GcIterator.over(mapUrlToSchema.values()))
         {
-            SoftReference<RolapSchema> ref = it.next();
-            RolapSchema schema = ref.get();
-            // Schema is null if already garbage collected
-            if (schema != null) {
-                list.add(schema);
-            } else {
-                // We will remove the stale reference
-                try {
-                    it.remove();
-                } catch (Exception ex) {
-                    // Should not happen, so
-                    // warn but otherwise ignore
-                    RolapSchema.LOGGER.warn(ex);
-                }
-            }
+            list.add(schema);
         }
         return list;
     }

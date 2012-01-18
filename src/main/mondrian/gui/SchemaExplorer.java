@@ -746,6 +746,27 @@ public class SchemaExplorer
                 addInlineTable(e);
             }
         };
+
+
+        moveLevelUp = new AbstractAction(
+            getResourceConverter().getString(
+                "schemaExplorer.moveLevelUp.title", "Move Up"))
+        {
+            public void actionPerformed(ActionEvent e) {
+                moveLevelUp(e);
+            }
+        };
+
+        moveLevelDown = new AbstractAction(
+            getResourceConverter().getString(
+                "schemaExplorer.moveLevelDown.title", "Move Down"))
+        {
+            public void actionPerformed(ActionEvent e) {
+                moveLevelDown(e);
+            }
+        };
+
+
         addProperty = new AbstractAction(
             getResourceConverter().getString(
                 "schemaExplorer.addProperty.title", "Add Property"))
@@ -3461,7 +3482,13 @@ public class SchemaExplorer
         setTableCellFocus(0);
     }
 
-    protected void addMemberFormatter(ActionEvent evt) {
+    private static class LevelInfo {
+       MondrianGuiDef.Level level = null;
+       Object[] parentPathObjs = null;
+    }
+
+    protected LevelInfo getSelectedLevel(ActionEvent evt) {
+        final LevelInfo info = new LevelInfo();
         TreePath tpath = null;
         Object path = null;
         if (evt.getSource() instanceof Component
@@ -3474,9 +3501,10 @@ public class SchemaExplorer
             tpath = tree.getSelectionPath();
         }
         int parentIndex = -1;
+
         if (tpath != null) {
-            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
-                parentIndex--)
+            for (parentIndex = tpath.getPathCount() - 1;
+                parentIndex >= 0; parentIndex--)
             {
                 Object p = tpath.getPathComponent(parentIndex);
                 if (p instanceof MondrianGuiDef.Level) {
@@ -3485,28 +3513,35 @@ public class SchemaExplorer
                 }
             }
         }
-        if (path == null) {
+        if (path == null || !(path instanceof MondrianGuiDef.Level)) {
             JOptionPane.showMessageDialog(
                 this, getResourceConverter().getString(
                     "schemaExplorer.levelNotSelected.alert",
                     "Level not selected."),
                 alert,
                 JOptionPane.WARNING_MESSAGE);
+            return null;
+        }
+        info.level = (MondrianGuiDef.Level) path;
+        info.parentPathObjs = new Object[parentIndex + 1];
+        for (int i = 0; i <= parentIndex; i++) {
+            info.parentPathObjs[i] = tpath.getPathComponent(i);
+        }
+
+        return info;
+    }
+
+    protected void addMemberFormatter(ActionEvent evt) {
+        final LevelInfo info = getSelectedLevel(evt);
+        if (info == null) {
             return;
         }
 
         final MondrianGuiDef.MemberFormatter formatter =
             new MondrianGuiDef.MemberFormatter();
+        info.level.memberFormatter = formatter;
 
-        final MondrianGuiDef.Level parent =
-            (MondrianGuiDef.Level) path;
-        parent.memberFormatter = formatter;
-
-        Object[] parentPathObjs = new Object[parentIndex + 1];
-        for (int i = 0; i <= parentIndex; i++) {
-            parentPathObjs[i] = tpath.getPathComponent(i);
-        }
-        TreePath parentPath = new TreePath(parentPathObjs);
+        TreePath parentPath = new TreePath(info.parentPathObjs);
         tree.setSelectionPath(parentPath.pathByAddingChild(formatter));
 
         refreshTree(tree.getSelectionPath());
@@ -3566,39 +3601,10 @@ public class SchemaExplorer
     }
 
     protected void addKeyExp(ActionEvent evt) {
-        TreePath tpath = null;
-        Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
-        int parentIndex = -1;
-        if (tpath != null) {
-            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
-                parentIndex--)
-            {
-                final Object p = tpath.getPathComponent(parentIndex);
-                if (p instanceof MondrianGuiDef.Level) {
-                    path = p;
-                    break;
-                }
-            }
-        }
-        //Object path = tree.getSelectionPath().getLastPathComponent();
-        if (!(path instanceof MondrianGuiDef.Level)) {
-            JOptionPane.showMessageDialog(
-                this, getResourceConverter().getString(
-                    "schemaExplorer.levelNotSelected.alert",
-                    "Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
+        final LevelInfo info = getSelectedLevel(evt);
+        if (info == null) {
             return;
         }
-
-        MondrianGuiDef.Level level = (MondrianGuiDef.Level) path;
 
         MondrianGuiDef.KeyExpression keyExp =
             new MondrianGuiDef.KeyExpression();
@@ -3606,52 +3612,19 @@ public class SchemaExplorer
         keyExp.expressions[0] = new MondrianGuiDef.SQL();
         keyExp.expressions[0].dialect = "generic";
         keyExp.expressions[0].cdata = "";
-        level.keyExp = keyExp;
+        info.level.keyExp = keyExp;
 
-        Object[] parentPathObjs = new Object[parentIndex + 1];
-        for (int i = 0; i <= parentIndex; i++) {
-            parentPathObjs[i] = tpath.getPathComponent(i);
-        }
-        TreePath parentPath = new TreePath(parentPathObjs);
+        TreePath parentPath = new TreePath(info.parentPathObjs);
         tree.setSelectionPath(parentPath.pathByAddingChild(keyExp));
 
         refreshTree(tree.getSelectionPath());
     }
 
     protected void addNameExp(ActionEvent evt) {
-        TreePath tpath = null;
-        Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
-        int parentIndex = -1;
-        if (tpath != null) {
-            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
-                parentIndex--)
-            {
-                final Object p = tpath.getPathComponent(parentIndex);
-                if (p instanceof MondrianGuiDef.Level) {
-                    path = p;
-                    break;
-                }
-            }
-        }
-        if (!(path instanceof MondrianGuiDef.Level)) {
-            JOptionPane.showMessageDialog(
-                this, getResourceConverter().getString(
-                    "schemaExplorer.levelNotSelected.alert",
-                    "Level not selected."),
-                    alert, JOptionPane.WARNING_MESSAGE);
+        final LevelInfo info = getSelectedLevel(evt);
+        if (info == null) {
             return;
         }
-
-        MondrianGuiDef.Level level = (MondrianGuiDef.Level) path;
 
         MondrianGuiDef.NameExpression nameExp =
             new MondrianGuiDef.NameExpression();
@@ -3659,52 +3632,19 @@ public class SchemaExplorer
         nameExp.expressions[0] = new MondrianGuiDef.SQL();
         nameExp.expressions[0].dialect = "generic";
         nameExp.expressions[0].cdata = "";
-        level.nameExp = nameExp;
+        info.level.nameExp = nameExp;
 
-        Object[] parentPathObjs = new Object[parentIndex + 1];
-        for (int i = 0; i <= parentIndex; i++) {
-            parentPathObjs[i] = tpath.getPathComponent(i);
-        }
-        TreePath parentPath = new TreePath(parentPathObjs);
+        TreePath parentPath = new TreePath(info.parentPathObjs);
         tree.setSelectionPath(parentPath.pathByAddingChild(nameExp));
 
         refreshTree(tree.getSelectionPath());
     }
 
     protected void addOrdinalExp(ActionEvent evt) {
-        TreePath tpath = null;
-        Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
-        int parentIndex = -1;
-        if (tpath != null) {
-            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
-                parentIndex--)
-            {
-                final Object p = tpath.getPathComponent(parentIndex);
-                if (p instanceof MondrianGuiDef.Level) {
-                    path = p;
-                    break;
-                }
-            }
-        }
-        if (!(path instanceof MondrianGuiDef.Level)) {
-            JOptionPane.showMessageDialog(
-                this, getResourceConverter().getString(
-                    "schemaExplorer.levelNotSelected.alert",
-                    "Level not selected."),
-                    alert, JOptionPane.WARNING_MESSAGE);
+        final LevelInfo info = getSelectedLevel(evt);
+        if (info == null) {
             return;
         }
-
-        MondrianGuiDef.Level level = (MondrianGuiDef.Level) path;
 
         MondrianGuiDef.OrdinalExpression ordinalExp =
             new MondrianGuiDef.OrdinalExpression();
@@ -3712,52 +3652,19 @@ public class SchemaExplorer
         ordinalExp.expressions[0] = new MondrianGuiDef.SQL();
         ordinalExp.expressions[0].dialect = "generic";
         ordinalExp.expressions[0].cdata = "";
-        level.ordinalExp = ordinalExp;
+        info.level.ordinalExp = ordinalExp;
 
-        Object[] parentPathObjs = new Object[parentIndex + 1];
-        for (int i = 0; i <= parentIndex; i++) {
-            parentPathObjs[i] = tpath.getPathComponent(i);
-        }
-        TreePath parentPath = new TreePath(parentPathObjs);
+        TreePath parentPath = new TreePath(info.parentPathObjs);
         tree.setSelectionPath(parentPath.pathByAddingChild(ordinalExp));
 
         refreshTree(tree.getSelectionPath());
     }
 
     protected void addCaptionExp(ActionEvent evt) {
-        TreePath tpath = null;
-        Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
-        int parentIndex = -1;
-        if (tpath != null) {
-            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
-                parentIndex--)
-            {
-                final Object p = tpath.getPathComponent(parentIndex);
-                if (p instanceof MondrianGuiDef.Level) {
-                    path = p;
-                    break;
-                }
-            }
-        }
-        if (!(path instanceof MondrianGuiDef.Level)) {
-            JOptionPane.showMessageDialog(
-                this, getResourceConverter().getString(
-                    "schemaExplorer.levelNotSelected.alert",
-                    "Level not selected."),
-                    alert, JOptionPane.WARNING_MESSAGE);
+        final LevelInfo info = getSelectedLevel(evt);
+        if (info == null) {
             return;
         }
-
-        MondrianGuiDef.Level level = (MondrianGuiDef.Level) path;
 
         MondrianGuiDef.CaptionExpression captionExp =
             new MondrianGuiDef.CaptionExpression();
@@ -3765,52 +3672,19 @@ public class SchemaExplorer
         captionExp.expressions[0] = new MondrianGuiDef.SQL();
         captionExp.expressions[0].dialect = "generic";
         captionExp.expressions[0].cdata = "";
-        level.captionExp = captionExp;
+        info.level.captionExp = captionExp;
 
-        Object[] parentPathObjs = new Object[parentIndex + 1];
-        for (int i = 0; i <= parentIndex; i++) {
-            parentPathObjs[i] = tpath.getPathComponent(i);
-        }
-        TreePath parentPath = new TreePath(parentPathObjs);
+        TreePath parentPath = new TreePath(info.parentPathObjs);
         tree.setSelectionPath(parentPath.pathByAddingChild(captionExp));
 
         refreshTree(tree.getSelectionPath());
     }
 
     protected void addParentExp(ActionEvent evt) {
-        TreePath tpath = null;
-        Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
-        int parentIndex = -1;
-        if (tpath != null) {
-            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
-                parentIndex--)
-            {
-                final Object p = tpath.getPathComponent(parentIndex);
-                if (p instanceof MondrianGuiDef.Level) {
-                    path = p;
-                    break;
-                }
-            }
-        }
-        if (!(path instanceof MondrianGuiDef.Level)) {
-            JOptionPane.showMessageDialog(
-                this, getResourceConverter().getString(
-                    "schemaExplorer.levelNotSelected.alert",
-                    "Level not selected."),
-                    alert, JOptionPane.WARNING_MESSAGE);
+        final LevelInfo info = getSelectedLevel(evt);
+        if (info == null) {
             return;
         }
-
-        MondrianGuiDef.Level level = (MondrianGuiDef.Level) path;
 
         MondrianGuiDef.ParentExpression parentExp =
             new MondrianGuiDef.ParentExpression();
@@ -3818,13 +3692,9 @@ public class SchemaExplorer
         parentExp.expressions[0] = new MondrianGuiDef.SQL();
         parentExp.expressions[0].dialect = "generic";
         parentExp.expressions[0].cdata = "";
-        level.parentExp = parentExp;
+        info.level.parentExp = parentExp;
 
-        Object[] parentPathObjs = new Object[parentIndex + 1];
-        for (int i = 0; i <= parentIndex; i++) {
-            parentPathObjs[i] = tpath.getPathComponent(i);
-        }
-        TreePath parentPath = new TreePath(parentPathObjs);
+        TreePath parentPath = new TreePath(info.parentPathObjs);
         tree.setSelectionPath(parentPath.pathByAddingChild(parentExp));
 
         refreshTree(tree.getSelectionPath());
@@ -4130,70 +4000,97 @@ public class SchemaExplorer
     }
 
 
+    protected void moveLevelUp(ActionEvent evt) {
+        final LevelInfo info = getSelectedLevel(evt);
+        if (info == null) {
+            return;
+        }
+
+        MondrianGuiDef.Hierarchy hierarchy =
+            (MondrianGuiDef.Hierarchy)
+                info.parentPathObjs[info.parentPathObjs.length - 2];
+
+        int loc = -1;
+        for (int i = 0; i < hierarchy.levels.length; i++) {
+            if (hierarchy.levels[i] == info.level) {
+              loc = i;
+              break;
+            }
+        }
+
+        if (loc > 0) {
+          MondrianGuiDef.Level tmp = hierarchy.levels[loc - 1];
+          hierarchy.levels[loc - 1] = info.level;
+          hierarchy.levels[loc] = tmp;
+        }
+
+        TreePath parentPath = new TreePath(info.parentPathObjs);
+        tree.setSelectionPath(parentPath);
+        refreshTree(tree.getSelectionPath());
+        setTableCellFocus(0);
+    }
+
+    protected void moveLevelDown(ActionEvent evt) {
+        final LevelInfo info = getSelectedLevel(evt);
+        if (info == null) {
+            return;
+        }
+
+        MondrianGuiDef.Hierarchy hierarchy =
+            (MondrianGuiDef.Hierarchy)
+                info.parentPathObjs[info.parentPathObjs.length - 2];
+
+        int loc = -1;
+        for (int i = 0; i < hierarchy.levels.length; i++) {
+            if (hierarchy.levels[i] == info.level) {
+              loc = i;
+              break;
+            }
+        }
+
+        if (loc < hierarchy.levels.length - 1) {
+          MondrianGuiDef.Level tmp = hierarchy.levels[loc + 1];
+          hierarchy.levels[loc + 1] = info.level;
+          hierarchy.levels[loc] = tmp;
+        }
+
+        TreePath parentPath = new TreePath(info.parentPathObjs);
+        tree.setSelectionPath(parentPath);
+        refreshTree(tree.getSelectionPath());
+        setTableCellFocus(0);
+    }
+
+
     /**
      * @param evt
      */
     protected void addProperty(ActionEvent evt) {
-        TreePath tpath = null;
-        Object path = null;
-        if (evt.getSource() instanceof Component
-            && ((Component)evt.getSource())
-                .getParent() instanceof CustomJPopupMenu)
-        {
-            tpath = ((CustomJPopupMenu)((Component)evt.getSource())
-                    .getParent()).getPath();
-        } else {
-            tpath = tree.getSelectionPath();
-        }
-        int parentIndex = -1;
-        if (tpath != null) {
-            for (parentIndex = tpath.getPathCount() - 1; parentIndex >= 0;
-                parentIndex--)
-            {
-                final Object p = tpath.getPathComponent(parentIndex);
-                if (p instanceof MondrianGuiDef.Level) {
-                    path = p;
-                    break;
-                }
-            }
-        }
-
-        if (!(path instanceof MondrianGuiDef.Level)) {
-            JOptionPane.showMessageDialog(
-                this, getResourceConverter().getString(
-                    "schemaExplorer.levelNotSelected.alert",
-                    "Level not selected."), alert, JOptionPane.WARNING_MESSAGE);
+        final LevelInfo info = getSelectedLevel(evt);
+        if (info == null) {
             return;
         }
-
-
-        MondrianGuiDef.Level level = (MondrianGuiDef.Level) path;
 
         MondrianGuiDef.Property property = new MondrianGuiDef.Property();
         property.name = "";
 
-        if (level.properties == null) {
-            level.properties = new MondrianGuiDef.Property[0];
+        if (info.level.properties == null) {
+            info.level.properties = new MondrianGuiDef.Property[0];
         }
         property.name =
             getNewName(
                 getResourceConverter().getString(
                     "schemaExplorer.newProperty.title",
                     "New Property"),
-                level.properties);
-        NodeDef[] temp = level.properties;
-        level.properties = new MondrianGuiDef.Property[temp.length + 1];
+                info.level.properties);
+        NodeDef[] temp = info.level.properties;
+        info.level.properties = new MondrianGuiDef.Property[temp.length + 1];
         for (int i = 0; i < temp.length; i++) {
-            level.properties[i] = (MondrianGuiDef.Property) temp[i];
+            info.level.properties[i] = (MondrianGuiDef.Property) temp[i];
         }
 
-        level.properties[level.properties.length - 1] = property;
+        info.level.properties[info.level.properties.length - 1] = property;
 
-        Object[] parentPathObjs = new Object[parentIndex + 1];
-        for (int i = 0; i <= parentIndex; i++) {
-            parentPathObjs[i] = tpath.getPathComponent(i);
-        }
-        TreePath parentPath = new TreePath(parentPathObjs);
+        TreePath parentPath = new TreePath(info.parentPathObjs);
         tree.setSelectionPath(parentPath.pathByAddingChild(property));
 
         refreshTree(tree.getSelectionPath());
@@ -5099,6 +4996,8 @@ public class SchemaExplorer
                             addInlineTable.setEnabled(false);
                         }
                     } else if (pathSelected instanceof MondrianGuiDef.Level) {
+                        jPopupMenu.add(moveLevelUp);
+                        jPopupMenu.add(moveLevelDown);
                         jPopupMenu.add(addProperty);
                         jPopupMenu.add(addKeyExp);
                         MondrianGuiDef.Level level =
@@ -5612,6 +5511,8 @@ public class SchemaExplorer
     private AbstractAction addJoin;
     private AbstractAction addView;
     private AbstractAction addInlineTable;
+    private AbstractAction moveLevelUp;
+    private AbstractAction moveLevelDown;
     private AbstractAction addProperty;
     private AbstractAction addCalculatedMemberProperty;
     private AbstractAction addClosure;

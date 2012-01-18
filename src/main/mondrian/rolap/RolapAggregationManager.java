@@ -20,8 +20,8 @@ import java.io.PrintWriter;
 import java.util.*;
 
 /**
- * <code>RolapAggregationManager</code> manages all {@link
- * mondrian.rolap.agg.Aggregation}s in the system. It is a singleton class.
+ * <code>RolapAggregationManager</code> manages all
+ * {@link mondrian.rolap.agg.Segment}s in the system.
  *
  * <p> The bits of the implementation which depend upon dimensional concepts
  * <code>RolapMember</code>, etc.) live in this class, and the other bits live
@@ -621,49 +621,6 @@ public abstract class RolapAggregationManager {
         CellRequest request,
         StarPredicate starPredicateSlicer,
         boolean countOnly);
-
-    /**
-     * Returns an API with which to explicitly manage the contents of the cache.
-     *
-     * @param connection Server whose cache to control
-     * @param pw Print writer, for tracing
-     * @return CacheControl API
-     */
-    public CacheControl getCacheControl(
-        RolapConnection connection,
-        final PrintWriter pw)
-    {
-        return new CacheControlImpl(connection) {
-            protected void flushNonUnion(final CellRegion region) {
-                final List<RolapStar> starList = getStarList(region);
-
-                // For each of the candidate stars, scan the list of aggregates.
-                for (RolapStar star : starList) {
-                    star.flush(this, region);
-                }
-            }
-
-            public void flush(final CellRegion region) {
-                if (pw != null) {
-                    pw.println("Cache state before flush:");
-                    printCacheState(pw, region);
-                    pw.println();
-                }
-                super.flush(region);
-                if (pw != null) {
-                    pw.println("Cache state after flush:");
-                    printCacheState(pw, region);
-                    pw.println();
-                }
-            }
-
-            public void trace(final String message) {
-                if (pw != null) {
-                    pw.println(message);
-                }
-            }
-        };
-    }
 
     public static RolapCacheRegion makeCacheRegion(
         final RolapStar star,

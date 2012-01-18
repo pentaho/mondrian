@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011-2011 Julian Hyde
+// Copyright (C) 2011-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -75,7 +75,15 @@ public class DelegatingTupleList extends AbstractTupleList
                 return list.size();
             }
             public Member set(int index, Member element) {
-                return list.get(index).set(column, element);
+                List<Member> subList = list.get(index);
+                if (subList.size() == 1) {
+                    // The sub list is probably a singleton list.
+                    // calling set() on it will fail. We have to
+                    // create a new singleton list.
+                    return list.set(index, Collections.singletonList(element))
+                        .get(0);
+                }
+                return subList.set(column, element);
             };
         };
     }

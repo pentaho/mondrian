@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -23,8 +23,7 @@ import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.*;
 import mondrian.spi.impl.Scripts;
-import mondrian.util.DirectedGraph;
-import mondrian.util.Pair;
+import mondrian.util.*;
 
 import org.apache.log4j.Logger;
 
@@ -85,7 +84,9 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
      */
     private Role defaultRole;
 
-    final String md5Bytes;
+    ByteString md5Bytes;
+
+    final boolean useContentChecksum;
 
     /**
      * A schema's aggregation information
@@ -124,16 +125,6 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
 
     private DataSourceChangeListener dataSourceChangeListener;
 
-    /**
-     * Map containing column cardinality. The combination of
-     * Mondrianef.Relation and MondrianDef.Expression uniquely
-     * identifies a relational expression(e.g. a column) specified
-     * in the xml schema.
-     */
-    private final Map<PhysRelation, Map<PhysExpr, Integer>>
-        relationExprCardinalityMap =
-        new HashMap<PhysRelation, Map<PhysExpr, Integer>>();
-
     PhysSchema physicalSchema;
 
     /**
@@ -163,6 +154,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
      */
     private int errorCount;
 
+    private final PhysStatistic statistic = new PhysStatistic();
+
     /**
      * Creates a schema.
      *
@@ -173,6 +166,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
      * @param connectInfo Connect properties
      * @param dataSource Data source
      * @param md5Bytes MD5 hash
+     * @param useContentChecksum Whether to use content checksum
      * @param name Name
      * @param annotationMap Annotation map
      */
@@ -180,13 +174,17 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         final String key,
         final Util.PropertyList connectInfo,
         final DataSource dataSource,
-        final String md5Bytes,
+        final ByteString md5Bytes,
+        boolean useContentChecksum,
         String name,
         Map<String, Annotation> annotationMap)
     {
         this.id = Util.generateUuidString();
         this.key = key;
         this.md5Bytes = md5Bytes;
+        this.useContentChecksum = useContentChecksum;
+        assert !(useContentChecksum && md5Bytes == null);
+
         // the order of the next two lines is important
         this.defaultRole = Util.createRootRole(this);
         final MondrianServer internalServer = MondrianServer.forId(null);
@@ -205,12 +203,15 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     }
 
     protected void finalCleanUp() {
-        final CacheControl cacheControl =
-            internalConnection.getCacheControl(null);
-        for (Cube cube : getCubes()) {
-            CellRegion cr =
-                cacheControl.createMeasuresRegion(cube);
-            cacheControl.flush(cr);
+        if (internalConnection != null) {
+            // REVIEW: Is this supposed to happen???
+            final CacheControl cacheControl =
+                internalConnection.getCacheControl(null);
+            for (Cube cube : getCubes()) {
+                CellRegion cr =
+                    cacheControl.createMeasuresRegion(cube);
+                cacheControl.flush(cr);
+            }
         }
         if (aggTableManager != null) {
             aggTableManager.finalCleanUp();
@@ -854,10 +855,12 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
 
     /**
      * Returns the checksum of this schema. Returns
-     * <code>null</code> {@link RolapConnectionProperties#UseContentChecksum}
+     * <code>null</code> if {@link RolapConnectionProperties#UseContentChecksum}
      * is set to false.
+     *
+     * @return MD5 checksum of this schema
      */
-    public String getChecksum() {
+    public ByteString getChecksum() {
         return md5Bytes;
     }
 
@@ -867,51 +870,6 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
      */
     public RolapConnection getInternalConnection() {
         return internalConnection;
-    }
-
-    /**
-     * Returns the cached cardinality for the column.
-     * The cache is stored in the schema so that queries on different
-     * cubes can share them.
-     * @return the cardinality map
-     */
-    Integer getCachedRelationExprCardinality(
-        PhysRelation relation,
-        PhysExpr columnExpr)
-    {
-        Util.deprecated("maybe move cardinality into PhysExpr", false);
-        Integer card = null;
-        synchronized (relationExprCardinalityMap) {
-            Map<PhysExpr, Integer> exprCardinalityMap =
-                relationExprCardinalityMap.get(relation);
-            if (exprCardinalityMap != null) {
-                card = exprCardinalityMap.get(columnExpr);
-            }
-        }
-        return card;
-    }
-
-    /**
-     * Sets the cardinality for a given column in cache.
-     *
-     * @param relation the relation associated with the column expression
-     * @param columnExpr the column expression to cache the cardinality for
-     * @param cardinality the cardinality for the column expression
-     */
-    void putCachedRelationExprCardinality(
-        PhysRelation relation,
-        PhysExpr columnExpr,
-        Integer cardinality)
-    {
-        synchronized (relationExprCardinalityMap) {
-            Map<PhysExpr, Integer> exprCardinalityMap =
-                relationExprCardinalityMap.get(relation);
-            if (exprCardinalityMap == null) {
-                exprCardinalityMap = new HashMap<PhysExpr, Integer>();
-                relationExprCardinalityMap.put(relation, exprCardinalityMap);
-            }
-            exprCardinalityMap.put(columnExpr, cardinality);
-        }
     }
 
     private RolapStar makeRolapStar(final PhysRelation fact) {
@@ -932,6 +890,10 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     {
         funTable = new RolapSchemaFunctionTable(userDefinedFunctions);
         ((RolapSchemaFunctionTable) funTable).init();
+    }
+
+    public PhysStatistic getStatistic() {
+        return statistic;
     }
 
     /**
@@ -1006,16 +968,6 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
 
     public Collection<RolapStar> getStars() {
         return getRolapStarRegistry().getStars();
-    }
-
-    /**
-     * Pushes all modifications of the aggregations to global cache,
-     * so other queries can start using the new cache
-     */
-    public void pushAggregateModificationsToGlobalCache() {
-        for (RolapStar star : getStars()) {
-            star.pushAggregateModificationsToGlobalCache();
-        }
     }
 
     final RolapNativeRegistry nativeRegistry = new RolapNativeRegistry();
@@ -2860,6 +2812,44 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                 orderBitset.set(ordinal);
             }
             return ordinal;
+        }
+    }
+
+    /**
+     * Caches the cardinality of columns.
+     *
+     * <p>The cache is stored in the schema so that queries on different
+     * cubes can share them.</p>
+     */
+    public class PhysStatistic {
+        private final Map<Pair<PhysRelation, PhysExpr>, Integer> map =
+            new HashMap<Pair<PhysRelation, PhysExpr>, Integer>();
+
+        /**
+         * Gets the cardinality for a given column (the number of distinct
+         * values of the column). If there is no value in cache, executes the
+         * callback to find the cardinality.
+         *
+         * @param relation the relation associated with the column expression
+         * @param expression the column expression to cache the cardinality for
+         * @param functor Computes the cardinality for the column expression
+         * @return Cardinality of given column
+         */
+        public int getCardinality(
+            PhysRelation relation,
+            PhysExpr expression,
+            Util.Functor0<Integer> functor)
+        {
+            final Pair<PhysRelation, PhysExpr> key =
+                Pair.of(relation, expression);
+            Integer card = map.get(key);
+            if (card == null) {
+                // If not cached, issue SQL to get the cardinality for
+                // this column.
+                card = functor.apply();
+                map.put(key, card);
+            }
+            return card;
         }
     }
 }

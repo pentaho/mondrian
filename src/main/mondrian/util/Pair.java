@@ -3,16 +3,17 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.util;
 
 import mondrian.olap.Util;
+import mondrian.spi.SegmentColumn;
+import mondrian.spi.SegmentHeader;
 
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Pair of values.
@@ -131,6 +132,68 @@ public class Pair <L, R>
         } else {
             return c1.compareTo(c2);
         }
+    }
+
+    /**
+     * Returns an iterable over the left slice of an iterable.
+     *
+     * @param iterable Iterable over pairs
+     * @param <L> Left type
+     * @param <R> Right type
+     * @return Iterable over the left elements
+     */
+    public static <L, R> Iterable<L> leftIter(
+        final Iterable<Pair<L, R>> iterable)
+    {
+        return new Iterable<L>() {
+            public Iterator<L> iterator() {
+                final Iterator<Pair<L, R>> iterator = iterable.iterator();
+                return new Iterator<L>() {
+                    public boolean hasNext() {
+                        return iterator.hasNext();
+                    }
+
+                    public L next() {
+                        return iterator.next().left;
+                    }
+
+                    public void remove() {
+                        iterator.remove();
+                    }
+                };
+            }
+        };
+    }
+
+    /**
+     * Returns an iterable over the right slice of an iterable.
+     *
+     * @param iterable Iterable over pairs
+     * @param <L> right type
+     * @param <R> Right type
+     * @return Iterable over the right elements
+     */
+    public static <L, R> Iterable<R> rightIter(
+        final Iterable<Pair<L, R>> iterable)
+    {
+        return new Iterable<R>() {
+            public Iterator<R> iterator() {
+                final Iterator<Pair<L, R>> iterator = iterable.iterator();
+                return new Iterator<R>() {
+                    public boolean hasNext() {
+                        return iterator.hasNext();
+                    }
+
+                    public R next() {
+                        return iterator.next().right;
+                    }
+
+                    public void remove() {
+                        iterator.remove();
+                    }
+                };
+            }
+        };
     }
 
     /**

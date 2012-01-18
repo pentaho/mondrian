@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2011 Julian Hyde and others
+// Copyright (C) 2004-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -368,11 +368,12 @@ public class UtilTestCase extends TestCase {
         // probably a bug in the test, not the JDK.)
         assertEquals(expected, original.replaceAll(seek, replace));
 
-        // Check the StringBuffer version of replace.
+        // Check the StringBuilder version of replace.
         StringBuilder buf = new StringBuilder(original);
         StringBuilder buf2 = Util.replace(buf, 0, seek, replace);
-        assertTrue(buf == buf2);
         assertEquals(expected, buf.toString());
+        assertEquals(expected, buf2.toString());
+        assertTrue(buf == buf2);
 
         // Check the String version of replace.
         assertEquals(expected, Util.replace(original, seek, replace));
@@ -1018,16 +1019,6 @@ public class UtilTestCase extends TestCase {
     }
 
     /**
-     * Unit test for {@link Util#lcidToLocale(short)}.
-     */
-    public void testLcid() {
-        assertEquals("en_US", Util.lcidToLocale((short) 0x0409).toString());
-        assertEquals("en_US", Util.lcidToLocale((short) 1033).toString());
-        assertEquals("fr", Util.lcidToLocale((short) 0x040c).toString());
-        assertEquals("en_GB", Util.lcidToLocale((short) 2057).toString());
-    }
-
-    /**
      * Unit test for {@link CombiningGenerator}.
      */
     public void testCombiningGenerator() {
@@ -1082,6 +1073,258 @@ public class UtilTestCase extends TestCase {
             i++;
         }
         assertEquals(1 << 20, i);
+    }
+
+    /**
+     * Unit test for {@link ByteString}.
+     */
+    public void testByteString() {
+        final ByteString empty0 = new ByteString(new byte[]{});
+        final ByteString empty1 = new ByteString(new byte[]{});
+        assertTrue(empty0.equals(empty1));
+        assertEquals(empty0.hashCode(), empty1.hashCode());
+        assertEquals("", empty0.toString());
+        assertEquals(0, empty0.length());
+        assertEquals(0, empty0.compareTo(empty0));
+        assertEquals(0, empty0.compareTo(empty1));
+
+        final ByteString two =
+            new ByteString(new byte[]{ (byte) 0xDE, (byte) 0xAD});
+        assertFalse(empty0.equals(two));
+        assertFalse(two.equals(empty0));
+        assertEquals("dead", two.toString());
+        assertEquals(2, two.length());
+        assertEquals(0, two.compareTo(two));
+        assertTrue(empty0.compareTo(two) < 0);
+        assertTrue(two.compareTo(empty0) > 0);
+
+        final ByteString three =
+            new ByteString(new byte[]{ (byte) 0xDE, (byte) 0x02, (byte) 0xAD});
+        assertEquals(3, three.length());
+        assertEquals("de02ad", three.toString());
+        assertTrue(two.compareTo(three) < 0);
+        assertTrue(three.compareTo(two) > 0);
+        assertEquals(0x02, three.byteAt(1));
+
+        final HashSet<ByteString> set = new HashSet<ByteString>();
+        set.addAll(Arrays.asList(empty0, two, three, two, empty1, three));
+        assertEquals(3, set.size());
+    }
+
+    /**
+     * Unit test for {@link Util#binarySearch}.
+     */
+    public void testBinarySearch() {
+        final String[] abce = {"a", "b", "c", "e"};
+        assertEquals(0, Util.binarySearch(abce, 0, 4, "a"));
+        assertEquals(1, Util.binarySearch(abce, 0, 4, "b"));
+        assertEquals(1, Util.binarySearch(abce, 1, 4, "b"));
+        assertEquals(-4, Util.binarySearch(abce, 0, 4, "d"));
+        assertEquals(-4, Util.binarySearch(abce, 1, 4, "d"));
+        assertEquals(-4, Util.binarySearch(abce, 2, 4, "d"));
+        assertEquals(-4, Util.binarySearch(abce, 2, 3, "d"));
+        assertEquals(-4, Util.binarySearch(abce, 2, 3, "e"));
+        assertEquals(-4, Util.binarySearch(abce, 2, 3, "f"));
+        assertEquals(-5, Util.binarySearch(abce, 0, 4, "f"));
+        assertEquals(-5, Util.binarySearch(abce, 2, 4, "f"));
+    }
+
+    /**
+     * Unit test for {@link mondrian.util.ArraySortedSet}.
+     */
+    public void testArraySortedSet() {
+        String[] abce = {"a", "b", "c", "e"};
+        final SortedSet<String> abceSet =
+            new ArraySortedSet<String>(abce);
+
+        // test size, isEmpty, contains
+        assertEquals(4, abceSet.size());
+        assertFalse(abceSet.isEmpty());
+        assertEquals("a", abceSet.first());
+        assertEquals("e", abceSet.last());
+        assertTrue(abceSet.contains("a"));
+        assertFalse(abceSet.contains("aa"));
+        assertFalse(abceSet.contains("z"));
+        assertFalse(abceSet.contains(null));
+        checkToString("[a, b, c, e]", abceSet);
+
+        // test iterator
+        String z = "";
+        for (String s : abceSet) {
+            z += s + ";";
+        }
+        assertEquals("a;b;c;e;", z);
+
+        // empty set
+        String[] empty = {};
+        final SortedSet<String> emptySet =
+            new ArraySortedSet<String>(empty);
+        int n = 0;
+        for (String s : emptySet) {
+            ++n;
+        }
+        assertEquals(0, n);
+        assertEquals(0, emptySet.size());
+        assertTrue(emptySet.isEmpty());
+        try {
+            String s = emptySet.first();
+            fail("expected exception, got " + s);
+        } catch (NoSuchElementException e) {
+            // ok
+        }
+        try {
+            String s = emptySet.last();
+            fail("expected exception, got " + s);
+        } catch (NoSuchElementException e) {
+            // ok
+        }
+        assertFalse(emptySet.contains("a"));
+        assertFalse(emptySet.contains("aa"));
+        assertFalse(emptySet.contains("z"));
+        checkToString("[]", emptySet);
+
+        // same hashCode etc. as similar hashset
+        final HashSet<String> abcHashset = new HashSet<String>();
+        abcHashset.addAll(Arrays.asList(abce));
+        assertEquals(abcHashset, abceSet);
+        assertEquals(abceSet, abcHashset);
+        assertEquals(abceSet.hashCode(), abcHashset.hashCode());
+
+        // subset to end
+        final Set<String> subsetEnd = new ArraySortedSet<String>(abce, 1, 4);
+        checkToString("[b, c, e]", subsetEnd);
+        assertEquals(3, subsetEnd.size());
+        assertFalse(subsetEnd.isEmpty());
+        assertTrue(subsetEnd.contains("c"));
+        assertFalse(subsetEnd.contains("a"));
+        assertFalse(subsetEnd.contains("z"));
+
+        // subset from start
+        final Set<String> subsetStart = new ArraySortedSet<String>(abce, 0, 2);
+        checkToString("[a, b]", subsetStart);
+        assertEquals(2, subsetStart.size());
+        assertFalse(subsetStart.isEmpty());
+        assertTrue(subsetStart.contains("a"));
+        assertFalse(subsetStart.contains("c"));
+
+        // subset from neither start or end
+        final Set<String> subset = new ArraySortedSet<String>(abce, 1, 2);
+        checkToString("[b]", subset);
+        assertEquals(1, subset.size());
+        assertFalse(subset.isEmpty());
+        assertTrue(subset.contains("b"));
+        assertFalse(subset.contains("a"));
+        assertFalse(subset.contains("e"));
+
+        // empty subset
+        final Set<String> subsetEmpty = new ArraySortedSet<String>(abce, 1, 1);
+        checkToString("[]", subsetEmpty);
+        assertEquals(0, subsetEmpty.size());
+        assertTrue(subsetEmpty.isEmpty());
+        assertFalse(subsetEmpty.contains("e"));
+
+        // subsets based on elements, not ordinals
+        assertEquals(abceSet.subSet("a", "c"), subsetStart);
+        assertEquals("[a, b, c]", abceSet.subSet("a", "d").toString());
+        assertFalse(abceSet.subSet("a", "e").equals(subsetStart));
+        assertFalse(abceSet.subSet("b", "c").equals(subsetStart));
+        assertEquals("[c, e]", abceSet.subSet("c", "z").toString());
+        assertEquals("[e]", abceSet.subSet("d", "z").toString());
+        assertFalse(abceSet.subSet("e", "c").equals(subsetStart));
+        assertEquals("[]", abceSet.subSet("e", "c").toString());
+        assertFalse(abceSet.subSet("z", "c").equals(subsetStart));
+        assertEquals("[]", abceSet.subSet("z", "c").toString());
+
+        // merge
+        final ArraySortedSet<String> ar1 = new ArraySortedSet<String>(abce);
+        final ArraySortedSet<String> ar2 =
+            new ArraySortedSet<String>(
+                new String[] {"d"});
+        final ArraySortedSet<String> ar3 =
+            new ArraySortedSet<String>(
+                new String[] {"b", "c"});
+        checkToString("[a, b, c, e]", ar1);
+        checkToString("[d]", ar2);
+        checkToString("[b, c]", ar3);
+        checkToString("[a, b, c, d, e]", ar1.merge(ar2));
+        checkToString("[a, b, c, e]", ar1.merge(ar3));
+    }
+
+    private void checkToString(String expected, Set<String> set) {
+        assertEquals(expected, set.toString());
+
+        final List<String> list = new ArrayList<String>();
+        list.addAll(set);
+        assertEquals(expected, list.toString());
+
+        list.clear();
+        for (String s : set) {
+            list.add(s);
+        }
+        assertEquals(expected, list.toString());
+    }
+
+    public void testIntersectSortedSet() {
+        final ArraySortedSet<String> ace =
+            new ArraySortedSet<String>(new String[]{ "a", "c", "e"});
+        final ArraySortedSet<String> cd =
+            new ArraySortedSet<String>(new String[]{ "c", "d"});
+        final ArraySortedSet<String> bdf =
+            new ArraySortedSet<String>(new String[]{ "b", "d", "f"});
+        final ArraySortedSet<String> bde =
+            new ArraySortedSet<String>(new String[]{ "b", "d", "e"});
+        final ArraySortedSet<String> empty =
+            new ArraySortedSet<String>(new String[]{});
+        checkToString("[a, c, e]", Util.intersect(ace, ace));
+        checkToString("[c]", Util.intersect(ace, cd));
+        checkToString("[]", Util.intersect(ace, empty));
+        checkToString("[]", Util.intersect(empty, ace));
+        checkToString("[]", Util.intersect(empty, empty));
+        checkToString("[]", Util.intersect(ace, bdf));
+        checkToString("[e]", Util.intersect(ace, bde));
+    }
+
+    /**
+     * Unit test for {@link Triple}.
+     */
+    public void testTriple() {
+        if (Util.PreJdk15) {
+            // Boolean is not Comparable until JDK 1.5. Triple works, but this
+            // test does not.
+            return;
+        }
+        final Triple<Integer, String, Boolean> triple0 =
+            Triple.of(5, "foo", true);
+        final Triple<Integer, String, Boolean> triple1 =
+            Triple.of(5, "foo", false);
+        final Triple<Integer, String, Boolean> triple2 =
+            Triple.of(5, "foo", true);
+        final Triple<Integer, String, Boolean> triple3 =
+            Triple.of(null, "foo", true);
+
+        assertEquals(triple0,  triple0);
+        assertFalse(triple0.equals(triple1));
+        assertFalse(triple1.equals(triple0));
+        assertFalse(triple0.hashCode() == triple1.hashCode());
+        assertEquals(triple0, triple2);
+        assertEquals(triple0.hashCode(), triple2.hashCode());
+        assertEquals(triple3, triple3);
+        assertFalse(triple0.equals(triple3));
+        assertFalse(triple3.equals(triple0));
+        assertFalse(triple0.hashCode() == triple3.hashCode());
+
+        final SortedSet<Triple<Integer, String, Boolean>> set =
+            new TreeSet<Triple<Integer, String, Boolean>>(
+                Arrays.asList(triple0, triple1, triple2, triple3, triple1));
+        assertEquals(3, set.size());
+        assertEquals(
+            "[<null, foo, true>, <5, foo, false>, <5, foo, true>]",
+            set.toString());
+
+        assertEquals("<5, foo, true>", triple0.toString());
+        assertEquals("<5, foo, false>", triple1.toString());
+        assertEquals("<5, foo, true>", triple2.toString());
+        assertEquals("<null, foo, true>", triple3.toString());
     }
 
     public void testDirectedGraph() {
@@ -1156,6 +1399,38 @@ public class UtilTestCase extends TestCase {
         }
     }
 
+    public void testLazy() {
+        final int[] calls = {0};
+        final Lazy<Integer> integerLazy =
+            new Lazy<Integer>(
+                new Util.Functor0<Integer>() {
+                    public Integer apply() {
+                        return calls[0]++;
+                    }
+                }
+            );
+        assertEquals(0, calls[0]); // constructor does not call factory
+        assertEquals(0, (int) integerLazy.get());
+        assertEquals(1, calls[0]); // first call to get calls factory
+        assertEquals(0, (int) integerLazy.get());
+        assertEquals(1, calls[0]); // factory not used again
+
+        final Lazy<String> nullLazy =
+            new Lazy<String>(
+                new Util.Functor0<String>() {
+                    public String apply() {
+                        calls[0]++;
+                        return null;
+                    }
+                }
+            );
+        assertEquals(1, calls[0]); // constructor does not call factory
+        assertEquals(null, nullLazy.get());
+        assertEquals(2, calls[0]); // first call to get calls factory
+        assertEquals(null, nullLazy.get());
+        assertEquals(2, calls[0]); // factory not used again
+    }
+
     /**
      * Simple implementation of {@link mondrian.util.DirectedGraph.Edge}.
      */
@@ -1183,3 +1458,4 @@ public class UtilTestCase extends TestCase {
 }
 
 // End UtilTestCase.java
+

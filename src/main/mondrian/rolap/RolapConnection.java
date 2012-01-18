@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.eigenbase.util.property.StringProperty;
 
 import org.olap4j.Scenario;
+import org.olap4j.impl.Olap4jUtil;
 
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -360,7 +361,7 @@ public class RolapConnection extends ConnectionBase {
             RolapUtil.loadDrivers(jdbcDriversProp);
 
             Properties jdbcProperties = getJdbcProperties(connectInfo);
-            final Map<String, String> map = Util.toMap(jdbcProperties);
+            final Map<String, String> map = Olap4jUtil.toMap(jdbcProperties);
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 // FIXME ordering is non-deterministic
                 appendKeyValue(buf, entry.getKey(), entry.getValue());
@@ -663,8 +664,12 @@ public class RolapConnection extends ConnectionBase {
             final Locus locus = new Locus(execution, null, "Loading cells");
             Locus.push(locus);
             Result result;
+            final RolapCube cube = (RolapCube) query.getCube();
             try {
                 statement.start(execution);
+                for (RolapStar star : cube.getStars()) {
+                    star.clearCachedAggregations(true);
+                }
                 result = new RolapResult(execution, true);
                 int i = 0;
                 for (QueryAxis axis : query.getAxes()) {
@@ -675,6 +680,9 @@ public class RolapConnection extends ConnectionBase {
                 }
             } finally {
                 Locus.pop(locus);
+                for (RolapStar star : cube.getStars()) {
+                    star.clearCachedAggregations(true);
+                }
             }
             statement.end(execution);
             return result;

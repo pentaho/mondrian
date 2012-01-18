@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde and others
+// Copyright (C) 2006-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -17,6 +17,7 @@ import mondrian.util.LockBox;
 
 import junit.framework.AssertionFailedError;
 
+import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.metadata.XmlaConstants;
 
 import org.custommonkey.xmlunit.XMLAssert;
@@ -103,7 +104,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
                 props.put(SESSION_ID_PROP, sessionId);
             }
             expectedStr = Util.replaceProperties(
-                expectedStr, Util.toMap(props));
+                expectedStr, Olap4jUtil.toMap(props));
         }
         return expectedStr;
     }
@@ -119,7 +120,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
                 props.put(SESSION_ID_PROP, sessionId);
             }
             requestText = Util.replaceProperties(
-                requestText, Util.toMap(props));
+                requestText, Olap4jUtil.toMap(props));
         }
 if (DEBUG) {
 System.out.println("requestText=" + requestText);
@@ -586,7 +587,7 @@ System.out.println("Got CONTINUE");
             props.setProperty(XmlaBaseTestCase.ROLE_PROP, entry.getMoniker());
         }
         soapRequestText = Util.replaceProperties(
-            soapRequestText, Util.toMap(props));
+            soapRequestText, Olap4jUtil.toMap(props));
 
         Document soapReqDoc = XmlUtil.parseString(soapRequestText);
         Document xmlaReqDoc = XmlaSupport.extractBodyFromSoap(soapReqDoc);
@@ -644,7 +645,7 @@ System.out.println("Got CONTINUE");
             props.setProperty(XmlaBaseTestCase.ROLE_PROP, entry.getMoniker());
         }
         soapRequestText = Util.replaceProperties(
-            soapRequestText, Util.toMap(props));
+            soapRequestText, Olap4jUtil.toMap(props));
 
         Document soapReqDoc = XmlUtil.parseString(soapRequestText);
         Document xmlaReqDoc = XmlaSupport.extractBodyFromSoap(soapReqDoc);

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -1020,6 +1020,9 @@ public class RolapHierarchy extends HierarchyBase {
     private static final RolapAttribute ALL_ATTRIBUTE =
         new RolapAttribute(
             "All",
+            true,
+            null,
+            null,
             Collections.<RolapSchema.PhysColumn>emptyList(),
             null,
             null,
@@ -1032,6 +1035,9 @@ public class RolapHierarchy extends HierarchyBase {
     private static final RolapAttribute NULL_ATTRIBUTE =
         new RolapAttribute(
             "Null",
+            true,
+            null,
+            null,
             Collections.<RolapSchema.PhysColumn>emptyList(),
             null,
             null,
@@ -1044,6 +1050,9 @@ public class RolapHierarchy extends HierarchyBase {
     private static final RolapAttribute MEASURES_ATTRIBUTE =
         new RolapAttribute(
             "Measures",
+            true,
+            null,
+            null,
             Collections.<RolapSchema.PhysColumn>emptyList(),
             null,
             null,

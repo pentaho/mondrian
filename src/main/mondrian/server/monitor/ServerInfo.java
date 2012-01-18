@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
-// Copyright (C) 2011-2011 Julian Hyde
+// Copyright (C) 2011-2012 Julian Hyde
 // All Rights Reserved.
 */
 package mondrian.server.monitor;
@@ -57,13 +57,29 @@ public class ServerInfo extends Info {
 
     /**
      * The number of segments that have been created since the server started.
+     * (Should equal the sum {@link #segmentCreateViaExternalCount}
+     * + {@link #segmentCreateViaRollupCount}
+     * + {@link #segmentCreateViaSqlCount}.)
      */
     public final int segmentCreateCount;
 
     /**
-     * The number of aggregates currently in cache.
+     * The number of segments that have been created via external since the
+     * server started.
      */
-    public final int aggregateCount;
+    public final int segmentCreateViaExternalCount;
+
+    /**
+     * The number of segments that have been created via rollup since the server
+     * started.
+     */
+    public final int segmentCreateViaRollupCount;
+
+    /**
+     * The number of segments that have been created via SQL since the server
+     * started.
+     */
+    public final int segmentCreateViaSqlCount;
 
     /**
      * The number of cells currently in cache.
@@ -104,7 +120,9 @@ public class ServerInfo extends Info {
         long jvmHeapBytesMax,
         int segmentCount,
         int segmentCreateCount,
-        int aggregateCount,
+        int segmentCreateViaExternalCount,
+        int segmentCreateViaRollupCount,
+        int segmentCreateViaSqlCount,
         int cellCount,
         int cellCoordinateCount)
     {
@@ -129,7 +147,9 @@ public class ServerInfo extends Info {
         this.jvmHeapBytesMax = jvmHeapBytesMax;
         this.segmentCount = segmentCount;
         this.segmentCreateCount = segmentCreateCount;
-        this.aggregateCount = aggregateCount;
+        this.segmentCreateViaExternalCount = segmentCreateViaExternalCount;
+        this.segmentCreateViaRollupCount = segmentCreateViaRollupCount;
+        this.segmentCreateViaSqlCount = segmentCreateViaSqlCount;
         this.cellCount = cellCount;
         this.cellCoordinateCount = cellCoordinateCount;
     }

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2011 Julian Hyde
+// Copyright (C) 2003-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -25,6 +25,7 @@ import mondrian.util.Bug;
 import junit.framework.Assert;
 
 import org.olap4j.*;
+import org.olap4j.impl.ArrayMap;
 import org.olap4j.layout.RectangularCellSetFormatter;
 
 import java.io.PrintWriter;
@@ -1299,11 +1300,11 @@ public class BasicQueryTest extends FoodMartTestCase {
         assertSize(
             "WITH Member [Time].[Time].[1997].[H1] as ' Aggregate({[Time].[1997].[Q1], [Time].[1997].[Q2]})' \n"
             + "  MEMBER [Measures].[Store Margin] as '[Measures].[Store Sales] - [Measures].[Store Cost]'\n"
-            + "SELECT {[Gender].children} on columns,\n"
+            + "SELECT {[Gender].members} on columns,\n"
             + " filter({[Product].members}, [Gender].[F] > 10000) on rows\n"
             + "FROM Sales\n"
             + "WHERE ([Time].[1997].[H1], [Measures].[Store Margin])",
-            2,
+            3,
             6);
     }
 
@@ -2861,7 +2862,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
         assertQueryReturns(
             "select {[Measures].members} on columns,\n"
-            + " {[Store Type].members} on rows\n"
+            + " {[Store].[Store Type].members} on rows\n"
             + "from [Store]"
             + "where [Store].[USA].[CA]",
 
@@ -5276,7 +5277,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             "<Cube name='"
             + cubeName
             + "'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
+            + "  <MeasureGroups>\n"
+            + "    <MeasureGroup name='sales' table='sales_fact_1997'>\n"
+            + "      <Measures>\n"
             + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
             + "      formatString='Standard' visible='false'/>\n"
             + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'\n"
@@ -5287,14 +5290,20 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "      formatString='#,###'/>\n"
             + "  <Measure name='Customer Count' column='customer_id'\n"
             + "      aggregator='distinct-count' formatString='#,###'/>\n"
-            + "  <CalculatedMember\n"
-            + "      name='Profit'\n"
-            + "      dimension='Measures'\n"
-            + "      visible='false'\n"
-            + "      formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>\n"
-            + "    <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'/>\n"
-            + "  </CalculatedMember>\n"
-            + "</Cube>", null, null, null, null);
+            + "      </Measures>\n"
+            + "    </MeasureGroup>\n"
+            + "  </MeasureGroups>"
+            + "  <CalculatedMembers>\n"
+            + "    <CalculatedMember\n"
+            + "        name='Profit'\n"
+            + "        dimension='Measures'\n"
+            + "        visible='false'\n"
+            + "        formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>\n"
+            + "      <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'/>\n"
+            + "    </CalculatedMember>\n"
+            + "  </CalculatedMembers>\n"
+            + "</Cube>",
+            null, null, null, null);
         SchemaReader scr = testContext.getConnection().getSchema().lookupCube(
             cubeName, true).getSchemaReader(null);
         Member member = scr.getMemberByUniqueName(
@@ -5317,8 +5326,12 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * Bug 1250080 caused a dimension with no 'all' member to be constrained
-     * twice.
+     * Tests bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-105">MONDRIAN-105,
+     * "bug with hierarchy with no all member when in query"</a>. It caused a
+     * dimension with no 'all' member to be constrained twice.
+     *
+     * @see mondrian.test.LegacySchemaTest#testDimWithoutAll()
      */
     public void testDimWithoutAll() {
         // Create a test context with a new ""Sales_DimWithoutAll" cube, and
@@ -5326,46 +5339,63 @@ public class BasicQueryTest extends FoodMartTestCase {
         final String schema = TestContext.instance().getSchema(
             null,
             "<Cube name='Sales_DimWithoutAll'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <Dimension name='Product' foreignKey='product_id'>\n"
-            + "    <Hierarchy hasAll='false' primaryKey='product_id' "
-            + "primaryKeyTable='product'>\n"
-            + "      <Join leftKey='product_class_id' "
-            + "rightKey='product_class_id'>\n"
-            + "        <Table name='product'/>\n"
-            + "        <Table name='product_class'/>\n"
-            + "      </Join>\n"
-            + "      <Level name='Product Family' table='product_class' "
-            + "column='product_family'\n"
-            + "          uniqueMembers='true'/>\n"
-            + "      <Level name='Product Department' "
-            + "table='product_class' column='product_department'\n"
-            + "          uniqueMembers='false'/>\n"
-            + "      <Level name='Product Category' table='product_class'"
-            + " column='product_category'\n"
-            + "          uniqueMembers='false'/>\n"
-            + "      <Level name='Product Subcategory' "
-            + "table='product_class' column='product_subcategory'\n"
-            + "          uniqueMembers='false'/>\n"
-            + "      <Level name='Brand Name' table='product' "
-            + "column='brand_name' uniqueMembers='false'/>\n"
-            + "      <Level name='Product Name' table='product' "
-            + "column='product_name'\n"
-            + "          uniqueMembers='true'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "  <Dimension name='Gender' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='false' primaryKey='customer_id'>\n"
-            + "    <Table name='customer'/>\n"
-            + "      <Level name='Gender' column='gender' "
-            + "uniqueMembers='true'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>"
-            + "  <Measure name='Unit Sales' column='unit_sales' "
-            + "aggregator='sum'\n"
-            + "      formatString='Standard' visible='false'/>\n"
-            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'\n"
-            + "      formatString='#,###.00'/>\n"
+            + "  <Dimensions>\n"
+            + "    <Dimension name='Product' key='Product Id'>\n"
+            + "      <Attributes>\n"
+            + "        <Attribute name='Product Family' table='product_class' keyColumn='product_family'/>\n"
+            + "        <Attribute name='Product Department' table='product_class'>\n"
+            + "          <Key>\n"
+            + "            <Column name='product_family'/>\n"
+            + "            <Column name='product_department'/>\n"
+            + "          </Key>\n"
+            + "          <Name>\n"
+            + "            <Column name='product_department'/>\n"
+            + "          </Name>\n"
+            + "        </Attribute>\n"
+            + "        <Attribute name='Product Category' table='product_class'>\n"
+            + "          <Key>\n"
+            + "            <Column name='product_family'/>\n"
+            + "            <Column name='product_department'/>\n"
+            + "            <Column name='product_category'/>\n"
+            + "          </Key>\n"
+            + "          <Name>\n"
+            + "            <Column name='product_category'/>\n"
+            + "          </Name>\n"
+            + "        </Attribute>\n"
+            + "        <Attribute name='Product Id' table='product' keyColumn='product_id'/>\n"
+            + "      </Attributes>\n"
+            + "      <Hierarchies>\n"
+            + "        <Hierarchy name='Products' allMemberName='All Products' hasAll='false'>\n"
+            + "          <Level attribute='Product Family'/>\n"
+            + "          <Level attribute='Product Department'/>\n"
+            + "          <Level attribute='Product Category'/>\n"
+            + "        </Hierarchy>\n"
+            + "      </Hierarchies>\n"
+            + "    </Dimension>\n"
+            + "    <Dimension name='Gender' table='customer' key='Name'>\n"
+            + "      <Attributes>\n"
+            + "        <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name'/>\n"
+            + "        <Attribute name='Gender' keyColumn='gender'/>\n"
+            + "      </Attributes>\n"
+            + "      <Hierarchies>\n"
+            + "        <Hierarchy name='Gender' allMemberName='All Gender' hasAll='false'>\n"
+            + "          <Level attribute='Gender'/>\n"
+            + "        </Hierarchy>\n"
+            + "      </Hierarchies>\n"
+            + "    </Dimension>\n"
+            + "  </Dimensions>\n"
+            + "  <MeasureGroups>\n"
+            + "    <MeasureGroup name='s' table='sales_fact_1997'>\n"
+            + "      <Measures>\n"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard' visible='false'/>\n"
+            + "        <Measure name='Store Cost' column='store_cost' aggregator='sum' formatString='#,###.00'/>\n"
+            + "      </Measures>\n"
+            + "      <DimensionLinks>\n"
+            + "        <RegularDimensionLink dimension='Product' foreignKeyColumn='product_id'/>\n"
+            + "        <RegularDimensionLink dimension='Gender' foreignKeyColumn='customer_id'/>\n"
+            + "      </DimensionLinks>"
+            + "    </MeasureGroup>\n"
+            + "  </MeasureGroups>\n"
             + "</Cube>",
             null,
             null,
@@ -5548,84 +5578,6 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
     }
 
-    /**
-     * Tests whether the agg mgr behaves correctly if a cell request causes
-     * a column to be constrained multiple times. This happens if two levels
-     * map to the same column via the same join-path. If the constraints are
-     * inconsistent, no data will be returned.
-     */
-    public void testMultipleConstraintsOnSameColumn() {
-        final String cubeName = "Sales_withCities";
-        final TestContext testContext = TestContext.instance().create(
-            null,
-            "<Cube name='" + cubeName + "'>\n"
-            + "  <Table name='sales_fact_1997'/>\n"
-            + "  <DimensionUsage name='Time' source='Time' foreignKey='time_id'/>\n"
-            + "  <Dimension name='Cities' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' allMemberName='All Cities' primaryKey='customer_id'>\n"
-            + "      <Table name='customer'/>\n"
-            + "      <Level name='City' column='city' uniqueMembers='true'/> \n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "  <Dimension name='Customers' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' allMemberName='All Customers' primaryKey='customer_id'>\n"
-            + "      <Table name='customer'/>\n"
-            + "      <Level name='Country' column='country' uniqueMembers='true'/>\n"
-            + "      <Level name='State Province' column='state_province' uniqueMembers='true'/>\n"
-            + "      <Level name='City' column='city' uniqueMembers='false'/>\n"
-            + "      <Level name='Name' column='fullname' uniqueMembers='true'>\n"
-            + "        <Property name='Gender' column='gender'/>\n"
-            + "        <Property name='Marital Status' column='marital_status'/>\n"
-            + "        <Property name='Education' column='education'/>\n"
-            + "        <Property name='Yearly Income' column='yearly_income'/>\n"
-            + "      </Level>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "  <Dimension name='Gender' foreignKey='customer_id'>\n"
-            + "    <Hierarchy hasAll='true' primaryKey='customer_id'>\n"
-            + "    <Table name='customer'/>\n"
-            + "      <Level name='Gender' column='gender' uniqueMembers='true'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
-            + "      formatString='Standard' visible='false'/>\n"
-            + "  <Measure name='Store Sales' column='store_sales' aggregator='sum'\n"
-            + "      formatString='#,###.00'/>\n"
-            + "</Cube>",
-            null,
-            null,
-            null,
-            null);
-
-        testContext.assertQueryReturns(
-            "select {\n"
-            + " [Customers].[USA],\n"
-            + " [Customers].[USA].[OR],\n"
-            + " [Customers].[USA].[CA],\n"
-            + " [Customers].[USA].[CA].[Altadena],\n"
-            + " [Customers].[USA].[CA].[Burbank],\n"
-            + " [Customers].[USA].[CA].[Burbank].[Alma Son]} ON COLUMNS\n"
-            + "from ["
-            + cubeName
-            + "] \n"
-            + "where ([Cities].[All Cities].[Burbank], [Measures].[Store Sales])",
-            "Axis #0:\n"
-            + "{[Cities].[Burbank], [Measures].[Store Sales]}\n"
-            + "Axis #1:\n"
-            + "{[Customer].[Customers].[USA]}\n"
-            + "{[Customer].[Customers].[USA].[OR]}\n"
-            + "{[Customer].[Customers].[USA].[CA]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Altadena]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Burbank]}\n"
-            + "{[Customer].[Customers].[USA].[CA].[Burbank].[Alma Son]}\n"
-            + "Row #0: 6,577.33\n"
-            + "Row #0: \n"
-            + "Row #0: 6,577.33\n"
-            + "Row #0: \n"
-            + "Row #0: 6,577.33\n"
-            + "Row #0: 36.50\n");
-    }
-
     public void testOverrideDimension() {
         assertQueryReturns(
             "with member  [Gender].[test] as '\n"
@@ -5690,7 +5642,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[Time].[1997].[Q1]}\n"
             + "Row #0: 66,291\n");
 
         // Illegal member in slicer
@@ -5715,9 +5667,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Time].[1997].[Q1], [Customers].[USA].[CA]}\n"
-            + "{[Time].[1997].[Q1], [Customers].[USA].[OR]}\n"
-            + "{[Time].[1997].[Q1], [Customers].[USA].[WA]}\n"
+            + "{[Time].[Time].[1997].[Q1], [Customer].[Customers].[USA].[CA]}\n"
+            + "{[Time].[Time].[1997].[Q1], [Customer].[Customers].[USA].[OR]}\n"
+            + "{[Time].[Time].[1997].[Q1], [Customer].[Customers].[USA].[WA]}\n"
             + "Row #0: 16,890\n"
             + "Row #1: 19,287\n"
             + "Row #2: 30,114\n");
@@ -6123,94 +6075,68 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #0: 266,773\n");
     }
 
-    public void testDefaultMeasureInCube() {
-        TestContext testContext = TestContext.instance().create(
+    private TestContext defaultMeasureContext(String name) {
+        return TestContext.instance().create(
             null,
-            "<Cube name='DefaultMeasureTesting' defaultMeasure='Supply Time'>\n"
-            + "  <Table name='inventory_fact_1997'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' "
-            + "foreignKey='store_id'/>\n"
-            + "  <DimensionUsage name='Store Type' source='Store Type' "
-            + "foreignKey='store_id'/>\n"
-            + "  <Measure name='Store Invoice' column='store_invoice' "
-            + "aggregator='sum'/>\n"
-            + "  <Measure name='Supply Time' column='supply_time' "
-            + "aggregator='sum'/>\n"
-            + "  <Measure name='Warehouse Cost' column='warehouse_cost' "
-            + "aggregator='sum'/>\n"
+            "<Cube name='DefaultMeasureTesting' defaultMeasure='"
+            + name
+            + "'>\n"
+            + "  <Dimensions>\n"
+            + "    <Dimension source='Store'/>\n"
+            + "  </Dimensions>\n"
+            + "  <MeasureGroups>\n"
+            + "    <MeasureGroup name='Inventory' table='inventory_fact_1997'>\n"
+            + "      <Measures>\n"
+            + "        <Measure name='Store Invoice' column='store_invoice' aggregator='sum'/>\n"
+            + "        <Measure name='Supply Time' column='supply_time' aggregator='sum'/>\n"
+            + "        <Measure name='Warehouse Cost' column='warehouse_cost' aggregator='sum'/>\n"
+            + "      </Measures>\n"
+            + "      <DimensionLinks>\n"
+            + "        <RegularDimensionLink dimension='Store' foreignKeyColumn='store_id'/>\n"
+            + "      </DimensionLinks>\n"
+            + "    </MeasureGroup>\n"
+            + "  </MeasureGroups>\n"
             + "</Cube>",
             null,
             null,
             null,
             null);
+    }
+
+    public void testDefaultMeasureInCube() {
+        TestContext testContext = defaultMeasureContext("Supply Time");
         String queryWithoutFilter =
-            "select store.members on 0 from "
+            "select stores.members on 0 from "
             + "DefaultMeasureTesting";
-        String queryWithDeflaultMeasureFilter =
-            "select store.members on 0 "
+        String queryWithDefaultMeasureFilter =
+            "select stores.members on 0 "
             + "from DefaultMeasureTesting where [measures].[Supply Time]";
         assertQueriesReturnSimilarResults(
-            queryWithoutFilter, queryWithDeflaultMeasureFilter, testContext);
+            queryWithoutFilter, queryWithDefaultMeasureFilter, testContext);
     }
 
     public void testDefaultMeasureInCubeForIncorrectMeasureName() {
-        TestContext testContext = TestContext.instance().create(
-            null,
-            "<Cube name='DefaultMeasureTesting' defaultMeasure='Supply Time Error'>\n"
-            + "  <Table name='inventory_fact_1997'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' "
-            + "foreignKey='store_id'/>\n"
-            + "  <DimensionUsage name='Store Type' source='Store Type' "
-            + "foreignKey='store_id'/>\n"
-            + "  <Measure name='Store Invoice' column='store_invoice' "
-            + "aggregator='sum'/>\n"
-            + "  <Measure name='Supply Time' column='supply_time' "
-            + "aggregator='sum'/>\n"
-            + "  <Measure name='Warehouse Cost' column='warehouse_cost' "
-            + "aggregator='sum'/>\n"
-            + "</Cube>",
-            null,
-            null,
-            null,
-            null);
+        TestContext testContext = defaultMeasureContext("Supply Time Error");
         String queryWithoutFilter =
-            "select store.members on 0 from "
+            "select stores.members on 0 from "
             + "DefaultMeasureTesting";
         String queryWithFirstMeasure =
-            "select store.members on 0 "
+            "select stores.members on 0 "
             + "from DefaultMeasureTesting where [measures].[Store Invoice]";
         assertQueriesReturnSimilarResults(
             queryWithoutFilter, queryWithFirstMeasure, testContext);
     }
 
     public void testDefaultMeasureInCubeForCaseSensitivity() {
-        TestContext testContext = TestContext.instance().create(
-            null,
-            "<Cube name='DefaultMeasureTesting' defaultMeasure='SUPPLY TIME'>\n"
-            + "  <Table name='inventory_fact_1997'/>\n"
-            + "  <DimensionUsage name='Store' source='Store' "
-            + "foreignKey='store_id'/>\n"
-            + "  <DimensionUsage name='Store Type' source='Store Type' "
-            + "foreignKey='store_id'/>\n"
-            + "  <Measure name='Store Invoice' column='store_invoice' "
-            + "aggregator='sum'/>\n"
-            + "  <Measure name='Supply Time' column='supply_time' "
-            + "aggregator='sum'/>\n"
-            + "  <Measure name='Warehouse Cost' column='warehouse_cost' "
-            + "aggregator='sum'/>\n"
-            + "</Cube>",
-            null,
-            null,
-            null,
-            null);
+        TestContext testContext = defaultMeasureContext("SUPPLY TIME");
         String queryWithoutFilter =
-            "select store.members on 0 from "
+            "select stores.members on 0 from "
             + "DefaultMeasureTesting";
         String queryWithFirstMeasure =
-            "select store.members on 0 "
+            "select stores.members on 0 "
             + "from DefaultMeasureTesting where [measures].[Store Invoice]";
         String queryWithDefaultMeasureFilter =
-            "select store.members on 0 "
+            "select stores.members on 0 "
             + "from DefaultMeasureTesting where [measures].[Supply Time]";
         if (props.CaseSensitive.get()) {
             assertQueriesReturnSimilarResults(
@@ -6281,7 +6207,7 @@ public class BasicQueryTest extends FoodMartTestCase {
     public void testRollupQuery() {
         assertQueryReturns(
             "SELECT {[Product].[Product Department].MEMBERS} ON AXIS(0),\n"
-            + "{{[Gender].[Gender].MEMBERS}, {[Gender].[All Gender]}} ON AXIS(1)\n"
+            + "{{[Gender].[Gender].[Gender].MEMBERS}, {[Gender].[All Gender]}} ON AXIS(1)\n"
             + "FROM [Sales 2] WHERE {[Measures].[Unit Sales]}",
             "Axis #0:\n"
             + "{[Measures].[Unit Sales]}\n"
@@ -6310,9 +6236,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Product].[Products].[Non-Consumable].[Household]}\n"
             + "{[Product].[Products].[Non-Consumable].[Periodicals]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[F]}\n"
-            + "{[Customer].[Gender].[M]}\n"
-            + "{[Customer].[Gender].[All Gender]}\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
+            + "{[Gender].[All Gender]}\n"
             + "Row #0: 3,439\n"
             + "Row #0: 6,776\n"
             + "Row #0: 1,987\n"
@@ -6396,13 +6322,26 @@ public class BasicQueryTest extends FoodMartTestCase {
         // than 1000 distinct members so it was used for this test.
         TestContext testContext = TestContext.instance().createSubstitutingCube(
             "Sales",
-            "  <Dimension name='Customer_2' foreignKey='customer_id'>\n"
-            + "    <Hierarchy name='Customer' allMemberName='All Customers' primaryKey='customer_id' >\n"
-            + "      <Table name='customer'/>\n"
-            + "      <Level name='Name1' column='customer_id' uniqueMembers='true'/>"
-            + "      <Level name='Name2' column='customer_id' uniqueMembers='true'/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>");
+            "  <Dimension name='Customer_2' key='Id' table='customer'>\n"
+            + "    <Attributes>\n"
+            + "      <Attribute name='Name1' keyColumn='customer_id' uniqueMembers='true'/>\n"
+            + "      <Attribute name='Name2' keyColumn='customer_id' uniqueMembers='true'/>\n"
+            + "      <Attribute name='Id' keyColumn='customer_id' uniqueMembers='true'/>\n"
+            + "    </Attributes>\n"
+            + "    <Hierarchies>\n"
+            + "      <Hierarchy name='Customer' allMemberName='All Customers' primaryKey='customer_id' >\n"
+            + "        <Level attribute='Name1'/>"
+            + "        <Level attribute='Name2'/>"
+            + "      </Hierarchy>\n"
+            + "    </Hierarchies>\n"
+            + "  </Dimension>",
+            null,
+            null,
+            null,
+            ArrayMap.of(
+                "Sales",
+                "<RegularDimensionLink dimension='Customer_2' foreignKeyColumn='customer_id'/>")
+);
 
         Result result = testContext.executeQuery(
             "WITH SET [#DataSet#] AS "
@@ -6698,7 +6637,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Store Sales]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[AGG]}\n"
+            + "{[Customer].[Gender].[AGG]}\n"
             + "Row #0: \n");
     }
 
@@ -6996,9 +6935,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
             + "\n"
             + "Axis (ROWS):\n"
-            + "ImmutableIterCalc(name=ImmutableIterCalc, class=class mondrian.olap.fun.FilterFunDef$ImmutableIterCalc, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=ITERABLE)\n"
-            + "    Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product]>>, resultStyle=LIST)\n"
-            + "        CurrentMemberFixed(hierarchy=[Product], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product]>, resultStyle=VALUE)\n"
+            + "ImmutableIterCalc(name=ImmutableIterCalc, class=class mondrian.olap.fun.FilterFunDef$ImmutableIterCalc, type=SetType<MemberType<hierarchy=[Product].[Products]>>, resultStyle=ITERABLE)\n"
+            + "    Children(name=Children, class=class mondrian.olap.fun.BuiltinFunTable$22$1, type=SetType<MemberType<hierarchy=[Product].[Products]>>, resultStyle=LIST)\n"
+            + "        CurrentMemberFixed(hierarchy=[Product].[Products], name=CurrentMemberFixed, class=class mondrian.olap.fun.HierarchyCurrentMemberFunDef$FixedCalcImpl, type=MemberType<hierarchy=[Product].[Products]>, resultStyle=VALUE)\n"
             + "    >(name=>, class=class mondrian.olap.fun.BuiltinFunTable$63$1, type=BOOLEAN, resultStyle=VALUE)\n"
             + "        MemberValueCalc(name=MemberValueCalc, class=class mondrian.calc.impl.MemberValueCalc, type=SCALAR, resultStyle=VALUE)\n"
             + "            Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Unit Sales]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Unit Sales])\n"
@@ -7043,9 +6982,9 @@ public class BasicQueryTest extends FoodMartTestCase {
         String s = resultSet.getString(1);
         TestContext.assertEqualsVerbose(
             "Axis (FILTER):\n"
-            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[F]>>, resultStyle=MUTABLE_LIST)\n"
-            + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE)\n"
-            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[F])\n"
+            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Customer].[Gender].[F]>>, resultStyle=MUTABLE_LIST)\n"
+            + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Customer].[Gender].[F]>, resultStyle=VALUE)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Customer].[Gender].[F]>, resultStyle=VALUE_NOT_NULL, value=[Customer].[Gender].[F])\n"
             + "\n"
             + "Axis (COLUMNS):\n"
             + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Measures].[Unit Sales]>>, resultStyle=MUTABLE_LIST)\n"
@@ -7055,10 +6994,10 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Store Margin]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store Margin])\n"
             + "\n"
             + "Axis (ROWS):\n"
-            + "CrossJoinIterCalc(name=CrossJoinIterCalc, class=class mondrian.olap.fun.CrossJoinFunDef$CrossJoinIterCalc, type=SetType<TupleType<MemberType<member=[Product].[Drink]>, MemberType<hierarchy=[Marital Status]>>>, resultStyle=ITERABLE)\n"
-            + "    1(name=1, class=class mondrian.mdx.NamedSetExpr$1, type=SetType<MemberType<member=[Product].[Drink]>>, resultStyle=ITERABLE)\n"
-            + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$27$1, type=SetType<MemberType<hierarchy=[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
-            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=HierarchyType<hierarchy=[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Marital Status])\n"
+            + "CrossJoinIterCalc(name=CrossJoinIterCalc, class=class mondrian.olap.fun.CrossJoinFunDef$CrossJoinIterCalc, type=SetType<TupleType<MemberType<member=[Product].[Products].[Drink]>, MemberType<hierarchy=[Customer].[Marital Status]>>>, resultStyle=ITERABLE)\n"
+            + "    1(name=1, class=class mondrian.mdx.NamedSetExpr$1, type=SetType<MemberType<member=[Product].[Products].[Drink]>>, resultStyle=ITERABLE)\n"
+            + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$27$1, type=SetType<MemberType<hierarchy=[Customer].[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=HierarchyType<hierarchy=[Customer].[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Customer].[Marital Status])\n"
             + "\n",
             s);
 
@@ -7085,9 +7024,9 @@ public class BasicQueryTest extends FoodMartTestCase {
                 "nnnms");
         TestContext.assertEqualsVerbose(
             "Axis (FILTER):\n"
-            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Gender].[F]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=2, elementSquaredCount=2)\n"
-            + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE)\n"
-            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Gender].[F]>, resultStyle=VALUE_NOT_NULL, value=[Gender].[F], callCount=2, callMillis=nnn)\n"
+            + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Customer].[Gender].[F]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=2, elementSquaredCount=2)\n"
+            + "    ()(name=(), class=class mondrian.olap.fun.SetFunDef$SetListCalc$2, type=MemberType<member=[Customer].[Gender].[F]>, resultStyle=VALUE)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Customer].[Gender].[F]>, resultStyle=VALUE_NOT_NULL, value=[Customer].[Gender].[F], callCount=2, callMillis=nnn)\n"
             + "\n"
             + "Axis (COLUMNS):\n"
             + "SetListCalc(name=SetListCalc, class=class mondrian.olap.fun.SetFunDef$SetListCalc, type=SetType<MemberType<member=[Measures].[Unit Sales]>>, resultStyle=MUTABLE_LIST, callCount=2, callMillis=nnn, elementCount=4, elementSquaredCount=8)\n"
@@ -7097,18 +7036,18 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=MemberType<member=[Measures].[Store Margin]>, resultStyle=VALUE_NOT_NULL, value=[Measures].[Store Margin], callCount=2, callMillis=nnn)\n"
             + "\n"
             + "Axis (ROWS):\n"
-            + "CrossJoinIterCalc(name=CrossJoinIterCalc, class=class mondrian.olap.fun.CrossJoinFunDef$CrossJoinIterCalc, type=SetType<TupleType<MemberType<member=[Product].[Drink]>, MemberType<hierarchy=[Marital Status]>>>, resultStyle=ITERABLE, callCount=2, callMillis=nnn, elementCount=0, elementSquaredCount=0)\n"
-            + "    1(name=1, class=class mondrian.mdx.NamedSetExpr$1, type=SetType<MemberType<member=[Product].[Drink]>>, resultStyle=ITERABLE)\n"
-            + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$27$1, type=SetType<MemberType<hierarchy=[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
-            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=HierarchyType<hierarchy=[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Marital Status], callCount=2, callMillis=nnn)\n"
+            + "CrossJoinIterCalc(name=CrossJoinIterCalc, class=class mondrian.olap.fun.CrossJoinFunDef$CrossJoinIterCalc, type=SetType<TupleType<MemberType<member=[Product].[Products].[Drink]>, MemberType<hierarchy=[Customer].[Marital Status]>>>, resultStyle=ITERABLE, callCount=2, callMillis=nnn, elementCount=0, elementSquaredCount=0)\n"
+            + "    1(name=1, class=class mondrian.mdx.NamedSetExpr$1, type=SetType<MemberType<member=[Product].[Products].[Drink]>>, resultStyle=ITERABLE)\n"
+            + "    Members(name=Members, class=class mondrian.olap.fun.BuiltinFunTable$27$1, type=SetType<MemberType<hierarchy=[Customer].[Marital Status]>>, resultStyle=MUTABLE_LIST)\n"
+            + "        Literal(name=Literal, class=class mondrian.calc.impl.ConstantCalc, type=HierarchyType<hierarchy=[Customer].[Marital Status]>, resultStyle=VALUE_NOT_NULL, value=[Customer].[Marital Status], callCount=2, callMillis=nnn)\n"
             + "\n",
             actual);
 
         assertTrue(
             strings[1],
             strings[1].contains(
-                "SqlStatement-SqlTupleReader.readTuples [[Product].[Product "
-                + "Category]] invoked 1 times for total of "));
+                "SqlStatement-SqlTupleReader.readTuples [[Product].[Products]."
+                + "[Product Category]] invoked 1 times for total of "));
     }
 
     public void testExplainInvalid() throws SQLException {
@@ -7139,6 +7078,9 @@ public class BasicQueryTest extends FoodMartTestCase {
         final OlapConnection olapConnection =
             TestContext.instance().getOlap4jConnection();
 
+        final String mdxQuery =
+            "select {TopCount([Customers].Members, 10, [Measures].[Unit Sales])} on columns from [Sales]";
+
         final ExecutorService es =
             Executors.newCachedThreadPool(
                 new ThreadFactory() {
@@ -7152,28 +7094,136 @@ public class BasicQueryTest extends FoodMartTestCase {
                     }
                 });
 
+
         final OlapStatement stmt = olapConnection.createStatement();
 
         es.submit(
             new Callable<CellSet>() {
                 public CellSet call() throws Exception {
-                    return stmt.executeOlapQuery(
-                        "select {Crossjoin([Store].Members, [Customers].Members)} on columns from [Sales]");
+                    return stmt.executeOlapQuery(mdxQuery);
                 }
             });
 
         // Give some time to the first query so it enters a "running" state.
-        Thread.sleep(1000);
+        Thread.sleep(100);
 
         es.submit(
             new Callable<CellSet>() {
                 public CellSet call() throws Exception {
-                    return stmt.executeOlapQuery(
-                        "select {Crossjoin([Store].Members, [Customers].Members)} on columns from [Sales]");
+                    return stmt.executeOlapQuery(mdxQuery);
                 }
             }).get();
 
         es.shutdownNow();
+    }
+
+    public void testRollup() {
+        switch (2) {
+        case 0:
+        assertQueryReturns(
+            "select [Gender].Children * [Product].Children on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Gender].[F], [Product].[Drink]}\n"
+            + "{[Gender].[F], [Product].[Food]}\n"
+            + "{[Gender].[F], [Product].[Non-Consumable]}\n"
+            + "{[Gender].[M], [Product].[Drink]}\n"
+            + "{[Gender].[M], [Product].[Food]}\n"
+            + "{[Gender].[M], [Product].[Non-Consumable]}\n"
+            + "Row #0: 12,202\n"
+            + "Row #0: 94,814\n"
+            + "Row #0: 24,542\n"
+            + "Row #0: 12,395\n"
+            + "Row #0: 97,126\n"
+            + "Row #0: 25,694\n");
+        // now, should be able to answer this one by rolling up gender
+        assertQueryReturns(
+            "select [Product].Children on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #0: 191,940\n"
+            + "Row #0: 50,236\n");
+            break;
+        case 1:
+            assertQueryReturns(
+                "select [Gender].[M] * [Product].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Gender].[M], [Product].[Drink]}\n"
+                + "{[Gender].[M], [Product].[Food]}\n"
+                + "{[Gender].[M], [Product].[Non-Consumable]}\n"
+                + "Row #0: 12,395\n"
+                + "Row #0: 97,126\n"
+                + "Row #0: 25,694\n");
+            assertQueryReturns(
+                "select [Gender].[F] * [Product].Children on 0\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Gender].[F], [Product].[Drink]}\n"
+                + "{[Gender].[F], [Product].[Food]}\n"
+                + "{[Gender].[F], [Product].[Non-Consumable]}\n"
+                + "Row #0: 12,202\n"
+                + "Row #0: 94,814\n"
+                + "Row #0: 24,542\n");
+        // now, should be able to answer this one by rolling up gender
+        assertQueryReturns(
+            "select [Product].Children on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #0: 191,940\n"
+            + "Row #0: 50,236\n");
+            break;
+        case 2:
+            String[] genders = {"M", "F"};
+            String[] states = {"USA", "Canada", "Mexico"};
+            for (String state : states) {
+                for (String gender : genders) {
+                    getTestContext().executeQuery(
+                        "select [Gender].[" + gender
+                        + "] * [Store].[" + state
+                        + "] * [Product].Children on 0\n"
+                        + "from [Sales]");
+                }
+            }
+        // now, should be able to answer this one by rolling up gender
+        assertQueryReturns(
+            "select [Product].Children on 0\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Product].[Products].[Drink]}\n"
+            + "{[Product].[Products].[Food]}\n"
+            + "{[Product].[Products].[Non-Consumable]}\n"
+            + "Row #0: 24,597\n"
+            + "Row #0: 191,940\n"
+            + "Row #0: 50,236\n");
+            break;
+        case 3:
+            // Test case for MONDRIAN-1021.
+            // First, read {Mexico}.
+            // Now, query {USA, Canada, Mexico}. Should just read {USA, Canada}.
+            break;
+        case 4:
+        }
     }
 }
 

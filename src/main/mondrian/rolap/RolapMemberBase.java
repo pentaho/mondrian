@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -43,7 +43,7 @@ public class RolapMemberBase
      * value of that expression for this member as retrieved via JDBC;
      * otherwise null.
      */
-    private Comparable<?> orderKey;
+    private Comparable orderKey;
     private Boolean isParentChildLeaf;
     private static final Logger LOGGER = Logger.getLogger(RolapMember.class);
     private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
@@ -464,7 +464,7 @@ public class RolapMemberBase
         return ordinal;
     }
 
-    public Comparable<?> getOrderKey() {
+    public Comparable getOrderKey() {
         return orderKey;
     }
 
@@ -474,7 +474,7 @@ public class RolapMemberBase
         }
     }
 
-    void setOrderKey(Comparable<?> orderKey) {
+    void setOrderKey(Comparable orderKey) {
         this.orderKey = orderKey;
     }
 

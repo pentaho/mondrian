@@ -488,6 +488,67 @@
         </CalculatedMembers>
     </Cube>
 
+    <!-- a simpler version of "Sales" (with MEMBER_ORDINAL-properties) -->
+    <Cube name="Sales 2">
+        <Dimensions>
+            <Dimension source="Time"/>
+            <Dimension source="Product"/>
+            <Dimension name="Gender" table="customer" key="Id">
+                <Attributes>
+                    <Attribute name="Gender" keyColumn="gender"/>
+                    <Attribute name="Id" keyColumn="customer_id"/>
+                </Attributes>
+                <Hierarchies>
+                    <Hierarchy name="Gender" allMemberName="All Gender">
+                        <Level attribute="Gender"/>
+                    </Hierarchy>
+                </Hierarchies>
+            </Dimension>
+        </Dimensions>
+        <MeasureGroups>
+            <MeasureGroup name="Sales" table="sales_fact_1997">
+                <Measures>
+                    <Measure name="Sales Count" column="product_id" aggregator="count" formatString="#,###">
+                        <CalculatedMemberProperty name="MEMBER_ORDINAL" value="1"/>
+                    </Measure>
+                    <Measure name="Unit Sales" column="unit_sales" aggregator="sum"    formatString="Standard">
+                        <CalculatedMemberProperty name="MEMBER_ORDINAL" value="2"/>
+                    </Measure>
+                    <Measure name="Store Sales" column="store_sales" aggregator="sum"  formatString="#,###.00">
+                        <CalculatedMemberProperty name="MEMBER_ORDINAL" value="3"/>
+                    </Measure>
+                    <Measure name="Store Cost" column="store_cost" aggregator="sum"    formatString="#,###.00">
+                        <CalculatedMemberProperty name="MEMBER_ORDINAL" value="6"/>
+                    </Measure>
+                    <Measure name="Customer Count" column="customer_id" aggregator="distinct-count" formatString="#,###">
+                        <CalculatedMemberProperty name="MEMBER_ORDINAL" value="7"/>
+                    </Measure>
+                </Measures>
+                <DimensionLinks>
+                    <RegularDimensionLink dimension="Time" foreignKeyColumn="time_id"/>
+                    <RegularDimensionLink dimension="Product" foreignKeyColumn="product_id"/>
+                    <RegularDimensionLink dimension="Gender" foreignKeyColumn="customer_id"/>
+                </DimensionLinks>
+            </MeasureGroup>
+        </MeasureGroups>
+        <CalculatedMembers>
+            <CalculatedMember
+                    name="Profit"
+                    dimension="Measures">
+                <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>
+                <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
+                <CalculatedMemberProperty name="MEMBER_ORDINAL" value="4"/>
+            </CalculatedMember>
+            <CalculatedMember
+                    name="Profit last Period"
+                    dimension="Measures"
+                    formula="COALESCEEMPTY((Measures.[Profit], [Time].[Time].PREVMEMBER),    Measures.[Profit])"
+                    visible="false">
+                <CalculatedMemberProperty name="MEMBER_ORDINAL" value="5"/>
+            </CalculatedMember>
+        </CalculatedMembers>
+    </Cube>
+
     <Cube name='Warehouse and Sales' defaultMeasure='Unit Sales'>
         <Dimensions>
 
@@ -740,7 +801,7 @@
         </CalculatedMembers>
     </Cube>
 
-    <!-- Cubes for compatability with old FoodMart. Will put them
+    <!-- Cubes for compatibility with old FoodMart. Will put them
          in a new schema at some point. -->
 
     <Cube name='Warehouse' defaultMeasure='Unit Sales'>
@@ -771,6 +832,41 @@
                             <Column name='warehouse_id'/>
                         </ForeignKey>
                     </RegularDimensionLink>
+                </DimensionLinks>
+            </MeasureGroup>
+        </MeasureGroups>
+    </Cube>
+
+    <!-- A cube based on a single table. -->
+    <Cube name='Store'>
+        <Dimensions>
+            <!-- We could have used the shared dimension "Store Type", but we
+                 want to test private dimensions without primary key. -->
+            <Dimension name='Store Type' key='Store Type'>
+                <Attributes>
+                    <Attribute name='Store Type' table='store' keyColumn='store_type' hasHierarchy='true'/>
+                </Attributes>
+            </Dimension>
+            <Dimension source='Store'/>
+            <Dimension name='Has coffee bar'>
+                <Attributes>
+                    <Attribute name='Has coffee bar' table='store' datatype='Boolean' keyColumn='coffee_bar' hasHierarchy='true'/>
+                </Attributes>
+            </Dimension>
+        </Dimensions>
+
+        <MeasureGroups>
+            <MeasureGroup name='Store' table='store'>
+                <Measures>
+                    <Measure name='Store Sqft' column='store_sqft' aggregator='sum'
+                             formatString='#,###'/>
+                    <Measure name='Grocery Sqft' column='grocery_sqft' aggregator='sum'
+                             formatString='#,###'/>
+                </Measures>
+                <DimensionLinks>
+                    <FactDimensionLink dimension='Store'/>
+                    <FactDimensionLink dimension='Store Type'/>
+                    <FactDimensionLink dimension='Has coffee bar'/>
                 </DimensionLinks>
             </MeasureGroup>
         </MeasureGroups>

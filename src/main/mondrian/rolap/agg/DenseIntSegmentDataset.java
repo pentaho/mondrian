@@ -3,30 +3,27 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2010-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
-//
-// jhyde, 21 March, 2002
 */
 package mondrian.rolap.agg;
 
-
 import mondrian.rolap.CellKey;
 import mondrian.rolap.SqlStatement;
+import mondrian.spi.SegmentBody;
+import mondrian.util.Pair;
 
-import java.util.SortedSet;
+import java.util.*;
 
 /**
- * Implementation of {@link DenseSegmentDataset} that stores
- * values of type {@link Object}.
+ * Implementation of {@link SegmentDataset} that stores
+ * values of type {@code int}.
  *
  * <p>The storage requirements are as follows. Table requires 1 word per
  * cell.</p>
  *
  * @author jhyde
- * @since 21 March, 2002
  * @version $Id$
  */
 class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
@@ -35,12 +32,27 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
     /**
      * Creates a DenseIntSegmentDataset.
      *
-     * @param segment Segment
+     * @param axes Segment axes, containing actual column values
      * @param size Number of coordinates
      */
-    DenseIntSegmentDataset(Segment segment, int size) {
-        super(segment, size);
-        this.values = new int[size];
+    DenseIntSegmentDataset(SegmentAxis[] axes, int size) {
+        this(axes, new int[size], new BitSet(size));
+    }
+
+    /**
+     * Creates a populated DenseIntSegmentDataset.
+     *
+     * @param axes Segment axes, containing actual column values
+     * @param values Cell values; not copied
+     * @param nullIndicators Null indicators
+     */
+    DenseIntSegmentDataset(
+        SegmentAxis[] axes,
+        int[] values,
+        BitSet nullIndicators)
+    {
+        super(axes, nullIndicators);
+        this.values = values;
     }
 
     public int getInt(CellKey key) {
@@ -106,16 +118,12 @@ class DenseIntSegmentDataset extends DenseNativeSegmentDataset {
     }
 
     public SegmentBody createSegmentBody(
-        SortedSet<Comparable<?>>[] axisValueSets,
-        boolean[] nullAxisFlags)
+        List<Pair<SortedSet<Comparable>, Boolean>> axes)
     {
-        return
-            new DenseIntSegmentBody(
-                nullIndicators,
-                values,
-                getSize(),
-                axisValueSets,
-                nullAxisFlags);
+        return new DenseIntSegmentBody(
+            nullIndicators,
+            values,
+            axes);
     }
 }
 
