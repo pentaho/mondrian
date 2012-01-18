@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -33,7 +33,10 @@ import java.util.*;
  * @version $Id$
  * @since May 25, 2007
  */
-class MondrianOlap4jLevel implements Level, Named {
+class MondrianOlap4jLevel
+    extends MondrianOlap4jMetadataElement
+    implements Level, Named
+{
     final MondrianOlap4jSchema olap4jSchema;
     final mondrian.olap.Level level;
 
@@ -114,6 +117,7 @@ class MondrianOlap4jLevel implements Level, Named {
         if (includeStandard) {
             list.addAll(
                 Arrays.asList(Property.StandardMemberProperty.values()));
+            list.addAll(MondrianOlap4jProperty.MEMBER_EXTENSIONS.values());
         }
         // then level-specific properties
         for (mondrian.olap.Property property : level.getProperties()) {
@@ -130,8 +134,7 @@ class MondrianOlap4jLevel implements Level, Named {
         return Locus.execute(
             mondrianConnection,
             "Reading members of level",
-            new Locus.Action<List<Member>>()
-            {
+            new Locus.Action<List<Member>>() {
                 public List<Member> execute() {
                     final mondrian.olap.SchemaReader schemaReader =
                         mondrianConnection.getSchemaReader().withLocus();
@@ -148,8 +151,7 @@ class MondrianOlap4jLevel implements Level, Named {
                         }
                     };
                 }
-            }
-        );
+            });
     }
 
     public String getName() {
@@ -178,6 +180,10 @@ class MondrianOlap4jLevel implements Level, Named {
 
     public boolean isVisible() {
         return level.isVisible();
+    }
+
+    protected OlapElement getOlapElement() {
+        return level;
     }
 }
 

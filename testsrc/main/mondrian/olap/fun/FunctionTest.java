@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2011 Julian Hyde and others
+// Copyright (C) 2003-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -3447,9 +3447,19 @@ public class FunctionTest extends FoodMartTestCase {
         assertExprThrows(
             "[Measures].[Store Sales].ID",
             "MDX object '[Measures].[Store Sales].[ID]' not found in cube 'Sales'");
+
+        // Error for KEY is slightly different than for ID. It doesn't matter
+        // very much.
+        //
+        // The error is different because KEY is registered as a Mondrian
+        // builtin property, but ID isn't. KEY cannot be evaluated in
+        // "<MEMBER>.KEY" syntax because there is not function defined. For
+        // other builtin properties, such as NAME, CAPTION there is a builtin
+        // function.
         assertExprThrows(
             "[Measures].[Store Sales].KEY",
-            "MDX object '[Measures].[Store Sales].[KEY]' not found in cube 'Sales'");
+            "No function matches signature '<Member>.KEY'");
+
         assertExprReturns("[Measures].[Store Sales].CAPTION", "Store Sales");
     }
 

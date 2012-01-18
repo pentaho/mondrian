@@ -3,12 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
+import mondrian.olap.OlapElement;
 import mondrian.rolap.RolapMeasure;
 
 import org.olap4j.OlapException;
@@ -30,7 +31,10 @@ import java.util.List;
  * @version $Id$
  * @since May 25, 2007
  */
-class MondrianOlap4jMember implements Member, Named {
+class MondrianOlap4jMember
+    extends MondrianOlap4jMetadataElement
+    implements Member, Named
+{
     final mondrian.olap.Member member;
     final MondrianOlap4jSchema olap4jSchema;
 
@@ -214,6 +218,10 @@ class MondrianOlap4jMember implements Member, Named {
     public boolean isVisible() {
         return (Boolean) member.getPropertyValue(
             mondrian.olap.Property.VISIBLE.getName());
+    }
+
+    protected OlapElement getOlapElement() {
+        return member;
     }
 }
 

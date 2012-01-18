@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -84,14 +84,15 @@ public class Property extends EnumeratedValues.BasicValue {
     public static final Map<String, Property> mapUpperNameToProperties =
         new HashMap<String, Property>();
 
-    public static final int FORMAT_EXP_ORDINAL = 0;
+    public static final int FORMAT_EXP_PARSED_ORDINAL = 0;
     /**
      * Definition of the internal property which
      * holds the parsed format string (an object of type {@link Exp}).
      */
-    public static final Property FORMAT_EXP =
+    public static final Property FORMAT_EXP_PARSED =
         new Property(
-            "$format_exp", Datatype.TYPE_OTHER, FORMAT_EXP_ORDINAL, true, false,
+            "$format_exp", Datatype.TYPE_OTHER,
+            FORMAT_EXP_PARSED_ORDINAL, true, false,
             false, null);
 
     public static final int AGGREGATION_TYPE_ORDINAL = 1;
@@ -662,6 +663,46 @@ public class Property extends EnumeratedValues.BasicValue {
             false, false, true,
             "The translation expressed as an LCID. Only valid for property translations.");
 
+    public static final int FORMAT_EXP_ORDINAL = 53;
+
+    /**
+     * Definition of the property which
+     * holds the format string.
+     */
+    public static final Property FORMAT_EXP =
+        new Property(
+            "FORMAT_EXP", Datatype.TYPE_STRING, FORMAT_EXP_ORDINAL, true, true,
+            false, null);
+
+    public static final int ACTION_TYPE_ORDINAL = 54;
+
+    /**
+     * Definition of the property which
+     * holds the format string.
+     */
+    public static final Property ACTION_TYPE =
+        new Property(
+            "ACTION_TYPE", Datatype.TYPE_NUMERIC, ACTION_TYPE_ORDINAL, false,
+            false, true, null);
+
+    public static final int DRILLTHROUGH_COUNT_ORDINAL = 55;
+
+    /**
+     * Definition of the property that
+     * holds the number of fact rows that contributed to this cell.
+     * If the cell is not drillable, returns -1.
+     *
+     * <p>Note that this property may be expensive to compute for some
+     * cubes.</p>
+     */
+    public static final Property DRILLTHROUGH_COUNT =
+        new Property(
+            "DRILLTHROUGH_COUNT", Datatype.TYPE_NUMERIC,
+            DRILLTHROUGH_COUNT_ORDINAL, false,
+            false, true,
+            "Number of fact rows that contributed to this cell. If the cell is "
+            + "not drillable, value is -1.");
+
     /**
      * The various property names which define a format string.
      */
@@ -741,24 +782,23 @@ public class Property extends EnumeratedValues.BasicValue {
     }
 
     /**
-     * Returns whether this property is a standard member property.
+     * Returns whether this property is a standard cell property.
      */
     public boolean isCellProperty() {
-        return cell && ordinal <= VALUE_ORDINAL;
+        return cell && isStandard();
     }
 
     /**
      * Returns whether this property is standard.
      */
     public boolean isStandard() {
-        return ordinal <= VALUE_ORDINAL;
+        return ordinal < MAX_ORDINAL;
     }
-
 
     public static final EnumeratedValues<Property> enumeration =
         new EnumeratedValues<Property>(
             new Property[] {
-                FORMAT_EXP,
+                FORMAT_EXP_PARSED,
                 AGGREGATION_TYPE,
                 NAME,
                 CAPTION,
@@ -803,7 +843,12 @@ public class Property extends EnumeratedValues.BasicValue {
                 KEY,
                 SCENARIO,
                 DISPLAY_FOLDER,
+                FORMAT_EXP,
+                ACTION_TYPE,
+                DRILLTHROUGH_COUNT,
             });
+
+    private static final int MAX_ORDINAL = 56;
 
     static {
         // Populate synonyms.
@@ -812,9 +857,10 @@ public class Property extends EnumeratedValues.BasicValue {
 
         // Populate map of upper-case property names.
         for (String propertyName : enumeration.getNames()) {
+            final Property property = enumeration.getValue(propertyName, true);
             mapUpperNameToProperties.put(
-                propertyName.toUpperCase(),
-                enumeration.getValue(propertyName, true));
+                propertyName.toUpperCase(), property);
+            assert property.getOrdinal() < MAX_ORDINAL;
         }
 
         // Add synonyms.

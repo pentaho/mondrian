@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,7 +25,10 @@ import org.olap4j.metadata.*;
  * @version $Id$
  * @since May 24, 2007
  */
-class MondrianOlap4jDimension implements Dimension, Named {
+class MondrianOlap4jDimension
+    extends MondrianOlap4jMetadataElement
+    implements Dimension, Named
+{
     private final MondrianOlap4jSchema olap4jSchema;
     private final mondrian.olap.Dimension dimension;
 
@@ -102,6 +105,10 @@ class MondrianOlap4jDimension implements Dimension, Named {
 
     public boolean isVisible() {
         return dimension.isVisible();
+    }
+
+    protected OlapElement getOlapElement() {
+        return dimension;
     }
 }
 

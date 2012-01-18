@@ -10,6 +10,7 @@
 package mondrian.olap4j;
 
 import mondrian.olap.Hierarchy;
+import mondrian.olap.OlapElement;
 import mondrian.olap.Role;
 
 import org.olap4j.OlapException;
@@ -26,7 +27,10 @@ import java.util.*;
  * @version $Id$
  * @since May 24, 2007
  */
-class MondrianOlap4jSchema implements Schema, Named {
+class MondrianOlap4jSchema
+    extends MondrianOlap4jMetadataElement
+    implements Schema, Named
+{
     final MondrianOlap4jCatalog olap4jCatalog;
     final String schemaName;
     final mondrian.olap.Schema schema;
@@ -114,6 +118,10 @@ class MondrianOlap4jSchema implements Schema, Named {
      */
     final Locale getLocale() {
         return olap4jCatalog.olap4jDatabase.getOlapConnection().getLocale();
+    }
+
+    protected OlapElement getOlapElement() {
+        return null;
     }
 }
 

@@ -12,6 +12,7 @@ package mondrian.olap4j;
 import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.Member;
+import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.*;
 import mondrian.xmla.XmlaHandler;
 
@@ -738,7 +739,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         OlapException createException(
             Cell context, String msg, Throwable cause)
         {
-            OlapException exception = new OlapException(msg, cause);
+            OlapException exception = createException(msg, cause);
             exception.setContext(context);
             return exception;
         }
@@ -753,7 +754,28 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         OlapException createException(
             String msg, Throwable cause)
         {
-            return new OlapException(msg, cause);
+            String sqlState = deduceSqlState(cause);
+            assert !mondrian.util.Bug.olap4jUpgrade(
+                "use OlapException(String, String, Throwable) ctor");
+            final OlapException e = new OlapException(msg, sqlState);
+            e.initCause(cause);
+            return e;
+        }
+
+        private String deduceSqlState(Throwable cause) {
+            if (cause == null) {
+                return null;
+            }
+            if (cause instanceof ResourceLimitExceededException) {
+                return "ResourceLimitExceeded";
+            }
+            if (cause instanceof QueryTimeoutException) {
+                return "QueryTimeout";
+            }
+            if (cause instanceof MondrianEvaluationException) {
+                return "EvaluationException";
+            }
+            return null;
         }
 
         /**

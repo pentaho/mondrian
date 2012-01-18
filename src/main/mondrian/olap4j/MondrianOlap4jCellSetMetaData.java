@@ -3,19 +3,20 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
-import mondrian.olap.Query;
-import mondrian.olap.QueryAxis;
+import mondrian.olap.*;
 
 import org.olap4j.CellSetAxisMetaData;
 import org.olap4j.CellSetMetaData;
 import org.olap4j.impl.ArrayNamedListImpl;
 import org.olap4j.metadata.*;
+import org.olap4j.metadata.Cube;
+import org.olap4j.metadata.Property;
 
 import java.sql.SQLException;
 
@@ -64,8 +65,13 @@ class MondrianOlap4jCellSetMetaData implements CellSetMetaData {
                     return property.getName();
                 }
             };
-        for (Property.StandardCellProperty property
-            : Property.StandardCellProperty.values())
+        for (Property property : Property.StandardCellProperty.values()) {
+            if (query.hasCellProperty(property.getName())) {
+                list.add(property);
+            }
+        }
+        for (Property property
+            : MondrianOlap4jProperty.CELL_EXTENSIONS.values())
         {
             if (query.hasCellProperty(property.getName())) {
                 list.add(property);

@@ -1,8 +1,9 @@
 /*
+// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -12,7 +13,7 @@ import org.olap4j.impl.Named;
 import org.olap4j.metadata.Datatype;
 import org.olap4j.metadata.Property;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * Implementation of {@link org.olap4j.metadata.Property}
@@ -25,6 +26,52 @@ import java.util.Set;
  * @since Nov 12, 2007
  */
 class MondrianOlap4jProperty implements Property, Named {
+    /**
+     * Map of member properties that are built into Mondrian but are not in the
+     * olap4j standard.
+     */
+    static final Map<String, MondrianOlap4jProperty> MEMBER_EXTENSIONS =
+        new LinkedHashMap<String, MondrianOlap4jProperty>();
+
+    /**
+     * Map of cell properties that are built into Mondrian but are not in the
+     * olap4j standard.
+     */
+    static final Map<String, MondrianOlap4jProperty> CELL_EXTENSIONS =
+        new LinkedHashMap<String, MondrianOlap4jProperty>();
+
+    static {
+        // Build set of names of olap4j standard member properties.
+        final Set<String> memberNames = new HashSet<String>();
+        for (Property property : Property.StandardMemberProperty.values()) {
+            memberNames.add(property.getName());
+        }
+
+        final Set<String> cellNames = new HashSet<String>();
+        for (Property property : StandardCellProperty.values()) {
+            cellNames.add(property.getName());
+        }
+
+        for (mondrian.olap.Property o
+            : mondrian.olap.Property.enumeration.getValuesSortedByName())
+        {
+            if (o.isMemberProperty()
+                && !memberNames.contains(o.getName()))
+            {
+                MEMBER_EXTENSIONS.put(
+                    o.getName(),
+                    new MondrianOlap4jProperty(o));
+            }
+            if (o.isCellProperty()
+                && !cellNames.contains(o.getName()))
+            {
+                CELL_EXTENSIONS.put(
+                    o.getName(),
+                    new MondrianOlap4jProperty(o));
+            }
+        }
+    }
+
     final mondrian.olap.Property property;
 
     MondrianOlap4jProperty(mondrian.olap.Property property) {

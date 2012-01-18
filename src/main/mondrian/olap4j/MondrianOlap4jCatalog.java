@@ -3,13 +3,14 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap4j;
 
 import mondrian.olap.Access;
+import mondrian.olap.OlapElement;
 import mondrian.rolap.RolapSchema;
 
 import org.olap4j.OlapDatabaseMetaData;
@@ -27,7 +28,10 @@ import java.util.Map;
  * @version $Id$
  * @since May 23, 2007
  */
-class MondrianOlap4jCatalog implements Catalog, Named {
+class MondrianOlap4jCatalog
+    extends MondrianOlap4jMetadataElement
+    implements Catalog, Named
+{
     final MondrianOlap4jDatabaseMetaData olap4jDatabaseMetaData;
     final String name;
     final Map<String, RolapSchema> schemaMap;
@@ -94,6 +98,10 @@ class MondrianOlap4jCatalog implements Catalog, Named {
 
     public Database getDatabase() {
         return olap4jDatabase;
+    }
+
+    protected OlapElement getOlapElement() {
+        return null;
     }
 }
 

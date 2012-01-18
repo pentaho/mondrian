@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,7 +25,10 @@ import java.util.List;
  * @version $Id$
  * @since May 25, 2007
  */
-class MondrianOlap4jHierarchy implements Hierarchy, Named {
+class MondrianOlap4jHierarchy
+    extends MondrianOlap4jMetadataElement
+    implements Hierarchy, Named
+{
     final MondrianOlap4jSchema olap4jSchema;
     final mondrian.olap.Hierarchy hierarchy;
 
@@ -123,6 +126,10 @@ class MondrianOlap4jHierarchy implements Hierarchy, Named {
 
     public boolean isVisible() {
         return hierarchy.isVisible();
+    }
+
+    protected OlapElement getOlapElement() {
+        return hierarchy;
     }
 }
 

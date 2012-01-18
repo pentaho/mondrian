@@ -9,6 +9,8 @@
 */
 package mondrian.olap4j;
 
+import mondrian.olap.OlapElement;
+
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapException;
 import org.olap4j.impl.Named;
@@ -25,7 +27,10 @@ import java.util.List;
  * @version $Id$
  * @author LBoudreau
  */
-class MondrianOlap4jDatabase implements Database, Named {
+class MondrianOlap4jDatabase
+    extends MondrianOlap4jMetadataElement
+    implements Database, Named
+{
     private final NamedList<MondrianOlap4jCatalog> catalogs;
     private final MondrianOlap4jConnection olap4jConnection;
     private final String name;
@@ -109,6 +114,10 @@ class MondrianOlap4jDatabase implements Database, Named {
 
     public String getDataSourceInfo() throws OlapException {
         return this.dataSourceInfo;
+    }
+
+    protected OlapElement getOlapElement() {
+        return null;
     }
 }
 

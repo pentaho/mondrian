@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2011 Julian Hyde
+// Copyright (C) 2003-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -3033,10 +3033,19 @@ public class XmlaHandler {
          *
          * @param connection Connection
          * @return List of data source definitions
-         * @throws OlapException
+         * @throws OlapException on error
          */
         List<Map<String, Object>> getDataSources(OlapConnection connection)
             throws OlapException;
+
+        /**
+         * Returns a map containing annotations on this element.
+         *
+         * @param element Element
+         * @return Annotation map, never null
+         */
+        Map<String, Object> getAnnotationMap(MetadataElement element)
+            throws SQLException;
 
         class FunctionDefinition {
             public final String functionName;
@@ -3172,6 +3181,10 @@ public class XmlaHandler {
                     "ProviderName", olapDb.getProviderName(),
                     "ProviderType", providerTypes,
                     "AuthenticationMode", modes));
+        }
+
+        public Map<String, Object> getAnnotationMap(MetadataElement element) {
+            return Collections.emptyMap();
         }
     }
 

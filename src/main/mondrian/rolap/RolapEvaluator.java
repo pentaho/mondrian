@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -862,7 +862,7 @@ public class RolapEvaluator implements Evaluator {
      */
     public final String getFormatString() {
         final Exp formatExp =
-            (Exp) getProperty(Property.FORMAT_EXP.name, null);
+            (Exp) getProperty(Property.FORMAT_EXP_PARSED.name, null);
         if (formatExp == null) {
             return "Standard";
         }
