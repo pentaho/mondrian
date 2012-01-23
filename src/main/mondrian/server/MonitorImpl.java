@@ -18,6 +18,8 @@ import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import org.apache.log4j.Logger;
+
 /**
  * Process that reads from the monitor stream and updates counters.
  *
@@ -60,6 +62,7 @@ import java.util.concurrent.BlockingQueue;
 class MonitorImpl
     implements Monitor
 {
+    private static final Logger LOGGER = Logger.getLogger(MonitorImpl.class);
     private final Handler handler = new Handler();
 
     protected static final Util.MemoryInfo MEMORY_INFO = Util.getMemoryInfo();
@@ -843,10 +846,10 @@ class MonitorImpl
         public void run() {
             try {
                 for (;;) {
-                    final Pair<Handler, Message> entry = eventQueue.take();
-                    final Handler handler = entry.left;
-                    final Message message = entry.right;
                     try {
+                        final Pair<Handler, Message> entry = eventQueue.take();
+                        final Handler handler = entry.left;
+                        final Message message = entry.right;
                         final Object result = message.accept(handler);
                         if (message instanceof Command) {
                             responseQueue.put((Command) message, result);
@@ -854,17 +857,21 @@ class MonitorImpl
                             // Broadcast the event to anyone who is interested.
                             RolapUtil.MONITOR_LOGGER.debug(message);
                         }
-                    } catch (Exception e) {
-                        // REVIEW: Somewhere better to send it?
-                        e.printStackTrace();
-                    }
-                    if (message instanceof ShutdownCommand) {
+                        if (message instanceof ShutdownCommand) {
+                            return;
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        LOGGER.warn(
+                            "Monitor thread interrupted.",
+                            e);
                         return;
+                    } catch (Throwable t) {
+                        LOGGER.error(
+                            "Runtime error on the monitor thread.",
+                            t);
                     }
                 }
-            } catch (InterruptedException e) {
-                // REVIEW: Somewhere better to send it?
-                e.printStackTrace();
             } finally {
                 running = false;
             }
