@@ -944,7 +944,9 @@ public class JdbcDialectImpl implements Dialect {
             return DatabaseProduct.INFOBRIGHT;
         } else if (upperProductName.equals("MYSQL")) {
             return DatabaseProduct.MYSQL;
-        } else if (upperProductName.equals("VERTICA")) {
+        } else if (upperProductName.equals("VERTICA")
+            || upperProductName.equals("VERTICA DATABASE"))
+        {
             return DatabaseProduct.VERTICA;
         } else if (upperProductName.equals("VECTORWISE")) {
             return DatabaseProduct.VECTORWISE;
