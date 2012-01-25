@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -34,8 +34,7 @@ import java.util.*;
  * @since Feb 5, 2007
  */
 public class UtilCompatibleJdk14 implements UtilCompatible {
-    private final static Logger LOGGER =
-        Logger.getLogger(Util.class);
+    private static final Logger LOGGER = Logger.getLogger(Util.class);
     private static String previousUuid = "";
     private static final String UUID_BASE =
         Long.toHexString(new Random().nextLong());
@@ -137,6 +136,13 @@ public class UtilCompatibleJdk14 implements UtilCompatible {
         try {
             stmt.cancel();
         } catch (SQLException e) {
+            // We can't call stmt.isClosed(); the method doesn't exist until
+            // JDK 1.6. So, mask out the error.
+            if (e.getMessage().equals(
+                    "org.apache.commons.dbcp.DelegatingStatement is closed."))
+            {
+                return;
+            }
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
                     MondrianResource.instance()
