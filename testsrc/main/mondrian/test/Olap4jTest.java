@@ -22,7 +22,9 @@ import org.olap4j.metadata.Level;
 import org.olap4j.metadata.Member;
 import org.olap4j.metadata.Property;
 
+import java.lang.reflect.Method;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -269,6 +271,57 @@ public class Olap4jTest extends FoodMartTestCase {
         } catch (OlapException e) {
             assertEquals("ResourceLimitExceeded", e.getSQLState());
         }
+    }
+
+    public void testCloseOnCompletion() throws Exception {
+        if (Util.JdbcVersion < 0x0401) {
+            // Statement.closeOnCompletion added in JDBC 4.1 / JDK 1.7.
+            return;
+        }
+        final OlapConnection connection =
+            getTestContext().getOlap4jConnection();
+        for (boolean b : new boolean[] {false, true}) {
+            final OlapStatement statement = connection.createStatement();
+            final CellSet cellSet = statement.executeOlapQuery(
+                "select [Measures].[Unit Sales] on 0\n"
+                + "from [Sales]");
+            if (b) {
+                closeOnCompletion(statement);
+            }
+            assertFalse(isClosed(cellSet));
+            assertFalse(isClosed(statement));
+            cellSet.close();
+            assertTrue(isClosed(cellSet));
+            assertEquals(b, isClosed(statement));
+            statement.close(); // not error to close twice
+        }
+    }
+
+    /**
+     * Calls {@link java.sql.Statement#isClosed()} or
+     * {@link java.sql.ResultSet#isClosed()} via reflection.
+     *
+     * @param statement Statement or result set
+     * @return Whether statement or result set is closed
+     * @throws Exception on error
+     */
+    static boolean isClosed(Object statement) throws Exception {
+        Method method =
+            (statement instanceof Statement
+                ? java.sql.Statement.class
+                : java.sql.ResultSet.class).getMethod("isClosed");
+        return (Boolean) method.invoke(statement);
+    }
+
+    /**
+     * Calls {@link java.sql.Statement#closeOnCompletion()} via reflection.
+     *
+     * @param statement Statement or result set
+     * @throws Exception on error
+     */
+    static void closeOnCompletion(Object statement) throws Exception {
+        Method method = java.sql.Statement.class.getMethod("closeOnCompletion");
+        method.invoke(statement);
     }
 }
 
