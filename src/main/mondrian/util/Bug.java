@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2010 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -134,6 +134,14 @@ public class Bug {
      *
      */
     public static final boolean BugMondrian361Fixed = false;
+
+    /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-441">bug MONDRIAN-441,
+     * "Parent-child hierarchies: &lt;Join&gt; used in dimension"</a>
+     * is fixed.
+     */
+    public static final boolean BugMondrian441Fixed = false;
 
     /**
      * Whether

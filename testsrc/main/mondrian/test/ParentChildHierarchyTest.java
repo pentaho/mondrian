@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2011 Julian Hyde
+// Copyright (C) 2003-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -19,7 +19,7 @@ import junit.framework.Assert;
 import java.util.List;
 
 /**
- * <code>ParentChildHierarchyTest</code> tests parent-child hierarchies.
+ * Tests for parent-child hierarchies.
  *
  * @author jhyde
  * @since Mar 6, 2003
@@ -182,7 +182,10 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
 
     /**
      * Tests snow flake closure combination.
-     * bug #1675125 - now fixed.
+     *
+     * <p>Test case for
+     * <a href="http://jira.pentaho.org/browse/MONDRIAN-266">MONDRIAN-266,
+     * "Closure tables do not work in a Snowflake Dimension"</a>.
      */
     public void testSnowflakeClosure() {
         getEmpSnowFlakeClosureTestContext().assertQueryReturns(
@@ -224,7 +227,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     /**
-     * Test case for bug #1708327
+     * Test case for
+     * <a href="http://jira.pentaho.org/browse/MONDRIAN-284">MONDRIAN-284,
+     * "Parent child hierarchies without closures are broken"</a>.
      */
     public void _testNonClosureParentChildHierarchy() {
         getEmpNonClosureTestContext().assertQueryReturns(
@@ -286,8 +291,11 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "Row #0: 7,392\n");
     }
 
-    // bug 1063369: DISTINCT COUNT applied to a parent/child hierarchy fails:
-    // unsupported when children expanded
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.org/browse/MONDRIAN-75">MONDRIAN-75,
+     * "'distinct count' measure cause exception in parent/child"</a>.
+     */
     public void testDistinctAll() {
         // parent/child dimension not expanded, and the query works
         assertQueryReturns(
@@ -916,10 +924,11 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     /**
-     * Testcase for bug 1459995, "NullPointerException in
-     * RolapEvaluator.setContext(....)".
+     * Test case for
+     * <a href="http://jira.pentaho.org/browse/MONDRIAN-168">MONDRIAN-168,
+     * "NullPointerException in RolapEvaluator.setContext(....)"</a>.
      */
-    public void testBug1459995() {
+    public void testBugMondrian168() {
         assertQueryReturns(
             "select \n"
             + "     {[Employee Salary]} on columns, \n"
@@ -1054,7 +1063,9 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     /**
-     * test case for bug #2477623, Closure Tables not working with Virtual Cubes
+     * Test case for
+     * <a href="http://jira.pentaho.org/browse/MONDRIAN-488">MONDRIAN-488,
+     * "Closure Tables not working with Virtual Cubes"</a>.
      */
     public void testClosureTableInVirtualCube() {
         final TestContext testContext = TestContext.instance().create(
@@ -1232,6 +1243,88 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             }
         }
         assertEquals(1, found);
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.org/browse/MONDRIAN-441">MONDRIAN-441,
+     * "Parent-child hierarchies: &lt;Join&gt; used in dimension"</a>.
+     */
+    public void testBridgeTable() {
+        if (!Bug.BugMondrian441Fixed) {
+            return;
+        }
+        // The test case in the bug has a new table "bri_store_employee". For
+        // convenience of configuration, we replace that with an InlineTable
+        // here.
+        final TestContext testContext = getTestContext().withSchema(
+            "<Schema name='FoodMart'>\n"
+            + "  <Dimension type='StandardDimension' highCardinality='false' name='Employee'>\n"
+            + "    <Hierarchy name='Employee' hasAll='false' primaryKey='store_id' primaryKeyTable='bri_store_employee'>\n"
+            + "      <Join leftKey='employee_id' rightKey='employee_id'>\n"
+            + "        <InlineTable alias='bri_store_employee'>\n"
+            + "          <ColumnDefs>\n"
+            + "            <ColumnDef name='store_id' type='Integer'/>\n"
+            + "            <ColumnDef name='employee_id' type='Integer'/>\n"
+            + "          </ColumnDefs>\n"
+            + "          <Rows>\n"
+            + "            <Row>\n"
+            + "              <Value column='store_id'>2</Value>\n"
+            + "              <Value column='employee_id'>o</Value>\n"
+            + "            </Row>\n"
+            + "            <Row>\n"
+            + "              <Value column='store_id'>2</Value>\n"
+            + "              <Value column='employee_id'>1</Value>\n"
+            + "            </Row>\n"
+            + "            <Row>\n"
+            + "              <Value column='store_id'>2</Value>\n"
+            + "              <Value column='employee_id'>2</Value>\n"
+            + "            </Row>\n"
+            + "            <Row>\n"
+            + "              <Value column='store_id'>2</Value>\n"
+            + "              <Value column='employee_id'>22</Value>\n"
+            + "            </Row>\n"
+            + "            <Row>\n"
+            + "              <Value column='store_id'>2</Value>\n"
+            + "              <Value column='employee_id'>22</Value>\n"
+            + "            </Row>\n"
+            + "            <Row>\n"
+            + "              <Value column='store_id'>2</Value>\n"
+            + "              <Value column='employee_id'>32</Value>\n"
+            + "            </Row>\n"
+            + "            <Row>\n"
+            + "              <Value column='store_id'>2</Value>\n"
+            + "              <Value column='employee_id'>484</Value>\n"
+            + "            </Row>\n"
+            + "          </Rows>\n"
+            + "        </InlineTable>\n"
+            + "        <Table name='employee' alias='employee'/>\n"
+            + "      </Join>\n"
+            + "      <Level name='Employee' table='employee' column='employee_id' nameColumn='full_name' parentColumn='supervisor_id' nullParentValue='0' type='Integer' uniqueMembers='true' levelType='Regular' hideMemberIf='Never'>\n"
+            + "        <Closure parentColumn='supervisor_id' childColumn='employee_id'>\n"
+            + "          <Table name='employee_closure'/>\n"
+            + "        </Closure>\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Cube name='Sales_Bug_441' cache='true' enabled='true'>\n"
+            + "    <Table name='sales_fact_1997'/>\n"
+            + "    <DimensionUsage source='Employee' name='Employee' foreignKey='store_id' highCardinality='false'/>\n"
+            + "    <Measure name='Store Sales' column='store_sales' datatype='Numeric' formatString='#,###.00' aggregator='sum' visible='true'/>\n"
+            + "  </Cube>\n"
+            + "</Schema>");
+        testContext.assertQueryReturns(
+            "select\n"
+            + " NON EMPTY {[Measures].[Store Sales]} ON COLUMNS,\n"
+            + " {[Employee].[Sheri Nowmer]} on ROWS\n"
+            + "from Sales_Bug_441",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Employee].[Sheri Nowmer]}\n"
+            + "Row #0: 28,435.38\n");
     }
 }
 
