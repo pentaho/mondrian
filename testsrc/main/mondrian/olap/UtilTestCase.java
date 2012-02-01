@@ -773,6 +773,7 @@ public class UtilTestCase extends TestCase {
         final LockBox.Entry abcEntry0b = box.get(abcEntry0.getMoniker());
         assertNotNull(abcEntry0b);
         assertEquals(abcEntry0b.getMoniker(), abcEntry0.getMoniker());
+        assertSame(abcEntry0, abcEntry0b);
         assertNotSame(abcEntry0b, abcEntry1);
         assertTrue(!abcEntry0b.getMoniker().equals(abcEntry1.getMoniker()));
 
@@ -814,12 +815,14 @@ public class UtilTestCase extends TestCase {
         // Other registration of same object still works.
         final LockBox.Entry abcEntry1b = box.get(abcEntry1.getMoniker());
         assertNotNull(abcEntry1b);
+        assertSame(abcEntry1b, abcEntry1);
         assertSame(abcEntry1b.getValue(), abc);
         assertSame(abcEntry1.getValue(), abc);
 
         // Other entry still exists.
         final LockBox.Entry xyEntry2 = box.get(xyEntry.getMoniker());
         assertNotNull(xyEntry2);
+        assertSame(xyEntry2, xyEntry);
         assertSame(xyEntry2.getValue(), xy);
         assertSame(xyEntry.getValue(), xy);
 

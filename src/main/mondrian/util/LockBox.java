@@ -63,8 +63,8 @@ public class LockBox {
      * the caller (or someone) still has the moniker, it is not sufficient
      * to prevent the entry from being garbage collected.
      */
-    private final Map<String, Object> map =
-        new WeakHashMap<String, Object>();
+    private final Map<LockBoxEntryImpl, Object> map =
+        new WeakHashMap<LockBoxEntryImpl, Object>();
     private final Random random = new Random();
     private final byte[] bytes = new byte[16]; // 128 bit... secure enough
     private long ordinal;
@@ -96,7 +96,7 @@ public class LockBox {
     public synchronized Entry register(Object o) {
         String moniker = generateMoniker();
         final LockBoxEntryImpl entry = new LockBoxEntryImpl(this, moniker);
-        map.put(moniker, wrap(o));
+        map.put(entry, wrap(o));
         return entry;
     }
 
@@ -138,7 +138,7 @@ public class LockBox {
      * @return Whether the object was removed
      */
     public synchronized boolean deregister(Entry entry) {
-        return map.remove(entry.getMoniker()) != null;
+        return map.remove(entry) != null;
     }
 
     /**
@@ -154,11 +154,14 @@ public class LockBox {
      * @return Entry, or null if there is no entry with this moniker
      */
     public synchronized Entry get(String moniker) {
-        if (map.containsKey(moniker)) {
-            return new LockBoxEntryImpl(this, moniker);
-        } else {
-            return null;
+        // Linear scan through keys. Not perfect, but safer than maintaining
+        // a map that might mistakenly allow/prevent GC.
+        for (LockBoxEntryImpl entry : map.keySet()) {
+            if (entry.moniker.equals(moniker)) {
+                return entry;
+            }
         }
+        return null;
     }
 
     /**
@@ -169,6 +172,10 @@ public class LockBox {
      * <p>The object can be retrieved using {@link #getValue()} if you have
      * the entry, or {@link LockBox#get(String)} if you only have the
      * string key.
+     *
+     * <p>Holding onto an Entry will prevent the entry, and the associated
+     * value from being garbage collected. Holding onto the moniker will
+     * not prevent garbage collection.</p>
      */
     public interface Entry
     {
@@ -183,9 +190,9 @@ public class LockBox {
          * String key by which to identify this object. Not null, not easily
          * forged, and unique within the lock box.
          *
-         * <p>Given this moniker, you can forge a new Entry using
-         * {@link LockBox#get(String)}. The new Entry will have the same moniker,
-         * and will be able to access the same value</p>
+         * <p>Given this moniker, you retrieve the Entry using
+         * {@link LockBox#get(String)}. The retrieved Entry will will have the
+         * same moniker, and will be able to access the same value.</p>
          *
          * @return String key
          */
@@ -205,7 +212,8 @@ public class LockBox {
      * Implementation of {@link Entry}.
      *
      * <p>It is important that entries cannot be forged. Therefore this class,
-     * and its constructor, are private.
+     * and its constructor, are private. And equals and hashCode use object
+     * identity.
      */
     private static class LockBoxEntryImpl implements Entry {
         private final LockBox lockBox;
@@ -217,7 +225,7 @@ public class LockBox {
         }
 
         public Object getValue() {
-            final Object value = lockBox.map.get(moniker);
+            final Object value = lockBox.map.get(this);
             if (value == null) {
                 throw new RuntimeException(
                     "LockBox has no entry with moniker [" + moniker + "]");
@@ -230,7 +238,7 @@ public class LockBox {
         }
 
         public boolean isRegistered() {
-            return lockBox.map.containsKey(moniker);
+            return lockBox.map.containsKey(this);
         }
     }
 }
