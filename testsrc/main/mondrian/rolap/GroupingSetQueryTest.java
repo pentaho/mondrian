@@ -46,7 +46,6 @@ public class GroupingSetQueryTest extends BatchTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        getTestContext().clearConnection();
         useGroupingSets = prop.EnableGroupingSets.get();
         formattedSql = prop.GenerateFormattedSql.get();
         origWarnIfNoPatternForDialect = prop.WarnIfNoPatternForDialect.get();

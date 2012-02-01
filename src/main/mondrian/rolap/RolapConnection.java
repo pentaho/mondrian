@@ -281,8 +281,15 @@ public class RolapConnection extends ConnectionBase {
 
     @Override
     protected void finalize() throws Throwable {
-        super.finalize();
-        close();
+        try {
+            super.finalize();
+            close();
+        } catch (Throwable t) {
+            LOGGER.info(
+                MondrianResource.instance()
+                    .FinalizerErrorRolapConnection.baseMessage,
+                t);
+        }
     }
 
     /**

@@ -53,6 +53,8 @@ public class SegmentCacheTest extends BasicQueryTest {
             .remove(testWorker);
         getTestContext().getConnection().getCacheControl(null)
             .flushSchemaCache();
+        this.mockCache = null;
+        this.testWorker = null;
         super.tearDown();
     }
 

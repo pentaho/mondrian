@@ -186,8 +186,10 @@ public class SegmentHeader implements Serializable {
             if (ccActual != null) {
                 final SegmentColumn ccActualExcl =
                     getExcludedRegion(ccToFlush.columnExpression);
-                if (ccActualExcl != null
-                    && ccActualExcl.merge(ccToFlush).values == null)
+                if (ccToFlush.values == null
+                    || (ccActualExcl != null
+                        && ccActualExcl.values != null
+                        && ccActualExcl.merge(ccToFlush).values == null))
                 {
                     // This means that the whole axis is excluded.
                     // Better destroy that segment.
@@ -371,7 +373,7 @@ public class SegmentHeader implements Serializable {
             descriptionSB.append("]\n");
             descriptionSB.append("Axes:[");
             for (SegmentColumn c : constrainedColumns) {
-                descriptionSB.append("\n\t{");
+                descriptionSB.append("\n    {");
                 descriptionSB.append(c.columnExpression);
                 descriptionSB.append("=(");
                 if (c.values == null) {
@@ -389,7 +391,7 @@ public class SegmentHeader implements Serializable {
             descriptionSB.append("]\n");
             descriptionSB.append("Excluded Regions:[");
             for (SegmentColumn c : excludedRegions) {
-                descriptionSB.append("\n\t{");
+                descriptionSB.append("\n    {");
                 descriptionSB.append(c.columnExpression);
                 descriptionSB.append("=(");
                 if (c.values == null) {

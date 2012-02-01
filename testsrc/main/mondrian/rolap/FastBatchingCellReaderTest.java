@@ -38,7 +38,6 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        getTestContext().clearConnection();
         final Statement statement =
             ((RolapConnection) getTestContext().getConnection())
                 .getInternalStatement();
@@ -1071,7 +1070,6 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             // tables, so this test will fail.
             return;
         }
-        getTestContext().clearConnection();
         propSaver.set(propSaver.properties.UseAggregates, true);
         propSaver.set(propSaver.properties.ReadAggregates, true);
 

@@ -13,7 +13,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.CacheControl.CellRegion;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
@@ -40,6 +39,7 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+
 import javax.sql.DataSource;
 
 /**
@@ -79,7 +79,7 @@ public class RolapSchema implements Schema {
     /**
      * Internal use only.
      */
-    private final RolapConnection internalConnection;
+    private RolapConnection internalConnection;
 
     /**
      * Holds cubes in this schema.
@@ -205,7 +205,9 @@ public class RolapSchema implements Schema {
         final MondrianServer internalServer = MondrianServer.forId(null);
         this.internalConnection =
             new RolapConnection(internalServer, connectInfo, this, dataSource);
-        internalServer.addConnection(internalConnection);
+        internalServer.removeConnection(internalConnection);
+        internalServer.removeStatement(
+            internalConnection.getInternalStatement());
 
         this.aggTableManager = new AggTableManager(this);
         this.dataSourceChangeListener =
@@ -333,16 +335,6 @@ public class RolapSchema implements Schema {
     }
 
     protected void finalCleanUp() {
-        if (internalConnection != null) {
-            // REVIEW: Is this supposed to happen???
-            final CacheControl cacheControl =
-                internalConnection.getCacheControl(null);
-            for (Cube cube : getCubes()) {
-                CellRegion cr =
-                    cacheControl.createMeasuresRegion(cube);
-                cacheControl.flush(cr);
-            }
-        }
         if (aggTableManager != null) {
             aggTableManager.finalCleanUp();
             aggTableManager = null;
@@ -350,8 +342,15 @@ public class RolapSchema implements Schema {
     }
 
     protected void finalize() throws Throwable {
-        super.finalize();
-        finalCleanUp();
+        try {
+            super.finalize();
+            finalCleanUp();
+        } catch (Throwable t) {
+            LOGGER.info(
+                MondrianResource.instance()
+                    .FinalizerErrorRolapSchema.baseMessage,
+                t);
+        }
     }
 
     public boolean equals(Object o) {
@@ -460,7 +459,7 @@ public class RolapSchema implements Schema {
         return Collections.unmodifiableList(warningList);
     }
 
-    Role getDefaultRole() {
+    public Role getDefaultRole() {
         return defaultRole;
     }
 
@@ -779,9 +778,10 @@ public class RolapSchema implements Schema {
                         final boolean ignoreInvalidMembers =
                             MondrianProperties.instance().IgnoreInvalidMembers
                                 .get();
-                        Member member = schemaReader.getMemberByUniqueName(
-                            Util.parseIdentifier(memberGrant.member),
-                            !ignoreInvalidMembers);
+                        Member member = schemaReader.withLocus()
+                            .getMemberByUniqueName(
+                                Util.parseIdentifier(memberGrant.member),
+                                !ignoreInvalidMembers);
                         if (member == null) {
                             // They asked to ignore members that don't exist
                             // (e.g. [Store].[USA].[Foo]), so ignore this grant
@@ -1615,7 +1615,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     }
 
     public SchemaReader getSchemaReader() {
-        return new RolapSchemaReader(defaultRole, this);
+        return new RolapSchemaReader(defaultRole, this).withLocus();
     }
 
     /**
@@ -1738,7 +1738,7 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     /**
      * <code>RolapStarRegistry</code> is a registry for {@link RolapStar}s.
      */
-    class RolapStarRegistry {
+    public class RolapStarRegistry {
         private final Map<String, RolapStar> stars =
             new HashMap<String, RolapStar>();
 

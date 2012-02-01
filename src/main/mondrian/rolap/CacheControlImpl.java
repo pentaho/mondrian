@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.CacheControl.CellRegion;
 import mondrian.olap.Id.Quoting;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.SegmentCacheManager;
@@ -520,9 +521,9 @@ public class CacheControlImpl implements CacheControl {
 
     public void printCacheState(
         final PrintWriter pw,
-        CellRegion region)
+        final CellRegion region)
     {
-        List<RolapStar> starList = getStarList(region);
+        final List<RolapStar> starList = getStarList(region);
         for (RolapStar star : starList) {
             star.print(pw, "", false);
         }
@@ -530,12 +531,12 @@ public class CacheControlImpl implements CacheControl {
             MondrianServer.forConnection(connection)
                 .getAggregationManager().cacheMgr;
         Locus.execute(
-            Execution.NONE,
+            connection,
             "CacheControlImpl.printCacheState",
-            new Locus.Action<Object>() {
-                public Object execute() {
-                    return manager.execute(
-                        new PrintCacheStateCommand(manager, pw, Locus.peek()));
+            new Locus.Action<Void>() {
+                public Void execute() {
+                    manager.printCacheState(region, pw, Locus.peek());
+                    return null;
                 }
             });
     }
@@ -1528,33 +1529,6 @@ public class CacheControlImpl implements CacheControl {
             for (MemberEditCommandPlus command : commandList) {
                 command.commit();
             }
-        }
-    }
-
-    private static class PrintCacheStateCommand
-        implements SegmentCacheManager.Command<Void>
-    {
-        private final SegmentCacheManager manager;
-        private final PrintWriter pw;
-        private final Locus locus;
-
-        public PrintCacheStateCommand(
-            SegmentCacheManager manager,
-            PrintWriter pw,
-            Locus locus)
-        {
-            this.manager = manager;
-            this.pw = pw;
-            this.locus = locus;
-        }
-
-        public Void call() {
-            manager.segmentIndex.printCacheState(pw);
-            return null;
-        }
-
-        public Locus getLocus() {
-            return locus;
         }
     }
 

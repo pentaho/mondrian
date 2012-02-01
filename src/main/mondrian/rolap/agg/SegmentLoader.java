@@ -13,6 +13,7 @@ import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
+import mondrian.rolap.cache.SegmentCacheIndex;
 import mondrian.server.Locus;
 import mondrian.server.monitor.SqlStatementEvent;
 import mondrian.spi.*;
@@ -101,7 +102,9 @@ public class SegmentLoader {
     {
         for (GroupingSet groupingSet : groupingSets) {
             for (Segment segment : groupingSet.getSegments()) {
-                cacheMgr.segmentIndex.add(
+                final SegmentCacheIndex index =
+                    cacheMgr.getIndexRegistry().getIndex(segment.star);
+                index.add(
                     segment.getHeader(),
                     true,
                     new SegmentBuilder.StarSegmentConverter(
@@ -247,11 +250,11 @@ public class SegmentLoader {
      * @param body Segment body
      */
     private void cacheSegment(
+        RolapStar star,
         SegmentHeader header,
         SegmentBody body)
     {
-        cacheMgr.loadSucceeded(header, body);
-
+        cacheMgr.loadSucceeded(star, header, body);
         // Write the segment into external cache.
         //
         // It would be a mistake to do this from the cacheMgr -- because the
@@ -278,7 +281,10 @@ public class SegmentLoader {
                             new RuntimeException("Segment failed to load");
                     }
                     final SegmentHeader header = segment.getHeader();
-                    cacheMgr.loadFailed(header, throwable);
+                    cacheMgr.loadFailed(
+                        segment.star,
+                        header,
+                        throwable);
                     ++n;
                 }
             }
@@ -439,7 +445,7 @@ public class SegmentLoader {
 
                 // Send a message to the agg manager. It will place the segment
                 // in the index.
-                cacheSegment(header, body);
+                cacheSegment(segment.star, header, body);
             }
         }
     }

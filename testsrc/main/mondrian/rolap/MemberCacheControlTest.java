@@ -69,6 +69,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         super.tearDown();
         Pool.instance().clear();
         Locus.pop(locus);
+        locus = null;
     }
 
     // ~ Utility methods ------------------------------------------------------
@@ -100,8 +101,6 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             + "      </Level>\n"
             + "    </Hierarchy>\n"
             + "   </Dimension>");
-        // Prevent interference between tests.
-        testContext.clearConnection();
         return testContext;
     }
 

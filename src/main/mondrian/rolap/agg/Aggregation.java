@@ -169,6 +169,20 @@ public class Aggregation {
                     compoundPredicateList);
             segments.add(segment);
         }
+        // It is important to sort the segments per measure bitkey.
+        // The order in which the measures come in is not deterministic.
+        // It actually depends on the order of the CellRequests.
+        // See: mondrian.rolap.BatchLoader.Batch.add(CellRequest request).
+        // Failure to sort them will give out wrong results (uses the wrong
+        // column) if we have more than one column in the grouping set.
+        Collections.sort(
+            segments, new Comparator<Segment>() {
+                public int compare(Segment o1, Segment o2) {
+                    return Integer.valueOf(
+                        o1.measure.getBitPosition())
+                            .compareTo(o2.measure.getBitPosition());
+                }
+            });
         return segments;
     }
 

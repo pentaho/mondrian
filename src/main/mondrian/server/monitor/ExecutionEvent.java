@@ -9,8 +9,6 @@
 */
 package mondrian.server.monitor;
 
-import mondrian.server.Locus;
-
 /**
  * Event concerning the execution of an MDX statement.
  *
@@ -58,23 +56,6 @@ public abstract class ExecutionEvent extends Event {
         this.connectionId = connectionId;
         this.statementId = statementId;
         this.executionId = executionId;
-    }
-
-    /**
-     * Creates an ExecutionEvent, specifying context via a Locus object.
-     * The Locus object is not stored.
-     *
-     * @param timestamp Timestamp
-     * @param locus Locus
-     */
-    public ExecutionEvent(long timestamp, Locus locus) {
-        this(
-            timestamp,
-            locus.getServer().getId(),
-            locus.execution.getMondrianStatement().getMondrianConnection()
-                .getId(),
-            locus.execution.getMondrianStatement().getId(),
-            locus.execution.getId());
     }
 }
 

@@ -14,11 +14,11 @@ import mondrian.rolap.RolapUtil;
 import mondrian.server.monitor.*;
 import mondrian.util.Pair;
 
+import org.apache.log4j.Logger;
+
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-
-import org.apache.log4j.Logger;
 
 /**
  * Process that reads from the monitor stream and updates counters.
@@ -220,6 +220,7 @@ class MonitorImpl
                  - aggExec.cellCacheSegmentDeleteCount),
                 aggExec.cellCacheSegmentCreateCount,
                 aggExec.cellCacheSegmentCreateViaExternalCount,
+                aggExec.cellCacheSegmentDeleteViaExternalCount,
                 aggExec.cellCacheSegmentCreateViaRollupCount,
                 aggExec.cellCacheSegmentCreateViaSqlCount,
                 aggExec.cellCacheSegmentCellCount,
@@ -324,6 +325,7 @@ class MonitorImpl
         private int cellCacheSegmentCreateViaRollupCount;
         private int cellCacheSegmentCreateViaSqlCount;
         private int cellCacheSegmentCreateViaExternalCount;
+        private int cellCacheSegmentDeleteViaExternalCount;
         private int cellCacheSegmentDeleteCount;
         private int cellCacheSegmentCoordinateSum;
         private int cellCacheSegmentCellCount;
@@ -651,6 +653,11 @@ class MonitorImpl
         {
             ++exec.cellCacheSegmentDeleteCount;
             exec.cellCacheSegmentCoordinateSum -= event.coordinateCount;
+            switch (event.source) {
+            case EXTERNAL:
+                ++exec.cellCacheSegmentDeleteViaExternalCount;
+                break;
+            }
         }
 
         public Object visit(SqlStatementStartEvent event) {

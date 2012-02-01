@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggGen;
 import mondrian.rolap.aggmatcher.AggStar;
+import mondrian.rolap.cache.SegmentCacheIndex;
 import mondrian.rolap.cache.SegmentCacheIndexImpl;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
@@ -247,7 +248,7 @@ public class FastBatchingCellReader implements CellReader {
             for (SegmentHeader header : response.cacheSegments) {
                 final SegmentBody body = cacheMgr.compositeCache.get(header);
                 if (body == null) {
-                    cacheMgr.remove(header);
+                    cacheMgr.remove(cube.getStar(), header);
                     failedSegments.add(header);
                     ++failureCount;
                     continue;
@@ -442,7 +443,7 @@ public class FastBatchingCellReader implements CellReader {
         }
         body = cacheMgr.compositeCache.get(header);
         if (body == null) {
-            cacheMgr.remove(header);
+            cacheMgr.remove(cube.getStar(), header);
             return null;
         }
         headerBodies.put(header, body);
@@ -546,8 +547,10 @@ class BatchLoader {
         final RolapStar.Measure measure = request.getMeasure();
         final RolapStar star = measure.getStar();
         final RolapSchema schema = star.getSchema();
+        final SegmentCacheIndex index =
+            cacheMgr.getIndexRegistry().getIndex(star);
         final List<SegmentHeader> headersInCache =
-            cacheMgr.segmentIndex.locate(
+            index.locate(
                 schema.getName(),
                 schema.getChecksum(),
                 measure.getCubeName(),
@@ -565,7 +568,7 @@ class BatchLoader {
         if (!headersInCache.isEmpty()) {
             final SegmentHeader headerInCache = headersInCache.get(0);
             final Future<SegmentBody> future =
-                cacheMgr.segmentIndex.getFuture(headerInCache);
+                index.getFuture(headerInCache);
             if (future != null) {
                 // Segment header is in cache, body is being loaded. Worker will
                 // need to wait for load to complete.
@@ -574,7 +577,7 @@ class BatchLoader {
                 // Segment is in cache.
                 cacheHeaders.add(headerInCache);
             }
-            cacheMgr.segmentIndex.setConverter(
+            index.setConverter(
                 headerInCache.schemaName,
                 headerInCache.schemaChecksum,
                 headerInCache.cubeName,
@@ -602,7 +605,7 @@ class BatchLoader {
             // Don't even bother doing a segment lookup if we can't
             // rollup that measure.
             final List<List<SegmentHeader>> rollup =
-                cacheMgr.segmentIndex.findRollupCandidates(
+                index.findRollupCandidates(
                     schema.getName(),
                     schema.getChecksum(),
                     measure.getCubeName(),

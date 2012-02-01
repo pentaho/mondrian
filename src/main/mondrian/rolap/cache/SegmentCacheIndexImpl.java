@@ -29,14 +29,17 @@ import java.util.concurrent.Future;
  * @author Julian Hyde
  */
 public class SegmentCacheIndexImpl implements SegmentCacheIndex {
+
     private final Map<List, List<SegmentHeader>> bitkeyMap =
         new HashMap<List, List<SegmentHeader>>();
+
     /**
      * The fact map allows us to spot quickly which
      * segments have facts relating to a given header.
      */
     private final Map<List, FactInfo> factMap =
         new HashMap<List, FactInfo>();
+
     /**
      * The fuzzy fact map allows us to spot quickly which
      * segments have facts relating to a given header, but doesn't
@@ -218,16 +221,20 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
 
         final List factKey = makeFactKey(header);
         final FactInfo factInfo = factMap.get(factKey);
-        factInfo.headerList.remove(header);
-        if (factInfo.headerList.size() == 0) {
-            factMap.remove(factKey);
+        if (factInfo != null) {
+            factInfo.headerList.remove(header);
+            if (factInfo.headerList.size() == 0) {
+                factMap.remove(factKey);
+            }
         }
 
         final List fuzzyFactKey = makeFuzzyFactKey(header);
         final FuzzyFactInfo fuzzyFactInfo = fuzzyFactMap.get(fuzzyFactKey);
-        fuzzyFactInfo.headerList.remove(header);
-        if (fuzzyFactInfo.headerList.size() == 0) {
-            fuzzyFactMap.remove(fuzzyFactKey);
+        if (fuzzyFactInfo != null) {
+            fuzzyFactInfo.headerList.remove(header);
+            if (fuzzyFactInfo.headerList.size() == 0) {
+                fuzzyFactMap.remove(fuzzyFactKey);
+            }
         }
 
         final List bitkeyKey = makeBitkeyKey(header);
@@ -359,6 +366,11 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         checkThread();
 
         for (List<SegmentHeader> headerList : bitkeyMap.values()) {
+            Collections.sort(
+                headerList, new Comparator<SegmentHeader>() {
+                    public int compare(SegmentHeader o1, SegmentHeader o2) {
+                        return o1.getUniqueID().compareTo(o2.getUniqueID());
+                    }});
             for (SegmentHeader header : headerList) {
                 pw.println(header.getDescription());
             }
@@ -415,6 +427,9 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             compoundPredicates);
         final FactInfo factInfo = factMap.get(factKey);
         assert factInfo != null : "should have called 'add' first";
+        if (factInfo == null) {
+            return;
+        }
         factInfo.converter = converter;
     }
 

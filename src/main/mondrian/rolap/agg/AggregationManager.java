@@ -12,7 +12,6 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.calc.impl.ListTupleList;
 import mondrian.olap.CacheControl;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
@@ -45,24 +44,6 @@ public class AggregationManager extends RolapAggregationManager {
         Logger.getLogger(AggregationManager.class);
 
     public final SegmentCacheManager cacheMgr = new SegmentCacheManager();
-
-    private static AggregationManager instance;
-
-    /**
-     * Returns or creates the singleton.
-     *
-     * @deprecated No longer a singleton, and will be removed in mondrian-4.
-     *   Use {@link mondrian.olap.MondrianServer#getAggregationManager()}.
-     *   To get a server, call
-     *   {@link mondrian.olap.MondrianServer#forConnection(mondrian.olap.Connection)},
-     *   passing in a null connection if you absolutely must.
-     */
-    public static synchronized AggregationManager instance() {
-        if (instance == null) {
-            instance = new AggregationManager();
-        }
-        return instance;
-    }
 
     /**
      * Creates the AggregationManager.
