@@ -205,7 +205,7 @@ public class Pair <L, R>
      * @param <V> Value type (element type of second iterable)
      * @return Iterable in over both iterables in parallel
      */
-    public static <K, V> java.lang.Iterable<Pair<K, V>> of(
+    public static <K, V> java.lang.Iterable<Pair<K, V>> iterate(
         final Iterable<K> i0,
         final Iterable<V> i1)
     {

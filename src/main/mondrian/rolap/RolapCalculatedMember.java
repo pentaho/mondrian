@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -48,7 +48,7 @@ public class RolapCalculatedMember extends RolapMemberBase {
     {
         // A calculated measure has MemberType.FORMULA because FORMULA
         // overrides MEASURE.
-        super(parentMember, level, name, null, MemberType.FORMULA);
+        super(parentMember, level, null, name, MemberType.FORMULA);
         this.formula = formula;
         this.annotationMap = Collections.emptyMap();
     }

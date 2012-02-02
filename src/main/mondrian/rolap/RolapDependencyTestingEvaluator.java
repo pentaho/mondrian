@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -263,7 +263,7 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
             int attempt = 0;
             while (true) {
                 // Choose a random level.
-                final List<Level> levels = hierarchy.getLevelList();
+                final List<Level> levels = Util.cast(hierarchy.getLevelList());
                 final int levelDepth = random.nextInt(levels.size()) + 1;
                 Member member = null;
                 for (int i = 0; i < levelDepth; i++) {
@@ -407,10 +407,9 @@ public class RolapDependencyTestingEvaluator extends RolapEvaluator {
          */
         private Hierarchy[] getIndependentHierarchies(Calc calc) {
             List<Hierarchy> list = new ArrayList<Hierarchy>();
-            final List<RolapHierarchy> hierarchies =
-                ((RolapCube) getValidator().getQuery().getCube())
-                    .getHierarchies();
-            for (Hierarchy hierarchy : hierarchies) {
+            final RolapCube cube =
+                (RolapCube) getValidator().getQuery().getCube();
+            for (Hierarchy hierarchy : cube.getHierarchyList()) {
                 if (!calc.dependsOn(hierarchy)) {
                     list.add(hierarchy);
                 }

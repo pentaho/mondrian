@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -30,15 +30,18 @@ public class ValueColumnPredicate
     /**
      * Creates a column constraint.
      *
+     * @param router Resolves route to fact table
+     * @param constrainedColumn Constrained column
      * @param value Value to constraint the column to. (We require that it is
      *   {@link Comparable} because we will sort the values in order to
      *   generate deterministic SQL.)
      */
     public ValueColumnPredicate(
+        RolapSchema.PhysRouter router,
         RolapSchema.PhysColumn constrainedColumn,
         Object value)
     {
-        super(constrainedColumn);
+        super(router, constrainedColumn);
         assert value != null;
         assert ! (value instanceof StarColumnPredicate);
         this.value = value;
@@ -138,7 +141,7 @@ public class ValueColumnPredicate
     public StarColumnPredicate minus(StarPredicate predicate) {
         assert predicate != null;
         if (((StarColumnPredicate) predicate).evaluate(value)) {
-            return Predicates.wildcard(constrainedColumn, false);
+            return Predicates.wildcard(router, constrainedColumn, false);
         } else {
             return this;
         }

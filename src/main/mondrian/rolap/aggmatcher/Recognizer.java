@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -452,12 +452,12 @@ abstract class Recognizer {
         // 2) for each usage, find dimension and its levels
         // 3) determine if level columns are represented
 
-        // In generaly, there is only one cube.
+        // In generally, there is only one cube.
         for (RolapCube cube : findCubes()) {
-            Dimension[] dims = cube.getDimensions();
+            List<? extends RolapCubeDimension> dims = cube.getDimensionList();
             // start dimensions at 1 (0 is measures)
-            for (int j = 1; j < dims.length; j++) {
-                Dimension dim = dims[j];
+            for (int j = 1; j < dims.size(); j++) {
+                Dimension dim = dims.get(j);
                 // Ok, got dimension.
                 // See if any of the levels exist as columns in the
                 // aggTable. This requires applying a map from:

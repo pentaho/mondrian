@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2002-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -143,13 +143,11 @@ public class BuiltinFunTable extends FunTableImpl {
             }
 
             Level nthLevel(Hierarchy hierarchy, int n) {
-                List<Level> levels = hierarchy.getLevelList();
-
-                if (n >= levels.size() || n < 0) {
+                if (n >= hierarchy.getLevelList().size() || n < 0) {
                     throw newEvalException(
                         this, "Index '" + n + "' out of bounds");
                 }
-                return levels.get(n);
+                return hierarchy.getLevelList().get(n);
             }
         });
 

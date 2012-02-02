@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2011 Julian Hyde and others
+// Copyright (C) 2006-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -149,7 +149,7 @@ public class SqlContextConstraint
         // measure
         if (measureMembers.isEmpty()) {
             Cube cube = query.getCube();
-            Dimension dimension = cube.getDimensions()[0];
+            Dimension dimension = cube.getDimensionList().get(0);
             query.addMeasuresMembers(
                 dimension.getHierarchy().getDefaultMember());
         }

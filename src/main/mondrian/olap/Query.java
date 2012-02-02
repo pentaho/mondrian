@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1998-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -589,7 +589,7 @@ public class Query extends QueryPart {
         }
 
         // Make sure that no hierarchy is used on more than one axis.
-        for (Hierarchy hierarchy : ((RolapCube) getCube()).getHierarchies()) {
+        for (Hierarchy hierarchy : ((RolapCube) getCube()).getHierarchyList()) {
             int useCount = 0;
             for (QueryAxis axis : allAxes()) {
                 if (axis.getSet().getType().usesHierarchy(hierarchy, true)) {

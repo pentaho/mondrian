@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2009 Julian Hyde and others
+// Copyright (C) 2004-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -16,7 +16,7 @@ import java.text.MessageFormat;
 import java.util.*;
 
 public class StandAlone {
-    private static final String[] indents = new String[]{
+    private static final String[] indents = {
         "    ", "        ", "            ", "                "
     };
 
@@ -237,9 +237,9 @@ public class StandAlone {
             System.out.print("(" + cellPropValue + ")");
         }
 
-
         System.out.println(cell.getFormattedValue());
     }
+
     private static void printMembers(Position pos) {
         boolean needComma = false;
 
@@ -385,9 +385,7 @@ public class StandAlone {
     private static void printCube(Cube cube) {
         System.out.println("Cube " + cube.getName());
 
-        Dimension[] dims = cube.getDimensions();
-
-        for (Dimension dim : dims) {
+        for (Dimension dim : cube.getDimensionList()) {
             printDimension(dim);
         }
     }

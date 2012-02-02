@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,7 +29,7 @@ public class Test {
     PrintWriter pw;
     RolapConnection connection;
 
-    static public void main(String[] args) {
+    public static void main(String[] args) {
         Test test = new Test(args);
         if (true) {
             test.run();
@@ -104,8 +104,7 @@ public class Test {
     {
         RolapCube salesCube =
             (RolapCube) connection.getSchema().lookupCube("Sales", true);
-        RolapHierarchy measuresHierarchy =
-                (RolapHierarchy) salesCube.getMeasuresHierarchy();
+        RolapHierarchy measuresHierarchy = salesCube.getMeasuresHierarchy();
         testMemberReader(measuresHierarchy.getMemberReader());
 
         RolapHierarchy genderHierarchy = (RolapHierarchy)
@@ -130,8 +129,8 @@ public class Test {
         print(rootMembers);
         pw.println();
 
-        List<RolapLevel> levels =
-            rootMembers.get(0).getHierarchy().getRolapLevelList();
+        List<? extends RolapLevel> levels =
+            rootMembers.get(0).getHierarchy().getLevelList();
         RolapLevel level = levels.get(levels.size() > 1 ? 1 : 0);
         pw.print("Members at level " + level.getUniqueName() + " are ");
         List<RolapMember> members =

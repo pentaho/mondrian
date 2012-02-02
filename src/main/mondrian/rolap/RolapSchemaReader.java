@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2011 Julian Hyde
+// Copyright (C) 2003-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -70,7 +70,7 @@ public class RolapSchemaReader
     public List<Member> getHierarchyRootMembers(Hierarchy hierarchy) {
         final Role.HierarchyAccess hierarchyAccess =
             role.getAccessDetails(hierarchy);
-        final List<Level> levels = hierarchy.getLevelList();
+        final List<? extends Level> levels = hierarchy.getLevelList();
         final Level firstLevel;
         if (hierarchyAccess == null) {
             firstLevel = levels.get(0);
@@ -553,7 +553,7 @@ public class RolapSchemaReader
     public List<Dimension> getCubeDimensions(Cube cube) {
         assert cube != null;
         final List<Dimension> dimensions = new ArrayList<Dimension>();
-        for (Dimension dimension : cube.getDimensions()) {
+        for (Dimension dimension : cube.getDimensionList()) {
             switch (role.getAccess(dimension)) {
             case NONE:
                 continue;
@@ -584,7 +584,7 @@ public class RolapSchemaReader
         assert hierarchy != null;
         final Role.HierarchyAccess hierarchyAccess =
             role.getAccessDetails(hierarchy);
-        final List<Level> levels = hierarchy.getLevelList();
+        final List<Level> levels = Util.cast(hierarchy.getLevelList());
         if (hierarchyAccess == null) {
             return levels;
         }

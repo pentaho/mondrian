@@ -573,8 +573,11 @@ public class BatchTestCase extends FoodMartTestCase {
     }
 
     protected CellRequest createRequest(
-        final String cube, final String measureName,
-        final String[] tables, final String[] columns, final String[] values)
+        final String cube,
+        final String measureName,
+        final String[] tables,
+        final String[] columns,
+        final String[] values)
     {
         RolapStar.Measure starMeasure = getMeasure(cube, measureName);
         CellRequest request = new CellRequest(starMeasure, false, false);
@@ -589,6 +592,7 @@ public class BatchTestCase extends FoodMartTestCase {
                 request.addConstrainedColumn(
                     storeTypeColumn,
                     new ValueColumnPredicate(
+                        new RolapSchema.BadRouter(),
                         (RolapSchema.PhysColumn)
                             storeTypeColumn.getExpression(),
                         value));
@@ -1076,6 +1080,7 @@ public class BatchTestCase extends FoodMartTestCase {
                 for (int i = 0; i < values.length; i++) {
                     andPredList.add(
                         new ValueColumnPredicate(
+                            new RolapSchema.BadRouter(),
                             (RolapSchema.PhysColumn)
                                 starColumn[i].getExpression(),
                             values[i]));

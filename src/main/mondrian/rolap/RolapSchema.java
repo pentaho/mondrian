@@ -48,7 +48,7 @@ import javax.sql.DataSource;
  * @since 26 July, 2001
  * @version $Id$
  */
-public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
+public class RolapSchema implements Schema {
     static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
 
     final String name;
@@ -132,8 +132,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
      * that has
      * {@link mondrian.rolap.RolapConnectionProperties#Ignore Ignore}=true.
      */
-    private final List<MondrianSchemaException> warningList =
-        new ArrayList<MondrianSchemaException>();
+    final List<MondrianSchemaException> warningList;
 
     private final Map<String, Annotation> annotationMap;
 
@@ -144,15 +143,6 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
      * <p>Expect a different ID for each Mondrian instance node.
      */
     private final String id;
-
-    /**
-     * Number of errors (messages logged via {@link #error}) encountered during
-     * validation. If there are any errors, the schema is not viable for
-     * queries. Fatal errors (logged via {@link #fatal}) will already have
-     * aborted the validation process; warnings (logged via {@link #warning})
-     * will have been logged without incrementing the error count.
-     */
-    private int errorCount;
 
     private final PhysStatistic statistic = new PhysStatistic();
 
@@ -200,6 +190,16 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
             throw Util.newError("<Schema> name must be set");
         }
         this.annotationMap = annotationMap;
+
+        if (getInternalConnection() != null
+            && "true".equals(
+                getInternalConnection().getProperty(
+                    RolapConnectionProperties.Ignore.name())))
+        {
+            warningList = new ArrayList<MondrianSchemaException>();
+        } else {
+            warningList = null;
+        }
     }
 
     protected void finalCleanUp() {
@@ -290,26 +290,25 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     }
 
     void resolve(
+        RolapSchemaLoader loader,
         PhysSchema physSchema,
         UnresolvedColumn unresolvedColumn)
     {
         try {
             if (unresolvedColumn.state == UnresolvedColumn.State.ACTIVE) {
-                warning(
+                loader.getHandler().warning(
                     "Calculated column '" + unresolvedColumn.name
                     + "' in table '" + unresolvedColumn.tableName
-                    + "' has cyclic expression",
-                    unresolvedColumn.xml,
-                    null);
+                    + "' has cyclic expression", unresolvedColumn.xml, null);
                 return;
             }
             unresolvedColumn.state = UnresolvedColumn.State.ACTIVE;
             final PhysRelation table =
                 physSchema.tablesByName.get(unresolvedColumn.tableName);
             if (table == null) {
-                warning(
-                    "Unknown table '" + unresolvedColumn.tableName
-                    + "'" + unresolvedColumn.getContext() + ".",
+                loader.getHandler().warning(
+                    "Unknown table '" + unresolvedColumn.tableName + "'"
+                    + unresolvedColumn.getContext() + ".",
                     unresolvedColumn.xml,
                     null);
                 return;
@@ -318,7 +317,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                 table.getColumn(
                     unresolvedColumn.name, false);
             if (column == null) {
-                warning(
+                loader.getHandler().warning(
                     "Reference to unknown column '" + unresolvedColumn.name
                     + "' in table '" + unresolvedColumn.tableName + "'"
                     + unresolvedColumn.getContext() + ".",
@@ -331,6 +330,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                     for (Object o : physCalcColumn.list) {
                         if (o instanceof UnresolvedColumn) {
                             resolve(
+                                loader,
                                 physSchema,
                                 (UnresolvedColumn) o);
                         }
@@ -344,98 +344,6 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                 unresolvedColumn.state = UnresolvedColumn.State.ERROR;
             }
         }
-    }
-
-    public XmlLocation locate(NodeDef node, String attributeName) {
-        final Location location = node.getLocation();
-        if (location == null) {
-            return null;
-        }
-        return new XmlLocationImpl(node, location, attributeName);
-    }
-
-    public void warning(
-        String message,
-        NodeDef node,
-        String attributeName)
-    {
-        warning(message, node, attributeName, null);
-    }
-
-    public void warning(
-        String message,
-        NodeDef node,
-        String attributeName,
-        Throwable cause)
-    {
-        final XmlLocation xmlLocation = locate(node, attributeName);
-        final MondrianSchemaException ex =
-            new MondrianSchemaException(
-                message, describe(node), xmlLocation, Severity.WARNING, cause);
-        if (internalConnection != null
-            && "true".equals(
-                internalConnection.getProperty(
-                    RolapConnectionProperties.Ignore.name())))
-        {
-            warningList.add(ex);
-        } else {
-            throw ex;
-        }
-    }
-
-    private String describe(NodeDef node) {
-        // TODO: If node is not a namedElement, list its ancestors until we
-        // hit a NamedElement. For example: Key in Dimension 'foo'.
-        // Will require a new method DOMWrapper Annotator.getParent(DOMWrapper).
-        if (node == null) {
-            return null;
-        } else if (node instanceof MondrianDef.NamedElement) {
-            return node.getName()
-                   + " '"
-                   + ((MondrianDef.NamedElement) node).getNameAttribute()
-                   + "'";
-        } else {
-            return node.getName();
-        }
-    }
-
-    public void error(
-        String message,
-        NodeDef node,
-        String attributeName)
-    {
-        final XmlLocation xmlLocation = locate(node, attributeName);
-        final Throwable cause = null;
-        final MondrianSchemaException ex =
-            new MondrianSchemaException(
-                message, describe(node), xmlLocation, Severity.ERROR, cause);
-        if (internalConnection != null
-            && "true".equals(
-                internalConnection.getProperty(
-                    RolapConnectionProperties.Ignore.name())))
-        {
-            ++errorCount;
-            warningList.add(ex);
-        } else {
-            throw ex;
-        }
-    }
-
-    public void error(
-        MondrianException message, NodeDef node, String attributeName)
-    {
-        error(message.toString(), node, attributeName);
-    }
-
-    public RuntimeException fatal(
-        String message,
-        NodeDef node,
-        String attributeName)
-    {
-        final XmlLocation xmlLocation = locate(node, attributeName);
-        final Throwable cause = null;
-        return new MondrianSchemaException(
-            message, describe(node), xmlLocation, Severity.FATAL, cause);
     }
 
     public Dimension createDimension(Cube cube, String xml) {
@@ -473,53 +381,6 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
      */
     protected RolapCube lookupCube(final String cubeName) {
         return mapNameToCube.get(Util.normalizeName(cubeName));
-    }
-
-    /**
-     * Returns an xmlCalculatedMember called 'calcMemberName' in the
-     * cube called 'cubeName' or return null if no calculatedMember or
-     * xmlCube by those name exists.
-     */
-    protected MondrianDef.CalculatedMember lookupXmlCalculatedMember(
-        final String calcMemberName,
-        final String cubeName)
-    {
-        for (final MondrianDef.Cube cube
-            : Util.filter(xmlSchema.children, MondrianDef.Cube.class))
-        {
-            if (!Util.equalName(cube.name, cubeName)) {
-                continue;
-            }
-            for (MondrianDef.CalculatedMember xmlCalcMember
-                : Util.filter(
-                    cube.children, MondrianDef.CalculatedMember.class))
-            {
-                // FIXME: Since fully-qualified names are not unique, we
-                // should compare unique names. Also, the logic assumes that
-                // CalculatedMember.dimension is not quoted (e.g. "Time")
-                // and CalculatedMember.hierarchy is quoted
-                // (e.g. "[Time].[Weekly]").
-                if (Util.equalName(
-                        calcMemberFqName(xmlCalcMember),
-                        calcMemberName))
-                {
-                    return xmlCalcMember;
-                }
-            }
-        }
-        return null;
-    }
-
-    private String calcMemberFqName(MondrianDef.CalculatedMember xmlCalcMember)
-    {
-        if (xmlCalcMember.dimension != null) {
-            return Util.makeFqName(
-                Util.quoteMdxIdentifier(xmlCalcMember.dimension),
-                xmlCalcMember.name);
-        } else {
-            return Util.makeFqName(
-                xmlCalcMember.hierarchy, xmlCalcMember.name);
-        }
     }
 
     /**
@@ -1010,7 +871,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     /**
      * Implementation of XmlLocation based on {@link Location}.
      */
-    private static class XmlLocationImpl implements XmlLocation {
+    static class XmlLocationImpl implements XmlLocation {
         private final NodeDef node;
         private final Location location;
         private final String attributeName;
@@ -1022,7 +883,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
          * @param location Location
          * @param attributeName Attribute name (may be null)
          */
-        public XmlLocationImpl(
+        XmlLocationImpl(
             NodeDef node, Location location, String attributeName)
         {
             this.node = node;
@@ -1064,7 +925,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         final Dialect dialect;
         final JdbcSchema jdbcSchema;
 
-        private final Set<PhysLink> linkSet = new HashSet<PhysLink>();
+        final Set<PhysLink> linkSet = new HashSet<PhysLink>();
 
         private final Map<PhysRelation, List<PhysLink>> hardLinksFrom =
             new HashMap<PhysRelation, List<PhysLink>>();
@@ -1480,6 +1341,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
          * Returns the number of rows in the table.
          */
         int getNumberOfRows();
+
+        void addColumn(PhysColumn column);
     }
 
     static abstract class PhysRelationImpl implements PhysRelation {
@@ -1570,7 +1433,13 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         public PhysKey addKey(String keyName, List<PhysColumn> keyColumnList) {
             final PhysKey key = new PhysKey(this, keyName, keyColumnList);
             final PhysKey previous = keysByName.put(keyName, key);
-            assert previous == null;
+            if (previous != null) {
+                // OK if the table already has a key, as long as it is
+                // identical.
+                assert previous.equals(key);
+                keysByName.put(keyName, previous);
+                return previous;
+            }
             return key;
         }
 
@@ -1580,20 +1449,20 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
          * populated this time or previously.
          *
          * <p>If the table does not exist or the view is invalid, returns false,
-         * and calls {@link mondrian.rolap.RolapSchema#warning} to indicate
+         * and calls {@link RolapSchemaLoader.Handler#warning} to indicate
          * the problem.
          *
-         * @param schema Schema (for logging errors)
+         * @param loader Schema loader
          * @param xmlNode XML element
          * @return whether was populated successfully this call or previously
          */
         public boolean ensurePopulated(
-            RolapSchema schema,
+            RolapSchemaLoader loader,
             NodeDef xmlNode)
         {
             if (!populated) {
                 final int[] rowCountAndSize = new int[2];
-                populated = populateColumns(schema, xmlNode, rowCountAndSize);
+                populated = populateColumns(loader, xmlNode, rowCountAndSize);
                 rowCount = rowCountAndSize[0];
                 totalColumnByteCount = rowCountAndSize[1];
             }
@@ -1611,16 +1480,22 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
          * @param rowCountAndSize Output array, to hold the number of rows in
          */
         protected abstract boolean populateColumns(
-            RolapSchema schema,
+            RolapSchemaLoader schema,
             NodeDef xmlNode,
             int[] rowCountAndSize);
+
+        public void addColumn(PhysColumn column) {
+            columnsByName.put(
+                column.name,
+                column);
+        }
     }
 
     /**
      * A relation defined by a SQL string.
      *
      * <p>Column names and types are resolved, in
-     * {@link mondrian.rolap.RolapSchema.PhysRelationImpl#populateColumns(RolapSchema,org.eigenbase.xom.NodeDef,int[])},
+     * {@link mondrian.rolap.RolapSchema.PhysRelationImpl#populateColumns(RolapSchemaLoader, org.eigenbase.xom.NodeDef, int[])},
      * by preparing a query based on the SQL string.
      *
      * <p>In Mondrian's schema file, each {@link Dialect} can have its own SQL
@@ -1677,7 +1552,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         }
 
         protected boolean populateColumns(
-            RolapSchema schema,
+            RolapSchemaLoader loader,
             NodeDef xmlNode,
             int[] rowCountAndSize)
         {
@@ -1701,16 +1576,15 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                     final Dialect.Datatype datatype =
                         physSchema.dialect.sqlTypeToDatatype(typeName, type);
                     if (datatype == null) {
-                        schema.warning(
+                        loader.getHandler().warning(
                             "Unknown data type "
-                                + typeName + " (" + type + ") for column "
-                                + columnName + " of view; mondrian is probably"
-                                + " not familiar with this database's type"
-                                + " system", xmlNode,
+                            + typeName + " (" + type + ") for column "
+                            + columnName + " of view; mondrian is probably"
+                            + " not familiar with this database's type"
+                            + " system", xmlNode,
                             null);
                     }
-                    columnsByName.put(
-                        columnName,
+                    addColumn(
                         new RolapSchema.PhysRealColumn(
                             this, columnName, datatype,
                             null, columnSize));
@@ -1724,11 +1598,8 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                 rowCountAndSize[1] = rowByteCount;
                 return true;
             } catch (SQLException e) {
-                schema.warning(
-                    "View is invalid: " + e.getMessage(),
-                    xmlNode,
-                    null,
-                    e);
+                loader.getHandler().warning(
+                    "View is invalid: " + e.getMessage(), xmlNode, null, e);
                 return false;
             } finally {
                 if (connection != null) {
@@ -1788,7 +1659,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         }
 
         protected boolean populateColumns(
-            RolapSchema schema, NodeDef xmlNode, int[] rowCountAndSize)
+            RolapSchemaLoader schema, NodeDef xmlNode, int[] rowCountAndSize)
         {
             // not much to do; was populated on creation
             rowCountAndSize[0] = rowList.size();
@@ -1882,13 +1753,14 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         }
 
         protected boolean populateColumns(
-            RolapSchema schema, NodeDef xmlNode, int[] rowCountAndSize)
+            RolapSchemaLoader loader, NodeDef xmlNode, int[] rowCountAndSize)
         {
             final JdbcSchema.Table jdbcTable =
                 physSchema.jdbcSchema.getTable(name);
             if (jdbcTable == null) {
-                schema.warning(
-                    "Table '" + name + "' does not exist in database.", xmlNode,
+                loader.getHandler().warning(
+                    "Table '" + name + "' does not exist in database.",
+                    xmlNode,
                     null);
                 return false;
             }
@@ -1911,9 +1783,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                             jdbcColumn.getDatatype(),
                             null,
                             jdbcColumn.getColumnSize());
-                    columnsByName.put(
-                        jdbcColumn.getName(),
-                        column);
+                    addColumn(column);
                 }
             }
             return true;
@@ -1945,7 +1815,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     public static class PhysKey {
         final PhysRelation relation;
         final List<PhysColumn> columnList;
-        private final String name;
+        final String name;
 
         /**
          * Creates a PhysKey.
@@ -2097,6 +1967,14 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         public abstract Dialect.Datatype getDatatype();
 
         /**
+         * Returns the type to be used for in-memory representation of this
+         * expression.
+         *
+         * @return Internal type
+         */
+        public abstract SqlStatement.Type getInternalType();
+
+        /**
          * Joins the table underlying this expression to the root of the
          * corresponding star. Usually called after
          * {@link SqlQueryBuilder#addToFrom(mondrian.rolap.RolapSchema.PhysExpr)}.
@@ -2155,6 +2033,10 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         }
 
         public Dialect.Datatype getDatatype() {
+            return null; // not known
+        }
+
+        public SqlStatement.Type getInternalType() {
             return null; // not known
         }
     }
@@ -2344,6 +2226,10 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         }
 
         public Dialect.Datatype getDatatype() {
+            return null;
+        }
+
+        public SqlStatement.Type getInternalType() {
             return null;
         }
 
@@ -2587,6 +2473,57 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
     }
 
     /**
+     * Callback that can give an expression a path to a root relation.
+     *
+     * <p>The most typical implementation is the one that knows the measure
+     * group and joining dimension, and can therefore find the path of an
+     * expression (say an attribute's key) to the fact table.</p>
+     */
+    public interface PhysRouter {
+        PhysPath path(PhysColumn column);
+    }
+
+    /**
+     * Implementation of {@link PhysRouter} that always throws.
+     *
+     * <p>Use it in situations where a column will never need to be joined to
+     * a fact table, for instance when defining a column predicate whose value
+     * is a literal true or false.
+     */
+    public static class BadRouter implements RolapSchema.PhysRouter {
+        public RolapSchema.PhysPath path(RolapSchema.PhysColumn column) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    /**
+     * Implementation of {@link PhysRouter} that joins an attribute to a
+     * measure group's fact table via a joining dimension.
+     */
+    public static class CubeRouter implements PhysRouter {
+        private final RolapMeasureGroup measureGroup;
+        private final RolapCubeDimension cubeDimension;
+
+        /**
+         * Creates a cube router.
+         *
+         * @param measureGroup Measure group
+         * @param cubeDimension Joining dimension
+         */
+        public CubeRouter(
+            RolapMeasureGroup measureGroup,
+            RolapCubeDimension cubeDimension)
+        {
+            this.measureGroup = measureGroup;
+            this.cubeDimension = cubeDimension;
+        }
+
+        public PhysPath path(PhysColumn column) {
+            return measureGroup.getPath(cubeDimension, column);
+        }
+    }
+
+    /**
      * Checked exception for signaling errors in physical schemas.
      * These are intended to be caught and converted into validation exceptions.
      */
@@ -2615,7 +2552,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
                 message
                 + (nodeDesc == null
                     ? ""
-                    : " in " + nodeDesc)
+                    : " (in " + nodeDesc + ")")
                 + (xmlLocation == null
                     ? ""
                     : " (at " + xmlLocation + ")"),
@@ -2634,7 +2571,7 @@ public class RolapSchema implements Schema, RolapSchemaLoader.Handler {
         }
     }
 
-    private static enum Severity {
+    static enum Severity {
         WARNING,
         ERROR,
         FATAL

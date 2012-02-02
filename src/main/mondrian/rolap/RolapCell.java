@@ -256,9 +256,15 @@ public class RolapCell implements Cell {
                         if (memberWalk.getLevel() != levelLast) {
                             RolapCubeMember rolapCubeMember =
                                 (RolapCubeMember) memberWalk;
+                            final RolapStoredMeasure measure =
+                                (RolapStoredMeasure)
+                                    result.getCellMembers(pos)[0];
                             // Add a predicate for the member at this level
                             listOfStarPredicatesForCurrentPosition.add(
                                 Predicates.memberPredicate(
+                                    new RolapSchema.CubeRouter(
+                                        measure.getMeasureGroup(),
+                                        rolapCubeMember.getDimension()),
                                     rolapCubeMember));
                         }
                         levelLast = memberWalk.getLevel();

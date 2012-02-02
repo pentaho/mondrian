@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -22,7 +22,6 @@ import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.server.Statement;
 import mondrian.util.Bug;
-import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
 
@@ -145,7 +144,6 @@ public class RolapCube extends CubeBase {
             null,
             null,
             null);
-        schemaLoader.initDimension(measuresDimension);
 
         final RolapCubeDimension measuresCubeDimension =
             new RolapCubeDimension(
@@ -162,13 +160,16 @@ public class RolapCube extends CubeBase {
         schemaLoader.initDimension(measuresCubeDimension);
         dimensionList.add(measuresCubeDimension);
         this.measuresHierarchy =
-            (RolapCubeHierarchy)
-                measuresCubeDimension.getHierarchyList().get(0);
+            measuresCubeDimension.getHierarchyList().get(0);
         this.hierarchyList.add(this.measuresHierarchy);
     }
 
     public Dimension[] getDimensions() {
         return dimensionList.toArray(new Dimension[dimensionList.size()]);
+    }
+
+    public List<? extends RolapCubeDimension> getDimensionList() {
+        return Util.cast(dimensionList);
     }
 
     @Override
@@ -199,8 +200,10 @@ public class RolapCube extends CubeBase {
      * of sync with the cache.
      *
      * @param memberReader new member reader for measures hierarchy
+     *
+     * @see Util#deprecated(Object) make private
      */
-    private void setMeasuresHierarchyMemberReader(MemberReader memberReader) {
+    void setMeasuresHierarchyMemberReader(MemberReader memberReader) {
         this.measuresHierarchy.getRolapHierarchy().setMemberReader(
             memberReader);
         // this invalidates any cached schema reader
@@ -225,122 +228,6 @@ public class RolapCube extends CubeBase {
 
     void setAggGroup(final ExplicitRules.Group aggGroup) {
         this.aggGroup = aggGroup;
-    }
-
-    /**
-     * Returns a pair (primary key table, primary key) if all of the hierarchies
-     * in a dimension have the same primary key details; throws otherwise.
-     *
-     * @param dimension XML dimension
-     * @return Primary key table and column, never null
-     */
-    Pair<String, String> getUniquePrimaryKey(
-        Mondrian3Def.Dimension dimension)
-    {
-        if (dimension.hierarchies.length == 0) {
-            throw schema.fatal(
-                "Dimension has no hierarchies",
-                dimension,
-                null);
-        }
-        Set<Pair<String, String>> primaryKeySet =
-            new HashSet<Pair<String, String>>();
-        for (Mondrian3Def.Hierarchy xmlHierarchy : dimension.hierarchies) {
-            String primaryKeyTable = xmlHierarchy.primaryKeyTable;
-            if (primaryKeyTable == null
-                && xmlHierarchy.relation instanceof Mondrian3Def.Relation)
-            {
-                primaryKeyTable =
-                    ((Mondrian3Def.Relation) xmlHierarchy.relation).getAlias();
-            }
-            primaryKeySet.add(
-                Pair.of(
-                    primaryKeyTable,
-                    xmlHierarchy.primaryKey));
-        }
-        if (primaryKeySet.size() != 1) {
-            throw schema.fatal(
-                "Cannot convert schema: hierarchies in dimension '"
-                + dimension.name
-                + "' do not have consistent primary keys",
-                dimension,
-                null);
-        }
-        return primaryKeySet.iterator().next();
-    }
-
-    /**
-     * Returns whether a dimension is degenerate; that is, all of its
-     * hierarchies are in the fact table.
-     *
-     * @param xmlCubeDimension Dimension
-     * @param xmlSchema Schema
-     * @param xmlFact Fact table
-     * @return Whether dimension is degenerate
-     */
-    private boolean isDegenerate(
-        Mondrian3Def.CubeDimension xmlCubeDimension,
-        Mondrian3Def.Schema xmlSchema,
-        Mondrian3Def.RelationOrJoin xmlFact)
-    {
-        if (xmlCubeDimension instanceof Mondrian3Def.Dimension) {
-            Mondrian3Def.Dimension dimension =
-                (Mondrian3Def.Dimension) xmlCubeDimension;
-            for (Mondrian3Def.Hierarchy hierarchy : dimension.hierarchies) {
-                if (hierarchy.relation != null
-                    && !Util.equals(hierarchy.relation, xmlFact))
-                {
-                    return false;
-                }
-            }
-            return true;
-        } else if (xmlCubeDimension instanceof Mondrian3Def.DimensionUsage) {
-            final Mondrian3Def.Dimension dimension =
-                xmlCubeDimension.getDimension(xmlSchema);
-            if (dimension == null) {
-                // Dimension usage uses an invalid dimension. It doesn't matter
-                // whether the dimension is degenerate, they'll get an error
-                // either way.
-                return false;
-            }
-            return isDegenerate(dimension, xmlSchema, xmlFact);
-        }
-        return false;
-    }
-
-    /**
-     * Returns a set of the names of the cubes used by a virtual cube. The
-     * order is deterministic.
-     *
-     * @param xmlVirtualCube XML virtual cube
-     * @return Set of cube names
-     */
-    private Set<String> getUsedCubeNames(
-        Mondrian3Def.VirtualCube xmlVirtualCube)
-    {
-        final Set<String> names = new LinkedHashSet<String>();
-        if (xmlVirtualCube.cubeUsage != null) {
-            for (Mondrian3Def.CubeUsage xmlCubeUsage
-                : xmlVirtualCube.cubeUsage.cubeUsages)
-            {
-                names.add(xmlCubeUsage.cubeName);
-            }
-        }
-        for (Mondrian3Def.VirtualCubeDimension virtualCubeDimension
-            : xmlVirtualCube.dimensions)
-        {
-            if (virtualCubeDimension.cubeName != null) {
-                names.add(virtualCubeDimension.cubeName);
-            }
-        }
-        for (Mondrian3Def.VirtualCubeMeasure virtualCubeMeasure
-            : xmlVirtualCube.measures)
-        {
-            if (virtualCubeMeasure.cubeName != null) {
-                names.add(virtualCubeMeasure.cubeName);
-            }
-        }
-        return names;
     }
 
     /**
@@ -439,12 +326,15 @@ public class RolapCube extends CubeBase {
     /**
      * Returns a list of all hierarchies in this cube, in order of dimension.
      *
-     * <p>TODO: Make this method return RolapCubeHierarchy, when the measures
-     * hierarchy is a RolapCubeHierarchy.
+     * @deprecated Use {@link #getHierarchyList()}. Will be removed before 4.0.
      *
      * @return List of hierarchies
      */
     public List<RolapHierarchy> getHierarchies() {
+        return Util.cast(hierarchyList);
+    }
+
+    public List<RolapCubeHierarchy> getHierarchyList() {
         return Util.cast(hierarchyList);
     }
 
@@ -532,9 +422,7 @@ public class RolapCube extends CubeBase {
             if (dimension.getName().equals(
                     hierarchy.getDimension().getName()))
             {
-                for (RolapCubeHierarchy hier
-                    : dimension .getRolapCubeHierarchyList())
-                {
+                for (RolapCubeHierarchy hier : dimension.getHierarchyList()) {
                     if (hier.getName().equals(hierarchy.getName())) {
                         return hier;
                     }
@@ -584,23 +472,18 @@ public class RolapCube extends CubeBase {
             if (dimensionName.equals(levelDimName)
                 || (isClosure && dimensionName.equals(closDimName)))
             {
-                for (RolapCubeHierarchy hier
-                    : dimension.getRolapCubeHierarchyList())
-                {
+                for (RolapCubeHierarchy hier : dimension.getHierarchyList()) {
                     final String hierarchyName = hier.getName();
                     if (hierarchyName.equals(levelHierName)
                         || (isClosure && hierarchyName.equals(closHierName)))
                     {
                         if (isClosure) {
                             final RolapCubeLevel baseLevel =
-                                hier.getRolapCubeLevelList().get(1)
-                                    .getClosedPeer();
+                                hier.getLevelList().get(1).getClosedPeer();
                             virtualToBaseMap.put(level, baseLevel);
                             return baseLevel;
                         }
-                        for (RolapCubeLevel lvl
-                            : hier.getRolapCubeLevelList())
-                        {
+                        for (RolapCubeLevel lvl : hier.getLevelList()) {
                             if (lvl.getName().equals(level.getName())) {
                                 virtualToBaseMap.put(level, lvl);
                                 return lvl;
@@ -631,7 +514,7 @@ public class RolapCube extends CubeBase {
     /**
      * Returns the the measures hierarchy.
      */
-    public Hierarchy getMeasuresHierarchy() {
+    public RolapHierarchy getMeasuresHierarchy() {
         return measuresHierarchy;
     }
 

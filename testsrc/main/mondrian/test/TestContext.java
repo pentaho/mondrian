@@ -23,6 +23,7 @@ import mondrian.rolap.*;
 import mondrian.spi.*;
 import mondrian.spi.impl.FilterDynamicSchemaProcessor;
 import mondrian.util.DelegatingInvocationHandler;
+import mondrian.util.Pair;
 
 import junit.framework.*;
 import junit.framework.Test;
@@ -32,6 +33,7 @@ import org.olap4j.impl.CoordinateIterator;
 import org.olap4j.layout.TraditionalCellSetFormatter;
 
 import java.io.*;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -88,20 +90,21 @@ public class TestContext {
         "[Product].[Products]",
         "[Promotion].[Media Type]",
         "[Promotion].[Promotions]",
-        "[Store].[Stores]",
         "[Store].[Store Size in SQFT]",
         "[Store].[Store Type]",
+        "[Store].[Stores]",
         "[Time].[Time]",
         "[Time].[Weekly]",
     };
-    private static String unadulteratedFoodMartSchema;
+    private static final Map<String, String> rawSchemas =
+        new WeakMap<String, String>();
 
     /**
      * Retrieves the singleton (instantiating if necessary).
      */
     public static synchronized TestContext instance() {
         if (instance == null) {
-            instance = new TestContext();
+            instance = new TestContext().with(DataSet.FOODMART);
         }
         return instance;
     }
@@ -182,10 +185,10 @@ public class TestContext {
         }
         if (catalogURL == null) {
             // Works if we are running in root directory of source tree
-            File file = new File("demo/NewFoodMart.xml");
+            File file = new File("demo/FoodMart.xml");
             if (!file.exists()) {
                 // Works if we are running in bin directory of runtime env
-                file = new File("../demo/NewFoodMart.xml");
+                file = new File("../demo/FoodMart.xml");
             }
             try {
                 catalogURL = Util.toURL(file);
@@ -299,7 +302,7 @@ public class TestContext {
         String roleDefs)
     {
         // First, get the unadulterated schema.
-        String s = getRawFoodMartSchema();
+        String s = getRawSchema();
 
         // Add parameter definitions, if specified.
         if (parameterDefs != null) {
@@ -367,18 +370,14 @@ public class TestContext {
     }
 
     /**
-     * Returns the definition of the "FoodMart" schema as stored in
-     * {@code FoodMart.xml}.
+     * Returns the definition of a schema as stored in the underlying file.
+     * Uses a cache to save re-reading.
      *
+     * @param dataSet Data set
      * @return XML definition of the FoodMart schema
      */
-    public static String getRawFoodMartSchema() {
-        synchronized (SnoopingSchemaProcessor.class) {
-            if (unadulteratedFoodMartSchema == null) {
-                unadulteratedFoodMartSchema = instance().getRawSchema();
-            }
-        }
-        return unadulteratedFoodMartSchema;
+    public static String getRawSchema(DataSet dataSet) {
+        return instance().with(dataSet).getRawSchema();
     }
 
     /**
@@ -387,13 +386,22 @@ public class TestContext {
      * @return XML definition of the FoodMart schema
      */
     public String getRawSchema() {
-        final Connection connection =
-            withSchemaProcessor(SnoopingSchemaProcessor.class)
-                .getConnection();
-        connection.close();
-        String schema = SnoopingSchemaProcessor.THREAD_RESULT.get();
-        Util.threadLocalRemove(SnoopingSchemaProcessor.THREAD_RESULT);
-        return schema;
+        final String catalog =
+            getConnectionProperties().get(
+                RolapConnectionProperties.Catalog.name());
+        synchronized (rawSchemas) {
+            String rawSchema = rawSchemas.get(catalog);
+            if (rawSchema == null) {
+                final Connection connection =
+                    withSchemaProcessor(SnoopingSchemaProcessor.class)
+                        .getConnection();
+                connection.close();
+                rawSchema = SnoopingSchemaProcessor.THREAD_RESULT.get();
+                Util.threadLocalRemove(SnoopingSchemaProcessor.THREAD_RESULT);
+                rawSchemas.put(catalog, rawSchema);
+            }
+            return rawSchema;
+        }
     }
 
     /**
@@ -1086,8 +1094,8 @@ public class TestContext {
      */
     public Axis executeAxis(String expression) {
         Result result = executeQuery(
-            "select {" + expression
-            + "} on columns from " + getDefaultCubeName());
+            "select {" + expression + "} on columns from "
+            + getDefaultCubeName());
         return result.getAxes()[0];
     }
 
@@ -1332,8 +1340,7 @@ public class TestContext {
     public static String toString(CellSet cellSet) {
         final StringWriter sw = new StringWriter();
         new TraditionalCellSetFormatter().format(
-            cellSet,
-            new PrintWriter(sw));
+            cellSet, new PrintWriter(sw));
         return sw.toString();
     }
 
@@ -1467,24 +1474,52 @@ public class TestContext {
     public TestContext with(DataSet dataSet) {
         switch (dataSet) {
         case FOODMART:
-            return this;
+            return withPropertiesReplace(
+                RolapConnectionProperties.Catalog,
+                "FoodMart.xml",
+                "NewFoodMart.xml");
         case LEGACY_FOODMART:
-            final Util.PropertyList properties =
-                getConnectionProperties().clone();
-            final String catalog =
-                properties.get(RolapConnectionProperties.Catalog.name());
-            properties.put(
-                RolapConnectionProperties.Catalog.name(),
-                Util.replace(
-                    catalog,
-                    "NewFoodMart.xml",
-                    "FoodMart.xml"));
-            return withProperties(properties);
+            return withPropertiesReplace(
+                RolapConnectionProperties.Catalog,
+                "NewFoodMart.xml",
+                "FoodMart.xml");
         case STEELWHEELS:
             return SteelWheelsTestCase.createContext(this, null);
         default:
             throw Util.unexpected(dataSet);
         }
+    }
+
+    private TestContext withPropertiesReplace(
+        RolapConnectionProperties property,
+        String find,
+        String replace)
+    {
+        final Util.PropertyList properties =
+            getConnectionProperties().clone();
+        final String catalog =
+            properties.get(property.name());
+        String catalog2 = Util.replace(catalog, find, replace);
+        if (catalog.equals(catalog2)) {
+            return this;
+        }
+        properties.put(property.name(), catalog2);
+        return withProperties(properties);
+    }
+
+    /**
+     * Shorthand for {@code with(LEGACY_FOODMART)} that indicates that the test
+     * case should be upgraded.
+     */
+    public TestContext legacy() {
+        return with(DataSet.LEGACY_FOODMART);
+    }
+
+    /**
+     * Shorthand for {@code with(FOODMART)}.
+     */
+    public TestContext modern() {
+        return with(DataSet.FOODMART);
     }
 
     public String getCatalogContent() {
@@ -1626,67 +1661,138 @@ public class TestContext {
         checkSqlAgainstDatasource(actualSql, expectedRows);
     }
 
+    /**
+     * Checks that expected SQL equals actual SQL, using a diff repository to
+     * get the expected SQL.
+     *
+     * <p>Performs some normalization on the actual SQL to compensate for
+     * differences between dialects.</p>
+     */
+    public void assertSqlEquals(
+        DiffRepository diffRepos,
+        String tag,
+        String actualSql,
+        int expectedRows)
+    {
+        final Util.Functor1<String, String> filter =
+            new Util.Functor1<String, String>()
+            {
+                public String apply(String param) {
+                    return transformQuotes(
+                        dialectize(Dialect.DatabaseProduct.MYSQL, param));
+                }
+            };
+        String transformedActualSql = filter.apply(actualSql);
+
+        final String expectedSql = "${" + tag + "}";
+        diffRepos.assertEquals(tag, expectedSql, transformedActualSql, filter);
+
+        // if the actual SQL isn't in the current dialect we have some
+        // problems... probably with the dialectize method
+        diffRepos.assertEquals(tag, actualSql, fold(dialectize(actualSql)).s);
+
+        checkSqlAgainstDatasource(actualSql, expectedRows);
+    }
+
     private static String removeQuotes(String actualSql) {
         String transformedActualSql = actualSql.replaceAll("`", "");
         transformedActualSql = transformedActualSql.replaceAll("\"", "");
         return transformedActualSql;
     }
 
+    private static String transformQuotes(String sql) {
+        return sql.replaceAll("\"", "`");
+    }
+
     /**
      * Converts a SQL string into the current dialect.
-     *
-     * <p>This is not intended to be a general purpose method: it looks for
-     * specific patterns known to occur in tests, in particular "=as=" and
-     * "fname + ' ' + lname".
      *
      * @param sql SQL string in generic dialect
      * @return SQL string converted into current dialect
      */
-    private String dialectize(String sql) {
-        final String search = "fname \\+ ' ' \\+ lname";
-        final Dialect dialect = getDialect();
-        final Dialect.DatabaseProduct databaseProduct =
-            dialect.getDatabaseProduct();
+    private String dialectize(String sql)
+    {
+        return dialectize(getDialect().getDatabaseProduct(), sql);
+    }
+
+    /**
+     * Converts a SQL string into a given dialect.
+     *
+     * <p>This is not intended to be a general purpose method: it looks for
+     * specific patterns known to occur in tests, in particular "=as=" and
+     * "fname + ' ' + lname".</p>
+     *
+     * @param databaseProduct Database product
+     * @param sql SQL string in generic dialect
+     * @return SQL string converted into current dialect
+     */
+    private static String dialectize(
+        Dialect.DatabaseProduct databaseProduct,
+        String sql)
+    {
+        final String fullName = "fname \\+ ' ' \\+ lname";
+        final String promotionSales =
+            "\\(case when `sales_fact_1997`.`promotion_id` = 0 then 0 else `sales_fact_1997`.`store_sales` end\\)";
         switch (databaseProduct) {
         case MYSQL:
             // Mysql would generate "CONCAT(...)"
             sql = sql.replaceAll(
-                search,
+                fullName,
                 "CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)");
+            sql = sql.replaceAll(
+                promotionSales,
+                "`sales_fact_1997`.`store_sales`");
             break;
         case POSTGRESQL:
         case ORACLE:
         case LUCIDDB:
         case TERADATA:
             sql = sql.replaceAll(
-                search,
+                fullName,
                 "`fname` || ' ' || `lname`");
             break;
         case DERBY:
             sql = sql.replaceAll(
-                search,
+                fullName,
                 "`customer`.`fullname`");
             break;
         case INGRES:
             sql = sql.replaceAll(
-                search,
+                fullName,
                 "fullname");
             break;
         case DB2:
         case DB2_AS400:
         case DB2_OLD_AS400:
             sql = sql.replaceAll(
-                search,
+                fullName,
                 "CONCAT(CONCAT(`customer`.`fname`, ' '), `customer`.`lname`)");
             break;
         }
 
-        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.ORACLE) {
+        if (databaseProduct == Dialect.DatabaseProduct.ORACLE) {
             // " + tableQualifier + "
             sql = sql.replaceAll(" =as= ", " ");
         } else {
             sql = sql.replaceAll(" =as= ", " as ");
         }
+
+        final String caseStmt =
+            " (case when `sales_fact_1997`.`promotion_id` = 0 then 0"
+            + " else `sales_fact_1997`.`store_sales` end)";
+        final String accessCase =
+            " Iif(`sales_fact_1997`.`promotion_id` = 0, 0,"
+            + " `sales_fact_1997`.`store_sales`)";
+        final String infobrightCase = " `sales_fact_1997`.`store_sales`";
+        switch (databaseProduct) {
+        case ACCESS:
+            sql = sql.replaceAll(accessCase, caseStmt);
+            break;
+        case INFOBRIGHT:
+            sql = sql.replaceAll(infobrightCase, caseStmt);
+            break;
+        }
+
         return sql;
     }
 
@@ -1837,23 +1943,22 @@ public class TestContext {
                 expression,
                 scalar,
                 scalar ? null : ResultStyle.ITERABLE);
-        final List<RolapHierarchy> hierarchies =
-            ((RolapCube) query.getCube()).getHierarchies();
-        final TreeSet<String> actualHierList = new TreeSet<String>();
-        for (Hierarchy hierarchy : hierarchies) {
+        final TreeSet<String> actualHierarchyList = new TreeSet<String>();
+        final RolapCube cube = (RolapCube) query.getCube();
+        for (Hierarchy hierarchy : cube.getHierarchyList()) {
             if (calc.dependsOn(hierarchy)) {
-                actualHierList.add(hierarchy.getUniqueName());
+                actualHierarchyList.add(hierarchy.getUniqueName());
             }
         }
-        if (!Util.equals(expectedHierList, actualHierList)) {
+        if (!Util.equals(expectedHierList, actualHierarchyList)) {
             String message =
                 "In expected but not actual: "
-                + minus(expectedHierList, actualHierList)
+                + minus(expectedHierList, actualHierarchyList)
                 + "\n"
                 + "In actual but not expected: "
-                + minus(actualHierList, expectedHierList);
+                + minus(actualHierarchyList, expectedHierList);
             assertEqualsVerbose(
-                expectedHierList.toString(), actualHierList.toString(),
+                expectedHierList.toString(), actualHierarchyList.toString(),
                 false, message);
         }
     }
@@ -1916,6 +2021,35 @@ public class TestContext {
         properties.remove(
             RolapConnectionProperties.Catalog.name());
         return withProperties(properties);
+    }
+
+    /**
+     * Creates a TestContext that applies a substitution to the schema text.
+     *
+     * @param substitution Filter to be applied to the schema content
+     * @return TestContext which contains the substituted schema
+     */
+    public final TestContext withSubstitution(
+        final Util.Functor1<String, String> substitution)
+    {
+        return new DelegatingTestContext(this) {
+            public Util.PropertyList getConnectionProperties() {
+                final Util.PropertyList propertyList =
+                    super.getConnectionProperties();
+                String catalogContent =
+                    propertyList.get(
+                        RolapConnectionProperties.CatalogContent.name());
+                if (catalogContent == null) {
+                    catalogContent = super.getRawSchema();
+                }
+                String catalogContent2 = substitution.apply(catalogContent);
+                Util.PropertyList propertyList2 = propertyList.clone();
+                propertyList2.put(
+                    RolapConnectionProperties.CatalogContent.name(),
+                    catalogContent2);
+                return propertyList2;
+            }
+        };
     }
 
     protected String checkErrorLocation(String schema) {
@@ -2049,7 +2183,7 @@ public class TestContext {
     {
         final String schema =
             substituteSchema(
-                getRawFoodMartSchema(),
+                getRawSchema(),
                 cubeName,
                 dimensionDefs,
                 measureDefs,
@@ -2241,8 +2375,11 @@ public class TestContext {
                 }
                 throw new AssertionFailedError(
                     "Actual message matched expected, but actual error "
-                    + "location " + xmlLocation + " did not match expected"
-                    + Util.nl + "Other info:" + Util.nl + sw);
+                    + "location (" + xmlLocation + ") did not match expected."
+                    + (sw.getBuffer().length() > 0
+                        ? " Other info: "
+                        : "")
+                    + sw);
             }
             if (buf.length() > 0) {
                 buf.append(Util.nl);
@@ -2250,10 +2387,11 @@ public class TestContext {
             buf.append(message);
         }
         throw new AssertionFailedError(
-            "Exception list did not contain expected exception '"
-            + expected + "'. Exception list is:" + Util.nl
-            + buf + Util.nl
-            + "Other info:" + Util.nl + sw);
+            "Exception list did not contain expected exception. Exception is:\n"
+            + expected
+            + "\nException list is:\n"
+            + buf
+            + "\nOther info:\n" + sw);
     }
 
     /**
@@ -2416,6 +2554,162 @@ public class TestContext {
         FOODMART,
         STEELWHEELS,
         LEGACY_FOODMART
+    }
+
+    /**
+     * Map backed by a hash map of weak references. When a ref is garbage
+     * collected, the entry is a candidate for removal from the map. Operations
+     * such as put, get, and iterator remove dead entries when they see them.
+     *
+     * <p>Unlike {@link WeakHashMap}, this map can be used for keys that can
+     * be re-created. Such as strings.</p>
+     *
+     * @param <K> Key type
+     * @param <V> Value type
+     */
+    private static class WeakMap<K, V> implements Map<K, V> {
+        private final Map<K, WeakReference<V>> map =
+            new HashMap<K, WeakReference<V>>();
+
+        public int size() {
+            return map.size();
+        }
+
+        public boolean isEmpty() {
+            return map.isEmpty();
+        }
+
+        public boolean containsKey(Object key) {
+            return map.containsKey(key);
+        }
+
+        public boolean containsValue(Object value) {
+            for (WeakReference<V> ref : map.values()) {
+                final V v = ref.get();
+                if (v != null && v.equals(value)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public V get(Object key) {
+            final WeakReference<V> ref = map.get(key);
+            if (ref == null) {
+                return null;
+            }
+            final V v = ref.get();
+            if (v == null) {
+                //noinspection SuspiciousMethodCalls
+                map.remove(key);
+            }
+            return v;
+        }
+
+        public V put(K key, V value) {
+            final WeakReference<V> ref =
+                map.put(key, new WeakReference<V>(value));
+            return ref == null ? null : ref.get();
+        }
+
+        public V remove(Object key) {
+            final WeakReference<V> ref = map.remove(key);
+            return ref == null ? null : ref.get();
+        }
+
+        public void putAll(Map<? extends K, ? extends V> m) {
+            for (Entry<? extends K, ? extends V> entry : m.entrySet()) {
+                map.put(entry.getKey(), new WeakReference<V>(entry.getValue()));
+            }
+        }
+
+        public void clear() {
+            map.clear();
+        }
+
+        public Set<K> keySet() {
+            return map.keySet();
+        }
+
+        public Collection<V> values() {
+            return new AbstractSet<V>() {
+                public Iterator<V> iterator() {
+                    return Util.GcIterator.over(map.values()).iterator();
+                }
+
+                public int size() {
+                    return map.size();
+                }
+            };
+        }
+
+        public Set<Entry<K, V>> entrySet() {
+            return new AbstractSet<Entry<K, V>>() {
+                @Override
+                public Iterator<Entry<K, V>> iterator() {
+                    // WARNING: An iteration may return fewer than size()
+                    // entries due to the invisible hand of the garbage
+                    // collector removing them. Normally collections are
+                    // safe in a single-threaded scenario, but not this one.
+                    return new GcEntryIterator<K, V>(map.entrySet().iterator());
+                }
+
+                @Override
+                public int size() {
+                    return map.size();
+                }
+            };
+        }
+    }
+
+    /**
+     * Iterator over a collection of entries that removes entries whose value
+     * is null.
+     *
+     * @see Util.GcIterator
+     *
+     * @param <K> Key type
+     * @param <V> Value type
+     */
+    static class GcEntryIterator<K, V> implements Iterator<Map.Entry<K, V>> {
+        private final Iterator<Map.Entry<K, WeakReference<V>>> iterator;
+        private boolean hasNext;
+        private Map.Entry<K, V> next;
+
+        public GcEntryIterator(
+            Iterator<Map.Entry<K, WeakReference<V>>> iterator)
+        {
+            this.iterator = iterator;
+            this.hasNext = true;
+            moveToNext();
+        }
+
+        private void moveToNext() {
+            while (iterator.hasNext()) {
+                final Map.Entry<K, WeakReference<V>> ref = iterator.next();
+                V value = ref.getValue().get();
+                if (value != null) {
+                    next = new Pair<K, V>(ref.getKey(), value);
+                    return;
+                }
+                iterator.remove();
+            }
+            hasNext = false;
+        }
+
+        public boolean hasNext() {
+            return hasNext;
+        }
+
+        public Map.Entry<K, V> next() {
+            final Map.Entry<K, V> next1 = next;
+            moveToNext();
+            return next1;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 }
 

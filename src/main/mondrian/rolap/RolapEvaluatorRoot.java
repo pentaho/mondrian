@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2011 Julian Hyde and others
+// Copyright (C) 2008-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -53,8 +53,8 @@ class RolapEvaluatorRoot {
 
     final SolveOrderMode solveOrderMode =
         Util.lookup(
-            SolveOrderMode.class,
-            MondrianProperties.instance().SolveOrderMode.get().toUpperCase(),
+            Util.toUpperCase(
+                MondrianProperties.instance().SolveOrderMode.get()),
             SolveOrderMode.ABSOLUTE);
 
     final Set<Exp> activeNativeExpansions = new HashSet<Exp>();
@@ -88,9 +88,9 @@ class RolapEvaluatorRoot {
         this.schemaReader = query.getSchemaReader(true);
         this.queryStartTime = new Date();
         List<RolapMember> list = new ArrayList<RolapMember>();
-        nonAllPositions = new int[cube.getHierarchies().size()];
+        nonAllPositions = new int[cube.getHierarchyList().size()];
         nonAllPositionCount = 0;
-        for (RolapHierarchy hierarchy : cube.getHierarchies()) {
+        for (RolapCubeHierarchy hierarchy : cube.getHierarchyList()) {
             RolapMember defaultMember =
                 (RolapMember) schemaReader.getHierarchyDefaultMember(hierarchy);
             assert defaultMember != null;

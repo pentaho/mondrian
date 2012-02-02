@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde and others
+// Copyright (C) 2009-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -15,10 +15,7 @@ import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.HierarchyType;
 import mondrian.olap.type.Type;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapHierarchy;
-
-import java.util.List;
+import mondrian.rolap.*;
 
 /**
  * Definition of the <code>Dimensions(&lt;Numeric Expression&gt;)</code>
@@ -61,12 +58,11 @@ class DimensionsNumericFunDef extends FunDefBase {
 
     RolapHierarchy nthHierarchy(Evaluator evaluator, int n) {
         RolapCube cube = (RolapCube) evaluator.getCube();
-        List<RolapHierarchy> hierarchies = cube.getHierarchies();
-        if (n >= hierarchies.size() || n < 0) {
+        if (n >= cube.getHierarchyList().size() || n < 0) {
             throw newEvalException(
                 this, "Index '" + n + "' out of bounds");
         }
-        return hierarchies.get(n);
+        return cube.getHierarchyList().get(n);
     }
 }
 

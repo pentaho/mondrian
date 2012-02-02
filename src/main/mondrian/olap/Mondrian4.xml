@@ -6,7 +6,7 @@
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
   == Copyright (C) 2001-2002 Kana Software, Inc.
-  == Copyright (C) 2001-2009 Julian Hyde and others
+  == Copyright (C) 2001-2012 Julian Hyde and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -37,7 +37,7 @@ AggStar [same level as RolapStar]
    tables, columns, but currently is not
 
 Aggregate tables are very similar to fact tables of different granularities.
-The main difference is that an aggegate table does not DEFINE a measure; it
+The main difference is that an aggregate table does not DEFINE a measure; it
 just provides a usage of it. Questions:
 
 1. Do agg tables BELONG TO a measure group? Is it possible to have an agg
@@ -104,7 +104,7 @@ In other words, (physColumn, physPath) uniquely identifies a RolapStar.Column.
  dtdName="mondrian.dtd"
  className="MondrianDef"
  packageName="mondrian.olap"
- importName="mondrian.rolap.sql.SqlQuery; import java.util.*; import org.olap4j.metadata.NamedList"
+ importName="mondrian.rolap.sql.SqlQuery; import mondrian.util.Pair; import java.util.*; import org.olap4j.metadata.NamedList; import org.eigenbase.xom.NodeDef"
  root="Schema"
  defaultKeepDef="true"
  version="1.0">
@@ -151,7 +151,16 @@ Revision is $Id$
     </Class>
 
     <Class class="NamedElement">
-        <Code><![CDATA[public abstract String getNameAttribute();]]></Code>
+        <Code><![CDATA[
+        String getNameAttribute();
+        /**
+         * {@inheritDoc}
+         *
+         * <p>Override NodeDef; any code calling this method should consider
+         * calling {@link #getNameAttribute} instead.</p>
+         */
+        String getName();
+        ]]></Code>
     </Class>
 
     <Class class="SchemaElement">
@@ -170,8 +179,23 @@ Revision is $Id$
         <Doc>Child element of an InlineTable.</Doc>
     </Class>
 
+    <Class class="RoleElement">
+        <Doc>
+            Child element of a Role.
+        </Doc>
+    </Class>
+
+    <Class class="Holder">
+        <Doc>Element that contains children.</Doc>
+        <Code>
+            <![CDATA[
+                List<? extends NodeDef> list();
+            ]]>
+        </Code>
+    </Class>
+
     <!-- Schema ========================================================== -->
-    <Element type="Schema">
+    <Element type="Schema" class="NamedElement">
         <Doc>
             <p>A schema is a collection of cubes.
             It can also contain shared dimensions (for use by those
@@ -179,7 +203,7 @@ Revision is $Id$
             user-defined functions.</p>
         </Doc>
         <Attribute name="name" required="true">
-            <Doc>Name of this schema</Doc>
+            <Doc>Name of this schema.</Doc>
         </Attribute>
         <Attribute name="description" required="false">
             <Doc>
@@ -195,7 +219,34 @@ Revision is $Id$
         <Attribute name="defaultRole" required="false">
             <Doc>The name of the default role for connections to this schema</Doc>
         </Attribute>
-        <Array name="children" type="SchemaElement">
+        <Attribute name="missingLink" required="true" default="warning">
+            <Doc>
+                Action if there is no link in a measure group for each
+                dimension in a cube. Valid values are 'ignore', 'warning' (the
+                default) and 'error'. Use the 'NoLink' element to prevent
+                warnings/errors by explicitly declaring that a dimension is not
+                linked.
+            </Doc>
+            <Value>ignore</Value>
+            <Value>warning</Value>
+            <Value>error</Value>
+        </Attribute>
+        <Attribute name="metamodelVersion" required="false">
+            <Doc>
+                <p>Version of the Mondrian XML metamodel that created this
+                    schema. Typically this is the same as the Mondrian version
+                    number (e.g. "4.0.0" or "3.3").</p>
+
+                <p>There was a major change in format with Mondrian version 4.
+                    Not coincidentally, this attribute was introduced at that
+                    time. Mondrian can detect that a schema is in the earlier
+                    format, and attempt to upgrade it. The attribute is not
+                    necessary for this detection, but it makes the process
+                    more efficient: Mondrian only needs to parse the file
+                    once.</p>
+            </Doc>
+        </Attribute>
+        <Array name="childArray" type="SchemaElement">
             <Doc>
                 Child elements of this Schema. PhysicalSchema (at most once),
                 Dimension, Cube, Role, NamedSet, UserDefinedFunction, Parameter,
@@ -205,10 +256,10 @@ Revision is $Id$
         <Code>
             <![CDATA[
             public String getNameAttribute() { return name; }
-            private Children children() {
-                return new Children(
+            private static final SchemaElement[] EMPTY = {};
+            public final Children<SchemaElement> children =
+                new Children<SchemaElement>(
                     SchemaElement.class,
-                    children,
                     Cube.class,
                     Dimension.class,
                     Role.class,
@@ -216,31 +267,38 @@ Revision is $Id$
                     UserDefinedFunction.class,
                     Parameter.class,
                     PhysicalSchema.class,
-                    Annotations.class);
-            }
+                    Annotations.class)
+                {
+                    SchemaElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(SchemaElement[] ts) {
+                        childArray = ts;
+                    }
+                };
             public NamedList<Cube> getCubes() {
-                return children().filterNamed(Cube.class);
+                return children.filterNamed(Cube.class);
             }
             public NamedList<Dimension> getDimensions() {
-                return children().only(Dimensions.EMPTY).toList();
+                return children.filterNamed(Dimension.class);
             }
             public NamedList<Role> getRoles() {
-                return children().filterNamed(Role.class);
+                return children.filterNamed(Role.class);
             }
             public NamedList<NamedSet> getNamedSets() {
-                return children().filterNamed(NamedSet.class);
+                return children.filterNamed(NamedSet.class);
             }
             public NamedList<UserDefinedFunction> getUserDefinedFunctions() {
-                return children().filterNamed(UserDefinedFunction.class);
+                return children.filterNamed(UserDefinedFunction.class);
             }
             public NamedList<Parameter> getParameters() {
-                return children().filterNamed(Parameter.class);
+                return children.filterNamed(Parameter.class);
             }
             public PhysicalSchema getPhysicalSchema() {
-                return children().singleton(PhysicalSchema.class);
+                return children.singleton(PhysicalSchema.class);
             }
             public NamedList<Annotation> getAnnotations() {
-                return children().only(Annotations.EMPTY).toList();
+                return children.only(Annotations.EMPTY).list();
             }
         }
 
@@ -306,36 +364,89 @@ Revision is $Id$
             return new NamedListImpl<T>(list(ts));
         }
 
-        private static class Children {
-            private final Object[] os;
+        public static abstract class Children<T extends org.eigenbase.xom.NodeDef> {
             private final Class[] classes;
 
-            private static final Object[] EMPTY = new Object[0];
-
-            <T> Children(Class<T> iface, T[] os, Class<? extends T>... classes) {
+            Children(Class<T> iface, Class<? extends T>... classes) {
                 for (Class clazz : classes) {
                     if (!iface.isAssignableFrom(clazz)) {
                         System.out.println(clazz + " should be a " + iface);
                     }
                 }
-                this.os = os == null ? EMPTY : os;
                 this.classes = classes;
             }
 
-            <T> List<T> filter(Class<T> clazz) {
-                return list(os, clazz);
+            abstract T[] getArray();
+
+            abstract void setArray(T[] t);
+
+            <T2> List<T2> filter(Class<T2> clazz) {
+                return list(getArray(), clazz);
             }
 
-            <T extends NamedElement> NamedList<T> filterNamed(Class<T> clazz) {
-                return namedList(os, clazz);
+            <T2 extends NamedElement> NamedList<T2> filterNamed(Class<T2> clazz) {
+                return namedList(getArray(), clazz);
             }
 
-            <T> T singleton(Class<T> clazz) {
-                return MondrianDef.only(os, clazz, null);
+            <T2> T2 singleton(Class<T2> clazz) {
+                return MondrianDef.only(getArray(), clazz, null);
             }
 
-            <T> T only(T empty) {
-                return MondrianDef.only(os, (Class<T>) empty.getClass(), empty);
+            <T2> T2 only(T2 empty) {
+                return MondrianDef.only(getArray(), (Class<T2>) empty.getClass(), empty);
+            }
+
+            public void add(T t) {
+                T[] ts = getArray();
+                T[] t2s = Util.copyOf(ts, ts.length + 1);
+                t2s[t2s.length - 1] = t;
+                setArray(t2s);
+            }
+
+            public void add(int i, T t) {
+                T[] ts = getArray();
+                T[] t2s = Util.copyOf(ts, ts.length + 1);
+                System.arraycopy(t2s, i, t2s, i + 1, t2s.length - 1 - i);
+                t2s[i] = t;
+                setArray(t2s);
+            }
+
+            public <T1 extends Holder> T1 holder(T1 holder) {
+                for (T t : getArray()) {
+                    if (t.getClass() == holder.getClass()) {
+                        return (T1) t;
+                    }
+                }
+                add((T) holder);
+                return holder;
+            }
+        }
+
+        protected static abstract class MutableArrayList<T> extends AbstractList<T> {
+            protected abstract T[] getArray();
+            protected abstract void setArray(T[] ts);
+
+            public T get(int index) {
+                return getArray()[index];
+            }
+
+            public int size() {
+                return getArray().length;
+            }
+
+            public T set(int i, T t) {
+                final T[] ts = getArray();
+                final T old = ts[i];
+                ts[i] = t;
+                return old;
+            }
+
+            public void add(int i, T t) {
+                final T[] ts = getArray();
+                T[] t2s = Util.copyOf(ts, ts.length + 1);
+                System.arraycopy(t2s, i, t2s, i + 1, t2s.length - 1 - i);
+                t2s[i] = t;
+                setArray(t2s);
             }
         }
 
@@ -375,6 +486,14 @@ Revision is $Id$
                 }
                 return -1;
             }
+
+            public T set(int index, T element) {
+                return list.set(index, element);
+            }
+
+            public void add(int index, T element) {
+                list.add(index, element);
+            }
         }
 
         private static class _Dummy {
@@ -384,13 +503,13 @@ Revision is $Id$
     </Element>
 
     <!-- Dimension ======================================================== -->
-    <Element type="Dimension" class="NamedElement,SchemaElement,CubeElement">
+    <Element type="Dimension" class="NamedElement,SchemaElement">
         <Doc>
             A <code>Dimension</code> is a collection of attributes, some them
             organized into hierarchies.
 
             <p>Dimensions are either defined at the Schema level, or as part of
-            a Cube.</p>
+            a Cube within a Dimensions element.</p>
         </Doc>
         <Attribute name="name" required="false">
             <Doc>
@@ -454,7 +573,7 @@ Revision is $Id$
                 dimension (that is, the 'source' attribute is set).
             </Doc>
         </Attribute>
-        <Array name="children" type="DimensionElement">
+        <Array name="childArray" type="DimensionElement">
             <Doc>
                 Child elements of this Dimension: Attributes, Hierarchies,
                 Annotations can each occur up to once, in any order.
@@ -465,30 +584,40 @@ Revision is $Id$
             public String getNameAttribute() {
                 return name != null ? name : source;
             }
-            private Children children() {
-                return new Children(
+            private static final DimensionElement[] EMPTY = {};
+            public final Children<DimensionElement> children =
+                new Children<DimensionElement>(
                     DimensionElement.class,
-                    children,
                     Attributes.class,
                     Hierarchies.class,
-                    Annotations.class);
-            }
+                    Annotations.class)
+                {
+                    DimensionElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(DimensionElement[] ts) {
+                        childArray = ts;
+                    }
+                };
             public NamedList<Attribute> getAttributes() {
-                return children().only(Attributes.EMPTY).toList();
+                return children.only(Attributes.EMPTY).list();
             }
             public NamedList<Hierarchy> getHierarchies() {
-                return children().only(Hierarchies.EMPTY).toList();
+                return children.only(Hierarchies.EMPTY).list();
             }
             public NamedList<Annotation> getAnnotations() {
-                return children().only(Annotations.EMPTY).toList();
+                return children.only(Annotations.EMPTY).list();
             }
             ]]>
         </Code>
     </Element>
 
-    <Element type="Dimensions" class="SchemaElement,CubeElement">
+    <Element type="Dimensions" class="Holder,CubeElement">
         <Doc>
             Array of Dimensions.
+
+            Note that shared dimensions are direct children of a Schema element.
+            The dimensions of a cube reside in a Dimensions holder element.
         </Doc>
         <Array name="array" type="Dimension"/>
         <Code>
@@ -498,8 +627,17 @@ Revision is $Id$
                EMPTY = new Dimensions();
                EMPTY.array = new Dimension[0];
             }
-            private NamedList<Dimension> toList() {
-                return namedList(array);
+            public NamedList<Dimension> list() {
+                return new NamedListImpl<Dimension>(
+                    new MutableArrayList<Dimension>() {
+                        protected Dimension[] getArray() {
+                            return array == null ? EMPTY.array : array;
+                        }
+                        protected void setArray(Dimension[] ts) {
+                            array = ts;
+                        }
+                    }
+                );
             }
             ]]>
         </Code>
@@ -554,7 +692,7 @@ Revision is $Id$
                 realized otherwise it is ignored.
             </Doc>
         </Attribute>
-        <Array name="children" type="CubeElement">
+        <Array name="childArray" type="CubeElement">
             <Doc>
                 Child elements of this Cube. Annotations, MeasureGroups,
                 Dimensions, CalculatedMembers, NamedSets can each occur at
@@ -566,36 +704,43 @@ Revision is $Id$
             public String getNameAttribute() {
                 return name;
             }
-            private Children children() {
-                return new Children(
+            private static final CubeElement[] EMPTY = {};
+            public final Children<CubeElement> children =
+                new Children<CubeElement>(
                     CubeElement.class,
-                    children,
                     Annotations.class,
                     MeasureGroups.class,
                     Dimensions.class,
                     CalculatedMembers.class,
-                    NamedSets.class);
-            }
+                    NamedSets.class)
+                {
+                    CubeElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(CubeElement[] ts) {
+                        childArray = ts;
+                    }
+                };
             public NamedList<Dimension> getDimensions() {
-                return children().only(Dimensions.EMPTY).toList();
+                return children.only(Dimensions.EMPTY).list();
             }
             public NamedList<MeasureGroup> getMeasureGroups() {
-                return children().only(MeasureGroups.EMPTY).toList();
+                return children.only(MeasureGroups.EMPTY).list();
             }
             public NamedList<CalculatedMember> getCalculatedMembers() {
-                return children().only(CalculatedMembers.EMPTY).toList();
+                return children.only(CalculatedMembers.EMPTY).list();
             }
             public NamedList<NamedSet> getNamedSets() {
-                return children().filterNamed(NamedSet.class);
+                return children.filterNamed(NamedSet.class);
             }
             public NamedList<Annotation> getAnnotations() {
-                return children().only(Annotations.EMPTY).toList();
+                return children.only(Annotations.EMPTY).list();
             }
             ]]>
         </Code>
     </Element>
 
-    <Element type="Hierarchies" class="DimensionElement">
+    <Element type="Hierarchies" class="Holder,DimensionElement">
         <Doc>A list of Hierarchy elements.</Doc>
         <Array name="array" type="Hierarchy"/>
         <Code>
@@ -605,14 +750,23 @@ Revision is $Id$
                EMPTY = new Hierarchies();
                EMPTY.array = new Hierarchy[0];
             }
-            private NamedList<Hierarchy> toList() {
-                return namedList(array);
+            public NamedList<Hierarchy> list() {
+                return new NamedListImpl<Hierarchy>(
+                    new MutableArrayList<Hierarchy>() {
+                        protected Hierarchy[] getArray() {
+                            return array == null ? EMPTY.array : array;
+                        }
+                        protected void setArray(Hierarchy[] ts) {
+                            array = ts;
+                        }
+                    }
+                );
             }
             ]]>
         </Code>
     </Element>
 
-    <Element type="Attributes" class="DimensionElement">
+    <Element type="Attributes" class="Holder,DimensionElement">
         <Doc>A list of Attribute elements.</Doc>
         <Array name="array" type="Attribute"/>
         <Code>
@@ -622,14 +776,23 @@ Revision is $Id$
                EMPTY = new Attributes();
                EMPTY.array = new Attribute[0];
             }
-            private NamedList<Attribute> toList() {
-                return namedList(array);
+            public NamedList<Attribute> list() {
+                return new NamedListImpl<Attribute>(
+                    new MutableArrayList<Attribute>() {
+                        protected Attribute[] getArray() {
+                            return array == null ? EMPTY.array : array;
+                        }
+                        protected void setArray(Attribute[] ts) {
+                            array = ts;
+                        }
+                    }
+                );
             }
             ]]>
         </Code>
     </Element>
 
-    <Element type="Attribute" class="DimensionElement,NamedElement">
+    <Element type="Attribute" class="NamedElement">
         <Doc>TODO:</Doc>
         <Attribute name="name" required="true">
             <Doc>
@@ -748,7 +911,7 @@ Revision is $Id$
             </Doc>
         </Attribute>
 
-        <Array name="children" type="AttributeElement">
+        <Array name="childArray" type="AttributeElement">
             <Doc>
                 Child elements. Key, Name, OrderBy, Caption, Closure,
                 MemberFormatter, Annotations can each occur at most once;
@@ -759,10 +922,10 @@ Revision is $Id$
             public String getNameAttribute() {
                 return name;
             }
-            private Children children() {
-                return new Children(
+            private static final AttributeElement[] EMPTY = {};
+            public final Children<AttributeElement> children =
+                new Children<AttributeElement>(
                     AttributeElement.class,
-                    children,
                     Key.class,
                     Name.class,
                     OrderBy.class,
@@ -770,31 +933,38 @@ Revision is $Id$
                     Closure.class,
                     Property.class,
                     MemberFormatter.class,
-                    Annotations.class);
-            }
+                    Annotations.class)
+                {
+                    AttributeElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(AttributeElement[] ts) {
+                        childArray = ts;
+                    }
+                };
             public NamedList<Property> getProperties() {
-                return children().filterNamed(Property.class);
+                return children.filterNamed(Property.class);
             }
             public Key getKey() {
-                return children().singleton(Key.class);
+                return children.singleton(Key.class);
             }
             public Name getName_() {
-                return children().singleton(Name.class);
+                return children.singleton(Name.class);
             }
             public OrderBy getOrderBy() {
-                return children().singleton(OrderBy.class);
+                return children.singleton(OrderBy.class);
             }
             public Caption getCaption() {
-                return children().singleton(Caption.class);
+                return children.singleton(Caption.class);
             }
             public Closure getClosure() {
-                return children().singleton(Closure.class);
+                return children.singleton(Closure.class);
             }
             public MemberFormatter getMemberFormatter() {
-                return children().singleton(MemberFormatter.class);
+                return children.singleton(MemberFormatter.class);
             }
             public NamedList<Annotation> getAnnotations() {
-                return children().only(Annotations.EMPTY).toList();
+                return children.only(Annotations.EMPTY).list();
             }
         ]]>
         </Code>
@@ -868,7 +1038,7 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
-        <Array name="children" type="HierarchyElement">
+        <Array name="childArray" type="HierarchyElement">
             <Doc>
                 Child elements of this Hierarchy. Annotations can occur at most
                 once; Level can occur several times, in any order.
@@ -879,18 +1049,25 @@ Revision is $Id$
             public String getNameAttribute() {
                 return name;
             }
-            private Children children() {
-                return new Children(
+            private static final HierarchyElement[] EMPTY = {};
+            public final Children<HierarchyElement> children =
+                new Children<HierarchyElement>(
                     HierarchyElement.class,
-                    children,
                     Level.class,
-                    Annotations.class);
-            }
+                    Annotations.class)
+                {
+                    HierarchyElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(HierarchyElement[] ts) {
+                        childArray = ts;
+                    }
+                };
             public NamedList<Level> getLevels() {
-                return children().filterNamed(Level.class);
+                return children.filterNamed(Level.class);
             }
             public NamedList<Annotation> getAnnotations() {
-                return children().only(Annotations.EMPTY).toList();
+                return children.only(Annotations.EMPTY).list();
             }
             ]]>
         </Code>
@@ -963,7 +1140,7 @@ Revision is $Id$
                 Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
-        <Array name="children" type="LevelElement">
+        <Array name="childArray" type="LevelElement">
             <Doc>
                 Child elements of a Level. Annotations can
                 appear at most once.
@@ -974,14 +1151,21 @@ Revision is $Id$
             public String getNameAttribute() {
                 return first(name, attribute);
             }
-            private Children children() {
-                return new Children(
+            private static final LevelElement[] EMPTY = {};
+            public final Children<LevelElement> children =
+                new Children<LevelElement>(
                     LevelElement.class,
-                    children,
-                    Annotations.class);
-            }
+                    Annotations.class)
+                {
+                    LevelElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(LevelElement[] ts) {
+                        childArray = ts;
+                    }
+                };
             public NamedList<Annotation> getAnnotations() {
-                return children().only(Annotations.EMPTY).toList();
+                return children.only(Annotations.EMPTY).list();
             }
             ]]>
         </Code>
@@ -1127,7 +1311,7 @@ Revision is $Id$
                 Default true.
             </Doc>
         </Attribute>
-        <Array name="children" type="MeasureElement">
+        <Array name="childArray" type="MeasureElement">
             <Doc>
                 Child elements of a Measure. Arguments and Annotations can
                 appear at most once, CalculatedMemberProperty and
@@ -1139,32 +1323,39 @@ Revision is $Id$
             public String getNameAttribute() {
                 return name;
             }
-            private Children children() {
-                return new Children(
+            private static final MeasureElement[] EMPTY = {};
+            public final Children<MeasureElement> children =
+                new Children<MeasureElement>(
                     MeasureElement.class,
-                    children,
                     Arguments.class,
                     Annotations.class,
                     CalculatedMemberProperty.class,
-                    CellFormatter.class);
-            }
+                    CellFormatter.class)
+                {
+                    MeasureElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(MeasureElement[] ts) {
+                        childArray = ts;
+                    }
+                };
             public NamedList<CalculatedMemberProperty> getCalculatedMemberProperties() {
-                return children().filterNamed(CalculatedMemberProperty.class);
+                return children.filterNamed(CalculatedMemberProperty.class);
             }
             public Arguments getArguments() {
-                return children().singleton(Arguments.class);
+                return children.singleton(Arguments.class);
             }
             public CellFormatter getCellFormatter() {
-                return children().singleton(CellFormatter.class);
+                return children.singleton(CellFormatter.class);
             }
             public NamedList<Annotation> getAnnotations() {
-                return children().only(Annotations.EMPTY).toList();
+                return children.only(Annotations.EMPTY).list();
             }
             ]]>
         </Code>
     </Element>
 
-    <Element type="CalculatedMembers" class="CubeElement">
+    <Element type="CalculatedMembers" class="Holder,CubeElement">
         <Doc>
             Collection of CalculatedMember elements.
         </Doc>
@@ -1176,8 +1367,17 @@ Revision is $Id$
                EMPTY = new CalculatedMembers();
                EMPTY.array = new CalculatedMember[0];
             }
-            private NamedList<CalculatedMember> toList() {
-                return namedList(array);
+            public NamedList<CalculatedMember> list() {
+                return new NamedListImpl<CalculatedMember>(
+                    new MutableArrayList<CalculatedMember>() {
+                        protected CalculatedMember[] getArray() {
+                            return array == null ? EMPTY.array : array;
+                        }
+                        protected void setArray(CalculatedMember[] ts) {
+                            array = ts;
+                        }
+                    }
+                );
             }
             ]]>
         </Code>
@@ -1237,7 +1437,7 @@ Revision is $Id$
                 Default true.
             </Doc>
         </Attribute>
-        <Array name="children" type="CalculatedMemberElement">
+        <Array name="childArray" type="CalculatedMemberElement">
             <Doc>
                 Child elements of a NamedSet. Formula, CellFormatter and
                 Annotations can occur at most once; CalculatedMemberProperty can
@@ -1249,26 +1449,33 @@ Revision is $Id$
             public String getNameAttribute() {
                 return name;
             }
-            private Children children() {
-                return new Children(
+            private static final CalculatedMemberElement[] EMPTY = {};
+            public final Children<CalculatedMemberElement> children =
+                new Children<CalculatedMemberElement>(
                     CalculatedMemberElement.class,
-                    children,
                     Annotations.class,
                     CalculatedMemberProperty.class,
                     CellFormatter.class,
-                    Formula.class);
-            }
+                    Formula.class)
+                {
+                    CalculatedMemberElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(CalculatedMemberElement[] ts) {
+                        childArray = ts;
+                    }
+                };
             public Formula getFormula() {
-                return children().singleton(Formula.class);
+                return children.singleton(Formula.class);
             }
             public CellFormatter getCellFormatter() {
-                return children().singleton(CellFormatter.class);
+                return children.singleton(CellFormatter.class);
             }
             public NamedList<Annotation> getAnnotations() {
-                return children().only(Annotations.EMPTY).toList();
+                return children.only(Annotations.EMPTY).list();
             }
             public NamedList<CalculatedMemberProperty> getCalculatedMemberProperties() {
-                return children().filterNamed(CalculatedMemberProperty.class);
+                return children.filterNamed(CalculatedMemberProperty.class);
             }
             ]]>
         </Code>
@@ -1332,7 +1539,7 @@ Revision is $Id$
                EMPTY = new NamedSets();
                EMPTY.array = new NamedSet[0];
             }
-            private NamedList<NamedSet> toList() {
+            private NamedList<NamedSet> list() {
                 return namedList(array);
             }
             ]]>
@@ -1377,7 +1584,7 @@ Revision is $Id$
                 Equivalent to the Formula sub-element.
             </Doc>
         </Attribute>
-        <Array name="children" type="CalculatedMemberElement">
+        <Array name="childArray" type="CalculatedMemberElement">
             <Doc>
                 Child elements of a CalculatedMember. Formula and Annotations
                 can occur at most once; CalculatedMemberProperty can occur zero
@@ -1389,22 +1596,29 @@ Revision is $Id$
             public String getNameAttribute() {
                 return name;
             }
-            private Children children() {
-                return new Children(
+            private static final CalculatedMemberElement[] EMPTY = {};
+            public final Children<CalculatedMemberElement> children =
+                new Children<CalculatedMemberElement>(
                     CalculatedMemberElement.class,
-                    children,
                     Annotations.class,
                     CalculatedMemberProperty.class,
-                    Formula.class);
-            }
+                    Formula.class)
+                {
+                    CalculatedMemberElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(CalculatedMemberElement[] ts) {
+                        childArray = ts;
+                    }
+                };
             public Formula getFormula() {
-                return children().singleton(Formula.class);
+                return children.singleton(Formula.class);
             }
             public NamedList<Annotation> getAnnotations() {
-                return children().only(Annotations.EMPTY).toList();
+                return children.only(Annotations.EMPTY).list();
             }
             public NamedList<CalculatedMemberProperty> getCalculatedMemberProperties() {
-                return children().filterNamed(CalculatedMemberProperty.class);
+                return children.filterNamed(CalculatedMemberProperty.class);
             }
             ]]>
         </Code>
@@ -1555,7 +1769,7 @@ Revision is $Id$
                 hierarchies, but it must have different aliases.)
             </Doc>
         </Attribute>
-        <Array name="children" type="TableElement">
+        <Array name="childArray" type="TableElement">
             <Doc>
                 Child elements of this Table.
 
@@ -1576,22 +1790,29 @@ Revision is $Id$
             public String getAlias() {
                 return (alias != null) ? alias : name;
             }
-            private Children children() {
-                return new Children(
+            private static final TableElement[] EMPTY = {};
+            public final Children<TableElement> children =
+                new Children<TableElement>(
                     TableElement.class,
-                    children,
                     ColumnDefs.class,
                     Key.class,
-                    Hints.class);
-            }
+                    Hints.class)
+                {
+                    TableElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(TableElement[] ts) {
+                        childArray = ts;
+                    }
+                };
             public List<RealOrCalcColumnDef> getColumnDefs() {
-                return children().only(ColumnDefs.EMPTY).toList();
+                return children.only(ColumnDefs.EMPTY).list();
             }
-            public Key getKey() {
-                return children().singleton(Key.class);
+            public List<Key> getKeys() {
+                return children.filter(Key.class);
             }
             public List<Hint> getHints() {
-                return children().only(Hints.EMPTY).toList();
+                return children.only(Hints.EMPTY).list();
             }
         ]]></Code>
     </Element>
@@ -1607,8 +1828,8 @@ Revision is $Id$
            EMPTY = new Hints();
            EMPTY.array = new Hint[0];
         }
-        private List<Hint> toList() {
-            return list(array);
+        private List<Hint> list() {
+            return MondrianDef.list(array);
         }
         ]]></Code>
     </Element>
@@ -1627,7 +1848,7 @@ Revision is $Id$
 
     <Element type="InlineTable" class="Relation">
         <attribute name="alias" required="true"/>
-        <Array name="children" type="InlineTableElement">
+        <Array name="childArray" type="InlineTableElement">
             <Doc>
                 Child elements of this Table.
 
@@ -1650,27 +1871,34 @@ Revision is $Id$
             public String getAlias() {
                 return alias;
             }
-            private Children children() {
-                return new Children(
+            private static final InlineTableElement[] EMPTY = {};
+            public final Children<InlineTableElement> children =
+                new Children<InlineTableElement>(
                     InlineTableElement.class,
-                    children,
                     ColumnDefs.class,
                     Rows.class,
-                    Key.class);
-            }
+                    Key.class)
+                {
+                    InlineTableElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(InlineTableElement[] ts) {
+                        childArray = ts;
+                    }
+                };
             public List<RealOrCalcColumnDef> getColumnDefs() {
-                return children().only(ColumnDefs.EMPTY).toList();
+                return children.only(ColumnDefs.EMPTY).list();
             }
             public List<Row> getRows() {
-                return children().only(Rows.EMPTY).toList();
+                return children.only(Rows.EMPTY).list();
             }
             public Key getKey() {
-                return children().singleton(Key.class);
+                return children.singleton(Key.class);
             }
         ]]></Code>
     </Element>
 
-    <Element type="ColumnDefs" class="TableElement,InlineTableElement">
+    <Element type="ColumnDefs" class="Holder,TableElement,InlineTableElement">
         <Doc>
             Holder for an array of RealOrCalcColumnDef elements.
         </Doc>
@@ -1682,8 +1910,15 @@ Revision is $Id$
                EMPTY = new ColumnDefs();
                EMPTY.array = new RealOrCalcColumnDef[0];
             }
-            private List<RealOrCalcColumnDef> toList() {
-                return list(array);
+            public List<RealOrCalcColumnDef> list() {
+                return new MutableArrayList<RealOrCalcColumnDef>() {
+                    protected RealOrCalcColumnDef[] getArray() {
+                        return array == null ? EMPTY.array : array;
+                    }
+                    protected void setArray(RealOrCalcColumnDef[] ts) {
+                        array = ts;
+                    }
+                };
             }
             ]]>
         </Code>
@@ -1752,8 +1987,8 @@ Revision is $Id$
                EMPTY = new Rows();
                EMPTY.array = new Row[0];
             }
-            private List<Row> toList() {
-                return list(array);
+            private List<Row> list() {
+                return MondrianDef.list(array);
             }
             ]]>
         </Code>
@@ -1824,7 +2059,7 @@ Revision is $Id$
         </Code>
     </Element>
 
-    <Element type="AggName" super="AggTable">
+    <Element type="AggName" super="AggTable" class="NamedElement">
         <Attribute name="name" required="true">
             <Doc>
                 The Table name of a Specific aggregate table.
@@ -1854,7 +2089,7 @@ Revision is $Id$
         </Code>
     </Element>
 
-    <Element type="AggExclude">
+    <Element type="AggExclude" class="NamedElement">
         <Attribute name="pattern" required="false">
             <Doc>
                 A Table pattern not to be matched.
@@ -1925,7 +2160,7 @@ Revision is $Id$
             }
         </Code>
     </Element>
-    <Element type="AggLevel">
+    <Element type="AggLevel" class="NamedElement">
         <Attribute name="column" required="true">
             <Doc>
                 The name of the column mapping to the level name.
@@ -1946,7 +2181,7 @@ Revision is $Id$
         </Code>
     </Element>
 
-    <Element type="AggMeasure">
+    <Element type="AggMeasure" class="NamedElement">
         <Attribute name="column" required="true">
             <Doc>
                 The name of the column mapping to the measure name.
@@ -1983,24 +2218,47 @@ Revision is $Id$
                EMPTY = new Aggregates();
                EMPTY.array = new AggTable[0];
             }
-            private List<AggTable> toList() {
-                return list(array);
+            private List<AggTable> list() {
+                return MondrianDef.list(array);
             }
             ]]>
         </Code>
     </Element>
 
     <!-- Columns and keys ================================================== -->
-    <Element type="Columns">
+    <Element type="Columns" class="Holder">
         <Doc>
             Collection of columns.
         </Doc>
-        <Array name="columns" type="Column"/>
+        <Array name="array" type="Column"/>
+        <Code>
+            <![CDATA[
+            private static final Columns EMPTY;
+            static {
+               EMPTY = new Columns();
+               EMPTY.array = new Column[0];
+            }
+            public List<Column> list() {
+                return new MutableArrayList<Column>() {
+                    protected Column[] getArray() {
+                        return array == null ? EMPTY.array : array;
+                    }
+                    protected void setArray(Column[] ts) {
+                        array = ts;
+                    }
+                };
+            }
+            ]]>
+        </Code>
     </Element>
 
     <Element type="Key" class="Columns,TableElement,InlineTableElement,AttributeElement">
         <Doc>
             Definition of the key of a dimension or table.
+
+            <p>Even though its base class is Columns, and Columns implements
+            the Holder interface, we do not use Key as a holder. This is
+            because a Table can have more than one Key.</p>
         </Doc>
         <Attribute name="name" required="false">
             <Doc>
@@ -2077,14 +2335,41 @@ Revision is $Id$
             (or denials) for schema elements.
         </Doc>
         <Attribute name="name" required="true"/>
-        <Object name="annotations" type="Annotations" required="false">
-            <Doc>Contains values of user-defined properties.</Doc>
-        </Object>
-        <Array name="schemaGrants" type="SchemaGrant"/>
-        <Object name="union" type="Union" required="false" />
+        <Array name="childArray" type="RoleElement">
+            <Doc>
+                Child elements of this Role.
+                Union (at most once),
+                SchemaElement,
+                Annotations (at most once), in any order.
+            </Doc>
+        </Array>
         <Code>
             <![CDATA[
                 public String getNameAttribute() { return name; }
+                private static final RoleElement[] EMPTY = {};
+                public final Children<RoleElement> children =
+                    new Children<RoleElement>(
+                        RoleElement.class,
+                        Annotations.class,
+                        SchemaGrant.class,
+                        Union.class)
+                    {
+                        RoleElement[] getArray() {
+                            return childArray == null ? EMPTY : childArray;
+                        }
+                        void setArray(RoleElement[] ts) {
+                            childArray = ts;
+                        }
+                    };
+            public List<SchemaGrant> getSchemaGrants() {
+                return children.filter(SchemaGrant.class);
+            }
+            public Union getUnion() {
+                return children.singleton(Union.class);
+            }
+            public NamedList<Annotation> getAnnotations() {
+                return children.only(Annotations.EMPTY).list();
+            }
             ]]>
         </Code>
     </Element>
@@ -2099,7 +2384,7 @@ Revision is $Id$
         </Attribute>
     </Class>
 
-    <Element class="Grant" type="SchemaGrant">
+    <Element type="SchemaGrant" class="Grant,RoleElement">
         <Doc>
             Grants (or denies) this role access to this schema.
             <code>access</code> may be "all", "all_dimensions", "custom"
@@ -2203,7 +2488,7 @@ Revision is $Id$
     </Element>
 
     <!-- Union ============================================================ -->
-    <Element type="Union">
+    <Element type="Union" class="RoleElement">
         <Doc>
             Body of a Role definition which defines a Role to be the union
             of several Roles. The RoleUsage elements must refer to Roles that
@@ -2303,7 +2588,7 @@ Revision is $Id$
         </Code>
     </Element>
 
-    <Element type="Annotations" class="SchemaElement,CubeElement,DimensionElement,HierarchyElement,LevelElement,AttributeElement,MeasureElement,CalculatedMemberElement">
+    <Element type="Annotations" class="Holder,SchemaElement,CubeElement,DimensionElement,HierarchyElement,LevelElement,AttributeElement,MeasureElement,CalculatedMemberElement,RoleElement">
         <Doc>Holder for an array of Annotation elements</Doc>
         <Array name="array" type="Annotation"/>
         <Code>
@@ -2313,8 +2598,17 @@ Revision is $Id$
                EMPTY = new Annotations();
                EMPTY.array = new Annotation[0];
             }
-            private NamedList<Annotation> toList() {
-                return namedList(array);
+            public NamedList<Annotation> list() {
+                return new NamedListImpl<Annotation>(
+                    new MutableArrayList<Annotation>() {
+                        protected Annotation[] getArray() {
+                            return array == null ? EMPTY.array : array;
+                        }
+                        protected void setArray(Annotation[] ts) {
+                            array = ts;
+                        }
+                    }
+                );
             }
             ]]>
         </Code>
@@ -2444,12 +2738,29 @@ Revision is $Id$
             Definition of the set of tables, columns, and relationships
             that the cubes and dimensions in this schema are mapped onto.
         </Doc>
-        <Array name="elements" type="PhysicalSchemaElement" required="false">
+        <Array name="childArray" type="PhysicalSchemaElement" required="false">
             <Doc>
                 List of tables, other relations, and links in this physical
                 schema. The elements do not need to be in any particular order.
             </Doc>
         </Array>
+        <Code>
+            <![CDATA[
+            private static final PhysicalSchemaElement[] EMPTY = {};
+            public final Children<PhysicalSchemaElement> children =
+                new Children<PhysicalSchemaElement>(
+                    PhysicalSchemaElement.class)
+                {
+                    PhysicalSchemaElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(PhysicalSchemaElement[] ts) {
+                        childArray = ts;
+                    }
+                };
+
+            ]]>
+        </Code>
     </Element>
 
     <Element type="Link" class="PhysicalSchemaElement">
@@ -2485,7 +2796,7 @@ Revision is $Id$
         </Object>
     </Element>
 
-    <Element type="MeasureGroups" class="CubeElement">
+    <Element type="MeasureGroups" class="Holder,CubeElement">
         <Doc>
             Holder for one or more MeasureGroup elements.
         </Doc>
@@ -2501,8 +2812,17 @@ Revision is $Id$
                EMPTY = new MeasureGroups();
                EMPTY.array = new MeasureGroup[0];
             }
-            private NamedList<MeasureGroup> toList() {
-                return namedList(array);
+            public NamedList<MeasureGroup> list() {
+                return new NamedListImpl<MeasureGroup>(
+                    new MutableArrayList<MeasureGroup>() {
+                        protected MeasureGroup[] getArray() {
+                            return array == null ? EMPTY.array : array;
+                        }
+                        protected void setArray(MeasureGroup[] ts) {
+                            array = ts;
+                        }
+                    }
+                );
             }
             ]]>
         </Code>
@@ -2529,7 +2849,7 @@ Revision is $Id$
                 measure group will be pushed to top level member.
             </Doc>
         </Attribute>
-        <Array name="children" type="MeasureGroupElement">
+        <Array name="childArray" type="MeasureGroupElement">
             <Doc>
                 Child elements of this MeasureGroup. These are Measures and
                 DimensionLinks (once), Aggregates (at most once), in any order.
@@ -2538,28 +2858,35 @@ Revision is $Id$
         <Code>
             <![CDATA[
             public String getNameAttribute() { return name; }
-            private Children children() {
-                return new Children(
+            private static final MeasureGroupElement[] EMPTY = {};
+            public final Children<MeasureGroupElement> children =
+                new Children<MeasureGroupElement>(
                     MeasureGroupElement.class,
-                    children,
                     Measures.class,
                     DimensionLinks.class,
-                    Aggregates.class);
-            }
+                    Aggregates.class)
+                {
+                    MeasureGroupElement[] getArray() {
+                        return childArray == null ? EMPTY : childArray;
+                    }
+                    void setArray(MeasureGroupElement[] ts) {
+                        childArray = ts;
+                    }
+                };
             public List<DimensionLink> getDimensionLinks() {
-                return children().only(DimensionLinks.EMPTY).toList();
+                return children.only(DimensionLinks.EMPTY).list();
             }
             public NamedList<Measure> getMeasures() {
-                return children().only(Measures.EMPTY).toList();
+                return children.only(Measures.EMPTY).list();
             }
             public List<AggTable> getAggregates() {
-                return children().only(Aggregates.EMPTY).toList();
+                return children.only(Aggregates.EMPTY).list();
             }
             ]]>
         </Code>
     </Element>
 
-    <Element type="Measures" class="MeasureGroupElement">
+    <Element type="Measures" class="Holder,MeasureGroupElement">
         <Doc>
             Holder element for {@link MondrianDef.Measure} elements.
         </Doc>
@@ -2575,14 +2902,23 @@ Revision is $Id$
                EMPTY = new Measures();
                EMPTY.array = new Measure[0];
             }
-            private NamedList<Measure> toList() {
-                return namedList(array);
+            public NamedList<Measure> list() {
+                return new NamedListImpl<Measure>(
+                    new MutableArrayList<Measure>() {
+                        protected Measure[] getArray() {
+                            return array == null ? EMPTY.array : array;
+                        }
+                        protected void setArray(Measure[] ts) {
+                            array = ts;
+                        }
+                    }
+                );
             }
             ]]>
         </Code>
     </Element>
 
-    <Element type="DimensionLinks" class="MeasureGroupElement">
+    <Element type="DimensionLinks" class="Holder,MeasureGroupElement">
         <Doc>
             Holder element for {@link MondrianDef.DimensionLink} elements.
         </Doc>
@@ -2598,8 +2934,15 @@ Revision is $Id$
                EMPTY = new DimensionLinks();
                EMPTY.array = new DimensionLink[0];
             }
-            private List<DimensionLink> toList() {
-                return list(array);
+            public List<DimensionLink> list() {
+                return new MutableArrayList<DimensionLink>() {
+                    protected DimensionLink[] getArray() {
+                        return array == null ? EMPTY.array : array;
+                    }
+                    protected void setArray(DimensionLink[] ts) {
+                        array = ts;
+                    }
+                };
             }
             ]]>
         </Code>
@@ -2612,7 +2955,7 @@ Revision is $Id$
             of the measure group is linked to the dimension table.
 
             <p>There are subclasses, describing particular ways of linking:
-            RegularDimensionLink and FactDimensionLink.</p>
+            ForeignKeyLink, FactLink, ReferenceLink, NoLink.</p>
         </Doc>
         <Attribute name="dimension" required="true">
             <Doc>
@@ -2621,7 +2964,7 @@ Revision is $Id$
         </Attribute>
     </Element>
 
-    <Element type="RegularDimensionLink" class="DimensionLink">
+    <Element type="ForeignKeyLink" class="DimensionLink">
         <Doc>
             Dimension that is linked to a measure group by a foreign key
             from the fact table to the dimension table. This is the most
@@ -2664,11 +3007,33 @@ Revision is $Id$
         </Object>
     </Element>
 
-    <Element type="FactDimensionLink" class="DimensionLink">
+    <Element type="FactLink" class="DimensionLink">
         <Doc>
             Dimension that is trivially linked to a measure group because
             the dimension table is the fact table. This is also known as
             a 'degenerate dimension'.
+        </Doc>
+    </Element>
+
+    <Element type="ReferenceLink" class="DimensionLink">
+        <Doc>
+            Dimension that is linked into a measure group via another dimension.
+            Its key does not join to the fact table, as in a RegularLink, but
+            instead joins to the key of a given attribute of a given dimension.
+        </Doc>
+        <Attribute name="viaAttribute"/>
+        <Attribute name="viaDimension"/>
+    </Element>
+
+    <Element type="NoLink" class="DimensionLink">
+        <Doc>
+            Documents that a dimension is not linked to the current measure
+            group.
+
+            <p>If Schema.missingLink=ignore then this element is not
+            necessary. However, we recommend that you use
+            Schema.missingLink=warning (the default) and create explicit links
+            for all dimensions.</p>
         </Doc>
     </Element>
 

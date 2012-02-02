@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -139,9 +139,17 @@ public interface RolapMember extends Member, RolapCalculation {
          *
          * @param key Key value
          * @param level Level
+         * @param memberType Member type
          * @return Whether key value is valid
          */
-        public static boolean isValid(Object key, RolapLevel level) {
+        public static boolean isValid(
+            Object key,
+            RolapLevel level,
+            MemberType memberType)
+        {
+            if (memberType == MemberType.FORMULA) {
+                return key == null;
+            }
             if (level.isAll()) {
                 return key.equals(Collections.<Object>emptyList());
             }

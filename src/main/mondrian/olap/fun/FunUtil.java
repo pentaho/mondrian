@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2002-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -273,16 +273,15 @@ public class FunUtil extends Util {
      * @return Default hierarchy, or null
      */
     public static Hierarchy getDimensionDefaultHierarchy(Dimension dimension) {
-        final List<Hierarchy> hierarchies = dimension.getHierarchyList();
-        if (hierarchies.size() == 1) {
-            return hierarchies.get(0);
+        if (dimension.getHierarchyList().size() == 1) {
+            return dimension.getHierarchyList().get(0);
         }
         if (MondrianProperties.instance().SsasCompatibleNaming.get()) {
             // In SSAS 2005, dimensions with more than one hierarchy do not have
             // a default hierarchy.
             return null;
         }
-        for (Hierarchy hierarchy : hierarchies) {
+        for (Hierarchy hierarchy : dimension.getHierarchyList()) {
             if (hierarchy.getName() == null
                 || hierarchy.getUniqueName().equals(dimension.getUniqueName()))
             {
@@ -1688,7 +1687,7 @@ public class FunUtil extends Util {
         return cousin;
     }
 
-    static private Member cousin2(
+    private static Member cousin2(
         SchemaReader schemaReader,
         Member member1,
         Member member2)
@@ -2678,8 +2677,8 @@ public class FunUtil extends Util {
         final Evaluator evaluator;
         final Calc exp;
 
-        final private int descMask;
-        final private Map<Member, Object> valueMap;
+        private final int descMask;
+        private final Map<Member, Object> valueMap;
 
         MemberComparator(Evaluator evaluator, Calc exp, boolean desc)
         {

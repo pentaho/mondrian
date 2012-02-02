@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2011 Julian Hyde and others
+// Copyright (C) 2009-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -194,7 +194,7 @@ public final class ScenarioImpl implements Scenario {
         // Add a value to the [Scenario] dimension of every cube that has
         // writeback enabled.
         for (RolapCube cube : schema.getCubeList()) {
-            for (RolapHierarchy hierarchy : cube.getHierarchies()) {
+            for (RolapCubeHierarchy hierarchy : cube.getHierarchyList()) {
                 if (isScenario(hierarchy)) {
                     member =
                         cube.createCalculatedMember(
@@ -363,19 +363,17 @@ public final class ScenarioImpl implements Scenario {
             // Build the array of members by ordinal. If a member is not
             // specified for a particular dimension, use the 'all' member (not
             // necessarily the same as the default member).
-            final List<RolapHierarchy> hierarchyList = cube.getHierarchies();
-            this.membersByOrdinal = new Member[hierarchyList.size()];
-            for (int i = 0; i < membersByOrdinal.length; i++) {
-                membersByOrdinal[i] = hierarchyList.get(i).getDefaultMember();
+            final List<Member> memberList = new ArrayList<Member>();
+            for (RolapCubeHierarchy hierarchy : cube.getHierarchyList()) {
+                memberList.add(hierarchy.getDefaultMember());
             }
+            membersByOrdinal =
+                memberList.toArray(new Member[memberList.size()]);
             for (RolapMember member : members) {
                 final RolapHierarchy hierarchy = member.getHierarchy();
                 if (isScenario(hierarchy)) {
                     assert member.isAll();
                 }
-                // REVIEW The following works because Measures is the only
-                // dimension whose members do not belong to RolapCubeDimension,
-                // just a regular RolapDimension, but has ordinal 0.
                 final int ordinal = hierarchy.getOrdinalInCube();
                 membersByOrdinal[ordinal] = member;
             }

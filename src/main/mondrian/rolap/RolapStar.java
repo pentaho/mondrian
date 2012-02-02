@@ -52,11 +52,6 @@ public class RolapStar {
     private final Table factTable;
 
     /**
-     * Number of columns (column and columnName).
-     */
-    private int columnCount;
-
-    /**
      * Keeps track of the columns across all tables. Should have
      * a number of elements equal to columnCount.
      */
@@ -80,12 +75,6 @@ public class RolapStar {
 
     private final Map<RolapSchema.PhysExpr, Column> map =
         new HashMap<RolapSchema.PhysExpr, Column>();
-
-    /**
-     * @see Util#deprecated(Object, boolean)
-     */
-    private final Map<RolapSchema.PhysRelation, Table> tableMap =
-        new HashMap<RolapSchema.PhysRelation, Table>();
 
     /**
      * Creates a RolapStar. Please use
@@ -236,6 +225,7 @@ public class RolapStar {
         RolapSchema.PhysExpr expr,
         boolean fail)
     {
+        Util.deprecated("remove", true);
         final Column column = map.get(expr);
         if (column == null) {
             if (fail) {
@@ -249,27 +239,12 @@ public class RolapStar {
     }
 
     /**
-     * Returns this RolapStar's column count. After a star has been created with
-     * all of its columns, this is the number of columns in the star.
+     * Returns the number of columns in the star.
+     *
+     * @return Number of columns
      */
     public int getColumnCount() {
-        return columnCount;
-    }
-
-    /**
-     * This is used by the {@link Column} constructor to get a unique id (per
-     * its parent {@link RolapStar}).
-     */
-    private int nextColumnCount() {
-        return columnCount++;
-    }
-
-    /**
-     * Decrements the column counter; used if a newly
-     * created column is found to already exist.
-     */
-    private int decrementColumnCount() {
-        return columnCount--;
+        return columnList.size();
     }
 
     /**
@@ -468,17 +443,20 @@ public class RolapStar {
      * Retrieves the {@link RolapStar.Measure} in which a measure is stored.
      */
     public static Measure getStarMeasure(Member member) {
-        return (Measure) ((RolapStoredMeasure) member).getStarMeasure();
+        return ((RolapStoredMeasure) member).getStarMeasure();
     }
 
     /**
-     * This is used by TestAggregationManager only.
+     * Used by TestAggregationManager only.
      */
     public Column lookupColumn(String tableAlias, String columnName) {
         final Table table = factTable.findDescendant(tableAlias);
         return (table == null) ? null : table.lookupColumn(columnName);
     }
 
+    /**
+     * Used by test code only.
+     */
     public BitKey getBitKey(String[] tableAlias, String[] columnName) {
         BitKey bitKey = BitKey.Factory.makeBitKey(getColumnCount());
         Column starColumn;
@@ -534,33 +512,6 @@ public class RolapStar {
         }
     }
 
-    private boolean containsColumn(String tableName, String columnName) {
-        Util.deprecated("not used - remove?", false);
-        Connection jdbcConnection;
-        try {
-            jdbcConnection = dataSource.getConnection();
-        } catch (SQLException e1) {
-            throw Util.newInternal(
-                e1, "Error while creating connection from data source");
-        }
-        try {
-            final DatabaseMetaData metaData = jdbcConnection.getMetaData();
-            final ResultSet columns =
-                metaData.getColumns(null, null, tableName, columnName);
-            return columns.next();
-        } catch (SQLException e) {
-            throw Util.newInternal(
-                "Error while retrieving metadata for table '" + tableName
-                + "', column '" + columnName + "'");
-        } finally {
-            try {
-                jdbcConnection.close();
-            } catch (SQLException e) {
-                // ignore
-            }
-        }
-    }
-
     /**
      * Adds a column to the star's list of all columns across all tables.
      *
@@ -582,45 +533,6 @@ public class RolapStar {
 
     public RolapSchema getSchema() {
         return schema;
-    }
-
-    /**
-     * Generates a SQL statement to read all instances of the given attributes.
-     *
-     * <p>The SQL statement is of the form {@code SELECT ... FROM ... JOIN ...
-     * GROUP BY ...}. It is useful for populating an aggregate table.
-     *
-     * @param columnList List of columns (attributes and measures)
-     * @param columnNameList List of column names (must have same cardinality
-     *     as {@code columnList})
-     * @return SQL SELECT statement
-     */
-    public String generateSql(
-        List<Column> columnList,
-        List<String> columnNameList)
-    {
-        final SqlQuery query = new SqlQuery(sqlQueryDialect, true);
-        query.addFrom(
-            factTable.relation,
-            factTable.relation.getAlias(),
-            false);
-        int k = -1;
-        for (Column column : columnList) {
-            ++k;
-            column.table.addToFrom(query,  false, true);
-            String columnExpr = column.getExpression().toSql();
-            if (column instanceof Measure) {
-                Measure measure = (Measure) column;
-                columnExpr = measure.getAggregator().getExpression(columnExpr);
-            }
-            final String columnName = columnNameList.get(k);
-            String alias = query.addSelect(columnExpr, null, columnName);
-            if (!(column instanceof Measure)) {
-                query.addGroupBy(columnExpr, alias);
-            }
-        }
-        // remove whitespace from query - in particular, the trailing newline
-        return query.toString().trim();
     }
 
     public String toString() {
@@ -678,12 +590,14 @@ public class RolapStar {
         private final Table table;
         private final RolapSchema.PhysExpr expression;
         private final Dialect.Datatype datatype;
-        private final SqlStatement.Type internalType;
+        protected final SqlStatement.Type internalType;
         private final String name;
 
         /**
          * When a Column is a column, and not a Measure, the parent column
          * is the column associated with next highest Level.
+         *
+         * @see Util#deprecated(Object) Only used for agggen
          */
         private final Column parentColumn;
 
@@ -720,17 +634,6 @@ public class RolapStar {
             String name,
             Table table,
             RolapSchema.PhysExpr expression,
-            Dialect.Datatype datatype)
-        {
-            this(
-                name, table, expression, datatype, null, null,
-                null, null, Integer.MIN_VALUE, table.star.nextColumnCount());
-        }
-
-        private Column(
-            String name,
-            Table table,
-            RolapSchema.PhysExpr expression,
             Dialect.Datatype datatype,
             SqlStatement.Type internalType,
             Column nameColumn,
@@ -742,10 +645,11 @@ public class RolapStar {
             assert table != null;
             assert name != null;
             assert datatype != null;
-            if (Util.deprecated(false, false)) {
-                // TODO: remove datatype field
-                assert datatype == expression.getDatatype();
-            }
+            assert expression == null
+                   || datatype == expression.getDatatype()
+                   || expression.getDatatype() == null;
+            assert expression == null
+                   || internalType == expression.getInternalType();
             this.name = name;
             this.table = table;
             this.expression = expression;
@@ -756,9 +660,6 @@ public class RolapStar {
             this.parentColumn = parentColumn;
             this.usagePrefix = usagePrefix;
             this.approxCardinality = approxCardinality;
-            if (table != null) {
-                table.star.addColumn(this);
-            }
         }
 
         public boolean equals(Object obj) {
@@ -770,7 +671,6 @@ public class RolapStar {
             return
                 other.table == this.table
                 && Util.equals(other.expression, this.expression)
-                && other.datatype == this.datatype
                 && other.name.equals(this.name);
         }
 
@@ -911,7 +811,6 @@ public class RolapStar {
          * @param prefix Prefix to print first, such as spaces for indentation
          */
         public void print(PrintWriter pw, String prefix) {
-            SqlQuery sqlQuery = new SqlQuery(table.star.getSqlQueryDialect());
             pw.print(prefix);
             pw.print(getName());
             pw.print(" (");
@@ -921,7 +820,7 @@ public class RolapStar {
         }
 
         public Dialect.Datatype getDatatype() {
-            return datatype;
+            return expression.getDatatype();
         }
 
         /**
@@ -995,6 +894,7 @@ public class RolapStar {
     public static class Measure extends Column {
         private final String cubeName;
         private final RolapAggregator aggregator;
+        private final Dialect.Datatype datatype;
 
         public Measure(
             String name,
@@ -1004,9 +904,25 @@ public class RolapStar {
             RolapSchema.PhysExpr expression,
             Dialect.Datatype datatype)
         {
-            super(name, table, expression, datatype);
+            super(
+                name,
+                table,
+                expression,
+                datatype,
+                null,
+                null,
+                null,
+                null,
+                Integer.MIN_VALUE,
+                table.star.getColumnCount());
             this.cubeName = cubeName;
             this.aggregator = aggregator;
+            this.datatype = datatype;
+        }
+
+        @Override
+        public Dialect.Datatype getDatatype() {
+            return datatype;
         }
 
         public RolapAggregator getAggregator() {
@@ -1038,8 +954,6 @@ public class RolapStar {
         }
 
         public void print(PrintWriter pw, String prefix) {
-            SqlQuery sqlQuery =
-                new SqlQuery(getTable().star.getSqlQueryDialect());
             pw.print(prefix);
             pw.print(getName());
             pw.print(" (");
@@ -1114,6 +1028,7 @@ public class RolapStar {
 
         private void addColumn(Column column) {
             columnList.add(column);
+            star.addColumn(column);
         }
 
         /**
@@ -1216,15 +1131,11 @@ public class RolapStar {
                         // TODO: pass in usagePrefix (from DimensionUsage)
                         null,
                         -1,
-                        star.nextColumnCount());
+                        star.getColumnCount());
                 addColumn(column);
                 return column;
             }
             return null;
-        }
-
-        public boolean containsColumn(Column column) {
-            return getColumns().contains(column);
         }
 
         /**
@@ -1284,10 +1195,7 @@ public class RolapStar {
             }
         }
 
-        synchronized void makeMeasure(RolapBaseCubeMeasure measure) {
-            // Remove assertion to allow cube to be recreated
-            // assert lookupMeasureByName(
-            //    measure.getCube().getName(), measure.getName()) == null;
+        void makeMeasure(RolapBaseCubeMeasure measure) {
             RolapStar.Measure starMeasure =
                 new RolapStar.Measure(
                     measure.getName(),
@@ -1297,13 +1205,8 @@ public class RolapStar {
                     measure.getExpr(),
                     measure.getDatatype());
 
+            addColumn(starMeasure);
             measure.setStarMeasure(starMeasure); // reverse mapping
-
-            if (containsColumn(starMeasure)) {
-                star.decrementColumnCount();
-            } else {
-                addColumn(starMeasure);
-            }
         }
 
         /**

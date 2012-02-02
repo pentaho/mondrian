@@ -120,12 +120,14 @@ public class SegmentBuilder {
             if (values == null) {
                 predicate =
                     new LiteralColumnPredicate(
+                        new RolapSchema.BadRouter(),
                         (RolapSchema.PhysColumn)
                             constrainedColumn.getExpression(),
                         true);
             } else if (values.size() == 1) {
                 predicate =
                     new ValueColumnPredicate(
+                        new RolapSchema.BadRouter(),
                         (RolapSchema.PhysColumn)
                             constrainedColumn.getExpression(),
                         values.first());
@@ -135,12 +137,14 @@ public class SegmentBuilder {
                 for (Object value : values) {
                     valuePredicateList.add(
                         new ValueColumnPredicate(
+                            new RolapSchema.BadRouter(),
                             (RolapSchema.PhysColumn)
                                 constrainedColumn.getExpression(),
                             value));
                 }
                 predicate =
                     new ListColumnPredicate(
+                        new RolapSchema.BadRouter(),
                         (RolapSchema.PhysColumn)
                             constrainedColumn.getExpression(),
                         valuePredicateList);

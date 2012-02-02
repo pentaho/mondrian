@@ -180,10 +180,14 @@ public class Aggregation {
         RolapStar.Column[] columns,
         StarColumnPredicate[] predicates)
     {
+        if (predicates.length == 0) {
+            return predicates;
+        }
         RolapStar star = getStar();
         Util.assertTrue(predicates.length == columns.length);
         StarColumnPredicate[] newPredicates = predicates.clone();
         double[] bloats = new double[columns.length];
+        final RolapSchema.PhysRouter router = predicates[0].getRouter();
 
         // We want to handle the special case "drilldown" which occurs pretty
         // often. Here, the parent is here as a constraint with a single member
@@ -333,6 +337,7 @@ public class Aggregation {
             {
                 newPredicates[j] =
                     Predicates.wildcard(
+                        router,
                         (RolapSchema.PhysColumn) columns[j].getExpression(),
                         true);
             }

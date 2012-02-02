@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -96,7 +96,8 @@ public abstract class AbstractQuerySpec implements QuerySpec {
             }
             table.addToFrom(sqlQuery, false, true);
 
-            String expr = column.getExpression().toSql();
+            final RolapSchema.PhysExpr physExpr = column.getExpression();
+            String sql = physExpr.toSql();
 
             StarColumnPredicate predicate = getColumnPredicate(i);
             final Dialect dialect = sqlQuery.getDialect();
@@ -116,21 +117,22 @@ public abstract class AbstractQuerySpec implements QuerySpec {
                 dialect.getDatabaseProduct();
             if (databaseProduct == Dialect.DatabaseProduct.DB2_AS400) {
                 alias =
-                    sqlQuery.addSelect(expr, column.getInternalType(), null);
+                    sqlQuery.addSelect(
+                        sql, physExpr.getInternalType(), null);
             } else {
                 alias =
                     sqlQuery.addSelect(
-                        expr, column.getInternalType(), getColumnAlias(i));
+                        sql, physExpr.getInternalType(), getColumnAlias(i));
             }
 
             if (isAggregate()) {
-                sqlQuery.addGroupBy(expr, alias);
+                sqlQuery.addGroupBy(sql, alias);
             }
 
             // Add ORDER BY clause to make the results deterministic.
             // Derby has a bug with ORDER BY, so ignore it.
             if (isOrdered()) {
-                sqlQuery.addOrderBy(expr, true, false, false);
+                sqlQuery.addOrderBy(sql, true, false, false);
             }
         }
 
@@ -319,11 +321,21 @@ public abstract class AbstractQuerySpec implements QuerySpec {
     protected void extraPredicates(SqlQuery sqlQuery) {
         List<StarPredicate> predicateList = getPredicateList();
         for (StarPredicate predicate : predicateList) {
-            for (RolapStar.Column column
-                : predicate.getStarColumnList(star))
-            {
-                final RolapStar.Table table = column.getTable();
-                table.addToFrom(sqlQuery, false, true);
+            if (predicate instanceof StarColumnPredicate) {
+                StarColumnPredicate columnPredicate =
+                    (StarColumnPredicate) predicate;
+                for (RolapSchema.PhysColumn c : predicate.getColumnList()) {
+                    final RolapSchema.PhysPath path =
+                        columnPredicate.getRouter().path(c);
+                    path.addToFrom(sqlQuery, false);
+                }
+            } else {
+                for (RolapStar.Column column
+                    : Predicates.starify(star, predicate.getColumnList()))
+                {
+                    final RolapStar.Table table = column.getTable();
+                    table.addToFrom(sqlQuery, false, true);
+                }
             }
             StringBuilder buf = new StringBuilder();
             predicate.toSql(sqlQuery.getDialect(), buf);

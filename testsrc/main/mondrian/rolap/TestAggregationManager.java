@@ -335,6 +335,7 @@ public class TestAggregationManager extends BatchTestCase {
         request.addConstrainedColumn(
             storeTypeColumn,
             new ValueColumnPredicate(
+                new RolapSchema.BadRouter(),
                 (RolapSchema.PhysColumn) storeTypeColumn.getExpression(),
                 value));
         return request;

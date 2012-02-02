@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2011 Julian Hyde and others
+// Copyright (C) 2004-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -48,7 +48,7 @@ class ResultComparator {
         Cube cube = result.getQuery().getCube();
         HashSet<String> defaultDimMembers = new HashSet<String>();
 
-        for (Dimension dim : cube.getDimensions()) {
+        for (Dimension dim : cube.getDimensionList()) {
             for (Hierarchy hierarchy : dim.getHierarchyList()) {
                 String uniqueName =
                     hierarchy.getDefaultMember().getUniqueName();
@@ -239,8 +239,8 @@ class ResultComparator {
         final Element dataResultXml,
         final Result result)
     {
-        final Dimension[] dimensions =
-            result.getQuery().getCube().getDimensions();
+        final List<? extends Dimension> dimensions =
+            result.getQuery().getCube().getDimensionList();
         String axisName = "slicer";
         final Axis slicerAxis = result.getSlicerAxis();
         final Element axisXml = document.createElement(axisName);
@@ -303,7 +303,7 @@ class ResultComparator {
                 }
             }
         }
-        return dimension.getHierarchies()[0].getDefaultMember();
+        return dimension.getHierarchyList().get(0).getDefaultMember();
     }
 
     private void axisToXml(

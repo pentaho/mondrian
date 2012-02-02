@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -70,7 +70,7 @@ public class RolapCubeDimension extends RolapDimension {
         // create new hierarchies
 
         final int originalSize = hierarchyList.size();
-        for (RolapHierarchy rolapHierarchy : rolapDim.getRolapHierarchyList()) {
+        for (RolapHierarchy rolapHierarchy : rolapDim.getHierarchyList()) {
             final RolapCubeHierarchy hierarchy =
                 new RolapCubeHierarchy(
                     schemaLoader,
@@ -103,6 +103,11 @@ public class RolapCubeDimension extends RolapDimension {
         //noinspection SuspiciousToArrayCall
         return hierarchyList.toArray(
             new RolapCubeHierarchy[hierarchyList.size()]);
+    }
+
+    @Override
+    public List<? extends RolapCubeHierarchy> getHierarchyList() {
+        return Util.cast(hierarchyList);
     }
 
     // this method should eventually replace the call below
@@ -183,10 +188,6 @@ public class RolapCubeDimension extends RolapDimension {
             return RolapSchemaLoader.first(dimCaption, name) + caption;
         }
         return caption;
-    }
-
-    public final List<RolapCubeHierarchy> getRolapCubeHierarchyList() {
-        return Util.cast(hierarchyList);
     }
 }
 

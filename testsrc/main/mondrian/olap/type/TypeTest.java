@@ -32,7 +32,7 @@ public class TypeTest extends TestCase {
             getCubeWithName("Sales", connection.getSchema().getCubes());
         assertTrue(salesCube != null);
         Dimension customersDimension = null;
-        for (Dimension dimension : salesCube.getDimensions()) {
+        for (Dimension dimension : salesCube.getDimensionList()) {
             if (dimension.getName().equals("Customer")) {
                 customersDimension = dimension;
             }

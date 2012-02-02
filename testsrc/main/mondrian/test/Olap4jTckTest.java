@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2011 Julian Hyde
+// Copyright (C) 2010-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -43,7 +43,7 @@ public class Olap4jTckTest extends TestCase {
 
     public static TestSuite suite() {
         final Util.PropertyList list =
-            mondrian.test.TestContext.instance()
+            mondrian.test.TestContext.instance().legacy()
                 .getConnectionProperties();
         final String connStr = "jdbc:mondrian:" + list;
         final String catalog = list.get("Catalog");

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -93,7 +93,7 @@ public abstract class LevelBase
 
     public Level getChildLevel() {
         int childDepth = depth + 1;
-        List<Level> levels = hierarchy.getLevelList();
+        List<? extends Level> levels = hierarchy.getLevelList();
         return (childDepth < levels.size())
             ? levels.get(childDepth)
             : null;
@@ -101,7 +101,7 @@ public abstract class LevelBase
 
     public Level getParentLevel() {
         int parentDepth = depth - 1;
-        List<Level> levels = hierarchy.getLevelList();
+        List<? extends Level> levels = hierarchy.getLevelList();
         return (parentDepth >= 0)
             ? levels.get(parentDepth)
             : null;

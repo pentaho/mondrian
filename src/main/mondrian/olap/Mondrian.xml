@@ -19,6 +19,7 @@
  packageName="mondrian.olap"
  importName="mondrian.rolap.sql.SqlQuery"
  root="Schema"
+ defaultKeepDef="true"
  version="1.0">
     <Doc>
 This is the XML model for Mondrian schemas.

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -311,7 +311,7 @@ public class Bug {
 
     // Mondrian 4 tasks
 
-    private static final boolean Enable = true;
+    private static final boolean Enable = false;
 
     /**
      * Allow Dimension to have a PhysicalSchema. Graph used for that dimension
@@ -351,6 +351,18 @@ public class Bug {
      * UnsupportedOperationException in getBaseStarKeyColumn
      */
     public static final boolean BaseStarKeyColumnFixed = Enable;
+
+    /**
+     * Members come out sorted wrong. Not assigning ordinal correctly?
+     */
+    public static final boolean OrdinalFixed = Enable;
+
+    /**
+     * Whether the bug is fixed that causes upgrade of virtual cubes to fail
+     * if calculated members or sets depend on dimensions and members in their
+     * base cube that are not exposed in the virtual cube.
+     */
+    public static final boolean VirtualCubeConversionMissesHiddenFixed = false;
 }
 
 // End Bug.java

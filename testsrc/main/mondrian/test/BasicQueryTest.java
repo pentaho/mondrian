@@ -1212,8 +1212,8 @@ public class BasicQueryTest extends FoodMartTestCase {
         final Cell cell = result.getCell(new int[]{0, 0});
         final Map<String, Hierarchy> hierarchyMap =
             new HashMap<String, Hierarchy>();
-        for (Dimension dimension : result.getQuery().getCube().getDimensions())
-        {
+        final Cube cube = result.getQuery().getCube();
+        for (Dimension dimension : cube.getDimensionList()) {
             for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                 hierarchyMap.put(hierarchy.getUniqueName(), hierarchy);
             }
@@ -5275,34 +5275,34 @@ public class BasicQueryTest extends FoodMartTestCase {
         final TestContext testContext = TestContext.instance().create(
             null,
             "<Cube name='"
-            + cubeName
-            + "'>\n"
-            + "  <MeasureGroups>\n"
-            + "    <MeasureGroup name='sales' table='sales_fact_1997'>\n"
-            + "      <Measures>\n"
-            + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
-            + "      formatString='Standard' visible='false'/>\n"
-            + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'\n"
-            + "      formatString='#,###.00'/>\n"
-            + "  <Measure name='Store Sales' column='store_sales' aggregator='sum'\n"
-            + "      formatString='#,###.00'/>\n"
-            + "  <Measure name='Sales Count' column='product_id' aggregator='count'\n"
-            + "      formatString='#,###'/>\n"
-            + "  <Measure name='Customer Count' column='customer_id'\n"
-            + "      aggregator='distinct-count' formatString='#,###'/>\n"
-            + "      </Measures>\n"
-            + "    </MeasureGroup>\n"
-            + "  </MeasureGroups>"
-            + "  <CalculatedMembers>\n"
-            + "    <CalculatedMember\n"
-            + "        name='Profit'\n"
-            + "        dimension='Measures'\n"
-            + "        visible='false'\n"
-            + "        formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>\n"
-            + "      <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'/>\n"
-            + "    </CalculatedMember>\n"
-            + "  </CalculatedMembers>\n"
-            + "</Cube>",
+                + cubeName
+                + "'>\n"
+                + "  <MeasureGroups>\n"
+                + "    <MeasureGroup name='sales' table='sales_fact_1997'>\n"
+                + "      <Measures>\n"
+                + "  <Measure name='Unit Sales' column='unit_sales' aggregator='sum'\n"
+                + "      formatString='Standard' visible='false'/>\n"
+                + "  <Measure name='Store Cost' column='store_cost' aggregator='sum'\n"
+                + "      formatString='#,###.00'/>\n"
+                + "  <Measure name='Store Sales' column='store_sales' aggregator='sum'\n"
+                + "      formatString='#,###.00'/>\n"
+                + "  <Measure name='Sales Count' column='product_id' aggregator='count'\n"
+                + "      formatString='#,###'/>\n"
+                + "  <Measure name='Customer Count' column='customer_id'\n"
+                + "      aggregator='distinct-count' formatString='#,###'/>\n"
+                + "      </Measures>\n"
+                + "    </MeasureGroup>\n"
+                + "  </MeasureGroups>"
+                + "  <CalculatedMembers>\n"
+                + "    <CalculatedMember\n"
+                + "        name='Profit'\n"
+                + "        dimension='Measures'\n"
+                + "        visible='false'\n"
+                + "        formula='[Measures].[Store Sales]-[Measures].[Store Cost]'>\n"
+                + "      <CalculatedMemberProperty name='FORMAT_STRING' value='$#,##0.00'/>\n"
+                + "    </CalculatedMember>\n"
+                + "  </CalculatedMembers>\n"
+                + "</Cube>",
             null, null, null, null);
         SchemaReader scr = testContext.getConnection().getSchema().lookupCube(
             cubeName, true).getSchemaReader(null);
@@ -5391,8 +5391,8 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "        <Measure name='Store Cost' column='store_cost' aggregator='sum' formatString='#,###.00'/>\n"
             + "      </Measures>\n"
             + "      <DimensionLinks>\n"
-            + "        <RegularDimensionLink dimension='Product' foreignKeyColumn='product_id'/>\n"
-            + "        <RegularDimensionLink dimension='Gender' foreignKeyColumn='customer_id'/>\n"
+            + "        <ForeignKeyLink dimension='Product' foreignKeyColumn='product_id'/>\n"
+            + "        <ForeignKeyLink dimension='Gender' foreignKeyColumn='customer_id'/>\n"
             + "      </DimensionLinks>"
             + "    </MeasureGroup>\n"
             + "  </MeasureGroups>\n"
@@ -6092,7 +6092,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "        <Measure name='Warehouse Cost' column='warehouse_cost' aggregator='sum'/>\n"
             + "      </Measures>\n"
             + "      <DimensionLinks>\n"
-            + "        <RegularDimensionLink dimension='Store' foreignKeyColumn='store_id'/>\n"
+            + "        <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>\n"
             + "      </DimensionLinks>\n"
             + "    </MeasureGroup>\n"
             + "  </MeasureGroups>\n"
@@ -6116,15 +6116,12 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testDefaultMeasureInCubeForIncorrectMeasureName() {
+        // It is an error if the default measure does not exist.
+        // (Previous behavior was to silently ignore the measure.)
         TestContext testContext = defaultMeasureContext("Supply Time Error");
-        String queryWithoutFilter =
-            "select stores.members on 0 from "
-            + "DefaultMeasureTesting";
-        String queryWithFirstMeasure =
-            "select stores.members on 0 "
-            + "from DefaultMeasureTesting where [measures].[Store Invoice]";
-        assertQueriesReturnSimilarResults(
-            queryWithoutFilter, queryWithFirstMeasure, testContext);
+        testContext.assertSchemaError(
+            "Default measure 'Supply Time Error' not found \\(in Cube 'DefaultMeasureTesting'\\) \\(at ${pos}\\)",
+            "<Cube name='DefaultMeasureTesting' defaultMeasure='Supply Time Error'>");
     }
 
     public void testDefaultMeasureInCubeForCaseSensitivity() {
@@ -6340,7 +6337,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             null,
             ArrayMap.of(
                 "Sales",
-                "<RegularDimensionLink dimension='Customer_2' foreignKeyColumn='customer_id'/>")
+                "<ForeignKeyLink dimension='Customer_2' foreignKeyColumn='customer_id'/>")
 );
 
         Result result = testContext.executeQuery(

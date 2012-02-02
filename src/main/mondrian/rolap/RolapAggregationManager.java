@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -432,27 +432,19 @@ public abstract class RolapAggregationManager {
         BitKey bitKey)
     {
         assert measureGroup != null;
-        RolapCubeMember levelMember = member;
-        boolean memberUnsatisfiable = false;
-        while (levelMember != null) {
-            RolapCubeLevel level = levelMember.getLevel();
-            // Only need to constrain the nonAll levels
-            if (!level.isAll()) {
-                RolapStar.Column column =
-                    level.getBaseStarKeyColumn(measureGroup);
-                if (column != null) {
-                    bitKey.set(column.getBitPosition());
-                } else {
-                    // One level in a member causes the member to be
-                    // unsatisfiable.
-                    memberUnsatisfiable = true;
-                    break;
-                }
+        final RolapCubeLevel level = member.getLevel();
+        for (RolapSchema.PhysColumn key : level.getAttribute().keyList) {
+            final RolapStar.Column column =
+                measureGroup.getRolapStarColumn(
+                    level.getDimension(),
+                    key);
+            if (column == null) {
+                // request is unsatisfiable
+                return true;
             }
-
-            levelMember = levelMember.getParentMember();
+            bitKey.set(column.getBitPosition());
         }
-        return memberUnsatisfiable;
+        return false;
     }
 
     /**
@@ -541,7 +533,11 @@ public abstract class RolapAggregationManager {
                 for (RolapCubeMember member : tuple) {
                     tuplePredicate =
                         makeCompoundPredicateForMember(
-                            member, tuplePredicate);
+                            new RolapSchema.CubeRouter(
+                                measureGroup,
+                                member.getDimension()),
+                            member,
+                            tuplePredicate);
                 }
                 if (tuplePredicate != null) {
                     if (compoundGroupPredicate == null) {
@@ -572,6 +568,7 @@ public abstract class RolapAggregationManager {
     }
 
     private static StarPredicate makeCompoundPredicateForMember(
+        RolapSchema.PhysRouter router,
         RolapCubeMember member,
         StarPredicate memberPredicate)
     {
@@ -581,6 +578,7 @@ public abstract class RolapAggregationManager {
         for (int i = 0; i < keyList.size(); i++) {
             final ValueColumnPredicate predicate =
                 new ValueColumnPredicate(
+                    router,
                     keyList.get(i),
                     valueList.get(i));
             if (memberPredicate == null) {
@@ -623,13 +621,13 @@ public abstract class RolapAggregationManager {
         boolean countOnly);
 
     public static RolapCacheRegion makeCacheRegion(
-        final RolapStar star,
+        final RolapMeasureGroup measureGroup,
         final CacheControl.CellRegion region)
     {
         final List<Member> measureList = CacheControlImpl.findMeasures(region);
         final List<RolapStar.Measure> starMeasureList =
             new ArrayList<RolapStar.Measure>();
-        RolapMeasureGroup measureGroup = null;
+        final RolapStar star = measureGroup.getStar();
         for (Member measure : measureList) {
             if (!(measure instanceof RolapStoredMeasure)) {
                 continue;
@@ -646,7 +644,7 @@ public abstract class RolapAggregationManager {
             // Should there be a 'break' here? Are all of the
             // storedMeasure cubes the same cube? Is the measureList always
             // non-empty so that baseCube is always set?
-            measureGroup = storedMeasure.getMeasureGroup();
+            assert measureGroup == storedMeasure.getMeasureGroup();
             starMeasureList.add(starMeasure);
         }
         final RolapCacheRegion cacheRegion =
@@ -689,7 +687,11 @@ public abstract class RolapAggregationManager {
                                 true);
                 }
                 rolapMember.getLevel().getLevelReader().constrainRegion(
-                    Predicates.memberPredicate(rolapMember),
+                    Predicates.memberPredicate(
+                        new RolapSchema.CubeRouter(
+                            measureGroup,
+                            rolapMember.getDimension()),
+                        rolapMember),
                     measureGroup,
                     cacheRegion);
             }
@@ -697,10 +699,12 @@ public abstract class RolapAggregationManager {
             final CacheControlImpl.MemberRangeCellRegion rangeRegion =
                 (CacheControlImpl.MemberRangeCellRegion) region;
             final RolapCubeLevel level = (RolapCubeLevel)rangeRegion.getLevel();
-            RolapStar.Column column = level.getBaseStarKeyColumn(measureGroup);
 
             level.getLevelReader().constrainRegion(
                 Predicates.rangePredicate(
+                    new RolapSchema.CubeRouter(
+                        measureGroup,
+                        level.cubeDimension),
                     rangeRegion.getLowerInclusive(),
                     rangeRegion.getLowerBound(),
                     rangeRegion.getUpperInclusive(),

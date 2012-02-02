@@ -190,8 +190,7 @@ public class RolapLevel extends LevelBase {
             final RolapDimension dimension =
                 ((RolapHierarchy) hierarchy).createClosedPeerDimension(this);
             closedPeerLevel =
-                dimension.getRolapHierarchyList().get(0)
-                    .getRolapLevelList().get(1);
+                dimension.getHierarchyList().get(0).getLevelList().get(1);
         }
     }
 
@@ -314,18 +313,6 @@ public class RolapLevel extends LevelBase {
 
     public RolapLevel getClosedPeer() {
         return closedPeerLevel;
-    }
-
-    public static RolapLevel lookupLevel(
-        RolapLevel[] levels,
-        String levelName)
-    {
-        for (RolapLevel level : levels) {
-            if (level.getName().equals(levelName)) {
-                return level;
-            }
-        }
-        return null;
     }
 }
 

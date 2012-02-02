@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2010 Julian Hyde and others
+// Copyright (C) 2006-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -24,15 +24,20 @@ import java.util.*;
  */
 public abstract class AbstractColumnPredicate implements StarColumnPredicate {
     protected final RolapSchema.PhysColumn constrainedColumn;
+    protected final RolapSchema.PhysRouter router;
     private BitKey constrainedColumnBitKey;
 
     /**
      * Creates an AbstractColumnPredicate.
      *
+     * @param router Resolves route to fact table
      * @param constrainedColumn Constrained column
      */
-    protected AbstractColumnPredicate(RolapSchema.PhysColumn constrainedColumn)
+    protected AbstractColumnPredicate(
+        RolapSchema.PhysRouter router,
+        RolapSchema.PhysColumn constrainedColumn)
     {
+        this.router = router;
         this.constrainedColumn = constrainedColumn;
         assert constrainedColumn != null;
     }
@@ -52,11 +57,6 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
         return Collections.singletonList(constrainedColumn);
     }
 
-    public List<RolapStar.Column> getStarColumnList(RolapStar star) {
-        return Collections.singletonList(
-            star.getColumn(constrainedColumn, true));
-    }
-
     public BitKey getConstrainedColumnBitKey() {
         if (constrainedColumnBitKey == null) {
             constrainedColumnBitKey =
@@ -65,6 +65,10 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
             constrainedColumnBitKey.set(constrainedColumn.ordinal());
         }
         return constrainedColumnBitKey;
+    }
+
+    public final RolapSchema.PhysRouter getRouter() {
+        return router;
     }
 
     public boolean evaluate(List<Object> valueList) {
@@ -101,6 +105,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
             list.add(this);
             list.addAll(that.getPredicates());
             return new ListColumnPredicate(
+                getRouter(),
                 getColumn(),
                 list);
         } else {
@@ -109,6 +114,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
             list.add(this);
             list.add(predicate);
             return new ListColumnPredicate(
+                getRouter(),
                 getColumn(),
                 list);
         }
@@ -134,30 +140,34 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
          * Returns a predicate which tests whether the column's
          * value is equal to a given constant.
          *
+         * @param router Resolves route to fact table
          * @param column Constrained column
          * @param value Value
          * @return Predicate which tests whether the column's value is equal
          *   to a column constraint's value
          */
         public static StarColumnPredicate equal(
+            RolapSchema.PhysRouter router,
             RolapSchema.PhysColumn column,
             Object value)
         {
-            return new ValueColumnPredicate(column, value);
+            return new ValueColumnPredicate(router, column, value);
         }
 
         /**
          * Returns predicate which is the OR of a list of predicates.
          *
+         * @param router Resolves route to fact table
          * @param column Column being constrained
          * @param list List of predicates
          * @return Predicate which is an OR of the list of predicates
          */
         public static StarColumnPredicate or(
+            RolapSchema.PhysRouter router,
             RolapSchema.PhysColumn column,
             List<StarColumnPredicate> list)
         {
-            return new ListColumnPredicate(column, list);
+            return new ListColumnPredicate(router, column, list);
         }
 
         /**
@@ -181,6 +191,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
             ValueColumnPredicate predicate)
         {
             return equal(
+                predicate.router,
                 predicate.getColumn(),
                 predicate.getValue());
         }

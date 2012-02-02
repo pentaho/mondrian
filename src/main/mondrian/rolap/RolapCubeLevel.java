@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -92,8 +92,8 @@ public class RolapCubeLevel extends RolapLevel {
             schemaLoader.initDimension(cubeDimension);
             closedPeerCubeLevel =
                 cubeDimension
-                    .getRolapCubeHierarchyList().get(0)
-                    .getRolapCubeLevelList().get(1);
+                    .getHierarchyList().get(0)
+                    .getLevelList().get(1);
 
             this.levelReader = new ParentChildLevelReaderImpl(this);
         } else {
@@ -296,6 +296,9 @@ public class RolapCubeLevel extends RolapLevel {
                 } else {
                     predicate =
                         new ValueColumnPredicate(
+                            new RolapSchema.CubeRouter(
+                                measureGroup,
+                                cubeLevel.cubeDimension),
                             column, key.get(keyOrdinal));
                 }
 

@@ -554,6 +554,10 @@ public class Util extends XOMUtil {
         return matchCase ? s.equals(t) : s.equalsIgnoreCase(t);
     }
 
+    public static String toUpperCase(String s) {
+        return s == null ? null : s.toUpperCase();
+    }
+
     /**
      * Compares two names.  if case sensitive flag is false,
      * apply finer grain difference with case sensitive
@@ -2298,6 +2302,25 @@ public class Util extends XOMUtil {
         return list.get(list.size() - 1);
     }
 
+    /**
+     * Returns the sole item in a list.
+     *
+     * <p>If the list has 0 or more than one element, throws.</p>
+     *
+     * @param list List
+     * @param <T> Element type
+     * @return Sole item in the list
+     * @throws IndexOutOfBoundsException if list is empty or has more than 1 elt
+     */
+    public static <T> T only(List<T> list) {
+        if (list.size() != 1) {
+            throw new IndexOutOfBoundsException(
+                "list " + list + " has " + list.size()
+                + " elements, expected 1");
+        }
+        return list.get(0);
+    }
+
     public static class ErrorCellValue {
         public String toString() {
             return "#ERR";
@@ -2562,7 +2585,13 @@ public class Util extends XOMUtil {
         @SuppressWarnings({"CloneDoesntCallSuperClone"})
         @Override
         public PropertyList clone() {
-            return new PropertyList(new ArrayList<Pair<String, String>>(list));
+            // Copy pairs, because pairs are modified when put is called.
+            final List<Pair<String, String>> list1 =
+                new ArrayList<Pair<String, String>>(list.size());
+            for (Pair<String, String> pair : list) {
+                list1.add(Pair.of(pair.left, pair.right));
+            }
+            return new PropertyList(list1);
         }
 
         public String get(String key) {
@@ -2570,8 +2599,7 @@ public class Util extends XOMUtil {
         }
 
         public String get(String key, String defaultValue) {
-            for (int i = 0, n = list.size(); i < n; i++) {
-                Pair<String, String> pair = list.get(i);
+            for (Pair<String, String> pair : list) {
                 if (pair.left.equalsIgnoreCase(key)) {
                     return pair.right;
                 }
@@ -2580,8 +2608,7 @@ public class Util extends XOMUtil {
         }
 
         public String put(String key, String value) {
-            for (int i = 0, n = list.size(); i < n; i++) {
-                Pair<String, String> pair = list.get(i);
+            for (Pair<String, String> pair : list) {
                 if (pair.left.equalsIgnoreCase(key)) {
                     String old = pair.right;
                     if (key.equalsIgnoreCase("Provider")) {
@@ -3570,6 +3597,26 @@ public class Util extends XOMUtil {
 
     /**
      * Looks up an enumeration by name, returning a given default value if null
+     * or not valid. Default value must not be null.
+     *
+     * @param name Name of constant
+     * @param defaultValue Default value if constant is not found
+     * @return Value, or null if name is null or value does not exist
+     */
+    public static <E extends Enum<E>> E lookup(
+        String name, E defaultValue)
+    {
+        Class<E> clazz = (Class<E>) defaultValue.getClass();
+        while (!clazz.isEnum()) {
+            // Enum constants with overriding methods belong to their own
+            // anonymous subclass.
+            clazz = (Class<E>) clazz.getSuperclass();
+        }
+        return lookup(clazz, name, defaultValue);
+    }
+
+    /**
+     * Looks up an enumeration by name, returning a given default value if null
      * or not valid.
      *
      * @param clazz Enumerated type
@@ -3578,7 +3625,9 @@ public class Util extends XOMUtil {
      * @return Value, or null if name is null or value does not exist
      */
     public static <E extends Enum<E>> E lookup(
-        Class<E> clazz, String name, E defaultValue)
+        Class<E> clazz,
+        String name,
+        E defaultValue)
     {
         if (name == null) {
             return defaultValue;
@@ -3859,46 +3908,6 @@ public class Util extends XOMUtil {
         role.grant(schema, Access.ALL);
         role.makeImmutable();
         return role;
-    }
-
-    /**
-     * Tries to find the cube from which a dimension is taken.
-     * It considers private dimensions, shared dimensions and virtual
-     * dimensions. If it can't determine with certitude the origin
-     * of the dimension, it returns null.
-     */
-    public static Cube getDimensionCube(Dimension dimension) {
-        final Cube[] cubes = dimension.getSchema().getCubes();
-        for (Cube cube : cubes) {
-            for (Dimension dimension1 : cube.getDimensions()) {
-                // If the dimensions have the same identity,
-                // we found an access rule.
-                if (dimension == dimension1) {
-                    return cube;
-                }
-                // If the passed dimension argument is of class
-                // RolapCubeDimension, we must validate the cube
-                // assignment and make sure the cubes are the same.
-                // If not, skip to the next grant.
-                if (dimension instanceof RolapCubeDimension
-                    && dimension.equals(dimension1)
-                    && !((RolapCubeDimension)dimension1)
-                    .getCube()
-                    .equals(cube))
-                {
-                    continue;
-                }
-                // Last thing is to allow for equality correspondences
-                // to work with virtual cubes.
-                if (cube instanceof RolapCube
-                    && ((RolapCube)cube).isVirtual()
-                    && dimension.equals(dimension1))
-                {
-                    return cube;
-                }
-            }
-        }
-        return null;
     }
 
     public static abstract class AbstractFlatList<T>

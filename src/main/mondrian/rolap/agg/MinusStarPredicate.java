@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -35,7 +35,7 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
         StarColumnPredicate plus,
         StarColumnPredicate minus)
     {
-        super(plus.getColumn());
+        super(plus.getRouter(), plus.getColumn());
         assert minus != null;
         this.plus = plus;
         this.minus = minus;
@@ -114,9 +114,7 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
                 unionList.addAll(list.getPredicates());
                 return new MinusStarPredicate(
                     plus,
-                    new ListColumnPredicate(
-                        column,
-                        unionList));
+                    new ListColumnPredicate(router, column, unionList));
             }
             if (predicate instanceof ValueColumnPredicate) {
                 ValueColumnPredicate valuePredicate =
@@ -132,10 +130,10 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
                 unionList.addAll(minusList.getPredicates());
                 unionList.add(
                     new ValueColumnPredicate(
-                        column, valuePredicate.getValue()));
+                        router, column, valuePredicate.getValue()));
                 return new MinusStarPredicate(
                     plus,
-                    new ListColumnPredicate(column, unionList));
+                    new ListColumnPredicate(router, column, unionList));
             }
         }
         return new MinusStarPredicate(

@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2011 Julian Hyde
+// Copyright (C) 2003-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,6 +13,7 @@ import mondrian.olap.*;
 import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.test.TestContext;
+import mondrian.util.Bug;
 
 import java.util.List;
 
@@ -38,16 +39,23 @@ public class VirtualCubeTest extends BatchTestCase {
         super(name);
     }
 
+    public TestContext getTestContext() {
+        return TestContext.instance().legacy();
+    }
+
     /**
      * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-163">
      * MONDRIAN-163, "VirtualCube SegmentArrayQuerySpec.addMeasure assert"</a>.
      */
     public void testNoTimeDimension() {
-        TestContext testContext = TestContext.instance().create(
+        TestContext testContext = getTestContext().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\">\n"
             + "<VirtualCubeDimension name=\"Product\"/>\n"
+            + (Bug.VirtualCubeConversionMissesHiddenFixed
+                ? ""
+                : "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Time\"/>\n")
             + "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
             + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n"
             + "</VirtualCube>",
@@ -58,17 +66,15 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testCalculatedMeasureAsDefaultMeasureInVC() {
-        TestContext testContext = TestContext.instance().create(
+        TestContext testContext = getTestContext().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\" defaultMeasure=\"Profit\">\n"
             + "<VirtualCubeDimension name=\"Product\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Warehouse\" "
-            + "name=\"[Measures].[Warehouse Sales]\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Sales\" "
-            + "name=\"[Measures].[Unit Sales]\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Sales\" "
-            + "name=\"[Measures].[Profit]\"/>\n"
+            + "<VirtualCubeDimension cubeName=\"Sales\" name=\"Time\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Profit]\"/>\n"
             + "</VirtualCube>",
             null,
             null,
@@ -80,38 +86,33 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testDefaultMeasureInVCForIncorrectMeasureName() {
-        TestContext testContext = TestContext.instance().create(
+        TestContext testContext = getTestContext().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\" defaultMeasure=\"Profit Error\">\n"
             + "<VirtualCubeDimension name=\"Product\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Warehouse\" "
-            + "name=\"[Measures].[Warehouse Sales]\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Sales\" "
-            + "name=\"[Measures].[Unit Sales]\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Sales\" "
-            + "name=\"[Measures].[Profit]\"/>\n"
+            + "<VirtualCubeDimension cubeName=\"Sales\" name=\"Time\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Profit]\"/>\n"
             + "</VirtualCube>",
             null,
             null,
             null);
-        String query1 = "select from [Sales vs Warehouse]";
-        String query2 =
-            "select from [Sales vs Warehouse] "
-            + "where measures.[Warehouse Sales]";
-        assertQueriesReturnSimilarResults(query1, query2, testContext);
+        testContext.assertQueryThrows(
+            "select from [Sales vs Warehouse]",
+            "Default measure 'Profit Error' not found");
     }
 
     public void testVirtualCubeMeasureInvalidCubeName() {
-        TestContext testContext = TestContext.instance().create(
+        TestContext testContext = getTestContext().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\">\n"
             + "<VirtualCubeDimension name=\"Product\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Warehouse\" "
-            + "name=\"[Measures].[Warehouse Sales]\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Bad cube\" "
-            + "name=\"[Measures].[Unit Sales]\"/>\n"
+            + "<VirtualCubeDimension cubeName=\"Sales\" name=\"Time\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Bad cube\" name=\"[Measures].[Unit Sales]\"/>\n"
             + "</VirtualCube>",
             null,
             null,
@@ -122,32 +123,30 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testDefaultMeasureInVCForCaseSensitivity() {
-        TestContext testContext = TestContext.instance().create(
+        TestContext testContext = getTestContext().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\" defaultMeasure=\"PROFIT\">\n"
             + "<VirtualCubeDimension name=\"Product\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Warehouse\" "
-            + "name=\"[Measures].[Warehouse Sales]\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Sales\" "
-            + "name=\"[Measures].[Unit Sales]\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Sales\" "
-            + "name=\"[Measures].[Profit]\"/>\n"
+            + (Bug.VirtualCubeConversionMissesHiddenFixed
+                ? ""
+                : "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Time\"/>\n")
+            + "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Profit]\"/>\n"
             + "</VirtualCube>",
             null,
             null,
             null);
         String queryWithoutFilter = "select from [Sales vs Warehouse]";
-        String queryWithFirstMeasure =
-            "select from [Sales vs Warehouse] "
-            + "where measures.[Warehouse Sales]";
         String queryWithDefaultMeasureFilter =
             "select from [Sales vs Warehouse] "
             + "where measures.[Profit]";
 
         if (MondrianProperties.instance().CaseSensitive.get()) {
-            assertQueriesReturnSimilarResults(
-                queryWithoutFilter, queryWithFirstMeasure, testContext);
+            testContext.assertQueryThrows(
+                "select from [Sales vs Warehouse]",
+                "Default measure 'PROFIT' not found");
         } else {
             assertQueriesReturnSimilarResults(
                 queryWithoutFilter, queryWithDefaultMeasureFilter, testContext);
@@ -155,7 +154,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testWithTimeDimension() {
-        TestContext testContext = TestContext.instance().create(
+        TestContext testContext = getTestContext().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\">\n"
@@ -177,7 +176,7 @@ public class VirtualCubeTest extends BatchTestCase {
             "select\n"
             + "{ [Measures].[Warehouse Sales], [Measures].[Unit Sales] }\n"
             + "ON COLUMNS,\n"
-            + "{[Product].[Products].[All Products]}\n"
+            + "{[Product].[All Products]}\n"
             + "ON ROWS\n"
             + "from [Sales vs Warehouse]",
             "Axis #0:\n"
@@ -186,7 +185,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "{[Measures].[Warehouse Sales]}\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Products].[All Products]}\n"
+            + "{[Product].[All Products]}\n"
             + "Row #0: 196,770.888\n"
             + "Row #0: 266,773\n");
     }
@@ -206,7 +205,7 @@ public class VirtualCubeTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Warehouse].[Warehouses].[USA]}\n"
+            + "{[Warehouse].[USA]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Warehouse Cost]}\n"
             + "Row #0: 89,043.253\n");
@@ -220,8 +219,8 @@ public class VirtualCubeTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Warehouse].[Warehouses].[USA]}\n"
-            + "{[Warehouse].[Warehouses].[USA].[CA]}\n"
+            + "{[Warehouse].[USA]}\n"
+            + "{[Warehouse].[USA].[CA]}\n"
             + "Axis #2:\n"
             + "{[Measures].[Warehouse Cost]}\n"
             + "{[Measures].[Sales Count]}\n"
@@ -251,7 +250,7 @@ public class VirtualCubeTest extends BatchTestCase {
      *     Warehouse dimension is USA
      */
     private TestContext createContextWithNonDefaultAllMember() {
-        return TestContext.instance().create(
+        return getTestContext().create(
             null,
 
             // Warehouse cube where the default member in the Warehouse
@@ -297,7 +296,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testMemberVisibility() {
-        TestContext testContext = TestContext.instance().create(
+        TestContext testContext = getTestContext().create(
             null,
             null,
             "<VirtualCube name=\"Warehouse and Sales Member Visibility\">\n"
@@ -307,7 +306,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Cost]\" visible=\"false\" />\n"
             + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
             + "  <VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Units Shipped]\" visible=\"false\" />\n"
-            + "  <CalculatedMember name=\"Profit\" dimension=\"Measures\" visible=\"false\" >\n"
+            + "  <CalculatedMember name=\"Profit2\" dimension=\"Measures\" visible=\"false\" >\n"
             + "    <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>\n"
             + "  </CalculatedMember>\n"
             + "</VirtualCube>",
@@ -319,7 +318,7 @@ public class VirtualCubeTest extends BatchTestCase {
             + " [Measures].[Store Cost],\n"
             + " [Measures].[Store Sales],\n"
             + " [Measures].[Units Shipped],\n"
-            + " [Measures].[Profit]} on columns\n"
+            + " [Measures].[Profit2]} on columns\n"
             + "from [Warehouse and Sales Member Visibility]");
         assertVisibility(result, 0, "Sales Count", true); // explicitly visible
         assertVisibility(
@@ -327,7 +326,7 @@ public class VirtualCubeTest extends BatchTestCase {
         assertVisibility(result, 2, "Store Sales", true); // visible by default
         assertVisibility(
             result, 3, "Units Shipped", false); // explicitly invisible
-        assertVisibility(result, 4, "Profit", false); // explicitly invisible
+        assertVisibility(result, 4, "Profit2", false); // explicitly invisible
     }
 
     private void assertVisibility(
@@ -357,7 +356,11 @@ public class VirtualCubeTest extends BatchTestCase {
      * styles.
      */
     public void testFormatStringExpressionCubeNoCache() {
-        TestContext testContext = TestContext.instance().create(
+        // NOTE: I renamed the CalculatedMember from Profit to Profit2
+        // when moving to mondrian-4 schemas
+        // because the underlying Sales cube has a member called Profit
+        // and the schema convert is not smart enough to let them coexist.
+        TestContext testContext = getTestContext().create(
             null,
             null,
             "<Cube name=\"Warehouse No Cache\" cache=\"false\">\n"
@@ -373,11 +376,11 @@ public class VirtualCubeTest extends BatchTestCase {
             + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Cost]\"/>\n"
             + "  <VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Store Sales]\"/>\n"
             + "  <VirtualCubeMeasure cubeName=\"Warehouse No Cache\" name=\"[Measures].[Units Shipped]\"/>\n"
-            + "  <CalculatedMember name=\"Profit\" dimension=\"Measures\">\n"
+            + "  <CalculatedMember name=\"Profit2\" dimension=\"Measures\">\n"
             + "    <Formula>[Measures].[Store Sales] - [Measures].[Store Cost]</Formula>\n"
             + "  </CalculatedMember>\n"
             + "  <CalculatedMember name=\"Profit Per Unit Shipped\" dimension=\"Measures\">\n"
-            + "    <Formula>[Measures].[Profit] / [Measures].[Units Shipped]</Formula>\n"
+            + "    <Formula>[Measures].[Profit2] / [Measures].[Units Shipped]</Formula>\n"
             + "    <CalculatedMemberProperty name=\"FORMAT_STRING\" expression=\"IIf(([Measures].[Profit Per Unit Shipped] > 2.0), '|0.#|style=green', '|0.#|style=red')\"/>\n"
             + "  </CalculatedMember>\n"
             + "</VirtualCube>",
@@ -431,44 +434,44 @@ public class VirtualCubeTest extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Time].[Time].[1997]}\n"
-            + "{[Time].[Time].[1997].[Q1]}\n"
-            + "{[Time].[Time].[1997].[Q1].[1]}\n"
-            + "{[Time].[Time].[1997].[Q1].[2]}\n"
-            + "{[Time].[Time].[1997].[Q1].[3]}\n"
-            + "{[Time].[Time].[1997].[Q2]}\n"
-            + "{[Time].[Time].[1997].[Q2].[4]}\n"
-            + "{[Time].[Time].[1997].[Q2].[5]}\n"
-            + "{[Time].[Time].[1997].[Q2].[6]}\n"
-            + "{[Time].[Time].[1997].[Q3]}\n"
-            + "{[Time].[Time].[1997].[Q3].[7]}\n"
-            + "{[Time].[Time].[1997].[Q3].[8]}\n"
-            + "{[Time].[Time].[1997].[Q3].[9]}\n"
-            + "{[Time].[Time].[1997].[Q4]}\n"
-            + "{[Time].[Time].[1997].[Q4].[10]}\n"
-            + "{[Time].[Time].[1997].[Q4].[11]}\n"
-            + "{[Time].[Time].[1997].[Q4].[12]}\n"
-            + "{[Time].[Time].[1998]}\n"
-            + "{[Time].[Time].[1998].[Q1]}\n"
-            + "{[Time].[Time].[1998].[Q1].[1]}\n"
-            + "{[Time].[Time].[1998].[Q1].[2]}\n"
-            + "{[Time].[Time].[1998].[Q1].[3]}\n"
-            + "{[Time].[Time].[1998].[Q2]}\n"
-            + "{[Time].[Time].[1998].[Q2].[4]}\n"
-            + "{[Time].[Time].[1998].[Q2].[5]}\n"
-            + "{[Time].[Time].[1998].[Q2].[6]}\n"
-            + "{[Time].[Time].[1998].[Q3]}\n"
-            + "{[Time].[Time].[1998].[Q3].[7]}\n"
-            + "{[Time].[Time].[1998].[Q3].[8]}\n"
-            + "{[Time].[Time].[1998].[Q3].[9]}\n"
-            + "{[Time].[Time].[1998].[Q4]}\n"
-            + "{[Time].[Time].[1998].[Q4].[10]}\n"
-            + "{[Time].[Time].[1998].[Q4].[11]}\n"
-            + "{[Time].[Time].[1998].[Q4].[12]}\n"
+            + "{[Time].[1997]}\n"
+            + "{[Time].[1997].[Q1]}\n"
+            + "{[Time].[1997].[Q1].[1]}\n"
+            + "{[Time].[1997].[Q1].[2]}\n"
+            + "{[Time].[1997].[Q1].[3]}\n"
+            + "{[Time].[1997].[Q2]}\n"
+            + "{[Time].[1997].[Q2].[4]}\n"
+            + "{[Time].[1997].[Q2].[5]}\n"
+            + "{[Time].[1997].[Q2].[6]}\n"
+            + "{[Time].[1997].[Q3]}\n"
+            + "{[Time].[1997].[Q3].[7]}\n"
+            + "{[Time].[1997].[Q3].[8]}\n"
+            + "{[Time].[1997].[Q3].[9]}\n"
+            + "{[Time].[1997].[Q4]}\n"
+            + "{[Time].[1997].[Q4].[10]}\n"
+            + "{[Time].[1997].[Q4].[11]}\n"
+            + "{[Time].[1997].[Q4].[12]}\n"
+            + "{[Time].[1998]}\n"
+            + "{[Time].[1998].[Q1]}\n"
+            + "{[Time].[1998].[Q1].[1]}\n"
+            + "{[Time].[1998].[Q1].[2]}\n"
+            + "{[Time].[1998].[Q1].[3]}\n"
+            + "{[Time].[1998].[Q2]}\n"
+            + "{[Time].[1998].[Q2].[4]}\n"
+            + "{[Time].[1998].[Q2].[5]}\n"
+            + "{[Time].[1998].[Q2].[6]}\n"
+            + "{[Time].[1998].[Q3]}\n"
+            + "{[Time].[1998].[Q3].[7]}\n"
+            + "{[Time].[1998].[Q3].[8]}\n"
+            + "{[Time].[1998].[Q3].[9]}\n"
+            + "{[Time].[1998].[Q4]}\n"
+            + "{[Time].[1998].[Q4].[10]}\n"
+            + "{[Time].[1998].[Q4].[11]}\n"
+            + "{[Time].[1998].[Q4].[12]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Products].[Drink]}\n"
-            + "{[Product].[Products].[Food]}\n"
-            + "{[Product].[Products].[Non-Consumable]}\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
             + "Row #0: 24,597\n"
             + "Row #0: 5,976\n"
             + "Row #0: 1,910\n"
@@ -612,18 +615,18 @@ public class VirtualCubeTest extends BatchTestCase {
             + "{[Measures].[Shipped per Ordered]}\n"
             + "{[Measures].[Profit per Unit Shipped]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Products].[Drink], [Time].[Time].[1997].[Q1]}\n"
-            + "{[Product].[Products].[Drink], [Time].[Time].[1997].[Q2]}\n"
-            + "{[Product].[Products].[Drink], [Time].[Time].[1997].[Q3]}\n"
-            + "{[Product].[Products].[Drink], [Time].[Time].[1997].[Q4]}\n"
-            + "{[Product].[Products].[Food], [Time].[Time].[1997].[Q1]}\n"
-            + "{[Product].[Products].[Food], [Time].[Time].[1997].[Q2]}\n"
-            + "{[Product].[Products].[Food], [Time].[Time].[1997].[Q3]}\n"
-            + "{[Product].[Products].[Food], [Time].[Time].[1997].[Q4]}\n"
-            + "{[Product].[Products].[Non-Consumable], [Time].[Time].[1997].[Q1]}\n"
-            + "{[Product].[Products].[Non-Consumable], [Time].[Time].[1997].[Q2]}\n"
-            + "{[Product].[Products].[Non-Consumable], [Time].[Time].[1997].[Q3]}\n"
-            + "{[Product].[Products].[Non-Consumable], [Time].[Time].[1997].[Q4]}\n"
+            + "{[Product].[Drink], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Product].[Drink], [Time].[Time].[1997].[Q2]}\n"
+            + "{[Product].[Drink], [Time].[Time].[1997].[Q3]}\n"
+            + "{[Product].[Drink], [Time].[Time].[1997].[Q4]}\n"
+            + "{[Product].[Food], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Product].[Food], [Time].[Time].[1997].[Q2]}\n"
+            + "{[Product].[Food], [Time].[Time].[1997].[Q3]}\n"
+            + "{[Product].[Food], [Time].[Time].[1997].[Q4]}\n"
+            + "{[Product].[Non-Consumable], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Product].[Non-Consumable], [Time].[Time].[1997].[Q2]}\n"
+            + "{[Product].[Non-Consumable], [Time].[Time].[1997].[Q3]}\n"
+            + "{[Product].[Non-Consumable], [Time].[Time].[1997].[Q4]}\n"
             + "Row #0: 5,976\n"
             + "Row #0: 4637.0\n"
             + "Row #0: 77.59%\n"
@@ -678,7 +681,7 @@ public class VirtualCubeTest extends BatchTestCase {
      * Tests a calc member defined in the cube.
      */
     public void testCalculatedMemberInSchema() {
-        TestContext testContext = TestContext.instance().createSubstitutingCube(
+        TestContext testContext = getTestContext().createSubstitutingCube(
             "Warehouse and Sales",
             null,
             "  <CalculatedMember name=\"Shipped per Ordered\" dimension=\"Measures\">\n"
@@ -697,18 +700,18 @@ public class VirtualCubeTest extends BatchTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Shipped per Ordered]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Products].[Drink], [Time].[Time].[1997].[Q1]}\n"
-            + "{[Product].[Products].[Drink], [Time].[Time].[1997].[Q2]}\n"
-            + "{[Product].[Products].[Drink], [Time].[Time].[1997].[Q3]}\n"
-            + "{[Product].[Products].[Drink], [Time].[Time].[1997].[Q4]}\n"
-            + "{[Product].[Products].[Food], [Time].[Time].[1997].[Q1]}\n"
-            + "{[Product].[Products].[Food], [Time].[Time].[1997].[Q2]}\n"
-            + "{[Product].[Products].[Food], [Time].[Time].[1997].[Q3]}\n"
-            + "{[Product].[Products].[Food], [Time].[Time].[1997].[Q4]}\n"
-            + "{[Product].[Products].[Non-Consumable], [Time].[Time].[1997].[Q1]}\n"
-            + "{[Product].[Products].[Non-Consumable], [Time].[Time].[1997].[Q2]}\n"
-            + "{[Product].[Products].[Non-Consumable], [Time].[Time].[1997].[Q3]}\n"
-            + "{[Product].[Products].[Non-Consumable], [Time].[Time].[1997].[Q4]}\n"
+            + "{[Product].[Drink], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Product].[Drink], [Time].[Time].[1997].[Q2]}\n"
+            + "{[Product].[Drink], [Time].[Time].[1997].[Q3]}\n"
+            + "{[Product].[Drink], [Time].[Time].[1997].[Q4]}\n"
+            + "{[Product].[Food], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Product].[Food], [Time].[Time].[1997].[Q2]}\n"
+            + "{[Product].[Food], [Time].[Time].[1997].[Q3]}\n"
+            + "{[Product].[Food], [Time].[Time].[1997].[Q4]}\n"
+            + "{[Product].[Non-Consumable], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Product].[Non-Consumable], [Time].[Time].[1997].[Q2]}\n"
+            + "{[Product].[Non-Consumable], [Time].[Time].[1997].[Q3]}\n"
+            + "{[Product].[Non-Consumable], [Time].[Time].[1997].[Q4]}\n"
             + "Row #0: 5,976\n"
             + "Row #0: 77.6%\n"
             + "Row #1: 5,895\n"
@@ -782,12 +785,15 @@ public class VirtualCubeTest extends BatchTestCase {
      * ordinalColumn property
      */
     public void testOrdinalColumn() {
-        TestContext testContext = TestContext.instance().create(
+        TestContext testContext = getTestContext().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs HR\">\n"
             + "<VirtualCubeDimension cubeName=\"HR\" name=\"Store\"/>\n"
             + "<VirtualCubeDimension cubeName=\"HR\" name=\"Position\"/>\n"
+            + (Bug.VirtualCubeConversionMissesHiddenFixed
+                ? ""
+                : "  <VirtualCubeDimension cubeName=\"HR\" name=\"Employees\"/>\n")
             + "<VirtualCubeMeasure cubeName=\"HR\" name=\"[Measures].[Org Salary]\"/>\n"
             + "</VirtualCube>",
             null,
@@ -796,7 +802,7 @@ public class VirtualCubeTest extends BatchTestCase {
         testContext.assertQueryReturns(
             "select {[Measures].[Org Salary]} on columns, "
             + "non empty "
-            + "crossjoin([Store].[Store Country].members, [Employee].[Position].[Store Management].children) "
+            + "crossjoin([Store].[Store Country].members, [Position].[Store Management].children) "
             + "on rows from [Sales vs HR]",
             "Axis #0:\n"
             + "{}\n"
@@ -828,34 +834,37 @@ public class VirtualCubeTest extends BatchTestCase {
      * does not join to any cubes.
      */
     public void testUnjoinedDimension() {
-        TestContext testContext = TestContext.instance().create(
+        TestContext testContext = getTestContext().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs HR\">\n"
-            + "<VirtualCubeDimension name=\"Store\"/>\n"
+            + "<VirtualCubeDimension name=\"Warehouse\"/>\n"
             + "<VirtualCubeDimension cubeName=\"HR\" name=\"Position\"/>\n"
+            + (Bug.VirtualCubeConversionMissesHiddenFixed
+                ? ""
+                : "  <VirtualCubeDimension cubeName=\"HR\" name=\"Employees\"/>\n")
             + "<VirtualCubeMeasure cubeName=\"HR\" name=\"[Measures].[Org Salary]\"/>\n"
             + "</VirtualCube>",
             null,
             null,
             null);
         testContext.assertSchemaError(
-            "Virtual cube dimension must join to at least one cube: dimension 'Store' in cube 'Sales vs HR' \\(at ${pos}\\)",
-            "<VirtualCubeDimension name=\"Store\"/>");
+            "Virtual cube dimension must join to at least one cube: dimension 'Warehouse' in cube 'Sales vs HR' \\(in VirtualCubeDimension\\) \\(at ${pos}\\)",
+            "<VirtualCubeDimension name=\"Warehouse\"/>");
     }
 
     public void testDefaultMeasureProperty() {
-        TestContext testContext = TestContext.instance().create(
+        TestContext testContext = getTestContext().create(
             null,
             null,
             "<VirtualCube name=\"Sales vs Warehouse\" defaultMeasure=\"Unit Sales\">\n"
             + "<VirtualCubeDimension name=\"Product\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Warehouse\" "
-            + "name=\"[Measures].[Warehouse Sales]\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Sales\" "
-            + "name=\"[Measures].[Unit Sales]\"/>\n"
-            + "<VirtualCubeMeasure cubeName=\"Sales\" "
-            + "name=\"[Measures].[Profit]\"/>\n"
+            + (Bug.VirtualCubeConversionMissesHiddenFixed
+                ? ""
+                : "  <VirtualCubeDimension cubeName=\"Sales\" name=\"Time\"/>\n")
+            + "<VirtualCubeMeasure cubeName=\"Warehouse\" name=\"[Measures].[Warehouse Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Unit Sales]\"/>\n"
+            + "<VirtualCubeMeasure cubeName=\"Sales\" name=\"[Measures].[Profit]\"/>\n"
             + "</VirtualCube>",
             null,
             null,
@@ -996,7 +1005,7 @@ public class VirtualCubeTest extends BatchTestCase {
      * Happens when you aggregate distinct-count measures in a virtual cube.
      */
     public void testBugMondrian322() {
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = getTestContext().create(
             null,
             null,
             "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n"
@@ -1023,7 +1032,7 @@ public class VirtualCubeTest extends BatchTestCase {
          * empty.
          */
         testContext.assertQueryReturns(
-            "with member [Warehouses].[x] as 'Aggregate([Warehouse].members)'\n"
+            "with member [Warehouse].[x] as 'Aggregate([Warehouse].members)'\n"
             + "member [Measures].[foo] AS '([Warehouse].[x],[Measures].[Customer Count])'\n"
             + "select {[Measures].[foo]} on 0 from [Warehouse And Sales2]",
             "Axis #0:\n"
@@ -1034,7 +1043,7 @@ public class VirtualCubeTest extends BatchTestCase {
     }
 
     public void testBugMondrian322a() {
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = getTestContext().create(
             null,
             null,
             "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n"
@@ -1048,7 +1057,7 @@ public class VirtualCubeTest extends BatchTestCase {
             null,
             null);
         testContext.assertQueryReturns(
-            "with member [Warehouses].[x] as 'Aggregate({[Warehouse].[Canada], [Warehouse].[USA]})'\n"
+            "with member [Warehouse].[x] as 'Aggregate({[Warehouse].[Canada], [Warehouse].[USA]})'\n"
             + "member [Measures].[foo] AS '([Warehouse].[x],[Measures].[Customer Count])'\n"
             + "select {[Measures].[foo]} on 0 from [Warehouse And Sales2]",
             "Axis #0:\n"
@@ -1063,7 +1072,7 @@ public class VirtualCubeTest extends BatchTestCase {
      * MONDRIAN-352, "Caption is not set on RolapVirtualCubeMesure"</a>.
      */
     public void testVirtualCubeMeasureCaption() {
-        TestContext testContext = TestContext.instance().create(
+        TestContext testContext = getTestContext().create(
             null,
             "<Cube name=\"TestStore\">\n"
             + "  <Table name=\"store\"/>\n"
@@ -1130,17 +1139,17 @@ public class VirtualCubeTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
-            + "{[Warehouse].[Warehouses].[USA], [Time].[Time].[1997].[Q1].[1]}\n"
-            + "{[Warehouse].[Warehouses].[USA], [Time].[Time].[1997].[Q1].[3]}\n"
-            + "{[Warehouse].[Warehouses].[USA], [Time].[Time].[1997].[Q2].[4]}\n"
-            + "{[Warehouse].[Warehouses].[USA], [Time].[Time].[1997].[Q2].[5]}\n"
-            + "{[Warehouse].[Warehouses].[USA], [Time].[Time].[1997].[Q2].[6]}\n"
-            + "{[Warehouse].[Warehouses].[USA], [Time].[Time].[1997].[Q3].[7]}\n"
-            + "{[Warehouse].[Warehouses].[USA], [Time].[Time].[1997].[Q3].[8]}\n"
-            + "{[Warehouse].[Warehouses].[USA], [Time].[Time].[1997].[Q3].[9]}\n"
-            + "{[Warehouse].[Warehouses].[USA], [Time].[Time].[1997].[Q4].[10]}\n"
-            + "{[Warehouse].[Warehouses].[USA], [Time].[Time].[1997].[Q4].[11]}\n"
-            + "{[Warehouse].[Warehouses].[USA], [Time].[Time].[1997].[Q4].[12]}\n"
+            + "{[Warehouse].[USA], [Time].[Time].[1997].[Q1].[1]}\n"
+            + "{[Warehouse].[USA], [Time].[Time].[1997].[Q1].[3]}\n"
+            + "{[Warehouse].[USA], [Time].[Time].[1997].[Q2].[4]}\n"
+            + "{[Warehouse].[USA], [Time].[Time].[1997].[Q2].[5]}\n"
+            + "{[Warehouse].[USA], [Time].[Time].[1997].[Q2].[6]}\n"
+            + "{[Warehouse].[USA], [Time].[Time].[1997].[Q3].[7]}\n"
+            + "{[Warehouse].[USA], [Time].[Time].[1997].[Q3].[8]}\n"
+            + "{[Warehouse].[USA], [Time].[Time].[1997].[Q3].[9]}\n"
+            + "{[Warehouse].[USA], [Time].[Time].[1997].[Q4].[10]}\n"
+            + "{[Warehouse].[USA], [Time].[Time].[1997].[Q4].[11]}\n"
+            + "{[Warehouse].[USA], [Time].[Time].[1997].[Q4].[12]}\n"
             + "Row #0: 21,762\n"
             + "Row #1: 13,775\n"
             + "Row #2: 15,938\n"

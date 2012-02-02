@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -29,8 +29,17 @@ public interface Cube extends OlapElement, Annotated {
 
     /**
      * Returns the dimensions of this cube.
+     *
+     * @deprecated Use {@link #getDimensionList()}; will be removed before 4.0.
      */
     Dimension[] getDimensions();
+
+    /**
+     * Returns the dimensions in this cube.
+     *
+     * @return List of dimensions
+     */
+    List<? extends Dimension> getDimensionList();
 
     /**
      * Returns the named sets of this cube.

@@ -108,8 +108,7 @@ public class RolapMemberBase
         assert !(parentMember instanceof RolapCubeMember)
             || this instanceof RolapCalculatedMember
             || this instanceof VisualTotalsFunDef.VisualTotalMember;
-        assert RolapMember.Key.isValid(key, level)
-            || memberType == MemberType.FORMULA
+        assert Key.isValid(key, level, memberType)
             : "invalid key " + key + " for level " + level;
         if (key instanceof byte[]) {
             // Some drivers (e.g. Derby) return byte arrays for binary columns

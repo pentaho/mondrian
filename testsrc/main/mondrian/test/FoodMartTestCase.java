@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2002-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -336,12 +336,13 @@ public class FoodMartTestCase extends TestCase {
     }
 
     private Dimension getDimension(String dimensionName, Cube salesCube) {
-        return getDimensionWithName(dimensionName, salesCube.getDimensions());
+        return getDimensionWithName(
+            dimensionName, salesCube.getDimensionList());
     }
 
     protected Dimension getDimensionWithName(
         String name,
-        Dimension[] dimensions)
+        List<? extends Dimension> dimensions)
     {
         Dimension resultDimension = null;
         for (Dimension dimension : dimensions) {

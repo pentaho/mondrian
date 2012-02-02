@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -492,7 +492,25 @@ public class DiffRepository
         }
     }
 
-    public void assertEquals(String tag, String expected, String actual)
+    /**
+     * Calls {@link #assertEquals(String, String, String, mondrian.olap.Util.Functor1)}
+     * with a null filter.
+     *
+     * @param tag Tag
+     * @param expected Expected value (may contain a "${tag}")
+     * @param actual Actual value
+     */
+    public final void assertEquals(
+        String tag, String expected, String actual)
+    {
+        assertEquals(tag, expected, actual, null);
+    }
+
+    public void assertEquals(
+        String tag,
+        String expected,
+        String actual,
+        Util.Functor1<String, String> filter)
     {
         final String testCaseName = getCurrentTestCaseName(true);
         String expected2 = expand(tag, expected);
@@ -502,6 +520,12 @@ public class DiffRepository
                 "reference file does not contain resource '" + expected
                 + "' for testcase '" + testCaseName + "'");
         } else {
+            final String expected3;
+            if (filter != null) {
+                expected3 = filter.apply(expected2);
+            } else {
+                expected3 = expected2;
+            }
             try {
                 // TODO jvs 25-Apr-2006:  reuse bulk of
                 // DiffTestCase.diffTestLog here; besides newline
@@ -509,7 +533,7 @@ public class DiffRepository
                 // at which the first diff occurs, which is useful
                 // for largish snippets
                 String expected2Canonical =
-                    Util.replace(expected2, Util.nl, "\n");
+                    Util.replace(expected3, Util.nl, "\n");
                 String actualCanonical = Util.replace(actual, Util.nl, "\n");
                 Assert.assertEquals(
                     expected2Canonical,

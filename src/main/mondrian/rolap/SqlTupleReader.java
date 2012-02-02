@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -72,7 +72,7 @@ import javax.sql.DataSource;
  * @version $Id$
  */
 public class SqlTupleReader implements TupleReader {
-    private final static Logger LOGGER =
+    private static final Logger LOGGER =
         Logger.getLogger(SqlTupleReader.class);
     protected final TupleConstraint constraint;
     protected final List<TargetBase> targets = new ArrayList<TargetBase>();
@@ -116,9 +116,9 @@ public class SqlTupleReader implements TupleReader {
         }
 
         public void open() {
-            levels = level.getHierarchy().getRolapLevelList().toArray(
+            levels = level.getHierarchy().getLevelList().toArray(
                 new RolapLevel[
-                    level.getHierarchy().getRolapLevelList().size()]);
+                    level.getHierarchy().getLevelList().size()]);
             setList(new ArrayList<RolapMember>());
             levelDepth = level.getDepth();
             parentChild = level.isParentChild();
@@ -991,7 +991,7 @@ Util.deprecated("obsolete basecube parameter", false);
             }
         }
 
-        List<RolapLevel> levels = hierarchy.getRolapLevelList();
+        final List<RolapLevel> levels = Util.cast(hierarchy.getLevelList());
         int levelDepth = level.getDepth();
 
         boolean needsGroupBy =
@@ -1023,7 +1023,9 @@ Util.deprecated("obsolete basecube parameter", false);
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 String q = aggColumn.generateExprString(sqlQuery);
                 String alias =
-                    sqlQuery.addSelectGroupBy(q, starColumn.getInternalType());
+                    sqlQuery.addSelectGroupBy(
+                        q,
+                        starColumn.getExpression().getInternalType());
                 layoutBuilder.register(q, alias);
                 sqlQuery.addOrderBy(q, true, false, true);
                 aggColumn.getTable().addToFrom(sqlQuery, false, true);

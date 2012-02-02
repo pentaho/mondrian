@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -30,7 +30,7 @@ public interface Hierarchy extends OlapElement, Annotated {
      * not be visible; use {@link SchemaReader#getHierarchyLevels} instead.
      *
      * @post return != null
-     * @deprecated Use {@link #getLevelList}
+     * @deprecated Use {@link #getLevelList}; will be removed before 4.0.
      */
     Level[] getLevels();
 
@@ -39,7 +39,7 @@ public interface Hierarchy extends OlapElement, Annotated {
      *
      * @return List of levels
      */
-    List<Level> getLevelList();
+    List<? extends Level> getLevelList();
 
     /**
      * Returns the default member of this hierarchy.
@@ -50,12 +50,14 @@ public interface Hierarchy extends OlapElement, Annotated {
      * @post return != null
      */
     Member getDefaultMember();
+
     /**
      * Returns the "All" member of this hierarchy.
      *
      * @post return != null
      */
     Member getAllMember();
+
     /**
      * Returns a special member representing the "null" value. This never
      * occurs on an axis, but may occur if functions such as <code>Lead</code>,

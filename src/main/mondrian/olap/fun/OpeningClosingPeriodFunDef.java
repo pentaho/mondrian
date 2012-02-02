@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2002-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -138,8 +138,8 @@ class OpeningClosingPeriodFunDef extends FunDefBase {
                 Level level;
                 if (levelCalc == null) {
                     int targetDepth = member.getLevel().getDepth() + 1;
-                    List<Level> levels = member.getHierarchy().getLevelList();
-
+                    List<? extends Level> levels =
+                        member.getHierarchy().getLevelList();
                     if (levels.size() <= targetDepth) {
                         return member.getHierarchy().getNullMember();
                     }

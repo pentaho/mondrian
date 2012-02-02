@@ -75,13 +75,21 @@ public class RolapSchemaLoader {
 
     private static final Map<String, Dialect.Datatype> DATATYPE_MAP =
         new HashMap<String, Dialect.Datatype>();
+
+    /**
+     * Name of the sole level in the Measures hierarchy.
+     *
+     * @see Dimension#MEASURES_NAME
+     */
+    static final String MEASURES_LEVEL_NAME = "MeasuresLevel";
+
     static {
         for (Dialect.Datatype datatype : Dialect.Datatype.values()) {
             DATATYPE_MAP.put(datatype.name(), datatype);
         }
     }
 
-    private RolapSchema schema;
+    RolapSchema schema;
     private PhysSchemaBuilder physSchemaBuilder;
     private final RolapSchemaValidatorImpl validator =
         new RolapSchemaValidatorImpl();
@@ -93,12 +101,23 @@ public class RolapSchemaLoader {
             Pair<RolapMeasureGroup, RolapCubeDimension>,
             RolapSchema.PhysPath>();
 
+    private final Handler handler =
+        new RolapSchemaLoaderHandlerImpl() {
+            protected List<RolapSchema.MondrianSchemaException> getWarningList()
+            {
+                return schema == null ? null : schema.warningList;
+            }
+        };
+
+    private MissingLinkAction missingLinkAction;
+
+    /**
+     * Creates a RolapSchemaLoader.
+     *
+     * @param schema Schema being loaded (may be null, and populated later)
+     */
     RolapSchemaLoader(RolapSchema schema) {
         this.schema = schema;
-    }
-
-    static Logger getLogger() {
-        return LOGGER;
     }
 
     /**
@@ -116,7 +135,7 @@ public class RolapSchemaLoader {
      * @param dataSource Data source
      * @return Populated schema
      */
-    private RolapSchema load(
+    private RolapSchema loadStage0(
         final String key,
         ByteString md5Bytes,
         final String catalogUrl,
@@ -148,7 +167,7 @@ public class RolapSchemaLoader {
                     try {
                         catalogStr = Util.readVirtualFileAsString(catalogUrl);
                     } catch (java.io.IOException ex) {
-                        getLogger().debug("RolapSchema.load: ex=" + ex);
+                        LOGGER.debug("RolapSchema.load: ex=" + ex);
                         catalogStr = "?";
                     }
                 }
@@ -166,46 +185,55 @@ public class RolapSchemaLoader {
                 def = xmlParser.parse(catalogStr);
             }
 
+            boolean useContentChecksum;
             if (md5Bytes == null) {
                 // If a null catalogStr was passed in, we should have
                 // computed it above by re-reading the catalog URL.
                 assert catalogStr != null;
                 md5Bytes = new ByteString(Util.digestMd5(catalogStr));
+                useContentChecksum = false;
+            } else {
+                useContentChecksum = true;
             }
 
-            MondrianDef.Schema xmlSchema = new MondrianDef.Schema(def);
-
-            if (LOGGER.isDebugEnabled()) {
-                StringWriter sw = new StringWriter(4096);
-                PrintWriter pw = new PrintWriter(sw);
-                pw.println("RolapSchema.load: dump xmlschema");
-                xmlSchema.display(pw, 2);
-                pw.flush();
-                getLogger().debug(sw.toString());
+            final MondrianDef.Schema xmlSchema;
+            final boolean legacy = isLegacy(def);
+            if (legacy) {
+                LOGGER.warn("Model is in legacy format");
+                Mondrian3Def.Schema xmlLegacySchema =
+                    new Mondrian3Def.Schema(def);
+                RolapSchema tempSchema =
+                    new RolapSchema(
+                        key,
+                        connectInfo,
+                        dataSource,
+                        md5Bytes,
+                        useContentChecksum,
+                        xmlLegacySchema.name,
+                        Collections.<String, Annotation>emptyMap());
+                tempSchema.physicalSchema =
+                    new RolapSchema.PhysSchema(
+                        tempSchema.getDialect(),
+                        tempSchema.getInternalConnection().getDataSource());
+                RolapSchemaUpgrader upgrader =
+                    new RolapSchemaUpgrader(
+                        this, tempSchema, tempSchema.physicalSchema);
+                xmlSchema = upgrader.convertSchema(xmlLegacySchema);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(
+                        "schema after conversion:\n" + xmlSchema.toXML());
+                }
+            } else {
+                xmlSchema = new MondrianDef.Schema(def);
             }
 
-            final Map<String, Annotation> annotationMap =
-                createAnnotationMap(xmlSchema.getAnnotations());
-            schema =
-                new RolapSchema(
-                    key,
-                    connectInfo,
-                    dataSource,
-                    md5Bytes,
-                    md5Bytes != null,
-                    xmlSchema.name,
-                    annotationMap);
-            validator.putXml(schema, xmlSchema);
-
-            load(
-                schema,
-                xmlSchema,
-                xmlSchema.getPhysicalSchema(),
-                xmlSchema.getUserDefinedFunctions(),
-                xmlSchema.getDimensions(),
-                xmlSchema.getParameters(),
-                xmlSchema.getCubes());
-            return schema;
+            return loadStage1(
+                key,
+                md5Bytes,
+                useContentChecksum,
+                connectInfo,
+                dataSource,
+                xmlSchema);
         } catch (XOMException e) {
             throw Util.newError(e, "while parsing catalog " + catalogUrl);
         } catch (FileSystemException e) {
@@ -215,7 +243,76 @@ public class RolapSchemaLoader {
         }
     }
 
-    void load(
+    private RolapSchema loadStage1(
+        String key,
+        ByteString md5Bytes,
+        boolean useContentChecksum,
+        Util.PropertyList connectInfo,
+        DataSource dataSource,
+        MondrianDef.Schema xmlSchema)
+        throws XOMException
+    {
+        if (LOGGER.isDebugEnabled()) {
+            StringWriter sw = new StringWriter(4096);
+            PrintWriter pw = new PrintWriter(sw);
+            pw.println("RolapSchema.load: dump xmlschema");
+            xmlSchema.display(pw, 2);
+            pw.flush();
+            LOGGER.debug(sw.toString());
+        }
+
+        final Map<String, Annotation> annotationMap =
+            createAnnotationMap(xmlSchema.getAnnotations());
+
+        schema =
+            new RolapSchema(
+                key,
+                connectInfo,
+                dataSource,
+                md5Bytes,
+                useContentChecksum,
+                xmlSchema.name,
+                annotationMap);
+
+        validator.putXml(schema, xmlSchema);
+        missingLinkAction =
+            Util.lookup(
+                Util.toUpperCase(xmlSchema.missingLink),
+                MissingLinkAction.WARNING);
+
+        loadStage2(
+            schema,
+            xmlSchema,
+            xmlSchema.getPhysicalSchema(),
+            xmlSchema.getUserDefinedFunctions(),
+            xmlSchema.getDimensions(),
+            xmlSchema.getParameters(),
+            xmlSchema.getCubes());
+        return schema;
+    }
+
+    /**
+     * Returns whether a schema is in legacy (that is, pre-Mondrian-4.0) format.
+     *
+     * @param def Parsed schema
+     * @return Whether schema is in legacy format
+     */
+    private boolean isLegacy(DOMWrapper def) {
+        final String metamodelVersion =
+            def.getAttribute("metamodelVersion");
+        if (metamodelVersion == null) {
+            return true;
+        }
+        final String[] versionParts = metamodelVersion.split("\\.");
+        final String majorVersion =
+            versionParts.length > 0 ? versionParts[0] : "";
+        if (majorVersion.compareTo("4") < 0) {
+            return true;
+        }
+        return false;
+    }
+
+    void loadStage2(
         RolapSchema schema,
         MondrianDef.Schema xmlSchema,
         final MondrianDef.PhysicalSchema xmlPhysicalSchema,
@@ -277,7 +374,7 @@ public class RolapSchemaLoader {
                     new RolapCube(
                         schema,
                         xmlCube.name,
-                        xmlCube.visible,
+                        toBoolean(xmlCube.visible, true),
                         xmlCube.caption,
                         xmlCube.description,
                         createAnnotationMap(xmlCube.getAnnotations()),
@@ -308,7 +405,7 @@ public class RolapSchemaLoader {
             // RoleImpl roles so it is safe to cast.
             defaultRole = (RoleImpl) schema.lookupRole(xmlSchema.defaultRole);
             if (defaultRole == null) {
-                schema.warning(
+                handler.warning(
                     "Role '" + xmlSchema.defaultRole + "' not found",
                     xmlSchema,
                     "defaultRole");
@@ -358,7 +455,7 @@ public class RolapSchemaLoader {
         List<RolapSchema.UnresolvedColumn> unresolvedColumnList =
             new ArrayList<RolapSchema.UnresolvedColumn>();
         for (MondrianDef.Relation relation : Util.filter(
-            xmlPhysicalSchema.elements, MondrianDef.Relation.class))
+            xmlPhysicalSchema.childArray, MondrianDef.Relation.class))
         {
             final String alias = relation.getAlias();
             final RolapSchema.PhysRelationImpl physTable;
@@ -421,15 +518,14 @@ public class RolapSchemaLoader {
         List<UnresolvedLink> unresolvedLinkList =
             new ArrayList<UnresolvedLink>();
         for (MondrianDef.Link link
-            : Util.filter(xmlPhysicalSchema.elements, MondrianDef.Link.class))
+            : Util.filter(xmlPhysicalSchema.childArray, MondrianDef.Link.class))
         {
             List<RolapSchema.PhysColumn> columnList =
                 new ArrayList<RolapSchema.PhysColumn>();
             int errorCount = 0;
             final RolapSchema.PhysRelation sourceTable =
                 physSchema.tablesByName.get(link.source);
-            String keyName =
-                link.key == null ? "primary" : link.key;
+            String keyName = first(link.key, "primary");
             RolapSchema.PhysKey sourceKey = null;
             if (sourceTable == null) {
                 handler.warning(
@@ -459,7 +555,7 @@ public class RolapSchemaLoader {
                 List<RolapSchema.PhysColumn> targetColumnList =
                     new ArrayList<RolapSchema.PhysColumn>();
                 for (MondrianDef.Column foreignKeyColumn
-                    : link.foreignKey.columns)
+                    : link.foreignKey.array)
                 {
                     if (foreignKeyColumn.table != null
                         && !foreignKeyColumn.table.equals(link.target))
@@ -504,7 +600,7 @@ public class RolapSchemaLoader {
             {
                 continue;
             }
-            schema.resolve(physSchema, unresolvedColumn);
+            schema.resolve(this, physSchema, unresolvedColumn);
         }
 
         // Add links to the schema now their columns have been resolved.
@@ -619,10 +715,11 @@ public class RolapSchemaLoader {
         }
 
         // Read columns from JDBC.
-        physTable.ensurePopulated(schema, table);
+        physTable.ensurePopulated(this, table);
 
-        registerKey(
-            handler, table.getKey(), unresolvedColumnList, physTable);
+        for (MondrianDef.Key key : table.getKeys()) {
+            registerKey(handler, key, unresolvedColumnList, physTable);
+        }
         return physTable;
     }
 
@@ -651,7 +748,7 @@ public class RolapSchemaLoader {
             physTable.addKey(
                 keyName, new ArrayList<RolapSchema.PhysColumn>());
         int i = 0;
-        for (MondrianDef.Column columnRef : xmlKey.columns) {
+        for (MondrianDef.Column columnRef : xmlKey.array) {
             final int index = i++;
             final RolapSchema.UnresolvedColumn unresolvedColumn =
                 new RolapSchema.UnresolvedColumn(
@@ -677,7 +774,9 @@ public class RolapSchemaLoader {
         }
         if (key.columnList.size() != 1) {
             handler.warning(
-                "Key must have precisely one column; in table '"
+                "Key must have precisely one column; key "
+                + key.columnList
+                + " in table '"
                 + physTable.alias + "'.",
                 xmlKey,
                 null);
@@ -712,16 +811,13 @@ public class RolapSchemaLoader {
                     column,
                     null);
             } else {
-                RolapSchema.PhysColumn physColumn =
+                physInlineTable.addColumn(
                     new RolapSchema.PhysRealColumn(
                         physInlineTable,
                         column.name,
                         toType(column.type),
                         toInternalType(column.internalType),
-                        -1);
-                physInlineTable.columnsByName.put(
-                    column.name,
-                    physColumn);
+                        -1));
             }
             return;
         }
@@ -781,12 +877,11 @@ public class RolapSchemaLoader {
                     list.add(unresolvedColumn);
                     unresolvedColumnList.add(unresolvedColumn);
                 } else {
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException(
+                        "illegal expression: " + child);
                 }
             }
-            physTable.columnsByName.put(
-                column.name,
-                physCalcColumn);
+            physTable.addColumn(physCalcColumn);
         } else {
             // Check that column exists; throw if not.
             RolapSchema.PhysColumn physColumn =
@@ -836,7 +931,7 @@ public class RolapSchemaLoader {
         final MondrianDef.Cube xmlCube = validator.getXml(cube);
         final NamedList<MondrianDef.Dimension> xmlCubeDimensions =
             xmlCube.getDimensions();
-        int ordinal = cube.getDimensions().length;
+        int ordinal = cube.getDimensionList().size();
         for (MondrianDef.Dimension xmlCubeDimension : xmlCubeDimensions) {
             // Look up usages of shared dimensions in the schema before
             // consulting the XML schema (which may be null).
@@ -860,32 +955,28 @@ public class RolapSchemaLoader {
 
         // Initialize dimensions before measure groups. (Measure groups contain
         // dimension links, and these reference dimensions.)
-        for (Dimension dimension : cube.getDimensions()) {
+        for (RolapCubeDimension dimension : cube.getDimensionList()) {
             if (dimension.isMeasures()) {
                 // already initialized
                 continue;
             }
-            final RolapCubeDimension rolapDimension =
-                (RolapCubeDimension) dimension;
-            initDimension(rolapDimension);
+            initDimension(dimension);
         }
 
         final NamedList<MondrianDef.MeasureGroup> xmlMeasureGroups =
             xmlCube.getMeasureGroups();
         if (xmlMeasureGroups.size() == 0) {
-            schema.warning(
+            handler.warning(
                 "Cube definition must contain MeasureGroups element, and at least one MeasureGroup",
                 xmlCube,
                 null);
         }
 
         List<RolapMember> measureList = new ArrayList<RolapMember>();
-        Member defaultMeasure = null;
-
         final Set<String> measureGroupNames = new HashSet<String>();
         for (MondrianDef.MeasureGroup xmlMeasureGroup : xmlMeasureGroups) {
             if (!measureGroupNames.add(xmlMeasureGroup.name)) {
-                schema.warning(
+                handler.warning(
                     "Duplicate measure group '" + xmlMeasureGroup.name
                     + "' in cube '" + cube.getName() + "'",
                     xmlMeasureGroup,
@@ -896,7 +987,7 @@ public class RolapSchemaLoader {
                 this.physSchemaBuilder.getPhysRelation(
                     xmlMeasureGroup.table, false);
             if (fact == null) {
-                schema.warning(
+                handler.warning(
                     "Unknown fact table '" + xmlMeasureGroup.table + "'",
                     xmlMeasureGroup,
                     "table");
@@ -924,9 +1015,6 @@ public class RolapSchemaLoader {
                 final RolapBaseCubeMeasure measure =
                     createMeasure(
                         measureGroup, xmlMeasure, relation);
-                if (Util.equalName(measure.getName(), xmlCube.defaultMeasure)) {
-                    defaultMeasure = measure;
-                }
                 if (measure.getOrdinal() == -1) {
                     measure.setOrdinal(measureList.size());
                 }
@@ -955,7 +1043,7 @@ public class RolapSchemaLoader {
                     new MondrianDef.Measure();
                 xmlMeasure.aggregator = "count";
                 xmlMeasure.name = "Fact Count";
-                xmlMeasure.visible = false;
+                xmlMeasure.visible = Boolean.FALSE;
                 RolapSchema.PhysRelation relation =
                     xmlMeasureGroup.table == null
                         ? null
@@ -966,6 +1054,10 @@ public class RolapSchemaLoader {
                 measureList.add(measureGroup.factCountMeasure);
             }
 
+            final Set<RolapCubeDimension> unlinkedDimensions =
+                new HashSet<RolapCubeDimension>(
+                    cube.getDimensionList());
+            unlinkedDimensions.remove(cube.getDimensionList().get(0));
             for (MondrianDef.DimensionLink xmlDimensionLink
                 : xmlMeasureGroup.getDimensionLinks())
             {
@@ -976,16 +1068,14 @@ public class RolapSchemaLoader {
                         xmlSchema.getDimensions().get(
                             xmlDimensionLink.dimension);
                     if (xmlSchemaDimension != null) {
-                        schema.warning(
+                        handler.warning(
                             "Dimension '" + xmlDimensionLink.dimension
                             + "' not found in this cube, but there is a schema "
                             + "dimension of that name. Did you intend to "
                             + "create cube dimension referring to that schema "
-                            + "dimension?",
-                            xmlDimensionLink,
-                            "dimension");
+                            + "dimension?", xmlDimensionLink, "dimension");
                     } else {
-                        schema.warning(
+                        handler.warning(
                             "Dimension '" + xmlDimensionLink.dimension
                             + "' not found",
                             xmlDimensionLink,
@@ -993,29 +1083,56 @@ public class RolapSchemaLoader {
                     }
                     continue;
                 }
+                if (!unlinkedDimensions.remove(dimension)) {
+                    handler.warning(
+                        "More than one link for dimension '"
+                        + xmlDimensionLink.dimension
+                        + "' in measure group '"
+                        + xmlMeasureGroup.name
+                        + "'",
+                        xmlDimensionLink,
+                        "dimension");
+                }
                 if (xmlDimensionLink
-                    instanceof MondrianDef.RegularDimensionLink)
+                    instanceof MondrianDef.ForeignKeyLink)
                 {
                     addRegularLink(
                         fact,
                         measureGroup,
                         dimension,
-                        (MondrianDef.RegularDimensionLink)
+                        (MondrianDef.ForeignKeyLink)
                             xmlDimensionLink);
                 } else if (xmlDimensionLink
-                    instanceof MondrianDef.FactDimensionLink)
+                    instanceof MondrianDef.FactLink)
                 {
                     addFactLink(
                         measureGroup,
                         dimension);
+                } else if (xmlDimensionLink
+                    instanceof MondrianDef.ReferenceLink)
+                {
+                    // TODO: implement
+                } else if (xmlDimensionLink
+                    instanceof MondrianDef.NoLink)
+                {
+                    // safe to ignore dimension
                 } else {
                     throw Util.newInternal(
                         "Unknown link type " + xmlDimensionLink);
                 }
             }
+
+            for (RolapCubeDimension dimension : unlinkedDimensions) {
+                missingLinkAction.handle(
+                    handler,
+                    "No link for dimension '" + dimension.getName()
+                    + "' in measure group '" + measureGroup.getName() + "'",
+                    xmlMeasureGroup,
+                    null);
+            }
         }
 
-        cube.init(measureList, defaultMeasure);
+        cube.init(measureList, measureList.get(0));
 
 //        // Check that every stored measure belongs to its measure group.
 //        List<RolapCubeHierarchy.RolapCubeStoredMeasure> storedMeasures =
@@ -1100,6 +1217,20 @@ public class RolapSchemaLoader {
             cube,
             true);
 
+        if (xmlCube.defaultMeasure != null) {
+            final RolapMember defaultMeasure =
+                findMeasure(measureList, xmlCube.defaultMeasure);
+            if (defaultMeasure == null) {
+                handler.error(
+                    "Default measure '" + xmlCube.defaultMeasure
+                    + "' not found",
+                    xmlCube,
+                    "defaultMeasure");
+            } else {
+                cube.getMeasuresHierarchy().setDefaultMember(defaultMeasure);
+            }
+        }
+
         checkOrdinals(cube.getName(), measureList);
         if (Util.deprecated(false, false)) {
             cube.setAggGroup(
@@ -1108,12 +1239,23 @@ public class RolapSchemaLoader {
         }
     }
 
+    private static RolapMember findMeasure(
+        List<RolapMember> memberList, String name)
+    {
+        for (RolapMember member : memberList) {
+            if (Util.equalName(member.getName(), name)) {
+                return member;
+            }
+        }
+        return null;
+    }
+
     private void registerDimension(
         RolapMeasureGroup measureGroup,
         RolapCubeDimension dimension,
         RolapSchema.PhysPath path)
     {
-        for (RolapHierarchy hierarchy : dimension.getRolapHierarchyList()) {
+        for (RolapHierarchy hierarchy : dimension.getHierarchyList()) {
             registerHierarchy(measureGroup, hierarchy);
         }
         for (RolapAttribute attribute : dimension.attributeMap.values()) {
@@ -1125,7 +1267,7 @@ public class RolapSchemaLoader {
         RolapMeasureGroup measureGroup,
         RolapHierarchy hierarchy)
     {
-        for (RolapLevel level : hierarchy.getRolapLevelList()) {
+        for (RolapLevel level : hierarchy.getLevelList()) {
             registerLevel(measureGroup, level);
         }
     }
@@ -1276,7 +1418,7 @@ public class RolapSchemaLoader {
             aggregator, measureExp, measureGroup.getFactRelation(),
             relationSet);
         if (relationSet.size() != 1) {
-            schema.error(
+            handler.error(
                 "Measure '" + xmlMeasure.name
                 + "' must belong to one and only one relation",
                 xmlMeasure,
@@ -1297,7 +1439,7 @@ public class RolapSchemaLoader {
                 Dialect.Datatype.class,
                 xmlMeasure.datatype);
             if (specifiedDatatype == null) {
-                schema.error(
+                handler.error(
                     "Invalid datatype '" + xmlMeasure.datatype + "'",
                     xmlMeasure,
                     "datatype");
@@ -1307,7 +1449,7 @@ public class RolapSchemaLoader {
             && datatype != null
             && specifiedDatatype != datatype)
         {
-            schema.error(
+            handler.error(
                 "Datatype '" + datatype + "' of measure '" + xmlMeasure.name
                 + "' is inconsistent with stated datatype '"
                 + specifiedDatatype + "'",
@@ -1316,7 +1458,7 @@ public class RolapSchemaLoader {
         }
         if (datatype == null) {
             if (specifiedDatatype == null) {
-                schema.error(
+                handler.error(
                     "Datatype of measure '" + xmlMeasure.name
                     + "' cannot be derived, so must be specified",
                     xmlMeasure,
@@ -1337,8 +1479,7 @@ public class RolapSchemaLoader {
                 measureGroup,
                 null,
                 measureGroup.getCube()
-                    .getHierarchies().get(0)
-                    .getRolapLevelList().get(0),
+                    .getHierarchyList().get(0).getLevelList().get(0),
                 xmlMeasure.name,
                 xmlMeasure.caption,
                 xmlMeasure.description,
@@ -1384,10 +1525,7 @@ public class RolapSchemaLoader {
         }
 
         // Set member's visibility, default true.
-        Boolean visible = xmlMeasure.visible;
-        if (visible == null) {
-            visible = Boolean.TRUE;
-        }
+        final boolean visible = toBoolean(xmlMeasure.visible, true);
         measure.setProperty(Property.VISIBLE.name, visible);
 
         List<String> propNames = new ArrayList<String>();
@@ -1458,23 +1596,22 @@ public class RolapSchemaLoader {
         RolapSchema.PhysRelation fact,
         RolapMeasureGroup measureGroup,
         RolapCubeDimension dimension,
-        MondrianDef.RegularDimensionLink xmlRegularDimensionLink)
+        MondrianDef.ForeignKeyLink xmlForeignKeyLink)
     {
         final List<RolapSchema.PhysColumn> foreignKeyList =
             createColumnList(
-                xmlRegularDimensionLink,
+                xmlForeignKeyLink,
                 "foreignKeyColumn",
                 fact,
-                xmlRegularDimensionLink.foreignKeyColumn,
-                xmlRegularDimensionLink.foreignKey);
+                xmlForeignKeyLink.foreignKeyColumn,
+                xmlForeignKeyLink.foreignKey);
 
         if (dimension.rolapDimension.keyAttribute == null) {
             getHandler().error(
                 "Dimension '"
                 + dimension.getName()
                 + "' is used in a dimension link but has no key attribute. Please "
-                + "specify key.",
-                xmlRegularDimensionLink,
+                + "specify key.", xmlForeignKeyLink,
                 null);
             return;
         }
@@ -1483,12 +1620,12 @@ public class RolapSchemaLoader {
             dimension.rolapDimension.keyAttribute.keyList;
 
         if (foreignKeyList.size() != keyList.size()) {
-            schema.error(
+            handler.error(
                 "Number of foreign key columns "
                 + foreignKeyList.size()
                 + " does not match number of key columns "
                 + keyList.size(),
-                xmlRegularDimensionLink.foreignKey,
+                xmlForeignKeyLink.foreignKey,
                 null);
         }
 
@@ -1499,7 +1636,7 @@ public class RolapSchemaLoader {
         Set<RolapSchema.PhysRelation> relations =
             new HashSet<RolapSchema.PhysRelation>();
         for (MondrianDef.Column xmlColumn
-            : xmlRegularDimensionLink.key.columns)
+            : xmlForeignKeyLink.key.columns)
         {
             if (xmlColumn.table == null) {
                 schema.error(
@@ -1532,7 +1669,7 @@ public class RolapSchemaLoader {
         if (relations.size() != 1) {
             schema.error(
                 "foreign key columns come from different relations",
-                schema.locate(xmlRegularDimensionLink.foreignKey, null),
+                schema.locate(xmlForeignKeyLink.foreignKey, null),
                 null);
         }
         RolapSchema.PhysKey key =
@@ -1544,7 +1681,7 @@ public class RolapSchemaLoader {
         List<RolapSchema.PhysColumn> foreignKeyColumnList =
             new ArrayList<RolapSchema.PhysColumn>();
         for (MondrianDef.Column xmlColumn
-            : xmlRegularDimensionLink.foreignKey.columns)
+            : xmlForeignKeyLink.foreignKey.columns)
         {
             if (xmlColumn.table != null
                 && !xmlColumn.table.equals(
@@ -1574,7 +1711,7 @@ public class RolapSchemaLoader {
         if (keyColumnList.size() != foreignKeyColumnList.size()) {
             schema.error(
                 "Column count mismatch",
-                schema.locate(xmlRegularDimensionLink, null),
+                schema.locate(xmlForeignKeyLink, null),
                 null);
             return;
         }
@@ -1756,7 +1893,7 @@ public class RolapSchemaLoader {
                 xmlCubeDimension,
                 schema,
                 xmlSchema,
-                cube.getDimensions().length,
+                cube.getDimensionList().size(),
                 cube.hierarchyList,
                 createAnnotationMap(
                     xmlCubeDimension.getAnnotations()));
@@ -1837,7 +1974,7 @@ public class RolapSchemaLoader {
             new RolapDimension(
                 schema,
                 xmlDimension.name,
-                xmlDimension.visible,
+                toBoolean(xmlDimension.visible, true),
                 xmlDimension.caption,
                 xmlDimension.description,
                 dimensionType,
@@ -1878,7 +2015,7 @@ public class RolapSchemaLoader {
                 }
             }
 
-            if (xmlAttribute.hasHierarchy) {
+            if (toBoolean(xmlAttribute.hasHierarchy, false)) {
                 ++attributeHierarchyCount;
             }
 
@@ -1929,27 +2066,30 @@ public class RolapSchemaLoader {
                     public RolapSchema.PhysKey apply() {
                         return lookupKey(
                             xmlDimension,
-                            dimension);
+                            dimension,
+                            true);
                     }
                 }
             );
 
         for (MondrianDef.Hierarchy xmlHierarchy : xmlDimension.getHierarchies())
         {
+            // If hierarchy is not named, name is same as dimension.
+            String hierarchyName = first(xmlHierarchy.name, xmlDimension.name);
             final String uniqueName =
                 xmlDimension.getHierarchies().size() == 1
-                && xmlHierarchy.name.equals(xmlDimension.name)
+                && hierarchyName.equals(xmlDimension.name)
                     ? dimension.getUniqueName()
-                    : Util.makeFqName(dimension, xmlHierarchy.name);
+                    : Util.makeFqName(dimension, hierarchyName);
             RolapHierarchy hierarchy =
                 new RolapHierarchy(
                     dimension,
-                    xmlHierarchy.name,
+                    hierarchyName,
                     uniqueName,
-                    xmlHierarchy.visible,
+                    toBoolean(xmlHierarchy.visible, true),
                     xmlHierarchy.caption,
                     xmlHierarchy.description,
-                    xmlHierarchy.hasAll == null || xmlHierarchy.hasAll,
+                    toBoolean(xmlHierarchy.hasAll, true),
                     null,
                     createAnnotationMap(xmlHierarchy.getAnnotations()));
             validator.putXml(hierarchy, xmlHierarchy);
@@ -1980,15 +2120,18 @@ public class RolapSchemaLoader {
                     createLevel(
                         hierarchy, hierarchy.levelList.size(), xmlLevel));
             }
+            hierarchy.init2(
+                this,
+                xmlHierarchy.defaultMember);
         }
 
         for (RolapAttribute attribute : attributeList) {
             final MondrianDef.Attribute xmlAttribute =
                 validator.getXml(attribute, true);
-            if (xmlAttribute.hasHierarchy == null
-                ? countHierarchies(dimension.getRolapHierarchyList(), attribute)
-                  == 0
-                : xmlAttribute.hasHierarchy)
+            if (toBoolean(
+                    xmlAttribute.hasHierarchy,
+                    countHierarchies(
+                        dimension.getHierarchyList(), attribute) == 0))
             {
                 // Create attribute hierarchy.
                 final String uniqueName =
@@ -1998,7 +2141,7 @@ public class RolapSchemaLoader {
                         dimension,
                         xmlAttribute.name,
                         uniqueName,
-                        xmlAttribute.visible,
+                        toBoolean(xmlAttribute.visible, true),
                         xmlAttribute.caption,
                         xmlAttribute.description,
                         true, // REVIEW: add Attribute@hierarchyHasAll?
@@ -2017,13 +2160,16 @@ public class RolapSchemaLoader {
                     new RolapLevel(
                         hierarchy,
                         xmlAttribute.name,
-                        xmlAttribute.visible,
+                        toBoolean(xmlAttribute.visible, true),
                         xmlAttribute.caption,
                         xmlAttribute.description,
                         hierarchy.hasAll() ? 1 : 0,
                         attribute,
                         RolapLevel.HideMemberCondition.Never,
                         Collections.<String, Annotation>emptyMap()));
+                hierarchy.init2(
+                    this,
+                    null);
             }
         }
 
@@ -2064,6 +2210,10 @@ public class RolapSchemaLoader {
         return cubeDimension;
     }
 
+    public static boolean toBoolean(Boolean aBoolean, boolean dflt) {
+        return aBoolean == null ? dflt : aBoolean;
+    }
+
     /**
      * Returns the number of hierarchies that a given attribute appears as a
      * level of.
@@ -2073,11 +2223,11 @@ public class RolapSchemaLoader {
      * @return number of levels using attribute
      */
     private int countHierarchies(
-        List<RolapHierarchy> hierarchyList, RolapAttribute attribute)
+        List<? extends RolapHierarchy> hierarchyList, RolapAttribute attribute)
     {
         int n = 0;
         for (RolapHierarchy hierarchy : hierarchyList) {
-            for (RolapLevel level : hierarchy.getRolapLevelList()) {
+            for (RolapLevel level : hierarchy.getLevelList()) {
                 if (level.attribute == attribute) {
                     ++n;
                 }
@@ -2103,12 +2253,15 @@ public class RolapSchemaLoader {
      * dimensions are degenerate (i.e. reside in fact table) and so do not need
      * a key.</p>
      *
+     * @param xmlDimension Dimension XML element
      * @param dimension Dimension
+     * @param create Whether to create a key if not found
      * @return Key, or null if not found
      */
     private RolapSchema.PhysKey lookupKey(
         MondrianDef.Dimension xmlDimension,
-        RolapDimension dimension)
+        RolapDimension dimension,
+        boolean create)
     {
         // Find the unique relation of the attribute's list of key columns.
         final RolapSchema.PhysRelation relation = uniqueRelation(dimension);
@@ -2119,6 +2272,11 @@ public class RolapSchemaLoader {
             if (key.columnList.equals(dimension.keyAttribute.keyList)) {
                 return key;
             }
+        }
+        if (create) {
+            return relation.addKey(
+                "k$" + relation.getKeyList().size(),
+                dimension.keyAttribute.keyList);
         }
         getHandler().error(
             "The columns of dimension's key attribute do not match "
@@ -2143,15 +2301,15 @@ public class RolapSchemaLoader {
         RolapDimension dimension)
     {
         final DimensionType dimensionType = dimension.getDimensionType();
-        for (RolapHierarchy hierarchy : dimension.getRolapHierarchyList()) {
-            for (RolapLevel level : hierarchy.getRolapLevelList()) {
+        for (RolapHierarchy hierarchy : dimension.getHierarchyList()) {
+            for (RolapLevel level : hierarchy.getLevelList()) {
                 if (level.getLevelType().isTime()
                     && dimensionType != DimensionType.TimeDimension)
                 {
                     getHandler().error(
                         MondrianResource.instance().TimeLevelInNonTimeHierarchy
                             .ex(dimension.getUniqueName()),
-                        validator.getXml(level),
+                        validator.getXmls(level, hierarchy, dimension),
                         null);
                 }
                 if (!level.getLevelType().isTime()
@@ -2161,7 +2319,7 @@ public class RolapSchemaLoader {
                     getHandler().error(
                         MondrianResource.instance().NonTimeLevelInTimeHierarchy
                             .ex(dimension.getUniqueName()),
-                        validator.getXml(level),
+                        validator.getXmls(level, hierarchy, dimension),
                         null);
                 }
             }
@@ -2169,11 +2327,10 @@ public class RolapSchemaLoader {
     }
 
     /**
-     * Initializes a dimension.
+     * Initializes a dimension within the context of a cube.
      */
-    void initDimension(RolapDimension dimension)
-    {
-        for (RolapHierarchy hierarchy : dimension.getRolapHierarchyList()) {
+    void initDimension(RolapCubeDimension dimension) {
+        for (RolapCubeHierarchy hierarchy : dimension.getHierarchyList()) {
             initHierarchy(hierarchy);
         }
     }
@@ -2181,15 +2338,14 @@ public class RolapSchemaLoader {
     /**
      * Initializes a hierarchy within the context of a cube.
      */
-    void initHierarchy(
-        RolapHierarchy hierarchy)
-    {
+    void initHierarchy(RolapCubeHierarchy hierarchy) {
         hierarchy.init1(this, null);
-        for (RolapLevel level : hierarchy.getRolapLevelList()) {
+        for (RolapCubeLevel level : hierarchy.getLevelList()) {
             initLevel(level);
         }
         final MondrianDef.Hierarchy xmlHierarchy =
-            (MondrianDef.Hierarchy) validator.getXml(hierarchy, false);
+            (MondrianDef.Hierarchy) validator.getXml(
+                hierarchy.getRolapHierarchy(), false);
         hierarchy.init2(
             this,
             xmlHierarchy == null
@@ -2304,7 +2460,7 @@ public class RolapSchemaLoader {
         final RolapAttribute attribute =
             new RolapAttribute(
                 xmlAttribute.name,
-                xmlAttribute.visible,
+                toBoolean(xmlAttribute.visible, true),
                 xmlAttribute.caption,
                 xmlAttribute.description,
                 keyList,
@@ -2336,7 +2492,7 @@ public class RolapSchemaLoader {
     }
 
     public Handler getHandler() {
-        return schema;
+        return handler;
     }
 
     RolapLevel createLevel(
@@ -2368,7 +2524,7 @@ public class RolapSchemaLoader {
             new RolapLevel(
                 hierarchy,
                 first(xmlLevel.name, xmlLevel.attribute),
-                xmlLevel.visible,
+                toBoolean(xmlLevel.visible, true),
                 xmlLevel.caption,
                 xmlLevel.description,
                 depth,
@@ -2460,17 +2616,17 @@ public class RolapSchemaLoader {
         String attributeName,
         RolapSchema.PhysRelation table,
         String columnName,
-        MondrianDef.Columns xmlKey)
+        MondrianDef.Columns xmlColumns)
     {
         if (columnName != null) {
-            if (xmlKey != null) {
+            if (xmlColumns != null) {
                 // Post an error, and coninue, ignoring xmlKey.
                 getHandler().error(
                     "must not specify both "
                     + attributeName
                     + " and "
-                    + xmlKey.getName(),
-                    xmlKey,
+                    + xmlColumns.getName(),
+                    xmlColumns,
                     null);
             }
             if (table == null) {
@@ -2486,8 +2642,8 @@ public class RolapSchemaLoader {
         }
         final List<RolapSchema.PhysColumn> list =
             new ArrayList<RolapSchema.PhysColumn>();
-        if (xmlKey != null) {
-            for (MondrianDef.Column xmlColumn : xmlKey.columns) {
+        if (xmlColumns != null) {
+            for (MondrianDef.Column xmlColumn : xmlColumns.array) {
                 list.add(
                     getPhysColumn(
                         last(table, xmlColumn.table, xmlColumn, "table"),
@@ -2707,7 +2863,7 @@ public class RolapSchemaLoader {
         final DataSource dataSource)
     {
         final RolapSchemaLoader schemaLoader = new RolapSchemaLoader(null);
-        return schemaLoader.load(
+        return schemaLoader.loadStage0(
             key, md5Bytes, catalogUrl, catalogStr, connectInfo, dataSource);
     }
 
@@ -2737,14 +2893,13 @@ public class RolapSchemaLoader {
         MondrianDef.Role xmlRole,
         Map<String, Role> mapNameToRole)
     {
-        if (xmlRole.union != null) {
-            if (xmlRole.schemaGrants != null
-                && xmlRole.schemaGrants.length > 0)
-            {
+        final MondrianDef.Union xmlUnion = xmlRole.getUnion();
+        if (xmlUnion != null) {
+            if (xmlRole.getSchemaGrants().size() > 0) {
                 throw MondrianResource.instance().RoleUnionGrants.ex();
             }
             List<Role> roleList = new ArrayList<Role>();
-            for (MondrianDef.RoleUsage roleUsage : xmlRole.union.roleUsages) {
+            for (MondrianDef.RoleUsage roleUsage : xmlUnion.roleUsages) {
                 final Role role = mapNameToRole.get(roleUsage.roleName);
                 if (role == null) {
                     throw MondrianResource.instance().UnknownRole.ex(
@@ -2755,7 +2910,7 @@ public class RolapSchemaLoader {
             return RoleImpl.union(roleList);
         }
         RoleImpl role = new RoleImpl();
-        for (MondrianDef.SchemaGrant schemaGrant : xmlRole.schemaGrants) {
+        for (MondrianDef.SchemaGrant schemaGrant : xmlRole.getSchemaGrants()) {
             role.grant(schema, getAccess(schemaGrant.access, schemaAllowed));
             for (MondrianDef.CubeGrant cubeGrant : schemaGrant.cubeGrants) {
                 RolapCube cube = schema.lookupCube(cubeGrant.cube);
@@ -2922,7 +3077,7 @@ public class RolapSchemaLoader {
                     new RolapCube(
                         schema,
                         xmlCube.name,
-                        xmlCube.visible,
+                        toBoolean(xmlCube.visible, true),
                         xmlCube.caption,
                         xmlCube.description,
                         createAnnotationMap(xmlCube.getAnnotations()),
@@ -2961,7 +3116,7 @@ public class RolapSchemaLoader {
      * @param cube the cube that the calculated members originate from
      * @param errOnDups throws an error if a duplicate member is found
      */
-    private void createCalcMembersAndNamedSets(
+    void createCalcMembersAndNamedSets(
         List<MondrianDef.CalculatedMember> xmlCalcMembers,
         List<MondrianDef.NamedSet> xmlNamedSets,
         List<RolapMember> memberList,
@@ -3125,10 +3280,7 @@ public class RolapSchemaLoader {
         calculatedMemberList.add(formula);
 
         final RolapMember member = (RolapMember) formula.getMdxMember();
-        Boolean visible = xmlCalcMember.visible;
-        if (visible == null) {
-            visible = Boolean.TRUE;
-        }
+        boolean visible = toBoolean(xmlCalcMember.visible, true);
         member.setProperty(Property.VISIBLE.name, visible);
 
         if (xmlCalcMember.caption != null
@@ -3657,143 +3809,20 @@ public class RolapSchemaLoader {
     }
 
     static class PhysSchemaBuilder {
-        final RolapCube cube;
+        final RolapSchemaLoader loader;
+        RolapCube cube;
         final RolapSchema.PhysSchema physSchema;
         private int nextId = 0;
-        private Map<String, DimensionLink> dimensionLinks =
+        Map<String, DimensionLink> dimensionLinks =
             new HashMap<String, DimensionLink>();
 
         PhysSchemaBuilder(
-            RolapCube cube,
+            RolapSchemaLoader loader,
             RolapSchema.PhysSchema physSchema)
         {
             assert physSchema != null;
-            this.cube = cube;
+            this.loader = loader;
             this.physSchema = physSchema;
-        }
-
-        /**
-         * Converts an xml relation to a physical table, creating if necessary.
-         * For legacy schema support.
-         *
-         * @param xmlRelation XML relation
-         * @return Physical table
-         */
-        RolapSchema.PhysRelation toPhysRelation(
-            final MondrianDef.Relation xmlRelation)
-        {
-            final String alias = xmlRelation.getAlias();
-            RolapSchema.PhysRelation physRelation =
-                physSchema.tablesByName.get(alias);
-            if (physRelation == null) {
-                if (xmlRelation instanceof MondrianDef.Table) {
-                    MondrianDef.Table xmlTable =
-                        (MondrianDef.Table) xmlRelation;
-                    final RolapSchema.PhysTable physTable =
-                        new RolapSchema.PhysTable(
-                            physSchema,
-                            xmlTable.schema,
-                            xmlTable.name,
-                            alias,
-                            buildHintMap(xmlTable.getHints()));
-                    // Read columns from JDBC.
-                    physTable.ensurePopulated(
-                        cube.getSchema(),
-                        xmlTable);
-                    physRelation = physTable;
-                } else if (xmlRelation instanceof Mondrian3Def.InlineTable) {
-                    final Mondrian3Def.InlineTable xmlInlineTable =
-                        (Mondrian3Def.InlineTable) xmlRelation;
-                    RolapSchema.PhysInlineTable physInlineTable =
-                        new RolapSchema.PhysInlineTable(
-                            physSchema,
-                            alias);
-                    for (Mondrian3Def.RealOrCalcColumnDef columnDef
-                        : xmlInlineTable.columnDefs.array)
-                    {
-                        physInlineTable.columnsByName.put(
-                            columnDef.name,
-                            new RolapSchema.PhysRealColumn(
-                                physInlineTable,
-                                columnDef.name,
-                                Dialect.Datatype.valueOf(columnDef.type),
-                                null,
-                                4));
-                    }
-                    final int columnCount =
-                        physInlineTable.columnsByName.size();
-                    for (Mondrian3Def.Row row : xmlInlineTable.rows.array) {
-                        String[] values = new String[columnCount];
-                        for (Mondrian3Def.Value value : row.values) {
-                            int columnOrdinal = 0;
-                            for (String columnName
-                                : physInlineTable.columnsByName.keySet())
-                            {
-                                if (columnName.equals(value.column)) {
-                                    break;
-                                }
-                                ++columnOrdinal;
-                            }
-                            if (columnOrdinal >= columnCount) {
-                                throw Util.newError(
-                                    "Unknown column '" + value.column + "'");
-                            }
-                            values[columnOrdinal] = value.cdata;
-                        }
-                        physInlineTable.rowList.add(values);
-                    }
-                    if (true) {
-                        final RolapSchema.PhysView physView =
-                            RolapUtil.convertInlineTableToRelation(
-                                physInlineTable, physSchema.dialect);
-                        physView.ensurePopulated(
-                            cube.getSchema(),
-                            xmlInlineTable);
-                        physRelation = physView;
-                    } else {
-                        physRelation = physInlineTable;
-                    }
-                } else if (xmlRelation instanceof Mondrian3Def.View) {
-                    final Mondrian3Def.View xmlView =
-                        (Mondrian3Def.View) xmlRelation;
-                    final Mondrian3Def.SQL sql =
-                        Mondrian3Def.SQL.choose(
-                            xmlView.selects,
-                            cube.getSchema().getDialect());
-                    final RolapSchema.PhysView physView =
-                        new RolapSchema.PhysView(
-                            alias, physSchema, getText(sql));
-                    physView.ensurePopulated(
-                        cube.getSchema(),
-                        xmlView);
-                    physRelation = physView;
-                } else {
-                    throw Util.needToImplement(
-                        "translate xml table to phys table for table type"
-                            + xmlRelation.getClass());
-                }
-                physSchema.tablesByName.put(alias, physRelation);
-            }
-            assert physRelation.getSchema() == physSchema;
-            return physRelation;
-        }
-
-        private String getText(Mondrian3Def.SQL sql) {
-            final StringBuilder buf = new StringBuilder();
-            for (NodeDef child : sql.children) {
-                if (child instanceof TextDef) {
-                    TextDef textDef = (TextDef) child;
-                    buf.append(textDef.s);
-                }
-            }
-            return buf.toString();
-        }
-
-        RolapSchema.PhysExpr toPhysExpr(
-            MondrianDef.Relation relation,
-            MondrianDef.Expression exp)
-        {
-            return toPhysExpr(toPhysRelation(relation), exp);
         }
 
         /**
@@ -3814,11 +3843,7 @@ public class RolapSchemaLoader {
             } else if (exp instanceof MondrianDef.ExpressionView) {
                 final MondrianDef.ExpressionView expressionView =
                     (MondrianDef.ExpressionView) exp;
-                final MondrianDef.SQL sql =
-                    MondrianDef.SQL.choose(
-                        expressionView.expressions,
-                        cube.getSchema().getDialect());
-                return toPhysExpr(physRelation, sql);
+                return toPhysExpr(physRelation, expressionView);
             } else if (exp instanceof MondrianDef.Column) {
                 MondrianDef.Column column = (MondrianDef.Column) exp;
                 if (column.table != null) {
@@ -3850,6 +3875,17 @@ public class RolapSchemaLoader {
                 throw Util.newInternal(
                     "Unknown expression type " + exp.getClass());
             }
+        }
+
+        RolapSchema.PhysExpr toPhysExpr(
+            RolapSchema.PhysRelation physRelation,
+            MondrianDef.ExpressionView xmlExpressionView)
+        {
+            final MondrianDef.SQL sql =
+                MondrianDef.SQL.choose(
+                    xmlExpressionView.expressions,
+                    physSchema.dialect);
+            return toPhysExpr(physRelation, sql);
         }
 
         RolapSchema.PhysExpr toPhysExpr(
@@ -3888,12 +3924,18 @@ public class RolapSchemaLoader {
                     return new RolapSchema.PhysCalcExpr(
                         list);
                 } else {
-                    return new RolapSchema.PhysCalcColumn(
-                        relationSet.iterator().next(),
-                        "$" + (nextId++),
-                        null,
-                        null,
-                        list);
+                    // TODO: embed expression in calc column
+                    final RolapSchema.PhysRelation relation =
+                        relationSet.iterator().next();
+                    final RolapSchema.PhysCalcColumn physCalcColumn =
+                        new RolapSchema.PhysCalcColumn(
+                            relation,
+                            "$" + (nextId++),
+                            null,
+                            null,
+                            list);
+                    relation.addColumn(physCalcColumn);
+                    return physCalcColumn;
                 }
             }
         }
@@ -3939,7 +3981,7 @@ public class RolapSchemaLoader {
          *    May be null if there are multiple relations to choose from
          * @param relationSet Set of relations to add to
          */
-        private static void collectRelations(
+        static void collectRelations(
             RolapSchema.PhysExpr expr,
             RolapSchema.PhysRelation defaultRelation,
             Set<RolapSchema.PhysRelation> relationSet)
@@ -3986,11 +4028,8 @@ public class RolapSchemaLoader {
                 return this.toPhysExpr(relation, exp);
             } else if (column != null) {
                 if (relation == null) {
-                    final RolapSchema schema = this.cube.getSchema();
-                    schema.error(
-                        "Table must be specified",
-                        exp,
-                        null);
+                    loader.getHandler().error(
+                        "Table must be specified", exp, null);
                     return this.dummyColumn(relation);
                 }
                 return this.toPhysColumn(relation, column);
@@ -4072,35 +4111,19 @@ public class RolapSchemaLoader {
         }
 
         public Handler getHandler() {
-            return cube.getSchema();
+            return loader.getHandler();
         }
 
-        private static class DimensionLink {
-            private final RolapCube cube;
-            private final String dimensionName;
-            private final RolapSchema.PhysRelation fact;
-            private final String foreignKey;
-            private final String primaryKeyTable;
-            private final String primaryKey;
-            private final boolean degenerate;
-
+        public static class DimensionLink extends MondrianDef.DimensionLink {
             public DimensionLink(
-                RolapCube cube,
-                String dimensionName,
+                RolapSchemaUpgrader schemaUpgrader,
+                String name,
                 RolapSchema.PhysRelation fact,
                 String foreignKey,
                 String primaryKeyTable,
                 String primaryKey,
                 boolean degenerate)
             {
-                Util.deprecated("not used -- remove?", true);
-                this.cube = cube;
-                this.dimensionName = dimensionName;
-                this.fact = fact;
-                this.foreignKey = foreignKey;
-                this.primaryKeyTable = primaryKeyTable;
-                this.primaryKey = primaryKey;
-                this.degenerate = degenerate;
             }
         }
     }
@@ -4140,11 +4163,47 @@ public class RolapSchemaLoader {
             return (T) xml;
         }
 
+        public <T extends NodeDef> T getXmls(Object... os) {
+            for (Object o1 : os) {
+                T t = this.<T>getXml(o1, false);
+                if (t != null) {
+                    return t;
+                }
+            }
+            return null;
+        }
+
         public void putXml(Object metaElement, NodeDef xml) {
             map.put(metaElement, xml);
         }
     }
 
+    enum MissingLinkAction {
+        IGNORE {
+            public void handle(
+                Handler handler, String message, NodeDef xml, String attr)
+            {
+                // do nothing
+            }
+        },
+        WARNING {
+            public void handle(
+                Handler handler, String message, NodeDef xml, String attr)
+            {
+                handler.warning(message, xml, attr);
+            }
+        },
+        ERROR {
+            public void handle(
+                Handler handler, String message, NodeDef xml, String attr)
+            {
+                handler.error(message, xml, attr);
+            }
+        };
+
+        public abstract void handle(
+            Handler handler, String message, NodeDef xml, String attr);
+    }
 }
 
 // End RolapSchemaLoader.java

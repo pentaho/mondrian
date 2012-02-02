@@ -3,14 +3,15 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2007 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
-import mondrian.rolap.*;
+import mondrian.rolap.RolapMember;
+import mondrian.rolap.RolapSchema;
 
 /**
  * Column constraint defined by a member.
@@ -31,14 +32,16 @@ public class MemberColumnPredicate
     /**
      * Creates a MemberColumnPredicate
      *
+     * @param router Resolves route to fact table
      * @param column Constrained column
      * @param member Member to constrain column to; must not be null
      */
     public MemberColumnPredicate(
+        RolapSchema.PhysRouter router,
         RolapSchema.PhysColumn column,
         RolapMember member)
     {
-        super(column, member.getKey());
+        super(router, column, member.getKey());
         this.member = member;
         assert column != null;
         assert column == member.getLevel().getAttribute().keyList.get(0);

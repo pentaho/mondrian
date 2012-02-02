@@ -43,6 +43,10 @@ public class DelegatingTestContext extends TestContext {
     }
 
     public String getCatalogContent() {
+        String schema = super.getCatalogContent();
+        if (schema != null) {
+            return schema;
+        }
         return context.getCatalogContent();
     }
 }

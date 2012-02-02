@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2009 Julian Hyde
+// Copyright (C) 2009-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -280,6 +280,35 @@ public class RolapMeasureGroup {
             cubeDimension, column);
         assert !(fail && starColumn == null);
         return starColumn;
+    }
+
+    /**
+     * Finds the path from the fact table of this measure group to a given
+     * column, by way of a joining dimension.
+     *
+     * <p>The dimension disambiguates if the same column is used twice, for
+     * example, if the 'year' column is used via two time dimensions.</p>
+     *
+     * @param cubeDimension Joining dimension
+     * @param column Physical column
+     * @return Path from fact table to physical column
+     */
+    public RolapSchema.PhysPath getPath(
+        RolapCubeDimension cubeDimension,
+        RolapSchema.PhysColumn column)
+    {
+        final RolapSchema.PhysPathBuilder pathBuilder =
+            new RolapSchema.PhysPathBuilder(
+                getPath(cubeDimension));
+        try {
+            column.relation.getSchema().getGraph().findPath(
+                pathBuilder, column.relation);
+        } catch (RolapSchema.PhysSchemaException e) {
+            throw new RuntimeException(
+                "Could not find path",
+                e);
+        }
+        return pathBuilder.done();
     }
 }
 

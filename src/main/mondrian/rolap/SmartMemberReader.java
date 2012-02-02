@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
@@ -92,7 +92,7 @@ public class SmartMemberReader implements MemberReader {
     public List<RolapMember> getMembers() {
         List<RolapMember> v = new ConcatenableList<RolapMember>();
         // todo: optimize by walking to children for members we know about
-        for (RolapLevel level : getHierarchy().getRolapLevelList()) {
+        for (RolapLevel level : getHierarchy().getLevelList()) {
             List<RolapMember> membersInLevel = getMembersInLevel(
                 level,
                 0,

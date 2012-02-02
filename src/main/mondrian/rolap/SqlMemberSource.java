@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -74,7 +74,7 @@ class SqlMemberSource
     // implement MemberSource
     public int getMemberCount() {
         int count = 0;
-        for (RolapLevel level : hierarchy.getRolapLevelList()) {
+        for (RolapLevel level : hierarchy.getLevelList()) {
             count += getLevelMemberCount(level);
         }
         return count;
@@ -305,7 +305,7 @@ class SqlMemberSource
                 }
 
                 RolapMember member = root;
-                for (RolapLevel level : hierarchy.getRolapLevelList()) {
+                for (RolapLevel level : hierarchy.getLevelList()) {
                     if (level.isAll()) {
                         continue;
                     }
@@ -429,7 +429,7 @@ class SqlMemberSource
                 "while generating query to retrieve members of " + hierarchy);
         final RolapSchema.SqlQueryBuilder queryBuilder =
             new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
-        for (RolapLevel level : hierarchy.getRolapLevelList()) {
+        for (RolapLevel level : hierarchy.getLevelList()) {
             for (RolapSchema.PhysColumn column : level.attribute.keyList) {
                 queryBuilder.asasdasd(column, Sgo.SELECT_GROUP);
             }
@@ -511,7 +511,7 @@ class SqlMemberSource
     // implement MemberSource
     public List<RolapMember> getRootMembers() {
         return getMembersInLevel(
-            hierarchy.getRolapLevelList().get(0), 0, Integer.MAX_VALUE);
+            hierarchy.getLevelList().get(0), 0, Integer.MAX_VALUE);
     }
 
     /**

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -50,8 +50,8 @@ public class Target extends TargetBase {
     }
 
     public void open() {
-        levels = level.getHierarchy().getRolapLevelList().toArray(
-            new RolapLevel[level.getHierarchy().getRolapLevelList().size()]);
+        levels = level.getHierarchy().getLevelList().toArray(
+            new RolapLevel[level.getHierarchy().getLevelList().size()]);
         // REVIEW: ArrayDeque is preferable to LinkedList (JDK1.6 and up) but it
         //   doesn't implement List, so we can't easily interoperate the two.
         setList(new LinkedList<RolapMember>());

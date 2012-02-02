@@ -18,6 +18,7 @@ import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.spi.SegmentColumn;
 import mondrian.util.ArraySortedSet;
+import mondrian.util.Pair;
 
 import org.eigenbase.util.property.BooleanProperty;
 
@@ -151,8 +152,8 @@ public class CacheControlImpl implements CacheControl {
     }
 
     public CellRegion createMeasuresRegion(Cube cube) {
-        Dimension measuresDimension = null;
-        for (Dimension dim : cube.getDimensions()) {
+        RolapCubeDimension measuresDimension = null;
+        for (RolapCubeDimension dim : ((RolapCube) cube).getDimensionList()) {
             if (dim.isMeasures()) {
                 measuresDimension = dim;
                 break;
@@ -439,6 +440,30 @@ public class CacheControlImpl implements CacheControl {
         return list;
     }
 
+    static Collection<RolapStar> getStars(CellRegion region) {
+        return findStars(region).left;
+    }
+
+    static Collection<RolapMeasureGroup> getMeasureGroups(CellRegion region) {
+        return findStars(region).right;
+    }
+
+    private static Pair<Set<RolapStar>, Set<RolapMeasureGroup>> findStars(
+        CellRegion region)
+    {
+        final Set<RolapStar> starList = new LinkedHashSet<RolapStar>();
+        final Set<RolapMeasureGroup> measureGroupSet =
+            new LinkedHashSet<RolapMeasureGroup>();
+        for (Member measure : findMeasures(region)) {
+            if (measure instanceof RolapStoredMeasure) {
+                RolapStoredMeasure storedMeasure = (RolapStoredMeasure) measure;
+                starList.add(storedMeasure.getStarMeasure().getStar());
+                measureGroupSet.add(storedMeasure.getMeasureGroup());
+            }
+        }
+        return Pair.of(starList, measureGroupSet);
+    }
+
     public static SegmentColumn[] findAxisValues(CellRegion region) {
         final List<SegmentColumn> list =
             new ArrayList<SegmentColumn>();
@@ -506,29 +531,11 @@ public class CacheControlImpl implements CacheControl {
         return list.toArray(new SegmentColumn[list.size()]);
     }
 
-    public static List<RolapStar> getStarList(CellRegion region) {
-        // Figure out which measure (therefore star) it belongs to.
-        List<RolapStar> starList = new ArrayList<RolapStar>();
-        final List<Member> measuresList = findMeasures(region);
-        for (Member measure : measuresList) {
-            if (measure instanceof RolapStoredMeasure) {
-                RolapStoredMeasure storedMeasure = (RolapStoredMeasure) measure;
-                final RolapStar.Measure starMeasure =
-                    (RolapStar.Measure) storedMeasure.getStarMeasure();
-                if (!starList.contains(starMeasure.getStar())) {
-                    starList.add(starMeasure.getStar());
-                }
-            }
-        }
-        return starList;
-    }
-
     public void printCacheState(
         final PrintWriter pw,
         CellRegion region)
     {
-        List<RolapStar> starList = getStarList(region);
-        for (RolapStar star : starList) {
+        for (RolapStar star : getStars(region)) {
             star.print(pw, "", false);
         }
         final SegmentCacheManager manager =

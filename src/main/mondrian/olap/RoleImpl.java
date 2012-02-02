@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2002-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -193,7 +193,7 @@ public class RoleImpl implements Role {
             // and the dimension has an access level of custom, we deny.
             // TODO Remove for Mondrian 4.0
             boolean canAccess = false;
-            for (Hierarchy hierarchy : dimension.getHierarchies()) {
+            for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                 final HierarchyAccessImpl hierarchyAccess =
                     hierarchyGrants.get(hierarchy);
                 if (hierarchyAccess != null
@@ -242,15 +242,14 @@ public class RoleImpl implements Role {
      * argument.
      */
     private Access checkDimensionAccessByCubeInheritance(Dimension dimension) {
-        assert dimensionGrants.containsKey(dimension) == false;
+        assert !dimensionGrants.containsKey(dimension);
         for (Map.Entry<Cube, Access> cubeGrant : cubeGrants.entrySet()) {
             final Access access = toAccess(cubeGrant.getValue());
             // The 'none' and 'custom' access level are not good enough
             if (access == Access.NONE || access == Access.CUSTOM) {
                 continue;
             }
-            final Dimension[] dimensions = cubeGrant.getKey().getDimensions();
-            for (Dimension dimension1 : dimensions) {
+            for (Dimension dimension1 : cubeGrant.getKey().getDimensionList()) {
                 // If the dimensions have the same identity,
                 // we found an access rule.
                 if (dimension == dimension1) {
@@ -485,7 +484,7 @@ public class RoleImpl implements Role {
      * @return element representing all access to a given hierarchy
      */
     public static HierarchyAccess createAllAccess(Hierarchy hierarchy) {
-        final List<Level> levels = hierarchy.getLevelList();
+        final List<? extends Level> levels = hierarchy.getLevelList();
         return new HierarchyAccessImpl(
             Util.createRootRole(hierarchy.getDimension().getSchema()),
             hierarchy, Access.ALL, levels.get(0),

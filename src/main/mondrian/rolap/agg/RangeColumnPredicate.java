@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -30,6 +30,7 @@ public class RangeColumnPredicate extends AbstractColumnPredicate {
     /**
      * Creates a RangeColumnPredicate.
      *
+     * @param router Resolves route to fact table
      * @param column Constrained column
      * @param lowerInclusive Whether range includes the lower bound;
      *   must be false if not bounded below
@@ -39,13 +40,14 @@ public class RangeColumnPredicate extends AbstractColumnPredicate {
      * @param upperBound Upper bound, or null if not bounded above
      */
     public RangeColumnPredicate(
+        RolapSchema.PhysRouter router,
         RolapSchema.PhysColumn column,
         boolean lowerInclusive,
         ValueColumnPredicate lowerBound,
         boolean upperInclusive,
         ValueColumnPredicate upperBound)
     {
-        super(column);
+        super(router, column);
         assert lowerBound == null
             || lowerBound.getColumn() == column;
         assert !(lowerBound == null && lowerInclusive);

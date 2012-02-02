@@ -216,8 +216,8 @@ public class Formula extends QueryPart {
                                 .SsasCompatibleNaming.get())
                         {
                             Dimension dimension = (Dimension) parent;
-                            if (dimension.getHierarchies().length == 1) {
-                                hierarchy = dimension.getHierarchies()[0];
+                            if (dimension.getHierarchyList().size() == 1) {
+                                hierarchy = dimension.getHierarchyList().get(0);
                             } else {
                                 hierarchy = null;
                             }

@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -425,6 +425,7 @@ public class SqlConstraintUtils {
     }
 
     private static StarPredicate getColumnPredicates(
+        RolapMeasureGroup measureGroup,
         RolapSchema.PhysSchema physSchema,
         Collection<RolapMember> members)
     {
@@ -434,10 +435,10 @@ public class SqlConstraintUtils {
         }
         RolapMember member1 = members.iterator().next();
         if (i == 1) {
-            return Predicates.memberPredicate(member1);
+            return Predicates.memberPredicate(
+                new RolapSchema.BadRouter(),
+                member1);
         }
-        List<RolapSchema.PhysColumn> keyList =
-            member1.getLevel().getAttribute().keyList;
         return Predicates.list(
             physSchema,
             member1.getLevel(),
@@ -462,7 +463,7 @@ public class SqlConstraintUtils {
      * list of members.
      *
      * @param queryBuilder query containing the where clause
-     * @param measureGroup
+     * @param measureGroup Measure group
      * @param aggStar aggregate star if available
      * @param members list of constraining members
      * @param fromLevel lowest parent level that is unique
@@ -862,7 +863,14 @@ public class SqlConstraintUtils {
         } else {
             if (datatype.isNumeric()) {
                 // make sure it can be parsed
-                Double.valueOf(columnValue);
+                try {
+                    Double.valueOf(columnValue);
+                } catch (NumberFormatException e) {
+                    // fall back to
+                    //   numeric_column = 'string value'
+                    // even though it's extremely unlikely to match
+                    datatype = Dialect.Datatype.String;
+                }
             }
             final StringBuilder buf = new StringBuilder();
             query.getDialect().quote(buf, columnValue, datatype);
@@ -918,61 +926,74 @@ public class SqlConstraintUtils {
 
         // generate the left-hand side of the IN expression
         int ordinalInMultiple = 0;
-        for (RolapMember m = members.get(0); m != null; m = m.getParentMember())
-        {
-            if (m.isAll()) {
-                continue;
+        RolapMember member = members.get(0);
+        RolapLevel level = member.getLevel();
+
+        // this method can be called within the context of shared members,
+        // outside of the normal rolap star, therefore we need to
+        // check the level to see if it is a shared or cube level.
+
+        final List<RolapStar.Column> columns;
+        if (level instanceof RolapCubeLevel) {
+            final RolapCubeLevel cubeLevel = (RolapCubeLevel) level;
+            columns = new ArrayList<RolapStar.Column>();
+            for (RolapSchema.PhysColumn key : cubeLevel.attribute.keyList) {
+                columns.add(
+                    measureGroup.getRolapStarColumn(
+                        cubeLevel.cubeDimension,
+                        key));
             }
-            RolapLevel level = m.getLevel();
+        } else {
+            columns = null;
+        }
 
-            // this method can be called within the context of shared members,
-            // outside of the normal rolap star, therefore we need to
-            // check the level to see if it is a shared or cube level.
-
-            final RolapStar.Column column;
-            if (level instanceof RolapCubeLevel) {
-                column = ((RolapCubeLevel) level).getBaseStarKeyColumn(
-                    measureGroup);
-            } else {
-                column = null;
-            }
-
-            // REVIEW: The following code mostly uses the name column (or name
-            // expression) of the level. Shouldn't it use the key column (or key
-            // expression)?
-            String columnString;
-            if (column != null) {
-                if (aggStar != null) {
-                    // this assumes that the name column is identical to the
-                    // id column
+        // REVIEW: The following code mostly uses the name column (or name
+        // expression) of the level. Shouldn't it use the key column (or key
+        // expression)?
+        String columnString;
+        if (columns != null) {
+            if (aggStar != null) {
+                // this assumes that the name column is identical to the
+                // id column
+                columnString = null;
+                for (RolapStar.Column column : columns) {
                     int bitPos = column.getBitPosition();
                     AggStar.Table.Column aggColumn =
                         aggStar.lookupColumn(bitPos);
                     AggStar.Table table = aggColumn.getTable();
                     table.addToFrom(queryBuilder.sqlQuery, false, true);
-                    columnString = aggColumn.getExpression().toSql();
-                } else {
-                    RolapStar.Table targetTable = column.getTable();
-                    targetTable.addToFrom(queryBuilder.sqlQuery, false, true);
-                    columnString = column.getExpression().toSql();
+                    if (columnString == null) {
+                        columnString = "";
+                    } else {
+                        columnString += ", ";
+                    }
+                    columnString += aggColumn.getExpression().toSql();
                 }
             } else {
-                assert aggStar == null;
-                RolapSchema.PhysExpr nameExp = level.getAttribute().nameExp;
-                columnString = nameExp.toSql();
+                columnString = null;
+                for (RolapStar.Column column : columns) {
+                    RolapStar.Table targetTable = column.getTable();
+                    targetTable.addToFrom(
+                        queryBuilder.sqlQuery, false, true);
+                    if (columnString == null) {
+                        columnString = "";
+                    } else {
+                        columnString += ", ";
+                    }
+                    columnString += column.getExpression().toSql();
+                }
             }
-
-            if (ordinalInMultiple++ > 0) {
-                columnBuf.append(", ");
-            }
-
-            columnBuf.append(columnString);
-
-            // Only needs to compare up to the first(lowest) unique level.
-            if (m.getLevel() == fromLevel) {
-                break;
-            }
+        } else {
+            assert aggStar == null;
+            RolapSchema.PhysExpr nameExp = level.getAttribute().nameExp;
+            columnString = nameExp.toSql();
         }
+
+        if (ordinalInMultiple++ > 0) {
+            columnBuf.append(", ");
+        }
+
+        columnBuf.append(columnString);
 
         columnBuf.append(")");
 
@@ -993,38 +1014,26 @@ public class SqlConstraintUtils {
             memberBuf.setLength(0);
             memberBuf.append("(");
 
-            boolean containsNull = false;
-            for (RolapMember p = m; p != null; p = p.getParentMember()) {
-                if (p.isAll()) {
-                    // Ignore the ALL level.
-                    // Generate SQL condition for the next level
-                    continue;
-                }
-                RolapLevel level = p.getLevel();
-
+            for (Object o : m.getKeyAsList()) {
                 Util.deprecated("obsolete", false);
-                String value = getColumnValue(
-                    p.getKey(),
-                    queryBuilder.getDialect(), level.attribute.getDatatype());
+                String value =
+                    getColumnValue(
+                        o,
+                        queryBuilder.getDialect(),
+                        level.attribute.getDatatype());
 
                 // If parent at a level is NULL, record this parent and all
                 // its children (if there are any)
                 if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(value)) {
                     // Add to the nullParent map
                     List<RolapMember> childrenList =
-                        parentWithNullToChildrenMap.get(p);
+                        parentWithNullToChildrenMap.get(m);
                     if (childrenList == null) {
                         childrenList = new ArrayList<RolapMember>();
-                        parentWithNullToChildrenMap.put(p, childrenList);
-                    }
-
-                    // If p has children
-                    if (m != p) {
-                        childrenList.add(m);
+                        parentWithNullToChildrenMap.put(m, childrenList);
                     }
 
                     // Skip generating condition for this parent
-                    containsNull = true;
                     break;
                 }
 
@@ -1036,16 +1045,9 @@ public class SqlConstraintUtils {
                 queryBuilder.getDialect().quote(
                     memberBuf, value, level.attribute.getDatatype());
 
-                // Only needs to compare up to the first(lowest) unique level.
-                if (p.getLevel() == fromLevel) {
-                    break;
-                }
-            }
-
-            // Now check if sql string is sucessfully generated for this member.
-            // If parent levels do not contain NULL then SQL must have been
-            // generated successfully.
-            if (!containsNull) {
+                // Now check if sql string is sucessfully generated for this
+                // member.  If parent levels do not contain NULL then SQL must
+                // have been generated successfully.
                 memberBuf.append(")");
                 if (memberOrdinal++ > 0) {
                     valueBuf.append(", ");
@@ -1248,6 +1250,7 @@ public class SqlConstraintUtils {
 
                 StarPredicate cc =
                     getColumnPredicates(
+                        measureGroup,
                         level.getAttribute().keyList.get(0).relation
                             .getSchema(),
                         members2);

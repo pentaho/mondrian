@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -120,7 +120,7 @@ class PropertiesFunDef extends FunDefBase {
             if (hierarchy == null) {
                 return Category.Value;
             }
-            List<Level> levels = hierarchy.getLevelList();
+            List<? extends Level> levels = hierarchy.getLevelList();
             Property property =
                 lookupProperty(
                     levels.get(levels.size() - 1),

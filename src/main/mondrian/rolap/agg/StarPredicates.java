@@ -4,12 +4,12 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
-// Copyright (C) 2011-2011 Julian Hyde
+// Copyright (C) 2011-2012 Julian Hyde
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
-import mondrian.rolap.StarColumnPredicate;
+import mondrian.rolap.*;
 
 /**
  * Utilities for {@link mondrian.rolap.StarPredicate}s and
@@ -33,7 +33,7 @@ public class StarPredicates {
             switch (listColumnPredicate.getPredicates().size()) {
             case 0:
                 return new LiteralColumnPredicate(
-                    predicate.getColumn(), false);
+                    new RolapSchema.BadRouter(), predicate.getColumn(), false);
             case 1:
                 return listColumnPredicate.getPredicates().get(0);
             default:

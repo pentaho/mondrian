@@ -30,101 +30,101 @@ Axis #0:
 Axis #1:
 {[Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
-{[Customers].[USA].[OR].[Albany], [Store Size in SQFT].[27694]}
-{[Customers].[USA].[CA].[Altadena], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Altadena], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[WA].[Anacortes], [Store Size in SQFT].[28206]}
-{[Customers].[USA].[CA].[Arcadia], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Arcadia], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[WA].[Ballard], [Store Size in SQFT].[21215]}
-{[Customers].[USA].[OR].[Beaverton], [Store Size in SQFT].[20319]}
-{[Customers].[USA].[CA].[Bellflower], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Bellflower], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[WA].[Bellingham], [Store Size in SQFT].[28206]}
-{[Customers].[USA].[CA].[Berkeley], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[CA].[Beverly Hills], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Beverly Hills], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[WA].[Bremerton], [Store Size in SQFT].[39696]}
-{[Customers].[USA].[CA].[Burbank], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Burbank], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[WA].[Burien], [Store Size in SQFT].[21215]}
-{[Customers].[USA].[CA].[Burlingame], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[CA].[Chula Vista], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[CA].[Colma], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[CA].[Concord], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[CA].[Coronado], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[OR].[Corvallis], [Store Size in SQFT].[27694]}
-{[Customers].[USA].[CA].[Daly City], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[CA].[Downey], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Downey], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[WA].[Edmonds], [Store Size in SQFT].[21215]}
-{[Customers].[USA].[CA].[El Cajon], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[WA].[Everett], [Store Size in SQFT].[21215]}
-{[Customers].[USA].[CA].[Fremont], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[CA].[Glendale], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Glendale], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[CA].[Grossmont], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[CA].[Imperial Beach], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[WA].[Issaquah], [Store Size in SQFT].[21215]}
-{[Customers].[USA].[WA].[Kirkland], [Store Size in SQFT].[21215]}
-{[Customers].[USA].[CA].[La Jolla], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[CA].[La Mesa], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[OR].[Lake Oswego], [Store Size in SQFT].[20319]}
-{[Customers].[USA].[CA].[Lakewood], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Lakewood], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[OR].[Lebanon], [Store Size in SQFT].[27694]}
-{[Customers].[USA].[CA].[Lemon Grove], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[CA].[Lincoln Acres], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[CA].[Long Beach], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Long Beach], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[CA].[Los Angeles], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Los Angeles], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[WA].[Lynnwood], [Store Size in SQFT].[21215]}
-{[Customers].[USA].[WA].[Marysville], [Store Size in SQFT].[21215]}
-{[Customers].[USA].[CA].[Mill Valley], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[OR].[Milwaukie], [Store Size in SQFT].[20319]}
-{[Customers].[USA].[CA].[National City], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[CA].[Newport Beach], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Newport Beach], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[CA].[Novato], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[CA].[Oakland], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[WA].[Olympia], [Store Size in SQFT].[33858]}
-{[Customers].[USA].[OR].[Oregon City], [Store Size in SQFT].[20319]}
-{[Customers].[USA].[CA].[Palo Alto], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[CA].[Pomona], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Pomona], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[WA].[Port Orchard], [Store Size in SQFT].[39696]}
-{[Customers].[USA].[OR].[Portland], [Store Size in SQFT].[20319]}
-{[Customers].[USA].[WA].[Puyallup], [Store Size in SQFT].[33858]}
-{[Customers].[USA].[WA].[Redmond], [Store Size in SQFT].[21215]}
-{[Customers].[USA].[CA].[Redwood City], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[WA].[Renton], [Store Size in SQFT].[21215]}
-{[Customers].[USA].[CA].[Richmond], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[OR].[Salem], [Store Size in SQFT].[27694]}
-{[Customers].[USA].[CA].[San Carlos], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[CA].[San Diego], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[CA].[San Francisco], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[CA].[San Gabriel], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[San Gabriel], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[CA].[San Jose], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[CA].[Santa Cruz], [Store Size in SQFT].[22478]}
-{[Customers].[USA].[CA].[Santa Monica], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Santa Monica], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[WA].[Seattle], [Store Size in SQFT].[21215]}
-{[Customers].[USA].[WA].[Sedro Woolley], [Store Size in SQFT].[28206]}
-{[Customers].[USA].[WA].[Spokane], [Store Size in SQFT].[30268]}
-{[Customers].[USA].[CA].[Spring Valley], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[WA].[Tacoma], [Store Size in SQFT].[33858]}
-{[Customers].[USA].[CA].[Torrance], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Torrance], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[OR].[W. Linn], [Store Size in SQFT].[20319]}
-{[Customers].[USA].[WA].[Walla Walla], [Store Size in SQFT].[#null]}
-{[Customers].[USA].[CA].[West Covina], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[West Covina], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[OR].[Woodburn], [Store Size in SQFT].[27694]}
-{[Customers].[USA].[CA].[Woodland Hills], [Store Size in SQFT].[23688]}
-{[Customers].[USA].[CA].[Woodland Hills], [Store Size in SQFT].[23598]}
-{[Customers].[USA].[WA].[Yakima], [Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[OR].[Albany], [Store].[Store Size in SQFT].[27694]}
+{[Customer].[Customers].[USA].[CA].[Altadena], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Altadena], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[WA].[Anacortes], [Store].[Store Size in SQFT].[28206]}
+{[Customer].[Customers].[USA].[CA].[Arcadia], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Arcadia], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[WA].[Ballard], [Store].[Store Size in SQFT].[21215]}
+{[Customer].[Customers].[USA].[OR].[Beaverton], [Store].[Store Size in SQFT].[20319]}
+{[Customer].[Customers].[USA].[CA].[Bellflower], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Bellflower], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[WA].[Bellingham], [Store].[Store Size in SQFT].[28206]}
+{[Customer].[Customers].[USA].[CA].[Berkeley], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[CA].[Beverly Hills], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Beverly Hills], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[WA].[Bremerton], [Store].[Store Size in SQFT].[39696]}
+{[Customer].[Customers].[USA].[CA].[Burbank], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Burbank], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[WA].[Burien], [Store].[Store Size in SQFT].[21215]}
+{[Customer].[Customers].[USA].[CA].[Burlingame], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[CA].[Chula Vista], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[CA].[Colma], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[CA].[Concord], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[CA].[Coronado], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[OR].[Corvallis], [Store].[Store Size in SQFT].[27694]}
+{[Customer].[Customers].[USA].[CA].[Daly City], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[CA].[Downey], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Downey], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[WA].[Edmonds], [Store].[Store Size in SQFT].[21215]}
+{[Customer].[Customers].[USA].[CA].[El Cajon], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[WA].[Everett], [Store].[Store Size in SQFT].[21215]}
+{[Customer].[Customers].[USA].[CA].[Fremont], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[CA].[Glendale], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Glendale], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[CA].[Grossmont], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[CA].[Imperial Beach], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[WA].[Issaquah], [Store].[Store Size in SQFT].[21215]}
+{[Customer].[Customers].[USA].[WA].[Kirkland], [Store].[Store Size in SQFT].[21215]}
+{[Customer].[Customers].[USA].[CA].[La Jolla], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[CA].[La Mesa], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[OR].[Lake Oswego], [Store].[Store Size in SQFT].[20319]}
+{[Customer].[Customers].[USA].[CA].[Lakewood], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Lakewood], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[OR].[Lebanon], [Store].[Store Size in SQFT].[27694]}
+{[Customer].[Customers].[USA].[CA].[Lemon Grove], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[CA].[Lincoln Acres], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[CA].[Long Beach], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Long Beach], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[CA].[Los Angeles], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Los Angeles], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[WA].[Lynnwood], [Store].[Store Size in SQFT].[21215]}
+{[Customer].[Customers].[USA].[WA].[Marysville], [Store].[Store Size in SQFT].[21215]}
+{[Customer].[Customers].[USA].[CA].[Mill Valley], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[OR].[Milwaukie], [Store].[Store Size in SQFT].[20319]}
+{[Customer].[Customers].[USA].[CA].[National City], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[CA].[Newport Beach], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Newport Beach], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[CA].[Novato], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[CA].[Oakland], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[WA].[Olympia], [Store].[Store Size in SQFT].[33858]}
+{[Customer].[Customers].[USA].[OR].[Oregon City], [Store].[Store Size in SQFT].[20319]}
+{[Customer].[Customers].[USA].[CA].[Palo Alto], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[CA].[Pomona], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Pomona], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[WA].[Port Orchard], [Store].[Store Size in SQFT].[39696]}
+{[Customer].[Customers].[USA].[OR].[Portland], [Store].[Store Size in SQFT].[20319]}
+{[Customer].[Customers].[USA].[WA].[Puyallup], [Store].[Store Size in SQFT].[33858]}
+{[Customer].[Customers].[USA].[WA].[Redmond], [Store].[Store Size in SQFT].[21215]}
+{[Customer].[Customers].[USA].[CA].[Redwood City], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[WA].[Renton], [Store].[Store Size in SQFT].[21215]}
+{[Customer].[Customers].[USA].[CA].[Richmond], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[OR].[Salem], [Store].[Store Size in SQFT].[27694]}
+{[Customer].[Customers].[USA].[CA].[San Carlos], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[CA].[San Diego], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[CA].[San Francisco], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[CA].[San Gabriel], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[San Gabriel], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[CA].[San Jose], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[CA].[Santa Cruz], [Store].[Store Size in SQFT].[22478]}
+{[Customer].[Customers].[USA].[CA].[Santa Monica], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Santa Monica], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[WA].[Seattle], [Store].[Store Size in SQFT].[21215]}
+{[Customer].[Customers].[USA].[WA].[Sedro Woolley], [Store].[Store Size in SQFT].[28206]}
+{[Customer].[Customers].[USA].[WA].[Spokane], [Store].[Store Size in SQFT].[30268]}
+{[Customer].[Customers].[USA].[CA].[Spring Valley], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[WA].[Tacoma], [Store].[Store Size in SQFT].[33858]}
+{[Customer].[Customers].[USA].[CA].[Torrance], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Torrance], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[OR].[W. Linn], [Store].[Store Size in SQFT].[20319]}
+{[Customer].[Customers].[USA].[WA].[Walla Walla], [Store].[Store Size in SQFT].[#null]}
+{[Customer].[Customers].[USA].[CA].[West Covina], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[West Covina], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[OR].[Woodburn], [Store].[Store Size in SQFT].[27694]}
+{[Customer].[Customers].[USA].[CA].[Woodland Hills], [Store].[Store Size in SQFT].[23688]}
+{[Customer].[Customers].[USA].[CA].[Woodland Hills], [Store].[Store Size in SQFT].[23598]}
+{[Customer].[Customers].[USA].[WA].[Yakima], [Store].[Store Size in SQFT].[#null]}
 Row #0: 6,806
 Row #1: 1,152
 Row #2: 1,422
@@ -302,14 +302,14 @@ From [Sales]
 Axis #0:
 {}
 Axis #1:
-{[Yearly Income].[*TOTAL_MEMBER_SEL~MAX], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[*TOTAL_MEMBER_SEL~SUM], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[$110K - $130K], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[$130K - $150K], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[$150K +], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[$30K - $50K], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[$70K - $90K], [Measures].[*FORMATTED_MEASURE_0]}
-{[Yearly Income].[$90K - $110K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customer].[Yearly Income].[*TOTAL_MEMBER_SEL~MAX], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customer].[Yearly Income].[*TOTAL_MEMBER_SEL~SUM], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customer].[Yearly Income].[$110K - $130K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customer].[Yearly Income].[$130K - $150K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customer].[Yearly Income].[$150K +], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customer].[Yearly Income].[$30K - $50K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customer].[Yearly Income].[$70K - $90K], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customer].[Yearly Income].[$90K - $110K], [Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
 {[Customer].[Education Level].[*TOTAL_MEMBER_SEL~MAX]}
 {[Customer].[Education Level].[*TOTAL_MEMBER_SEL~SUM]}

@@ -88,7 +88,6 @@ public class RolapCacheRegion {
     {
         BitKey predicateBitKey =
             Predicates.getBitKey(predicate, star);
-            BitKey.Factory.makeBitKey(star.getColumnCount());
         predicates.put(
             predicateBitKey,
             predicate);

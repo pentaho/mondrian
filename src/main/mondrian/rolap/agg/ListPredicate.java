@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -55,10 +55,6 @@ public abstract class ListPredicate implements StarPredicate {
             columnSet.addAll(predicate.getColumnList());
         }
         columns = new ArrayList<RolapSchema.PhysColumn>(columnSet);
-    }
-
-    public List<RolapStar.Column> getStarColumnList(RolapStar star) {
-        return Predicates.starify(star, columns);
     }
 
     public List<RolapSchema.PhysColumn> getColumnList() {

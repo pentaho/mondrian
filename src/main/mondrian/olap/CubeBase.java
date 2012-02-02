@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -104,7 +104,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     }
 
     public Hierarchy lookupHierarchy(Id.Segment s, boolean unique) {
-        for (Dimension dimension : getDimensions()) {
+        for (Dimension dimension : getDimensionList()) {
             for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                 String name = unique
                     ? hierarchy.getUniqueName() : hierarchy.getName();
@@ -179,7 +179,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
      * @return Dimension, or null if not found
      */
     public Dimension lookupDimension(Id.Segment s) {
-        for (Dimension dimension : getDimensions()) {
+        for (Dimension dimension : getDimensionList()) {
             if (Util.equalName(dimension.getName(), s.name)) {
                 return dimension;
             }
@@ -190,7 +190,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
     // ------------------------------------------------------------------------
 
     public Level getTimeLevel(org.olap4j.metadata.Level.Type levelType) {
-        for (Dimension dimension : getDimensions()) {
+        for (Dimension dimension : getDimensionList()) {
             if (dimension.getDimensionType() == DimensionType.TimeDimension) {
                 for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                     for (Level level : hierarchy.getLevelList()) {

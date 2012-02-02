@@ -32,7 +32,7 @@ import java.util.*;
  * A dimension may be either shared or private to a particular cube. The
  * dimension object doesn't actually know which; {@link Schema} has a list of
  * shared hierarchies ({@link Schema#getSharedHierarchies}), and {@link Cube}
- * has a list of dimensions ({@link Cube#getDimensions}).
+ * has a list of dimensions ({@link Cube#getDimensionList()}).
  *
  * <p>
  * If a dimension is shared between several cubes, the {@link Dimension}objects
@@ -106,11 +106,7 @@ class RolapDimension extends DimensionBase {
         return hierarchyList.toArray(new RolapHierarchy[hierarchyList.size()]);
     }
 
-    public List<Hierarchy> getHierarchyList() {
-        return hierarchyList;
-    }
-
-    public final List<RolapHierarchy> getRolapHierarchyList() {
+    public List<? extends RolapHierarchy> getHierarchyList() {
         return Util.cast(hierarchyList);
     }
 

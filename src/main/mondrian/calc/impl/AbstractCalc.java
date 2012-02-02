@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -13,8 +13,7 @@ import mondrian.calc.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
 import mondrian.olap.type.Type;
-import mondrian.rolap.RolapEvaluator;
-import mondrian.rolap.RolapHierarchy;
+import mondrian.rolap.*;
 
 import java.util.*;
 
@@ -244,9 +243,8 @@ public abstract class AbstractCalc implements Calc {
         }
         int changeCount = 0;
         Evaluator ev = evaluator;
-        final List<RolapHierarchy> hierarchies =
-            ((RolapEvaluator) evaluator).getCube().getHierarchies();
-        for (RolapHierarchy hierarchy : hierarchies) {
+        final RolapCube cube = ((RolapEvaluator) evaluator).getCube();
+        for (RolapHierarchy hierarchy : cube.getHierarchyList()) {
             final Member member = ev.getContext(hierarchy);
             if (member.isAll()) {
                 continue;

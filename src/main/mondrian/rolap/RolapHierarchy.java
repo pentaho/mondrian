@@ -172,7 +172,7 @@ public class RolapHierarchy extends HierarchyBase {
             levelList.add(
                 new RolapLevel(
                     this,
-                    "MeasuresLevel",
+                    RolapSchemaLoader.MEASURES_LEVEL_NAME,
                     true,
                     null,
                     null,
@@ -180,12 +180,6 @@ public class RolapHierarchy extends HierarchyBase {
                     MEASURES_ATTRIBUTE,
                     RolapLevel.HideMemberCondition.Never,
                     Collections.<String, Annotation>emptyMap()));
-            /*
-                for (RolapLevel level : levelList) {
-                    level.initLevel(null, null, false);
-                }
-                levels = levelList.toArray(new RolapLevel[levelList.size()]);
-                */
         }
 
         if (this instanceof RolapCubeHierarchy) {
@@ -732,12 +726,8 @@ public class RolapHierarchy extends HierarchyBase {
         return 0;
     }
 
-    public List<Level> getLevelList() {
+    public List<? extends RolapLevel> getLevelList() {
         return Util.cast(levelList);
-    }
-
-    public List<RolapLevel> getRolapLevelList() {
-        return levelList;
     }
 
     /**

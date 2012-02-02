@@ -1302,7 +1302,7 @@ public class UtilTestCase extends TestCase {
         final Triple<Integer, String, Boolean> triple3 =
             Triple.of(null, "foo", true);
 
-        assertEquals(triple0,  triple0);
+        assertEquals(triple0, triple0);
         assertFalse(triple0.equals(triple1));
         assertFalse(triple1.equals(triple0));
         assertFalse(triple0.hashCode() == triple1.hashCode());
@@ -1429,6 +1429,30 @@ public class UtilTestCase extends TestCase {
         assertEquals(2, calls[0]); // first call to get calls factory
         assertEquals(null, nullLazy.get());
         assertEquals(2, calls[0]); // factory not used again
+    }
+
+    /**
+     * Unit test for {@link Util.PropertyList}.
+     */
+    public void testPropertyList() {
+        final Util.PropertyList list = new Util.PropertyList();
+        list.put("x", "1");
+        list.put("y", "2");
+        list.put("x", "3");
+        assertEquals("x=3; y=2", list.toString());
+
+        // modifying the clone does not affect the original
+        final Util.PropertyList list2 = list.clone();
+        assertEquals("x=3; y=2", list.toString());
+        list2.put("x", "4");
+        assertEquals("x=4; y=2", list2.toString());
+        assertEquals("x=3; y=2", list.toString());
+
+        // modifying the original does not affect the clone
+        list.remove("y");
+        list.put("z", "foo bar");
+        assertEquals("x=4; y=2", list2.toString());
+        assertEquals("x=3; z=foo bar", list.toString());
     }
 
     /**

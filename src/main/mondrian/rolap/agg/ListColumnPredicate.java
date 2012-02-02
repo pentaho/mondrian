@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -53,14 +53,16 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
     /**
      * Creates a ListColumnPredicate
      *
+     * @param router Resolves route to fact table
      * @param column Column being constrained
      * @param list List of child predicates
      */
     public ListColumnPredicate(
+        RolapSchema.PhysRouter router,
         RolapSchema.PhysColumn column,
         List<StarColumnPredicate> list)
     {
-        super(column);
+        super(router, column);
         this.children = list;
         childrenHashMap = null;
         hashValue = 0;
@@ -255,7 +257,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
                 (LiteralStarPredicate) predicate;
             if (literalStarPredicate.getValue()) {
                 // X minus TRUE --> FALSE
-                return Predicates.wildcard(constrainedColumn, false);
+                return Predicates.wildcard(router, constrainedColumn, false);
             } else {
                 // X minus FALSE --> X
                 return this;
@@ -266,7 +268,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
                 (LiteralColumnPredicate) predicate;
             if (literalColumnPredicate.getValue()) {
                 // X minus TRUE --> FALSE
-                return Predicates.wildcard(constrainedColumn, false);
+                return Predicates.wildcard(router, constrainedColumn, false);
             } else {
                 // X minus FALSE --> X
                 return this;
@@ -286,7 +288,8 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
             }
         }
         if (changeCount > 0) {
-            return new ListColumnPredicate(getColumn(), newChildren);
+            return new ListColumnPredicate(
+                router, getColumn(), newChildren);
         } else {
             return this;
         }
@@ -300,6 +303,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
                 new ArrayList<StarColumnPredicate>(children);
             list.addAll(that.children);
             return new ListColumnPredicate(
+                router,
                 getColumn(),
                 list);
         } else {
@@ -307,6 +311,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
                 new ArrayList<StarColumnPredicate>(children);
             list.add(predicate);
             return new ListColumnPredicate(
+                router,
                 getColumn(),
                 list);
         }

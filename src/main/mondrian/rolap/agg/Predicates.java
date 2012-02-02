@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011-2011 Julian Hyde
+// Copyright (C) 2011-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -26,7 +26,9 @@ import java.util.List;
  */
 public abstract class Predicates
 {
-    public static StarPredicate memberPredicate(RolapMember member)
+    public static StarPredicate memberPredicate(
+        RolapSchema.PhysRouter router,
+        RolapMember member)
     {
         List<RolapSchema.PhysColumn> keyList =
             member.getLevel().getAttribute().keyList;
@@ -34,6 +36,7 @@ public abstract class Predicates
         switch (size) {
         case 1:
             return new MemberColumnPredicate(
+                router,
                 keyList.get(0),
                 member);
         default:
@@ -47,6 +50,7 @@ public abstract class Predicates
     }
 
     public static RangeColumnPredicate rangePredicate(
+        RolapSchema.PhysRouter router,
         boolean lowerInclusive,
         RolapMember lowerBound,
         boolean upperInclusive,
@@ -61,15 +65,16 @@ public abstract class Predicates
             (lowerBound == null ? upperBound : lowerBound).getLevel();
         if (level.getAttribute().keyList.size() == 1) {
             return new RangeColumnPredicate(
+                router,
                 level.getAttribute().keyList.get(0),
                 lowerInclusive,
                 (lowerBound == null
                  ? null
-                 : (ValueColumnPredicate) memberPredicate(lowerBound)),
+                 : (ValueColumnPredicate) memberPredicate(router, lowerBound)),
                 upperInclusive,
                 (upperBound == null
                  ? null
-                 : (ValueColumnPredicate) memberPredicate(upperBound)));
+                 : (ValueColumnPredicate) memberPredicate(router, upperBound)));
         } else {
             throw new UnsupportedOperationException("TODO:");
         }
@@ -77,7 +82,9 @@ public abstract class Predicates
 
     public static BitKey getBitKey(StarPredicate predicate, RolapStar star) {
         BitKey bitKey = BitKey.Factory.makeBitKey(star.getColumnCount());
-        for (RolapStar.Column column : predicate.getStarColumnList(star)) {
+        for (RolapStar.Column column
+            : Predicates.starify(star, predicate.getColumnList()))
+        {
             bitKey.set(column.getBitPosition());
         }
         return bitKey;
@@ -146,17 +153,20 @@ public abstract class Predicates
     /**
      * Creates a ColumnPredicate that matches any value of the column.
      *
-     * <p>Unlike {@link LiteralStarPredicate}, it references a column.
+     * <p>Unlike {@link LiteralStarPredicate}, it references a column and has
+     * a route to the fact table.
      *
+     * @param router Resolves route to fact table
      * @param column Column
      * @param value Value
      * @return Predicate that always evaluates to given value
      */
     public static StarColumnPredicate wildcard(
+        RolapSchema.PhysRouter router,
         RolapSchema.PhysColumn column,
         boolean value)
     {
-        return new LiteralColumnPredicate(column, value);
+        return new LiteralColumnPredicate(router, column, value);
     }
 
     /**

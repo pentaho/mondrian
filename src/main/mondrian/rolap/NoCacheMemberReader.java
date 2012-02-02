@@ -6,7 +6,7 @@
 // Copyright (C) 2001-2002 Kana Software, Inc.
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2007-2008 StrateBI
-// Copyright (C) 2008-2011 Julian Hyde and others
+// Copyright (C) 2008-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -103,7 +103,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         System.out.println("NoCache getMembers");
         List<RolapMember> v = new ArrayList<RolapMember>();
         // todo: optimize by walking to children for members we know about
-        for (RolapLevel level : getHierarchy().getRolapLevelList()) {
+        for (RolapLevel level : getHierarchy().getLevelList()) {
             List<RolapMember> membersInLevel =
                 getMembersInLevel(level, 0, Integer.MAX_VALUE);
             v.addAll(membersInLevel);

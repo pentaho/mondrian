@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -110,7 +110,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             this.reader = new CacheRolapCubeHierarchyMemberReader();
         }
 
-        for (RolapLevel level : rolapHierarchy.getRolapLevelList()) {
+        for (RolapLevel level : rolapHierarchy.getLevelList()) {
             levelList.add(new RolapCubeLevel(level, this));
         }
 
@@ -337,7 +337,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         return cubeDimension.cube;
     }
 
-    public final List<RolapCubeLevel> getRolapCubeLevelList() {
+    public List<? extends RolapCubeLevel> getLevelList() {
         return Util.cast(levelList);
     }
 
