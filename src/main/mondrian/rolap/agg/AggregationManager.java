@@ -14,6 +14,7 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.CacheControl;
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.MondrianServer;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.SqlStatement.Type;
@@ -63,6 +64,20 @@ public class AggregationManager extends RolapAggregationManager {
      */
     public final Logger getLogger() {
         return LOGGER;
+    }
+
+    /**
+     * Returns or creates the singleton.
+     *
+     * @deprecated No longer a singleton, and will be removed in mondrian-4.
+     *   Use {@link mondrian.olap.MondrianServer#getAggregationManager()}.
+     *   To get a server, call
+     *   {@link mondrian.olap.MondrianServer#forConnection(mondrian.olap.Connection)},
+     *   passing in a null connection if you absolutely must.
+     */
+    public static synchronized AggregationManager instance() {
+        return
+            MondrianServer.forId(null).getAggregationManager();
     }
 
     /**
