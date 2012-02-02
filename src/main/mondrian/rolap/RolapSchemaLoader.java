@@ -2999,9 +2999,10 @@ public class RolapSchemaLoader {
                         final boolean ignoreInvalidMembers =
                             MondrianProperties.instance().IgnoreInvalidMembers
                                 .get();
-                        Member member = schemaReader.getMemberByUniqueName(
-                            Util.parseIdentifier(memberGrant.member),
-                            !ignoreInvalidMembers);
+                        Member member =
+                            schemaReader.withLocus().getMemberByUniqueName(
+                                Util.parseIdentifier(memberGrant.member),
+                                !ignoreInvalidMembers);
                         if (member == null) {
                             // They asked to ignore members that don't exist
                             // (e.g. [Store].[USA].[Foo]), so ignore this grant

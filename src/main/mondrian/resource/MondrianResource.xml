@@ -857,6 +857,26 @@
     </text>
 </exception>
 
+<!-- ====================================================================== -->
+<!-- GC -->
+<exception id="9000001" name="FinalizerErrorRolapSchema">
+    <text>
+        An exception was encountered while finalizing a RolapSchema object instance.
+    </text>
+</exception>
+
+<exception id="9000002" name="FinalizerErrorMondrianServerImpl">
+    <text>
+        An exception was encountered while finalizing a RolapSchema object instance.
+    </text>
+</exception>
+
+<exception id="9000003" name="FinalizerErrorRolapConnection">
+    <text>
+        An exception was encountered while finalizing a RolapConnection object instance.
+    </text>
+</exception>
+
 <!-- End of last error section ============================================ -->
 
 </resourceBundle>

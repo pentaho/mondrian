@@ -10,6 +10,8 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.server.Execution;
+import mondrian.server.Locus;
 import mondrian.test.*;
 
 import java.io.PrintWriter;
@@ -690,14 +692,17 @@ public class CacheControlTest extends FoodMartTestCase {
         final SchemaReader schemaReader = salesCube.getSchemaReader(null);
         final CacheControl cacheControl =
             new CacheControlImpl((RolapConnection) connection);
-        final Member memberQ1 = schemaReader.getMemberByUniqueName(
-            Id.Segment.toList("Time", "1997", "Q1"), true);
-        final Member memberBeer = schemaReader.getMemberByUniqueName(
-            Id.Segment.toList(
-                "Product", "Drink", "Alcoholic Beverages", "Beer and Wine"),
+        final Member memberQ1 =
+            schemaReader.withLocus().getMemberByUniqueName(
+                Id.Segment.toList("Time", "1997", "Q1"), true);
+        final Member memberBeer =
+            schemaReader.withLocus().getMemberByUniqueName(
+                Id.Segment.toList(
+                    "Product", "Drink", "Alcoholic Beverages", "Beer and Wine"),
             true);
-        final Member memberDairy = schemaReader.getMemberByUniqueName(
-            Id.Segment.toList("Product", "Drink", "Dairy"), true);
+        final Member memberDairy =
+            schemaReader.withLocus().getMemberByUniqueName(
+                Id.Segment.toList("Product", "Drink", "Dairy"), true);
 
         final CacheControl.CellRegion regionTimeQ1 =
             cacheControl.createMemberRegion(memberQ1, false);

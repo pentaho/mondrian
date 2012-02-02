@@ -62,11 +62,6 @@ public class TestContext {
     private static TestContext instance; // the singleton
     private PrintWriter pw;
 
-    /**
-     * Connection to the FoodMart database. Set on the first call to
-     * {@link #getConnection}.
-     */
-    private Connection foodMartConnection;
     private Dialect dialect;
 
     private int errorStart;
@@ -203,19 +198,7 @@ public class TestContext {
     public synchronized void flushSchemaCache() {
         // it's pointless to flush the schema cache if we
         // have a handle on the connection object already
-        clearConnection();
         getConnection().getCacheControl(null).flushSchemaCache();
-    }
-
-    public synchronized void clearConnection() {
-        if (foodMartConnection != null) {
-            try {
-                foodMartConnection.getDataSource().getConnection().close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            foodMartConnection = null;
-        }
     }
 
     /**
@@ -225,14 +208,11 @@ public class TestContext {
      * to the FoodMart database.
      */
     public synchronized Connection getConnection() {
-        if (foodMartConnection == null) {
-            foodMartConnection =
-                DriverManager.getConnection(
-                    getConnectionProperties(),
-                    null,
-                    null);
-        }
-        return foodMartConnection;
+        return
+            DriverManager.getConnection(
+                getConnectionProperties(),
+                null,
+                null);
     }
 
     /**

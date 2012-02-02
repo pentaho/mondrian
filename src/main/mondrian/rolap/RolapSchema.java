@@ -13,7 +13,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.CacheControl.CellRegion;
 import mondrian.olap.Member;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.Type;
@@ -36,6 +35,7 @@ import java.lang.reflect.*;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
+
 import javax.sql.DataSource;
 
 /**
@@ -56,7 +56,7 @@ public class RolapSchema implements Schema {
     /**
      * Internal use only.
      */
-    private final RolapConnection internalConnection;
+    private RolapConnection internalConnection;
 
     /**
      * Holds cubes in this schema.
@@ -180,7 +180,9 @@ public class RolapSchema implements Schema {
         final MondrianServer internalServer = MondrianServer.forId(null);
         this.internalConnection =
             new RolapConnection(internalServer, connectInfo, this, dataSource);
-        internalServer.addConnection(internalConnection);
+        internalServer.removeConnection(internalConnection);
+        internalServer.removeStatement(
+            internalConnection.getInternalStatement());
 
         this.aggTableManager = new AggTableManager(this);
         this.dataSourceChangeListener =
@@ -203,16 +205,6 @@ public class RolapSchema implements Schema {
     }
 
     protected void finalCleanUp() {
-        if (internalConnection != null) {
-            // REVIEW: Is this supposed to happen???
-            final CacheControl cacheControl =
-                internalConnection.getCacheControl(null);
-            for (Cube cube : getCubes()) {
-                CellRegion cr =
-                    cacheControl.createMeasuresRegion(cube);
-                cacheControl.flush(cr);
-            }
-        }
         if (aggTableManager != null) {
             aggTableManager.finalCleanUp();
             aggTableManager = null;
@@ -220,8 +212,15 @@ public class RolapSchema implements Schema {
     }
 
     protected void finalize() throws Throwable {
-        super.finalize();
-        finalCleanUp();
+        try {
+            super.finalize();
+            finalCleanUp();
+        } catch (Throwable t) {
+            LOGGER.info(
+                MondrianResource.instance()
+                    .FinalizerErrorRolapSchema.baseMessage,
+                t);
+        }
     }
 
     public boolean equals(Object o) {
@@ -252,7 +251,7 @@ public class RolapSchema implements Schema {
         return Collections.unmodifiableList(Util.<Exception>cast(warningList));
     }
 
-    Role getDefaultRole() {
+    public Role getDefaultRole() {
         return defaultRole;
     }
 
@@ -663,7 +662,7 @@ public class RolapSchema implements Schema {
     }
 
     public SchemaReader getSchemaReader() {
-        return new RolapSchemaReader(defaultRole, this);
+        return new RolapSchemaReader(defaultRole, this).withLocus();
     }
 
     /**
@@ -760,7 +759,7 @@ public class RolapSchema implements Schema {
     /**
      * <code>RolapStarRegistry</code> is a registry for {@link RolapStar}s.
      */
-    class RolapStarRegistry {
+    public class RolapStarRegistry {
         private final Map<PhysRelation, RolapStar> stars =
             new HashMap<PhysRelation, RolapStar>();
 

@@ -12,6 +12,7 @@ package mondrian.server;
 import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianServer;
 import mondrian.olap4j.CatalogFinder;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapResultShepherd;
 import mondrian.rolap.RolapSchema;
@@ -176,8 +177,15 @@ class MondrianServerImpl
 
     @Override
     protected void finalize() throws Throwable {
-        super.finalize();
-        shutdown();
+        try {
+            super.finalize();
+            shutdown(true);
+        } catch (Throwable t) {
+            LOGGER.info(
+                MondrianResource.instance()
+                    .FinalizerErrorMondrianServerImpl.baseMessage,
+                t);
+        }
     }
 
     public int getId() {
@@ -270,11 +278,18 @@ class MondrianServerImpl
 
     @Override
     public void shutdown() {
+        this.shutdown(false);
+    }
+
+    private void shutdown(boolean silent) {
         if (this == MondrianServerRegistry.INSTANCE.staticServer) {
             LOGGER.warn("Can't shutdown the static server.");
             return;
         }
         if (shutdown) {
+            if (silent) {
+                return;
+            }
             throw new MondrianException("Server already shutdown.");
         }
         this.shutdown  = true;
@@ -308,7 +323,7 @@ class MondrianServerImpl
         monitor.sendEvent(
             new ConnectionEndEvent(
                 System.currentTimeMillis(),
-                connection.getServer().getId(),
+                getId(),
                 connection.getId()));
     }
 

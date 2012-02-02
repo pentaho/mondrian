@@ -1449,6 +1449,14 @@ diagrams and hyperlinks to source code">
         <linecontains negate="true">
           <contains value="Tag @link: can't find unwrap(Class)"/>
         </linecontains>
+        <!-- ignore: Statement.closeOnCompletion does not exist until JDK1.7 -->
+        <linecontains negate="true">
+          <contains value="Tag @link: can't find closeOnCompletion()"/>
+        </linecontains>
+        <!-- ignore: ResultSet.isClosed does not exist until JDK1.6 -->
+        <linecontains negate="true">
+          <contains value="Tag @link: can't find isClosed()"/>
+        </linecontains>
         <!-- ignore: FactoryJdbc4Impl is only built in JDK1.6 -->
         <linecontains negate="true">
           <contains value="FactoryJdbc4Impl.java"/>

@@ -44,7 +44,6 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     private static final String LAST_SCHEMA_UPDATE_NODE_NAME =
         "LAST_SCHEMA_UPDATE";
     protected SortedMap<String, String> catalogNameUrls = null;
-    private Servlet servlet;
 
     private static int sessionIdCounter = 1000;
     private static Map<String, String> sessionIdMap =
@@ -356,24 +355,17 @@ System.out.println("Got CONTINUE");
     protected Servlet getServlet(TestContext testContext)
         throws IOException, ServletException, SAXException
     {
-        if (servlet == null) {
-            getSessionId(Action.CLEAR);
+        getSessionId(Action.CLEAR);
 
-            String connectString = testContext.getConnectString();
-            Map<String, String> catalogNameUrls =
-                getCatalogNameUrls(testContext);
-            servlet =
-                XmlaSupport.makeServlet(
-                    connectString,
-                    catalogNameUrls,
-                    getServletCallbackClass().getName(),
-                    SERVLET_CACHE);
-        }
-        return servlet;
-    }
-
-    protected void clearServlet() {
-        servlet = null;
+        String connectString = testContext.getConnectString();
+        Map<String, String> catalogNameUrls =
+            getCatalogNameUrls(testContext);
+        return
+            XmlaSupport.makeServlet(
+                connectString,
+                catalogNameUrls,
+                getServletCallbackClass().getName(),
+                SERVLET_CACHE);
     }
 
     protected abstract Class<? extends XmlaRequestCallback>

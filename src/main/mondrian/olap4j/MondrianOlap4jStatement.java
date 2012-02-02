@@ -40,6 +40,11 @@ abstract class MondrianOlap4jStatement
     private boolean closed;
 
     /**
+     * Support for {@link #closeOnCompletion()} method.
+     */
+    protected boolean closeOnCompletion;
+
+    /**
      * Current cell set, or null if the statement is not executing anything.
      * Any method which modifies this member must synchronize
      * on the MondrianOlap4jStatement.
@@ -458,6 +463,18 @@ abstract class MondrianOlap4jStatement
             return olap4jConnection.getMondrianConnection();
         } catch (OlapException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Called by each child result set (most likely a cell set) when it is
+     * closed.
+     *
+     * @param resultSet Result set or cell set
+     */
+    void onResultSetClose(ResultSet resultSet) {
+        if (closeOnCompletion) {
+            close();
         }
     }
 }

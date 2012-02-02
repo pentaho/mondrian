@@ -14,6 +14,8 @@ import mondrian.rolap.RolapUtil;
 import mondrian.server.monitor.*;
 import mondrian.util.Pair;
 
+import org.apache.log4j.Logger;
+
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -60,6 +62,7 @@ import java.util.concurrent.BlockingQueue;
 class MonitorImpl
     implements Monitor
 {
+    private static final Logger LOGGER = Logger.getLogger(MonitorImpl.class);
     private final Handler handler = new Handler();
 
     protected static final Util.MemoryInfo MEMORY_INFO = Util.getMemoryInfo();
@@ -217,6 +220,7 @@ class MonitorImpl
                  - aggExec.cellCacheSegmentDeleteCount),
                 aggExec.cellCacheSegmentCreateCount,
                 aggExec.cellCacheSegmentCreateViaExternalCount,
+                aggExec.cellCacheSegmentDeleteViaExternalCount,
                 aggExec.cellCacheSegmentCreateViaRollupCount,
                 aggExec.cellCacheSegmentCreateViaSqlCount,
                 aggExec.cellCacheSegmentCellCount,
@@ -321,6 +325,7 @@ class MonitorImpl
         private int cellCacheSegmentCreateViaRollupCount;
         private int cellCacheSegmentCreateViaSqlCount;
         private int cellCacheSegmentCreateViaExternalCount;
+        private int cellCacheSegmentDeleteViaExternalCount;
         private int cellCacheSegmentDeleteCount;
         private int cellCacheSegmentCoordinateSum;
         private int cellCacheSegmentCellCount;
@@ -648,6 +653,11 @@ class MonitorImpl
         {
             ++exec.cellCacheSegmentDeleteCount;
             exec.cellCacheSegmentCoordinateSum -= event.coordinateCount;
+            switch (event.source) {
+            case EXTERNAL:
+                ++exec.cellCacheSegmentDeleteViaExternalCount;
+                break;
+            }
         }
 
         public Object visit(SqlStatementStartEvent event) {
@@ -843,10 +853,10 @@ class MonitorImpl
         public void run() {
             try {
                 for (;;) {
-                    final Pair<Handler, Message> entry = eventQueue.take();
-                    final Handler handler = entry.left;
-                    final Message message = entry.right;
                     try {
+                        final Pair<Handler, Message> entry = eventQueue.take();
+                        final Handler handler = entry.left;
+                        final Message message = entry.right;
                         final Object result = message.accept(handler);
                         if (message instanceof Command) {
                             responseQueue.put((Command) message, result);
@@ -854,17 +864,21 @@ class MonitorImpl
                             // Broadcast the event to anyone who is interested.
                             RolapUtil.MONITOR_LOGGER.debug(message);
                         }
-                    } catch (Exception e) {
-                        // REVIEW: Somewhere better to send it?
-                        e.printStackTrace();
-                    }
-                    if (message instanceof ShutdownCommand) {
+                        if (message instanceof ShutdownCommand) {
+                            return;
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        LOGGER.warn(
+                            "Monitor thread interrupted.",
+                            e);
                         return;
+                    } catch (Throwable t) {
+                        LOGGER.error(
+                            "Runtime error on the monitor thread.",
+                            t);
                     }
                 }
-            } catch (InterruptedException e) {
-                // REVIEW: Somewhere better to send it?
-                e.printStackTrace();
             } finally {
                 running = false;
             }

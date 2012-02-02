@@ -138,6 +138,14 @@ public class Bug {
 
     /**
      * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-441">bug MONDRIAN-441,
+     * "Parent-child hierarchies: &lt;Join&gt; used in dimension"</a>
+     * is fixed.
+     */
+    public static final boolean BugMondrian441Fixed = false;
+
+    /**
+     * Whether
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-485">bug MONDRIAN-485,
      * "Member key treated as member name in WHERE"</a>
      * is fixed. This bug is a placeholder for all support for keys in

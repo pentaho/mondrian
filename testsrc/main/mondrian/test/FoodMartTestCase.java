@@ -47,6 +47,7 @@ public class FoodMartTestCase extends TestCase {
     protected void tearDown() throws Exception {
         // revert any properties that have been set during this test
         propSaver.reset();
+        getTestContext().getConnection().close();
     }
 
     /**

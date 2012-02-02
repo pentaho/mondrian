@@ -535,7 +535,6 @@ System.out.println("password=" + password);
         try {
             doTest(expectedFault);
         } finally {
-            clearServlet();
             doAuthorization = false;
         }
     }
@@ -569,7 +568,6 @@ System.out.println("password=" + password);
         try {
             doTest(req, expectedFault);
         } finally {
-            clearServlet();
             doAuthorization = false;
         }
     }
@@ -610,7 +608,6 @@ System.out.println("DO IT AGAIN");
 }
             doTest(req, expectedFault);
         } finally {
-            clearServlet();
             XmlaErrorTest.doAuthorization = false;
             XmlaErrorTest.user = null;
             XmlaErrorTest.password = null;
@@ -654,7 +651,6 @@ System.out.println("DO IT AGAIN");
         try {
             doTest(req, expectedFault);
         } finally {
-            clearServlet();
             XmlaErrorTest.doAuthorization = false;
             XmlaErrorTest.user = null;
             XmlaErrorTest.password = null;
@@ -698,7 +694,6 @@ System.out.println("DO IT AGAIN");
         try {
             doTest(req, expectedFault);
         } finally {
-            clearServlet();
             XmlaErrorTest.doAuthorization = false;
             XmlaErrorTest.user = null;
             XmlaErrorTest.password = null;

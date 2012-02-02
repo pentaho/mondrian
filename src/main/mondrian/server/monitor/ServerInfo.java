@@ -70,6 +70,12 @@ public class ServerInfo extends Info {
     public final int segmentCreateViaExternalCount;
 
     /**
+     * The number of segments that have been deleted via external since the
+     * server started.
+     */
+    public final int segmentDeleteViaExternalCount;
+
+    /**
      * The number of segments that have been created via rollup since the server
      * started.
      */
@@ -121,6 +127,7 @@ public class ServerInfo extends Info {
         int segmentCount,
         int segmentCreateCount,
         int segmentCreateViaExternalCount,
+        int segmentDeleteViaExternalCount,
         int segmentCreateViaRollupCount,
         int segmentCreateViaSqlCount,
         int cellCount,
@@ -148,6 +155,7 @@ public class ServerInfo extends Info {
         this.segmentCount = segmentCount;
         this.segmentCreateCount = segmentCreateCount;
         this.segmentCreateViaExternalCount = segmentCreateViaExternalCount;
+        this.segmentDeleteViaExternalCount = segmentDeleteViaExternalCount;
         this.segmentCreateViaRollupCount = segmentCreateViaRollupCount;
         this.segmentCreateViaSqlCount = segmentCreateViaSqlCount;
         this.cellCount = cellCount;

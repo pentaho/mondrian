@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2010 Julian Hyde
+// Copyright (C) 2010-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -46,6 +46,8 @@ import java.util.*;
  * @since 2010/11/18
  */
 public class LockBox {
+    private static final Object DUMMY = new Object();
+
     /**
      * Mapping from monikers to entries.
      *
@@ -61,11 +63,25 @@ public class LockBox {
      * the caller (or someone) still has the moniker, it is not sufficient
      * to prevent the entry from being garbage collected.
      */
-    private final Map<String, LockBoxEntryImpl> map =
-        new WeakHashMap<String, LockBoxEntryImpl>();
+    private final Map<LockBoxEntryImpl, Object> map =
+        new WeakHashMap<LockBoxEntryImpl, Object>();
     private final Random random = new Random();
     private final byte[] bytes = new byte[16]; // 128 bit... secure enough
     private long ordinal;
+
+    /**
+     * Creates a LockBox.
+     */
+    public LockBox() {
+    }
+
+    private static Object wrap(Object o) {
+        return o == null ? DUMMY : o;
+    }
+
+    private static Object unwrap(Object value) {
+        return value == DUMMY ? null : value;
+    }
 
     /**
      * Adds an object to the lock box, and returns a key for it.
@@ -79,8 +95,8 @@ public class LockBox {
      */
     public synchronized Entry register(Object o) {
         String moniker = generateMoniker();
-        final LockBoxEntryImpl entry = new LockBoxEntryImpl(o, moniker);
-        map.put(moniker, entry);
+        final LockBoxEntryImpl entry = new LockBoxEntryImpl(this, moniker);
+        map.put(entry, wrap(o));
         return entry;
     }
 
@@ -119,23 +135,33 @@ public class LockBox {
      * <p>It is safe to call this method multiple times.
      *
      * @param entry Entry to deregister
-     * @return Whether the object as removed
+     * @return Whether the object was removed
      */
     public synchronized boolean deregister(Entry entry) {
-        final LockBoxEntryImpl previousEntry =
-            map.remove(entry.getMoniker());
-        return previousEntry != null;
+        return map.remove(entry) != null;
     }
 
     /**
      * Retrieves an entry using its string moniker. Returns null if there is
      * no entry with that moniker.
      *
+     * <p>Successive calls for the same moniker do not necessarily return
+     * the same {@code Entry} object, but those entries'
+     * {@link LockBox.Entry#getValue()} will nevertheless return the same
+     * value.</p>
+     *
      * @param moniker Moniker of the lock box entry
      * @return Entry, or null if there is no entry with this moniker
      */
     public synchronized Entry get(String moniker) {
-        return map.get(moniker);
+        // Linear scan through keys. Not perfect, but safer than maintaining
+        // a map that might mistakenly allow/prevent GC.
+        for (LockBoxEntryImpl entry : map.keySet()) {
+            if (entry.moniker.equals(moniker)) {
+                return entry;
+            }
+        }
+        return null;
     }
 
     /**
@@ -146,6 +172,10 @@ public class LockBox {
      * <p>The object can be retrieved using {@link #getValue()} if you have
      * the entry, or {@link LockBox#get(String)} if you only have the
      * string key.
+     *
+     * <p>Holding onto an Entry will prevent the entry, and the associated
+     * value from being garbage collected. Holding onto the moniker will
+     * not prevent garbage collection.</p>
      */
     public interface Entry
     {
@@ -160,32 +190,55 @@ public class LockBox {
          * String key by which to identify this object. Not null, not easily
          * forged, and unique within the lock box.
          *
+         * <p>Given this moniker, you retrieve the Entry using
+         * {@link LockBox#get(String)}. The retrieved Entry will will have the
+         * same moniker, and will be able to access the same value.</p>
+         *
          * @return String key
          */
         String getMoniker();
+
+        /**
+         * Returns whether the entry is still valid. Returns false if
+         * {@link LockBox#deregister(mondrian.util.LockBox.Entry)} has been
+         * called on this Entry or any entry with the same moniker.
+         *
+         * @return whether entry is registered
+         */
+        boolean isRegistered();
     }
 
     /**
      * Implementation of {@link Entry}.
      *
      * <p>It is important that entries cannot be forged. Therefore this class,
-     * and its constructor, are private.
+     * and its constructor, are private. And equals and hashCode use object
+     * identity.
      */
     private static class LockBoxEntryImpl implements Entry {
-        private final Object value;
+        private final LockBox lockBox;
         private final String moniker;
 
-        private LockBoxEntryImpl(Object value, String moniker) {
-            this.value = value;
+        private LockBoxEntryImpl(LockBox lockBox, String moniker) {
+            this.lockBox = lockBox;
             this.moniker = moniker;
         }
 
         public Object getValue() {
-            return value;
+            final Object value = lockBox.map.get(this);
+            if (value == null) {
+                throw new RuntimeException(
+                    "LockBox has no entry with moniker [" + moniker + "]");
+            }
+            return unwrap(value);
         }
 
         public String getMoniker() {
             return moniker;
+        }
+
+        public boolean isRegistered() {
+            return lockBox.map.containsKey(this);
         }
     }
 }

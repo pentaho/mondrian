@@ -9,8 +9,6 @@
 */
 package mondrian.server.monitor;
 
-import mondrian.server.Locus;
-
 /**
  * Deletion of a segment from the cell cache.
  *
@@ -29,10 +27,16 @@ public class CellCacheSegmentDeleteEvent extends CellCacheEvent {
      */
     public CellCacheSegmentDeleteEvent(
         long timestamp,
-        Locus locus,
-        int coordinateCount)
+        int serverId,
+        int connectionId,
+        long statementId,
+        long executionId,
+        int coordinateCount,
+        Source source)
     {
-        super(timestamp, locus);
+        super(
+            timestamp, serverId, connectionId,
+            statementId, executionId, source);
         this.coordinateCount = coordinateCount;
     }
 

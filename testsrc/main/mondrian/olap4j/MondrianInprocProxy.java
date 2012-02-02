@@ -9,13 +9,14 @@
 package mondrian.olap4j;
 
 import mondrian.tui.XmlaSupport;
+import mondrian.util.CompletedFuture;
 
-import org.olap4j.driver.xmla.XmlaOlap4jServerInfos;
+import org.apache.commons.collections.map.ReferenceMap;
 import org.olap4j.driver.xmla.proxy.XmlaOlap4jProxy;
+import org.olap4j.driver.xmla.XmlaOlap4jServerInfos;
 
 import java.util.*;
 import java.util.concurrent.*;
-import javax.servlet.Servlet;
 
 /**
  * Proxy which implements XMLA requests by talking to mondrian
@@ -30,8 +31,8 @@ public class MondrianInprocProxy
 {
     private final Map<String, String> catalogNameUrls;
     private final String urlString;
-    private final Map<List<String>, Servlet> servletCache =
-        new HashMap<List<String>, Servlet>();
+    private final Map servletCache =
+        new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
 
     /**
      * Creates and initializes a MondrianInprocProxy.
@@ -53,18 +54,6 @@ public class MondrianInprocProxy
         this.urlString = urlString.substring("jdbc:mondrian:".length());
     }
 
-    // Use single-threaded executor for ease of debugging.
-    private static final ExecutorService singleThreadExecutor =
-        Executors.newSingleThreadExecutor(
-            new ThreadFactory() {
-                public Thread newThread(Runnable r) {
-                    Thread t = Executors.defaultThreadFactory().newThread(r);
-                    t.setDaemon(true);
-                    return t;
-               }
-            }
-        );
-
     public byte[] get(
         XmlaOlap4jServerInfos infos,
         String request)
@@ -82,13 +71,7 @@ public class MondrianInprocProxy
         final XmlaOlap4jServerInfos infos,
         final String request)
     {
-        return singleThreadExecutor.submit(
-            new Callable<byte[]>() {
-                public byte[] call() throws Exception {
-                    return get(infos, request);
-                }
-            }
-       );
+        return new CompletedFuture<byte[]>(get(infos, request), null);
     }
 
     public String getEncodingCharsetName() {

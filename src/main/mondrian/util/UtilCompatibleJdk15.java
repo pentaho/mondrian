@@ -142,6 +142,13 @@ public class UtilCompatibleJdk15 implements UtilCompatible {
         try {
             stmt.cancel();
         } catch (SQLException e) {
+            // We can't call stmt.isClosed(); the method doesn't exist until
+            // JDK 1.6. So, mask out the error.
+            if (e.getMessage().equals(
+                    "org.apache.commons.dbcp.DelegatingStatement is closed."))
+            {
+                return;
+            }
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
                     MondrianResource.instance()

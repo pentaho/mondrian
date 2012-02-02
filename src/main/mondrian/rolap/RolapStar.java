@@ -19,6 +19,7 @@ import mondrian.rolap.sql.SqlQuery;
 import mondrian.server.Locus;
 import mondrian.spi.*;
 
+import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -95,11 +96,6 @@ public class RolapStar {
         this.changeListener = schema.getDataSourceChangeListener();
     }
 
-    public AggregationManager getAggregationManager() {
-        return schema.getInternalConnection().getServer()
-            .getAggregationManager();
-    }
-
     /**
      * Retrieves the value of the cell identified by a cell request, if it
      * can be found in the local cache of the current statement (thread).
@@ -166,7 +162,8 @@ public class RolapStar {
 
     private Object getCellFromExternalCache(CellRequest request) {
         final SegmentWithData segment =
-            getAggregationManager().cacheMgr.peek(request);
+            Locus.peek().getServer().getAggregationManager()
+                .cacheMgr.peek(request);
         if (segment == null) {
             return null;
         }
@@ -174,8 +171,7 @@ public class RolapStar {
     }
 
     public void register(SegmentWithData segment) {
-        final Bar bar = localBars.get();
-        bar.segmentRefs.add(
+        localBars.get().segmentRefs.add(
             new SoftReference<SegmentWithData>(segment));
     }
 
@@ -189,7 +185,7 @@ public class RolapStar {
     public static class Bar {
         /** Holds all thread-local aggregations of this star. */
         private final Map<AggregationKey, Aggregation> aggregations =
-            new HashMap<AggregationKey, Aggregation>();
+            new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
 
         private final List<SoftReference<SegmentWithData>> segmentRefs =
             new ArrayList<SoftReference<SegmentWithData>>();
@@ -372,9 +368,8 @@ public class RolapStar {
             }
 
             // Clear aggregation cache for the current thread context.
-            final Bar bar = localBars.get();
-            bar.aggregations.clear();
-            bar.segmentRefs.clear();
+            localBars.get().aggregations.clear();
+            localBars.get().segmentRefs.clear();
         }
     }
 
@@ -398,7 +393,8 @@ public class RolapStar {
             new Aggregation(
                 aggregationKey);
 
-        localBars.get().aggregations.put(aggregationKey, aggregation);
+        localBars.get().aggregations.put(
+            aggregationKey, aggregation);
 
         // Let the change listener get the opportunity to register the
         // first time the aggregation is used
@@ -421,7 +417,6 @@ public class RolapStar {
      * @see Util#deprecated(Object)  currently always returns null -- remove
      */
     public Aggregation lookupSegment(AggregationKey aggregationKey) {
-        // First try thread local cache
         return localBars.get().aggregations.get(aggregationKey);
     }
 

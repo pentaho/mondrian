@@ -13,14 +13,19 @@ import mondrian.olap.*;
 import mondrian.olap.CacheControl.CellRegion;
 import mondrian.rolap.*;
 import mondrian.rolap.cache.*;
+import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.*;
 import mondrian.spi.*;
+import mondrian.util.ByteString;
 import mondrian.util.Pair;
 
+import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.log4j.Logger;
 
+import java.io.PrintWriter;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 
 /**
@@ -207,15 +212,14 @@ import java.util.concurrent.*;
 public class SegmentCacheManager {
     private final Handler handler = new Handler();
     private final Actor ACTOR;
-    public final SegmentCacheIndex segmentIndex;
-    final Thread thread;
+    public final Thread thread;
 
     /**
      * Executor with which to send requests to external caches.
      */
     public final ExecutorService cacheExecutor =
         Util.getExecutorService(
-            10, 0, 1, 10,
+            10, 0, 1, -1,
             "mondrian.rolap.agg.SegmentCacheManager$cacheExecutor");
 
     /**
@@ -226,7 +230,8 @@ public class SegmentCacheManager {
      */
     public final ExecutorService sqlExecutor =
         Util.getExecutorService(
-            10, 0, 1, 10, "mondrian.rolap.agg.SegmentCacheManager$sqlExecutor");
+            10, 0, 1, 10,
+            "mondrian.rolap.agg.SegmentCacheManager$sqlExecutor");
 
     // NOTE: This list is only mutable for testing purposes. Would rather it
     // were immutable.
@@ -234,6 +239,7 @@ public class SegmentCacheManager {
         new CopyOnWriteArrayList<SegmentCacheWorker>();
 
     public final SegmentCache compositeCache;
+    private final SegmentCacheIndexRegistry indexRegistry;
 
     private static final Logger LOGGER =
         Logger.getLogger(AggregationManager.class);
@@ -243,8 +249,10 @@ public class SegmentCacheManager {
         thread = new Thread(
             ACTOR, "mondrian.rolap.agg.SegmentCacheManager$ACTOR");
         thread.setDaemon(true);
-        segmentIndex = new SegmentCacheIndexImpl(thread);
         thread.start();
+
+        // Create the index registry.
+        this.indexRegistry = new SegmentCacheIndexRegistry();
 
         // Add a local cache, if needed.
         if (!MondrianProperties.instance().DisableCaching.get()) {
@@ -270,6 +278,10 @@ public class SegmentCacheManager {
         return ACTOR.execute(handler, command);
     }
 
+    public SegmentCacheIndexRegistry getIndexRegistry() {
+        return indexRegistry;
+    }
+
     /**
      * Adds a segment to segment index.
      *
@@ -282,15 +294,22 @@ public class SegmentCacheManager {
      * @param body segment body
      */
     public void loadSucceeded(
+        RolapStar star,
         SegmentHeader header,
         SegmentBody body)
     {
+        final Locus locus = Locus.peek();
         ACTOR.event(
             handler,
             new SegmentLoadSucceededEvent(
                 System.currentTimeMillis(),
-                Locus.peek(),
-                this,
+                locus.getServer().getMonitor(),
+                locus.getServer().getId(),
+                locus.execution.getMondrianStatement()
+                    .getMondrianConnection().getId(),
+                locus.execution.getMondrianStatement().getId(),
+                locus.execution.getId(),
+                star,
                 header,
                 body));
     }
@@ -305,15 +324,22 @@ public class SegmentCacheManager {
      * @param throwable Error
      */
     public void loadFailed(
+        RolapStar star,
         SegmentHeader header,
         Throwable throwable)
     {
+        final Locus locus = Locus.peek();
         ACTOR.event(
             handler,
             new SegmentLoadFailedEvent(
                 System.currentTimeMillis(),
-                Locus.peek(),
-                this,
+                locus.getServer().getMonitor(),
+                locus.getServer().getId(),
+                locus.execution.getMondrianStatement()
+                    .getMondrianConnection().getId(),
+                locus.execution.getMondrianStatement().getId(),
+                locus.execution.getId(),
+                star,
                 header,
                 throwable));
     }
@@ -328,14 +354,22 @@ public class SegmentCacheManager {
      * @param header segment header
      */
     public void remove(
+        RolapStar star,
         SegmentHeader header)
     {
+        final Locus locus = Locus.peek();
         ACTOR.event(
             handler,
             new SegmentRemoveEvent(
                 System.currentTimeMillis(),
-                Locus.peek(),
+                locus.getServer().getMonitor(),
+                locus.getServer().getId(),
+                locus.execution.getMondrianStatement()
+                    .getMondrianConnection().getId(),
+                locus.execution.getMondrianStatement().getId(),
+                locus.execution.getId(),
                 this,
+                star,
                 header));
     }
 
@@ -343,11 +377,17 @@ public class SegmentCacheManager {
      * Tells the cache that a segment is newly available in an external cache.
      */
     public void externalSegmentCreated(SegmentHeader header) {
+        final Locus locus = Locus.peek();
         ACTOR.event(
             handler,
             new ExternalSegmentCreatedEvent(
                 System.currentTimeMillis(),
-                Locus.peek(),
+                locus.getServer().getMonitor(),
+                locus.getServer().getId(),
+                locus.execution.getMondrianStatement()
+                    .getMondrianConnection().getId(),
+                locus.execution.getMondrianStatement().getId(),
+                locus.execution.getId(),
                 this,
                 header));
     }
@@ -357,9 +397,29 @@ public class SegmentCacheManager {
      * cache.
      */
     public void externalSegmentDeleted(SegmentHeader header) {
+        final Locus locus = Locus.peek();
         ACTOR.event(
             handler,
-            new ExternalSegmentDeletedEvent(this, header));
+            new ExternalSegmentDeletedEvent(
+                System.currentTimeMillis(),
+                locus.getServer().getMonitor(),
+                locus.getServer().getId(),
+                locus.execution.getMondrianStatement()
+                    .getMondrianConnection().getId(),
+                locus.execution.getMondrianStatement().getId(),
+                locus.execution.getId(),
+                this,
+                header));
+    }
+
+    public void printCacheState(
+        CellRegion region,
+        PrintWriter pw,
+        Locus locus)
+    {
+        ACTOR.execute(
+            handler,
+            new PrintCacheStateCommand(region, pw, locus));
     }
 
     /**
@@ -371,14 +431,18 @@ public class SegmentCacheManager {
         sqlExecutor.shutdown();
     }
 
-    public SegmentBuilder.SegmentConverter getConverter(SegmentHeader header) {
-        return segmentIndex.getConverter(
-            header.schemaName,
-            header.schemaChecksum,
-            header.cubeName,
-            header.rolapStarFactTableName,
-            header.measureName,
-            header.compoundPredicates);
+    public SegmentBuilder.SegmentConverter getConverter(
+        RolapStar star,
+        SegmentHeader header)
+    {
+        return indexRegistry.getIndex(star)
+                .getConverter(
+                    header.schemaName,
+                    header.schemaChecksum,
+                    header.cubeName,
+                    header.rolapStarFactTableName,
+                    header.measureName,
+                    header.compoundPredicates);
     }
 
     /**
@@ -411,7 +475,9 @@ public class SegmentCacheManager {
                 final SegmentBuilder.SegmentConverter converter =
                     response.converterMap.get(
                         SegmentCacheIndexImpl.makeConverterKey(header));
-                return converter.convert(header, body);
+                if (converter != null) {
+                    return converter.convert(header, body);
+                }
             }
         }
         for (Map.Entry<SegmentHeader, Future<SegmentBody>> entry
@@ -427,7 +493,9 @@ public class SegmentCacheManager {
                 final SegmentBuilder.SegmentConverter converter =
                     response.converterMap.get(
                         SegmentCacheIndexImpl.makeConverterKey(header));
-                return converter.convert(header, body);
+                if (converter != null) {
+                    return converter.convert(header, body);
+                }
             }
         }
         return null;
@@ -444,16 +512,20 @@ public class SegmentCacheManager {
         void visit(ExternalSegmentDeletedEvent event);
     }
 
-    private static class Handler implements Visitor {
+    private class Handler implements Visitor {
         public void visit(SegmentLoadSucceededEvent event) {
-            event.cacheMgr.segmentIndex.loadSucceeded(
-                event.header,
-                event.body);
+            indexRegistry.getIndex(event.star)
+                .loadSucceeded(
+                    event.header,
+                    event.body);
 
-            event.locus.getServer().getMonitor().sendEvent(
+            event.monitor.sendEvent(
                 new CellCacheSegmentCreateEvent(
                     event.timestamp,
-                    event.locus,
+                    event.serverId,
+                    event.connectionId,
+                    event.statementId,
+                    event.executionId,
                     event.header.getConstrainedColumns().size(),
                     event.body == null
                         ? 0
@@ -462,19 +534,25 @@ public class SegmentCacheManager {
         }
 
         public void visit(SegmentLoadFailedEvent event) {
-            event.cacheMgr.segmentIndex.loadFailed(
-                event.header,
-                event.throwable);
+            indexRegistry.getIndex(event.star)
+                .loadFailed(
+                    event.header,
+                    event.throwable);
         }
 
         public void visit(final SegmentRemoveEvent event) {
-            event.cacheMgr.segmentIndex.remove(event.header);
+            indexRegistry.getIndex(event.star)
+                .remove(event.header);
 
-            event.locus.getServer().getMonitor().sendEvent(
+            event.monitor.sendEvent(
                 new CellCacheSegmentDeleteEvent(
                     event.timestamp,
-                    event.locus,
-                    event.header.getConstrainedColumns().size()));
+                    event.serverId,
+                    event.connectionId,
+                    event.statementId,
+                    event.executionId,
+                    event.header.getConstrainedColumns().size(),
+                    CellCacheEvent.Source.CACHE_CONTROL));
 
             // Remove the segment from external caches. Use an executor, because
             // it may take some time. We discard the future, because we don't
@@ -499,19 +577,38 @@ public class SegmentCacheManager {
         }
 
         public void visit(ExternalSegmentCreatedEvent event) {
-            event.cacheMgr.segmentIndex.add(event.header, false, null);
-
-            event.locus.getServer().getMonitor().sendEvent(
-                new CellCacheSegmentCreateEvent(
-                    event.timestamp,
-                    event.locus,
-                    event.header.getConstrainedColumns().size(),
-                    0,
-                    CellCacheSegmentCreateEvent.Source.EXTERNAL));
+            final SegmentCacheIndex index =
+                event.cacheMgr.indexRegistry.getIndex(event.header);
+            if (index != null) {
+                index.add(event.header, false, null);
+                event.monitor.sendEvent(
+                    new CellCacheSegmentCreateEvent(
+                        event.timestamp,
+                        event.serverId,
+                        event.connectionId,
+                        event.statementId,
+                        event.executionId,
+                        event.header.getConstrainedColumns().size(),
+                        0,
+                        CellCacheEvent.Source.EXTERNAL));
+            }
         }
 
         public void visit(ExternalSegmentDeletedEvent event) {
-            event.cacheMgr.segmentIndex.remove(event.header);
+            final SegmentCacheIndex index =
+                event.cacheMgr.indexRegistry.getIndex(event.header);
+            if (index != null) {
+                index.remove(event.header);
+                event.monitor.sendEvent(
+                    new CellCacheSegmentDeleteEvent(
+                        event.timestamp,
+                        event.serverId,
+                        event.connectionId,
+                        event.statementId,
+                        event.executionId,
+                        event.header.getConstrainedColumns().size(),
+                        CellCacheEvent.Source.EXTERNAL));
+            }
         }
     }
 
@@ -533,12 +630,12 @@ public class SegmentCacheManager {
 
         public FlushCommand(
             Locus locus,
-            SegmentCacheManager cacheMgr,
+            SegmentCacheManager mgr,
             CellRegion region,
             CacheControlImpl cacheControlImpl)
         {
             this.locus = locus;
-            this.cacheMgr = cacheMgr;
+            this.cacheMgr = mgr;
             this.region = region;
             this.cacheControlImpl = cacheControlImpl;
         }
@@ -556,15 +653,20 @@ public class SegmentCacheManager {
                 CacheControlImpl.findMeasures(region);
             final SegmentColumn[] flushRegion =
                 CacheControlImpl.findAxisValues(region);
+            final Collection<RolapStar> starList =
+                CacheControlImpl.getStars(region);
 
             for (Member member : measures) {
                 if (!(member instanceof RolapStoredMeasure)) {
                     continue;
                 }
-                RolapStoredMeasure storedMeasure =
+                final RolapStoredMeasure storedMeasure =
                     (RolapStoredMeasure) member;
+                final RolapStar star = storedMeasure.getCube().getStar();
+                final SegmentCacheIndex index =
+                    cacheMgr.indexRegistry.getIndex(star);
                 headers.addAll(
-                    cacheMgr.segmentIndex.intersectRegion(
+                    index.intersectRegion(
                         member.getDimension().getSchema().getName(),
                         ((RolapSchema) member.getDimension().getSchema())
                             .getChecksum(),
@@ -578,8 +680,29 @@ public class SegmentCacheManager {
             // If flushRegion is empty, this means we must clear all
             // segments for the region's measures.
             if (flushRegion.length == 0) {
-                for (SegmentHeader header : headers) {
-                    cacheMgr.remove(header);
+                for (final SegmentHeader header : headers) {
+                    for (RolapStar star : starList) {
+                        cacheMgr.indexRegistry.getIndex(star).remove(header);
+                    }
+                    // Remove the segment from external caches. Use an
+                    // executor, because it may take some time. We discard
+                    // the future, because we don't care too much if it fails.
+                    Util.discard(cacheMgr.cacheExecutor.submit(
+                        new Runnable() {
+                            public void run() {
+                                try {
+                                    // Note that the SegmentCache API doesn't
+                                    // require us to verify that the segment
+                                    // exists (by calling "contains") before we
+                                    // call "remove".
+                                    cacheMgr.compositeCache.remove(header);
+                                } catch (Throwable e) {
+                                    LOGGER.warn(
+                                        "remove header failed: " + header,
+                                        e);
+                                }
+                            }
+                        }));
                 }
                 return new FlushResult(
                     Collections.<Callable<Boolean>>emptyList());
@@ -596,9 +719,11 @@ public class SegmentCacheManager {
                 if (!header.canConstrain(flushRegion)) {
                     // We have to delete that segment altogether.
                     cacheControlImpl.trace(
-                        "discard segment - it cannot be constrained and maintain consistency: "
+                        "discard segment - it cannot be constrained and maintain consistency:\n"
                         + header.getDescription());
-                    cacheMgr.remove(header);
+                    for (RolapStar star : starList) {
+                        cacheMgr.indexRegistry.getIndex(star).remove(header);
+                    }
                     continue;
                 }
                 final SegmentHeader newHeader =
@@ -625,12 +750,46 @@ public class SegmentCacheManager {
                             }
                         });
                 }
-                cacheMgr.segmentIndex.remove(header);
-                cacheMgr.segmentIndex.add(newHeader, false, null);
+                for (RolapStar star : starList) {
+                    SegmentCacheIndex index =
+                        cacheMgr.indexRegistry.getIndex(star);
+                    index.remove(header);
+                    index.add(newHeader, false, null);
+                }
             }
 
             // Done
             return new FlushResult(callableList);
+        }
+    }
+
+    private class PrintCacheStateCommand
+        implements SegmentCacheManager.Command<Void>
+    {
+        private final PrintWriter pw;
+        private final Locus locus;
+        private final CellRegion region;
+
+        public PrintCacheStateCommand(
+            CellRegion region,
+            PrintWriter pw,
+            Locus locus)
+        {
+            this.region = region;
+            this.pw = pw;
+            this.locus = locus;
+        }
+
+        public Void call() {
+            for (RolapStar star : CacheControlImpl.getStars(region)) {
+                indexRegistry.getIndex(star)
+                    .printCacheState(pw);
+            }
+            return null;
+        }
+
+        public Locus getLocus() {
+            return locus;
         }
     }
 
@@ -858,24 +1017,36 @@ public class SegmentCacheManager {
     }
 
     private static class SegmentLoadSucceededEvent extends Event {
-        private final SegmentCacheManager cacheMgr;
         private final SegmentHeader header;
         private final SegmentBody body;
-        private final Locus locus;
         private final long timestamp;
+        private final RolapStar star;
+        private final int serverId;
+        private final int connectionId;
+        private final long statementId;
+        private final long executionId;
+        private final Monitor monitor;
 
         public SegmentLoadSucceededEvent(
             long timestamp,
-            Locus locus,
-            SegmentCacheManager cacheMgr,
+            Monitor monitor,
+            int serverId,
+            int connectionId,
+            long statementId,
+            long executionId,
+            RolapStar star,
             SegmentHeader header,
             SegmentBody body)
         {
             this.timestamp = timestamp;
-            this.locus = locus;
+            this.monitor = monitor;
+            this.serverId = serverId;
+            this.connectionId = connectionId;
+            this.statementId = statementId;
+            this.executionId = executionId;
             assert header != null;
-            assert cacheMgr != null;
-            this.cacheMgr = cacheMgr;
+            assert star != null;
+            this.star = star;
             this.header = header;
             this.body = body; // may be null
         }
@@ -886,25 +1057,36 @@ public class SegmentCacheManager {
     }
 
     private static class SegmentLoadFailedEvent extends Event {
-        private final SegmentCacheManager cacheMgr;
         private final SegmentHeader header;
-        private final Locus locus;
         private final Throwable throwable;
         private final long timestamp;
+        private final RolapStar star;
+        private final Monitor monitor;
+        private final int serverId;
+        private final int connectionId;
+        private final long statementId;
+        private final long executionId;
 
         public SegmentLoadFailedEvent(
             long timestamp,
-            Locus locus,
-            SegmentCacheManager cacheMgr,
+            Monitor monitor,
+            int serverId,
+            int connectionId,
+            long statementId,
+            long executionId,
+            RolapStar star,
             SegmentHeader header,
             Throwable throwable)
         {
             this.timestamp = timestamp;
-            this.locus = locus;
+            this.monitor = monitor;
+            this.serverId = serverId;
+            this.connectionId = connectionId;
+            this.statementId = statementId;
+            this.executionId = executionId;
+            this.star = star;
             this.throwable = throwable;
             assert header != null;
-            assert cacheMgr != null;
-            this.cacheMgr = cacheMgr;
             this.header = header;
         }
 
@@ -914,22 +1096,36 @@ public class SegmentCacheManager {
     }
 
     private static class SegmentRemoveEvent extends Event {
-        private final SegmentCacheManager cacheMgr;
         private final SegmentHeader header;
         private final long timestamp;
-        private final Locus locus;
+        private final Monitor monitor;
+        private final int serverId;
+        private final int connectionId;
+        private final long statementId;
+        private final long executionId;
+        private final RolapStar star;
+        private final SegmentCacheManager cacheMgr;
 
         public SegmentRemoveEvent(
             long timestamp,
-            Locus locus,
+            Monitor monitor,
+            int serverId,
+            int connectionId,
+            long statementId,
+            long executionId,
             SegmentCacheManager cacheMgr,
+            RolapStar star,
             SegmentHeader header)
         {
             this.timestamp = timestamp;
-            this.locus = locus;
-            assert header != null;
-            assert cacheMgr != null;
+            this.monitor = monitor;
+            this.serverId = serverId;
+            this.connectionId = connectionId;
+            this.statementId = statementId;
+            this.executionId = executionId;
             this.cacheMgr = cacheMgr;
+            this.star = star;
+            assert header != null;
             this.header = header;
         }
 
@@ -942,16 +1138,28 @@ public class SegmentCacheManager {
         private final SegmentCacheManager cacheMgr;
         private final SegmentHeader header;
         private final long timestamp;
-        private final Locus locus;
+        private final Monitor monitor;
+        private final int serverId;
+        private final int connectionId;
+        private final long statementId;
+        private final long executionId;
 
         public ExternalSegmentCreatedEvent(
             long timestamp,
-            Locus locus,
+            Monitor monitor,
+            int serverId,
+            int connectionId,
+            long statementId,
+            long executionId,
             SegmentCacheManager cacheMgr,
             SegmentHeader header)
         {
             this.timestamp = timestamp;
-            this.locus = locus;
+            this.monitor = monitor;
+            this.serverId = serverId;
+            this.connectionId = connectionId;
+            this.statementId = statementId;
+            this.executionId = executionId;
             assert header != null;
             assert cacheMgr != null;
             this.cacheMgr = cacheMgr;
@@ -966,11 +1174,29 @@ public class SegmentCacheManager {
     private static class ExternalSegmentDeletedEvent extends Event {
         private final SegmentCacheManager cacheMgr;
         private final SegmentHeader header;
+        private final long timestamp;
+        private final Monitor monitor;
+        private final int serverId;
+        private final int connectionId;
+        private final long statementId;
+        private final long executionId;
 
         public ExternalSegmentDeletedEvent(
+            long timestamp,
+            Monitor monitor,
+            int serverId,
+            int connectionId,
+            long statementId,
+            long executionId,
             SegmentCacheManager cacheMgr,
             SegmentHeader header)
         {
+            this.timestamp = timestamp;
+            this.monitor = monitor;
+            this.serverId = serverId;
+            this.connectionId = connectionId;
+            this.statementId = statementId;
+            this.executionId = executionId;
             assert header != null;
             assert cacheMgr != null;
             this.cacheMgr = cacheMgr;
@@ -1000,39 +1226,47 @@ public class SegmentCacheManager {
             if (e.isLocal()) {
                 return;
             }
-            final SegmentCacheManager.Command<Void> command;
-            final Locus locus = Locus.peek();
-            switch (e.getEventType()) {
-            case ENTRY_CREATED:
-                command =
-                    new Command<Void>() {
-                        public Void call() {
-                            cacheMgr.externalSegmentCreated(e.getSource());
-                            return null;
+            Locus.execute(
+                Execution.NONE,
+                "AsyncCacheListener.handle",
+                new Locus.Action<Void>() {
+                    public Void execute() {
+                        final SegmentCacheManager.Command<Void> command;
+                        final Locus locus = Locus.peek();
+                        switch (e.getEventType()) {
+                        case ENTRY_CREATED:
+                            command =
+                                new Command<Void>() {
+                                    public Void call() {
+                                        cacheMgr.externalSegmentCreated(
+                                            e.getSource());
+                                        return null;
+                                    }
+                                    public Locus getLocus() {
+                                        return locus;
+                                    }
+                                };
+                            break;
+                        case ENTRY_DELETED:
+                            command =
+                                new Command<Void>() {
+                                    public Void call() {
+                                        cacheMgr.externalSegmentDeleted(
+                                            e.getSource());
+                                        return null;
+                                    }
+                                    public Locus getLocus() {
+                                        return locus;
+                                    }
+                                };
+                            break;
+                        default:
+                            throw new UnsupportedOperationException();
                         }
-
-                        public Locus getLocus() {
-                            return locus;
-                        }
-                    };
-                break;
-            case ENTRY_DELETED:
-                command =
-                    new Command<Void>() {
-                        public Void call() {
-                            cacheMgr.externalSegmentDeleted(e.getSource());
-                            return null;
-                        }
-
-                        public Locus getLocus() {
-                            return locus;
-                        }
-                    };
-                break;
-            default:
-                throw new UnsupportedOperationException();
-            }
-            cacheMgr.execute(command);
+                        cacheMgr.execute(command);
+                        return null;
+                    }
+                });
         }
     }
 
@@ -1167,17 +1401,18 @@ public class SegmentCacheManager {
             final RolapSchema schema = star.getSchema();
             final AggregationKey key = new AggregationKey(request);
             final List<SegmentHeader> headers =
-                segmentIndex.locate(
-                    schema.getName(),
-                    schema.getChecksum(),
-                    measure.getCubeName(),
-                    measure.getName(),
-                    star.getFactTable().getAlias(),
-                    request.getConstrainedColumnsBitKey(),
-                    request.getMappedCellValues(),
-                    AggregationKey.getCompoundPredicateStringList(
-                        star,
-                        key.getCompoundPredicateList()));
+                indexRegistry.getIndex(star)
+                    .locate(
+                        schema.getName(),
+                        schema.getChecksum(),
+                        measure.getCubeName(),
+                        measure.getName(),
+                        star.getFactTable().getAlias(),
+                        request.getConstrainedColumnsBitKey(),
+                        request.getMappedCellValues(),
+                        AggregationKey.getCompoundPredicateStringList(
+                            star,
+                            key.getCompoundPredicateList()));
 
             final Map<SegmentHeader, Future<SegmentBody>> headerMap =
                 new HashMap<SegmentHeader, Future<SegmentBody>>();
@@ -1188,11 +1423,12 @@ public class SegmentCacheManager {
             // is loading via SQL.)
             for (SegmentHeader header : headers) {
                 final Future<SegmentBody> bodyFuture =
-                    segmentIndex.getFuture(header);
+                    indexRegistry.getIndex(star)
+                        .getFuture(header);
                 if (bodyFuture != null) {
                     converterMap.put(
                         SegmentCacheIndexImpl.makeConverterKey(header),
-                        getConverter(header));
+                        getConverter(star, header));
                     headerMap.put(
                         header, bodyFuture);
                 }
@@ -1216,6 +1452,49 @@ public class SegmentCacheManager {
         {
             this.headerMap = headerMap;
             this.converterMap = converterMap;
+        }
+    }
+
+    /**
+     * Registry of all the indexes that were created for this
+     * cache manager, per {@link RolapStar}.
+     */
+    public class SegmentCacheIndexRegistry {
+        private final Map<RolapStar, SegmentCacheIndex> indexes =
+            new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.SOFT);
+        /**
+         * Returns the {@link SegmentCacheIndex} for a given
+         * {@link RolapStar}.
+         */
+        public synchronized SegmentCacheIndex getIndex(RolapStar star) {
+            if (!indexes.containsKey(star)) {
+                indexes.put(star, new SegmentCacheIndexImpl(thread));
+            }
+            return indexes.get(star);
+        }
+        /**
+         * Returns the {@link SegmentCacheIndex} for a given
+         * {@link SegmentHeader}.
+         */
+        private synchronized SegmentCacheIndex getIndex(
+            SegmentHeader header)
+        {
+            for (Entry<RolapStar, SegmentCacheIndex> entry
+                : indexes.entrySet())
+            {
+                final String factTableName =
+                    entry.getKey().getFactTable().getTableName();
+                final ByteString schemaChecksum =
+                    entry.getKey().getSchema().getChecksum();
+                if (!factTableName.equals(header.rolapStarFactTableName)) {
+                    continue;
+                }
+                if (!schemaChecksum.equals(header.schemaChecksum)) {
+                    continue;
+                }
+                return entry.getValue();
+            }
+            return null;
         }
     }
 }

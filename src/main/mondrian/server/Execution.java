@@ -235,6 +235,7 @@ public class Execution {
             {
                 Util.cancelAndCloseStatement(entry.getValue());
             }
+            statements.clear();
         }
     }
 
@@ -246,6 +247,7 @@ public class Execution {
     public void end() {
         queryTiming.done();
         this.state = State.DONE;
+        statements.clear();
         fireExecutionEndEvent();
     }
 
