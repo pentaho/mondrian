@@ -674,7 +674,7 @@ length($0) > maxLineLength                      \
 && $0 !~ /^import /                             \
 && $0 !~ /http:/                                \
 && $0 !~ /\/\/ Expect "/                        \
-&& s !~ /^ *(\+ |<< )?string\)?[;,]?$/ {
+&& s !~ /^ *(\+ |<< |: |\?)?string\)?[;,]?$/ {
     error( \
         fname, \
         FNR, \
