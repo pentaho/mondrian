@@ -128,7 +128,7 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
                 "does not start with '" + CONNECT_STRING_PREFIX + "'");
         }
         Util.PropertyList list = Util.parseConnectString(x);
-        final Map<String, String> map = Olap4jUtil.toMap(info);
+        final Map<String, String> map = Util.toMap(info);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             list.put(entry.getKey(), entry.getValue());
         }

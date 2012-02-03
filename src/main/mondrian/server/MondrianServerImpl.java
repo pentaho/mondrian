@@ -170,7 +170,7 @@ class MondrianServerImpl
         // entry.
         this.lockBox = registry.lockBox;
 
-        this.aggMgr = new AggregationManager();
+        this.aggMgr = new AggregationManager(this);
 
         this.shepherd = new RolapResultShepherd();
     }

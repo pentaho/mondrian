@@ -17,7 +17,6 @@ import mondrian.util.LockBox;
 
 import junit.framework.AssertionFailedError;
 
-import org.olap4j.impl.Olap4jUtil;
 import org.olap4j.metadata.XmlaConstants;
 
 import org.custommonkey.xmlunit.XMLAssert;
@@ -103,7 +102,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
                 props.put(SESSION_ID_PROP, sessionId);
             }
             expectedStr = Util.replaceProperties(
-                expectedStr, Olap4jUtil.toMap(props));
+                expectedStr, Util.toMap(props));
         }
         return expectedStr;
     }
@@ -119,7 +118,7 @@ public abstract class XmlaBaseTestCase extends FoodMartTestCase {
                 props.put(SESSION_ID_PROP, sessionId);
             }
             requestText = Util.replaceProperties(
-                requestText, Olap4jUtil.toMap(props));
+                requestText, Util.toMap(props));
         }
 if (DEBUG) {
 System.out.println("requestText=" + requestText);
@@ -579,7 +578,7 @@ System.out.println("Got CONTINUE");
             props.setProperty(XmlaBaseTestCase.ROLE_PROP, entry.getMoniker());
         }
         soapRequestText = Util.replaceProperties(
-            soapRequestText, Olap4jUtil.toMap(props));
+            soapRequestText, Util.toMap(props));
 
         Document soapReqDoc = XmlUtil.parseString(soapRequestText);
         Document xmlaReqDoc = XmlaSupport.extractBodyFromSoap(soapReqDoc);
@@ -637,7 +636,7 @@ System.out.println("Got CONTINUE");
             props.setProperty(XmlaBaseTestCase.ROLE_PROP, entry.getMoniker());
         }
         soapRequestText = Util.replaceProperties(
-            soapRequestText, Olap4jUtil.toMap(props));
+            soapRequestText, Util.toMap(props));
 
         Document soapReqDoc = XmlUtil.parseString(soapRequestText);
         Document xmlaReqDoc = XmlaSupport.extractBodyFromSoap(soapReqDoc);

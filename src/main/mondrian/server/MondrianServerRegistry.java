@@ -34,6 +34,10 @@ public class MondrianServerRegistry {
     public static final MondrianServerRegistry INSTANCE =
         new MondrianServerRegistry();
 
+    public MondrianServerRegistry() {
+        super();
+    }
+
     /**
      * Registry of all servers.
      */

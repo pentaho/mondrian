@@ -11,8 +11,6 @@ package mondrian.server;
 
 import mondrian.olap.Util;
 
-import org.olap4j.impl.Olap4jUtil;
-
 import java.io.IOException;
 
 /**
@@ -45,7 +43,7 @@ public class UrlRepositoryContentFinder
     public String getContent() {
         try {
             return Util.readURL(
-                url, Olap4jUtil.toMap(System.getProperties()));
+                url, Util.toMap(System.getProperties()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -44,17 +44,18 @@ public class AggregationManager extends RolapAggregationManager {
     private static final Logger LOGGER =
         Logger.getLogger(AggregationManager.class);
 
-    public final SegmentCacheManager cacheMgr = new SegmentCacheManager();
+    public final SegmentCacheManager cacheMgr;
 
     /**
      * Creates the AggregationManager.
      */
-    public AggregationManager() {
+    public AggregationManager(MondrianServer server) {
         if (properties.EnableCacheHitCounters.get()) {
             LOGGER.error(
                 "Property " + properties.EnableCacheHitCounters.getPath()
                 + " is obsolete; ignored.");
         }
+        this.cacheMgr = new SegmentCacheManager(server);
     }
 
     /**
