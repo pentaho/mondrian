@@ -4318,6 +4318,84 @@ public class SchemaTest extends FoodMartTestCase {
             + "{}\n"
             + "$39,431.67");
     }
+
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1065">MONDRIAN-1065,
+     * Incorrect data column is used in the WHERE clause of the SQL when
+     * using Oracle DB</a>.
+     */
+    public void testBugMondrian1065() {
+        // Test case only works under Oracle
+        switch (TestContext.instance().getDialect().getDatabaseProduct()) {
+        case ORACLE:
+            break;
+        default:
+            return;
+        }
+        TestContext testContext = TestContext.instance().createSubstitutingCube(
+                "Sales",
+                "  <Dimension name=\"PandaSteak\" foreignKey=\"promotion_id\">\n"
+                + "    <Hierarchy hasAll=\"false\" primaryKey=\"lvl_3_id\">\n"
+                + "      <InlineTable alias=\"meatShack\">\n"
+                + "        <ColumnDefs>\n"
+                + "          <ColumnDef name=\"lvl_1_id\" type=\"Integer\"/>\n"
+                + "          <ColumnDef name=\"lvl_1_name\" type=\"String\"/>\n"
+                + "          <ColumnDef name=\"lvl_2_id\" type=\"Integer\"/>\n"
+                + "          <ColumnDef name=\"lvl_2_name\" type=\"String\"/>\n"
+                + "          <ColumnDef name=\"lvl_3_id\" type=\"Integer\"/>\n"
+                + "          <ColumnDef name=\"lvl_3_name\" type=\"String\"/>\n"
+                + "        </ColumnDefs>\n"
+                + "        <Rows>\n"
+                + "          <Row>\n"
+                + "            <Value column=\"lvl_1_id\">1</Value>\n"
+                + "            <Value column=\"lvl_1_name\">level 1</Value>\n"
+                + "            <Value column=\"lvl_2_id\">1</Value>\n"
+                + "            <Value column=\"lvl_2_name\">level 2 - 1</Value>\n"
+                + "            <Value column=\"lvl_3_id\">112</Value>\n"
+                + "            <Value column=\"lvl_3_name\">level 3 - 1</Value>\n"
+                + "          </Row>\n"
+                + "          <Row>\n"
+                + "            <Value column=\"lvl_1_id\">1</Value>\n"
+                + "            <Value column=\"lvl_1_name\">level 1</Value>\n"
+                + "            <Value column=\"lvl_2_id\">1</Value>\n"
+                + "            <Value column=\"lvl_2_name\">level 2 - 1</Value>\n"
+                + "            <Value column=\"lvl_3_id\">114</Value>\n"
+                + "            <Value column=\"lvl_3_name\">level 3 - 2</Value>\n"
+                + "          </Row>\n"
+                + "        </Rows>\n"
+                + "      </InlineTable>\n"
+                + "      <Level name=\"Level1\" column=\"lvl_1_id\" nameColumn=\"lvl_1_name\" />\n"
+                + "      <Level name=\"Level2\" column=\"lvl_2_id\" nameColumn=\"lvl_2_name\" />\n"
+                + "      <Level name=\"Level3\" column=\"lvl_3_id\" nameColumn=\"lvl_3_name\" />\n"
+                + "    </Hierarchy>\n"
+                + "  </Dimension>\n");
+        testContext.assertQueryReturns(
+            "select non empty crossjoin({[PandaSteak].[Level3].[level 3 - 1], [PandaSteak].[Level3].[level 3 - 2]}, {[Measures].[Unit Sales], [Measures].[Store Cost]}) on columns, {[Product].[Product Family].Members} on rows from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[PandaSteak].[level 1].[level 2 - 1].[level 3 - 1], [Measures].[Unit Sales]}\n"
+            + "{[PandaSteak].[level 1].[level 2 - 1].[level 3 - 1], [Measures].[Store Cost]}\n"
+            + "{[PandaSteak].[level 1].[level 2 - 1].[level 3 - 2], [Measures].[Unit Sales]}\n"
+            + "{[PandaSteak].[level 1].[level 2 - 1].[level 3 - 2], [Measures].[Store Cost]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 5\n"
+            + "Row #0: 3.50\n"
+            + "Row #0: 9\n"
+            + "Row #0: 7.70\n"
+            + "Row #1: 27\n"
+            + "Row #1: 20.77\n"
+            + "Row #1: 46\n"
+            + "Row #1: 39.88\n"
+            + "Row #2: 10\n"
+            + "Row #2: 9.63\n"
+            + "Row #2: 17\n"
+            + "Row #2: 16.21\n");
+    }
 }
 
 // End SchemaTest.java

@@ -635,7 +635,9 @@ public class SqlConstraintUtils {
                         baseCube,
                         aggStar,
                         getColumnValue(
-                            gp.getKey(),
+                            level.nameExp != null
+                                ? gp.getName()
+                                : gp.getKey(),
                             sqlQuery.getDialect(),
                             level.getDatatype()),
                         false));
