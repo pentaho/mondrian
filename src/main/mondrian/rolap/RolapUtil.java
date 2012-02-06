@@ -125,7 +125,7 @@ public class RolapUtil {
         }
     }
 
-    private final static class RolapUtilComparable
+    public final static class RolapUtilComparable
         implements Comparable, Serializable
     {
         private static final long serialVersionUID = -2595758291465179116L;

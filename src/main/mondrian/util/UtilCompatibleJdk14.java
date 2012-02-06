@@ -11,6 +11,7 @@ package mondrian.util;
 
 import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapUtil.RolapUtilComparable;
 
 import org.apache.log4j.Logger;
 
@@ -172,7 +173,18 @@ public class UtilCompatibleJdk14 implements UtilCompatible {
         T[] ts, int start, int end, T t)
     {
         return Collections.binarySearch(
-            Arrays.asList(ts).subList(start, end), t);
+            Arrays.asList(ts).subList(start, end), t,
+            new Comparator<T>() {
+                public int compare(T o1, T o2) {
+                    if (o1 instanceof RolapUtilComparable) {
+                        return -1;
+                    }
+                    if (o2 instanceof RolapUtilComparable) {
+                        return 1;
+                    }
+                    return o1.compareTo(o2);
+                };
+            });
     }
 }
 
