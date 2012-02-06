@@ -214,6 +214,14 @@ public abstract class RolapAggregator
             public String getExpression(String operand) {
                 return "count(distinct " + operand + ")";
             }
+
+            public boolean supportsFastAggregates(
+                mondrian.spi.Dialect.Datatype dataType)
+            {
+                // We can't rollup using the raw data, because this is
+                // a distinct-count operation.
+                return false;
+            };
         };
 
     /**

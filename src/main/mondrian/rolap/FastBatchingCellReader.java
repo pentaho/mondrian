@@ -598,7 +598,15 @@ class BatchLoader {
         // with the same target dimensionality. It is quite likely that the
         // other rollup will satisfy this request, and it's complicated to be
         // 100% sure. If we're wrong, we'll be back.
-        if (measure.getAggregator().getRollup().supportsFastAggregates(
+
+        // Also make sure that we don't try to rollup a measure which
+        // doesn't support rollup from raw data, like a distinct count
+        // for example. Both the measure's aggregator and its rollup
+        // aggregator must support raw data aggregation. We call
+        // Aggregator.supportsFastAggregates() to verify.
+        if (measure.getAggregator().supportsFastAggregates(
+                measure.getDatatype())
+            && measure.getAggregator().getRollup().supportsFastAggregates(
                 measure.getDatatype())
             && !rollupBitmaps.contains(request.getConstrainedColumnsBitKey()))
         {
