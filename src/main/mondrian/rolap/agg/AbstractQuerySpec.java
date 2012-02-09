@@ -9,7 +9,6 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.Dialect;
@@ -319,22 +318,13 @@ public abstract class AbstractQuerySpec implements QuerySpec {
      * @param sqlQuery Query
      */
     protected void extraPredicates(SqlQuery sqlQuery) {
-        List<StarPredicate> predicateList = getPredicateList();
-        for (StarPredicate predicate : predicateList) {
-            if (predicate instanceof StarColumnPredicate) {
-                StarColumnPredicate columnPredicate =
-                    (StarColumnPredicate) predicate;
-                for (RolapSchema.PhysColumn c : predicate.getColumnList()) {
-                    final RolapSchema.PhysPath path =
-                        columnPredicate.getRouter().path(c);
+        for (StarPredicate predicate : getPredicateList()) {
+            for (PredicateColumn pair : predicate.getColumnList()) {
+                final RolapSchema.PhysColumn c = pair.physColumn;
+                final RolapSchema.PhysRouter router = pair.router;
+                final RolapSchema.PhysPath path = router.path(c);
+                if (path != null) {
                     path.addToFrom(sqlQuery, false);
-                }
-            } else {
-                for (RolapStar.Column column
-                    : Predicates.starify(star, predicate.getColumnList()))
-                {
-                    final RolapStar.Table table = column.getTable();
-                    table.addToFrom(sqlQuery, false, true);
                 }
             }
             StringBuilder buf = new StringBuilder();

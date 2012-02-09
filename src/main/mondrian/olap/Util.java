@@ -17,8 +17,6 @@ import mondrian.olap.fun.FunUtil;
 import mondrian.olap.fun.Resolver;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapCubeDimension;
 import mondrian.rolap.RolapUtil;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.util.*;
@@ -136,6 +134,9 @@ public class Util extends XOMUtil {
      * enabled.)
      */
     public static final boolean DEBUG = false;
+
+    public static final ComparableEmptyList COMPARABLE_EMPTY_LIST =
+        new ComparableEmptyList();
 
     static {
         String className;
@@ -1827,7 +1828,7 @@ public class Util extends XOMUtil {
     private static <T> List<T> _flatList(T[] t, boolean copy) {
         switch (t.length) {
         case 0:
-            return Collections.emptyList();
+            return COMPARABLE_EMPTY_LIST;
         case 1:
             return Collections.singletonList(t[0]);
         case 2:
@@ -1839,9 +1840,9 @@ public class Util extends XOMUtil {
             //   write our own implementation and reduce creation overhead a
             //   bit.
             if (copy) {
-                return Arrays.asList(t.clone());
+                return new ComparableList(Arrays.asList(t.clone()));
             } else {
-                return Arrays.asList(t);
+                return new ComparableList(Arrays.asList(t));
             }
         }
     }
@@ -1857,7 +1858,7 @@ public class Util extends XOMUtil {
     public static <T> List<T> flatList(List<T> t) {
         switch (t.size()) {
         case 0:
-            return Collections.emptyList();
+            return COMPARABLE_EMPTY_LIST;
         case 1:
             return Collections.singletonList(t.get(0));
         case 2:
@@ -1869,7 +1870,7 @@ public class Util extends XOMUtil {
             //   write our own implementation and reduce creation overhead a
             //   bit.
             //noinspection unchecked
-            return (List<T>) Arrays.asList(t.toArray());
+            return new ComparableList(Arrays.asList(t.toArray()));
         }
     }
 
@@ -2319,6 +2320,18 @@ public class Util extends XOMUtil {
                 + " elements, expected 1");
         }
         return list.get(0);
+    }
+
+    /**
+     * Sets or clears a given bit in an integer.
+     *
+     * @param i Initial integer
+     * @param bit Bit to set
+     * @param set Whether to set or clear
+     * @return Integer with bit set or cleared
+     */
+    public static int bit(int i, int bit, boolean set) {
+        return i & ~(set ? 0 : (1 << bit)) | (set ? (1 << bit) : 0);
     }
 
     public static class ErrorCellValue {
@@ -4362,6 +4375,73 @@ public class Util extends XOMUtil {
             }
             //noinspection unchecked
             return o1.compareTo(o2);
+        }
+    }
+
+    private static class ComparableEmptyList
+        extends AbstractList
+        implements Comparable<List>
+    {
+        private ComparableEmptyList() {
+        }
+
+        public Object get(int index) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        public int size() {
+            return 0;
+        }
+
+        public int compareTo(List o) {
+            if (o == this) {
+                return 0;
+            }
+            return o.size() == 0 ? 0 : -1;
+        }
+    }
+
+    private static class ComparableList<T extends Comparable<T>>
+        extends AbstractList<T>
+        implements Comparable<List<T>>
+    {
+        private final List<T> list;
+
+        protected ComparableList(List<T> list) {
+            this.list = list;
+        }
+
+        public T get(int index) {
+            return list.get(index);
+        }
+
+        public int size() {
+            return list.size();
+        }
+
+        public int compareTo(List<T> o) {
+            int size = size();
+            if (o.size() == size) {
+                return compare(this, o, size);
+            }
+            final int c = compare(this, o, Math.min(size(), o.size()));
+            if (c != 0) {
+                return c;
+            }
+            return size() - o.size();
+        }
+
+        private static <T extends Comparable>
+        int compare(List<T> list0, List<T> list1, int size) {
+            for (int i = 0; i < size; i++) {
+                Comparable o0 = list0.get(i);
+                Comparable o1 = list1.get(i);
+                int c = o0.compareTo(o1);
+                if (c != 0) {
+                    return c;
+                }
+            }
+            return 0;
         }
     }
 }

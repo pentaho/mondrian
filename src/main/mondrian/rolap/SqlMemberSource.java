@@ -313,21 +313,18 @@ class SqlMemberSource
                         columnLayout.levelLayoutMap.get(level);
                     // TODO: pre-allocate these, one per level; remember to
                     // clone list (using Flat2List or Flat3List if appropriate)
-                    final Object[] keyValues =
-                        new Object[level.attribute.keyList.size()];
+                    final Comparable[] keyValues =
+                        new Comparable[level.attribute.keyList.size()];
 
                     // It's cheaper to reuse the same list for probing the
                     // hashmap. Composite keys are stored using a different
                     // kind of list, but the lists should be comparable.
-                    final List<Object> keyList = Arrays.asList(keyValues);
+                    final List<Comparable> keyList = Arrays.asList(keyValues);
 
                     for (int i = 0; i < levelLayout.keyOrdinals.length; i++) {
                         int keyOrdinal = levelLayout.keyOrdinals[i];
                         Object value = accessors.get(keyOrdinal).get();
-                        if (value == null) {
-                            value = RolapUtil.sqlNullValue;
-                        }
-                        keyValues[i] = value;
+                        keyValues[i] = toComparable(value);
                     }
                     RolapMember parent = member;
 
@@ -335,7 +332,7 @@ class SqlMemberSource
                         keyValues.length == 1 ? keyValues[0] : keyList;
                     member = map.get(key);
                     if (member == null) {
-                        final Object keyClone =
+                        final Comparable keyClone =
                             RolapMember.Key.create(keyValues);
                         RolapMemberBase memberBase =
                             new RolapMemberBase(parent, level, keyClone);
@@ -347,10 +344,11 @@ class SqlMemberSource
 
                     // REVIEW jvs 20-Feb-2007:  What about caption? TODO:
 
-                    if (levelLayout.ordinalOrdinal >= 0) {
+                    if (levelLayout.orderByOrdinals.length > 0) {
                         if (assignOrderKeys) {
-                            Object orderKey =
-                                accessors.get(levelLayout.ordinalOrdinal).get();
+                            Comparable orderKey =
+                                getCompositeKey(
+                                    accessors, levelLayout.orderByOrdinals);
                             setOrderKey((RolapMemberBase) member, orderKey);
                         }
                     }
@@ -375,6 +373,20 @@ class SqlMemberSource
             throw stmt.handle(e);
         } finally {
             stmt.close();
+        }
+    }
+
+    static Comparable toComparable(Object value) {
+        if (value == null) {
+            return RolapUtil.sqlNullValue;
+        } else if (value instanceof byte[]) {
+            // Some drivers (e.g. Derby) return byte arrays for
+            // binary columns but byte arrays do not implement
+            // Comparable
+            return new String((byte[]) value);
+        } else {
+            // All other known return values are comparable.
+            return (Comparable) value;
         }
     }
 
@@ -404,18 +416,14 @@ class SqlMemberSource
     }
 
     enum Sgo {
-        SELECT_ORDER, SELECT, SELECT_GROUP, SELECT_GROUP_ORDER;
+        SELECT, SELECT_ORDER, SELECT_GROUP, SELECT_GROUP_ORDER;
+
+        public Sgo maybeOrder(boolean needsOrderBy) {
+            return values()[Util.bit(ordinal(), 0, needsOrderBy)];
+        }
 
         public Sgo maybeGroup(boolean needsGroupBy) {
-            if (needsGroupBy) {
-                switch (this) {
-                case SELECT_ORDER:
-                    return SELECT_GROUP_ORDER;
-                case SELECT:
-                    return SELECT_GROUP;
-                }
-            }
-            return this;
+            return values()[Util.bit(ordinal(), 1, needsGroupBy)];
         }
     }
 
@@ -430,27 +438,24 @@ class SqlMemberSource
         final RolapSchema.SqlQueryBuilder queryBuilder =
             new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
         for (RolapLevel level : hierarchy.getLevelList()) {
-            for (RolapSchema.PhysColumn column : level.attribute.keyList) {
-                queryBuilder.asasdasd(column, Sgo.SELECT_GROUP);
-            }
             for (RolapSchema.PhysColumn column : level.attribute.orderByList) {
-                queryBuilder.asasdasd(column, Sgo.SELECT_ORDER);
+                queryBuilder.addColumn(column, Sgo.SELECT_ORDER);
+            }
+            for (RolapSchema.PhysColumn column : level.attribute.keyList) {
+                queryBuilder.addColumn(column, Sgo.SELECT_GROUP);
             }
             for (RolapProperty property
                 : level.attribute.getExplicitProperties())
             {
                 for (RolapSchema.PhysColumn column : property.attribute.keyList)
                 {
-                    final Sgo sgo;
-                    if (sqlQuery.getDialect().allowsSelectNotInGroupBy()) {
-                         sgo = Sgo.SELECT;
-                    } else {
-                        // Some dialects allow us to eliminate properties from
-                        // the group by that are functionally dependent on the
-                        // level value.
-                        sgo = Sgo.SELECT_GROUP;
-                    }
-                    queryBuilder.asasdasd(column, sgo);
+                    // Some dialects allow us to eliminate properties from
+                    // the group by that are functionally dependent on the
+                    // level value.
+                    queryBuilder.addColumn(
+                        column,
+                        Sgo.SELECT.maybeGroup(
+                            !sqlQuery.getDialect().allowsSelectNotInGroupBy()));
                 }
             }
         }
@@ -638,27 +643,27 @@ class SqlMemberSource
         final SqlTupleReader.LevelLayoutBuilder levelLayout =
             layoutBuilder.createLayoutFor(level);
 
+        for (RolapSchema.PhysColumn key : level.attribute.orderByList) {
+            levelLayout.orderByOrdinalList.add(
+                queryBuilder.addColumn(key, Sgo.SELECT_GROUP_ORDER));
+        }
+
         for (RolapSchema.PhysColumn column : level.attribute.keyList) {
             // REVIEW: also need to join each attr to dim key?
             levelLayout.keyOrdinalList.add(
-                queryBuilder.asasdasd(column, Sgo.SELECT_GROUP));
+                queryBuilder.addColumn(column, Sgo.SELECT_GROUP));
         }
 
         if (level.attribute.nameExp != null) {
             levelLayout.nameOrdinal =
-                queryBuilder.asasdasd(
+                queryBuilder.addColumn(
                     level.attribute.nameExp, Sgo.SELECT_GROUP);
         }
 
         if (level.attribute.captionExp != null) {
             levelLayout.captionOrdinal =
-                queryBuilder.asasdasd(
+                queryBuilder.addColumn(
                     level.attribute.captionExp, Sgo.SELECT_GROUP);
-        }
-
-        for (RolapSchema.PhysColumn key : level.attribute.orderByList) {
-            levelLayout.ordinalList.add(
-                queryBuilder.asasdasd(key, Sgo.SELECT_GROUP_ORDER));
         }
 
         for (RolapProperty property : level.attribute.getExplicitProperties()) {
@@ -679,7 +684,7 @@ class SqlMemberSource
                 sgo = Sgo.SELECT;
             }
             levelLayout.propertyOrdinalList.add(
-                queryBuilder.asasdasd(exp, sgo));
+                queryBuilder.addColumn(exp, sgo));
         }
 
         final Pair<String, List<SqlStatement.Type>> pair =
@@ -760,7 +765,7 @@ class SqlMemberSource
             cube.getSchema().getInternalConnection().getServer()
                 .getAggregationManager();
         return aggMgr.findAgg(
-            star, levelBitKey, measureBitKey, new boolean[] {false});
+            star, levelBitKey, measureBitKey, new boolean[]{false});
     }
 
     /**
@@ -946,14 +951,12 @@ class SqlMemberSource
                         .ex(limit);
                 }
 
-                Object[] keys = new Object[layout.keyOrdinals.length];
-                List<Object> keyList = Arrays.asList(keys);
+                final Comparable[] keyValues =
+                    new Comparable[layout.keyOrdinals.length];
+                List<Comparable> keyList = Arrays.asList(keyValues);
                 for (int i = 0; i < layout.keyOrdinals.length; i++) {
                     Object value = accessors.get(layout.keyOrdinals[i]).get();
-                    if (value == null) {
-                        value = RolapUtil.sqlNullValue;
-                    }
-                    keys[i] = value;
+                    keyValues[i] = toComparable(value);
                 }
                 Object captionValue;
                 if (layout.captionOrdinal >= 0) {
@@ -961,12 +964,12 @@ class SqlMemberSource
                 } else {
                     captionValue = null;
                 }
-                Object key = keys.length == 1 ? keys[0] : keyList;
+                Object key = keyValues.length == 1 ? keyValues[0] : keyList;
                 RolapMember member =
                     cache.getMember(childLevel, key, checkCacheStatus);
                 checkCacheStatus = false; // only check the first time
                 if (member == null) {
-                    Object keyClone = RolapMember.Key.create(keys);
+                    Comparable keyClone = RolapMember.Key.create(keyValues);
                     member =
                         makeMember(
                             parentMember2, childLevel, keyClone, captionValue,
@@ -991,7 +994,7 @@ class SqlMemberSource
     public RolapMember makeMember(
         RolapMember parentMember,
         RolapLevel childLevel,
-        Object key,
+        Comparable key,
         Object captionValue,
         boolean parentChild,
         SqlStatement stmt,
@@ -1010,9 +1013,6 @@ class SqlMemberSource
         assert parentMember == null
             || parentMember.getLevel().getDepth() == childLevel.getDepth() - 1
             || childLevel.isParentChild();
-        if (layout.hasOrdinal) {
-            member.setOrdinal(lastOrdinal++);
-        }
         if (captionValue != null) {
             member.setCaption(captionValue.toString());
         }
@@ -1030,10 +1030,11 @@ class SqlMemberSource
                     parentMember, childLevel, key, member);
         }
         final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
-        if (layout.hasOrdinal) {
+        if (layout.orderByOrdinals.length > 0) {
+            member.setOrdinal(lastOrdinal++);
             if (assignOrderKeys) {
-                Object orderKey =
-                    accessors.get(layout.ordinalOrdinal).get();
+                Comparable orderKey =
+                    getCompositeKey(accessors, layout.orderByOrdinals);
                 setOrderKey(member, orderKey);
             }
         }
@@ -1053,6 +1054,24 @@ class SqlMemberSource
         }
         cache.putMember(member.getLevel(), key, member);
         return member;
+    }
+
+    private Comparable getCompositeKey(
+        List<SqlStatement.Accessor> accessors,
+        int[] ordinals) throws SQLException
+    {
+        if (ordinals.length > 1) {
+            Comparable[] values =
+                new Comparable[ordinals.length];
+            for (int i = 0; i < ordinals.length; i++) {
+                Object o = accessors.get(ordinals[i]).get();
+                values[i] = toComparable(o);
+            }
+            return (Comparable) Util.flatList(values);
+        } else {
+            Object o = accessors.get(ordinals[0]).get();
+            return toComparable(o);
+        }
     }
 
     public RolapMember allMember() {
@@ -1159,10 +1178,7 @@ class SqlMemberSource
         final SqlTupleReader.LevelLayoutBuilder levelLayout =
             layoutBuilder.createLayoutFor(level);
         return projectProperties(
-            layoutBuilder,
-            sqlQuery,
-            queryBuilder,
-            level);
+            layoutBuilder, sqlQuery, queryBuilder, level);
     }
 
     /**
@@ -1261,7 +1277,7 @@ class SqlMemberSource
         public RolapParentChildMember(
             RolapMember parentMember,
             RolapLevel childLevel,
-            Object value,
+            Comparable value,
             RolapMember dataMember)
         {
             super(parentMember, childLevel, value);
@@ -1302,7 +1318,9 @@ class SqlMemberSource
     {
         public RolapParentChildMemberNoClosure(
             RolapMember parentMember,
-            RolapLevel childLevel, Object value, RolapMember dataMember)
+            RolapLevel childLevel,
+            Comparable value,
+            RolapMember dataMember)
         {
             super(parentMember, childLevel, value, dataMember);
         }

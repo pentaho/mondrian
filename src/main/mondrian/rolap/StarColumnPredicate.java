@@ -9,6 +9,8 @@
 */
 package mondrian.rolap;
 
+import mondrian.rolap.agg.PredicateColumn;
+
 import java.util.Collection;
 
 /**
@@ -40,15 +42,7 @@ public interface StarColumnPredicate extends StarPredicate {
      *
      * @return Column constrained by this predicate.
      */
-    RolapSchema.PhysColumn getColumn();
-
-    /**
-     * Returns a functor that computes the route from the column to the
-     * fact table.
-     *
-     * @return Functor that computes the route to the fact table
-     */
-    RolapSchema.PhysRouter getRouter();
+    PredicateColumn getColumn();
 
     /**
      * Applies this predicate to a predicate from the axis of

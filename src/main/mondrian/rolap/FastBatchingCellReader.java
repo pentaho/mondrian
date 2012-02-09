@@ -1170,8 +1170,10 @@ class BatchLoader {
                 if (valueSet == null) {
                     predicate =
                         Predicates.wildcard(
-                            Util.<RolapSchema.PhysRouter>deprecated(null, true),
-                            physColumn, true);
+                            new PredicateColumn(
+                                Util.<RolapSchema.PhysRouter>deprecated(
+                                    null, true),
+                                physColumn), true);
                 } else {
                     ValueColumnPredicate[] values =
                         valueSet.toArray(
@@ -1183,8 +1185,9 @@ class BatchLoader {
 
                     predicate =
                         new ListColumnPredicate(
-                            new RolapSchema.BadRouter(),
-                            physColumn,
+                            new PredicateColumn(
+                                RolapSchema.BadRouter.INSTANCE,
+                                physColumn),
                             Arrays.asList((StarColumnPredicate[]) values));
                 }
 

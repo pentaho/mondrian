@@ -120,16 +120,18 @@ public class SegmentBuilder {
             if (values == null) {
                 predicate =
                     new LiteralColumnPredicate(
-                        new RolapSchema.BadRouter(),
-                        (RolapSchema.PhysColumn)
-                            constrainedColumn.getExpression(),
+                        new PredicateColumn(
+                            RolapSchema.BadRouter.INSTANCE,
+                            (RolapSchema.PhysColumn)
+                                constrainedColumn.getExpression()),
                         true);
             } else if (values.size() == 1) {
                 predicate =
                     new ValueColumnPredicate(
-                        new RolapSchema.BadRouter(),
-                        (RolapSchema.PhysColumn)
-                            constrainedColumn.getExpression(),
+                        new PredicateColumn(
+                            RolapSchema.BadRouter.INSTANCE,
+                            (RolapSchema.PhysColumn)
+                                constrainedColumn.getExpression()),
                         values.first());
             } else {
                 final List<StarColumnPredicate> valuePredicateList =
@@ -137,16 +139,18 @@ public class SegmentBuilder {
                 for (Object value : values) {
                     valuePredicateList.add(
                         new ValueColumnPredicate(
-                            new RolapSchema.BadRouter(),
-                            (RolapSchema.PhysColumn)
-                                constrainedColumn.getExpression(),
+                            new PredicateColumn(
+                                RolapSchema.BadRouter.INSTANCE,
+                                (RolapSchema.PhysColumn)
+                                    constrainedColumn.getExpression()),
                             value));
                 }
                 predicate =
                     new ListColumnPredicate(
-                        new RolapSchema.BadRouter(),
-                        (RolapSchema.PhysColumn)
-                            constrainedColumn.getExpression(),
+                        new PredicateColumn(
+                            RolapSchema.BadRouter.INSTANCE,
+                            (RolapSchema.PhysColumn)
+                                constrainedColumn.getExpression()),
                         valuePredicateList);
             }
             predicateList.add(predicate);
@@ -579,10 +583,10 @@ public class SegmentBuilder {
             }
             ccs.add(
                 new SegmentColumn(
-                    predicate.getColumn().toSql(),
+                    predicate.getColumn().physColumn.toSql(),
                     statistic.getCardinality(
-                        predicate.getColumn().relation,
-                        predicate.getColumn(),
+                        predicate.getColumn().physColumn.relation,
+                        predicate.getColumn().physColumn,
                         new Util.Functor0<Integer>() {
                             public Integer apply() {
                                 // -1 means "I don't know".

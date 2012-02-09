@@ -668,7 +668,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             RolapCubeLevel level)
         {
             synchronized (cacheHelper) {
-                if (member.getKey() == Collections.EMPTY_LIST) {
+                if (member.getKey() == Util.COMPARABLE_EMPTY_LIST) {
                     if (member.isAll()) {
                         return getAllMember();
                     }
@@ -954,14 +954,18 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             RolapMember member,
             RolapCubeLevel level)
         {
-            if (member.getKey() == null) {
+            if (member.getKey() == Util.COMPARABLE_EMPTY_LIST) {
                 if (member.isAll()) {
                     return getAllMember();
                 }
 
-                throw new NullPointerException();
+                throw new RuntimeException(member.toString());
             }
 
+            if (member instanceof RolapStoredMeasure) {
+                RolapStoredMeasure storedMeasure = (RolapStoredMeasure) member;
+                return new RolapCubeStoredMeasure(parent, storedMeasure, level);
+            }
             return new RolapCubeMember(parent, member, level);
         }
 
@@ -1015,7 +1019,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         public RolapMember makeMember(
             RolapMember parentMember,
             RolapLevel childLevel,
-            Object key,
+            Comparable key,
             Object captionValue,
             boolean parentChild,
             SqlStatement stmt,

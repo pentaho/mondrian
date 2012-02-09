@@ -36,12 +36,14 @@ public abstract class Predicates
         switch (size) {
         case 1:
             return new MemberColumnPredicate(
-                router,
-                keyList.get(0),
+                new PredicateColumn(
+                    router,
+                    keyList.get(0)),
                 member);
         default:
             RolapSchema.PhysSchema schema = keyList.get(0).relation.getSchema();
             return new MemberTuplePredicate(
+                router,
                 schema,
                 keyList,
                 Collections.singletonList(
@@ -65,8 +67,9 @@ public abstract class Predicates
             (lowerBound == null ? upperBound : lowerBound).getLevel();
         if (level.getAttribute().keyList.size() == 1) {
             return new RangeColumnPredicate(
-                router,
-                level.getAttribute().keyList.get(0),
+                new PredicateColumn(
+                    router,
+                    level.getAttribute().keyList.get(0)),
                 lowerInclusive,
                 (lowerBound == null
                  ? null
@@ -90,13 +93,24 @@ public abstract class Predicates
         return bitKey;
     }
 
-    public static List<RolapStar.Column> starify(
+    public static List<RolapStar.Column> starify_old(
         RolapStar star,
         List<RolapSchema.PhysColumn> columnList)
     {
         List<RolapStar.Column> list = new ArrayList<RolapStar.Column>();
         for (RolapSchema.PhysColumn column : columnList) {
             list.add(star.getColumn(column, true));
+        }
+        return list;
+    }
+
+    public static List<RolapStar.Column> starify(
+        RolapStar star,
+        List<PredicateColumn> columnList)
+    {
+        List<RolapStar.Column> list = new ArrayList<RolapStar.Column>();
+        for (PredicateColumn column : columnList) {
+            list.add(star.getColumn(column.physColumn, true));
         }
         return list;
     }
@@ -118,13 +132,16 @@ public abstract class Predicates
      */
     public static MemberTuplePredicate range(
         RolapSchema.PhysSchema physSchema,
+        RolapSchema.PhysRouter router,
         RolapMember lower,
         boolean lowerStrict,
         RolapMember upper,
         boolean upperStrict)
     {
         RolapMember member = lower != null ? lower : upper;
+        final int size = member.getKeyAsList().size();
         return new MemberTuplePredicate(
+            router,
             physSchema,
             member.getLevel().getAttribute().keyList,
             Collections.singletonList(
@@ -141,10 +158,14 @@ public abstract class Predicates
      */
     public static MemberTuplePredicate list(
         RolapSchema.PhysSchema physSchema,
+        RolapSchema.PhysRouter router,
         RolapLevel level,
         List<RolapMember> members)
     {
+        assert members.size() > 0;
+        final int size = members.get(0).getKeyAsList().size();
         return new MemberTuplePredicate(
+            router,
             physSchema,
             level.getAttribute().keyList,
             MemberTuplePredicate.createList(members));
@@ -156,17 +177,15 @@ public abstract class Predicates
      * <p>Unlike {@link LiteralStarPredicate}, it references a column and has
      * a route to the fact table.
      *
-     * @param router Resolves route to fact table
      * @param column Column
      * @param value Value
      * @return Predicate that always evaluates to given value
      */
     public static StarColumnPredicate wildcard(
-        RolapSchema.PhysRouter router,
-        RolapSchema.PhysColumn column,
+        PredicateColumn column,
         boolean value)
     {
-        return new LiteralColumnPredicate(router, column, value);
+        return new LiteralColumnPredicate(column, value);
     }
 
     /**
@@ -197,6 +216,85 @@ public abstract class Predicates
         StringBuilder buf = new StringBuilder(64);
         predicate.toSql(dialect, buf);
         return buf.toString();
+    }
+
+    public static StarPredicate and(List<StarPredicate> predicateList) {
+        final int size = predicateList.size();
+        switch (size) {
+        case 1:
+            return predicateList.get(0);
+        case 0:
+            return null;
+        default:
+            return new AndPredicate(predicateList);
+        }
+    }
+
+    public static StarPredicate or(List<StarPredicate> predicateList) {
+        final int size = predicateList.size();
+        switch (size) {
+        case 1:
+            return predicateList.get(0);
+        case 0:
+            return null;
+        default:
+            return new OrPredicate(predicateList);
+        }
+    }
+
+    /**
+     * Returns a predicate which tests whether the column's
+     * value is equal to a given constant.
+     *
+     * @param column Constrained column
+     * @param value Value
+     * @return Predicate which tests whether the column's value is equal
+     *   to a column constraint's value
+     */
+    public static StarColumnPredicate equal(
+        PredicateColumn column,
+        Object value)
+    {
+        return new ValueColumnPredicate(column, value);
+    }
+
+    /**
+     * Returns predicate which is the OR of a list of predicates.
+     *
+     * @param column Column being constrained
+     * @param list List of predicates
+     * @return Predicate which is an OR of the list of predicates
+     */
+    public static StarColumnPredicate or(
+        PredicateColumn column,
+        List<StarColumnPredicate> list)
+    {
+        return new ListColumnPredicate(column, list);
+    }
+
+    /**
+     * Returns a predicate which always evaluates to TRUE or FALSE.
+     * @param b Truth value
+     * @return Predicate which always evaluates to truth value
+     */
+    public static LiteralStarPredicate bool(boolean b) {
+        return b ? LiteralStarPredicate.TRUE : LiteralStarPredicate.FALSE;
+    }
+
+    /**
+     * Returns a predicate which tests whether the column's
+     * value is equal to column predicate's value.
+     *
+     * @param predicate Column predicate
+     * @return Predicate which tests whether the column's value is equal
+     *   to a column predicate's value
+     */
+    public static StarColumnPredicate equal(
+        ValueColumnPredicate predicate)
+    {
+        return equal(
+            predicate.getColumn(),
+            predicate.getValue());
     }
 }
 

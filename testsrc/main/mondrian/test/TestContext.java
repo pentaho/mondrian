@@ -33,6 +33,7 @@ import org.olap4j.impl.CoordinateIterator;
 import org.olap4j.layout.TraditionalCellSetFormatter;
 
 import java.io.*;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
@@ -61,6 +62,13 @@ import javax.sql.DataSource;
 public class TestContext {
     private static TestContext instance; // the singleton
     private PrintWriter pw;
+
+    /**
+     * Connection to the FoodMart database. Set on the first call to
+     * {@link #getConnection}. Soft reference allows garbage-collector to clear
+     * it if it's not been used recently.
+     */
+    private SoftReference<Connection> connectionRef;
 
     private Dialect dialect;
 
@@ -208,11 +216,19 @@ public class TestContext {
      * to the FoodMart database.
      */
     public synchronized Connection getConnection() {
-        return
+        if (connectionRef != null) {
+            final Connection connection = connectionRef.get();
+            if (connection != null) {
+                return connection;
+            }
+        }
+        final Connection connection =
             DriverManager.getConnection(
                 getConnectionProperties(),
                 null,
                 null);
+        connectionRef = new SoftReference<Connection>(connection);
+        return connection;
     }
 
     /**

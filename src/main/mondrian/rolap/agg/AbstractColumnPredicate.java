@@ -23,37 +23,33 @@ import java.util.*;
  * @version $Id$
  */
 public abstract class AbstractColumnPredicate implements StarColumnPredicate {
-    protected final RolapSchema.PhysColumn constrainedColumn;
-    protected final RolapSchema.PhysRouter router;
+    protected final PredicateColumn constrainedColumn;
     private BitKey constrainedColumnBitKey;
 
     /**
      * Creates an AbstractColumnPredicate.
      *
-     * @param router Resolves route to fact table
      * @param constrainedColumn Constrained column
      */
     protected AbstractColumnPredicate(
-        RolapSchema.PhysRouter router,
-        RolapSchema.PhysColumn constrainedColumn)
+        PredicateColumn constrainedColumn)
     {
-        this.router = router;
         this.constrainedColumn = constrainedColumn;
         assert constrainedColumn != null;
     }
 
     public String toString() {
         final StringBuilder buf = new StringBuilder();
-        buf.append(constrainedColumn.toSql());
+        buf.append(constrainedColumn.physColumn.toSql());
         describe(buf);
         return buf.toString();
     }
 
-    public RolapSchema.PhysColumn getColumn() {
+    public final PredicateColumn getColumn() {
         return constrainedColumn;
     }
 
-    public List<RolapSchema.PhysColumn> getColumnList() {
+    public List<PredicateColumn> getColumnList() {
         return Collections.singletonList(constrainedColumn);
     }
 
@@ -61,14 +57,11 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
         if (constrainedColumnBitKey == null) {
             constrainedColumnBitKey =
                 BitKey.Factory.makeBitKey(
-                    constrainedColumn.relation.getSchema().getColumnCount());
-            constrainedColumnBitKey.set(constrainedColumn.ordinal());
+                    constrainedColumn.physColumn.relation.getSchema()
+                        .getColumnCount());
+            constrainedColumnBitKey.set(constrainedColumn.physColumn.ordinal());
         }
         return constrainedColumnBitKey;
-    }
-
-    public final RolapSchema.PhysRouter getRouter() {
-        return router;
     }
 
     public boolean evaluate(List<Object> valueList) {
@@ -90,10 +83,7 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
                 return orColumn(starColumnPredicate);
             }
         }
-        final List<StarPredicate> list = new ArrayList<StarPredicate>(2);
-        list.add(this);
-        list.add(predicate);
-        return new OrPredicate(list);
+        return Predicates.or(Arrays.asList(this, predicate));
     }
 
     public StarColumnPredicate orColumn(StarColumnPredicate predicate) {
@@ -105,7 +95,6 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
             list.add(this);
             list.addAll(that.getPredicates());
             return new ListColumnPredicate(
-                getRouter(),
                 getColumn(),
                 list);
         } else {
@@ -114,87 +103,17 @@ public abstract class AbstractColumnPredicate implements StarColumnPredicate {
             list.add(this);
             list.add(predicate);
             return new ListColumnPredicate(
-                getRouter(),
                 getColumn(),
                 list);
         }
     }
 
     public StarPredicate and(StarPredicate predicate) {
-        final List<StarPredicate> list = new ArrayList<StarPredicate>(2);
-        list.add(this);
-        list.add(predicate);
-        return new AndPredicate(list);
+        return new AndPredicate(Arrays.asList(this, predicate));
     }
 
     public void toSql(Dialect dialect, StringBuilder buf) {
         throw Util.needToImplement(this);
-    }
-
-    /**
-     * Factory for {@link mondrian.rolap.StarPredicate}s and
-     * {@link mondrian.rolap.StarColumnPredicate}s.
-     */
-    public static class Factory {
-        /**
-         * Returns a predicate which tests whether the column's
-         * value is equal to a given constant.
-         *
-         * @param router Resolves route to fact table
-         * @param column Constrained column
-         * @param value Value
-         * @return Predicate which tests whether the column's value is equal
-         *   to a column constraint's value
-         */
-        public static StarColumnPredicate equal(
-            RolapSchema.PhysRouter router,
-            RolapSchema.PhysColumn column,
-            Object value)
-        {
-            return new ValueColumnPredicate(router, column, value);
-        }
-
-        /**
-         * Returns predicate which is the OR of a list of predicates.
-         *
-         * @param router Resolves route to fact table
-         * @param column Column being constrained
-         * @param list List of predicates
-         * @return Predicate which is an OR of the list of predicates
-         */
-        public static StarColumnPredicate or(
-            RolapSchema.PhysRouter router,
-            RolapSchema.PhysColumn column,
-            List<StarColumnPredicate> list)
-        {
-            return new ListColumnPredicate(router, column, list);
-        }
-
-        /**
-         * Returns a predicate which always evaluates to TRUE or FALSE.
-         * @param b Truth value
-         * @return Predicate which always evaluates to truth value
-         */
-        public static LiteralStarPredicate bool(boolean b) {
-            return b ? LiteralStarPredicate.TRUE : LiteralStarPredicate.FALSE;
-        }
-
-        /**
-         * Returns a predicate which tests whether the column's
-         * value is equal to column predicate's value.
-         *
-         * @param predicate Column predicate
-         * @return Predicate which tests whether the column's value is equal
-         *   to a column predicate's value
-         */
-        public static StarColumnPredicate equal(
-            ValueColumnPredicate predicate)
-        {
-            return equal(
-                predicate.router,
-                predicate.getColumn(),
-                predicate.getValue());
-        }
     }
 }
 

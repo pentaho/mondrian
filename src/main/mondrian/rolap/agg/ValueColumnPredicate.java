@@ -30,18 +30,16 @@ public class ValueColumnPredicate
     /**
      * Creates a column constraint.
      *
-     * @param router Resolves route to fact table
      * @param constrainedColumn Constrained column
      * @param value Value to constraint the column to. (We require that it is
      *   {@link Comparable} because we will sort the values in order to
      *   generate deterministic SQL.)
      */
     public ValueColumnPredicate(
-        RolapSchema.PhysRouter router,
-        RolapSchema.PhysColumn constrainedColumn,
+        PredicateColumn constrainedColumn,
         Object value)
     {
-        super(router, constrainedColumn);
+        super(constrainedColumn);
         assert value != null;
         assert ! (value instanceof StarColumnPredicate);
         this.value = value;
@@ -49,6 +47,8 @@ public class ValueColumnPredicate
 
     /**
      * Returns the value which the column is compared to.
+     *
+     * @return Value to compare column to
      */
     public Object getValue() {
         return value;
@@ -141,14 +141,14 @@ public class ValueColumnPredicate
     public StarColumnPredicate minus(StarPredicate predicate) {
         assert predicate != null;
         if (((StarColumnPredicate) predicate).evaluate(value)) {
-            return Predicates.wildcard(router, constrainedColumn, false);
+            return Predicates.wildcard(constrainedColumn, false);
         } else {
             return this;
         }
     }
 
     public void toSql(Dialect dialect, StringBuilder buf) {
-        final RolapSchema.PhysColumn column = getColumn();
+        final RolapSchema.PhysColumn column = getColumn().physColumn;
         String expr = column.toSql();
         buf.append(expr);
         Object key = getValue();
@@ -178,7 +178,7 @@ public class ValueColumnPredicate
     }
 
     public void toInListSql(Dialect dialect, StringBuilder buf) {
-        dialect.quote(buf, value, getColumn().getDatatype());
+        dialect.quote(buf, value, getColumn().physColumn.getDatatype());
     }
 }
 

@@ -30,7 +30,6 @@ public class RangeColumnPredicate extends AbstractColumnPredicate {
     /**
      * Creates a RangeColumnPredicate.
      *
-     * @param router Resolves route to fact table
      * @param column Constrained column
      * @param lowerInclusive Whether range includes the lower bound;
      *   must be false if not bounded below
@@ -40,14 +39,13 @@ public class RangeColumnPredicate extends AbstractColumnPredicate {
      * @param upperBound Upper bound, or null if not bounded above
      */
     public RangeColumnPredicate(
-        RolapSchema.PhysRouter router,
-        RolapSchema.PhysColumn column,
+        PredicateColumn column,
         boolean lowerInclusive,
         ValueColumnPredicate lowerBound,
         boolean upperInclusive,
         ValueColumnPredicate upperBound)
     {
-        super(router, column);
+        super(column);
         assert lowerBound == null
             || lowerBound.getColumn() == column;
         assert !(lowerBound == null && lowerInclusive);

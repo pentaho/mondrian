@@ -30,16 +30,14 @@ public class LiteralColumnPredicate extends AbstractColumnPredicate {
     /**
      * Creates a LiteralColumnPredicate.
      *
-     * @param router Resolves route to fact table
      * @param column Constrained column
      * @param value Truth value
      */
     public LiteralColumnPredicate(
-        RolapSchema.PhysRouter router,
-        RolapSchema.PhysColumn column,
+        PredicateColumn column,
         boolean value)
     {
-        super(router, column);
+        super(column);
         this.value = value;
     }
 

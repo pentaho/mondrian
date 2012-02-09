@@ -135,7 +135,7 @@ the Column@table attribute for all enclosed elements.
 
 <Key .../> is equivalent to <Attribute name="key" .../>
 <Name .../> is equivalent to <Attribute name="name" .../>
-<Ordinal .../> is equivalent to <Attribute name="ordinal" .../>
+<OrderBy .../> is equivalent to <Attribute name="ordinal" .../>
 
 4. Inline attributes.
 

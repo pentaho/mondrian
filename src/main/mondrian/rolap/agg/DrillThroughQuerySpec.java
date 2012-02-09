@@ -9,7 +9,6 @@
 */
 package mondrian.rolap.agg;
 
-import mondrian.olap.MondrianDef;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
@@ -131,14 +130,15 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     }
 
     public StarColumnPredicate getColumnPredicate(final int i) {
-        final StarColumnPredicate constr = request.getValueAt(i);
-        return (constr == null)
+        final StarColumnPredicate constraint = request.getValueAt(i);
+        return (constraint == null)
             ? Predicates.wildcard(
-                new RolapSchema.BadRouter(),
-                (RolapSchema.PhysColumn)
-                    request.getConstrainedColumns()[i].getExpression(),
+                new PredicateColumn(
+                    RolapSchema.BadRouter.INSTANCE,
+                    (RolapSchema.PhysColumn)
+                        request.getConstrainedColumns()[i].getExpression()),
                 true)
-            : constr;
+            : constraint;
     }
 
     public Pair<String, List<SqlStatement.Type>> generateSqlQuery() {

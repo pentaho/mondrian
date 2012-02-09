@@ -296,10 +296,12 @@ public class RolapCubeLevel extends RolapLevel {
                 } else {
                     predicate =
                         new ValueColumnPredicate(
-                            new RolapSchema.CubeRouter(
-                                measureGroup,
-                                cubeLevel.cubeDimension),
-                            column, key.get(keyOrdinal));
+                            new PredicateColumn(
+                                new RolapSchema.CubeRouter(
+                                    measureGroup,
+                                    cubeLevel.cubeDimension),
+                                column),
+                            key.get(keyOrdinal));
                 }
 
                 // use the member as constraint; this will give us some
@@ -347,6 +349,7 @@ public class RolapCubeLevel extends RolapLevel {
 
                 // use the member as constraint, this will give us some
                 //  optimization potential
+                Util.deprecated("adding predicate multiple times?", false);
                 for (RolapSchema.PhysColumn physColumn
                     : cubeLevel.attribute.keyList)
                 {
@@ -383,6 +386,9 @@ public class RolapCubeLevel extends RolapLevel {
                 MemberTuplePredicate predicate2 =
                     Predicates.range(
                         measureGroup.getStar().getSchema().physicalSchema,
+                        new RolapSchema.CubeRouter(
+                            measureGroup,
+                            cubeLevel.cubeDimension),
                         lowerMember,
                         !rangeColumnPredicate.getLowerInclusive(),
                         upperMember,
@@ -444,7 +450,9 @@ public class RolapCubeLevel extends RolapLevel {
                 // isn't creating a member on the fly a bad idea?
                 RolapMember wrappedMember =
                     new RolapMemberBase(
-                        wrappedAllMember, closedPeerLevel, member.getKey());
+                        wrappedAllMember,
+                        closedPeerLevel,
+                        member.getKeyCompact());
                 member =
                     new RolapCubeMember(
                         allMember,

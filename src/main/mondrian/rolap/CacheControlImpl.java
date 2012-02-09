@@ -10,7 +10,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.CacheControl.CellRegion;
 import mondrian.olap.Id.Quoting;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.SegmentCacheManager;
@@ -97,11 +96,11 @@ public class CacheControlImpl implements CacheControl {
     public CellRegion createCrossjoinRegion(CellRegion... regions) {
         assert regions != null;
         assert regions.length >= 2;
-        final HashSet<Dimension> set = new HashSet<Dimension>();
+        final Set<Hierarchy> set = new HashSet<Hierarchy>();
         final List<CellRegionImpl> list = new ArrayList<CellRegionImpl>();
         for (CellRegion region : regions) {
             int prevSize = set.size();
-            List<Dimension> dimensionality = region.getDimensionality();
+            List<Hierarchy> dimensionality = region.getDimensionality();
             set.addAll(dimensionality);
             if (set.size() < prevSize + dimensionality.size()) {
                 throw MondrianResource.instance()
@@ -191,10 +190,10 @@ public class CacheControlImpl implements CacheControl {
         if (region instanceof EmptyCellRegion) {
             return;
         }
-        final List<Dimension> dimensionality = region.getDimensionality();
+        final List<Hierarchy> dimensionality = region.getDimensionality();
         boolean found = false;
-        for (Dimension dimension : dimensionality) {
-            if (dimension.isMeasures()) {
+        for (Hierarchy hierarchy : dimensionality) {
+            if (hierarchy.getDimension().isMeasures()) {
                 found = true;
                 break;
             }
@@ -425,7 +424,7 @@ public class CacheControlImpl implements CacheControl {
         final CellRegionVisitor visitor =
             new CellRegionVisitorImpl() {
                 public void visit(MemberCellRegion region) {
-                    if (region.dimension.isMeasures()) {
+                    if (region.hierarchy.getDimension().isMeasures()) {
                         list.addAll(region.memberList);
                     }
                 }
@@ -471,7 +470,7 @@ public class CacheControlImpl implements CacheControl {
         final CellRegionVisitor visitor =
             new CellRegionVisitorImpl() {
                 public void visit(MemberCellRegion region) {
-                    if (region.dimension.isMeasures()) {
+                    if (region.hierarchy.getDimension().isMeasures()) {
                         return;
                     }
                     final Map<String, Set<Comparable>> levels =
@@ -481,11 +480,15 @@ public class CacheControlImpl implements CacheControl {
                         final String ccName =
                             ((RolapLevel)member.getLevel()).getAttribute()
                                 .keyList.get(0).toSql();
-                        if (!levels.containsKey(ccName)) {
-                            levels.put(ccName, new HashSet<Comparable>());
+                        Set<Comparable> levelValueSet = levels.get(ccName);
+                        if (levelValueSet == null) {
+                            levelValueSet = new HashSet<Comparable>();
+                            levels.put(ccName, levelValueSet);
                         }
-                        levels.get(ccName).add(
-                            (Comparable)((RolapMember)member).getKey());
+                        final Object key =
+                            ((RolapMember) member).getKeyCompact();
+                        levelValueSet.add(
+                            (Comparable) key);
                     }
                     for (Entry<String, Set<Comparable>> entry
                         : levels.entrySet())
@@ -811,11 +814,12 @@ public class CacheControlImpl implements CacheControl {
                     // It is possible that some regions don't intersect
                     // with a cube. We will intercept the exceptions and
                     // skip to the next cube if necessary.
-                    final List<Dimension> dimensions =
+                    final List<Hierarchy> hierarchies =
                         memberRegion.getDimensionality();
-                    if (dimensions.size() > 0) {
+                    if (hierarchies.size() > 0) {
+                        final Hierarchy hierarchy0 = hierarchies.get(0);
                         for (Cube cube
-                            : dimensions.get(0) .getSchema().getCubes())
+                            : hierarchy0.getDimension().getSchema().getCubes())
                         {
                             try {
                                 final List<CellRegionImpl> crossList =
@@ -887,17 +891,17 @@ public class CacheControlImpl implements CacheControl {
      */
     static class MemberCellRegion implements CellRegionImpl {
         private final List<Member> memberList;
-        private final Dimension dimension;
+        private final Hierarchy hierarchy;
 
         MemberCellRegion(List<Member> memberList, boolean descendants) {
             assert memberList.size() > 0;
             this.memberList = memberList;
-            this.dimension = (memberList.get(0)).getDimension();
+            this.hierarchy = (memberList.get(0)).getHierarchy();
             Util.discard(descendants);
         }
 
-        public List<Dimension> getDimensionality() {
-            return Collections.singletonList(dimension);
+        public List<Hierarchy> getDimensionality() {
+            return Collections.singletonList(hierarchy);
         }
 
         public String toString() {
@@ -920,7 +924,7 @@ public class CacheControlImpl implements CacheControl {
         public void accept(CellRegionVisitor visitor) {
             visitor.visit(this);
         }
-        public List<Dimension> getDimensionality() {
+        public List<Hierarchy> getDimensionality() {
             return Collections.emptyList();
         }
     }
@@ -960,8 +964,8 @@ public class CacheControlImpl implements CacheControl {
                 : lowerMember.getLevel();
         }
 
-        public List<Dimension> getDimensionality() {
-            return Collections.<Dimension>singletonList(level.getDimension());
+        public List<Hierarchy> getDimensionality() {
+            return Collections.<Hierarchy>singletonList(level.getHierarchy());
         }
 
         public RolapLevel getLevel() {
@@ -1020,12 +1024,12 @@ public class CacheControlImpl implements CacheControl {
      * Cell region formed by a cartesian product of two or more CellRegions.
      */
     static class CrossjoinCellRegion implements CellRegionImpl {
-        final List<Dimension> dimensions;
+        final List<Hierarchy> dimensions;
         private List<CellRegionImpl> components =
             new ArrayList<CellRegionImpl>();
 
         CrossjoinCellRegion(List<CellRegionImpl> regions) {
-            final List<Dimension> dimensionality = new ArrayList<Dimension>();
+            final List<Hierarchy> dimensionality = new ArrayList<Hierarchy>();
             compute(regions, components, dimensionality);
             dimensions = Collections.unmodifiableList(dimensionality);
         }
@@ -1033,13 +1037,13 @@ public class CacheControlImpl implements CacheControl {
         private static void compute(
             List<CellRegionImpl> regions,
             List<CellRegionImpl> components,
-            List<Dimension> dimensionality)
+            List<Hierarchy> dimensionality)
         {
-            final Set<Dimension> dimensionSet = new HashSet<Dimension>();
+            final Set<Hierarchy> dimensionSet = new HashSet<Hierarchy>();
             for (CellRegionImpl region : regions) {
                 addComponents(region, components);
 
-                final List<Dimension> regionDimensionality =
+                final List<Hierarchy> regionDimensionality =
                     region.getDimensionality();
                 dimensionality.addAll(regionDimensionality);
                 dimensionSet.addAll(regionDimensionality);
@@ -1071,7 +1075,7 @@ public class CacheControlImpl implements CacheControl {
             }
         }
 
-        public List<Dimension> getDimensionality() {
+        public List<Hierarchy> getDimensionality() {
             return dimensions;
         }
 
@@ -1100,7 +1104,7 @@ public class CacheControlImpl implements CacheControl {
             }
         }
 
-        public List<Dimension> getDimensionality() {
+        public List<Hierarchy> getDimensionality() {
             return regions.get(0).getDimensionality();
         }
 
@@ -1551,7 +1555,7 @@ public class CacheControlImpl implements CacheControl {
         extends MemberSetVisitorImpl
         implements MemberEditCommandPlus
     {
-        private final MemberSetPlus set;;
+        private final MemberSetPlus set;
         private List<CellRegion> cellRegionList;
         private Callable<Boolean> callable;
 

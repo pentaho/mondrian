@@ -15,8 +15,8 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 import mondrian.rolap.agg.*;
+import mondrian.util.Pair;
 
-import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -364,7 +364,6 @@ public abstract class RolapAggregationManager {
         // The special case is a tuple defined by only one member.
         int unsatisfiableTupleCount = 0;
         for (List<RolapMember> aggregation : aggregationList) {
-            boolean isTuple;
             if (aggregation.size() == 0
                 || !(aggregation.get(0) instanceof RolapCubeMember
                     || aggregation.get(0) instanceof VisualTotalMember))
@@ -511,7 +510,7 @@ public abstract class RolapAggregationManager {
      * </blockquote>
      *
      * @param compoundGroupMap Map from dimensionality to groups
-     * @param measureGroup
+     * @param measureGroup Measure group
      * @return compound predicate for a tuple or a member
      */
     private static StarPredicate makeCompoundPredicate(
@@ -519,25 +518,33 @@ public abstract class RolapAggregationManager {
         RolapMeasureGroup measureGroup)
     {
         List<StarPredicate> compoundPredicateList =
-            new ArrayList<StarPredicate> ();
+            new ArrayList<StarPredicate>();
+        final List<RolapSchema.PhysRouter> routers =
+            new ArrayList<RolapSchema.PhysRouter>();
+        int count = -1;
         for (List<RolapCubeMember[]> group : compoundGroupMap.values()) {
             // e.g.
             // {[USA].[CA], [Canada].[BC]}
             // or
             // {
+            ++count;
             StarPredicate compoundGroupPredicate = null;
             for (RolapCubeMember[] tuple : group) {
                 // [USA].[CA]
                 StarPredicate tuplePredicate = null;
 
-                for (RolapCubeMember member : tuple) {
-                    tuplePredicate =
-                        makeCompoundPredicateForMember(
-                            new RolapSchema.CubeRouter(
-                                measureGroup,
-                                member.getDimension()),
-                            member,
-                            tuplePredicate);
+                for (int i = 0; i < tuple.length; i++) {
+                    RolapCubeMember member = tuple[i];
+                    final RolapSchema.PhysRouter router;
+                    if (count == 0) {
+                        router = new RolapSchema.CubeRouter(
+                            measureGroup, member.getDimension());
+                        routers.add(router);
+                    } else {
+                        router = routers.get(i);
+                    }
+                    tuplePredicate = makeCompoundPredicateForMember(
+                        router, member, tuplePredicate);
                 }
                 if (tuplePredicate != null) {
                     if (compoundGroupPredicate == null) {
@@ -556,15 +563,7 @@ public abstract class RolapAggregationManager {
             }
         }
 
-        StarPredicate compoundPredicate = null;
-
-        if (compoundPredicateList.size() > 1) {
-            compoundPredicate = new OrPredicate(compoundPredicateList);
-        } else if (compoundPredicateList.size() == 1) {
-            compoundPredicate = compoundPredicateList.get(0);
-        }
-
-        return compoundPredicate;
+        return Predicates.or(compoundPredicateList);
     }
 
     private static StarPredicate makeCompoundPredicateForMember(
@@ -575,12 +574,15 @@ public abstract class RolapAggregationManager {
         final RolapCubeLevel level = member.getLevel();
         final List<RolapSchema.PhysColumn> keyList = level.attribute.keyList;
         final List<Object> valueList = member.getKeyAsList();
-        for (int i = 0; i < keyList.size(); i++) {
+        for (Pair<RolapSchema.PhysColumn, Object> pair
+            : Pair.iterate(keyList, valueList))
+        {
             final ValueColumnPredicate predicate =
                 new ValueColumnPredicate(
-                    router,
-                    keyList.get(i),
-                    valueList.get(i));
+                    new PredicateColumn(
+                        router,
+                        pair.left),
+                    pair.right);
             if (memberPredicate == null) {
                 memberPredicate = predicate;
             } else {

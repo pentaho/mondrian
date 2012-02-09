@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,7 +25,14 @@ import java.util.*;
  */
 public class OrPredicate extends ListPredicate {
 
-    public OrPredicate(List<StarPredicate> predicateList) {
+    /**
+     * Creates an OrPredicate.
+     *
+     * @param predicateList List of operand predicates
+     */
+    public OrPredicate(
+        List<StarPredicate> predicateList)
+    {
         super(predicateList);
     }
 
@@ -63,10 +70,7 @@ public class OrPredicate extends ListPredicate {
     }
 
     public StarPredicate and(StarPredicate predicate) {
-        List<StarPredicate> list = new ArrayList<StarPredicate>();
-        list.add(this);
-        list.add(predicate);
-        return new AndPredicate(list);
+        return Predicates.and(Arrays.asList(this, predicate));
     }
 
     /**
@@ -103,7 +107,7 @@ public class OrPredicate extends ListPredicate {
         List<StarPredicate> predicateGroup =
             predicateMap.get(inListRhsBitKey);
         if (predicateGroup == null) {
-            predicateGroup = new ArrayList<StarPredicate> ();
+            predicateGroup = new ArrayList<StarPredicate>();
             predicateMap.put(inListRhsBitKey, predicateGroup);
         }
         predicateGroup.add(predicate);
@@ -139,8 +143,8 @@ public class OrPredicate extends ListPredicate {
         Map<Integer, RolapSchema.PhysColumn> columnMap =
             new HashMap<Integer, RolapSchema.PhysColumn>();
 
-        for (RolapSchema.PhysColumn column : columns) {
-            columnMap.put(column.ordinal(), column);
+        for (PredicateColumn column : columns) {
+            columnMap.put(column.physColumn.ordinal(), column.physColumn);
         }
 
         buf.append("(");
@@ -233,7 +237,7 @@ public class OrPredicate extends ListPredicate {
         // super.toSql().
         //
         final Map<BitKey, List<StarPredicate>> predicateMap =
-            new LinkedHashMap<BitKey, List<StarPredicate>> ();
+            new LinkedHashMap<BitKey, List<StarPredicate>>();
 
         boolean first = true;
         checkInList(dialect, predicateMap);

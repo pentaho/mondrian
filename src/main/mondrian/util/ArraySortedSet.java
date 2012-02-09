@@ -191,7 +191,7 @@ public class ArraySortedSet<E extends Comparable>
         @SuppressWarnings({"unchecked"})
         E[] merged =
             Util.genericArray(
-                (Class<E>) this.values[0].getClass(),
+                (Class<E>) data1.getClass().getComponentType(),
                 k);
 
         while (p1 < data1.length && p2 < data2.length) {

@@ -53,16 +53,14 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
     /**
      * Creates a ListColumnPredicate
      *
-     * @param router Resolves route to fact table
      * @param column Column being constrained
      * @param list List of child predicates
      */
     public ListColumnPredicate(
-        RolapSchema.PhysRouter router,
-        RolapSchema.PhysColumn column,
+        PredicateColumn column,
         List<StarColumnPredicate> list)
     {
-        super(router, column);
+        super(column);
         this.children = list;
         childrenHashMap = null;
         hashValue = 0;
@@ -257,7 +255,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
                 (LiteralStarPredicate) predicate;
             if (literalStarPredicate.getValue()) {
                 // X minus TRUE --> FALSE
-                return Predicates.wildcard(router, constrainedColumn, false);
+                return Predicates.wildcard(constrainedColumn, false);
             } else {
                 // X minus FALSE --> X
                 return this;
@@ -268,7 +266,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
                 (LiteralColumnPredicate) predicate;
             if (literalColumnPredicate.getValue()) {
                 // X minus TRUE --> FALSE
-                return Predicates.wildcard(router, constrainedColumn, false);
+                return Predicates.wildcard(constrainedColumn, false);
             } else {
                 // X minus FALSE --> X
                 return this;
@@ -288,8 +286,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
             }
         }
         if (changeCount > 0) {
-            return new ListColumnPredicate(
-                router, getColumn(), newChildren);
+            return new ListColumnPredicate(getColumn(), newChildren);
         } else {
             return this;
         }
@@ -302,18 +299,12 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
             final List<StarColumnPredicate> list =
                 new ArrayList<StarColumnPredicate>(children);
             list.addAll(that.children);
-            return new ListColumnPredicate(
-                router,
-                getColumn(),
-                list);
+            return new ListColumnPredicate(getColumn(), list);
         } else {
             final List<StarColumnPredicate> list =
                 new ArrayList<StarColumnPredicate>(children);
             list.add(predicate);
-            return new ListColumnPredicate(
-                router,
-                getColumn(),
-                list);
+            return new ListColumnPredicate(getColumn(), list);
         }
     }
 
@@ -325,7 +316,7 @@ public class ListColumnPredicate extends AbstractColumnPredicate {
         }
 
         int notNullCount = 0;
-        final RolapSchema.PhysColumn column = getColumn();
+        final RolapSchema.PhysColumn column = getColumn().physColumn;
         final String expr = column.toSql();
         final int marker = buf.length(); // to allow backtrack later
         buf.append(expr);

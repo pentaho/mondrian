@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2003-2006 Robin Bagot and others
-// Copyright (C) 2003-2010 Julian Hyde
+// Copyright (C) 2003-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -184,8 +184,8 @@ class RolapConnectionPool {
             // use GenericObjectPool, which provides for resource limits
             connectionPool = new GenericObjectPool(
                 null, // PoolableObjectFactory, can be null
-                50, // max active
-                GenericObjectPool.WHEN_EXHAUSTED_BLOCK, // action when exhausted
+                5000, // max active
+                GenericObjectPool.WHEN_EXHAUSTED_GROW, // action when exhausted
                 3000, // max wait (milli seconds)
                 10, // max idle
                 false, // test on borrow

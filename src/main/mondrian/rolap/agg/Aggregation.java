@@ -198,10 +198,10 @@ public class Aggregation {
             return predicates;
         }
         RolapStar star = getStar();
-        Util.assertTrue(predicates.length == columns.length);
+        assert predicates.length == columns.length;
         StarColumnPredicate[] newPredicates = predicates.clone();
         double[] bloats = new double[columns.length];
-        final RolapSchema.PhysRouter router = predicates[0].getRouter();
+        final RolapSchema.PhysRouter router = predicates[0].getColumn().router;
 
         // We want to handle the special case "drilldown" which occurs pretty
         // often. Here, the parent is here as a constraint with a single member
@@ -351,8 +351,10 @@ public class Aggregation {
             {
                 newPredicates[j] =
                     Predicates.wildcard(
-                        router,
-                        (RolapSchema.PhysColumn) columns[j].getExpression(),
+                        new PredicateColumn(
+                            router,
+                            (RolapSchema.PhysColumn)
+                                columns[j].getExpression()),
                         true);
             }
         }
@@ -492,7 +494,7 @@ public class Aggregation {
             // of that column.
             for (int i = 0; i < arity; i++) {
                 RolapSchema.PhysColumn column =
-                    flushPredicate.getColumnList().get(i);
+                    flushPredicate.getColumnList().get(i).physColumn;
                 RolapStar.Column starColumn = star.getColumn(column, true);
                 int axisOrdinal =
                     findAxis(segmentAxes, starColumn.getBitPosition());

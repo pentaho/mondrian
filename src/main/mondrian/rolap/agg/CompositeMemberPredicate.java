@@ -12,7 +12,7 @@ package mondrian.rolap.agg;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Constraint defined by a member.
@@ -28,17 +28,29 @@ public class CompositeMemberPredicate
     implements MemberPredicate
 {
     private final RolapMember member;
-    private final List<RolapSchema.PhysColumn> columnList;
+    private final List<PredicateColumn> columnList =
+        new ArrayList<PredicateColumn>();
 
     /**
      * Creates a CompositeMemberPredicate.
      *
+     * @param router Determines route to fact table
      * @param member Member
      */
-    public CompositeMemberPredicate(RolapMember member) {
+    public CompositeMemberPredicate(
+        RolapSchema.PhysRouter router,
+        RolapMember member)
+    {
         this.member = member;
         assert member != null;
-        columnList = member.getLevel().getAttribute().keyList;
+        for (RolapSchema.PhysColumn physColumn
+            : member.getLevel().getAttribute().keyList)
+        {
+            columnList.add(
+                new PredicateColumn(
+                    router,
+                    physColumn));
+        }
         assert columnList.size() > 1 : "use MemberColumnPredicate for non-comp";
     }
 
@@ -47,7 +59,7 @@ public class CompositeMemberPredicate
         return member.getUniqueName();
     }
 
-    public List<RolapSchema.PhysColumn> getColumnList() {
+    public List<PredicateColumn> getColumnList() {
         return columnList;
     }
 

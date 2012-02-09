@@ -662,7 +662,8 @@ public class SegmentCacheManager {
                 }
                 final RolapStoredMeasure storedMeasure =
                     (RolapStoredMeasure) member;
-                final RolapStar star = storedMeasure.getCube().getStar();
+                final RolapStar star =
+                    storedMeasure.getMeasureGroup().getStar();
                 final SegmentCacheIndex index =
                     cacheMgr.indexRegistry.getIndex(star);
                 headers.addAll(

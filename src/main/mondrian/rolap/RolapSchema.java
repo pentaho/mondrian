@@ -2041,17 +2041,6 @@ public class RolapSchema implements Schema {
     }
 
     public static abstract class PhysColumn extends PhysExpr {
-        public static final Comparator<PhysColumn> COMPARATOR =
-            new Comparator<PhysColumn>() {
-                public int compare(
-                    PhysColumn object1,
-                    PhysColumn object2)
-                {
-                    return Util.compare(
-                        object1.ordinal,
-                        object2.ordinal);
-                }
-        };
         public final PhysRelation relation;
         public final String name;
         Dialect.Datatype datatype;
@@ -2477,8 +2466,21 @@ public class RolapSchema implements Schema {
      * <p>The most typical implementation is the one that knows the measure
      * group and joining dimension, and can therefore find the path of an
      * expression (say an attribute's key) to the fact table.</p>
+     *
+     * <p>If the {@link #path} method returns false, that means that the column
+     * does not need to be joined to the fact table.</p>
      */
     public interface PhysRouter {
+        /**
+         * Returns the path by which the column should be joined to the fact
+         * table.
+         *
+         * <p>A {@code null} return value is not an error; it means that the
+         * column does not need to be joined.</p>
+         *
+         * @param column Column
+         * @return Path by which column should be joined, or null
+         */
         PhysPath path(PhysColumn column);
     }
 
@@ -2490,8 +2492,31 @@ public class RolapSchema implements Schema {
      * is a literal true or false.
      */
     public static class BadRouter implements RolapSchema.PhysRouter {
+        public static final BadRouter INSTANCE = new BadRouter();
+
+        private BadRouter() {
+        }
+
         public RolapSchema.PhysPath path(RolapSchema.PhysColumn column) {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    /**
+     * Implementation of {@link PhysRouter} that always returns null paths.
+     *
+     * <p>Use it when a column does not need to be constrained by a fact table.
+     * For example, if you want all products, not just products that have
+     * been purchased.
+     */
+    public static class NoRouter implements RolapSchema.PhysRouter {
+        public static final NoRouter INSTANCE = new NoRouter();
+
+        private NoRouter() {
+        }
+
+        public RolapSchema.PhysPath path(RolapSchema.PhysColumn column) {
+            return null;
         }
     }
 
@@ -2515,6 +2540,13 @@ public class RolapSchema implements Schema {
         {
             this.measureGroup = measureGroup;
             this.cubeDimension = cubeDimension;
+        }
+
+        @Override
+        public String toString() {
+            return "CubeRouter(cube=" + measureGroup.getCube().getName()
+                   + ", measureGroup=" + measureGroup.getName()
+                   + ", dimension=" + cubeDimension.getName() + ")";
         }
 
         public PhysPath path(PhysColumn column) {
@@ -2698,9 +2730,8 @@ public class RolapSchema implements Schema {
             return sqlQuery.getDialect();
         }
 
-        int asasdasd(
-            PhysColumn column,
-            SqlMemberSource.Sgo sgo)
+        int addColumn(
+            PhysColumn column, SqlMemberSource.Sgo sgo)
         {
             if (column == null) {
                 return -1;

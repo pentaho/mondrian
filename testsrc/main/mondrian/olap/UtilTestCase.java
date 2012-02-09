@@ -541,6 +541,18 @@ public class UtilTestCase extends TestCase {
         assertEquals(Arrays.asList("x", "y,"), Util.parseCommaList("x,y,,"));
     }
 
+    /**
+     * Unit test for {@link Util#bit}.
+     */
+    public void testBit() {
+        assertEquals(1, Util.bit(0, 0, true)); // set unset bit
+        assertEquals(0, Util.bit(0, 0, false)); // clear unset bit
+        assertEquals(5, Util.bit(1, 2, true)); // set unset bit, keep other
+        assertEquals(1, Util.bit(1, 2, false)); // clear unset bit, keep other
+        assertEquals(5, Util.bit(5, 2, true)); // set set bit, keep other
+        assertEquals(1, Util.bit(5, 2, false)); // clear set bit, keep other
+    }
+
     public void testUnionIterator() {
         final List<String> xyList = Arrays.asList("x", "y");
         final List<String> abcList = Arrays.asList("a", "b", "c");

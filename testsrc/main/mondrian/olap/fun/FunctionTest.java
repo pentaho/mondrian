@@ -7145,107 +7145,156 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests that the Hierarchize function works correctly when applied to
-     * a level whose ordering is determined by an 'ordinal' property.
-     * TODO: fix this test (bug 1220787)
+     * Tests that the {@code Hierarchize} function works correctly when applied
+     * to a level whose ordering is determined by an 'ordinal' property.
      *
-     * <p>WG: Note that this is disabled right now due to its impact on other
-     * tests later on within the test suite, specifically XMLA tests that
-     * return a list of cubes.  We could run this test after XMLA, or clear
-     * out the cache to solve this.
+     * <p>Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-96">MONDRIAN-96,
+     * "NPE if both axes are empty"</a>.</p>
      */
     public void testHierarchizeOrdinal() {
-        TestContext context = getTestContext().withCube("[Sales_Hierarchize]");
-        final Connection connection = context.getConnection();
-        connection.getSchema().createCube(
-            "<Cube name=\"Sales_Hierarchize\">\n"
-            + "  <Table name=\"sales_fact_1997\"/>\n"
-            + "  <Dimension name=\"Time_Alphabetical\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
-            + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
-            + "      <Table name=\"time_by_day\"/>\n"
-            + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
-            + "          levelType=\"TimeYears\"/>\n"
-            + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
-            + "          levelType=\"TimeQuarters\"/>\n"
-            + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
-            + "          ordinalColumn=\"the_month\"\n"
-            + "          levelType=\"TimeMonths\"/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "\n"
-            + "  <Dimension name=\"Month_Alphabetical\" type=\"TimeDimension\" foreignKey=\"time_id\">\n"
-            + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
-            + "      <Table name=\"time_by_day\"/>\n"
-            + "      <Level name=\"Month\" column=\"month_of_year\" type=\"Numeric\"\n"
-            + "          ordinalColumn=\"the_month\"\n"
-            + "          levelType=\"TimeMonths\"/>\n"
-            + "    </Hierarchy>\n"
-            + "  </Dimension>\n"
-            + "\n"
-            + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
-            + "      formatString=\"Standard\"/>\n"
-            + "</Cube>");
+        final String cubeName = "Sales_Hierarchize";
+        final TestContext testContext = TestContext.instance().create(
+            null,
+            "<Cube name='" + cubeName + "'>\n"
+            + "  <Dimensions>\n"
+            + "    <Dimension name='Time_Alphabetical' table='time_by_day' key='Time Id' type='TimeDimension'>\n"
+            + "      <Attributes>\n"
+            + "        <Attribute name='Year' keyColumn='the_year' levelType='TimeYears'/>\n"
+            + "        <Attribute name='Quarter' levelType='TimeQuarters'>\n"
+            + "            <Key>\n"
+            + "                <Column name='the_year'/>\n"
+            + "                <Column name='quarter'/>\n"
+            + "            </Key>\n"
+            + "            <Name>\n"
+            + "                <Column name='quarter'/>\n"
+            + "            </Name>\n"
+            + "        </Attribute>\n"
+            + "        <Attribute name='Month Name' levelType='TimeMonths'>\n"
+            + "            <Key>\n"
+            + "                <Column name='the_year'/>\n"
+            + "                <Column name='month_of_year'/>\n"
+            + "            </Key>\n"
+            + "            <Name>\n"
+            + "                <Column name='month_of_year'/>\n"
+            + "            </Name>\n"
+            + "            <OrderBy>\n"
+            /*
+            + "                <Column name='the_year'/>\n"
+            + "                <Column name='quarter'/>\n"
+            */
+            + "                <Column name='the_month'/>\n"
+            + "            </OrderBy>\n"
+            + "        </Attribute>\n"
+            + "        <Attribute name='Time Id' keyColumn='time_id'/>\n"
+            + "      </Attributes>\n"
+            + "      <Hierarchies>\n"
+            + "        <Hierarchy name='Time_Alphabetical' hasAll='false'>\n"
+            + "          <Level attribute='Year'/>\n"
+            + "          <Level attribute='Quarter'/>\n"
+            + "          <Level attribute='Month Name'/>\n"
+            + "        </Hierarchy>\n"
+            + "        <Hierarchy name='Month_Alphabetical' hasAll='false'>\n"
+            + "          <Level attribute='Month Name'/>\n"
+            + "        </Hierarchy>\n"
+            + "      </Hierarchies>\n"
+            + "    </Dimension>\n"
+            + "  </Dimensions>\n"
+            + "  <MeasureGroups>\n"
+            + "    <MeasureGroup name='sales' table='sales_fact_1997'>\n"
+            + "      <Measures>\n"
+            + "        <Measure name='Unit Sales' column='unit_sales' aggregator='sum' formatString='Standard' visible='false'/>\n"
+            + "      </Measures>\n"
+            + "      <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Time_Alphabetical' foreignKeyColumn='time_id'/>\n"
+            + "      </DimensionLinks>\n"
+            + "    </MeasureGroup>\n"
+            + "  </MeasureGroups>\n"
+            + "</Cube>",
+            null,
+            null,
+            null,
+            null)
+            .withCube(cubeName);
 
         // The [Time_Alphabetical] is ordered alphabetically by month
         if (!Bug.CubeRaggedFeature) {
-        context.assertAxisReturns(
-            "Hierarchize([Time_Alphabetical].members)",
-                "[Time_Alphabetical].[1997]\n"
-                + "[Time_Alphabetical].[1997].[Q1]\n"
-                + "[Time_Alphabetical].[1997].[Q1].[2]\n"
-                + "[Time_Alphabetical].[1997].[Q1].[1]\n"
-                + "[Time_Alphabetical].[1997].[Q1].[3]\n"
-                + "[Time_Alphabetical].[1997].[Q2]\n"
-                + "[Time_Alphabetical].[1997].[Q2].[4]\n"
-                + "[Time_Alphabetical].[1997].[Q2].[6]\n"
-                + "[Time_Alphabetical].[1997].[Q2].[5]\n"
-                + "[Time_Alphabetical].[1997].[Q3]\n"
-                + "[Time_Alphabetical].[1997].[Q3].[8]\n"
-                + "[Time_Alphabetical].[1997].[Q3].[7]\n"
-                + "[Time_Alphabetical].[1997].[Q3].[9]\n"
-                + "[Time_Alphabetical].[1997].[Q4]\n"
-                + "[Time_Alphabetical].[1997].[Q4].[12]\n"
-                + "[Time_Alphabetical].[1997].[Q4].[11]\n"
-                + "[Time_Alphabetical].[1997].[Q4].[10]\n"
-                + "[Time_Alphabetical].[1998]\n"
-                + "[Time_Alphabetical].[1998].[Q1]\n"
-                + "[Time_Alphabetical].[1998].[Q1].[2]\n"
-                + "[Time_Alphabetical].[1998].[Q1].[1]\n"
-                + "[Time_Alphabetical].[1998].[Q1].[3]\n"
-                + "[Time_Alphabetical].[1998].[Q2]\n"
-                + "[Time_Alphabetical].[1998].[Q2].[4]\n"
-                + "[Time_Alphabetical].[1998].[Q2].[6]\n"
-                + "[Time_Alphabetical].[1998].[Q2].[5]\n"
-                + "[Time_Alphabetical].[1998].[Q3]\n"
-                + "[Time_Alphabetical].[1998].[Q3].[8]\n"
-                + "[Time_Alphabetical].[1998].[Q3].[7]\n"
-                + "[Time_Alphabetical].[1998].[Q3].[9]\n"
-                + "[Time_Alphabetical].[1998].[Q4]\n"
-                + "[Time_Alphabetical].[1998].[Q4].[12]\n"
-                + "[Time_Alphabetical].[1998].[Q4].[11]\n"
-                + "[Time_Alphabetical].[1998].[Q4].[10]");
+            testContext.assertAxisReturns(
+                "Head([Time_Alphabetical].[Time_Alphabetical].members, 7)",
+                "[Time_Alphabetical].[Time_Alphabetical].[1997]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q1]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q1].[2]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q1].[1]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q1].[3]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q2]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q2].[4]");
+
+        testContext.assertAxisReturns(
+            "Hierarchize([Time_Alphabetical].[Time_Alphabetical].members)",
+                "[Time_Alphabetical].[Time_Alphabetical].[1997]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q1]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q1].[2]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q1].[1]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q1].[3]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q2]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q2].[4]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q2].[6]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q2].[5]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q3]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q3].[8]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q3].[7]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q3].[9]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q4]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q4].[12]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q4].[11]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1997].[Q4].[10]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q1]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q1].[2]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q1].[1]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q1].[3]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q2]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q2].[4]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q2].[6]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q2].[5]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q3]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q3].[8]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q3].[7]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q3].[9]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q4]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q4].[12]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q4].[11]\n"
+                + "[Time_Alphabetical].[Time_Alphabetical].[1998].[Q4].[10]");
         }
 
         // The [Month_Alphabetical] is a single-level hierarchy ordered
         // alphabetically by month.
-        context.assertAxisReturns(
+        testContext.assertAxisReturns(
             "Hierarchize([Month_Alphabetical].members)",
-                "[Month_Alphabetical].[4]\n"
-                + "[Month_Alphabetical].[8]\n"
-                + "[Month_Alphabetical].[12]\n"
-                + "[Month_Alphabetical].[2]\n"
-                + "[Month_Alphabetical].[1]\n"
-                + "[Month_Alphabetical].[7]\n"
-                + "[Month_Alphabetical].[6]\n"
-                + "[Month_Alphabetical].[3]\n"
-                + "[Month_Alphabetical].[5]\n"
-                + "[Month_Alphabetical].[11]\n"
-                + "[Month_Alphabetical].[10]\n"
-                + "[Month_Alphabetical].[9]");
-
-        // clear the cache so that future tests don't fail that expect a
-        // specific set of cubes
-        TestContext.instance().flushSchemaCache();
+            "[Time_Alphabetical].[Month_Alphabetical].[4]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[4]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[8]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[8]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[12]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[12]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[2]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[2]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[1]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[1]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[7]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[7]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[6]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[6]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[3]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[3]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[5]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[5]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[11]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[11]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[10]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[10]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[9]\n"
+            + "[Time_Alphabetical].[Month_Alphabetical].[9]");
     }
 
     public void testIntersectAll() {

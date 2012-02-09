@@ -11,7 +11,6 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.Util;
 import mondrian.rolap.RolapMember;
-import mondrian.rolap.RolapSchema;
 
 /**
  * Column constraint defined by a member.
@@ -32,20 +31,19 @@ public class MemberColumnPredicate
     /**
      * Creates a MemberColumnPredicate
      *
-     * @param router Resolves route to fact table
      * @param column Constrained column
      * @param member Member to constrain column to; must not be null
      */
     public MemberColumnPredicate(
-        RolapSchema.PhysRouter router,
-        RolapSchema.PhysColumn column,
+        PredicateColumn column,
         RolapMember member)
     {
-        super(router, column, member.getKey());
+        super(column, member.getKey());
         this.member = member;
         assert column != null;
-        assert column == member.getLevel().getAttribute().keyList.get(0);
         assert member.getLevel().getAttribute().keyList.size() == 1;
+        assert column.physColumn
+               == member.getLevel().getAttribute().keyList.get(0);
     }
 
     // for debug

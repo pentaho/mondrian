@@ -49,8 +49,8 @@ From [Sales]
 Axis #0:
 {}
 Axis #1:
-{[Gender].[F], [Measures].[*FORMATTED_MEASURE_0]}
-{[Gender].[M], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customer].[Gender].[F], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customer].[Gender].[M], [Measures].[*FORMATTED_MEASURE_0]}
 Axis #2:
 {[Product].[Products].[Drink].[Alcoholic Beverages], [Customer].[Education Level].[*TOTAL_MEMBER_SEL~SUM]}
 {[Product].[Products].[Food].[Baked Goods], [Customer].[Education Level].[*TOTAL_MEMBER_SEL~SUM]}
@@ -144,10 +144,10 @@ Where ([Time].[*FILTER_MEMBER])
         <Resource name="result">
             <![CDATA[
 Axis #0:
-{[Time].[*FILTER_MEMBER]}
+{[Time].[Time].[*FILTER_MEMBER]}
 Axis #1:
-{[Gender].[M], [Measures].[*FORMATTED_MEASURE_0]}
-{[Gender].[M], [Measures].[*SUMMARY_MEASURE_1]}
+{[Customer].[Gender].[M], [Measures].[*FORMATTED_MEASURE_0]}
+{[Customer].[Gender].[M], [Measures].[*SUMMARY_MEASURE_1]}
 Axis #2:
 {[Product].[Products].[*TOTAL_MEMBER_SEL~SUM], [Customer].[Education Level].[All Education Levels]}
 {[Product].[Products].[Drink].[Beverages], [Customer].[Education Level].[*TOTAL_MEMBER_SEL~SUM]}

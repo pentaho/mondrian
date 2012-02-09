@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2010 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -259,7 +259,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
         public RolapMember makeMember(
             RolapMember parentMember,
             RolapLevel childLevel,
-            Object key,
+            Comparable key,
             Object captionValue,
             boolean parentChild,
             SqlStatement stmt,

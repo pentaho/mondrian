@@ -24,24 +24,31 @@ import java.util.*;
  */
 public class MemberTuplePredicate implements StarPredicate {
     private final List<Interval> intervals;
-    private final List<RolapSchema.PhysColumn> columnList;
+    private final List<PredicateColumn> columnList =
+        new ArrayList<PredicateColumn>();
     private final BitKey columnBitKey;
 
     /**
      * Creates a MemberTuplePredicate.
      *
+     * @param router Determines route to fact table
      * @param physSchema Physical Schema
-     * @param columnList List of constrained columns
+     * @param physColumnList List of constrained columns
      * @param intervals Upper/lower bounds of this predicate
      */
     MemberTuplePredicate(
+        RolapSchema.PhysRouter router,
         RolapSchema.PhysSchema physSchema,
-        List<RolapSchema.PhysColumn> columnList,
+        List<RolapSchema.PhysColumn> physColumnList,
         List<Interval> intervals)
     {
         this.columnBitKey =
             BitKey.Factory.makeBitKey(physSchema.getColumnCount());
-        this.columnList = columnList;
+        for (RolapSchema.PhysColumn column : physColumnList) {
+            columnList.add(
+                new PredicateColumn(
+                    router, column));
+        }
         this.intervals = intervals;
     }
 
@@ -66,7 +73,7 @@ public class MemberTuplePredicate implements StarPredicate {
             && this.intervals.equals(that.intervals);
     }
 
-    public List<RolapSchema.PhysColumn> getColumnList() {
+    public List<PredicateColumn> getColumnList() {
         return columnList;
     }
 
@@ -121,8 +128,22 @@ public class MemberTuplePredicate implements StarPredicate {
             if (i > 0) {
                 buf.append(" or ");
             }
-            interval.toSql(dialect, columnList, buf);
+            interval.toSql(dialect, unwrap(columnList), buf);
         }
+    }
+
+    private static List<RolapSchema.PhysColumn> unwrap(
+        final List<PredicateColumn> columnList)
+    {
+        return new AbstractList<RolapSchema.PhysColumn>() {
+            public RolapSchema.PhysColumn get(int index) {
+                return columnList.get(index).physColumn;
+            }
+
+            public int size() {
+                return columnList.size();
+            }
+        };
     }
 
     static Interval createRange(

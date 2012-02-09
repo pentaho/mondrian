@@ -9,6 +9,7 @@
 */
 package mondrian.rolap;
 
+import mondrian.rolap.agg.PredicateColumn;
 import mondrian.spi.Dialect;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public interface StarPredicate {
      *
      * @return List of constrained columns
      */
-    public List<RolapSchema.PhysColumn> getColumnList();
+    public List<PredicateColumn> getColumnList();
 
     /**
      * Returns a bitmap of constrained columns to speed up comparison.

@@ -538,7 +538,7 @@ public class BatchTestCase extends FoodMartTestCase {
             getConnection().getSchema().lookupCube("Sales", true);
         RolapHierarchy hierarchy =
             (RolapHierarchy) salesCube.lookupHierarchy(
-                new Id.Segment("Store", Id.Quoting.UNQUOTED),
+                new Id.Segment("Stores", Id.Quoting.UNQUOTED),
                 false);
         SmartMemberReader memberReader =
             (SmartMemberReader) hierarchy.getMemberReader();
@@ -592,9 +592,10 @@ public class BatchTestCase extends FoodMartTestCase {
                 request.addConstrainedColumn(
                     storeTypeColumn,
                     new ValueColumnPredicate(
-                        new RolapSchema.BadRouter(),
-                        (RolapSchema.PhysColumn)
-                            storeTypeColumn.getExpression(),
+                        new PredicateColumn(
+                            RolapSchema.BadRouter.INSTANCE,
+                            (RolapSchema.PhysColumn)
+                                storeTypeColumn.getExpression()),
                         value));
             }
         }
@@ -1080,21 +1081,17 @@ public class BatchTestCase extends FoodMartTestCase {
                 for (int i = 0; i < values.length; i++) {
                     andPredList.add(
                         new ValueColumnPredicate(
-                            new RolapSchema.BadRouter(),
-                            (RolapSchema.PhysColumn)
-                                starColumn[i].getExpression(),
+                            new PredicateColumn(
+                                RolapSchema.BadRouter.INSTANCE,
+                                (RolapSchema.PhysColumn)
+                                    starColumn[i].getExpression()),
                             values[i]));
                 }
-                final StarPredicate predicate =
-                    andPredList.size() == 1
-                        ? andPredList.get(0)
-                        : new AndPredicate(andPredList);
+                final StarPredicate predicate = Predicates.and(andPredList);
                 orPredList.add(predicate);
             }
 
-            return orPredList.size() == 1
-                ? orPredList.get(0)
-                : new OrPredicate(orPredList);
+            return Predicates.or(orPredList);
         }
     }
 

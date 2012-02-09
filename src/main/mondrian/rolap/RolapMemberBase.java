@@ -74,7 +74,7 @@ public class RolapMemberBase
      * use this property; in which case, they should leave it as its default,
      * -1. */
     private int ordinal;
-    private final Object key;
+    private final Comparable key;
 
     /**
      * Maps property name to property value.
@@ -100,7 +100,7 @@ public class RolapMemberBase
     protected RolapMemberBase(
         RolapMember parentMember,
         RolapLevel level,
-        Object key,
+        Comparable key,
         String name,
         MemberType memberType)
     {
@@ -110,13 +110,7 @@ public class RolapMemberBase
             || this instanceof VisualTotalsFunDef.VisualTotalMember;
         assert Key.isValid(key, level, memberType)
             : "invalid key " + key + " for level " + level;
-        if (key instanceof byte[]) {
-            // Some drivers (e.g. Derby) return byte arrays for binary columns
-            // but byte arrays do not implement Comparable
-            this.key = new String((byte[])key);
-        } else {
-            this.key = key;
-        }
+        this.key = key;
         this.ordinal = -1;
         this.mapPropertyNameToValue = Collections.emptyMap();
 
@@ -136,7 +130,11 @@ public class RolapMemberBase
         this.key = null;
     }
 
-    RolapMemberBase(RolapMember parentMember, RolapLevel level, Object value) {
+    RolapMemberBase(
+        RolapMember parentMember,
+        RolapLevel level,
+        Comparable value)
+    {
         this(parentMember, level, value, null, MemberType.REGULAR);
         assert !(level instanceof RolapCubeLevel);
     }
@@ -486,7 +484,7 @@ public class RolapMemberBase
     }
 
     // implement RolapMember
-    public Object getKeyCompact() {
+    public Comparable getKeyCompact() {
         return this.key;
     }
 

@@ -3,15 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.server.Execution;
-import mondrian.server.Locus;
 import mondrian.test.*;
 
 import java.io.PrintWriter;
@@ -983,7 +981,7 @@ public class CacheControlTest extends FoodMartTestCase {
         assertEquals(
             "Union("
             + "Crossjoin("
-            + "Member([Marital Status].[S]), "
+            + "Member([Customer].[Marital Status].[S]), "
             + "Union("
             + "Crossjoin("
             + "Member([Customer].[Gender].[F]), "
@@ -991,7 +989,7 @@ public class CacheControlTest extends FoodMartTestCase {
             + "Crossjoin(Member([Customer].[Gender].[M]), "
             + "Member([Time].[Time].[1997].[Q2])))), "
             + "Crossjoin("
-            + "Member([Marital Status].[S]), "
+            + "Member([Customer].[Marital Status].[S]), "
             + "Member([Customer].[Gender].[F]), "
             + "Member([Time].[Time].[1997].[Q1])))",
             region.toString());
@@ -1001,9 +999,9 @@ public class CacheControlTest extends FoodMartTestCase {
                 (CacheControlImpl.CellRegionImpl) region);
         assertEquals(
             "Union("
-            + "Crossjoin(Member([Marital Status].[S]), Member([Customer].[Gender].[F]), Member([Time].[Time].[1997].[Q1])), "
-            + "Crossjoin(Member([Marital Status].[S]), Member([Customer].[Gender].[M]), Member([Time].[Time].[1997].[Q2])), "
-            + "Crossjoin(Member([Marital Status].[S]), Member([Customer].[Gender].[F]), Member([Time].[Time].[1997].[Q1])))",
+            + "Crossjoin(Member([Customer].[Marital Status].[S]), Member([Customer].[Gender].[F]), Member([Time].[Time].[1997].[Q1])), "
+            + "Crossjoin(Member([Customer].[Marital Status].[S]), Member([Customer].[Gender].[M]), Member([Time].[Time].[1997].[Q2])), "
+            + "Crossjoin(Member([Customer].[Marital Status].[S]), Member([Customer].[Gender].[F]), Member([Time].[Time].[1997].[Q1])))",
             normalizedRegion.toString());
     }
 

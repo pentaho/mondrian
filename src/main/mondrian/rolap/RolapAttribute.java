@@ -54,6 +54,11 @@ public class RolapAttribute extends OlapElementBase {
 
     /**
      * The list of columns that are used to sort the attribute.
+     *
+     * <p>These columns do not necessarily include the key of the parent level,
+     * when the attribute is used in a non-trivial hierarchy. When used to
+     * generate an ORDER BY clause, Mondrian will sort by the parent's key
+     * first.
      */
     protected final List<RolapSchema.PhysColumn> orderByList;
 

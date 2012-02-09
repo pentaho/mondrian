@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * A constraint which always returns true or false.
  *
- * @see Predicates#wildcard(mondrian.rolap.RolapSchema.PhysColumn, boolean)
+ * @see Predicates#wildcard(mondrian.rolap.RolapSchema.PhysRouter, mondrian.rolap.RolapSchema.PhysColumn, boolean)
  *
  * @author jhyde
  * @version $Id$
@@ -51,6 +51,10 @@ public class LiteralStarPredicate implements StarPredicate {
                && this.value == ((LiteralStarPredicate) obj).value;
     }
 
+    public List<RolapSchema.PhysRouter> getRouters() {
+        return Collections.emptyList();
+    }
+
     public boolean evaluate(List<Object> valueList) {
         assert valueList.isEmpty();
         return value;
@@ -68,7 +72,7 @@ public class LiteralStarPredicate implements StarPredicate {
         buf.append("=any");
     }
 
-    public List<RolapSchema.PhysColumn> getColumnList() {
+    public List<PredicateColumn> getColumnList() {
         return Collections.emptyList();
     }
 

@@ -39,25 +39,32 @@ public abstract class ListPredicate implements StarPredicate {
      */
     private int hashValue;
 
-    protected final List<RolapSchema.PhysColumn> columns;
+    protected final List<PredicateColumn> columns;
 
     private BitKey columnBitKey = null;
 
-    protected ListPredicate(List<StarPredicate> predicateList) {
+    /**
+     * Creates a ListPredicate.
+     *
+     * @param predicateList List of operand predicates
+     */
+    protected ListPredicate(
+        List<StarPredicate> predicateList)
+    {
         childrenHashMap = null;
         hashValue = 0;
         // Ensure that columns are sorted by bit-key, for determinacy.
-        final SortedSet<RolapSchema.PhysColumn> columnSet =
-            new TreeSet<RolapSchema.PhysColumn>(
-                RolapSchema.PhysColumn.COMPARATOR);
+        final SortedSet<PredicateColumn> columnSet =
+            new TreeSet<PredicateColumn>(
+                PredicateColumn.COMPARATOR);
         for (StarPredicate predicate : predicateList) {
             children.add(predicate);
             columnSet.addAll(predicate.getColumnList());
         }
-        columns = new ArrayList<RolapSchema.PhysColumn>(columnSet);
+        columns = new ArrayList<PredicateColumn>(columnSet);
     }
 
-    public List<RolapSchema.PhysColumn> getColumnList() {
+    public List<PredicateColumn> getColumnList() {
         return columns;
     }
 

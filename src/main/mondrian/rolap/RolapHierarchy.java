@@ -190,7 +190,10 @@ public class RolapHierarchy extends HierarchyBase {
         // Create an all member; assign caption if supplied.
         this.allMember =
             new RolapMemberBase(
-                null, allLevel, Collections.EMPTY_LIST, this.allMemberName,
+                null,
+                allLevel,
+                Util.COMPARABLE_EMPTY_LIST,
+                this.allMemberName,
                 Member.MemberType.ALL);
         if (allMemberCaption != null
             && allMemberCaption.length() > 0)
@@ -742,7 +745,7 @@ public class RolapHierarchy extends HierarchyBase {
             super(
                 null,
                 level,
-                Collections.<Object>emptyList(),
+                Util.COMPARABLE_EMPTY_LIST,
                 RolapUtil.mdxNullLiteral(),
                 MemberType.NULL);
             assert level != null;

@@ -69,9 +69,12 @@ public interface RolapMember extends Member, RolapCalculation {
      * Returns this member in a compact form, and consistent with the
      * specification in {@link RolapMember.Key}.
      *
+     * <p>The result is either a value or a list. Either way, it implements
+     * Comparable.
+     *
      * @return Compact representation of this member's key
      */
-    Object getKeyCompact();
+    Comparable getKeyCompact();
 
     RolapMember getParentMember();
     RolapHierarchy getHierarchy();
@@ -111,7 +114,7 @@ public interface RolapMember extends Member, RolapCalculation {
         private static final Class<? extends List> LIST3_TYPE =
             Util.flatList("a", "b", "c").getClass();
         private static final Class<? extends List> LISTN_TYPE =
-            Arrays.asList("").getClass();
+            Util.flatList("a", "b", "c", "d").getClass();
 
         /**
          * Creates a composite or non-composite key value. All components are
@@ -123,11 +126,11 @@ public interface RolapMember extends Member, RolapCalculation {
          * @param values Component values
          * @return Value object
          */
-        public static Object create(Object[] values) {
+        public static Comparable create(Comparable[] values) {
             if (values.length == 1) {
                 return values[0];
             } else {
-                return Util.flatList(values);
+                return (Comparable) Util.flatList(values);
             }
         }
 
@@ -135,7 +138,7 @@ public interface RolapMember extends Member, RolapCalculation {
          * Returns whether a key value seems to be consistent with the standard
          * for simple and composite key values. If this method returns false,
          * you should probably change your code to use
-         * {@link #create(Object[])}.
+         * {@link #create(Comparable[])}.
          *
          * @param key Key value
          * @param level Level
@@ -151,7 +154,7 @@ public interface RolapMember extends Member, RolapCalculation {
                 return key == null;
             }
             if (level.isAll()) {
-                return key.equals(Collections.<Object>emptyList());
+                return key.equals(Util.COMPARABLE_EMPTY_LIST);
             }
             final int keyCount = level.attribute.keyList.size();
             if (key instanceof String
@@ -169,7 +172,7 @@ public interface RolapMember extends Member, RolapCalculation {
                 }
                 switch (arity) {
                 case 0:
-                    return key == Collections.EMPTY_LIST;
+                    return key == Util.COMPARABLE_EMPTY_LIST;
                 case 1:
                     return false;
                 case 2:

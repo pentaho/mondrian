@@ -33,7 +33,8 @@ public class StarPredicates {
             switch (listColumnPredicate.getPredicates().size()) {
             case 0:
                 return new LiteralColumnPredicate(
-                    new RolapSchema.BadRouter(), predicate.getColumn(), false);
+                    predicate.getColumn(),
+                    false);
             case 1:
                 return listColumnPredicate.getPredicates().get(0);
             default:

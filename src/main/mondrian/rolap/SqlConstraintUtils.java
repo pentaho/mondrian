@@ -16,6 +16,7 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.Dialect;
 import mondrian.util.FilteredIterableList;
+import mondrian.util.Pair;
 
 import java.util.*;
 
@@ -434,14 +435,23 @@ public class SqlConstraintUtils {
             return LiteralStarPredicate.FALSE;
         }
         RolapMember member1 = members.iterator().next();
+        final RolapLevel level = member1.getLevel();
+        RolapSchema.PhysRouter router;
+        if (level instanceof RolapCubeLevel) {
+            router = new RolapSchema.CubeRouter(
+                measureGroup, ((RolapCubeLevel) level).getDimension());
+        } else {
+            router = RolapSchema.NoRouter.INSTANCE;
+        }
         if (i == 1) {
             return Predicates.memberPredicate(
-                new RolapSchema.BadRouter(),
+                router,
                 member1);
         }
         return Predicates.list(
             physSchema,
-            member1.getLevel(),
+            router,
+            level,
             new ArrayList<RolapMember>(members));
     }
 
@@ -989,12 +999,7 @@ public class SqlConstraintUtils {
             columnString = nameExp.toSql();
         }
 
-        if (ordinalInMultiple++ > 0) {
-            columnBuf.append(", ");
-        }
-
         columnBuf.append(columnString);
-
         columnBuf.append(")");
 
         // generate the RHS of the IN predicate
@@ -1014,13 +1019,16 @@ public class SqlConstraintUtils {
             memberBuf.setLength(0);
             memberBuf.append("(");
 
-            for (Object o : m.getKeyAsList()) {
-                Util.deprecated("obsolete", false);
+            for (Pair<RolapSchema.PhysColumn, Object> pair
+                : Pair.iterate(level.attribute.keyList, m.getKeyAsList()))
+            {
+                final Object o = pair.right;
+                final Dialect.Datatype datatype = pair.left.getDatatype();
                 String value =
                     getColumnValue(
                         o,
                         queryBuilder.getDialect(),
-                        level.attribute.getDatatype());
+                        datatype);
 
                 // If parent at a level is NULL, record this parent and all
                 // its children (if there are any)
@@ -1041,19 +1049,18 @@ public class SqlConstraintUtils {
                     memberBuf.append(", ");
                 }
 
-                Util.deprecated("obsolete", false);
                 queryBuilder.getDialect().quote(
-                    memberBuf, value, level.attribute.getDatatype());
+                    memberBuf, value, datatype);
 
-                // Now check if sql string is sucessfully generated for this
+                // Now check if sql string is successfully generated for this
                 // member.  If parent levels do not contain NULL then SQL must
                 // have been generated successfully.
-                memberBuf.append(")");
-                if (memberOrdinal++ > 0) {
-                    valueBuf.append(", ");
-                }
-                valueBuf.append(memberBuf);
             }
+            memberBuf.append(")");
+            if (memberOrdinal++ > 0) {
+                valueBuf.append(", ");
+            }
+            valueBuf.append(memberBuf);
         }
 
         StringBuilder condition = new StringBuilder();

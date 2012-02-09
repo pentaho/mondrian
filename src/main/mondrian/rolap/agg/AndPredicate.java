@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
+// Copyright (C) 2007-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -25,7 +25,14 @@ import java.util.*;
  */
 public class AndPredicate extends ListPredicate {
 
-    public AndPredicate(List<StarPredicate> predicateList) {
+    /**
+     * Creates an AndPredicate.
+     *
+     * @param predicateList List of operand predicates
+     */
+    public AndPredicate(
+        List<StarPredicate> predicateList)
+    {
         super(predicateList);
     }
 
@@ -57,12 +64,8 @@ public class AndPredicate extends ListPredicate {
         }
     }
 
-
     public StarPredicate or(StarPredicate predicate) {
-        List<StarPredicate> list = new ArrayList<StarPredicate>();
-        list.add(this);
-        list.add(predicate);
-        return new OrPredicate(list);
+        return Predicates.or(Arrays.asList(this, predicate));
     }
 
     public BitKey checkInList(
@@ -123,7 +126,7 @@ public class AndPredicate extends ListPredicate {
                     if (columnPred.getValue() == RolapUtil.sqlNullValue) {
                         // This column predicate cannot be translated to IN
                         inListRhsBitKey.clear(
-                            columnPred.getColumn().ordinal());
+                            columnPred.getColumn().physColumn.ordinal());
                     }
                     // else do nothing because this column predicate can be
                     // translated to IN
@@ -136,34 +139,36 @@ public class AndPredicate extends ListPredicate {
         return inListRhsBitKey;
     }
 
-    /*
-     * Generate value list for this predicate to be used in an IN-list
+    /**
+     * Generates value list for this predicate to be used in an IN-list
      * sql predicate.
      *
-     * The values in a multi-column IN list predicates are generated in the
-     * same order, based on the bit position from the columnBitKey.
+     * <p>The values in a multi-column IN list predicates are generated in the
+     * same order, based on the bit position from the columnBitKey.</p>
      *
+     * @param buf Buffer wherein to build SQL
+     * @param dialect Dialect
+     * @param inListRhsBitKey Bit key
      */
     public void toInListSql(
         Dialect dialect,
         StringBuilder buf,
         BitKey inListRhsBitKey)
     {
-        boolean firstValue = true;
         buf.append("(");
-        /*
-         * Arranging children according to the bit position. This is required
-         * as RHS of IN list needs to list the column values in the same order.
-         */
+
+        // Arranging children according to the bit position. This is required
+        // as RHS of IN list needs to list the column values in the same order.
         Set<ValueColumnPredicate> sortedPredicates =
             new TreeSet<ValueColumnPredicate>();
 
         for (StarPredicate predicate : children) {
-            // inListPossible() checks gaurantees that predicate is of type
+            // inListPossible() checks guarantees that predicate is of type
             // ValueColumnPredicate
             assert predicate instanceof ValueColumnPredicate;
             if (inListRhsBitKey.get(
-                    ((ValueColumnPredicate) predicate).getColumn().ordinal()))
+                    ((ValueColumnPredicate) predicate).getColumn().physColumn
+                        .ordinal()))
             {
                 sortedPredicates.add((ValueColumnPredicate)predicate);
             }
@@ -175,8 +180,9 @@ public class AndPredicate extends ListPredicate {
                 buf.append(", ");
             }
             dialect.quote(
-                buf, predicate.getValue(),
-                predicate.getColumn().getDatatype());
+                buf,
+                predicate.getValue(),
+                predicate.getColumn().physColumn.getDatatype());
         }
         buf.append(")");
     }

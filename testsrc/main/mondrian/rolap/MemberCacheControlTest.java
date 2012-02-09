@@ -52,6 +52,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+//        if (false)
         propSaver.set(
             MondrianProperties.instance().EnableRolapCubeMemberCache,
             false);
@@ -78,7 +79,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
     }
 
     public TestContext getTestContext() {
-        TestContext testContext = TestContext.instance().createSubstitutingCube(
+        return TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
             // Reduced size Store dimension. Omits the 'Store Country' level,
             // and adds properties to non-leaf levels.
@@ -97,9 +98,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             + "        <Property name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\"/>\n"
             + "        <Property name=\"Has coffee bar\" column=\"coffee_bar\" type=\"Boolean\"/>\n"
             + "        <Property name=\"Street address\" column=\"store_street_address\" type=\"String\"/>\n"
-            + "      </Level>\n"
-            + "    </Hierarchy>\n"
-            + "   </Dimension>");
+            + "      </Level>\n" + "    </Hierarchy>\n" + "   </Dimension>");
         return testContext;
     }
 
@@ -128,7 +127,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
      * @return the Member
      * @throws MondrianException when not found.
      */
-    static protected RolapMember findMember(
+    protected static RolapMember findMember(
         TestContext tc,
         String cubeName,
         String ... names)
@@ -437,8 +436,8 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                 caMember.getLevel().getChildLevel(),
                 "Berkeley",
                 null);
-        final RolapBaseCubeMeasure unitSalesCubeMember =
-            (RolapBaseCubeMeasure) findMember(
+        final RolapCubeHierarchy.RolapCubeStoredMeasure unitSalesCubeMember =
+            (RolapCubeHierarchy.RolapCubeStoredMeasure) findMember(
                 tc, "Sales", "Measures", "Unit Sales");
         final RolapCubeMember yearCubeMember =
             (RolapCubeMember) findMember(
@@ -645,8 +644,8 @@ public class MemberCacheControlTest extends FoodMartTestCase {
                 tc, "Sales", "Retail", "CA", "San Francisco");
         final RolapMember caMember = sfCubeMember.member.getParentMember();
         final RolapHierarchy hierarchy = caMember.getHierarchy();
-        final RolapBaseCubeMeasure unitSalesCubeMember =
-            (RolapBaseCubeMeasure) findMember(
+        final RolapCubeHierarchy.RolapCubeStoredMeasure unitSalesCubeMember =
+            (RolapCubeHierarchy.RolapCubeStoredMeasure) findMember(
                 tc, "Sales", "Measures", "Unit Sales");
         final RolapCubeMember yearCubeMember =
             (RolapCubeMember) findMember(

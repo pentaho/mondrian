@@ -35,12 +35,11 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
         StarColumnPredicate plus,
         StarColumnPredicate minus)
     {
-        super(plus.getRouter(), plus.getColumn());
+        super(plus.getColumn());
         assert minus != null;
         this.plus = plus;
         this.minus = minus;
     }
-
 
     public boolean equals(Object obj) {
         if (obj instanceof MinusStarPredicate) {
@@ -55,10 +54,6 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
     public int hashCode() {
         return plus.hashCode() * 31
             + minus.hashCode();
-    }
-
-    public RolapSchema.PhysColumn getColumn() {
-        return plus.getColumn();
     }
 
     public void values(Collection<Object> collection) {
@@ -103,7 +98,7 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
         }
         if (minus instanceof ListColumnPredicate) {
             ListColumnPredicate minusList = (ListColumnPredicate) minus;
-            RolapSchema.PhysColumn column = plus.getColumn();
+            PredicateColumn column = plus.getColumn();
             if (predicate instanceof ListColumnPredicate) {
                 // Case 1: 'minus' and 'constraint' are both lists.
                 ListColumnPredicate list =
@@ -114,7 +109,7 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
                 unionList.addAll(list.getPredicates());
                 return new MinusStarPredicate(
                     plus,
-                    new ListColumnPredicate(router, column, unionList));
+                    new ListColumnPredicate(column, unionList));
             }
             if (predicate instanceof ValueColumnPredicate) {
                 ValueColumnPredicate valuePredicate =
@@ -130,10 +125,10 @@ public class MinusStarPredicate extends AbstractColumnPredicate {
                 unionList.addAll(minusList.getPredicates());
                 unionList.add(
                     new ValueColumnPredicate(
-                        router, column, valuePredicate.getValue()));
+                        column, valuePredicate.getValue()));
                 return new MinusStarPredicate(
                     plus,
-                    new ListColumnPredicate(router, column, unionList));
+                    new ListColumnPredicate(column, unionList));
             }
         }
         return new MinusStarPredicate(

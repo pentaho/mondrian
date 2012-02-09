@@ -10,8 +10,6 @@
 package mondrian.util;
 
 import mondrian.olap.Util;
-import mondrian.spi.SegmentColumn;
-import mondrian.spi.SegmentHeader;
 
 import java.util.*;
 
@@ -213,6 +211,11 @@ public class Pair <L, R>
         {
             public Iterator<Pair<K, V>> iterator()
             {
+                assert !(i0 instanceof Collection
+                         && i1 instanceof Collection
+                         && ((Collection) i0).size()
+                            != ((Collection) i1).size())
+                    : "size mismatch: i0=" + i0 + ", i1=" + i1;
                 final Iterator<K> iterator0 = i0.iterator();
                 final Iterator<V> iterator1 = i1.iterator();
 

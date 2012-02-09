@@ -272,7 +272,7 @@ Axis #0:
 Axis #1:
 {[Measures].[Unit Sales]}
 Axis #2:
-{[Time].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Time].[Time].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
 {[Time].[Time].[1997].[*FILTER_MEMBER], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
 {[Time].[Time].[1997].[*FILTER_MEMBER], [Customer].[Education Level].[Bachelors Degree]}
 {[Time].[Time].[1997].[*FILTER_MEMBER], [Customer].[Education Level].[Graduate Degree]}
@@ -316,7 +316,7 @@ Where ([Time].[*FILTER_MEMBER])
         <Resource name="result">
             <![CDATA[
 Axis #0:
-{[Time].[*FILTER_MEMBER]}
+{[Time].[Time].[*FILTER_MEMBER]}
 Axis #1:
 {[Measures].[Unit Sales]}
 Axis #2:
@@ -407,7 +407,7 @@ Axis #0:
 Axis #1:
 {[Measures].[Unit Sales]}
 Axis #2:
-{[Time].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Time].[Time].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
 {[Time].[Time].[1997].[*FILTER_MEMBER], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
 {[Time].[Time].[1997].[*FILTER_MEMBER], [Customer].[Education Level].[Bachelors Degree]}
 {[Time].[Time].[1997].[*FILTER_MEMBER], [Customer].[Education Level].[Graduate Degree]}
@@ -457,7 +457,7 @@ Axis #0:
 Axis #1:
 {[Measures].[Unit Sales]}
 Axis #2:
-{[Time].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
+{[Time].[Time].[*CTX_MEMBER_SEL~SUM], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
 {[Time].[Time].[1997].[*FILTER_MEMBER], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}
 {[Time].[Time].[1997].[*FILTER_MEMBER], [Customer].[Education Level].[Bachelors Degree]}
 {[Time].[Time].[1997].[*FILTER_MEMBER], [Customer].[Education Level].[Graduate Degree]}

@@ -856,11 +856,13 @@ public class RolapSchemaLoader {
                             calcColumnDef.expression
                     };
             }
-            for (NodeDef child : sql.children) {
+            for (int i = 0; i < sql.children.length; i++) {
+                NodeDef child = sql.children[i];
                 if (child instanceof TextDef) {
                     TextDef text = (TextDef) child;
-                    list.add(
-                        new RolapSchema.PhysTextExpr(text.getText()));
+                    String s = text.getText();
+                    s = trim(s, i == 0, i == sql.children.length - 1);
+                    list.add(new RolapSchema.PhysTextExpr(s));
                 } else if (child instanceof MondrianDef.Column) {
                     final int index = list.size();
                     final MondrianDef.Column columnRef =
@@ -893,6 +895,19 @@ public class RolapSchemaLoader {
             physColumn.setInternalType(
                 toInternalType(column.internalType));
         }
+    }
+
+    private static String trim(String s, boolean left, boolean right) {
+        while (left && s.length() > 0 && Character.isWhitespace(s.charAt(0))) {
+            s = s.substring(1);
+        }
+        while (right
+               && s.length() > 0
+               && Character.isWhitespace(s.charAt(s.length() - 1)))
+        {
+            s = s.substring(0, s.length() - 1);
+        }
+        return s;
     }
 
     private Dialect.Datatype toType(String type) {
@@ -3128,10 +3143,7 @@ public class RolapSchemaLoader {
     {
         final Query queryExp =
             resolveCalcMembers(
-                xmlCalcMembers,
-                xmlNamedSets,
-                cube,
-                errOnDups);
+                xmlCalcMembers, xmlNamedSets, cube, errOnDups);
         if (queryExp == null) {
             return;
         }

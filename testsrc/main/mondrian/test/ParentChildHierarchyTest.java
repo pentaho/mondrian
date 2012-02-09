@@ -269,7 +269,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Org Salary]}\n"
             + "{[Measures].[Count]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[All Employees]}\n"
+            + "{[Employee].[Employees].[All Employees]}\n"
             + "Row #0: $39,431.67\n"
             + "Row #0: 7,392\n");
     }

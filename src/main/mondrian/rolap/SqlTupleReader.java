@@ -193,16 +193,12 @@ public class SqlTupleReader implements TupleReader {
                                         parentKey.toString()));
                         }
                     }
-                    Object[] keys = new Object[layout.keyOrdinals.length];
+                    Comparable[] keyValues =
+                        new Comparable[layout.keyOrdinals.length];
                     for (int j = 0; j < layout.keyOrdinals.length; j++) {
                         int keyOrdinal = layout.keyOrdinals[j];
                         Object value = accessors.get(keyOrdinal).get();
-                        if (value == null) {
-//                            keys = null;
-//                            break;
-                            value = RolapUtil.sqlNullValue;
-                        }
-                        keys[j] = value;
+                        keyValues[j] = SqlMemberSource.toComparable(value);
                     }
                     Object captionValue;
                     if (layout.captionOrdinal >= 0) {
@@ -211,8 +207,10 @@ public class SqlTupleReader implements TupleReader {
                     } else {
                         captionValue = null;
                     }
-                    final List<Object> keyList = Arrays.asList(keys);
-                    final Object key = keys.length == 1 ? keys[0] : keyList;
+                    final Object key =
+                        keyValues.length == 1
+                            ? keyValues[0]
+                            : Arrays.asList(keyValues);
                     member = cache.getMember(childLevel, key, checkCacheStatus);
                     checkCacheStatus = false; // only check the first time
                     if (member == null) {
@@ -226,24 +224,25 @@ public class SqlTupleReader implements TupleReader {
                                     .findMember(key);
                         }
                         if (member == null) {
-                            final Object keyClone =
-                                RolapMember.Key.create(keys);
+                            final Comparable keyClone =
+                                RolapMember.Key.create(keyValues);
                             member = memberBuilder.makeMember(
                                 parentMember, childLevel, keyClone,
                                 captionValue, parentChild, stmt, layout);
                         }
                     }
 
-                    if (member != members.get(i)) {
+                    final RolapMember prevMember = members.get(i);
+                    if (member != prevMember && prevMember != null) {
                         // Flush list we've been building.
                         List<RolapMember> children = siblings.get(i + 1);
                         if (children != null) {
                             MemberChildrenConstraint mcc =
                                 constraint.getMemberChildrenConstraint(
-                                    members.get(i));
+                                    prevMember);
                             if (mcc != null) {
                                 cache.putChildren(
-                                    members.get(i), mcc, children);
+                                    prevMember, mcc, children);
                             }
                         }
                         // Start a new list, if the cache needs one. (We don't
@@ -266,7 +265,7 @@ public class SqlTupleReader implements TupleReader {
                         // If we're building a list of siblings at this level,
                         // we haven't seen this one before, so add it.
                         if (siblings.get(i) != null) {
-                            if (keys == null) {
+                            if (keyValues == null) {
                                 addAsOldestSibling(siblings.get(i), member);
                             } else {
                                 siblings.get(i).add(member);
@@ -1000,10 +999,11 @@ Util.deprecated("obsolete basecube parameter", false);
         final RolapMeasureGroup measureGroup = starSet.getMeasureGroup();
 
         for (int i = 0; i <= levelDepth; i++) {
-            RolapLevel currLevel = levels.get(i);
+            final RolapLevel currLevel = levels.get(i);
             if (currLevel.isAll()) {
                 continue;
             }
+
             final LevelLayoutBuilder levelLayoutBuilder =
                 layoutBuilder.createLayoutFor(currLevel);
 
@@ -1042,7 +1042,7 @@ Util.deprecated("obsolete basecube parameter", false);
                         : SqlMemberSource.Sgo.SELECT_GROUP;
                 for (RolapSchema.PhysColumn parentExp : parentExps) {
                     levelLayoutBuilder.parentOrdinalList.add(
-                        queryBuilder.asasdasd(parentExp, sgo));
+                        queryBuilder.addColumn(parentExp, sgo));
                     if (starSet.cube != null
                         && !levelCollapsed
                         && measureGroup != null)
@@ -1057,27 +1057,29 @@ Util.deprecated("obsolete basecube parameter", false);
 
             SqlMemberSource.Sgo sgo =
                 SqlMemberSource.Sgo.SELECT_ORDER.maybeGroup(needsGroupBy);
+
+            for (RolapSchema.PhysColumn column : attribute.orderByList) {
+                levelLayoutBuilder.orderByOrdinalList.add(
+                    queryBuilder.addColumn(column, sgo));
+            }
+
             for (RolapSchema.PhysColumn column : attribute.keyList) {
                 levelLayoutBuilder.keyOrdinalList.add(
-                    queryBuilder.asasdasd(column, sgo));
+                    queryBuilder.addColumn(column, sgo));
                 if (measureGroup != null) {
                     column.joinToStarRoot(
                         sqlQuery, measureGroup, cubeDimension);
                 }
             }
 
-            for (RolapSchema.PhysColumn column : attribute.orderByList) {
-                levelLayoutBuilder.ordinalList.add(
-                    queryBuilder.asasdasd(column, sgo));
-            }
 
             levelLayoutBuilder.nameOrdinal =
-                queryBuilder.asasdasd(
+                queryBuilder.addColumn(
                     attribute.nameExp,
                     SqlMemberSource.Sgo.SELECT.maybeGroup(needsGroupBy));
 
             levelLayoutBuilder.captionOrdinal =
-                queryBuilder.asasdasd(
+                queryBuilder.addColumn(
                     attribute.captionExp,
                     SqlMemberSource.Sgo.SELECT.maybeGroup(needsGroupBy));
             if (attribute.captionExp != null) {
@@ -1424,10 +1426,8 @@ Util.deprecated("obsolete basecube parameter", false);
     static class LevelLayoutBuilder {
         public List<Integer> keyOrdinalList = new ArrayList<Integer>();
         public int nameOrdinal = -1;
-        public List<Integer> ordinalList = new ArrayList<Integer>();
+        public List<Integer> orderByOrdinalList = new ArrayList<Integer>();
         public int captionOrdinal = -1;
-        public boolean hasOrdinal;
-        private int ordinalOrdinal = -1;
         final List<Integer> propertyOrdinalList = new ArrayList<Integer>();
         private final List<Integer> parentOrdinalList =
             new ArrayList<Integer>();
@@ -1442,8 +1442,7 @@ Util.deprecated("obsolete basecube parameter", false);
                 toArray(keyOrdinalList),
                 nameOrdinal,
                 captionOrdinal,
-                hasOrdinal,
-                ordinalOrdinal,
+                toArray(orderByOrdinalList),
                 toArray(propertyOrdinalList),
                 toArray(parentOrdinalList));
         }
@@ -1479,10 +1478,8 @@ Util.deprecated("obsolete basecube parameter", false);
         // column ordinals where the value of the level's caption is found,
         // or -1 if no caption
         public final int captionOrdinal;
-        // whether ordinal expression is different from key expression
-        public final boolean hasOrdinal;
-        // column ordinal where the ordinal expression is found
-        public final int ordinalOrdinal;
+        // column ordinals where the ordinal expression is found
+        public final int[] orderByOrdinals;
         // column ordinals where the values of the level's properties are found
         public final int[] propertyOrdinals;
         // column ordinals of the fields that contain this member's parent
@@ -1493,16 +1490,14 @@ Util.deprecated("obsolete basecube parameter", false);
             int[] keyOrdinals,
             int nameOrdinal,
             int captionOrdinal,
-            boolean hasOrdinal,
-            int ordinalOrdinal,
+            int[] orderByOrdinals,
             int[] propertyOrdinals,
             int[] parentOrdinals)
         {
             this.keyOrdinals = keyOrdinals;
             this.nameOrdinal = nameOrdinal;
             this.captionOrdinal = captionOrdinal;
-            this.hasOrdinal = hasOrdinal;
-            this.ordinalOrdinal = ordinalOrdinal;
+            this.orderByOrdinals = orderByOrdinals;
             this.propertyOrdinals = propertyOrdinals;
             this.parentOrdinals = parentOrdinals;
         }

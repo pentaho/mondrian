@@ -881,6 +881,12 @@ Revision is $Id$
                 The name of the column used to sort members. See also the
                 OrderBy sub-element. If neither orderByColumn nor OrderBy are
                 specified, defaults to the key.
+
+                <p>If an attribute is used within a multi-level hierarchy,
+                the members of one level are always sorted within the parent
+                member of the parent level. It is not necessary to explicitly
+                include the parent level's key or order-by key in this
+                attribute's order key.</p>
             </Doc>
         </Attribute>
         <Attribute name="captionColumn" required="false">

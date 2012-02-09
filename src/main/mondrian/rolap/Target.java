@@ -77,16 +77,14 @@ public class Target extends TargetBase {
                 SqlTupleReader.LevelColumnLayout layout =
                     columnLayout.levelLayoutMap.get(childLevel);
 
-                Object[] keys = new Object[layout.keyOrdinals.length];
+                final Comparable[] keyValues =
+                    new Comparable[layout.keyOrdinals.length];
                 for (int j = 0, n = layout.keyOrdinals.length; j < n; j++) {
                     int keyOrdinal = layout.keyOrdinals[j];
                     Object value = accessors.get(keyOrdinal).get();
-                    if (value == null) {
-                        value = RolapUtil.sqlNullValue;
-                    }
-                    keys[j] = value;
+                    keyValues[j] = SqlMemberSource.toComparable(value);
                 }
-                List<Object> keyList = Arrays.asList(keys);
+                List<Comparable> keyList = Arrays.asList(keyValues);
                 Object captionValue;
                 if (layout.captionOrdinal >= 0) {
                     captionValue = accessors.get(layout.captionOrdinal).get();
@@ -94,7 +92,7 @@ public class Target extends TargetBase {
                     captionValue = null;
                 }
                 RolapMember parentMember = member;
-                Object key = keys.length == 1 ? keys[0] : keyList;
+                Object key = keyValues.length == 1 ? keyValues[0] : keyList;
                 member = cache.getMember(childLevel, key, checkCacheStatus);
                 checkCacheStatus = false; /* Only check the first time */
                 if (member == null) {
@@ -107,7 +105,8 @@ public class Target extends TargetBase {
                                 constraint).findMember(key);
                     }
                     if (member == null) {
-                        final Object keyClone = RolapMember.Key.create(keys);
+                        final Comparable keyClone =
+                            RolapMember.Key.create(keyValues);
                         member = memberBuilder.makeMember(
                             parentMember, childLevel, keyClone, captionValue,
                             parentChild, stmt, layout);
