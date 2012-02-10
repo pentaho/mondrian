@@ -52,7 +52,6 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-//        if (false)
         propSaver.set(
             MondrianProperties.instance().EnableRolapCubeMemberCache,
             false);
@@ -98,8 +97,8 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             + "        <Property name=\"Store Sqft\" column=\"store_sqft\" type=\"Numeric\"/>\n"
             + "        <Property name=\"Has coffee bar\" column=\"coffee_bar\" type=\"Boolean\"/>\n"
             + "        <Property name=\"Street address\" column=\"store_street_address\" type=\"String\"/>\n"
-            + "      </Level>\n" + "    </Hierarchy>\n" + "   </Dimension>");
-        return testContext;
+            + "      </Level>\n"
+            + "    </Hierarchy>\n" + "   </Dimension>");
     }
 
     /**
