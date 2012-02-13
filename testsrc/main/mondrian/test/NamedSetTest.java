@@ -530,7 +530,7 @@ public class NamedSetTest extends FoodMartTestCase {
             + "  SET [TopMedia] AS 'TopCount([Promotion].[Media Type].children, 3, [Measures].[Store Sales])' \n"
             + "  MEMBER [Measures].[California sales for Top Media] AS 'Sum([TopMedia], [Measures].[Store Sales])'\n"
             + "SELECT \n"
-            + "  CrossJoin({[Store], [Store].[USA].[CA]},\n"
+            + "  CrossJoin({[Stores], [Stores].[USA].[CA]},\n"
             + "    {[Time].[1997].[Q1], [Time].[1997].[Q2]}) ON COLUMNS,\n"
             + " {[Product], [Product].children} ON ROWS\n"
             + "FROM [Sales]\n"
@@ -539,10 +539,10 @@ public class NamedSetTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{[Measures].[California sales for Top Media]}\n"
             + "Axis #1:\n"
-            + "{[Store].[All Stores], [Time].[Time].[1997].[Q1]}\n"
-            + "{[Store].[All Stores], [Time].[Time].[1997].[Q2]}\n"
-            + "{[Store].[USA].[CA], [Time].[Time].[1997].[Q1]}\n"
-            + "{[Store].[USA].[CA], [Time].[Time].[1997].[Q2]}\n"
+            + "{[Store].[Stores].[All Stores], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Store].[Stores].[All Stores], [Time].[Time].[1997].[Q2]}\n"
+            + "{[Store].[Stores].[USA].[CA], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Store].[Stores].[USA].[CA], [Time].[Time].[1997].[Q2]}\n"
             + "Axis #2:\n"
             + "{[Product].[Products].[All Products]}\n"
             + "{[Product].[Products].[Drink]}\n"
@@ -707,7 +707,7 @@ public class NamedSetTest extends FoodMartTestCase {
 
     public void testNamedSetAgainstCube() {
         final TestContext tc =
-            getTestContext().withSchemaProcessor(
+            getTestContext().legacy().withSchemaProcessor(
                 NamedSetsInCubeProcessor.class);
         // Set defined against cube, using 'formula' attribute.
         tc.assertQueryReturns(
@@ -781,7 +781,7 @@ public class NamedSetTest extends FoodMartTestCase {
 
     public void testNamedSetAgainstSchema() {
         final TestContext tc =
-            getTestContext().withSchemaProcessor(
+            getTestContext().legacy().withSchemaProcessor(
                 NamedSetsInCubeAndSchemaProcessor.class);
         tc.assertQueryReturns(
             "SELECT {[Measures].[Store Sales]} on columns,\n"
@@ -884,7 +884,7 @@ public class NamedSetTest extends FoodMartTestCase {
     public void testNamedSetsMixedWithCalcMembers()
     {
         final TestContext tc =
-            getTestContext().withSchemaProcessor(
+            getTestContext().legacy().withSchemaProcessor(
                 MixedNamedSetSchemaProcessor.class);
         tc.assertQueryReturns(
             "select {\n"
@@ -896,7 +896,7 @@ public class NamedSetTest extends FoodMartTestCase {
             + "from [Sales]\n"
             + "where [Marital Status].[S]",
             "Axis #0:\n"
-            + "{[Customer].[Marital Status].[S]}\n"
+            + "{[Marital Status].[S]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[CA City Sales]}\n"
@@ -951,7 +951,7 @@ public class NamedSetTest extends FoodMartTestCase {
             + "   UNION(\n"
             + "      CROSSJOIN(\n"
             + "         {[Time].[1997].[Q1]},\n"
-            + "          [Set Education Level]), \n"
+            + "          [Set Education Level]),\n"
             + "      {([Time].[1997].[Q1],\n"
             + "        [Education Level].[All Education Levels].[Graduate Degree])}) ON ROWS\n"
             + "from [Sales]",
@@ -977,7 +977,7 @@ public class NamedSetTest extends FoodMartTestCase {
      */
     public void testNamedSetDependencies() {
         final TestContext tc =
-            getTestContext().withSchemaProcessor(
+            getTestContext().legacy().withSchemaProcessor(
                 NamedSetsInCubeProcessor.class);
         tc.assertSetExprDependsOn(
             "[Top CA Cities]",

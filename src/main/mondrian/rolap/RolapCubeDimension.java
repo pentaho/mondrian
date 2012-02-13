@@ -16,6 +16,8 @@ import mondrian.olap.*;
 
 import java.util.*;
 
+import static mondrian.olap.Util.first;
+
 /**
  * RolapCubeDimension wraps a RolapDimension for a specific Cube.
  *
@@ -59,8 +61,8 @@ public class RolapCubeDimension extends RolapDimension {
             cube.getSchema(),
             name,
             rolapDim.isVisible(),
-            RolapSchemaLoader.first(caption, rolapDim.getCaption()),
-            RolapSchemaLoader.first(description, rolapDim.getDescription()),
+            first(caption, rolapDim.getCaption()),
+            first(description, rolapDim.getDescription()),
             rolapDim.getDimensionType(),
             annotationMap);
         this.rolapDimension = rolapDim;
@@ -185,7 +187,7 @@ public class RolapCubeDimension extends RolapDimension {
             && name != null
             && !source.equals(name))
         {
-            return RolapSchemaLoader.first(dimCaption, name) + caption;
+            return first(dimCaption, name) + caption;
         }
         return caption;
     }

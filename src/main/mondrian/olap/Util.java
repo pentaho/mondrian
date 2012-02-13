@@ -126,6 +126,11 @@ public class Util extends XOMUtil {
         Access.class.getSuperclass().getName().equals(
             "net.sourceforge.retroweaver.runtime.java.lang.Enum");
 
+    /**
+     * Whether scripting is available.
+     */
+    public static final boolean HaveScripting;
+
     private static final UtilCompatible compatible;
 
     /**
@@ -158,6 +163,25 @@ public class Util extends XOMUtil {
         } catch (IllegalAccessException e) {
             throw Util.newInternal(e, "Could not load '" + className + "'");
         }
+
+        // Figure out whether scripting is available.
+        // We know that scripting only exists in JDK 1.6 and later.
+        // But even then, if certain JARs are not on path, the JavaScript
+        // engine may not be available. OpenJDK 1.7 has this problem.
+        boolean b = false;
+        if (!PreJdk16) {
+            try {
+                final Functor0<Boolean> functor =
+                    compatible.compileScript(
+                        Functor0.class,
+                        "apply() { return true; }",
+                        "JavaScript");
+                b = functor.apply();
+            } catch (MondrianException e) {
+                Util.discard(e);
+            }
+        }
+        HaveScripting = b;
     }
 
     public static boolean isNull(Object o) {
@@ -2332,6 +2356,24 @@ public class Util extends XOMUtil {
      */
     public static int bit(int i, int bit, boolean set) {
         return i & ~(set ? 0 : (1 << bit)) | (set ? (1 << bit) : 0);
+    }
+
+    /**
+     * Returns the first argument that is not null.
+     *
+     * <p>You can use this method to provide defaults, e.g.
+     * {@code first(foo.name, "anonymous")}.</p>
+     *
+     * @param s0 Argument one
+     * @param s1 Argument two
+     * @param <T> Type of arguments and result
+     * @return First argument that is not null.
+     */
+    public static <T> T first(T s0, T s1) {
+        if (s0 != null) {
+            return s0;
+        }
+        return s1;
     }
 
     public static class ErrorCellValue {

@@ -45,6 +45,8 @@ import java.lang.reflect.Constructor;
 import java.util.*;
 import javax.sql.DataSource;
 
+import static mondrian.olap.Util.first;
+
 /**
  * Creates a schema from XML.
  *
@@ -202,25 +204,14 @@ public class RolapSchemaLoader {
             final boolean legacy = isLegacy(def);
             if (legacy) {
                 LOGGER.warn("Model is in legacy format");
-                Mondrian3Def.Schema xmlLegacySchema =
-                    new Mondrian3Def.Schema(def);
-                RolapSchema tempSchema =
-                    new RolapSchema(
-                        key,
-                        connectInfo,
-                        dataSource,
-                        md5Bytes,
-                        useContentChecksum,
-                        xmlLegacySchema.name,
-                        Collections.<String, Annotation>emptyMap());
-                tempSchema.physicalSchema =
-                    new RolapSchema.PhysSchema(
-                        tempSchema.getDialect(),
-                        tempSchema.getInternalConnection().getDataSource());
-                RolapSchemaUpgrader upgrader =
-                    new RolapSchemaUpgrader(
-                        this, tempSchema, tempSchema.physicalSchema);
-                xmlSchema = upgrader.convertSchema(xmlLegacySchema);
+                xmlSchema = RolapSchemaUpgrader.upgrade(
+                    this,
+                    def,
+                    key,
+                    md5Bytes,
+                    connectInfo,
+                    dataSource,
+                    useContentChecksum);
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
                         "schema after conversion:\n" + xmlSchema.toXML());
@@ -874,6 +865,7 @@ public class RolapSchemaLoader {
                     toInternalType(column.internalType),
                     list);
             final MondrianDef.SQL sql;
+            assert calcColumnDef.expression != null;
             if (calcColumnDef.expression
                 instanceof MondrianDef.ExpressionView)
             {
@@ -921,6 +913,7 @@ public class RolapSchemaLoader {
                         "illegal expression: " + child);
                 }
             }
+            physCalcColumn.compute();
             physTable.addColumn(physCalcColumn);
         } else {
             // Check that column exists; throw if not.
@@ -935,8 +928,18 @@ public class RolapSchemaLoader {
         }
     }
 
+    /**
+     * Trims whitespace from the left and right ends of a string.
+     *
+     * @param s String
+     * @param left Whether to trim the start of the string
+     * @param right Whether to trim the end of the string
+     * @return Trimmed string
+     */
     private static String trim(String s, boolean left, boolean right) {
-        while (left && s.length() > 0 && Character.isWhitespace(s.charAt(0))) {
+        while (left
+               && s.length() > 0 && Character.isWhitespace(s.charAt(0)))
+        {
             s = s.substring(1);
         }
         while (right
@@ -2110,7 +2113,9 @@ public class RolapSchemaLoader {
         for (MondrianDef.Hierarchy xmlHierarchy : xmlDimension.getHierarchies())
         {
             // If hierarchy is not named, name is same as dimension.
-            String hierarchyName = first(xmlHierarchy.name, xmlDimension.name);
+            String hierarchyName = first(
+                xmlHierarchy.name,
+                xmlDimension.name);
             final String uniqueName =
                 xmlDimension.getHierarchies().size() == 1
                 && hierarchyName.equals(xmlDimension.name)
@@ -2393,10 +2398,7 @@ public class RolapSchemaLoader {
             (MondrianDef.Hierarchy) validator.getXml(
                 hierarchy.getRolapHierarchy(), false);
         hierarchy.init2(
-            this,
-            xmlHierarchy == null
-                ? null
-                : xmlHierarchy.defaultMember);
+            this, xmlHierarchy == null ? null : xmlHierarchy.defaultMember);
     }
 
     private void initLevel(RolapLevel level)
@@ -2616,11 +2618,7 @@ public class RolapSchemaLoader {
     {
         final List<RolapSchema.PhysColumn> list =
             createColumnList(
-                xml,
-                attributeName,
-                relation,
-                columnName,
-                xmlKey);
+                xml, attributeName, relation, columnName, xmlKey);
         switch (list.size()) {
         case 0:
             return null;
@@ -2744,20 +2742,6 @@ public class RolapSchemaLoader {
             return getPhysRelation(tableName, xmlTable, xmlAttribute);
         }
         return s0;
-    }
-
-    static <T> T last(T s0, T s1) {
-        if (s1 != null) {
-            return s1;
-        }
-        return s0;
-    }
-
-    static <T> T first(T s0, T s1) {
-        if (s0 != null) {
-            return s0;
-        }
-        return s1;
     }
 
     private void createProperties(
@@ -3935,7 +3919,7 @@ public class RolapSchemaLoader {
             MondrianDef.SQL sql)
         {
             if (sql.children.length == 1
-                && sql.children[0] instanceof Mondrian3Def.Column)
+                && sql.children[0] instanceof MondrianDef.Column)
             {
                 return toPhysExpr(
                     physRelation,

@@ -196,6 +196,7 @@ class PhysSchemaConverter extends RolapSchemaLoader.PhysSchemaBuilder {
                 new MondrianDef.CalculatedColumnDef();
             xmlCalcColumnDef.name = column.name;
             xmlCalcColumnDef.expression = calcColumnExprMap.get(column);
+            assert xmlCalcColumnDef.expression != null;
             columnDefs.add(xmlCalcColumnDef);
         } else {
             // ignore regular column
@@ -237,6 +238,85 @@ class PhysSchemaConverter extends RolapSchemaLoader.PhysSchemaBuilder {
         }
         xmlTables.put(physInlineTable.getAlias(), xmlInlineTable);
         return xmlInlineTable;
+    }
+
+    /**
+     * Converts an expression to a calculated column.
+     *
+     * <p>If the expression belongs to more than one relation,
+     * or if it belongs to a relation that is not a table,
+     * posts an error and returns null.</p>
+     *
+     * <p>Returns an existing calculated column if possible.</p>
+     *
+     * @param expr Expression
+     * @param legacyExpression XML expression that column is being calculated
+     *                         from (just for context, if there is an error)
+     * @param xmlExpressionview XML expression in mondrian-4 format
+     * @param relation Relation that is context of expression
+     *
+     * @return Calculated column, or null
+     */
+    public RolapSchema.PhysCalcColumn toPhysColumn(
+        RolapSchema.PhysExpr expr,
+        NodeDef legacyExpression,
+        MondrianDef.ExpressionView xmlExpressionview,
+        RolapSchema.PhysRelation relation)
+    {
+        final Set<RolapSchema.PhysRelation> relationSet =
+            new HashSet<RolapSchema.PhysRelation>();
+        RolapSchemaLoader.PhysSchemaBuilder.collectRelations(
+            expr, relation, relationSet);
+        if (relationSet.size() != 1) {
+            getHandler().error(
+                "Expression must belong to one and only one relation",
+                legacyExpression,
+                null);
+            return null;
+        }
+        RolapSchema.PhysRelation relation1 = relationSet.iterator().next();
+        if (!(relation1 instanceof RolapSchema.PhysTable)) {
+            // For now, there is a limitation that expressions can only be based
+            // on a table.
+            //
+            // We might be able to fix this by automatically creating a view,
+            // or by allowing other relation types (inline tables, views) to
+            // have calculated columns.
+            getHandler().error(
+                "Cannot define an expression in a relation that it is not a "
+                + "table; relation '" + relation1.getAlias() + "' is a "
+                + relation1.getClass(),
+                legacyExpression,
+                null);
+            return null;
+        }
+        final RolapSchema.PhysTable physTable =
+            (RolapSchema.PhysTable) relation1;
+        for (Map.Entry<String, RolapSchema.PhysColumn> entry
+            : physTable.columnsByName.entrySet())
+        {
+            if (entry.getValue() instanceof RolapSchema.PhysCalcColumn) {
+                RolapSchema.PhysCalcColumn physCalcColumn =
+                    (RolapSchema.PhysCalcColumn) entry.getValue();
+                if (physCalcColumn.getList().equals(
+                        Collections.singletonList(expr)))
+                {
+                    return physCalcColumn;
+                }
+            }
+        }
+        RolapSchema.PhysCalcColumn physCalcColumn =
+            new RolapSchema.PhysCalcColumn(
+                physTable,
+                "calc$" + physTable.columnsByName.size(),
+                expr.getDatatype(),
+                expr.getInternalType(),
+                Collections.singletonList(expr));
+        physTable.addColumn(physCalcColumn);
+        calcColumnExprMap.put(
+            physCalcColumn,
+            xmlExpressionview);
+        return physCalcColumn;
     }
 }
 

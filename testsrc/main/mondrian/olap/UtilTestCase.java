@@ -137,6 +137,10 @@ public class UtilTestCase extends TestCase {
     /**
      * Checks that <code>connectString</code> contains a property called
      * <code>name</code>, whose value is <code>value</code>.
+     *
+     * @param connectString Connect string
+     * @param name Name
+     * @param expectedValue Expected value
      */
     void p(String connectString, String name, String expectedValue) {
         Util.PropertyList list = Util.parseConnectString(connectString);
@@ -1232,6 +1236,7 @@ public class UtilTestCase extends TestCase {
             new ArraySortedSet<String>(empty);
         int n = 0;
         for (String s : emptySet) {
+            Util.discard(s);
             ++n;
         }
         assertEquals(0, n);
@@ -1524,6 +1529,15 @@ public class UtilTestCase extends TestCase {
         list.put("z", "foo bar");
         assertEquals("x=4; y=2", list2.toString());
         assertEquals("x=3; z=foo bar", list.toString());
+    }
+
+    /**
+     * Unit test for {@link Util#first}.
+     */
+    public void testFirst() {
+        assertEquals("x", Util.first("x", "y"));
+        assertEquals("y", Util.first(null, "y"));
+        assertEquals(null, Util.first(null, null));
     }
 
     /**

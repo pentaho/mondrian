@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011-2011 Julian Hyde
+// Copyright (C) 2011-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -34,7 +34,7 @@ import javax.script.*;
  * @version $Id$
  */
 public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
-    private final static Logger LOGGER =
+    private static final Logger LOGGER =
         Logger.getLogger(Util.class);
 
     public <T> T compileScript(
@@ -44,6 +44,10 @@ public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
     {
         ScriptEngineManager factory = new ScriptEngineManager();
         ScriptEngine engine = factory.getEngineByName(engineName);
+        if (engine == null) {
+            throw Util.newError(
+                "Scripting engine '" + engineName + "' not available");
+        }
         try {
             engine.eval(script);
             Invocable inv = (Invocable) engine;

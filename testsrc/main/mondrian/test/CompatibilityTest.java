@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2005-2005 SAS Institute, Inc.
-// Copyright (C) 2006-2011 Julian Hyde and others
+// Copyright (C) 2006-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -297,7 +297,7 @@ public class CompatibilityTest extends FoodMartTestCase {
             return;
         }
         final String cubeName = "Sales_inline";
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = TestContext.instance().legacy().create(
             null,
             "<Cube name=\"" + cubeName + "\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -382,7 +382,7 @@ public class CompatibilityTest extends FoodMartTestCase {
             return;
         }
         final String cubeName = "Sales_inline";
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = TestContext.instance().legacy().create(
             null,
             "<Cube name=\"" + cubeName + "\">\n"
             + "  <Table name=\"sales_fact_1997\"/>\n"
@@ -440,7 +440,7 @@ public class CompatibilityTest extends FoodMartTestCase {
             return;
         }
         final String cubeName = "Store_NullsCollation";
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = TestContext.instance().legacy().create(
             null,
             "<Cube name=\"" + cubeName + "\">\n"
             + "  <Table name=\"store\"/>\n"

@@ -14,16 +14,22 @@ import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
 import mondrian.resource.MondrianResource;
 import mondrian.spi.Dialect;
+import mondrian.util.ByteString;
 import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
 
+import org.eigenbase.xom.DOMWrapper;
 import org.eigenbase.xom.NodeDef;
 import org.eigenbase.xom.TextDef;
+import org.eigenbase.xom.XOMException;
 
 import org.olap4j.metadata.NamedList;
 
 import java.util.*;
+import javax.sql.DataSource;
+
+import static mondrian.olap.Util.first;
 
 /**
  * Converts a mondrian-3.x schema to a mondrian-4 schema.
@@ -38,7 +44,15 @@ public class RolapSchemaUpgrader {
     private final Map<String, CubeInfo> cubeInfoMap =
         new HashMap<String, CubeInfo>();
 
-    RolapSchemaUpgrader(
+    /**
+     * Creates a RolapSchemaUpgrader; private because you should use
+     * {@link #upgrade}.
+     *
+     * @param loader Loader
+     * @param schema Schema
+     * @param physSchema Physical schema
+     */
+    private RolapSchemaUpgrader(
         RolapSchemaLoader loader,
         RolapSchema schema,
         RolapSchema.PhysSchema physSchema)
@@ -47,6 +61,55 @@ public class RolapSchemaUpgrader {
         this.schema = schema;
         this.physSchemaConverter =
             new PhysSchemaConverter(loader, physSchema);
+    }
+
+    /**
+     * Bootstraps the upgrade process.
+     *
+     * <p>Note that none of the arguments depend on {@link Mondrian3Def} types.
+     * The goal is to keep dependencies on the old schema out of
+     * {@link RolapSchemaLoader}.</p>
+     *
+     * @param loader Schema loader
+     * @param def XML parse tree containing Mondrian-3 style schema
+     * @param key Key
+     * @param md5Bytes MD5 hash
+     * @param connectInfo Connect properties
+     * @param dataSource Data source
+     * @param useContentChecksum Whether to use content checksum
+     *
+     * @return Schema in upgraded (mondrian-4) format
+     * @throws XOMException on error
+     */
+    static MondrianDef.Schema upgrade(
+        RolapSchemaLoader loader,
+        DOMWrapper def,
+        String key,
+        ByteString md5Bytes,
+        Util.PropertyList connectInfo,
+        DataSource dataSource,
+        boolean useContentChecksum)
+        throws XOMException
+    {
+        Mondrian3Def.Schema xmlLegacySchema =
+            new Mondrian3Def.Schema(def);
+        RolapSchema tempSchema =
+            new RolapSchema(
+                key,
+                connectInfo,
+                dataSource,
+                md5Bytes,
+                useContentChecksum,
+                xmlLegacySchema.name,
+                Collections.<String, Annotation>emptyMap());
+        tempSchema.physicalSchema =
+            new RolapSchema.PhysSchema(
+                tempSchema.getDialect(),
+                tempSchema.getInternalConnection().getDataSource());
+        RolapSchemaUpgrader upgrader =
+            new RolapSchemaUpgrader(
+                loader, tempSchema, tempSchema.physicalSchema);
+        return upgrader.convertSchema(xmlLegacySchema);
     }
 
     /**
@@ -159,6 +222,12 @@ public class RolapSchemaUpgrader {
             xmlCube.children.holder(new MondrianDef.CalculatedMembers()).list()
                 .add(
                     convertCalculatedMember(xmlLegacyCalculatedMember));
+        }
+        for (Mondrian3Def.NamedSet xmlLegacyNamedSet : xmlLegacyCube.namedSets)
+        {
+            xmlCube.children.holder(new MondrianDef.NamedSets()).list()
+                .add(
+                    convertNamedSet(xmlLegacyNamedSet));
         }
         convertAnnotations(
             xmlCube.children,
@@ -2065,6 +2134,13 @@ public class RolapSchemaUpgrader {
                     xmlLegacySchema,
                     xmlLegacyVirtualCube));
         }
+        for (Mondrian3Def.NamedSet xmlLegacyNamedSet
+            : xmlLegacySchema.namedSets)
+        {
+            xmlSchema.children.add(
+                convertNamedSet(
+                    xmlLegacyNamedSet));
+        }
         for (Mondrian3Def.Parameter xmlLegacyParameter
             : xmlLegacySchema.parameters)
         {
@@ -2238,10 +2314,13 @@ public class RolapSchemaUpgrader {
                 cubeInfoMap.get(info.cubeName).dimensionKeys);
         }
 
-        // Convert all calculated members of underlying cubes. Any of them might
-        // be referenced in a calculated measure.
+        // Convert all calculated members and named sets of underlying cubes.
+        // Any of them might be referenced in a calculated measure.
         final NamedList<MondrianDef.CalculatedMember> xmlCalcMembers =
             xmlCube.children.holder(new MondrianDef.CalculatedMembers()).list();
+        final NamedList<MondrianDef.NamedSet> xmlNamedSets =
+            xmlCube.children.holder(new MondrianDef.NamedSets()).list();
+        final Set<String> setNames = new HashSet<String>();
         for (Info info : infoMap.values()) {
             for (Mondrian3Def.CalculatedMember xmlLegacyCalcMember
                 : info.xmlLegacyCube.calculatedMembers)
@@ -2249,17 +2328,31 @@ public class RolapSchemaUpgrader {
                 if (measureNames.add(xmlLegacyCalcMember.name)) {
                     xmlCalcMembers.add(
                         convertCalculatedMember(xmlLegacyCalcMember));
-                    measureNames.add(xmlLegacyCalcMember.name);
+                }
+            }
+            for (Mondrian3Def.NamedSet xmlLegacyNamedSet
+                : info.xmlLegacyCube.namedSets)
+            {
+                if (setNames.add(xmlLegacyNamedSet.name)) {
+                    xmlNamedSets.add(
+                        convertNamedSet(xmlLegacyNamedSet));
                 }
             }
         }
 
-        // Convert calculated members defined in the virtual cube.
+        // Convert calculated members and named sets defined in the virtual
+        // cube.
         for (Mondrian3Def.CalculatedMember xmlLegacyCalcMember
             : xmlLegacyVirtualCube.calculatedMembers)
         {
             xmlCalcMembers.add(
                 convertCalculatedMember(xmlLegacyCalcMember));
+        }
+        for (Mondrian3Def.NamedSet xmlLegacyNamedSet
+            : xmlLegacyVirtualCube.namedSets)
+        {
+            xmlNamedSets.add(
+                convertNamedSet(xmlLegacyNamedSet));
         }
 
         return xmlCube;
@@ -2578,11 +2671,21 @@ public class RolapSchemaUpgrader {
         xmlHierarchy.allLevelName = xmlLegacyHierarchy.allLevelName;
         xmlHierarchy.allMemberCaption = xmlLegacyHierarchy.allMemberCaption;
         xmlHierarchy.allMemberName = xmlLegacyHierarchy.allMemberName;
-        xmlHierarchy.caption = xmlLegacyHierarchy.caption;
         xmlHierarchy.defaultMember = xmlLegacyHierarchy.defaultMember;
         xmlHierarchy.hasAll = xmlLegacyHierarchy.hasAll;
-        xmlHierarchy.name =
-            RolapSchemaLoader.first(xmlLegacyHierarchy.name, xmlDimension.name);
+        if (xmlLegacyHierarchy.name == null) {
+            // Inherit name, caption, description from dimension only if
+            // hierarchy name is null.
+            xmlHierarchy.name = xmlDimension.name;
+            xmlHierarchy.caption =
+                first(xmlLegacyHierarchy.caption, xmlDimension.caption);
+            xmlHierarchy.description =
+                first(xmlLegacyHierarchy.description, xmlDimension.description);
+        } else {
+            xmlHierarchy.name = xmlLegacyHierarchy.name;
+            xmlHierarchy.caption = xmlLegacyHierarchy.caption;
+            xmlHierarchy.description = xmlLegacyHierarchy.description;
+        }
         Util.discard(xmlLegacyHierarchy.memberReaderClass); // obsolete
         Util.discard(xmlLegacyHierarchy.memberReaderParameters); // obsolete
 
@@ -2892,6 +2995,11 @@ public class RolapSchemaUpgrader {
         xmlAttribute.keyColumn = xmlLegacyLevel.column;
         xmlAttribute.name = xmlLegacyLevel.name;
 
+        convertMemberFormatter(
+            xmlLegacyLevel.formatter,
+            xmlLegacyLevel.memberFormatter,
+            xmlAttribute.children);
+
         final MondrianDef.Level xmlLevel = new MondrianDef.Level();
         xmlLevel.caption = null; // attribute has caption
         if (xmlLegacyLevel.table != null) {
@@ -2904,7 +3012,6 @@ public class RolapSchemaUpgrader {
         xmlLevel.visible = xmlLegacyLevel.visible;
         xmlAttribute.table = relation == null ? null : relation.getAlias();
         Util.discard(xmlLegacyLevel.closure); // TODO:
-        xmlLevel.formatter = xmlLegacyLevel.formatter;
         xmlLevel.hideMemberIf = xmlLegacyLevel.hideMemberIf;
 
         convertAnnotations(
@@ -3021,8 +3128,10 @@ public class RolapSchemaUpgrader {
 
             attributeList.add(xmlPropertyAttribute);
 
-            final MondrianDef.Property xmlProperty = convertProperty(
-                xmlLegacyProperty, xmlPropertyAttribute.name);
+            final MondrianDef.Property xmlProperty =
+                convertProperty(
+                    xmlLegacyProperty,
+                    xmlPropertyAttribute.name);
 
             xmlAttribute.children.add(xmlProperty);
         }
@@ -3063,6 +3172,26 @@ public class RolapSchemaUpgrader {
 
         physSchemaConverter.legacyMap.put(xmlLevel, xmlLegacyLevel);
         return xmlLevel;
+    }
+
+    private void convertMemberFormatter(
+        String formatter,
+        Mondrian3Def.MemberFormatter xmlLegacyMemberFormatter,
+        MondrianDef.Children<MondrianDef.AttributeElement> children)
+    {
+        if (formatter != null) {
+            MondrianDef.MemberFormatter xmlMemberFormatter =
+                new MondrianDef.MemberFormatter();
+            xmlMemberFormatter.className = formatter;
+            children.add(xmlMemberFormatter);
+        } else if (xmlLegacyMemberFormatter != null) {
+            MondrianDef.MemberFormatter xmlMemberFormatter =
+                new MondrianDef.MemberFormatter();
+            xmlMemberFormatter.className = xmlLegacyMemberFormatter.className;
+            xmlMemberFormatter.script =
+                convertScript(xmlLegacyMemberFormatter.script);
+            children.add(xmlMemberFormatter);
+        }
     }
 
     private MondrianDef.Property convertProperty(
@@ -3192,39 +3321,35 @@ public class RolapSchemaUpgrader {
 
         RolapSchema.PhysExpr measureExp =
             physSchemaConverter.toPhysExpr(relation, xmlExpression);
-        final Set<RolapSchema.PhysRelation> relationSet =
-            new HashSet<RolapSchema.PhysRelation>();
-        RolapSchemaLoader.PhysSchemaBuilder.collectRelations(
-            measureExp, relation, relationSet);
-        if (relationSet.size() != 1) {
-            physSchemaConverter.getHandler().error(
-                "Expression must belong to one and only one relation",
-                legacyExpression,
-                null);
+
+        RolapSchema.PhysColumn physColumn;
+        if (measureExp instanceof RolapSchema.PhysColumn) {
+            physColumn = (RolapSchema.PhysColumn) measureExp;
+        } else {
+            physColumn =
+                physSchemaConverter.toPhysColumn(
+                    measureExp, legacyExpression, xmlExpressionview, relation);
+            if (physColumn == null) {
+                // toPhysColumn could not convert, and posted error
+                return null;
+            }
         }
 
-        RolapSchema.PhysColumn physColumn = (RolapSchema.PhysColumn) measureExp;
-        final RolapSchema.PhysRelation relation1 =
-            relationSet.iterator().next();
-        assert physColumn.relation == relation1;
-
-        if (measureExp instanceof RolapSchema.PhysCalcColumn) {
+        if (physColumn instanceof RolapSchema.PhysCalcColumn) {
             MondrianDef.Table xmlTable =
                 (MondrianDef.Table) physSchemaConverter.xmlTables.get(
-                    relation1.getAlias());
-            List<MondrianDef.RealOrCalcColumnDef> xmlColumnDefs =
-                xmlTable.children.holder(
-                    new MondrianDef.ColumnDefs()).list();
+                    physColumn.relation.getAlias());
             MondrianDef.CalculatedColumnDef xmlCalcColumnDef =
                 new MondrianDef.CalculatedColumnDef();
             xmlCalcColumnDef.name = physColumn.name;
             xmlCalcColumnDef.expression = xmlExpression;
-            xmlColumnDefs.add(xmlCalcColumnDef);
+            xmlTable.children.holder(new MondrianDef.ColumnDefs()).list().add(
+                xmlCalcColumnDef);
         }
 
         MondrianDef.Column xmlColumn = new MondrianDef.Column();
-        xmlColumn.table = relation1.getAlias();
-        xmlColumn.name = ((RolapSchema.PhysColumn) measureExp).name;
+        xmlColumn.table = physColumn.relation.getAlias();
+        xmlColumn.name = physColumn.name;
         return xmlColumn;
     }
 
@@ -3284,6 +3409,11 @@ public class RolapSchemaUpgrader {
                     convertMemberProperty(
                         xmlLegacyMemberProperty));
             }
+        }
+
+        if (xmlLegacyMeasure.cellFormatter != null) {
+            xmlMeasure.children.add(
+                convertCellFormatter(xmlLegacyMeasure.cellFormatter));
         }
 
         MondrianDef.Column column =
@@ -3365,6 +3495,9 @@ public class RolapSchemaUpgrader {
     private MondrianDef.Script convertScript(
         Mondrian3Def.Script xmlLegacyScript)
     {
+        if (xmlLegacyScript == null) {
+            return null;
+        }
         final MondrianDef.Script xmlScript = new MondrianDef.Script();
         xmlScript.cdata = xmlLegacyScript.cdata;
         xmlScript.language = xmlLegacyScript.language;
@@ -3379,16 +3512,22 @@ public class RolapSchemaUpgrader {
         return xmlFormula;
     }
 
-    // TODO: call this method
     private MondrianDef.NamedSet convertNamedSet(
-        Mondrian3Def.NamedSet xmlLegacyCalcMember)
+        Mondrian3Def.NamedSet xmlLegacyNamedSet)
     {
         final MondrianDef.NamedSet xmlNamedSet =
             new MondrianDef.NamedSet();
-        // TODO: fill in fields
+        xmlNamedSet.name = xmlLegacyNamedSet.name;
+        xmlNamedSet.caption = xmlLegacyNamedSet.caption;
+        xmlNamedSet.description = xmlLegacyNamedSet.description;
+        xmlNamedSet.formula = xmlLegacyNamedSet.formula;
+        if (xmlLegacyNamedSet.formulaElement != null) {
+            xmlNamedSet.children.add(
+                convertFormula(xmlLegacyNamedSet.formulaElement));
+        }
         convertAnnotations(
             xmlNamedSet.children,
-            xmlLegacyCalcMember.annotations);
+            xmlLegacyNamedSet.annotations);
         return xmlNamedSet;
     }
 

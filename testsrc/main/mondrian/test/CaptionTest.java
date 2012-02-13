@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -55,15 +55,15 @@ public class CaptionTest extends TestCase {
                 .getConnection();
         String mdxQuery =
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS, "
-            + "{[Promotion].[Media Type].[All Media]} ON ROWS FROM [Sales]";
+            + "{[Promotion Media].[All Media]} ON ROWS FROM [Sales]";
         mondrian.olap.Query monQuery = monConnection.parseQuery(mdxQuery);
         mondrian.olap.Result monResult = monConnection.execute(monQuery);
         Axis[] axes = monResult.getAxes();
         List<Position> positions = axes[1].getPositions();
         Member mall = positions.get(0).get(0);
 
-        String caption = mall.getHierarchy().getCaption();
-        Assert.assertEquals("Werbemedium", caption);
+        Assert.assertEquals("Werbemedium", mall.getDimension().getCaption());
+        Assert.assertEquals("Werbemedium", mall.getHierarchy().getCaption());
     }
 
     /**
@@ -131,7 +131,7 @@ public class CaptionTest extends TestCase {
      * some captions added.
      */
     public static class MyFoodmart implements DynamicSchemaProcessor {
-        final static String foodmart =
+        static final String foodmart =
             "<?xml version=\"1.0\"?>\n"
             + "<Schema name=\"FoodMart\">\n"
             + "<!-- Shared dimensions -->\n"

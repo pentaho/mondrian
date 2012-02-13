@@ -731,7 +731,7 @@ Revision is $Id$
                 return children.only(CalculatedMembers.EMPTY).list();
             }
             public NamedList<NamedSet> getNamedSets() {
-                return children.filterNamed(NamedSet.class);
+                return children.only(NamedSets.EMPTY).list();
             }
             public NamedList<Annotation> getAnnotations() {
                 return children.only(Annotations.EMPTY).list();
@@ -1533,7 +1533,7 @@ Revision is $Id$
         </Code>
     </Element>
 
-    <Element type="NamedSets" class="CubeElement">
+    <Element type="NamedSets" class="Holder,CubeElement">
         <Doc>
             Collection of NamedSet elements.
         </Doc>
@@ -1545,8 +1545,17 @@ Revision is $Id$
                 EMPTY = new NamedSets();
                 EMPTY.array = new NamedSet[0];
             }
-            private NamedList<NamedSet> list() {
-                return namedList(array);
+            public NamedList<NamedSet> list() {
+                return new NamedListImpl<NamedSet>(
+                    new MutableArrayList<NamedSet>() {
+                        protected NamedSet[] getArray() {
+                            return array == null ? EMPTY.array : array;
+                        }
+                        protected void setArray(NamedSet[] ts) {
+                            array = ts;
+                        }
+                    }
+                );
             }
             ]]>
         </Code>

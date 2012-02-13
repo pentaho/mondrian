@@ -91,7 +91,7 @@ public class UdfTest extends FoodMartTestCase {
      * @return Test context
      */
     private TestContext measureTestContext(String xmlMeasure) {
-        return TestContext.instance().createSubstitutingCube(
+        return TestContext.instance().legacy().createSubstitutingCube(
             "Sales", null, xmlMeasure, null, null);
     }
 
@@ -112,7 +112,7 @@ public class UdfTest extends FoodMartTestCase {
     public void testSanity() {
         // sanity check, make sure the schema is loading correctly
         assertQueryReturns(
-            "SELECT {[Measures].[Store Sqft]} ON COLUMNS, {[Store Type]} ON ROWS FROM [Store]",
+            "SELECT {[Measures].[Store Sqft]} ON COLUMNS, {[Store].[Store Type]} ON ROWS FROM [Store]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -126,7 +126,7 @@ public class UdfTest extends FoodMartTestCase {
         assertQueryReturns(
             "WITH MEMBER [Measures].[Sqft Plus One] AS 'PlusOne([Measures].[Store Sqft])'\n"
             + "SELECT {[Measures].[Sqft Plus One]} ON COLUMNS, \n"
-            + "  {[Store Type].children} ON ROWS \n"
+            + "  {[Store].[Store Type].children} ON ROWS \n"
             + "FROM [Store]",
 
             "Axis #0:\n"
@@ -274,7 +274,7 @@ public class UdfTest extends FoodMartTestCase {
         assertQueryReturns(
             "WITH MEMBER [Measures].[InverseNormal] AS 'InverseNormal([Measures].[Grocery Sqft] / [Measures].[Store Sqft])', FORMAT_STRING = \"0.000\"\n"
             + "SELECT {[Measures].[InverseNormal]} ON COLUMNS, \n"
-            + "  {[Store Type].children} ON ROWS \n"
+            + "  {[Store].[Store Type].children} ON ROWS \n"
             + "FROM [Store]",
 
             "Axis #0:\n"
@@ -606,31 +606,31 @@ public class UdfTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Store Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Stores][Canada].[BC].[Vancouver].[Store 19]}\n"
-            + "{[Store].[Stores][Canada].[BC].[Victoria].[Store 20]}\n"
-            + "{[Store].[Stores][Mexico].[DF].[Mexico City].[Store 9]}\n"
-            + "{[Store].[Stores][Mexico].[DF].[San Andres].[Store 21]}\n"
-            + "{[Store].[Stores][Mexico].[Guerrero].[Acapulco].[Store 1]}\n"
-            + "{[Store].[Stores][Mexico].[Jalisco].[Guadalajara].[Store 5]}\n"
-            + "{[Store].[Stores][Mexico].[Veracruz].[Orizaba].[Store 10]}\n"
-            + "{[Store].[Stores][Mexico].[Yucatan].[Merida].[Store 8]}\n"
-            + "{[Store].[Stores][Mexico].[Zacatecas].[Camacho].[Store 4]}\n"
-            + "{[Store].[Stores][Mexico].[Zacatecas].[Hidalgo].[Store 12]}\n"
-            + "{[Store].[Stores][Mexico].[Zacatecas].[Hidalgo].[Store 18]}\n"
-            + "{[Store].[Stores][USA].[CA].[Alameda].[HQ]}\n"
-            + "{[Store].[Stores][USA].[CA].[Beverly Hills].[Store 6]}\n"
-            + "{[Store].[Stores][USA].[CA].[Los Angeles].[Store 7]}\n"
-            + "{[Store].[Stores][USA].[CA].[San Diego].[Store 24]}\n"
-            + "{[Store].[Stores][USA].[CA].[San Francisco].[Store 14]}\n"
-            + "{[Store].[Stores][USA].[OR].[Portland].[Store 11]}\n"
-            + "{[Store].[Stores][USA].[OR].[Salem].[Store 13]}\n"
-            + "{[Store].[Stores][USA].[WA].[Bellingham].[Store 2]}\n"
-            + "{[Store].[Stores][USA].[WA].[Bremerton].[Store 3]}\n"
-            + "{[Store].[Stores][USA].[WA].[Seattle].[Store 15]}\n"
-            + "{[Store].[Stores][USA].[WA].[Spokane].[Store 16]}\n"
-            + "{[Store].[Stores][USA].[WA].[Tacoma].[Store 17]}\n"
-            + "{[Store].[Stores][USA].[WA].[Walla Walla].[Store 22]}\n"
-            + "{[Store].[Stores][USA].[WA].[Yakima].[Store 23]}\n"
+            + "{[Store].[Stores].[Canada].[BC].[Vancouver].[Store 19]}\n"
+            + "{[Store].[Stores].[Canada].[BC].[Victoria].[Store 20]}\n"
+            + "{[Store].[Stores].[Mexico].[DF].[Mexico City].[Store 9]}\n"
+            + "{[Store].[Stores].[Mexico].[DF].[San Andres].[Store 21]}\n"
+            + "{[Store].[Stores].[Mexico].[Guerrero].[Acapulco].[Store 1]}\n"
+            + "{[Store].[Stores].[Mexico].[Jalisco].[Guadalajara].[Store 5]}\n"
+            + "{[Store].[Stores].[Mexico].[Veracruz].[Orizaba].[Store 10]}\n"
+            + "{[Store].[Stores].[Mexico].[Yucatan].[Merida].[Store 8]}\n"
+            + "{[Store].[Stores].[Mexico].[Zacatecas].[Camacho].[Store 4]}\n"
+            + "{[Store].[Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 12]}\n"
+            + "{[Store].[Stores].[Mexico].[Zacatecas].[Hidalgo].[Store 18]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Alameda].[HQ]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[Stores].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "{[Store].[Stores].[USA].[OR].[Portland].[Store 11]}\n"
+            + "{[Store].[Stores].[USA].[OR].[Salem].[Store 13]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Bellingham].[Store 2]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Bremerton].[Store 3]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Seattle].[Store 15]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Spokane].[Store 16]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Tacoma].[Store 17]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Walla Walla].[Store 22]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Yakima].[Store 23]}\n"
             + "Row #0: \n"
             + "Row #1: \n"
             + "Row #2: \n"
@@ -910,7 +910,7 @@ public class UdfTest extends FoodMartTestCase {
      * Unit test for a UDF defined in JavaScript.
      */
     public void testScriptUdf() {
-        if (Util.PreJdk16) {
+        if (!Util.HaveScripting) {
             return;
         }
         TestContext tc = udfTestContext(
@@ -955,7 +955,7 @@ public class UdfTest extends FoodMartTestCase {
      * function. We also use 'CDATA' section to mask the '&lt;' symbol.
      */
     public void testScriptUdfFactorial() {
-        if (Util.PreJdk16) {
+        if (!Util.HaveScripting) {
             return;
         }
         TestContext tc = udfTestContext(
@@ -987,7 +987,7 @@ public class UdfTest extends FoodMartTestCase {
      * Unit test that we get a nice error if a script UDF contains an error.
      */
     public void testScriptUdfInvalid() {
-        if (Util.PreJdk16) {
+        if (!Util.HaveScripting) {
             return;
         }
         TestContext tc = udfTestContext(
@@ -1075,7 +1075,7 @@ public class UdfTest extends FoodMartTestCase {
      * As {@link #testCellFormatterNested()}, but using a script.
      */
     public void testCellFormatterScript() {
-        if (Util.PreJdk16) {
+        if (!Util.HaveScripting) {
             return;
         }
         TestContext tc = measureTestContext(
@@ -1162,7 +1162,7 @@ public class UdfTest extends FoodMartTestCase {
      * using a script.
      */
     public void testCellFormatterOnCalcMemberScript() {
-        if (Util.PreJdk16) {
+        if (!Util.HaveScripting) {
             return;
         }
         TestContext tc = calcMemberTestContext(
@@ -1194,7 +1194,7 @@ public class UdfTest extends FoodMartTestCase {
      * attribute of a Measure element.
      */
     public void testMemberFormatter() {
-        TestContext tc = TestContext.instance().createSubstitutingCube(
+        TestContext tc = TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
             "  <Dimension name='Promotion Media2' foreignKey='promotion_id'>\n"
             + "    <Hierarchy hasAll='true' allMemberName='All Media' primaryKey='promotion_id'>\n"
@@ -1215,7 +1215,7 @@ public class UdfTest extends FoodMartTestCase {
      * memberFormatter element.
      */
     public void testMemberFormatterNested() {
-        TestContext tc = TestContext.instance().createSubstitutingCube(
+        TestContext tc = TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
             "  <Dimension name='Promotion Media2' foreignKey='promotion_id'>\n"
             + "    <Hierarchy hasAll='true' allMemberName='All Media' primaryKey='promotion_id'>\n"
@@ -1237,10 +1237,10 @@ public class UdfTest extends FoodMartTestCase {
      * As {@link #testMemberFormatterNested()}, but using a script.
      */
     public void testMemberFormatterScript() {
-        if (Util.PreJdk16) {
+        if (!Util.HaveScripting) {
             return;
         }
-        TestContext tc = TestContext.instance().createSubstitutingCube(
+        TestContext tc = TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
             "  <Dimension name='Promotion Media2' foreignKey='promotion_id'>\n"
             + "    <Hierarchy hasAll='true' allMemberName='All Media' primaryKey='promotion_id'>\n"
@@ -1267,7 +1267,7 @@ public class UdfTest extends FoodMartTestCase {
      * @throws java.sql.SQLException on error
      */
     public void testPropertyFormatter() throws SQLException {
-        TestContext tc = TestContext.instance().createSubstitutingCube(
+        TestContext tc = TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
             "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"
             + "  <Hierarchy hasAll='true' allMemberName='All Promotions' primaryKey='promotion_id' defaultMember='[All Promotions]'>\n"
@@ -1298,7 +1298,7 @@ public class UdfTest extends FoodMartTestCase {
      * @throws java.sql.SQLException on error
      */
     public void testPropertyFormatterNested() throws SQLException {
-        TestContext tc = TestContext.instance().createSubstitutingCube(
+        TestContext tc = TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
             "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"
             + "  <Hierarchy hasAll='true' allMemberName='All Promotions' primaryKey='promotion_id' defaultMember='[All Promotions]'>\n"
@@ -1330,10 +1330,10 @@ public class UdfTest extends FoodMartTestCase {
      * @throws java.sql.SQLException on error
      */
     public void testPropertyFormatterScript() throws SQLException {
-        if (Util.PreJdk16) {
+        if (!Util.HaveScripting) {
             return;
         }
-        TestContext tc = TestContext.instance().createSubstitutingCube(
+        TestContext tc = TestContext.instance().legacy().createSubstitutingCube(
             "Sales",
             "<Dimension name='Promotions2' foreignKey='promotion_id'>\n"
             + "  <Hierarchy hasAll='true' allMemberName='All Promotions' primaryKey='promotion_id' defaultMember='[All Promotions]'>\n"
