@@ -18,7 +18,7 @@ import org.olap4j.test.TestContext;
 import java.util.Properties;
 
 /**
- * Test suite that runs the olap4j Test Compatiblity Kit (TCK) against
+ * Test suite that runs the olap4j Test Compatibility Kit (TCK) against
  * mondrian's olap4j driver.
  *
  * @author jhyde

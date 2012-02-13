@@ -261,24 +261,33 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             }
         }
         final List<RolapMember> rootMembers = getRootMembers();
+        final RolapCubeMember rootMember = (RolapCubeMember) rootMembers.get(0);
         if (rootMembers.size() == 1) {
             return rootMembers.get(0);
         } else {
-            return new MultiCardinalityDefaultMember(rootMembers.get(0));
+            return new MultiCardinalityDefaultMember(
+                rootMember.getParentMember(),
+                rootMember.getRolapMember(),
+                rootMember.cubeLevel);
         }
     }
 
     /**
-     * This is a special subclass of {@link DelegatingRolapMember}.
-     * It is needed because {@link Evaluator} doesn't support multi cardinality
-     * default members. RolapHierarchy.LimitedRollupSubstitutingMemberReader
-     * .substitute() looks for this class and substitutes the
+     * Special subclass of {@link DelegatingRolapMember}, needed because
+     * {@link Evaluator} doesn't support multi-cardinality default members.
+     * {@link RolapHierarchy.LimitedRollupSubstitutingMemberReader}.substitute()
+     * looks for this class and substitutes.
+     *
      * <p>FIXME: If/when we refactor evaluator to support
-     * multi cardinality default members, we can remove this.
+     * multi-cardinality default members, we can remove this.
      */
-    static class MultiCardinalityDefaultMember extends DelegatingRolapMember {
-        protected MultiCardinalityDefaultMember(RolapMember member) {
-            super(member);
+    static class MultiCardinalityDefaultMember extends RolapCubeMember {
+        protected MultiCardinalityDefaultMember(
+            RolapCubeMember parent,
+            RolapMember member,
+            RolapCubeLevel cubeLevel)
+        {
+            super(parent, member, cubeLevel);
         }
     }
 

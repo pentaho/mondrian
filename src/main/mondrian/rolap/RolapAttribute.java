@@ -150,13 +150,18 @@ public class RolapAttribute extends OlapElementBase {
         }
     }
 
+    @Override
+    public String toString() {
+        return getName(); // can't call getUniqueName -- it throws
+    }
+
     protected Logger getLogger() {
         return LOGGER;
     }
 
     public String getUniqueName() {
-        // REVIEW: Do we need this method? Can't implement unless attributes
-        // have a fixed dimension.
+        // REVIEW: Do we need this method? Can't implement proper unique name
+        // unless attributes have a fixed dimension.
         throw new UnsupportedOperationException();
     }
 
@@ -204,6 +209,10 @@ public class RolapAttribute extends OlapElementBase {
         Util.deprecated("obsolete method - use keyExpList types", false);
 //        assert keyList.size() == 1;
         return keyList.get(0).datatype;
+    }
+
+    public int getApproxRowCount() {
+        return approxRowCount;
     }
 }
 

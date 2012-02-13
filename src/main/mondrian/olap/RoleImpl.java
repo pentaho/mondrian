@@ -12,6 +12,7 @@ package mondrian.olap;
 
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapCubeDimension;
+import mondrian.rolap.RolapCubeHierarchy;
 
 import java.util.*;
 
@@ -321,12 +322,20 @@ public class RoleImpl implements Role {
             hierarchy,
             new HierarchyAccessImpl(
                 this, hierarchy, access, topLevel, bottomLevel, rollupPolicy));
-        // Cascade the access right to 'custom' on the parent dim if necessary
-        final Access dimAccess =
-            toAccess(dimensionGrants.get(hierarchy.getDimension()));
+
+        // Cascade the access right to 'custom' on the parent dim if necessary.
+        Access dimAccess = dimensionGrants.get(hierarchy.getDimension());
         if (dimAccess == Access.NONE) {
-            grant(hierarchy.getDimension(), Access.CUSTOM);
+            dimAccess = Access.CUSTOM;
         }
+        if (dimAccess == null && hierarchy instanceof RolapCubeHierarchy) {
+            RolapCube cube = ((RolapCubeHierarchy) hierarchy).getCube();
+            dimAccess = cubeGrants.get(cube);
+        }
+        if (dimAccess == null) {
+            dimAccess = Access.ALL;
+        }
+        grant(hierarchy.getDimension(), dimAccess);
     }
 
     public Access getAccess(Hierarchy hierarchy) {

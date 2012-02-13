@@ -874,7 +874,11 @@ Util.deprecated("obsolete basecube parameter", false);
             {
                 // start at lowest level of each dimension
                 for (RolapDimension dimension : dimensions) {
-                    queryBuilder.addListToFrom(dimension.keyAttribute.keyList);
+                    // skip degenerate dimensions, which have no key attribute
+                    if (dimension.keyAttribute != null) {
+                        queryBuilder.addListToFrom(
+                            dimension.keyAttribute.keyList);
+                    }
                 }
             } else {
                 // start at target level

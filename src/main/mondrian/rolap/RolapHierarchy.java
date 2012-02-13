@@ -773,8 +773,9 @@ public class RolapHierarchy extends HierarchyBase {
                 String cellFormatterClass = (String) value;
                 try {
                     CellFormatter formatter =
-                        RolapSchemaLoader.getCellFormatter(
+                        RolapSchemaLoader.getFormatter(
                             cellFormatterClass,
+                            CellFormatter.class,
                             null);
                     this.cellFormatter =
                         new RolapResult.CellFormatterValueFormatter(formatter);
@@ -794,8 +795,9 @@ public class RolapHierarchy extends HierarchyBase {
                             scriptText,
                             Scripts.ScriptLanguage.lookup(language));
                     CellFormatter formatter =
-                        RolapSchemaLoader.getCellFormatter(
+                        RolapSchemaLoader.getFormatter(
                             null,
+                            CellFormatter.class,
                             script);
                     this.cellFormatter =
                         new RolapResult.CellFormatterValueFormatter(formatter);
@@ -842,7 +844,7 @@ public class RolapHierarchy extends HierarchyBase {
             this.exp = exp;
         }
 
-        public boolean equals(Object o) {
+        public boolean equals(OlapElement o) {
             return o instanceof LimitedRollupMember
                 && ((LimitedRollupMember) o).member.equals(member);
         }
@@ -906,9 +908,8 @@ public class RolapHierarchy extends HierarchyBase {
                     member.getParentMember()))
             {
                 return new LimitedRollupMember(
-                    (RolapCubeMember)
-                        ((MultiCardinalityDefaultMember)member)
-                            .member.getParentMember(), exp);
+                    ((MultiCardinalityDefaultMember) member).getParentMember(),
+                    exp);
             }
             if (hierarchyAccess.getAccess(member) == Access.CUSTOM
                 || hierarchyAccess.hasInaccessibleDescendants(member))

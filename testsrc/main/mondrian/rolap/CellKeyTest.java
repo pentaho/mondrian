@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -327,29 +327,27 @@ public class CellKeyTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{[City].[Redwood City]}\n"
             + "Axis #1:\n"
-            + "[Customer].{[Gender].[F], [Address2].[#null]}\n"
-            + "{[Customer].[Gender].[F], [Address2].[#2]}\n"
-            + "{[Customer].[Gender].[F], [Address2].[Unit H103]}\n"
-            + "{[Customer].[Gender].[M], [Address2].[#null]}\n"
-            + "{[Customer].[Gender].[M], [Address2].[#208]}\n"
+            + "{[Gender].[F], [Address2].[#null]}\n"
+            + "{[Gender].[F], [Address2].[#2]}\n"
+            + "{[Gender].[F], [Address2].[Unit H103]}\n"
+            + "{[Gender].[M], [Address2].[#null]}\n"
+            + "{[Gender].[M], [Address2].[#208]}\n"
             + "Row #0: 71\n"
             + "Row #0: 10\n"
             + "Row #0: 3\n"
             + "Row #0: 52\n"
             + "Row #0: 8\n";
 
-        /*
-         * Make sure ExpandNonNative is not set. Otherwise, the query is
-         * evaluated natively. For the given data set(which contains NULL
-         * members), native evaluation produces results in a different order
-         * from the non-native evaluation.
-         */
+        // Make sure ExpandNonNative is not set. Otherwise, the query is
+        // evaluated natively. For the given data set (which contains NULL
+        // members), native evaluation produces results in a different order
+        // from the non-native evaluation.
         propSaver.set(
             MondrianProperties.instance().ExpandNonNative,
             false);
 
         TestContext testContext =
-            TestContext.instance().create(
+            TestContext.instance().legacy().create(
                 null,
                 cubeDef,
                 null,

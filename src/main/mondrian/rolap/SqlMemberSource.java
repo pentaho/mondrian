@@ -184,7 +184,8 @@ class SqlMemberSource
                 "while generating query to count members in attribute "
                 + attribute);
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
-            new SqlTupleReader.ColumnLayoutBuilder(null);
+            new SqlTupleReader.ColumnLayoutBuilder(
+                Collections.<List<RolapSchema.PhysColumn>>emptyList());
         final RolapSchema.SqlQueryBuilder queryBuilder =
             new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
         if (!sqlQuery.getDialect().allowsFromQuery()) {
@@ -380,10 +381,12 @@ class SqlMemberSource
         if (value == null) {
             return RolapUtil.sqlNullValue;
         } else if (value instanceof byte[]) {
-            // Some drivers (e.g. Derby) return byte arrays for
-            // binary columns but byte arrays do not implement
-            // Comparable
+            // Some drivers (e.g. Derby) return byte arrays for binary columns,
+            // but byte arrays do not implement Comparable.
             return new String((byte[]) value);
+        } else if (value instanceof Boolean) {
+            // Canonize to save a bit of memory.
+            return Boolean.valueOf((Boolean) value);
         } else {
             // All other known return values are comparable.
             return (Comparable) value;

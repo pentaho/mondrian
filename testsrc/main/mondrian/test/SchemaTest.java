@@ -2710,27 +2710,72 @@ Test that get error if a dimension has more than one hierarchy with same name.
             "select from [Sales]", "Union role must not contain grants");
     }
 
-    public void testUnionRoleIllegalForwardRef() {
+    /**
+     * Tests that mondrian gives an error if role names are not distinct.
+     */
+    public void testRoleDuplicate() {
         final TestContext testContext = TestContext.instance().create(
             null,
             null,
             null,
             null,
             null,
-            "<Role name=\"Role1\">\n"
-            + "  <SchemaGrant access=\"all\"/>\n"
+            "<Role name='Role1'>\n"
+            + "  <SchemaGrant access='all'/>\n"
             + "</Role>\n"
-            + "<Role name=\"Role1Plus2\">\n"
+            + "<Role name='Role1Plus2'>\n"
             + "  <Union>\n"
-            + "    <RoleUsage roleName=\"Role1\"/>\n"
-            + "    <RoleUsage roleName=\"Role2\"/>\n"
+            + "    <RoleUsage roleName='Role1'/>\n"
             + "  </Union>\n"
             + "</Role>\n"
-            + "<Role name=\"Role2\">\n"
-            + "  <SchemaGrant access=\"all\"/>\n"
+            + "<Role name='Role1' >\n"
+            + "  <SchemaGrant access='all'/>\n"
             + "</Role>").withRole("Role1Plus2");
-        testContext.assertQueryThrows(
-            "select from [Sales]", "Unknown role 'Role2'");
+        testContext.assertSchemaError(
+            "Duplicate role 'Role1' \\(in Role 'Role1'\\) \\(at ${pos}\\)",
+            "<Role name='Role1' >");
+    }
+
+    /**
+     * Tests that mondrian gives an error if a union role is cyclic.
+     */
+    public void testUnionRoleCyclic() {
+        // Role 2 is cyclic (contains Role 3, which contains Role 2).
+        final TestContext testContext = TestContext.instance().create(
+            null,
+            null,
+            null,
+            null,
+            null,
+            "<Role name='Role1'>\n"
+            + "  <SchemaGrant access='all'/>\n"
+            + "</Role>\n"
+            + "<Role name='Role2'>\n"
+            + "  <Union>\n"
+            + "    <RoleUsage roleName='Role1'/>\n"
+            + "    <RoleUsage roleName='Role3'/>\n"
+            + "  </Union>\n"
+            + "</Role>\n"
+            + "<Role name='Role3'>\n"
+            + "  <Union>\n"
+            + "    <RoleUsage roleName='Role4'/>\n"
+            + "    <RoleUsage roleName='Role2'/>\n"
+            + "  </Union>\n"
+            + "</Role>\n"
+            + "<Role name='Role4'>\n"
+            + "  <SchemaGrant access='all'/>\n"
+            + "</Role>\n"
+            + "<Role name='Role5'>\n"
+            + "  <Union>\n"
+            + "    <RoleUsage roleName='Role1'/>\n"
+            + "    <RoleUsage roleName='Role4'/>\n"
+            + "  </Union>\n"
+            + "</Role>")
+            .withRole("Role1");
+        testContext.assertSchemaError(
+            "Role 'Role3' has cyclic dependencies on other roles \\(in Role "
+            + "'Role3'\\) \\(at ${pos}\\)",
+            "<Role name='Role3'>");
     }
 
     public void testVirtualCubeNamedSetSupportInSchema() {
@@ -5747,6 +5792,88 @@ Test that get error if a dimension has more than one hierarchy with same name.
             + "</MeasureGroups>");
     }
 
+    /**
+     * Tests that mondrian gives error if an attribute hierarchy has the
+     * same name as another hierarchy in the dimension. (This would typically
+     * occur if an attribute has hasHierarchy=true and there is an explicit
+     * hierarchy for the same attribute.)
+     */
+    public void testDuplicateHierarchyNameCausedByAttrHierarchy() {
+        final TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales",
+            "<Dimension name='Customer' table='customer' key='Key'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='State'>"
+            + "      <Key>\n"
+            + "        <Column name='state_province'/>\n"
+            + "      </Key>\n"
+            + "    </Attribute>"
+            + "    <Attribute name='City' hasHierarchy='true'>\n"
+            + "      <Key>\n"
+            + "        <Column name='state_province'/>\n"
+            + "        <Column name='city'/>\n"
+            + "      </Key>\n"
+            + "      <Name>\n"
+            + "        <Column name='city'/>\n"
+            + "      </Name>\n"
+            + "    </Attribute>"
+            + "    <Attribute name='Name' keyColumn='customer_id'/>\n"
+            + "    <Attribute name='Key' keyColumn='customer_id' hidden='true'/>\n"
+            + "  </Attributes>"
+            + "  <Hierarchies>"
+            + "    <Hierarchy name='Customers'>\n"
+            + "      <Level attribute='State'/>\n"
+            + "      <Level attribute='City'/>\n"
+            + "      <Level attribute='Name'/>\n"
+            + "    </Hierarchy>\n"
+            + "    <Hierarchy name='City'>\n"
+            + "      <Level attribute='City'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Hierarchies>"
+            + "</Dimension>\n"
+            + "<MeasureGroups>\n"
+            + "  <MeasureGroup name='sales_fact'>\n"
+            + "  </MeasureGroup>\n"
+            + "</MeasureGroups>");
+        testContext.assertSchemaError(
+            "Cannot create hierarchy for attribute 'City'; dimension already "
+            + "has a hierarchy of that name \\(in Attribute 'City'\\) "
+            + "\\(at ${pos}\\)",
+            "<Attribute name='City' hasHierarchy='true'>");
+    }
+
+    /**
+     * Tests that get error if a Column element does not have 'table'
+     * attribute specified, and none is inherited from enclosing Attribute
+     * or Dimension element.
+     */
+    public void testWarnIfNoRelation() {
+        final TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales",
+            "<Dimension name='Customer' key='Key'>\n"
+            + "  <Attributes>"
+            + "    <Attribute name='City' hasHierarchy='true'>\n"
+            + "      <Key>\n"
+            + "        <Column table='customer' name='state_province'/>\n"
+            + "        <Column name='city'/>\n"
+            + "      </Key>\n"
+            + "      <Name>\n"
+            + "        <Column table='customer' name='city'/>\n"
+            + "      </Name>\n"
+            + "    </Attribute>"
+            + "    <Attribute name='Key' hidden='true'/>\n"
+            + "  </Attributes>"
+            + "</Dimension>\n"
+            + "<MeasureGroups>\n"
+            + "  <MeasureGroup name='sales_fact'>\n"
+            + "  </MeasureGroup>\n"
+            + "</MeasureGroups>");
+        testContext.assertSchemaError(
+            "Table required. No table is specified or inherited when resolving "
+            + "column 'city' \\(in Column\\) \\(at ${pos}\\)",
+            "<Column name='city'/>");
+    }
+
     // TODO: test where 'datatype' field of a <Measure> is invalid
 
     // TODO: test that get error if 'Dimension.foreignKey' not specified
@@ -5837,6 +5964,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
     // TODO: Implement ReferenceLink
 
     // TODO: Test ReferenceLink
+
+    // TODO: document that the name of an attribute's property defaults to the
+    // name of the source attribute
 }
 
 // End SchemaTest.java

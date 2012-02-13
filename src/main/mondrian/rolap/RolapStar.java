@@ -642,7 +642,10 @@ public class RolapStar {
             assert datatype != null;
             assert expression == null
                    || datatype == expression.getDatatype()
-                   || expression.getDatatype() == null;
+                   || expression.getDatatype() == null
+                   || this instanceof Measure
+                : "expression " + expression + ", datatype" + datatype
+                  + " mismatch";
             assert expression == null
                    || internalType == expression.getInternalType();
             this.name = name;
@@ -1191,6 +1194,20 @@ public class RolapStar {
         }
 
         void makeMeasure(RolapBaseCubeMeasure measure) {
+            Dialect.Datatype datatype =
+                measure.getAggregator().deriveDatatype(
+                    measure.getExpr() == null
+                        ? Collections.<Dialect.Datatype>emptyList()
+                        : Collections.singletonList(
+                            measure.getExpr().getDatatype()));
+            if (datatype == null
+                && measure.getExpr() != null)
+            {
+                // Sometimes we don't know the type of the expression (e.g. if
+                // it is a SQL expression) but we do know the type of the
+                // measure. Let's assume they are consistent.
+                datatype = measure.getDatatype();
+            }
             RolapStar.Measure starMeasure =
                 new RolapStar.Measure(
                     measure.getName(),
@@ -1198,7 +1215,7 @@ public class RolapStar {
                     measure.getAggregator(),
                     this,
                     measure.getExpr(),
-                    measure.getDatatype());
+                    datatype);
 
             addColumn(starMeasure);
             measure.setStarMeasure(starMeasure); // reverse mapping

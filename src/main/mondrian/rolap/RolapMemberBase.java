@@ -194,6 +194,38 @@ public class RolapMemberBase
         return this.getUniqueName().equals(that.getUniqueName());
     }
 
+    /**
+     * Whether this member is the same as another member.
+     *
+     * <p>Weaker than == but stronger than {@link #equals(Object)}. For
+     * example:</p>
+     *
+     * <ul>
+     *
+     * <li>Returns false when comparing the member [Gender].[F] to the visual
+     * total member [Gender].[F].</li>
+     *
+     * <li>Returns true when comparing two {@link RolapCubeMember} wrappers for
+     * [Gender].[F] in the same cube dimension. (Occurs when caching is
+     * disabled.)</li>
+     *
+     * <li>Returns true when applied to the same object.</li>
+     *
+     * </ul>
+     *
+     * @param member Member to compare to.
+     * @return Whether this and member represent the same MDX object
+     */
+    public final boolean same(RolapMember member) {
+        if (this == member) {
+            return true;
+        }
+        if (this.getClass() != member.getClass()) {
+            return false;
+        }
+        return this.equals(member);
+    }
+
     protected void setUniqueName(Object key) {
         String name = keyToString(key);
 

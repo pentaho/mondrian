@@ -501,7 +501,7 @@ public class RolapEvaluator implements Evaluator {
         // a mistake to use equals here; we might treat the visual total member
         // 'Gender.All' the same as the true 'Gender.All' because they have the
         // same unique name, and that would be wrong.
-        if (m == previous) {
+        if (m.same(previous)) {
             return previous;
         }
         // We call 'exists' before 'removeCalcMember' for efficiency.

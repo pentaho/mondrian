@@ -1251,7 +1251,7 @@ public class AccessControlTest extends FoodMartTestCase {
         return
             TestContext.instance().create(
                 null, null, null, null, null,
-                "<Role name=\"California manager\">\n"
+                "<Role name=\"California and Portland manager\">\n"
                 + "  <SchemaGrant access=\"none\">\n"
                 + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
                 + "      <HierarchyGrant hierarchy=\"[Stores]\" rollupPolicy=\""
@@ -1263,7 +1263,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "    </CubeGrant>\n"
                 + "  </SchemaGrant>\n"
                 + "</Role>")
-                .withRole("California manager");
+                .withRole("California and Portland manager");
     }
 
     /**
@@ -1328,7 +1328,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Number of Employees]}\n"
             + "Axis #2:\n"
-            + "{[Store].[All Stores]}\n"
+            + "{[Store].[Stores].[All Stores]}\n"
             + "Row #0: 1\n");
         checkQuery(testContext, mdx);
 
@@ -1539,22 +1539,22 @@ public class AccessControlTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[Products].[All Products], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Products].[All Products], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Products].[All Products], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Products].[All Products], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Products].[Drink].[Dairy], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Products].[Drink].[Dairy], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Products].[Drink].[Dairy], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Products].[Drink].[Dairy], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Products].[Food], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Products].[Food], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Products].[Food], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Products].[Food], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Products].[Food].[Eggs], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Products].[Food].[Eggs], [Store].[Store Type].[All Store Types], [Store Size in SQFT].[20319]}\n"
-            + "{[Product].[Products].[Food].[Eggs], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[All Store Size in SQFTs]}\n"
-            + "{[Product].[Products].[Food].[Eggs], [Store].[Store Type].[Supermarket], [Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[All Products], [Store].[Store Type].[All Store Types], [Store].[Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[All Products], [Store].[Store Type].[All Store Types], [Store].[Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[All Products], [Store].[Store Type].[Supermarket], [Store].[Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[All Products], [Store].[Store Type].[Supermarket], [Store].[Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[Drink].[Dairy], [Store].[Store Type].[All Store Types], [Store].[Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[Drink].[Dairy], [Store].[Store Type].[All Store Types], [Store].[Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[Drink].[Dairy], [Store].[Store Type].[Supermarket], [Store].[Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[Drink].[Dairy], [Store].[Store Type].[Supermarket], [Store].[Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[Food], [Store].[Store Type].[All Store Types], [Store].[Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[Food], [Store].[Store Type].[All Store Types], [Store].[Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[Food], [Store].[Store Type].[Supermarket], [Store].[Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[Food], [Store].[Store Type].[Supermarket], [Store].[Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[Food].[Eggs], [Store].[Store Type].[All Store Types], [Store].[Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[Food].[Eggs], [Store].[Store Type].[All Store Types], [Store].[Store Size in SQFT].[20319]}\n"
+            + "{[Product].[Products].[Food].[Eggs], [Store].[Store Type].[Supermarket], [Store].[Store Size in SQFT].[All Store Size in SQFTs]}\n"
+            + "{[Product].[Products].[Food].[Eggs], [Store].[Store Type].[Supermarket], [Store].[Store Size in SQFT].[20319]}\n"
             + "Row #0: 4,042.96\n"
             + "Row #0: 4,042.96\n"
             + "Row #0: 4,042.96\n"
@@ -1618,12 +1618,12 @@ public class AccessControlTest extends FoodMartTestCase {
             + "{[Measures].[Units Ordered]}\n"
             + "{[Measures].[Units Shipped]}\n"
             + "Axis #2:\n"
-            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Drink]}\n"
-            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Drink].[Dairy]}\n"
-            + "{[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Food]}\n"
-            + "{[Store Size in SQFT].[20319], [Product].[Drink]}\n"
-            + "{[Store Size in SQFT].[20319], [Product].[Food]}\n"
-            + "{[Store Size in SQFT].[20319], [Product].[Non-Consumable]}\n"
+            + "{[Store].[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Products].[Drink]}\n"
+            + "{[Store].[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Products].[Drink].[Dairy]}\n"
+            + "{[Store].[Store Size in SQFT].[All Store Size in SQFTs], [Product].[Products].[Food]}\n"
+            + "{[Store].[Store Size in SQFT].[20319], [Product].[Products].[Drink]}\n"
+            + "{[Store].[Store Size in SQFT].[20319], [Product].[Products].[Food]}\n"
+            + "{[Store].[Store Size in SQFT].[20319], [Product].[Products].[Non-Consumable]}\n"
             + "Row #0: 865.0\n"
             + "Row #0: 767.0\n"
             + "Row #1: 195.0\n"
@@ -1759,7 +1759,7 @@ public class AccessControlTest extends FoodMartTestCase {
         StringBuilder buf = new StringBuilder();
         StringBuilder buf2 = new StringBuilder();
         final String cubeName = "Sales with multiple customers";
-        final Result result = TestContext.instance().executeQuery(
+        final Result result = TestContext.instance().legacy().executeQuery(
             "select [Customers].[City].Members on 0 from [Sales]");
         for (Position position : result.getAxes()[0].getPositions()) {
             Member member = position.get(0);
@@ -1798,7 +1798,7 @@ public class AccessControlTest extends FoodMartTestCase {
 
             buf2.append("    <RoleUsage roleName=\"" + name + "\"/>\n");
         }
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = TestContext.instance().legacy().create(
             " <Dimension name=\"Customers\"> \n"
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\"> \n"
             + "      <Table name=\"customer\"/> \n"
@@ -1824,10 +1824,10 @@ public class AccessControlTest extends FoodMartTestCase {
             + buf2.toString()
             + "    </Union>\n"
             + "  </Role>\n");
-        final long t0 = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         final TestContext testContext1 = testContext.withRole("Test");
         testContext1.executeQuery("select from [" + cubeName + "]");
-        final long t1 = System.currentTimeMillis();
+        PerformanceTest.printDuration("AccessControlTest." + getName(), start);
 //      System.out.println("Elapsed=" + (t1 - t0) + " millis");
 //      System.out.println(
 //          "RoleImpl.accessCount=" + RoleImpl.accessCallCount);
@@ -2132,13 +2132,13 @@ public class AccessControlTest extends FoodMartTestCase {
             + "  </SchemaGrant>\n"
             + "</Role>\n");
         context.withRole("Role1").assertAxisReturns(
-            "[Education].Members",
-            "[Education Level].[All Education Levels]\n"
-            + "[Education Level].[Bachelors Degree]\n"
-            + "[Education Level].[Graduate Degree]\n"
-            + "[Education Level].[High School Degree]\n"
-            + "[Education Level].[Partial College]\n"
-            + "[Education Level].[Partial High School]");
+            "[Education Level].Members",
+            "[Customer].[Education Level].[All Education Levels]\n"
+            + "[Customer].[Education Level].[Bachelors Degree]\n"
+            + "[Customer].[Education Level].[Graduate Degree]\n"
+            + "[Customer].[Education Level].[High School Degree]\n"
+            + "[Customer].[Education Level].[Partial College]\n"
+            + "[Customer].[Education Level].[Partial High School]");
         context.withRole("Role1").assertAxisThrows(
             "[Customers].Members",
             "Mondrian Error:Failed to parse query 'select {[Customers].Members} on columns from Sales'");
@@ -2213,7 +2213,11 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     /**
-     * This is a test for MONDRIAN-1030. When the top level of a hierarchy
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1030">MONDRIAN-1030,
+     * "Members disappearing with RoleUnion and complex MDX query"</a>.
+     *
+     * <p>When the top level of a hierarchy
      * is not accessible and a partial rollup policy is used, the results would
      * be returned as those of the first member of those accessible only.
      *
@@ -2228,12 +2232,12 @@ public class AccessControlTest extends FoodMartTestCase {
      * to the SQL for the first member only.
      *
      * <p>Currently, Mondrian disguises the root member in the evaluator as a
-     * RestrictedMemberReader.MultiCardinalityDefaultMember. Later,
-     * RolapHierarchy.LimitedRollupSubstitutingMemberReader will recognize it
-     * and use the correct rollup policy on the parent member to generate
-     * correct SQL.
+     * {@link mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember}.
+     * Later, {@link mondrian.rolap.RolapHierarchy.LimitedRollupSubstitutingMemberReader}
+     * will recognize it and use the correct rollup policy on the parent member
+     * to generate correct SQL.
      */
-    public void testMondrian1030() throws Exception {
+    public void testBugMondrian1030() throws Exception {
         final String mdx1 =
             "With\n"
             + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Customers],[*BASE_MEMBERS_Product])'\n"
@@ -2288,12 +2292,12 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
-            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[All Education Levels]}\n"
-            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Bachelors Degree]}\n"
-            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Graduate Degree]}\n"
-            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[High School Degree]}\n"
-            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Partial College]}\n"
-            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Partial High School]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Coronado], [Customer].[Education Level].[All Education Levels]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Coronado], [Customer].[Education Level].[Bachelors Degree]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Coronado], [Customer].[Education Level].[Graduate Degree]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Coronado], [Customer].[Education Level].[High School Degree]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Coronado], [Customer].[Education Level].[Partial College]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Coronado], [Customer].[Education Level].[Partial High School]}\n"
             + "Row #0: 2,391\n"
             + "Row #1: 559\n"
             + "Row #2: 205\n"
@@ -2307,12 +2311,12 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
-            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[All Education Levels]}\n"
-            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Bachelors Degree]}\n"
-            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Graduate Degree]}\n"
-            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[High School Degree]}\n"
-            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Partial College]}\n"
-            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Partial High School]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank], [Customer].[Education Level].[All Education Levels]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank], [Customer].[Education Level].[Bachelors Degree]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank], [Customer].[Education Level].[Graduate Degree]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank], [Customer].[Education Level].[High School Degree]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank], [Customer].[Education Level].[Partial College]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank], [Customer].[Education Level].[Partial High School]}\n"
             + "Row #0: 3,086\n"
             + "Row #1: 914\n"
             + "Row #2: 126\n"
@@ -2326,18 +2330,18 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
-            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[All Education Levels]}\n"
-            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Bachelors Degree]}\n"
-            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Graduate Degree]}\n"
-            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[High School Degree]}\n"
-            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Partial College]}\n"
-            + "{[Customers].[USA].[CA].[Burbank], [Education Level].[Partial High School]}\n"
-            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[All Education Levels]}\n"
-            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Bachelors Degree]}\n"
-            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Graduate Degree]}\n"
-            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[High School Degree]}\n"
-            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Partial College]}\n"
-            + "{[Customers].[USA].[CA].[Coronado], [Education Level].[Partial High School]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank], [Customer].[Education Level].[All Education Levels]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank], [Customer].[Education Level].[Bachelors Degree]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank], [Customer].[Education Level].[Graduate Degree]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank], [Customer].[Education Level].[High School Degree]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank], [Customer].[Education Level].[Partial College]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Burbank], [Customer].[Education Level].[Partial High School]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Coronado], [Customer].[Education Level].[All Education Levels]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Coronado], [Customer].[Education Level].[Bachelors Degree]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Coronado], [Customer].[Education Level].[Graduate Degree]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Coronado], [Customer].[Education Level].[High School Degree]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Coronado], [Customer].[Education Level].[Partial College]}\n"
+            + "{[Customer].[Customers].[USA].[CA].[Coronado], [Customer].[Education Level].[Partial High School]}\n"
             + "Row #0: 3,086\n"
             + "Row #1: 914\n"
             + "Row #2: 126\n"
@@ -2358,12 +2362,12 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
-            + "{[Education Level].[All Education Levels]}\n"
-            + "{[Education Level].[Bachelors Degree]}\n"
-            + "{[Education Level].[Graduate Degree]}\n"
-            + "{[Education Level].[High School Degree]}\n"
-            + "{[Education Level].[Partial College]}\n"
-            + "{[Education Level].[Partial High School]}\n"
+            + "{[Customer].[Education Level].[All Education Levels]}\n"
+            + "{[Customer].[Education Level].[Bachelors Degree]}\n"
+            + "{[Customer].[Education Level].[Graduate Degree]}\n"
+            + "{[Customer].[Education Level].[High School Degree]}\n"
+            + "{[Customer].[Education Level].[Partial College]}\n"
+            + "{[Customer].[Education Level].[Partial High School]}\n"
             + "Row #0: 2,391\n"
             + "Row #1: 559\n"
             + "Row #2: 205\n"
@@ -2377,12 +2381,12 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
-            + "{[Education Level].[All Education Levels]}\n"
-            + "{[Education Level].[Bachelors Degree]}\n"
-            + "{[Education Level].[Graduate Degree]}\n"
-            + "{[Education Level].[High School Degree]}\n"
-            + "{[Education Level].[Partial College]}\n"
-            + "{[Education Level].[Partial High School]}\n"
+            + "{[Customer].[Education Level].[All Education Levels]}\n"
+            + "{[Customer].[Education Level].[Bachelors Degree]}\n"
+            + "{[Customer].[Education Level].[Graduate Degree]}\n"
+            + "{[Customer].[Education Level].[High School Degree]}\n"
+            + "{[Customer].[Education Level].[Partial College]}\n"
+            + "{[Customer].[Education Level].[Partial High School]}\n"
             + "Row #0: 3,086\n"
             + "Row #1: 914\n"
             + "Row #2: 126\n"
@@ -2396,12 +2400,12 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
-            + "{[Education Level].[All Education Levels]}\n"
-            + "{[Education Level].[Bachelors Degree]}\n"
-            + "{[Education Level].[Graduate Degree]}\n"
-            + "{[Education Level].[High School Degree]}\n"
-            + "{[Education Level].[Partial College]}\n"
-            + "{[Education Level].[Partial High School]}\n"
+            + "{[Customer].[Education Level].[All Education Levels]}\n"
+            + "{[Customer].[Education Level].[Bachelors Degree]}\n"
+            + "{[Customer].[Education Level].[Graduate Degree]}\n"
+            + "{[Customer].[Education Level].[High School Degree]}\n"
+            + "{[Customer].[Education Level].[Partial College]}\n"
+            + "{[Customer].[Education Level].[Partial High School]}\n"
             + "Row #0: 5,477\n"
             + "Row #1: 1,473\n"
             + "Row #2: 331\n"

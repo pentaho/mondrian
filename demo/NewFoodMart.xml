@@ -202,9 +202,6 @@
             <Hierarchy name='Store Size in SQFT'>
                 <Level attribute='Store Sqft'/>
             </Hierarchy>
-            <Hierarchy name='Store Type'>
-                <Level attribute='Store Type'/>
-            </Hierarchy>
         </Hierarchies>
     </Dimension>
 
@@ -397,9 +394,18 @@
             <Dimension name='Customer' table='customer' key='Name'>
                 <Attributes>
                     <Attribute name='Country' keyColumn='country'/>
-                    <Attribute name='State Province' keyColumn='state_province'/>
+                    <Attribute name='State Province'>
+                        <Key>
+                            <Column name='country'/>
+                            <Column name='state_province'/>
+                        </Key>
+                        <Name>
+                            <Column name='state_province'/>
+                        </Name>
+                    </Attribute>
                     <Attribute name='City'>
                         <Key>
+                            <Column name='country'/>
                             <Column name='state_province'/>
                             <Column name='city'/>
                         </Key>
@@ -409,7 +415,7 @@
                     </Attribute>
                     <Attribute name='Name' keyColumn='customer_id' nameColumn='full_name' orderByColumn='full_name'/>
                     <Attribute name='Gender' keyColumn='gender'/>
-                    <Attribute name='Marital Status' keyColumn='marital_status'/>
+                    <Attribute name='Marital Status' keyColumn='marital_status' approxRowCount='111'/>
                     <Attribute name='Education' keyColumn='education'/>
                     <Attribute name='Yearly Income' keyColumn='yearly_income'/>
                 </Attributes>

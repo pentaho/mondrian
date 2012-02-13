@@ -624,8 +624,8 @@ Revision is $Id$
             <![CDATA[
             private static final Dimensions EMPTY;
             static {
-               EMPTY = new Dimensions();
-               EMPTY.array = new Dimension[0];
+                EMPTY = new Dimensions();
+                EMPTY.array = new Dimension[0];
             }
             public NamedList<Dimension> list() {
                 return new NamedListImpl<Dimension>(
@@ -747,8 +747,8 @@ Revision is $Id$
             <![CDATA[
             private static final Hierarchies EMPTY;
             static {
-               EMPTY = new Hierarchies();
-               EMPTY.array = new Hierarchy[0];
+                EMPTY = new Hierarchies();
+                EMPTY.array = new Hierarchy[0];
             }
             public NamedList<Hierarchy> list() {
                 return new NamedListImpl<Hierarchy>(
@@ -773,8 +773,8 @@ Revision is $Id$
             <![CDATA[
             private static final Attributes EMPTY;
             static {
-               EMPTY = new Attributes();
-               EMPTY.array = new Attribute[0];
+                EMPTY = new Attributes();
+                EMPTY.array = new Attribute[0];
             }
             public NamedList<Attribute> list() {
                 return new NamedListImpl<Attribute>(
@@ -1370,8 +1370,8 @@ Revision is $Id$
             <![CDATA[
             private static final CalculatedMembers EMPTY;
             static {
-               EMPTY = new CalculatedMembers();
-               EMPTY.array = new CalculatedMember[0];
+                EMPTY = new CalculatedMembers();
+                EMPTY.array = new CalculatedMember[0];
             }
             public NamedList<CalculatedMember> list() {
                 return new NamedListImpl<CalculatedMember>(
@@ -1542,8 +1542,8 @@ Revision is $Id$
             <![CDATA[
             private static final NamedSets EMPTY;
             static {
-               EMPTY = new NamedSets();
-               EMPTY.array = new NamedSet[0];
+                EMPTY = new NamedSets();
+                EMPTY.array = new NamedSet[0];
             }
             private NamedList<NamedSet> list() {
                 return namedList(array);
@@ -1831,8 +1831,8 @@ Revision is $Id$
         <Code><![CDATA[
         private static final Hints EMPTY;
         static {
-           EMPTY = new Hints();
-           EMPTY.array = new Hint[0];
+            EMPTY = new Hints();
+            EMPTY.array = new Hint[0];
         }
         private List<Hint> list() {
             return MondrianDef.list(array);
@@ -1871,8 +1871,6 @@ Revision is $Id$
                     Rows in table. Maybe empty.</p>
             </Doc>
         </Array>
-        <Object name="columnDefs" type="ColumnDefs" required="true"/>
-        <Object name="rows" type="Rows" required="true"/>
         <Code><![CDATA[
             public String getAlias() {
                 return alias;
@@ -1913,8 +1911,8 @@ Revision is $Id$
             <![CDATA[
             private static final ColumnDefs EMPTY;
             static {
-               EMPTY = new ColumnDefs();
-               EMPTY.array = new RealOrCalcColumnDef[0];
+                EMPTY = new ColumnDefs();
+                EMPTY.array = new RealOrCalcColumnDef[0];
             }
             public List<RealOrCalcColumnDef> list() {
                 return new MutableArrayList<RealOrCalcColumnDef>() {
@@ -1981,7 +1979,7 @@ Revision is $Id$
         <Object name="expression" type="Expression" required="true"/>
     </Element>
 
-    <Element type="Rows" class="InlineTableElement">
+    <Element type="Rows" class="Holder,InlineTableElement">
         <Doc>
             Holder for an array of Row elements.
         </Doc>
@@ -1990,11 +1988,18 @@ Revision is $Id$
             <![CDATA[
             private static final Rows EMPTY;
             static {
-               EMPTY = new Rows();
-               EMPTY.array = new Row[0];
+                EMPTY = new Rows();
+                EMPTY.array = new Row[0];
             }
-            private List<Row> list() {
-                return MondrianDef.list(array);
+            public List<Row> list() {
+                return new MutableArrayList<Row>() {
+                    protected Row[] getArray() {
+                        return array == null ? EMPTY.array : array;
+                    }
+                    protected void setArray(Row[] ts) {
+                        array = ts;
+                    }
+                };
             }
             ]]>
         </Code>
@@ -2221,8 +2226,8 @@ Revision is $Id$
             <![CDATA[
             private static final Aggregates EMPTY;
             static {
-               EMPTY = new Aggregates();
-               EMPTY.array = new AggTable[0];
+                EMPTY = new Aggregates();
+                EMPTY.array = new AggTable[0];
             }
             private List<AggTable> list() {
                 return MondrianDef.list(array);
@@ -2241,8 +2246,8 @@ Revision is $Id$
             <![CDATA[
             private static final Columns EMPTY;
             static {
-               EMPTY = new Columns();
-               EMPTY.array = new Column[0];
+                EMPTY = new Columns();
+                EMPTY.array = new Column[0];
             }
             public List<Column> list() {
                 return new MutableArrayList<Column>() {
@@ -2494,13 +2499,36 @@ Revision is $Id$
     </Element>
 
     <!-- Union ============================================================ -->
-    <Element type="Union" class="RoleElement">
+    <Element type="Union" class="Holder,RoleElement">
         <Doc>
             Body of a Role definition which defines a Role to be the union
             of several Roles. The RoleUsage elements must refer to Roles that
             have been declared earlier in this schema file.
         </Doc>
-        <Array name="roleUsages" type="RoleUsage" required="true"/>
+        <Array name="array" type="RoleUsage" required="true">
+            <Doc>
+                Role usages.
+            </Doc>
+        </Array>
+        <Code>
+            <![CDATA[
+            private static final Union EMPTY;
+            static {
+                 EMPTY = new Union();
+                 EMPTY.array = new RoleUsage[0];
+            }
+            public List<RoleUsage> list() {
+                return new MutableArrayList<RoleUsage>() {
+                    protected RoleUsage[] getArray() {
+                        return array == null ? EMPTY.array : array;
+                    }
+                    protected void setArray(RoleUsage[] ts) {
+                        array = ts;
+                    }
+                };
+            }
+            ]]>
+        </Code>
     </Element>
 
     <!-- RoleUsage ======================================================== -->
@@ -2601,8 +2629,8 @@ Revision is $Id$
             <![CDATA[
             private static final Annotations EMPTY;
             static {
-               EMPTY = new Annotations();
-               EMPTY.array = new Annotation[0];
+                EMPTY = new Annotations();
+                EMPTY.array = new Annotation[0];
             }
             public NamedList<Annotation> list() {
                 return new NamedListImpl<Annotation>(
@@ -2815,8 +2843,8 @@ Revision is $Id$
             <![CDATA[
             private static final MeasureGroups EMPTY;
             static {
-               EMPTY = new MeasureGroups();
-               EMPTY.array = new MeasureGroup[0];
+                EMPTY = new MeasureGroups();
+                EMPTY.array = new MeasureGroup[0];
             }
             public NamedList<MeasureGroup> list() {
                 return new NamedListImpl<MeasureGroup>(
@@ -2905,8 +2933,8 @@ Revision is $Id$
             <![CDATA[
             private static final Measures EMPTY;
             static {
-               EMPTY = new Measures();
-               EMPTY.array = new Measure[0];
+                EMPTY = new Measures();
+                EMPTY.array = new Measure[0];
             }
             public NamedList<Measure> list() {
                 return new NamedListImpl<Measure>(
@@ -2937,8 +2965,8 @@ Revision is $Id$
             <![CDATA[
             private static final DimensionLinks EMPTY;
             static {
-               EMPTY = new DimensionLinks();
-               EMPTY.array = new DimensionLink[0];
+                EMPTY = new DimensionLinks();
+                EMPTY.array = new DimensionLink[0];
             }
             public List<DimensionLink> list() {
                 return new MutableArrayList<DimensionLink>() {

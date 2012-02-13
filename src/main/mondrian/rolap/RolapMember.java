@@ -159,6 +159,7 @@ public interface RolapMember extends Member, RolapCalculation {
             final int keyCount = level.attribute.keyList.size();
             if (key instanceof String
                 || key instanceof Number
+                || key instanceof Boolean
                 || key == RolapUtil.sqlNullValue)
             {
                 return keyCount == 1

@@ -212,7 +212,10 @@ public class RolapLevel extends LevelBase {
     }
 
     public int getApproxRowCount() {
-        return approxRowCount;
+        if (approxRowCount > 0) {
+            return approxRowCount;
+        }
+        return attribute.getApproxRowCount();
     }
 
     /**

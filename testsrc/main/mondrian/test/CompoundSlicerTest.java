@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2011 Julian Hyde and others
+// Copyright (C) 2009-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -639,8 +639,8 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Customer Count]}\n"
             + "Axis #2:\n"
-            + "{[Store].[USA].[CA]}\n"
-            + "{[Store].[USA].[OR].[Portland]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[OR].[Portland]}\n"
             + "Row #0: 1,175\n"
             + "Row #1: 352\n");
     }
@@ -654,7 +654,7 @@ public class CompoundSlicerTest extends FoodMartTestCase {
      */
     public void testRollupAvg() {
         final TestContext testContext =
-            TestContext.instance().createSubstitutingCube(
+            TestContext.instance().legacy().createSubstitutingCube(
                 "Sales",
                 null,
                 "<Measure name='Avg Unit Sales' aggregator='avg' column='unit_sales'/>\n"
@@ -677,8 +677,8 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "where [Measures].[Avg Unit Sales]\n"
             + "   * {[Customers].[USA].[OR], [Customers].[USA].[CA]}",
             "Axis #0:\n"
-            + "{[Measures].[Avg Unit Sales], [Customer].[Customers].[USA].[OR]}\n"
-            + "{[Measures].[Avg Unit Sales], [Customer].[Customers].[USA].[CA]}\n"
+            + "{[Measures].[Avg Unit Sales], [Customers].[USA].[OR]}\n"
+            + "{[Measures].[Avg Unit Sales], [Customers].[USA].[CA]}\n"
             + "6.189");
 
         // roll up using a named set
@@ -688,7 +688,7 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "select from [Sales]\n"
             + "where ([Measures].[Avg Unit Sales], [Customers].[OR and CA])",
             "Axis #0:\n"
-            + "{[Measures].[Avg Unit Sales], [Customer].[Customers].[OR and CA]}\n"
+            + "{[Measures].[Avg Unit Sales], [Customers].[OR and CA]}\n"
             + "3.094");
     }
 

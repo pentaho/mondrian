@@ -4,13 +4,16 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
+
+import org.olap4j.impl.NamedListImpl;
+import org.olap4j.metadata.NamedList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +32,8 @@ public abstract class DimensionBase
     protected final String name;
     protected final String uniqueName;
     protected final String description;
-    protected final List<Hierarchy> hierarchyList = new ArrayList<Hierarchy>();
+    protected final NamedList<Hierarchy> hierarchyList =
+        new NamedListImpl<Hierarchy>();
     protected final DimensionType dimensionType;
 
     /**

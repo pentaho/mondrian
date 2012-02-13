@@ -208,20 +208,18 @@ class PhysSchemaConverter extends RolapSchemaLoader.PhysSchemaBuilder {
         MondrianDef.InlineTable xmlInlineTable =
             new MondrianDef.InlineTable();
         xmlInlineTable.alias = physInlineTable.getAlias();
-        final List<MondrianDef.ColumnDef> columnDefList =
-            new ArrayList<MondrianDef.ColumnDef>();
+        final List<MondrianDef.RealOrCalcColumnDef> xmlColumnDefs =
+            xmlInlineTable.children.holder(new MondrianDef.ColumnDefs()).list();
         for (RolapSchema.PhysColumn elementDef
             : physInlineTable.columnsByName.values())
         {
             MondrianDef.ColumnDef xmlColumn = new MondrianDef.ColumnDef();
             xmlColumn.name = elementDef.name;
             xmlColumn.type = elementDef.datatype.name();
-            columnDefList.add(xmlColumn);
+            xmlColumnDefs.add(xmlColumn);
         }
-        xmlInlineTable.columnDefs.array =
-            columnDefList.toArray(
-                new MondrianDef.RealOrCalcColumnDef[columnDefList.size()]);
-        final List<MondrianDef.Row> rowList = new ArrayList<MondrianDef.Row>();
+        final List<MondrianDef.Row> xmlRows =
+            xmlInlineTable.children.holder(new MondrianDef.Rows()).list();
         for (String[] values : physInlineTable.rowList) {
             MondrianDef.Row xmlRow = new MondrianDef.Row();
             final List<MondrianDef.Value> valueList =
@@ -229,16 +227,14 @@ class PhysSchemaConverter extends RolapSchemaLoader.PhysSchemaBuilder {
             for (int i = 0; i < values.length; i++) {
                 String value = values[i];
                 MondrianDef.Value xmlValue = new MondrianDef.Value();
-                xmlValue.column = columnDefList.get(i).name;
+                xmlValue.column = xmlColumnDefs.get(i).name;
                 xmlValue.cdata = value;
                 valueList.add(xmlValue);
             }
             xmlRow.values =
                 valueList.toArray(new MondrianDef.Value[valueList.size()]);
-            rowList.add(xmlRow);
+            xmlRows.add(xmlRow);
         }
-        xmlInlineTable.rows.array =
-            rowList.toArray(new MondrianDef.Row[rowList.size()]);
         xmlTables.put(physInlineTable.getAlias(), xmlInlineTable);
         return xmlInlineTable;
     }

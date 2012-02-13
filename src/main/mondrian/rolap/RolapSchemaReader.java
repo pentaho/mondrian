@@ -290,6 +290,10 @@ public class RolapSchemaReader
         }
 
         if (rowCount == Integer.MIN_VALUE) {
+            rowCount = ((RolapLevel) level).getAttribute().getApproxRowCount();
+        }
+
+        if (rowCount == Integer.MIN_VALUE) {
             // See if the precise row count is available in cache.
             rowCount = getLevelCardinalityFromCache(level);
         }

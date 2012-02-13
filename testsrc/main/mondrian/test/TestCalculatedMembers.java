@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
+// Copyright (C) 2002-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -43,12 +43,12 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "from [HR]\n"
             + "where [Pay Type].[Hourly]",
             "Axis #0:\n"
-            + "{[Pay Type].[Hourly]}\n"
+            + "{[Employee].[Pay Type].[Hourly]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Avg Salary]}\n"
             + "{[Measures].[Org Salary]}\n"
             + "Axis #2:\n"
-            + "{[Time].[Time].[1997], [Store].[All Stores], [Employees].[All Employees]}\n"
+            + "{[Time].[Time].[1997], [Store].[Stores].[All Stores], [Employee].[Employees].[All Employees]}\n"
             + "Row #0: $40.31\n"
             + "Row #0: $11,406.75\n");
     }
@@ -457,10 +457,10 @@ public class TestCalculatedMembers extends BatchTestCase {
         // Level cannot be converted.
         assertExprThrows(
             "[Customers].[Country]",
-            "Member expression '[Customers].[Country]' must not be a set");
+            "Member expression '[Customer].[Customers].[Country]' must not be a set");
 
         // Hierarchy can be converted.
-        assertExprReturns("[Customers].[Customers]", "266,773");
+        assertExprReturns("[Customer].[Customers]", "266,773");
 
         // Dimension can be converted, if unambiguous.
         assertExprReturns("[Customers]", "266,773");
@@ -490,16 +490,16 @@ public class TestCalculatedMembers extends BatchTestCase {
         // Set of tuples cannot be converted.
         assertExprThrows(
             "{([Customers].[USA], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])}",
-            "Member expression '{([Customers].[USA], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])}' must not be a set");
+            "Member expression '{([Customer].[Customers].[USA], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer])}' must not be a set");
         assertExprThrows(
             "{([Customers].[USA], [Product].[Food]),"
             + "([Customers].[USA], [Product].[Drink])}",
-            "{([Customers].[USA], [Product].[Food]), ([Customers].[USA], [Product].[Drink])}' must not be a set");
+            "{([Customer].[Customers].[USA], [Product].[Products].[Food]), ([Customer].[Customers].[USA], [Product].[Products].[Drink])}' must not be a set");
 
         // Sets cannot be converted.
         assertExprThrows(
             "{[Product].[Products].[Food]}",
-            "Member expression '{[Product].[Food]}' must not be a set");
+            "Member expression '{[Product].[Products].[Food]}' must not be a set");
     }
 
     /**
@@ -533,15 +533,15 @@ public class TestCalculatedMembers extends BatchTestCase {
             + " [Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer],\n"
             + " [Measures].[Foo])",
             "Axis #0:\n"
-            + "{[Time].[Time].[1997].[Q4].[12], [Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer], [Measures].[Foo]}\n"
+            + "{[Time].[Time].[1997].[Q4].[12], [Product].[Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth].[Portsmouth Imported Beer], [Measures].[Foo]}\n"
             + "Axis #1:\n"
-            + "{[Store].[USA].[WA].[Bellingham]}\n"
-            + "{[Store].[USA].[WA].[Bremerton]}\n"
-            + "{[Store].[USA].[WA].[Seattle]}\n"
-            + "{[Store].[USA].[WA].[Spokane]}\n"
-            + "{[Store].[USA].[WA].[Tacoma]}\n"
-            + "{[Store].[USA].[WA].[Walla Walla]}\n"
-            + "{[Store].[USA].[WA].[Yakima]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Bellingham]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Bremerton]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Seattle]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Spokane]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Tacoma]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Walla Walla]}\n"
+            + "{[Store].[Stores].[USA].[WA].[Yakima]}\n"
             + "Row #0: Infinity\n"
             + "Row #0: Infinity\n"
             + "Row #0: 0.5\n"
@@ -553,7 +553,11 @@ public class TestCalculatedMembers extends BatchTestCase {
 
     /**
      * Tests that calculated members defined in the schema can have brackets in
-     * their names. (Bug 1251683.)
+     * their names.
+     *
+     * <p>Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-106">MONDRIAN-106,
+     * "Problem with square bracket in member name"</a>.</p>
      */
     public void testBracketInCubeCalcMemberName() {
         final String cubeName = "Sales_BracketInCubeCalcMemberName";
@@ -570,14 +574,14 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "      formatString=\"Standard\" visible=\"false\"/>\n"
             + "  <CalculatedMember\n"
             + "      name=\"With a [bracket] inside it\"\n"
-            + "      dimension=\"Measures\"\n"
+            + "      hierarchy=\"[Measures].[Measures]\"\n"
             + "      visible=\"false\"\n"
             + "      formula=\"[Measures].[Unit Sales] * 10\">\n"
             + "    <CalculatedMemberProperty name=\"FORMAT_STRING\" value=\"$#,##0.00\"/>\n"
             + "  </CalculatedMember>\n"
             + "</Cube>";
 
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = TestContext.instance().legacy().create(
             null, s, null, null, null, null);
         testContext.assertQueryThrows(
             "select {[Measures].[With a [bracket] inside it]} on columns,\n"
@@ -594,8 +598,8 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[With a [bracket]] inside it]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[F]}\n"
-            + "{[Customer].[Gender].[M]}\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
             + "Row #0: $1,315,580.00\n"
             + "Row #1: $1,352,150.00\n");
     }
@@ -798,7 +802,7 @@ public class TestCalculatedMembers extends BatchTestCase {
                 + "  </CalculatedMember>\n"
                 + "</Cube>";
 
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = TestContext.instance().legacy().create(
             null, s, null, null, null, null);
         testContext.assertQueryReturns(
             "select {[Measures].[Apos in dq], [Measures].[Dq in dq], [Measures].[Apos in apos], [Measures].[Dq in apos], [Measures].[Colored Profit]} on columns,\n"
@@ -813,8 +817,8 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[Dq in apos]}\n"
             + "{[Measures].[Colored Profit]}\n"
             + "Axis #2:\n"
-            + "{[Customer].[Gender].[F]}\n"
-            + "{[Customer].[Gender].[M]}\n"
+            + "{[Gender].[F]}\n"
+            + "{[Gender].[M]}\n"
             + "Row #0: an 'apos' in dq\n"
             + "Row #0: a \"dq\" in dq\n"
             + "Row #0: an 'apos' in apos\n"
@@ -854,7 +858,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Store Sqft]}\n"
             + "Axis #2:\n"
-            + "{[Has coffee bar].[Maybe]}\n"
+            + "{[Has coffee bar].[Has coffee bar].[Maybe]}\n"
             + "Row #0: 1,143,192\n");
      }
 
@@ -959,9 +963,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Foo]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Canada]}\n"
-            + "{[Store].[Mexico]}\n"
-            + "{[Store].[USA]}\n"
+            + "{[Store].[Stores].[Canada]}\n"
+            + "{[Store].[Stores].[Mexico]}\n"
+            + "{[Store].[Stores].[USA]}\n"
             + "Row #0: \n"
             + "Row #0: foo1.2345E-8bar\n"
             + "Row #1: \n"
@@ -1012,8 +1016,8 @@ public class TestCalculatedMembers extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[USA]}\n"
-            + "{[Store].[CA or OR]}\n"
+            + "{[Store].[Stores].[USA]}\n"
+            + "{[Store].[Stores].[CA or OR]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: 142,407\n");
     }
@@ -1044,9 +1048,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "{[Measures].[Profit Formatted]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Canada]}\n"
-            + "{[Store].[Mexico]}\n"
-            + "{[Store].[USA]}\n"
+            + "{[Store].[Stores].[Canada]}\n"
+            + "{[Store].[Stores].[Mexico]}\n"
+            + "{[Store].[Stores].[USA]}\n"
             + "Row #0: \n"
             + "Row #0: foo1.2345E-8bar\n"
             + "Row #1: \n"
@@ -1193,10 +1197,10 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
-            + "{[Education Level].[*CTX_MEMBER_SEL~SUM], [Product].[*CTX_MEMBER_SEL~SUM]}\n"
-            + "{[Education Level].[Bachelors Degree], [Product].[Food]}\n"
-            + "{[Education Level].[Bachelors Degree], [Product].[Non-Consumable]}\n"
-            + "{[Education Level].[Graduate Degree], [Product].[Food]}\n"
+            + "{[Customer].[Education Level].[*CTX_MEMBER_SEL~SUM], [Product].[Products].[*CTX_MEMBER_SEL~SUM]}\n"
+            + "{[Customer].[Education Level].[Bachelors Degree], [Product].[Products].[Food]}\n"
+            + "{[Customer].[Education Level].[Bachelors Degree], [Product].[Products].[Non-Consumable]}\n"
+            + "{[Customer].[Education Level].[Graduate Degree], [Product].[Products].[Food]}\n"
             + "Row #0: 73,671\n"
             + "Row #1: 49,365\n"
             + "Row #2: 13,051\n"
@@ -1234,10 +1238,10 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
-            + "{[Education Level].[*CTX_MEMBER_SEL~SUM], [Product].[*CTX_MEMBER_SEL~SUM]}\n"
-            + "{[Education Level].[Bachelors Degree], [Product].[Food]}\n"
-            + "{[Education Level].[Bachelors Degree], [Product].[Non-Consumable]}\n"
-            + "{[Education Level].[Graduate Degree], [Product].[Food]}\n"
+            + "{[Customer].[Education Level].[*CTX_MEMBER_SEL~SUM], [Product].[Products].[*CTX_MEMBER_SEL~SUM]}\n"
+            + "{[Customer].[Education Level].[Bachelors Degree], [Product].[Products].[Food]}\n"
+            + "{[Customer].[Education Level].[Bachelors Degree], [Product].[Products].[Non-Consumable]}\n"
+            + "{[Customer].[Education Level].[Graduate Degree], [Product].[Products].[Food]}\n"
             + "Row #0: 76,661\n"
             + "Row #1: 49,365\n"
             + "Row #2: 13,051\n"
@@ -1247,8 +1251,8 @@ public class TestCalculatedMembers extends BatchTestCase {
 
     /**
      * Test case for
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-335">MONDRIAN-335</a>,
-     * "Issues with calculated members".
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-335">MONDRIAN-335,
+     * "Issues with calculated members"</a>.
      * Verify that the calculated member [Product].[Food].[Test]
      * definition does not throw errors and returns expected
      * results.
@@ -1561,9 +1565,9 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[M0]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Products].[Food], [Store].[USA].[CA]}\n"
-            + "{[Product].[Products].[Food], [Store].[USA].[OR]}\n"
-            + "{[Product].[Products].[Food], [Store].[USA].[WA]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[CA]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[OR]}\n"
+            + "{[Product].[Products].[Food], [Store].[Stores].[USA].[WA]}\n"
             + "Row #0: 217,506\n"
             + "Row #1: 193,104\n"
             + "Row #2: 359,162\n");
@@ -1774,7 +1778,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Store].[USA].[Foo]}\n"
+            + "{[Store].[Stores].[USA].[Foo]}\n"
             + "Row #0: 266,773\n";
         assertQueryReturns(
             "with member [Store].[Stores].[USA].[Foo] as\n"
@@ -1816,8 +1820,8 @@ public class TestCalculatedMembers extends BatchTestCase {
             + " member [Gender].[X].[Y] as 5\n"
             + " select [Gender].[X].[Y] on 0\n"
             + " from [Sales]",
-            "The '[Gender].[Gender].[X]' calculated member cannot be used as a "
-            + "parent of another calculated member.");
+            "The '[Customer].[Gender].[X]' calculated member cannot be used as "
+            + "a parent of another calculated member.");
     }
 
     public void testCalcMemberSameNameDifferentHierarchies() {
@@ -1842,7 +1846,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             + " select [Gender].[M].[X] on 0\n"
             + " from [Sales]",
             "The 'X' calculated member cannot be created because its parent is "
-            + "at the lowest level in the [Gender].[Gender] hierarchy.");
+            + "at the lowest level in the [Customer].[Gender] hierarchy.");
     }
 }
 

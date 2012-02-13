@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2011 Julian Hyde
+// Copyright (C) 2003-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -85,7 +85,7 @@ public abstract class RolapAggregator
             }
 
             public Dialect.Datatype deriveDatatype(
-                Dialect.Datatype[] datatype)
+                List<Dialect.Datatype> parameterDatatypes)
             {
                 return Dialect.Datatype.Integer;
             }
@@ -220,7 +220,7 @@ public abstract class RolapAggregator
             }
 
             public Dialect.Datatype deriveDatatype(
-                Dialect.Datatype[] datatype)
+                List<Dialect.Datatype> parameterDatatypes)
             {
                 return Dialect.Datatype.Integer;
             }
@@ -242,7 +242,7 @@ public abstract class RolapAggregator
      * These aggregators are NOT singletons like the above aggregators; rather,
      * each is different because of the fact count column expression.
      */
-    protected abstract static class BaseAggor extends RolapAggregator {
+    protected static abstract class BaseAggor extends RolapAggregator {
         protected final String factCountExpr;
 
         protected BaseAggor(final String name, final String factCountExpr) {
@@ -410,13 +410,16 @@ public abstract class RolapAggregator
      * <p>The default implementation asserts that there is precisely one
      * argument and returns the type of that argument.
      *
-     * @param datatype Data types of arguments. Each argument's type may be
-     *     null, meaning not known
+     * @param parameterDatatypes Data types of arguments. Each argument's type
+     *                          may be null, meaning not known
+     *
      * @return Data type of call to this aggregator
      */
-    public Dialect.Datatype deriveDatatype(Dialect.Datatype[] datatype) {
-        assert datatype.length == 1;
-        return datatype[0];
+    public Dialect.Datatype deriveDatatype(
+        List<Dialect.Datatype> parameterDatatypes)
+    {
+        assert parameterDatatypes.size() == 1;
+        return parameterDatatypes.get(0);
     }
 }
 

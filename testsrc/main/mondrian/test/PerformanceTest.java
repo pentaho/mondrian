@@ -549,7 +549,7 @@ public class PerformanceTest extends FoodMartTestCase {
             + "1,184,028");
     }
 
-    private static long printDuration(String desc, long t0) {
+    static long printDuration(String desc, long t0) {
         final long t1 = System.currentTimeMillis();
         final long duration = t1 - t0;
         LOGGER.debug(desc + " took " + duration + " millis");

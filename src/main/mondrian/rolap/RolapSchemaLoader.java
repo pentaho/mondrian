@@ -83,6 +83,8 @@ public class RolapSchemaLoader {
      */
     static final String MEASURES_LEVEL_NAME = "MeasuresLevel";
 
+    private static final RoleImpl DUMMY_ROLE = new RoleImpl();
+
     static {
         for (Dialect.Datatype datatype : Dialect.Datatype.values()) {
             DATATYPE_MAP.put(datatype.name(), datatype);
@@ -393,10 +395,46 @@ public class RolapSchemaLoader {
         }
 
         // Create roles.
+        //
+        // Union roles can depend on roles that occur later, so we iterate
+        // until we reach a fixed point.
         Map<String, Role> rolesByName = new LinkedHashMap<String, Role>();
         for (MondrianDef.Role xmlRole : xmlSchema.getRoles()) {
-            final Role role = createRole(xmlRole, rolesByName);
-            rolesByName.put(xmlRole.name, role);
+            if (rolesByName.containsKey(xmlRole.name)) {
+                handler.error(
+                    "Duplicate role '" + xmlRole.name + "'",
+                    xmlRole,
+                    "name");
+                continue;
+            }
+            rolesByName.put(xmlRole.name, DUMMY_ROLE);
+        }
+        for (;;) {
+            final int prevMapSize = rolesByName.size();
+            MondrianDef.Role missed = null;
+            for (MondrianDef.Role xmlRole : xmlSchema.getRoles()) {
+                if (rolesByName.get(xmlRole.name) != DUMMY_ROLE) {
+                    continue;
+                }
+                final Role role = createRole(xmlRole, rolesByName);
+                if (role == DUMMY_ROLE) {
+                    // Dependencies not resolved; cannot make progress.
+                    missed = xmlRole;
+                    continue;
+                }
+                rolesByName.put(xmlRole.name, role);
+            }
+            if (missed == null) {
+                break;
+            }
+            if (rolesByName.size() == prevMapSize) {
+                handler.error(
+                    "Role '" + missed.name + "' has cyclic dependencies on "
+                    + "other roles",
+                    missed,
+                    null);
+                break;
+            }
         }
 
         Role defaultRole = null;
@@ -1444,8 +1482,8 @@ public class RolapSchemaLoader {
         Dialect.Datatype datatype =
             aggregator.deriveDatatype(
                 measureExp == null
-                    ? new Dialect.Datatype[0]
-                    : new Dialect.Datatype[] {measureExp.getDatatype()});
+                    ? Collections.<Dialect.Datatype>emptyList()
+                    : Collections.singletonList(measureExp.getDatatype()));
         final Dialect.Datatype specifiedDatatype;
         if (xmlMeasure.datatype == null) {
             specifiedDatatype = null;
@@ -1507,28 +1545,10 @@ public class RolapSchemaLoader {
         measureGroup.measureList.add(measure);
         validator.putXml(measure, xmlMeasure);
 
-        final String cellFormatterClassName;
-        final Scripts.ScriptDefinition scriptDefinition;
-        final MondrianDef.CellFormatter xmlCellFormatter =
-            xmlMeasure.getCellFormatter();
-        if (xmlCellFormatter != null) {
-            cellFormatterClassName = xmlCellFormatter.className;
-            scriptDefinition = toScriptDef(xmlCellFormatter.script);
-        } else {
-            cellFormatterClassName = xmlMeasure.formatter;
-            scriptDefinition = null;
-        }
-        if (cellFormatterClassName != null || scriptDefinition != null) {
-            try {
-                CellFormatter cellFormatter =
-                    getCellFormatter(
-                        cellFormatterClassName,
-                        scriptDefinition);
-                measure.setFormatter(cellFormatter);
-            } catch (Exception e) {
-                throw MondrianResource.instance().CellFormatterLoadFailed.ex(
-                    cellFormatterClassName, measure.getUniqueName(), e);
-            }
+        CellFormatter cellFormatter =
+            makeCellFormatter(xmlMeasure, measure.getUniqueName());
+        if (cellFormatter != null) {
+            measure.setFormatter(cellFormatter);
         }
 
         // Set member's caption, if present.
@@ -2148,6 +2168,17 @@ public class RolapSchemaLoader {
                     countHierarchies(
                         dimension.getHierarchyList(), attribute) == 0))
             {
+                if (((NamedList<RolapHierarchy>)dimension.getHierarchyList())
+                        .get(xmlAttribute.name) != null)
+                {
+                    handler.error(
+                        "Cannot create hierarchy for attribute '"
+                        + xmlAttribute.name
+                        + "'; dimension already has a hierarchy of that name",
+                        xmlAttribute,
+                        "name");
+                    continue;
+                }
                 // Create attribute hierarchy.
                 final String uniqueName =
                     Util.makeFqName(dimension, xmlAttribute.name);
@@ -2450,28 +2481,6 @@ public class RolapSchemaLoader {
             stringToLevelType(
                 xmlAttribute.levelType);
 
-        MemberFormatter memberFormatter = null;
-        final MondrianDef.MemberFormatter xmlMemberFormatter =
-            xmlAttribute.getMemberFormatter();
-        if (xmlMemberFormatter != null) {
-            final String memberFormatterClassName =
-                xmlMemberFormatter.className;
-            final Scripts.ScriptDefinition scriptDefinition =
-                toScriptDef(xmlMemberFormatter.script);
-            if (memberFormatterClassName != null || scriptDefinition != null) {
-                try {
-                    memberFormatter =
-                        RolapSchemaLoader.getMemberFormatter(
-                            memberFormatterClassName,
-                            scriptDefinition);
-                } catch (Exception e) {
-                    throw MondrianResource.instance().MemberFormatterLoadFailed
-                        .ex(
-                            memberFormatterClassName, xmlAttribute.name, e);
-                }
-            }
-        }
-
         final RolapAttribute attribute =
             new RolapAttribute(
                 xmlAttribute.name,
@@ -2482,7 +2491,7 @@ public class RolapSchemaLoader {
                 nameExpr,
                 captionExpr,
                 orderByList,
-                memberFormatter,
+                makeMemberFormatter(xmlAttribute),
                 xmlAttribute.nullValue,
                 levelType,
                 approxRowCount);
@@ -2685,6 +2694,14 @@ public class RolapSchemaLoader {
         MondrianDef.Column xmlColumn,
         String attributeName)
     {
+        if (relation == null) {
+            getHandler().error(
+                "Table required. No table is specified or inherited when "
+                + "resolving column '" + columnName + "'",
+                xmlColumn,
+                attributeName);
+            return null;
+        }
         final RolapSchema.PhysColumn column =
             relation.getColumn(columnName, false);
         if (column == null) {
@@ -2754,29 +2771,39 @@ public class RolapSchemaLoader {
         // Add defined properties. These are little more than usages of
         // attributes.
         for (MondrianDef.Property xmlProperty : xmlAttribute.getProperties()) {
-            final String name = first(xmlProperty.name, xmlProperty.attribute);
-            final RolapAttribute sourceAttribute =
-                dimension.attributeMap.get(xmlProperty.attribute);
-            if (sourceAttribute == null) {
-                getHandler().error(
-                    "Unknown attribute '" + xmlProperty.attribute + "'",
-                    xmlProperty,
-                    "attribute");
-                continue;
+            final RolapProperty property = createProperty(
+                dimension, attribute, xmlProperty);
+            if (property == null) {
+                return;
             }
-            final RolapProperty property =
-                new RolapProperty(
-                    name,
-                    attribute,
-                    sourceAttribute,
-                    dialectToPropertyDatatype(sourceAttribute.getDatatype()),
-                    makePropertyFormatter(xmlProperty),
-                    xmlProperty.caption,
-                    false,
-                    xmlProperty.description);
             validator.putXml(property, xmlProperty);
             propertyList.add(property);
         }
+    }
+
+    private RolapProperty createProperty(
+        RolapDimension dimension,
+        RolapAttribute attribute,
+        MondrianDef.Property xmlProperty)
+    {
+        RolapAttribute sourceAttribute =
+            dimension.attributeMap.get(xmlProperty.attribute);
+        if (sourceAttribute == null) {
+            handler.error(
+                "Unknown attribute '" + xmlProperty.attribute + "'",
+                xmlProperty,
+                "attribute");
+            return null;
+        }
+        return new RolapProperty(
+            first(xmlProperty.name, xmlProperty.attribute),
+            attribute,
+            sourceAttribute,
+            dialectToPropertyDatatype(sourceAttribute.getDatatype()),
+            makePropertyFormatter(xmlProperty),
+            xmlProperty.caption,
+            false,
+            xmlProperty.description);
     }
 
     private static Property.Datatype dialectToPropertyDatatype(
@@ -2814,20 +2841,72 @@ public class RolapSchemaLoader {
             propertyFormatterClassName = xmlProperty.formatter;
             scriptDefinition = null;
         }
-        if (propertyFormatterClassName != null
-            || scriptDefinition != null)
-        {
-            try {
-                return RolapSchemaLoader.createPropertyFormatter(
-                    propertyFormatterClassName,
-                    scriptDefinition);
-            } catch (Exception e) {
-                throw MondrianResource.instance()
-                    .PropertyFormatterLoadFailed.ex(
-                        propertyFormatterClassName, xmlProperty.name, e);
-            }
-        } else {
+        if (propertyFormatterClassName == null && scriptDefinition == null) {
             return null;
+        }
+        try {
+            return getFormatter(
+                propertyFormatterClassName,
+                PropertyFormatter.class,
+                scriptDefinition);
+        } catch (Exception e) {
+            throw MondrianResource.instance()
+                .PropertyFormatterLoadFailed.ex(
+                    propertyFormatterClassName, xmlProperty.name, e);
+        }
+    }
+
+    private static MemberFormatter makeMemberFormatter(
+        MondrianDef.Attribute xmlAttribute)
+    {
+        final MondrianDef.MemberFormatter xmlMemberFormatter =
+            xmlAttribute.getMemberFormatter();
+        if (xmlMemberFormatter == null) {
+            return null;
+        }
+        final String memberFormatterClassName = xmlMemberFormatter.className;
+        final Scripts.ScriptDefinition scriptDefinition =
+            toScriptDef(xmlMemberFormatter.script);
+        if (memberFormatterClassName == null && scriptDefinition == null) {
+            return null;
+        }
+        try {
+            return getFormatter(
+                memberFormatterClassName,
+                MemberFormatter.class,
+                scriptDefinition);
+        } catch (Exception e) {
+            throw MondrianResource.instance().MemberFormatterLoadFailed
+                .ex(
+                    memberFormatterClassName, xmlAttribute.name, e);
+        }
+    }
+
+    private static CellFormatter makeCellFormatter(
+        MondrianDef.Measure xmlMeasure, String measureUniqueName)
+    {
+        final MondrianDef.CellFormatter xmlCellFormatter =
+            xmlMeasure.getCellFormatter();
+        final String cellFormatterClassName;
+        final Scripts.ScriptDefinition scriptDefinition;
+        if (xmlCellFormatter != null) {
+            cellFormatterClassName = xmlCellFormatter.className;
+            scriptDefinition = toScriptDef(xmlCellFormatter.script);
+        } else {
+            cellFormatterClassName = xmlMeasure.formatter;
+            scriptDefinition = null;
+        }
+        if (cellFormatterClassName == null && scriptDefinition == null) {
+            return null;
+        }
+        try {
+            return getFormatter(
+                cellFormatterClassName,
+                CellFormatter.class,
+                scriptDefinition);
+        } catch (Exception e) {
+            throw MondrianResource.instance().CellFormatterLoadFailed.ex(
+                cellFormatterClassName, measureUniqueName, e);
         }
     }
 
@@ -2914,8 +2993,12 @@ public class RolapSchemaLoader {
                 throw MondrianResource.instance().RoleUnionGrants.ex();
             }
             List<Role> roleList = new ArrayList<Role>();
-            for (MondrianDef.RoleUsage roleUsage : xmlUnion.roleUsages) {
+            for (MondrianDef.RoleUsage roleUsage : xmlUnion.list()) {
                 final Role role = mapNameToRole.get(roleUsage.roleName);
+                if (role == DUMMY_ROLE) {
+                    // dependency not resolved yet
+                    return DUMMY_ROLE;
+                }
                 if (role == null) {
                     throw MondrianResource.instance().UnknownRole.ex(
                         roleUsage.roleName);
@@ -3538,16 +3621,21 @@ public class RolapSchemaLoader {
     }
 
     /**
-     * Given the name of a cell formatter class and/or a cell formatter script,
-     * returns a cell formatter.
+     * Given the name of a formatter class and/or a formatter script,
+     * returns a formatter.
+     *
+     * <p>The formatter is either a MemberFormatter, CellFormatter or
+     * PropertyFormatter.</p>
      *
      * @param className Name of cell formatter class
+     * @param iface Formatter class
      * @param script Script
      * @return Cell formatter
      * @throws Exception if class cannot be instantiated
      */
-    static CellFormatter getCellFormatter(
+    static <T> T getFormatter(
         String className,
+        Class<T> iface,
         Scripts.ScriptDefinition script)
         throws Exception
     {
@@ -3561,77 +3649,18 @@ public class RolapSchemaLoader {
         }
         if (className != null) {
             @SuppressWarnings({"unchecked"})
-            Class<CellFormatter> clazz =
-                (Class<CellFormatter>) Class.forName(className);
-            Constructor<CellFormatter> ctor = clazz.getConstructor();
+            Class<T> clazz = (Class<T>) Class.forName(className);
+            Constructor<T> ctor = clazz.getConstructor();
             return ctor.newInstance();
+        }
+        if (iface == CellFormatter.class) {
+            return iface.cast(Scripts.cellFormatter(script));
+        } else if (iface == MemberFormatter.class) {
+            return iface.cast(Scripts.memberFormatter(script));
+        } else if (iface == PropertyFormatter.class) {
+            return iface.cast(Scripts.propertyFormatter(script));
         } else {
-            return Scripts.cellFormatter(script);
-        }
-    }
-
-    /**
-     * Given the name of a member formatter class, returns a member formatter.
-     *
-     * @param className Name of cell formatter class
-     * @param script Script
-     * @return Member formatter
-     * @throws Exception if class cannot be instantiated
-     */
-    static MemberFormatter getMemberFormatter(
-        String className,
-        Scripts.ScriptDefinition script)
-        throws Exception
-    {
-        if (className == null && script == null) {
-            throw Util.newError(
-                "Must specify either className attribute or Script element");
-        }
-        if (className != null && script != null) {
-            throw Util.newError(
-                "Must not specify both className attribute and Script element");
-        }
-        if (className != null) {
-            @SuppressWarnings({"unchecked"})
-            Class<MemberFormatter> clazz =
-                (Class<MemberFormatter>) Class.forName(className);
-            Constructor<MemberFormatter> ctor = clazz.getConstructor();
-            return ctor.newInstance();
-        } else {
-            return Scripts.memberFormatter(script);
-        }
-    }
-
-    /**
-     * Given the name of a property formatter class, returns a propert
-     * formatter.
-     *
-     * @param className Name of property formatter class
-     * @param script Script
-     * @return Property formatter
-     * @throws Exception if class cannot be instantiated
-     */
-    static PropertyFormatter createPropertyFormatter(
-        String className,
-        Scripts.ScriptDefinition script)
-        throws Exception
-    {
-        if (className == null && script == null) {
-            throw Util.newError(
-                "Must specify either className attribute or Script element");
-        }
-        if (className != null && script != null) {
-            throw Util.newError(
-                "Must not specify both className attribute and Script element");
-        }
-        if (className != null) {
-            @SuppressWarnings({"unchecked"})
-            Class<PropertyFormatter> clazz =
-                (Class<PropertyFormatter>) Class.forName(className);
-            Constructor<PropertyFormatter> ctor = clazz.getConstructor();
-            return ctor.newInstance();
-        } else {
-            return Scripts.propertyFormatter(script);
+            throw new RuntimeException("Unknown class " + iface);
         }
     }
 
