@@ -174,7 +174,7 @@ public class Util extends XOMUtil {
                 final Functor0<Boolean> functor =
                     compatible.compileScript(
                         Functor0.class,
-                        "apply() { return true; }",
+                        "function apply() { return true; }",
                         "JavaScript");
                 b = functor.apply();
             } catch (MondrianException e) {
