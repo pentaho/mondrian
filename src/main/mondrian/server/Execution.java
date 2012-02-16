@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.log4j.MDC;
+
 /**
  * Execution context.
  *
@@ -80,6 +82,8 @@ public class Execution {
     private final long id;
 
     public static final Execution NONE = new Execution(null, 0);
+
+    private Map<String, Object> mdc;
 
     public Execution(Statement statement, long timeoutIntervalMillis) {
         this.id = SEQ.getAndIncrement();
@@ -320,6 +324,29 @@ public class Execution {
                 id,
                 getMdx()));
     }
+
+
+    /**
+     * Copy the current MDC so it can be used later
+     */
+    public void copyMDC() {
+        this.mdc = new HashMap<String, Object>(MDC.getContext());
+    }
+
+    /**
+     * Set the copied mdc into the current MDC. This should be called
+     * any time there will be logging in a thread handled by the
+     * RolapResultShepherd where original MDC needs to be retrieved
+     */
+    public void setContextMap() {
+        if(mdc == null) {
+            return;
+        }
+        Map<String, Object> old = MDC.getContext();
+        old.clear();
+        old.putAll(mdc);
+    }
+
     /**
      * Enumeration of the states of an Execution instance.
      */

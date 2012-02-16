@@ -619,6 +619,7 @@ public class RolapConnection extends ConnectionBase {
      *     the property file
      */
     public Result execute(final Execution execution) {
+        execution.copyMDC();
         return
             server.getResultShepherd()
                 .shepherdExecution(
@@ -631,6 +632,7 @@ public class RolapConnection extends ConnectionBase {
     }
 
     private Result executeInternal(final Execution execution) {
+        execution.setContextMap();
         final Statement statement = execution.getMondrianStatement();
         // Cleanup any previous executions still running
         synchronized (statement) {
