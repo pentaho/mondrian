@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.CacheControl.CellRegion;
 import mondrian.test.*;
 
 import java.io.PrintWriter;
@@ -1107,6 +1108,25 @@ public class CacheControlTest extends FoodMartTestCase {
             + "Crossjoin(Member([Marital Status].[S]), Member([Gender].[M]), Member([Time].[1997].[Q2])), "
             + "Crossjoin(Member([Marital Status].[S]), Member([Gender].[F]), Member([Time].[1997].[Q1])))",
             normalizedRegion.toString());
+    }
+
+    public void testFlushNonPrimedContent() throws Exception {
+        flushCache();
+        final TestContext testContext = getTestContext();
+        final CacheControl cacheControl =
+            testContext.getConnection().getCacheControl(null);
+        final Cube cube =
+            testContext.getConnection()
+                .getSchema().lookupCube("Sales", true);
+        Hierarchy hier =
+            cube.getDimensions()[2].getHierarchies()[0];
+        Member hierMember = hier.getAllMember();
+        CellRegion measuresRegion = cacheControl.createMeasuresRegion(cube);
+        CellRegion hierRegion =
+            cacheControl.createMemberRegion(hierMember, true);
+        CellRegion flushRegion =
+            cacheControl.createCrossjoinRegion(measuresRegion, hierRegion);
+        cacheControl.flush(flushRegion);
     }
 
     // todo: Test flushing a segment which is unconstrained

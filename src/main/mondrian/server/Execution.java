@@ -330,7 +330,9 @@ public class Execution {
      * Copy the current MDC so it can be used later
      */
     public void copyMDC() {
-        this.mdc = new HashMap<String, Object>(MDC.getContext());
+        if (MDC.getContext() != null) {
+            this.mdc = new HashMap<String, Object>(MDC.getContext());
+        }
     }
 
     /**

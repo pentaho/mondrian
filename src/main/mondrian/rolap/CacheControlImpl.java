@@ -452,14 +452,34 @@ public class CacheControlImpl implements CacheControl {
                     final Map<String, Set<Comparable>> levels =
                         new HashMap<String, Set<Comparable>>();
                     for (Member member : region.memberList) {
-                        final String ccName =
-                            ((RolapLevel)member.getLevel())
-                                .getKeyExp().getGenericExpression();
-                        if (!levels.containsKey(ccName)) {
-                            levels.put(ccName, new HashSet<Comparable>());
+                        RolapLevel currentLevel =
+                            ((RolapLevel)member.getLevel());
+                        while (true) {
+                            if (currentLevel == null) {
+                                break;
+                            }
+                            if (currentLevel.isAll()) {
+                                currentLevel =
+                                    (RolapLevel) currentLevel.getChildLevel();
+                                continue;
+                            }
+                            final String ccName =
+                                currentLevel.getKeyExp()
+                                    .getGenericExpression();
+                            if (!levels.containsKey(ccName)) {
+                                levels.put(
+                                    ccName, new HashSet<Comparable>());
+                            }
+                            if (member.getLevel().equals(currentLevel)) {
+                                levels.get(ccName).add(
+                                    (Comparable)((RolapMember)member).getKey());
+                            } else {
+                                levels.get(ccName).clear();
+                                levels.get(ccName).add(true);
+                            }
+                            currentLevel =
+                                (RolapLevel) currentLevel.getChildLevel();
                         }
-                        levels.get(ccName).add(
-                            (Comparable)((RolapMember)member).getKey());
                     }
                     for (Entry<String, Set<Comparable>> entry
                         : levels.entrySet())
