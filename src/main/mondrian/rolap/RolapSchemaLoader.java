@@ -365,7 +365,7 @@ public class RolapSchemaLoader {
             if (xmlCube.enabled == null || xmlCube.enabled) {
                 RolapCube cube =
                     new RolapCube(
-                        schema,
+                        this,
                         xmlCube.name,
                         toBoolean(xmlCube.visible, true),
                         xmlCube.caption,
@@ -3158,7 +3158,7 @@ public class RolapSchemaLoader {
                 MondrianDef.Cube xmlCube = new MondrianDef.Cube(def);
                 cube =
                     new RolapCube(
-                        schema,
+                        this,
                         xmlCube.name,
                         toBoolean(xmlCube.visible, true),
                         xmlCube.caption,
@@ -4175,7 +4175,7 @@ public class RolapSchemaLoader {
     }
 
     static class RolapSchemaValidatorImpl implements RolapSchemaValidator {
-        private static final Map<Object, NodeDef> map =
+        private final Map<Object, NodeDef> map =
             new IdentityHashMap<Object, NodeDef>();
 
         public <T extends NodeDef> T getXml(Object o) {

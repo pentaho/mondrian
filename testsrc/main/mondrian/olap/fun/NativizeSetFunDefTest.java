@@ -36,13 +36,6 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             MondrianProperties.instance().ReadAggregates, false);
         propSaver.set(
             MondrianProperties.instance().EnableNativeCrossJoin, true);
-        // SSAS-compatible naming causes <dimension>.<level>.members to be
-        // interpreted as <dimension>.<hierarchy>.members, and that happens a
-        // lot in this test. There is little to be gained by having this test
-        // run for both values. When SSAS-compatible naming is the standard, we
-        // should upgrade all the MDX.
-        propSaver.set(
-            MondrianProperties.instance().SsasCompatibleNaming, false);
     }
 
     public void tearDown() throws Exception {
@@ -1052,7 +1045,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         assertQueryIsReWritten(
             "SELECT NativizeSet({Gender.M,Gender.F}) on 0 from sales",
             "select "
-            + "NativizeSet({[Gender].[M], [Gender].[F]}) "
+            + "NativizeSet({[Customer].[Gender].[M], [Customer].[Gender].[F]}) "
             + "ON COLUMNS\n"
             + "from [Sales]\n");
     }
@@ -1064,7 +1057,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
         assertQueryIsReWritten(
             "select NativizeSet({[Marital Status].[Marital Status].members}) "
             + "on 0 from sales",
-            "select NativizeSet({[Marital Status].[Marital Status].Members}) "
+            "select NativizeSet({[Customer].[Marital Status].[Marital Status].Members}) "
             + "ON COLUMNS\n"
             + "from [Sales]\n");
     }
@@ -1074,15 +1067,12 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             MondrianProperties.instance().EnableNonEmptyOnAllAxis, false);
 
         assertQueryIsReWritten(
-            "select NativizeSet(CrossJoin({Gender.M,Gender.F},{[Marital Status].[Marital Status].members})) "
-            + "on 0 from sales",
-            "with member [Marital Status].[_Nativized_Member_Marital Status_Marital Status_] as '[Marital Status].DefaultMember'\n"
-            + "  set [_Nativized_Set_Marital Status_Marital Status_] as "
-            + "'{[Marital Status].[_Nativized_Member_Marital Status_Marital Status_]}'\n"
-            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010'\n"
-            + "  member [Marital Status].[_Nativized_Sentinel_Marital Status_(All)_] as '101010'\n"
-            + "select NativizeSet(Crossjoin({[Gender].[M], [Gender].[F]}, "
-            + "{[_Nativized_Set_Marital Status_Marital Status_]})) ON COLUMNS\n"
+            "select NativizeSet(CrossJoin({Gender.M,Gender.F},{[Marital Status].[Marital Status].members})) on 0 from sales",
+            "with member [Customer].[Marital Status].[_Nativized_Member_Customer_Marital Status_Marital Status_] as '[Customer].[Marital Status].DefaultMember'\n"
+            + "  set [_Nativized_Set_Customer_Marital Status_Marital Status_] as '{[Customer].[Marital Status].[_Nativized_Member_Customer_Marital Status_Marital Status_]}'\n"
+            + "  member [Customer].[Gender].[_Nativized_Sentinel_Customer_Gender_(All)_] as '101010'\n"
+            + "  member [Customer].[Marital Status].[_Nativized_Sentinel_Customer_Marital Status_(All)_] as '101010'\n"
+            + "select NativizeSet(Crossjoin({[Customer].[Gender].[M], [Customer].[Gender].[F]}, {[_Nativized_Set_Customer_Marital Status_Marital Status_]})) ON COLUMNS\n"
             + "from [Sales]\n");
     }
 
@@ -1169,8 +1159,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
     }
 
     public void testMultipleHierarchySsasTrue() {
-        propSaver.set(
-            MondrianProperties.instance().SsasCompatibleNaming, true);
+        assertTrue(MondrianProperties.instance().SsasCompatibleNaming.get());
         propSaver.set(
             MondrianProperties.instance().EnableNonEmptyOnAllAxis, false);
 
@@ -1183,27 +1172,9 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "from sales",
             "with member [Time].[Weekly].[_Nativized_Member_Time_Weekly_Week_] as '[Time].[Weekly].DefaultMember'\n"
             + "  set [_Nativized_Set_Time_Weekly_Week_] as '{[Time].[Weekly].[_Nativized_Member_Time_Weekly_Week_]}'\n"
-            + "  member [Time].[_Nativized_Sentinel_Time_Year_] as '101010'\n"
-            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010'\n"
-            + "select NativizeSet(Crossjoin([_Nativized_Set_Time_Weekly_Week_], {[Gender].[M]})) ON COLUMNS\n"
-            + "from [Sales]\n");
-    }
-
-    public void testMultipleHierarchySsasFalse() {
-        propSaver.set(
-            MondrianProperties.instance().SsasCompatibleNaming, false);
-        propSaver.set(
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis, false);
-
-        // Ssas compatible: [time.weekly].week
-        assertQueryIsReWritten(
-            "select nativizeSet(crossjoin( [time.weekly].week.members, { gender.m })) on 0 "
-            + "from sales",
-            "with member [Time].[_Nativized_Member_Time_Weekly_Week_] as '[Time].DefaultMember'\n"
-            + "  set [_Nativized_Set_Time_Weekly_Week_] as '{[Time].[_Nativized_Member_Time_Weekly_Week_]}'\n"
-            + "  member [Time].[_Nativized_Sentinel_Time_Year_] as '101010'\n"
-            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010'\n"
-            + "select NativizeSet(Crossjoin([_Nativized_Set_Time_Weekly_Week_], {[Gender].[M]})) ON COLUMNS\n"
+            + "  member [Time].[Weekly].[_Nativized_Sentinel_Time_Weekly_(All)_] as '101010'\n"
+            + "  member [Customer].[Gender].[_Nativized_Sentinel_Customer_Gender_(All)_] as '101010'\n"
+            + "select NativizeSet(Crossjoin([_Nativized_Set_Time_Weekly_Week_], {[Customer].[Gender].[M]})) ON COLUMNS\n"
             + "from [Sales]\n");
     }
 
@@ -1223,7 +1194,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "SET\n"
             + "\t[COG_OQP_INT_s8] AS 'CROSSJOIN({[Store Type].[Store Type].MEMBERS}, [COG_OQP_INT_s7])' \n"
             + "SET\n"
-            + "\t[COG_OQP_INT_s7] AS 'CROSSJOIN({[Promotions].[Promotions].MEMBERS}, "
+            + "\t[COG_OQP_INT_s7] AS 'CROSSJOIN({[Promotion].[Promotions].MEMBERS}, "
             + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Pearl].[Pearl Imported Beer]})' \n"
             + "SET\n"
             + "\t[COG_OQP_INT_s6] AS 'CROSSJOIN({[Store Type].[COG_OQP_INT_umg1]}, [COG_OQP_INT_s1])' \n"
@@ -1263,11 +1234,10 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "TopCount({[Marital Status].[Marital Status].members},1,[Measures].[Unit Sales]))"
             + " ) on 0,"
             + "{[Measures].[Unit Sales]} on 1 FROM [Sales]",
-            "with member [Gender].[_Nativized_Member_Gender_Gender_] as '[Gender].DefaultMember'\n"
-            + "  set [_Nativized_Set_Gender_Gender_] as '{[Gender].[_Nativized_Member_Gender_Gender_]}'\n"
-            + "  member [Gender].[_Nativized_Sentinel_Gender_(All)_] as '101010'\n"
-            + "select NON EMPTY NativizeSet(Crossjoin([_Nativized_Set_Gender_Gender_], "
-            + "TopCount({[Marital Status].[Marital Status].Members}, 1, [Measures].[Unit Sales]))) ON COLUMNS,\n"
+            "with member [Customer].[Gender].[_Nativized_Member_Customer_Gender_Gender_] as '[Customer].[Gender].DefaultMember'\n"
+            + "  set [_Nativized_Set_Customer_Gender_Gender_] as '{[Customer].[Gender].[_Nativized_Member_Customer_Gender_Gender_]}'\n"
+            + "  member [Customer].[Gender].[_Nativized_Sentinel_Customer_Gender_(All)_] as '101010'\n"
+            + "select NON EMPTY NativizeSet(Crossjoin([_Nativized_Set_Customer_Gender_Gender_], TopCount({[Customer].[Marital Status].[Marital Status].Members}, 1, [Measures].[Unit Sales]))) ON COLUMNS,\n"
             + "  NON EMPTY {[Measures].[Unit Sales]} ON ROWS\n"
             + "from [Sales]\n");
     }
@@ -1315,7 +1285,7 @@ public class NativizeSetFunDefTest extends BatchTestCase {
             + "  Nativizeset"
             + "  ("
             + "    {"
-            + "      [Store].Levels(0).MEMBERS"
+            + "      [Stores].Levels(0).MEMBERS"
             + "    }"
             + "  ) ON COLUMNS"
             + " FROM [Sales]";

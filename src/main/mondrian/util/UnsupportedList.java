@@ -3,11 +3,13 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.util;
+
+import mondrian.olap.Util;
 
 import org.apache.log4j.Logger;
 
@@ -56,8 +58,7 @@ public abstract class UnsupportedList<T> implements List<T> {
     }
 
     public Object[] toArray() {
-        throw new UnsupportedOperationException(
-            getClass().getName() + ".toArray");
+        return toArray(new Object[size()]);
     }
 
     public void add(int index, T element) {
@@ -91,8 +92,17 @@ public abstract class UnsupportedList<T> implements List<T> {
     }
 
     public <T> T[] toArray(T[] a) {
-        throw new UnsupportedOperationException(
-            getClass().getName() + ".toArray");
+        int size = size();
+        if (a.length < size) {
+            a = Util.copyOf(a, size);
+        }
+        for (int i = 0; i < a.length; i++) {
+            a[i] = (T) get(i);
+        }
+        if (a.length > size) {
+            a[size] = null;
+        }
+        return a;
     }
 
     public boolean add(T o) {

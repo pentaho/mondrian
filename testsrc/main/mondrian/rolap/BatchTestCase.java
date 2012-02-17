@@ -43,34 +43,37 @@ public class BatchTestCase extends FoodMartTestCase {
     public BatchTestCase() {
     }
 
-    protected final String tableTime = "time_by_day";
-    protected final String tableProductClass = "product_class";
-    protected final String tableCustomer = "customer";
-    protected final String fieldYear = "the_year";
-    protected final String fieldProductFamily = "product_family";
-    protected final String fieldProductDepartment = "product_department";
-    protected final String[] fieldValuesYear = {"1997"};
-    protected final String[] fieldValuesProductFamily = {
+    protected static final String tableTime = "time_by_day";
+    protected static final String tableProductClass = "product_class";
+    protected static final String tableCustomer = "customer";
+    protected static final String fieldYear = "the_year";
+    protected static final String fieldProductFamily = "product_family";
+    protected static final String fieldProductDepartment = "product_department";
+    protected static final String[] fieldValuesYear = {"1997"};
+    protected static final String[] fieldValuesProductFamily = {
         "Food", "Non-Consumable", "Drink"
     };
-    protected final String[] fieldValueProductDepartment = {
+    protected static final String[] fieldValueProductDepartment = {
         "Alcoholic Beverages", "Baked Goods", "Baking Goods",
-         "Beverages", "Breakfast Foods", "Canned Foods",
+        "Beverages", "Breakfast Foods", "Canned Foods",
         "Canned Products", "Carousel", "Checkout", "Dairy",
         "Deli", "Eggs", "Frozen Foods", "Health and Hygiene",
         "Household", "Meat", "Packaged Foods", "Periodicals",
         "Produce", "Seafood", "Snack Foods", "Snacks",
         "Starchy Foods"
     };
-    protected final String[] fieldValuesGender = {"M", "F"};
-    protected final String cubeNameSales = "Sales";
-    protected final String measureUnitSales = "[Measures].[Unit Sales]";
-    protected String fieldGender = "gender";
+    protected static final String[] fieldValuesGender = {"M", "F"};
+    protected static final String cubeNameSales = "Sales";
+    protected static final String measureUnitSales = "[Measures].[Unit Sales]";
+    protected static String fieldGender = "gender";
 
     protected BatchLoader.Batch createBatch(
         BatchLoader fbcr,
-        String[] tableNames, String[] fieldNames, String[][] fieldValues,
-        String cubeName, String measure)
+        String[] tableNames,
+        String[] fieldNames,
+        String[][] fieldValues,
+        String cubeName,
+        String measure)
     {
         List<String> values = new ArrayList<String>();
         for (int i = 0; i < tableNames.length; i++) {
@@ -536,22 +539,23 @@ public class BatchTestCase extends FoodMartTestCase {
         // for the first time. (TODO: Cleaner way to do this.)
         final Cube salesCube =
             getConnection().getSchema().lookupCube("Sales", true);
-        RolapHierarchy hierarchy =
-            (RolapHierarchy) salesCube.lookupHierarchy(
+        RolapCubeHierarchy hierarchy =
+            (RolapCubeHierarchy) salesCube.lookupHierarchy(
                 new Id.Segment("Stores", Id.Quoting.UNQUOTED),
                 false);
         if (hierarchy == null) {
             // In legacy schema, hierarchy is called "Store".
             hierarchy =
-                (RolapHierarchy) salesCube.lookupHierarchy(
+                (RolapCubeHierarchy) salesCube.lookupHierarchy(
                     new Id.Segment("Store", Id.Quoting.UNQUOTED),
                     false);
         }
-        SmartMemberReader memberReader =
-            (SmartMemberReader) hierarchy.getMemberReader();
-        MemberCacheHelper cacheHelper = memberReader.cacheHelper;
-        cacheHelper.mapLevelToMembers.cache.clear();
-        cacheHelper.mapMemberToChildren.cache.clear();
+        if (hierarchy.getMemberReader() instanceof SmartMemberReader) {
+            clear((SmartMemberReader) hierarchy.getMemberReader());
+        }
+        clear(
+            (SmartMemberReader)
+            hierarchy.getRolapHierarchy().getMemberReader());
 
         // Flush the cache, to ensure that the query gets executed.
         for (RolapStar star : cube.getStars()) {
@@ -562,6 +566,12 @@ public class BatchTestCase extends FoodMartTestCase {
         final CacheControl.CellRegion measuresRegion =
             cacheControl.createMeasuresRegion(cube);
         cacheControl.flush(measuresRegion);
+    }
+
+    private void clear(SmartMemberReader memberReader) {
+        MemberCacheHelper cacheHelper = memberReader.cacheHelper;
+        cacheHelper.mapLevelToMembers.cache.clear();
+        cacheHelper.mapMemberToChildren.cache.clear();
     }
 
     private static String replaceQuotes(String s) {
@@ -977,10 +987,7 @@ public class BatchTestCase extends FoodMartTestCase {
         final Connection con;
 
         public LimitedQuery(int resultLimit, int rowCount, String query) {
-            this.con = getConnection();
-            this.resultLimit = resultLimit;
-            this.rowCount = rowCount;
-            this.query = query;
+            this(getConnection(), resultLimit, rowCount, query);
         }
 
         public LimitedQuery(
@@ -993,7 +1000,7 @@ public class BatchTestCase extends FoodMartTestCase {
         }
 
         protected Result run() {
-            getConnection().getCacheControl(null).flushSchemaCache();
+            con.getCacheControl(null).flushSchemaCache();
             IntegerProperty monLimit =
                 MondrianProperties.instance().ResultLimit;
             int oldLimit = monLimit.get();

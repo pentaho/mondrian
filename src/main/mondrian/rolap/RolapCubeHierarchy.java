@@ -962,6 +962,9 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 throw new RuntimeException(member.toString());
             }
 
+            if (member instanceof RolapCubeMember) {
+                return (RolapCubeMember) member;
+            }
             if (member instanceof RolapStoredMeasure) {
                 RolapStoredMeasure storedMeasure = (RolapStoredMeasure) member;
                 return new RolapCubeStoredMeasure(parent, storedMeasure, level);

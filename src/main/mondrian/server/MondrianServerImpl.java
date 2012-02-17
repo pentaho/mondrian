@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import org.olap4j.OlapConnection;
 
+import java.lang.ref.WeakReference;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,10 +71,16 @@ class MondrianServerImpl
     /**
      * Map of open statements, by id. Statements are added just after
      * construction, and are removed when they call close. Garbage collection
-     * may cause a connection to be removed earlier.
+     * may cause references to become null.
+     *
+     * <p>The main reason that the keys are {@link WeakReference}s is for
+     * connections' internal statements. The internal statement references the
+     * connection. We did not want to prevent the connections from being garbage
+     * collected if the only reference to them was their own internal
+     * statement.</p>
      */
-    private final Map<Long, Statement> statementMap =
-        new WeakHashMap<Long, Statement>();
+    private final Map<Long, WeakReference<Statement>> statementMap =
+        new HashMap<Long, WeakReference<Statement>>();
 
     private final MonitorImpl monitor = new MonitorImpl();
 
@@ -342,7 +349,7 @@ class MondrianServerImpl
         }
         statementMap.put(
             statement.getId(),
-            statement);
+            new WeakReference<Statement>(statement));
         final RolapConnection connection =
             statement.getMondrianConnection();
         monitor.sendEvent(

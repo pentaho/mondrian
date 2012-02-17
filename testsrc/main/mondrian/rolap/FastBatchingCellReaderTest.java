@@ -102,8 +102,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Time].[Time].[1997], [Product].[Drink], [Education Level].[*CTX_MEMBER_SEL~SUM]}\n"
-            + "{[Time].[Time].[1997], [Product].[Drink], [Education Level].[Bachelors Degree]}\n"
+            + "{[Time].[Time].[1997], [Product].[Products].[Drink], [Customer].[Education Level].[*CTX_MEMBER_SEL~SUM]}\n"
+            + "{[Time].[Time].[1997], [Product].[Products].[Drink], [Customer].[Education Level].[Bachelors Degree]}\n"
             + "Row #0: 6,423\n"
             + "Row #1: 6,423\n");
     }
@@ -1276,7 +1276,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "from [Warehouse2]";
 
         TestContext testContext =
-            TestContext.instance().create(
+            TestContext.instance().legacy().create(
                 null,
                 cube,
                 null,
@@ -1295,12 +1295,12 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             + "{[Measures].[Count All Store+Warehouse]}\n"
             + "{[Measures].[Store Count]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Store Type].[Deluxe Supermarket]}\n"
-            + "{[Store].[Store Type].[Gourmet Supermarket]}\n"
-            + "{[Store].[Store Type].[HeadQuarters]}\n"
-            + "{[Store].[Store Type].[Mid-Size Grocery]}\n"
-            + "{[Store].[Store Type].[Small Grocery]}\n"
-            + "{[Store].[Store Type].[Supermarket]}\n"
+            + "{[Store Type].[Deluxe Supermarket]}\n"
+            + "{[Store Type].[Gourmet Supermarket]}\n"
+            + "{[Store Type].[HeadQuarters]}\n"
+            + "{[Store Type].[Mid-Size Grocery]}\n"
+            + "{[Store Type].[Small Grocery]}\n"
+            + "{[Store Type].[Supermarket]}\n"
             + "Row #0: 1\n"
             + "Row #0: 0\n"
             + "Row #0: 0\n"

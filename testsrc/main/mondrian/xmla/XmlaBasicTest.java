@@ -968,6 +968,9 @@ public class XmlaBasicTest extends XmlaBaseTestCase {
             MondrianProperties.instance().EnableRolapCubeMemberCache,
             false);
         doTest(requestType, props, getTestContext());
+        propSaver.set(
+            MondrianProperties.instance().EnableRolapCubeMemberCache,
+            true);
     }
 
     public void doTestRT(String requestType, TestContext testContext)

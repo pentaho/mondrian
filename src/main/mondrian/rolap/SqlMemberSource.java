@@ -99,6 +99,10 @@ class SqlMemberSource
         if (level.isAll()) {
             return 1;
         }
+        if (level.isMeasure()) {
+            return level.getHierarchy().getMemberReader()
+                .getMembersInLevel(level, 0, Integer.MAX_VALUE).size();
+        }
         return getMemberCount(level, dataSource);
     }
 

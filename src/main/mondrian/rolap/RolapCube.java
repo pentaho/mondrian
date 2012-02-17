@@ -93,7 +93,7 @@ public class RolapCube extends CubeBase {
     /**
      * Creates a <code>RolapCube</code> from a regular cube.
      *
-     * @param schema Schema cube belongs to
+     * @param schemaLoader Schema loader
      * @param name Name of cube
      * @param caption Caption of cube
      * @param description Description of cube
@@ -101,7 +101,7 @@ public class RolapCube extends CubeBase {
      * @param measuresCaption Caption for measures dimension
      */
     RolapCube(
-        RolapSchema schema,
+        RolapSchemaLoader schemaLoader,
         final String name,
         boolean visible,
         final String caption,
@@ -114,9 +114,7 @@ public class RolapCube extends CubeBase {
         assert annotationMap != null;
         this.annotationMap = annotationMap;
         this.caption = caption;
-        this.schema = schema;
-
-        final RolapSchemaLoader schemaLoader = new RolapSchemaLoader(schema);
+        this.schema = schemaLoader.schema;
 
         RolapDimension measuresDimension =
             new RolapDimension(
