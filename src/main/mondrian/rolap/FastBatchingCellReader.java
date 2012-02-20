@@ -806,7 +806,8 @@ class BatchLoader {
         private final Dialect dialect;
         private final RolapCube cube;
         private final List<CellRequest> cellRequests;
-        private final Map<String, Object> mdc;
+        private final Map<String, Object> mdc =
+            new HashMap<String, Object>();
 
         public LoadBatchCommand(
             Locus locus,
@@ -820,17 +821,14 @@ class BatchLoader {
             this.dialect = dialect;
             this.cube = cube;
             this.cellRequests = cellRequests;
-            this.mdc = new HashMap<String, Object>();
-            if(MDC.getContext() == null) {
-                return;
-            } else {
+            if(MDC.getContext() != null) {
                 this.mdc.putAll(MDC.getContext());
             }
         }
 
         public LoadBatchResponse call() {
-            if(mdc != null && MDC.getContext() != null) {
-                Map<String, Object> old = MDC.getContext();
+            if(MDC.getContext() != null) {
+                final Map<String, Object> old = MDC.getContext();
                 old.clear();
                 old.putAll(mdc);
             }

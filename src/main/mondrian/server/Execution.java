@@ -83,7 +83,8 @@ public class Execution {
 
     public static final Execution NONE = new Execution(null, 0);
 
-    private Map<String, Object> mdc = null;
+    private final Map<String, Object> mdc =
+        new HashMap<String, Object>();
 
     public Execution(Statement statement, long timeoutIntervalMillis) {
         this.id = SEQ.getAndIncrement();
@@ -95,11 +96,11 @@ public class Execution {
      * Copy the current MDC so it can be used later
      */
     public void copyMDC() {
-        this.mdc = new HashMap<String, Object>();
-        if(MDC.getContext() == null) {
-            return;
-        } else {
-            this.mdc.putAll(MDC.getContext());
+        this.mdc.clear();
+        final Map<String, Object> currentMdc =
+            MDC.getContext();
+        if(currentMdc != null) {
+            this.mdc.putAll(currentMdc);
         }
     }
 
@@ -109,12 +110,11 @@ public class Execution {
      * RolapResultShepherd where original MDC needs to be retrieved
      */
     public void setContextMap() {
-        if(mdc == null) {
-            return;
+        final Map<String, Object> old = MDC.getContext();
+        if (old != null) {
+            old.clear();
+            old.putAll(mdc);
         }
-        Map<String, Object> old = MDC.getContext();
-        old.clear();
-        old.putAll(mdc);
     }
 
     /**
