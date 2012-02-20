@@ -704,7 +704,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         for (SegmentColumn column : columnList) {
             // For each value, which equivalence class it belongs to.
             final SortedMap<Comparable, BitSet> valueMap =
-                new TreeMap<Comparable, BitSet>();
+                new TreeMap<Comparable, BitSet>(RolapUtil.ROLAP_COMPARATOR);
 
             int h = -1;
             for (SegmentHeader header : Pair.leftIter(matchingHeaders)) {
