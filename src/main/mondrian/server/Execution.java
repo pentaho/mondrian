@@ -83,12 +83,38 @@ public class Execution {
 
     public static final Execution NONE = new Execution(null, 0);
 
-    private Map<String, Object> mdc;
+    private Map<String, Object> mdc = null;
 
     public Execution(Statement statement, long timeoutIntervalMillis) {
         this.id = SEQ.getAndIncrement();
         this.statement = (StatementImpl) statement;
         this.timeoutIntervalMillis = timeoutIntervalMillis;
+    }
+
+    /**
+     * Copy the current MDC so it can be used later
+     */
+    public void copyMDC() {
+        this.mdc = new HashMap<String, Object>();
+        if(MDC.getContext() == null) {
+            return;
+        } else {
+            this.mdc.putAll(MDC.getContext());
+        }
+    }
+
+    /**
+     * Set the copied mdc into the current MDC. This should be called
+     * any time there will be logging in a thread handled by the
+     * RolapResultShepherd where original MDC needs to be retrieved
+     */
+    public void setContextMap() {
+        if(mdc == null) {
+            return;
+        }
+        Map<String, Object> old = MDC.getContext();
+        old.clear();
+        old.putAll(mdc);
     }
 
     /**
@@ -323,30 +349,6 @@ public class Execution {
                 statement.getId(),
                 id,
                 getMdx()));
-    }
-
-
-    /**
-     * Copy the current MDC so it can be used later
-     */
-    public void copyMDC() {
-        if (MDC.getContext() != null) {
-            this.mdc = new HashMap<String, Object>(MDC.getContext());
-        }
-    }
-
-    /**
-     * Set the copied mdc into the current MDC. This should be called
-     * any time there will be logging in a thread handled by the
-     * RolapResultShepherd where original MDC needs to be retrieved
-     */
-    public void setContextMap() {
-        if(mdc == null) {
-            return;
-        }
-        Map<String, Object> old = MDC.getContext();
-        old.clear();
-        old.putAll(mdc);
     }
 
     /**

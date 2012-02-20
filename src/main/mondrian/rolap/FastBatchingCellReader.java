@@ -21,6 +21,7 @@ import mondrian.spi.*;
 import mondrian.util.*;
 
 import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
 
 import java.util.*;
 import java.util.concurrent.Future;
@@ -805,6 +806,7 @@ class BatchLoader {
         private final Dialect dialect;
         private final RolapCube cube;
         private final List<CellRequest> cellRequests;
+        private final Map<String, Object> mdc;
 
         public LoadBatchCommand(
             Locus locus,
@@ -818,9 +820,20 @@ class BatchLoader {
             this.dialect = dialect;
             this.cube = cube;
             this.cellRequests = cellRequests;
+            this.mdc = new HashMap<String, Object>();
+            if(MDC.getContext() == null) {
+                return;
+            } else {
+                this.mdc.putAll(MDC.getContext());
+            }
         }
 
         public LoadBatchResponse call() {
+            if(mdc != null && MDC.getContext() != null) {
+                Map<String, Object> old = MDC.getContext();
+                old.clear();
+                old.putAll(mdc);
+            }
             return new BatchLoader(locus, cacheMgr, dialect, cube)
                 .load(cellRequests);
         }
