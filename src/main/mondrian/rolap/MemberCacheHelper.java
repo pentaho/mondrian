@@ -11,6 +11,7 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Level;
 import mondrian.olap.Util;
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
@@ -164,6 +165,10 @@ public class MemberCacheHelper implements MemberCache {
         mapMemberToChildren.clear();
         mapKeyToMember.clear();
         mapLevelToMembers.clear();
+        // We also need to clear the approxRowCount of each level.
+        for (Level level : rolapHierarchy.getLevels()) {
+            ((RolapLevel)level).setApproxRowCount(Integer.MIN_VALUE);
+        }
     }
 
     public DataSourceChangeListener getChangeListener() {

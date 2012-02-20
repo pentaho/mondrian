@@ -1434,11 +1434,36 @@ public class SegmentCacheManager {
 
             // Is there a pending segment? (A segment that has been created and
             // is loading via SQL.)
-            for (SegmentHeader header : headers) {
+            for (final SegmentHeader header : headers) {
                 final Future<SegmentBody> bodyFuture =
                     indexRegistry.getIndex(star)
                         .getFuture(header);
                 if (bodyFuture != null) {
+                    // Check if the DataSourceChangeListener wants us to clear
+                    // the current segment
+                    if (star.getChangeListener() != null
+                        && star.getChangeListener().isAggregationChanged(key))
+                    {
+                        /*
+                         * We can't satisfy this request, and we must clear the
+                         * data from our cache. We clear it from the index
+                         * first, then queue up a job in the background
+                         * to remove the data from all the caches.
+                         */
+                        indexRegistry.getIndex(star).remove(header);
+                        Util.discard(cacheExecutor.submit(
+                            new Runnable() {
+                                public void run() {
+                                    try {
+                                        compositeCache.remove(header);
+                                    } catch (Throwable e) {
+                                        LOGGER.warn(
+                                            "remove header failed: " + header,
+                                            e);
+                                    }
+                                }
+                            }));
+                    }
                     converterMap.put(
                         SegmentCacheIndexImpl.makeConverterKey(header),
                         getConverter(star, header));
