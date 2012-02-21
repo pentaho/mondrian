@@ -1210,7 +1210,7 @@ List<Exp> returnItemList() :
         i = returnItem() {
             list.add(i);
         }
-    )
+    )*
     {
         return list;
     }

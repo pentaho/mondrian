@@ -80,6 +80,10 @@ public class DrillThrough extends QueryPart {
     public int getFirstRowOrdinal() {
         return firstRowOrdinal;
     }
+
+    public List<Exp> getReturnList() {
+        return returnList;
+    }
 }
 
 // End DrillThrough.java

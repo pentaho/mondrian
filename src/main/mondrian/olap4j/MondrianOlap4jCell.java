@@ -9,6 +9,8 @@
 */
 package mondrian.olap4j;
 
+import mondrian.olap.Exp;
+import mondrian.olap.Util;
 import mondrian.rolap.RolapCell;
 import mondrian.rolap.SqlStatement;
 
@@ -19,6 +21,7 @@ import org.olap4j.metadata.Property;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -118,7 +121,13 @@ class MondrianOlap4jCell implements Cell {
     }
 
     public ResultSet drillThrough() throws OlapException {
-        return drillThroughInternal(-1, -1, null, false, null, null);
+        return drillThroughInternal(
+            -1,
+            -1,
+            new ArrayList<Exp>(),
+            false,
+            null,
+            null);
     }
 
     /**
@@ -130,7 +139,8 @@ class MondrianOlap4jCell implements Cell {
      * @param maxRowCount Maximum number of rows to retrieve, <= 0 if unlimited
      * @param firstRowOrdinal Ordinal of row to skip to (1-based), or 0 to
      *   start from beginning
-     * @param tabFields Comma-separated list of fields to return (deprecated)
+     * @param fields            List of fields to return, expressed as MDX
+     *                          expressions.
      * @param extendedContext   If true, add non-constraining columns to the
      *                          query for levels below each current member.
      *                          This additional context makes the drill-through
@@ -143,7 +153,7 @@ class MondrianOlap4jCell implements Cell {
     ResultSet drillThroughInternal(
         int maxRowCount,
         int firstRowOrdinal,
-        String tabFields,
+        List<Exp> fields,
         boolean extendedContext,
         Logger logger,
         int[] rowCountSlot)
@@ -157,7 +167,7 @@ class MondrianOlap4jCell implements Cell {
         }
         final SqlStatement sqlStmt =
             cell.drillThroughInternal(
-                maxRowCount, firstRowOrdinal, tabFields, extendedContext,
+                maxRowCount, firstRowOrdinal, fields, extendedContext,
                 logger);
         return sqlStmt.getWrappedResultSet();
     }

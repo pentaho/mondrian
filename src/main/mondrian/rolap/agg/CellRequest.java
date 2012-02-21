@@ -24,7 +24,7 @@ import java.util.*;
  * @since 21 March, 2002
  * @version $Id$
  */
-public final class CellRequest {
+public class CellRequest {
     private final RolapStar.Measure measure;
     public final boolean extendedContext;
     public final boolean drillThrough;

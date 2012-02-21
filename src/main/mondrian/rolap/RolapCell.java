@@ -92,7 +92,17 @@ public class RolapCell implements Cell {
         return (ci.value instanceof Throwable);
     }
 
-    public String getDrillThroughSQL(boolean extendedContext) {
+    public String getDrillThroughSQL(
+        boolean extendedContext)
+    {
+        return getDrillThroughSQL(
+            new ArrayList<Exp>(), extendedContext);
+    }
+
+    public String getDrillThroughSQL(
+        List<Exp> fields,
+        boolean extendedContext)
+    {
         final Member[] currentMembers = getMembersForDrillThrough();
         // Create a StarPredicate to represent the compound slicer
         // (if necessary)
@@ -103,9 +113,10 @@ public class RolapCell implements Cell {
             buildDrillthroughSlicerPredicate(
                 currentMembers,
                 result.getSlicerAxis());
-        CellRequest cellRequest =
+        DrillThroughCellRequest cellRequest =
             RolapAggregationManager.makeDrillThroughRequest(
-                currentMembers, extendedContext, result.getCube());
+                currentMembers, extendedContext, result.getCube(),
+                fields);
         if (cellRequest == null) {
             return null;
         }
@@ -117,6 +128,7 @@ public class RolapCell implements Cell {
         return aggMgr.getDrillThroughSql(
             cellRequest,
             starPredicateSlicer,
+            fields,
             false);
     }
 
@@ -131,9 +143,9 @@ public class RolapCell implements Cell {
             buildDrillthroughSlicerPredicate(
                 currentMembers,
                 result.getSlicerAxis());
-        CellRequest cellRequest =
+        DrillThroughCellRequest cellRequest =
             RolapAggregationManager.makeDrillThroughRequest(
-                currentMembers, false, result.getCube());
+                currentMembers, false, result.getCube(), null);
         if (cellRequest == null) {
             return -1;
         }
@@ -146,6 +158,7 @@ public class RolapCell implements Cell {
             aggMgr.getDrillThroughSql(
                 cellRequest,
                 starPredicateSlicer,
+                new ArrayList<Exp>(),
                 true);
 
         final SqlStatement stmt =
@@ -412,7 +425,8 @@ public class RolapCell implements Cell {
      * @param maxRowCount Maximum number of rows to retrieve, <= 0 if unlimited
      * @param firstRowOrdinal Ordinal of row to skip to (1-based), or 0 to
      *   start from beginning
-     * @param tabFields Comma-separated list of fields to return (deprecated)
+     * @param fields            List of field expressions to return as the
+     *                          result set columns.
      * @param extendedContext   If true, add non-constraining columns to the
      *                          query for levels below each current member.
      *                          This additional context makes the drill-through
@@ -423,7 +437,7 @@ public class RolapCell implements Cell {
     public SqlStatement drillThroughInternal(
         int maxRowCount,
         int firstRowOrdinal,
-        String tabFields,
+        List<Exp> fields,
         boolean extendedContext,
         Logger logger)
     {
@@ -432,10 +446,7 @@ public class RolapCell implements Cell {
         }
 
         // Generate SQL.
-        String sql = getDrillThroughSQL(extendedContext);
-        if (tabFields != null) {
-            sql = addTabFields(sql, tabFields);
-        }
+        String sql = getDrillThroughSQL(fields, extendedContext);
         if (logger != null && logger.isDebugEnabled()) {
             logger.debug("drill through sql: " + sql);
         }
@@ -473,29 +484,6 @@ public class RolapCell implements Cell {
                     SqlStatementEvent.Purpose.DRILL_THROUGH, 0),
                 resultSetType,
                 resultSetConcurrency);
-    }
-
-    private String addTabFields(String dtSql, String tabFields) {
-        int index = dtSql.indexOf("from");
-        String whereClause = " " + dtSql.substring(index);
-        StringTokenizer st = new StringTokenizer(tabFields, ",");
-        final List<String> drillThruColumnNames = new ArrayList<String>();
-        while (st.hasMoreTokens()) {
-            drillThruColumnNames.add(st.nextToken());
-        }
-
-        // Create Select Clause
-        StringBuilder buf = new StringBuilder("select ");
-        int k = -1;
-        for (String drillThruColumnName : drillThruColumnNames) {
-            if (++k > 0) {
-                buf.append(",");
-            }
-            buf.append(drillThruColumnName);
-        }
-        buf.append(' ');
-        buf.append(whereClause);
-        return buf.toString();
     }
 
     public Object getPropertyValue(String propertyName) {

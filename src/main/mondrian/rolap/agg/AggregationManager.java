@@ -13,6 +13,7 @@
 package mondrian.rolap.agg;
 
 import mondrian.olap.CacheControl;
+import mondrian.olap.Exp;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianServer;
 import mondrian.olap.Util;
@@ -190,8 +191,9 @@ public class AggregationManager extends RolapAggregationManager {
     }
 
     public String getDrillThroughSql(
-        final CellRequest request,
+        final DrillThroughCellRequest request,
         final StarPredicate starPredicateSlicer,
+        List<Exp> fields,
         final boolean countOnly)
     {
         DrillThroughQuerySpec spec =

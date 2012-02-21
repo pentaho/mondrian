@@ -16,6 +16,7 @@ import mondrian.server.*;
 import mondrian.util.Pair;
 
 import org.olap4j.*;
+import org.olap4j.layout.RectangularCellSetFormatter;
 import org.olap4j.mdx.*;
 
 import java.io.PrintWriter;
@@ -94,11 +95,12 @@ abstract class MondrianOlap4jStatement
                 cellSet.getAxes().size(), 0);
             final MondrianOlap4jCell cell =
                 (MondrianOlap4jCell) cellSet.getCell(coords);
+
             ResultSet resultSet =
                 cell.drillThroughInternal(
                     drillThrough.getMaxRowCount(),
                     drillThrough.getFirstRowOrdinal(),
-                    null,
+                    drillThrough.getReturnList(),
                     true,
                     null,
                     rowCountSlot);

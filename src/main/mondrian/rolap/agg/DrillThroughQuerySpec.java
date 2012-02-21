@@ -9,7 +9,11 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.olap.Exp;
+import mondrian.olap.Id;
+import mondrian.olap.Member;
 import mondrian.olap.MondrianDef;
+import mondrian.olap.SchemaReader;
 import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.rolap.sql.SqlQuery;
@@ -26,13 +30,13 @@ import java.util.*;
  * @version $Id$
  */
 class DrillThroughQuerySpec extends AbstractQuerySpec {
-    private final CellRequest request;
+    private final DrillThroughCellRequest request;
     private final List<StarPredicate> listOfStarPredicates;
     private final List<String> columnNames;
     private final int maxColumnNameLength;
 
     public DrillThroughQuerySpec(
-        CellRequest request,
+        DrillThroughCellRequest request,
         StarPredicate starPredicateSlicer,
         boolean countOnly)
     {
@@ -105,18 +109,32 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
         columnNames.add(columnName);
     }
 
+    @Override
+    protected boolean isPartOfSelect(RolapStar.Column col) {
+        return request.includeInSelect(col);
+    }
+
+    @Override
+    protected boolean isPartOfSelect(RolapStar.Measure measure) {
+        return request.includeInSelect(measure);
+    }
+
     public int getMeasureCount() {
-        return 1;
+        return request.getDrillThroughMeasures().size() > 0
+            ? request.getDrillThroughMeasures().size()
+            : 1;
     }
 
     public RolapStar.Measure getMeasure(final int i) {
-        Util.assertTrue(i == 0);
-        return request.getMeasure();
+        return request.getDrillThroughMeasures().size() > 0
+            ? request.getDrillThroughMeasures().get(i)
+            : request.getMeasure();
     }
 
     public String getMeasureAlias(final int i) {
-        Util.assertTrue(i == 0);
-        return columnNames.get(columnNames.size() - 1);
+        return request.getDrillThroughMeasures().size() > 0
+            ? request.getDrillThroughMeasures().get(i).getName()
+            : columnNames.get(columnNames.size() - 1);
     }
 
     public RolapStar.Column[] getColumns() {
@@ -142,6 +160,10 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
 
     protected void addMeasure(final int i, final SqlQuery sqlQuery) {
         RolapStar.Measure measure = getMeasure(i);
+
+        if (!isPartOfSelect(measure)) {
+            return;
+        }
 
         Util.assertTrue(measure.getTable() == getStar().getFactTable());
         measure.getTable().addToFrom(sqlQuery, false, true);

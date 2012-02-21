@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -16,7 +16,6 @@ import mondrian.olap.*;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
 import mondrian.rolap.agg.*;
 
-import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -52,7 +51,7 @@ public abstract class RolapAggregationManager {
      */
     public static CellRequest makeRequest(final Member[] members)
     {
-        return makeCellRequest(members, false, false, null);
+        return makeCellRequest(members, false, false, null, null);
     }
 
     /**
@@ -72,13 +71,15 @@ public abstract class RolapAggregationManager {
      * @param cube              Cube
      * @return Cell request, or null if the requst is unsatisfiable
      */
-    public static CellRequest makeDrillThroughRequest(
+    public static DrillThroughCellRequest makeDrillThroughRequest(
         final Member[] members,
         final boolean extendedContext,
-        RolapCube cube)
+        RolapCube cube,
+        List<Exp> fieldsList)
     {
         assert cube != null;
-        return makeCellRequest(members, true, extendedContext, cube);
+        return (DrillThroughCellRequest) makeCellRequest(
+            members, true, extendedContext, cube, fieldsList);
     }
 
     /**
@@ -107,7 +108,7 @@ public abstract class RolapAggregationManager {
         int starColumnCount = starMeasure.getStar().getColumnCount();
 
         CellRequest request =
-            makeCellRequest(currentMembers, false, false, null);
+            makeCellRequest(currentMembers, false, false, null, null);
 
         /*
          * Now setting the compound keys.
@@ -175,7 +176,8 @@ public abstract class RolapAggregationManager {
         final Member[] members,
         boolean drillThrough,
         final boolean extendedContext,
-        RolapCube cube)
+        RolapCube cube,
+        List<Exp> fieldsList)
     {
         // Need cube for drill-through requests
         assert drillThrough == (cube != null);
@@ -210,12 +212,40 @@ public abstract class RolapAggregationManager {
         final RolapStar.Measure starMeasure =
             (RolapStar.Measure) measure.getStarMeasure();
         assert starMeasure != null;
-        final CellRequest request =
-            new CellRequest(starMeasure, extendedContext, drillThrough);
+        final CellRequest request;
+        if (drillThrough) {
+            request =
+                new DrillThroughCellRequest(starMeasure, extendedContext);
+        } else {
+            request =
+                new CellRequest(starMeasure, extendedContext, drillThrough);
+        }
 
         // Since 'request.extendedContext == false' is a well-worn code path,
         // we have moved the test outside the loop.
         if (extendedContext) {
+            if (fieldsList != null) {
+                // If a field list was specified, there will be some columns
+                // to include in the result set, other that we don't. This
+                // happens when the MDX is a DRILLTHROUGH operation and
+                // includes a RETURN clause.
+                final SchemaReader reader = cube.getSchemaReader().withLocus();
+                for (Exp exp : fieldsList) {
+                    final OlapElement member =
+                        reader.lookupCompound(
+                            cube,
+                            Util.parseIdentifier(exp.toString()),
+                            true,
+                            Category.Unknown);
+                    if (member.getHierarchy() instanceof RolapCubeHierarchy
+                        && ((RolapCubeHierarchy)member.getHierarchy())
+                            .getRolapHierarchy().closureFor != null)
+                    {
+                        continue;
+                    }
+                    addNonConstrainingColumns(member, cube, request);
+                }
+            }
             for (int i = 1; i < members.length; i++) {
                 final RolapCubeMember member = (RolapCubeMember) members[i];
                 if (member.getHierarchy().getRolapHierarchy().closureFor
@@ -223,7 +253,8 @@ public abstract class RolapAggregationManager {
                 {
                     continue;
                 }
-                addNonConstrainingColumns(member, measure.getCube(), request);
+
+                addNonConstrainingColumns(member, cube, request);
 
                 final RolapCubeLevel level = member.getLevel();
                 final boolean needToReturnNull =
@@ -233,6 +264,7 @@ public abstract class RolapAggregationManager {
                     return null;
                 }
             }
+
         } else {
             for (int i = 1; i < members.length; i++) {
                 if (!(members[i] instanceof RolapCubeMember)) {
@@ -298,6 +330,49 @@ public abstract class RolapAggregationManager {
                     Util.assertTrue(nameColumn != null);
                     request.addConstrainedColumn(nameColumn, null);
                 }
+            }
+        }
+    }
+
+    private static void addNonConstrainingColumns(
+        final OlapElement member,
+        final RolapCube baseCube,
+        final CellRequest request)
+    {
+        RolapCubeLevel level;
+        if (member instanceof RolapCubeLevel) {
+            level = (RolapCubeLevel) member;
+        } else if (member instanceof RolapCubeHierarchy
+            || member instanceof RolapCubeDimension)
+        {
+            level = (RolapCubeLevel) member.getHierarchy().getLevels()[0];
+            if (level.isAll()) {
+                level = level.getChildLevel();
+            }
+        } else if (member instanceof RolapStar.Measure) {
+            ((DrillThroughCellRequest)request)
+                .addDrillThroughMeasure((RolapStar.Measure)member);
+            return;
+        } else if (member instanceof RolapBaseCubeMeasure) {
+            ((DrillThroughCellRequest)request)
+                .addDrillThroughMeasure(
+                    (RolapStar.Measure)
+                        ((RolapBaseCubeMeasure)member).getStarMeasure());
+            return;
+        } else {
+            // FIXME make this better.
+            throw new MondrianException();
+        }
+        RolapStar.Column column = level.getBaseStarKeyColumn(baseCube);
+        if (column != null) {
+            request.addConstrainedColumn(column, null);
+            ((DrillThroughCellRequest)request).addDrillThroughColumn(column);
+            if (request.extendedContext
+                && level.getNameExp() != null)
+            {
+                final RolapStar.Column nameColumn = column.getNameColumn();
+                Util.assertTrue(nameColumn != null);
+                request.addConstrainedColumn(nameColumn, null);
             }
         }
     }
@@ -621,8 +696,9 @@ public abstract class RolapAggregationManager {
      * @return SQL statement
      */
     public abstract String getDrillThroughSql(
-        CellRequest request,
+        DrillThroughCellRequest request,
         StarPredicate starPredicateSlicer,
+        List<Exp> fields,
         boolean countOnly);
 
     public static RolapCacheRegion makeCacheRegion(

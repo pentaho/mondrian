@@ -821,13 +821,13 @@ class BatchLoader {
             this.dialect = dialect;
             this.cube = cube;
             this.cellRequests = cellRequests;
-            if(MDC.getContext() != null) {
+            if (MDC.getContext() != null) {
                 this.mdc.putAll(MDC.getContext());
             }
         }
 
         public LoadBatchResponse call() {
-            if(MDC.getContext() != null) {
+            if (MDC.getContext() != null) {
                 final Map<String, Object> old = MDC.getContext();
                 old.clear();
                 old.putAll(mdc);

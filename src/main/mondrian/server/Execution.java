@@ -14,12 +14,13 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnection;
 import mondrian.server.monitor.*;
 
+import org.apache.log4j.MDC;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.log4j.MDC;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Execution context.
@@ -99,7 +100,7 @@ public class Execution {
         this.mdc.clear();
         final Map<String, Object> currentMdc =
             MDC.getContext();
-        if(currentMdc != null) {
+        if (currentMdc != null) {
             this.mdc.putAll(currentMdc);
         }
     }
