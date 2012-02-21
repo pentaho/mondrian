@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde
+// Copyright (C) 2006-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -74,9 +74,6 @@ public class SoftSmartCache<K, V> implements SmartCache<K, V> {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see mondrian.rolap.cache.SmartCache#get(java.lang.Object)
-     */
     public synchronized V get(K key) {
         CacheReference ref = cache.get(key);
         if (ref == null) {
@@ -89,16 +86,15 @@ public class SoftSmartCache<K, V> implements SmartCache<K, V> {
         return value;
     }
 
-    /* (non-Javadoc)
-     * @see mondrian.rolap.cache.SmartCache#clear()
-     */
+    public V remove(K key) {
+        final CacheReference ref = cache.remove(key);
+        return ref == null ? null : ref.get();
+    }
+
     public void clear() {
         cache.clear();
     }
 
-    /* (non-Javadoc)
-     * @see mondrian.rolap.cache.SmartCache#size()
-     */
     public int size() {
         return cache.size();
     }

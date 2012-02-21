@@ -10,7 +10,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.CacheControl.CellRegion;
 import mondrian.olap.Id.Quoting;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.SegmentCacheManager;
@@ -228,7 +227,26 @@ public class CacheControlImpl implements CacheControl {
             cellRegion = createUnionRegion(cellRegions);
             break;
         }
-        flush(cellRegion);
+        if (!containsMeasures(cellRegion)) {
+            for (RolapCube cube : connection.getSchema().getCubeList()) {
+                flush(
+                    createCrossjoinRegion(
+                        createMeasuresRegion(cube),
+                        cellRegion));
+            }
+        } else {
+            flush(cellRegion);
+        }
+    }
+
+    private boolean containsMeasures(CellRegion cellRegion) {
+        final List<Dimension> dimensionList = cellRegion.getDimensionality();
+        for (Dimension dimension : dimensionList) {
+            if (dimension.isMeasures()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void trace(String message) {
@@ -498,6 +516,7 @@ public class CacheControlImpl implements CacheControl {
                             Arrays.sort(
                                 keys,
                                 Util.SqlNullSafeComparator.instance);
+                            //noinspection unchecked
                             list.add(
                                 new SegmentColumn(
                                     entry.getKey(),
@@ -1559,7 +1578,7 @@ public class CacheControlImpl implements CacheControl {
         extends MemberSetVisitorImpl
         implements MemberEditCommandPlus
     {
-        private final MemberSetPlus set;;
+        private final MemberSetPlus set;
         private List<CellRegion> cellRegionList;
         private Callable<Boolean> callable;
 
@@ -1572,7 +1591,7 @@ public class CacheControlImpl implements CacheControl {
         }
 
         public void execute(final List<CellRegion> cellRegionList) {
-            // NOTE: use of member makes this class non-reentrant
+            // NOTE: use of cellRegionList makes this class non-reentrant
             this.cellRegionList = cellRegionList;
             set.accept(this);
             this.cellRegionList = null;
@@ -1800,6 +1819,9 @@ public class CacheControlImpl implements CacheControl {
      * @param member Member
      * @param parent Member's parent (generally equals member.getParentMember)
      * @param cellRegionList List of cell regions to be flushed
+     *
+     * @return Callable that yields true when the member has been added to the
+     * cache
      */
     private Callable<Boolean> addMember(
         final RolapMember member,

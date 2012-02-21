@@ -4,7 +4,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// Copyright (C) 2002-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
@@ -24,11 +24,13 @@ import mondrian.olap.Util;
 class MemberKey {
     private final RolapMember parent;
     private final Object value;
+
     MemberKey(RolapMember parent, Object value) {
         this.parent = parent;
         this.value = value;
     }
-    // override Object
+
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof MemberKey)) {
             return false;
@@ -37,18 +39,33 @@ class MemberKey {
         return Util.equals(this.parent, other.parent)
             && Util.equals(this.value, other.value);
     }
-    // override Object
+
+    @Override
     public int hashCode() {
-        if (parent == null && value == null) {
-            return 0;
+        int h = 0;
+        if (value != null) {
+            h = value.hashCode();
         }
-        if (parent == null && value != null) {
-            return (value.hashCode() << 16);
+        if (parent != null) {
+            h = (h * 31) + parent.hashCode();
         }
-        if (parent != null && value == null) {
-            return (parent.hashCode() << 16);
+        return h;
+    }
+
+    /**
+     * Returns the level of the member that this key represents.
+     *
+     * @return Member level, or null if is root member
+     */
+    public RolapLevel getLevel() {
+        if (parent == null) {
+            return null;
         }
-        return (parent.hashCode() << 16) ^ value.hashCode();
+        final RolapLevel level = parent.getLevel();
+        if (level.isParentChild()) {
+            return level;
+        }
+        return (RolapLevel) level.getChildLevel();
     }
 }
 
