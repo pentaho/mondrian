@@ -1673,6 +1673,7 @@ public class RolapSchema implements Schema {
         final String name;
         private Map<String, String> hintMap;
         private int rowCount;
+        private Hook hook;
 
         /**
          * Creates a table.
@@ -1754,14 +1755,26 @@ public class RolapSchema implements Schema {
         protected boolean populateColumns(
             RolapSchemaLoader loader, NodeDef xmlNode, int[] rowCountAndSize)
         {
-            final JdbcSchema.Table jdbcTable =
+            JdbcSchema.Table jdbcTable =
                 physSchema.jdbcSchema.getTable(name);
             if (jdbcTable == null) {
-                loader.getHandler().warning(
-                    "Table '" + name + "' does not exist in database.",
-                    xmlNode,
-                    null);
-                return false;
+                if (hook == null) {
+                    loader.getHandler().warning(
+                        "Table '" + name + "' does not exist in database.",
+                        xmlNode,
+                        null);
+                    return false;
+                }
+                hook.apply(
+                    this,
+                    loader.schema.getInternalConnection());
+                hook = null;
+                try {
+                    jdbcTable = physSchema.jdbcSchema.reloadTable(name);
+                } catch (SQLException e) {
+                    throw Util.newError(
+                        "Error while re-loading table '" + name + "'");
+                }
             }
             try {
                 jdbcTable.load();
@@ -1794,6 +1807,16 @@ public class RolapSchema implements Schema {
 
         public Map<String, String> getHintMap() {
             return hintMap;
+        }
+
+        public void setHook(Hook hook) {
+            this.hook = hook;
+        }
+
+        interface Hook {
+            boolean apply(
+                PhysTable table,
+                RolapConnection connection);
         }
     }
 

@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2011 Julian Hyde
+// Copyright (C) 2008-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -1026,6 +1026,17 @@ public class JdbcDialectImpl implements Dialect {
             return Datatype.Timestamp;
         default:
             return null;
+        }
+    }
+
+    public String datatypeToString(
+        Datatype datatype, int precision, int scale)
+    {
+        switch (datatype) {
+        case String:
+            return "VARCHAR(" + precision + ")";
+        default:
+            return datatype.name();
         }
     }
 }

@@ -302,7 +302,9 @@ public class TestContext {
 
         // Add parameter definitions, if specified.
         if (parameterDefs != null) {
-            int i = s.indexOf("<Dimension name=\"Store\">");
+            int firstDimension = s.indexOf("<Dimension ");
+            int firstCube = s.indexOf("<Cube ");
+            int i = Math.min(firstDimension, firstCube);
             s = s.substring(0, i)
                 + parameterDefs
                 + s.substring(i);
@@ -2380,7 +2382,7 @@ public class TestContext {
             if (buf.length() > 0) {
                 buf.append(Util.nl);
             }
-            buf.append(message);
+            buf.append(Util.getErrorMessage(exception));
         }
         throw new AssertionFailedError(
             "Exception list did not contain expected exception. Exception is:\n"

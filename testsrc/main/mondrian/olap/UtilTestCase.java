@@ -1541,6 +1541,17 @@ public class UtilTestCase extends TestCase {
     }
 
     /**
+     * Unit test for {@link Util#julian(long, long, long)}.
+     */
+    public void testJulian() {
+        assertEquals(-327, Util.julian(-4713, 1, 1)); // should be 0?
+        assertEquals(-32044, Util.julian(-4800, 3, 1));
+        assertEquals(1721426, Util.julian(1, 1, 1));
+        assertEquals(2454115, Util.julian(2007, 1, 14));
+        assertEquals(2455976, Util.julian(2012, 2, 18));
+    }
+
+    /**
      * Simple implementation of {@link mondrian.util.DirectedGraph.Edge}.
      */
     static class EdgeImpl<E> implements DirectedGraph.Edge<E> {

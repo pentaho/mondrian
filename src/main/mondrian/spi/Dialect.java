@@ -2,7 +2,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2011 Julian Hyde
+// Copyright (C) 2008-2012 Julian Hyde
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -774,6 +774,23 @@ public interface Dialect {
     Datatype sqlTypeToDatatype(
         String typeName,
         int type);
+
+    /**
+     * Converts a data type to its representation on this database.
+     *
+     * <p>For example, {@link Datatype#String} with a {@code columnSize} of 20
+     * becomes {@code VARCHAR2(20)} on Oracle and {@code VARCHAR(20)} on
+     * MySQL.</p>
+     *
+     * @param datatype Data type
+     * @param precision Precision of column, or 0 if applicable for datatype
+     * @param scale Scale of column, or 0 if not applicable for datatype
+     * @return String representation of datatype
+     */
+    String datatypeToString(
+        Datatype datatype,
+        int precision,
+        int scale);
 
     /**
      * Enumeration of common database types.

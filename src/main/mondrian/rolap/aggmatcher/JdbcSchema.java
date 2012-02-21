@@ -3,7 +3,7 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2011 Julian Hyde and others
+// Copyright (C) 2005-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -29,20 +29,20 @@ import javax.sql.DataSource;
 /**
  * Metadata gleaned from JDBC about the tables and columns in the star schema.
  * This class is used to scrape a database and store information about its
- * tables and columnIter.
+ * tables and columns.
  *
  * <p>The structure of this information is as follows: A database has tables. A
- * table has columnIter. A column has one or more usages.  A usage might be a
+ * table has columns. A column has one or more usages.  A usage might be a
  * column being used as a foreign key or as part of a measure.
  *
- * <p> Tables are created when calling code requests the set of available
- * tables. This call <code>getTables()</code> causes all tables to be loaded.
- * But a table's columnIter are not loaded until, on a table-by-table basis,
- * a request is made to get the set of columnIter associated with the table.
+ * <p>Tables are created when calling code requests the set of available
+ * tables. This calls <code>getTables()</code>, causing all tables to be loaded.
+ * Columns are loaded on demand. Each table's columns are not loaded until
+ * a request is made to get the set of columns associated with the table.
  * Since, the AggTableManager first attempts table name matches (recognition)
- * most tables do not match, so why load their columnIter.
- * Of course, as a result, there are a host of methods that can throw an
- * {@link SQLException}, rats.
+ * most tables do not match, so why load their columns.
+ * (Of course, as a result, there are a host of methods that can throw an
+ * {@link SQLException}, rats!)
  *
  * @author Richard M. Emberson
  * @version $Id$
@@ -61,9 +61,7 @@ public class JdbcSchema {
     }
 
     public interface Factory {
-        JdbcSchema makeDB(DataSource dataSource);
-        void clearDB(JdbcSchema db);
-        void removeDB(JdbcSchema db);
+        JdbcSchema loadDatabase(DataSource dataSource);
     }
 
     private static final Map<DataSource, SoftReference<JdbcSchema>> dbMap =
@@ -78,14 +76,8 @@ public class JdbcSchema {
     public static class StdFactory implements Factory {
         StdFactory() {
         }
-        public JdbcSchema makeDB(DataSource dataSource) {
+        public JdbcSchema loadDatabase(DataSource dataSource) {
             return new JdbcSchema(dataSource);
-        }
-        public void clearDB(JdbcSchema db) {
-            // NoOp
-        }
-        public void removeDB(JdbcSchema db) {
-            // NoOp
         }
     }
 
@@ -128,7 +120,7 @@ public class JdbcSchema {
             db = ref.get();
         }
         if (db == null) {
-            db = factory.makeDB(dataSource);
+            db = factory.loadDatabase(dataSource);
             dbMap.put(dataSource, new SoftReference<JdbcSchema>(db));
         }
 
@@ -149,7 +141,6 @@ public class JdbcSchema {
         if (ref != null) {
             JdbcSchema db = ref.get();
             if (db != null) {
-                factory.clearDB(db);
                 db.clear();
             } else {
                 dbMap.remove(dataSource);
@@ -170,7 +161,6 @@ public class JdbcSchema {
         if (ref != null) {
             JdbcSchema db = ref.get();
             if (db != null) {
-                factory.removeDB(db);
                 db.remove();
             }
         }
@@ -507,7 +497,7 @@ public class JdbcSchema {
             }
 
             /**
-             * Sets the columnIter java.sql.Type enun of the column.
+             * Sets the {@link java.sql.Types} enum of the column.
              *
              * @param type
              */
@@ -516,14 +506,14 @@ public class JdbcSchema {
             }
 
             /**
-             * Returns the columnIter java.sql.Type enun of the column.
+             * Returns the {@link java.sql.Types} enum of the column.
              */
             public int getType() {
                 return type;
             }
 
             /**
-             * Sets the columnIter java.sql.Type name.
+             * Sets the type name (per {@link java.sql.Types}) of the column.
              *
              * @param typeName
              */
@@ -532,7 +522,7 @@ public class JdbcSchema {
             }
 
             /**
-             * Returns the columnIter java.sql.Type name.
+             * Returns the type name (per {@link java.sql.Types}) of the column.
              */
             public String getTypeName() {
                 return typeName;
@@ -546,7 +536,7 @@ public class JdbcSchema {
             }
 
             /**
-             * Return true if this column is numeric.
+             * Return the data type of this column.
              */
             public Dialect.Datatype getDatatype() {
                 return JdbcSchema.getDatatype(getType());
@@ -555,7 +545,7 @@ public class JdbcSchema {
             /**
              * Sets the size in bytes of the column in the database.
              *
-             * @param columnSize
+             * @param columnSize Size in bytes
              */
             private void setColumnSize(final int columnSize) {
                 this.columnSize = columnSize;
@@ -563,7 +553,6 @@ public class JdbcSchema {
 
             /**
              * Returns the size in bytes of the column in the database.
-             *
              */
             public int getColumnSize() {
                 return columnSize;
@@ -572,7 +561,7 @@ public class JdbcSchema {
             /**
              * Sets number of fractional digits.
              *
-             * @param decimalDigits
+             * @param decimalDigits Number of fractional digits
              */
             private void setDecimalDigits(final int decimalDigits) {
                 this.decimalDigits = decimalDigits;
@@ -588,7 +577,7 @@ public class JdbcSchema {
             /**
              * Sets Radix (typically either 10 or 2).
              *
-             * @param numPrecRadix
+             * @param numPrecRadix Radix
              */
             private void setNumPrecRadix(final int numPrecRadix) {
                 this.numPrecRadix = numPrecRadix;
@@ -604,7 +593,7 @@ public class JdbcSchema {
             /**
              * For char types the maximum number of bytes in the column.
              *
-             * @param charOctetLength
+             * @param charOctetLength Octet length
              */
             private void setCharOctetLength(final int charOctetLength) {
                 this.charOctetLength = charOctetLength;
@@ -620,7 +609,7 @@ public class JdbcSchema {
             /**
              * False means the column definitely does not allow NULL values.
              *
-             * @param isNullable
+             * @param isNullable Whether this column allows NULL values
              */
             private void setIsNullable(final boolean isNullable) {
                 this.isNullable = isNullable;
@@ -647,7 +636,7 @@ public class JdbcSchema {
             }
 
             /**
-             * flushes all star usage references
+             * Flushes all star usage references.
              */
             public void flushUsages() {
                 usages.clear();
@@ -996,14 +985,14 @@ public class JdbcSchema {
         }
 
         /**
-         * Returns all of the columnIter associated with a table and creates
+         * Returns all of the columns associated with a table and creates
          * Column objects with the column's name, type, type name and column
          * size.
          *
-         * @throws SQLException
+         * @throws SQLException on error
          */
         private void loadColumns() throws SQLException {
-            if (! allColumnsLoaded) {
+            if (!allColumnsLoaded) {
                 Connection conn = getDataSource().getConnection();
                 try {
                     DatabaseMetaData dmd = conn.getMetaData();
@@ -1087,11 +1076,15 @@ public class JdbcSchema {
 
     /**
      * This forces the tables to be loaded.
+     * If called a second time, this method is a no-op.
      *
-     * @throws SQLException
+     * @throws SQLException on error
      */
     public void load() throws SQLException {
-        loadTables();
+        if (!allTablesLoaded) {
+            loadTables("%");
+            allTablesLoaded = true;
+        }
     }
 
     protected synchronized void clear() {
@@ -1106,14 +1099,6 @@ public class JdbcSchema {
         // set ALL instance variables to null
         clear();
         dataSource = null;
-    }
-
-    /**
-     * Used for testing allowing one to load tables and their columnIter
-     * from more than one datasource
-     */
-    void resetAllTablesLoaded() {
-        allTablesLoaded = false;
     }
 
     public DataSource getDataSource() {
@@ -1201,30 +1186,30 @@ public class JdbcSchema {
     }
 
     /**
-     * Gets all of the tables (and views) in the database.
-     * If called a second time, this method is a no-op.
+     * Gets all of the tables (and views) in the database that match a given
+     * table name.
      *
-     * @throws SQLException
+     * @param tableName Table name
+     * @throws SQLException on error
      */
-    private void loadTables() throws SQLException {
-        if (allTablesLoaded) {
-            return;
-        }
+    private void loadTables(String tableName) throws SQLException {
         Connection conn = null;
         try {
             conn = getDataSource().getConnection();
             final DatabaseMetaData databaseMetaData = conn.getMetaData();
-            String[] tableTypes = { "TABLE", "VIEW" };
+            List<String> tableTypes = Arrays.asList("TABLE", "VIEW");
             if (databaseMetaData.getDatabaseProductName().toUpperCase().indexOf(
                     "VERTICA") >= 0)
             {
                 for (String tableType : tableTypes) {
-                    loadTablesOfType(databaseMetaData, new String[]{tableType});
+                    loadTablesOfType(
+                        databaseMetaData,
+                        Collections.singletonList(tableType),
+                        tableName);
                 }
             } else {
-                loadTablesOfType(databaseMetaData, tableTypes);
+                loadTablesOfType(databaseMetaData, tableTypes, tableName);
             }
-            allTablesLoaded = true;
         } finally {
             if (conn != null) {
                 conn.close();
@@ -1233,24 +1218,37 @@ public class JdbcSchema {
     }
 
     /**
+     * Re-loads a table. Even if all tables have already been loaded.
+     *
+     * @param tableName Table name
+     * @throws SQLException on error
+     */
+    public Table reloadTable(String tableName)
+        throws SQLException
+    {
+        loadTables(tableName);
+        return tables.get(tableName);
+    }
+
+    /**
      * Loads definition of tables of a given set of table types ("TABLE", "VIEW"
      * etc.)
      */
     private void loadTablesOfType(
         DatabaseMetaData databaseMetaData,
-        String[] tableTypes)
+        List<String> tableTypes,
+        String tableName)
         throws SQLException
     {
         final String schema = getSchemaName();
         final String catalog = getCatalogName();
-        final String tableName = "%";
         ResultSet rs = null;
         try {
             rs = databaseMetaData.getTables(
                 catalog,
                 schema,
                 tableName,
-                tableTypes);
+                tableTypes.toArray(new String[tableTypes.size()]));
             if (rs == null) {
                 getLogger().debug("ERROR: rs == null");
                 return;
@@ -1270,7 +1268,7 @@ public class JdbcSchema {
      * entry.
      *
      * @param rs Result set
-     * @throws SQLException
+     * @throws SQLException on error
      */
     protected void addTable(final ResultSet rs) throws SQLException {
         String name = rs.getString(3);

@@ -2376,6 +2376,28 @@ public class Util extends XOMUtil {
         return s1;
     }
 
+    /**
+     * Computes <a href="http://en.wikipedia.org/wiki/Julian_day">Julian Day
+     * Number</a>.</p>
+     *
+     * @param year Year
+     * @param month Month
+     * @param day Date
+     * @return Julian Day Number (JDN)
+     */
+    public static long julian(long year, long month, long day) {
+        long a = (14 - month) / 12;
+        long y = year + 4800 - a;
+        long m = month + 12 * a - 3;
+        return day
+            + (153 * m + 2) / 5
+            + 365 * y
+            + y / 4
+            - y / 100
+            + y / 400
+            - 32045;
+    }
+
     public static class ErrorCellValue {
         public String toString() {
             return "#ERR";
