@@ -920,18 +920,15 @@ public class RolapCube extends CubeBase {
             final RolapConnection conn = schema.getInternalConnection();
             return Locus.execute(
                 conn,
-                "Validate calculated members in cube",
+                "RolapCube.resolveCalcMembers",
                 new Locus.Action<Query>() {
                     public Query execute() {
-                        final Query queryExp = (Query)
-                            conn.parseStatement(
-                                Locus.peek().execution.getMondrianStatement(),
-                                queryString, null, false);
+                        final Query queryExp =
+                            conn.parseQuery(queryString);
                         queryExp.resolve();
                         return queryExp;
                     }
-                }
-            );
+                });
         } catch (Exception e) {
             throw MondrianResource.instance().UnknownNamedSetHasBadFormula.ex(
                 getName(), e);
@@ -993,6 +990,7 @@ public class RolapCube extends CubeBase {
         List<RolapMember> memberList)
     {
         MondrianDef.CalculatedMember xmlCalcMember = xmlCalcMembers.get(i);
+
         final Formula formula = queryExp.getFormulas()[i];
 
         calculatedMemberList.add(formula);
@@ -1036,6 +1034,14 @@ public class RolapCube extends CubeBase {
     {
         MondrianDef.CalculatedMember xmlCalcMember = xmlCalcMembers.get(j);
 
+        if (xmlCalcMember.hierarchy != null
+            && xmlCalcMember.dimension != null)
+        {
+            throw MondrianResource.instance()
+                .CalcMemberHasBothDimensionAndHierarchy.ex(
+                        xmlCalcMember.name, getName());
+        }
+
         // Lookup dimension
         Hierarchy hierarchy = null;
         String dimName = null;
@@ -1052,7 +1058,7 @@ public class RolapCube extends CubeBase {
         } else if (xmlCalcMember.hierarchy != null) {
             dimName = xmlCalcMember.hierarchy;
             hierarchy = (Hierarchy)
-                getSchemaReader().lookupCompound(
+                getSchemaReader().withLocus().lookupCompound(
                     this,
                     Util.parseIdentifier(dimName),
                     false,
@@ -1069,6 +1075,29 @@ public class RolapCube extends CubeBase {
             parentFqName = xmlCalcMember.parent;
         } else {
             parentFqName = hierarchy.getUniqueNameSsas();
+        }
+
+        if (!hierarchy.getDimension().isMeasures()) {
+            // Check if the parent exists.
+            final OlapElement parent =
+                Util.lookupCompound(
+                    getSchemaReader().withLocus(),
+                    this,
+                    Util.parseIdentifier(parentFqName),
+                    false,
+                    Category.Unknown);
+
+            if (parent == null) {
+                throw MondrianResource.instance()
+                    .CalcMemberHasUnknownParent.ex(
+                        parentFqName, xmlCalcMember.name, getName());
+            }
+
+            if (parent.getHierarchy() != hierarchy) {
+                throw MondrianResource.instance()
+                .CalcMemberHasDifferentParentAndHierarchy.ex(
+                    xmlCalcMember.name, getName(), hierarchy.getUniqueName());
+            }
         }
 
         // If we're processing a virtual cube, it's possible that we've

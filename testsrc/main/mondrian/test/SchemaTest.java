@@ -2060,15 +2060,196 @@ public class SchemaTest extends FoodMartTestCase {
                 + "Row #0: 27,780\n");
         }
 
-        // TODO: test where hierarchy & dimension both specified. should fail
-        // TODO: test where hierarchy is not uname of valid hierarchy. should
-        //   fail
-        // TODO: test where formula is invalid. should fail
-        // TODO: test where parent is invalid. should fail
-        // TODO: test where parent is not in same hierarchy as hierarchy. should
-        //   fail
-        // TODO: test where calc member has no formula (formula attribute or
+        // Test where hierarchy & dimension both specified. should fail
+        try {
+            final TestContext testContextFail1 =
+                TestContext.instance().createSubstitutingCube(
+                    "Sales",
+                    null,
+                    null,
+                    "<CalculatedMember\n"
+                    + "      name='SF and LA'\n"
+                    + "      hierarchy='[Store]'\n"
+                    + "      dimension='[Store]'\n"
+                    + "      parent='[Store].[USA].[CA]'>\n"
+                    + "  <Formula>\n"
+                    + "    [Store].[USA].[CA].[San Francisco]\n"
+                    + "    + [Store].[USA].[CA].[Los Angeles]\n"
+                    + "  </Formula>\n"
+                    + "</CalculatedMember>",
+                    null);
+            testContextFail1.assertQueryReturns(
+                "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Store].[USA].[CA].[SF and LA]}\n"
+                + "Row #0: 27,780\n");
+            fail();
+        } catch (MondrianException e) {
+            assertTrue(
+                e.getMessage().contains(
+                    "Cannot specify both a dimension and hierarchy"
+                    + " for calculated member 'SF and LA' in cube 'Sales'"));
+        }
+
+        // test where hierarchy is not uname of valid hierarchy. should fail
+        try {
+            final TestContext testContextFail1 =
+                TestContext.instance().createSubstitutingCube(
+                    "Sales",
+                    null,
+                    null,
+                    "<CalculatedMember\n"
+                    + "      name='SF and LA'\n"
+                    + "      hierarchy='[Bacon]'\n"
+                    + "      parent='[Store].[USA].[CA]'>\n"
+                    + "  <Formula>\n"
+                    + "    [Store].[USA].[CA].[San Francisco]\n"
+                    + "    + [Store].[USA].[CA].[Los Angeles]\n"
+                    + "  </Formula>\n"
+                    + "</CalculatedMember>",
+                    null);
+            testContextFail1.assertQueryReturns(
+                "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Store].[USA].[CA].[SF and LA]}\n"
+                + "Row #0: 27,780\n");
+            fail();
+        } catch (MondrianException e) {
+            assertTrue(
+                e.getMessage().contains(
+                    "Unknown dimension '[Bacon]' for calculated member"
+                    + " 'SF and LA' in cube 'Sales'"));
+        }
+
+        // test where formula is invalid. should fail
+        try {
+            final TestContext testContextFail1 =
+                TestContext.instance().createSubstitutingCube(
+                    "Sales",
+                    null,
+                    null,
+                    "<CalculatedMember\n"
+                    + "      name='SF and LA'\n"
+                    + "      hierarchy='[Store]'\n"
+                    + "      parent='[Store].[USA].[CA]'>\n"
+                    + "  <Formula>\n"
+                    + "    Baconating!\n"
+                    + "  </Formula>\n"
+                    + "</CalculatedMember>",
+                    null);
+            testContextFail1.assertQueryReturns(
+                "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Store].[USA].[CA].[SF and LA]}\n"
+                + "Row #0: 27,780\n");
+            fail();
+        } catch (MondrianException e) {
+            assertTrue(
+                e.getMessage().contains(
+                    "Named set in cube 'Sales' has bad formula"));
+        }
+
+        // Test where parent is invalid. should fail
+        try {
+            final TestContext testContextFail1 =
+                TestContext.instance().createSubstitutingCube(
+                    "Sales",
+                    null,
+                    null,
+                    "<CalculatedMember\n"
+                    + "      name='SF and LA'\n"
+                    + "      hierarchy='[Store]'\n"
+                    + "      parent='[Store].[USA].[CA].[Baconville]'>\n"
+                    + "  <Formula>\n"
+                    + "    [Store].[USA].[CA].[San Francisco]\n"
+                    + "    + [Store].[USA].[CA].[Los Angeles]\n"
+                    + "  </Formula>\n"
+                    + "</CalculatedMember>",
+                    null);
+            testContextFail1.assertQueryReturns(
+                "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Store].[USA].[CA].[SF and LA]}\n"
+                + "Row #0: 27,780\n");
+            fail();
+        } catch (MondrianException e) {
+            assertTrue(
+                e.getMessage().contains(
+                    "Cannot find a parent with name '[Store].[USA].[CA]"
+                    + ".[Baconville]' for calculated member 'SF and LA'"
+                    + " in cube 'Sales'"));
+        }
+
+        // test where parent is not in same hierarchy as hierarchy. should fail
+        try {
+            final TestContext testContextFail1 =
+                TestContext.instance().createSubstitutingCube(
+                    "Sales",
+                    null,
+                    null,
+                    "<CalculatedMember\n"
+                    + "      name='SF and LA'\n"
+                    + "      hierarchy='[Store Type]'\n"
+                    + "      parent='[Store].[USA].[CA]'>\n"
+                    + "  <Formula>\n"
+                    + "    [Store].[USA].[CA].[San Francisco]\n"
+                    + "    + [Store].[USA].[CA].[Los Angeles]\n"
+                    + "  </Formula>\n"
+                    + "</CalculatedMember>",
+                    null);
+            testContextFail1.assertQueryReturns(
+                "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Store].[USA].[CA].[SF and LA]}\n"
+                + "Row #0: 27,780\n");
+            fail();
+        } catch (MondrianException e) {
+            assertTrue(
+                e.getMessage().contains(
+                    "The calculated member 'SF and LA' in cube 'Sales'"
+                    + " is defined for hierarchy '[Store Type]' but its"
+                    + " parent member is not part of that hierarchy"));
+        }
+
+        // test where calc member has no formula (formula attribute or
         //   embedded element); should fail
+        try {
+            final TestContext testContextFail1 =
+                TestContext.instance().createSubstitutingCube(
+                    "Sales",
+                    null,
+                    null,
+                    "<CalculatedMember\n"
+                    + "      name='SF and LA'\n"
+                    + "      hierarchy='[Store]'\n"
+                    + "      parent='[Store].[USA].[CA]'>\n"
+                    + "  <Formula>\n"
+                    + "  </Formula>\n"
+                    + "</CalculatedMember>",
+                    null);
+            testContextFail1.assertQueryReturns(
+                "select {[Store].[All Stores].[USA].[CA].[SF and LA]} on columns from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Store].[USA].[CA].[SF and LA]}\n"
+                + "Row #0: 27,780\n");
+            fail();
+        } catch (MondrianException e) {
+            assertTrue(
+                e.getMessage().contains(
+                    "Named set in cube 'Sales' has bad formula"));
+        }
     }
 
     /**
@@ -4334,42 +4515,42 @@ public class SchemaTest extends FoodMartTestCase {
             return;
         }
         TestContext testContext = TestContext.instance().createSubstitutingCube(
-                "Sales",
-                "  <Dimension name=\"PandaSteak\" foreignKey=\"promotion_id\">\n"
-                + "    <Hierarchy hasAll=\"false\" primaryKey=\"lvl_3_id\">\n"
-                + "      <InlineTable alias=\"meatShack\">\n"
-                + "        <ColumnDefs>\n"
-                + "          <ColumnDef name=\"lvl_1_id\" type=\"Integer\"/>\n"
-                + "          <ColumnDef name=\"lvl_1_name\" type=\"String\"/>\n"
-                + "          <ColumnDef name=\"lvl_2_id\" type=\"Integer\"/>\n"
-                + "          <ColumnDef name=\"lvl_2_name\" type=\"String\"/>\n"
-                + "          <ColumnDef name=\"lvl_3_id\" type=\"Integer\"/>\n"
-                + "          <ColumnDef name=\"lvl_3_name\" type=\"String\"/>\n"
-                + "        </ColumnDefs>\n"
-                + "        <Rows>\n"
-                + "          <Row>\n"
-                + "            <Value column=\"lvl_1_id\">1</Value>\n"
-                + "            <Value column=\"lvl_1_name\">level 1</Value>\n"
-                + "            <Value column=\"lvl_2_id\">1</Value>\n"
-                + "            <Value column=\"lvl_2_name\">level 2 - 1</Value>\n"
-                + "            <Value column=\"lvl_3_id\">112</Value>\n"
-                + "            <Value column=\"lvl_3_name\">level 3 - 1</Value>\n"
-                + "          </Row>\n"
-                + "          <Row>\n"
-                + "            <Value column=\"lvl_1_id\">1</Value>\n"
-                + "            <Value column=\"lvl_1_name\">level 1</Value>\n"
-                + "            <Value column=\"lvl_2_id\">1</Value>\n"
-                + "            <Value column=\"lvl_2_name\">level 2 - 1</Value>\n"
-                + "            <Value column=\"lvl_3_id\">114</Value>\n"
-                + "            <Value column=\"lvl_3_name\">level 3 - 2</Value>\n"
-                + "          </Row>\n"
-                + "        </Rows>\n"
-                + "      </InlineTable>\n"
-                + "      <Level name=\"Level1\" column=\"lvl_1_id\" nameColumn=\"lvl_1_name\" />\n"
-                + "      <Level name=\"Level2\" column=\"lvl_2_id\" nameColumn=\"lvl_2_name\" />\n"
-                + "      <Level name=\"Level3\" column=\"lvl_3_id\" nameColumn=\"lvl_3_name\" />\n"
-                + "    </Hierarchy>\n"
-                + "  </Dimension>\n");
+            "Sales",
+            "  <Dimension name=\"PandaSteak\" foreignKey=\"promotion_id\">\n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"lvl_3_id\">\n"
+            + "      <InlineTable alias=\"meatShack\">\n"
+            + "        <ColumnDefs>\n"
+            + "          <ColumnDef name=\"lvl_1_id\" type=\"Integer\"/>\n"
+            + "          <ColumnDef name=\"lvl_1_name\" type=\"String\"/>\n"
+            + "          <ColumnDef name=\"lvl_2_id\" type=\"Integer\"/>\n"
+            + "          <ColumnDef name=\"lvl_2_name\" type=\"String\"/>\n"
+            + "          <ColumnDef name=\"lvl_3_id\" type=\"Integer\"/>\n"
+            + "          <ColumnDef name=\"lvl_3_name\" type=\"String\"/>\n"
+            + "        </ColumnDefs>\n"
+            + "        <Rows>\n"
+            + "          <Row>\n"
+            + "            <Value column=\"lvl_1_id\">1</Value>\n"
+            + "            <Value column=\"lvl_1_name\">level 1</Value>\n"
+            + "            <Value column=\"lvl_2_id\">1</Value>\n"
+            + "            <Value column=\"lvl_2_name\">level 2 - 1</Value>\n"
+            + "            <Value column=\"lvl_3_id\">112</Value>\n"
+            + "            <Value column=\"lvl_3_name\">level 3 - 1</Value>\n"
+            + "          </Row>\n"
+            + "          <Row>\n"
+            + "            <Value column=\"lvl_1_id\">1</Value>\n"
+            + "            <Value column=\"lvl_1_name\">level 1</Value>\n"
+            + "            <Value column=\"lvl_2_id\">1</Value>\n"
+            + "            <Value column=\"lvl_2_name\">level 2 - 1</Value>\n"
+            + "            <Value column=\"lvl_3_id\">114</Value>\n"
+            + "            <Value column=\"lvl_3_name\">level 3 - 2</Value>\n"
+            + "          </Row>\n"
+            + "        </Rows>\n"
+            + "      </InlineTable>\n"
+            + "      <Level name=\"Level1\" column=\"lvl_1_id\" nameColumn=\"lvl_1_name\" />\n"
+            + "      <Level name=\"Level2\" column=\"lvl_2_id\" nameColumn=\"lvl_2_name\" />\n"
+            + "      <Level name=\"Level3\" column=\"lvl_3_id\" nameColumn=\"lvl_3_name\" />\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n");
         testContext.assertQueryReturns(
             "select non empty crossjoin({[PandaSteak].[Level3].[level 3 - 1], [PandaSteak].[Level3].[level 3 - 2]}, {[Measures].[Unit Sales], [Measures].[Store Cost]}) on columns, {[Product].[Product Family].Members} on rows from [Sales]",
             "Axis #0:\n"
