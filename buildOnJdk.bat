@@ -45,7 +45,7 @@ if %1==jdk1.7 (
 set JAVA_HOME=%JAVA_HOME_17%
 )
 
-set ANT_ARGUMENTS=
+set ANT_ARGUMENTS=-Drequested.java.version=%1
 for %%A in (%*) do (
 set ANT_ARGUMENTS=%ANT_ARGUMENTS% %%A
 )
@@ -61,5 +61,4 @@ echo Using Ant arguments: %ANT_ARGUMENTS%
 
 ant %ANT_ARGUMENTS%
 
-rem End buildJdk16.bat
-
+rem End buildOnJdk.bat

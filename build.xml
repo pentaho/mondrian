@@ -269,6 +269,15 @@ demo/access/MondrianFoodMart.mdb"/>
     </not>
   </condition>
 
+  <condition property="java.version.matches.requested">
+    <or>
+      <not>
+        <isset property="requested.java.version"/>
+      </not>
+      <matches pattern="^${requested.java.version}.*" string="jdk${java.runtime.version}" />
+    </or>
+  </condition>
+
   <path id="project.test.classpath" refid="project.test.classpath-${jdk}"/>
 
   <available classname="${mondrian.jdbcDrivers}"
@@ -537,7 +546,14 @@ compileJdk17"/>
         fork="no"/>
   </target>
 
-  <target name="compile.java">
+  <target name="apologise" unless="java.version.matches.requested">
+    <echo>Actual JVM Version (${java.runtime.version}) does not match
+requested (${requested.java.version}); skipping compile for this JDK.
+If you wish to build for this JDK, modify ${unix.script}.
+    </echo>
+  </target>
+
+  <target name="compile.java" depends="apologise" if="java.version.matches.requested">
     <echo>Compiling on JVM Version: ${java.runtime.version}</echo>
     <javac
         srcdir="${java.dir}"
@@ -550,7 +566,7 @@ compileJdk17"/>
       <exclude name="mondrian/olap4j/FactoryJdbc4Impl.java" if="jdk16.not.present"/>
       <exclude name="mondrian/olap4j/FactoryJdbc4Plus.java" if="jdk16.not.present"/>
       <exclude name="mondrian/olap4j/FactoryJdbc41Impl.java" if="jdk17.not.present"/>
-      <exclude name="mondrian/util/UtilCompatibleJdk16.java" if="jdk16.not.present"/>
+      <exclude name="mondrian/util/UtilCompatibleJdk16.java" if="jdk15.present"/>
     </javac>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>

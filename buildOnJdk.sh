@@ -11,10 +11,17 @@
 jdkVersion=$1
 shift
 
-# Change the following line to point each JDK's home.
-case "$jdkVersion" in
-(*) export JAVA_HOME=/usr/lib/jvm/${jdkVersion};;
-esac
+# If you are building Mondrian for a single JDK (most likely the
+# case), leave the following lines commented.
+#
+# If you are building a release, you will need to compile different
+# parts of Mondrian's source code under different JDKs.  Uncomment the
+# following lines to ensure that JAVA_HOME is assigned correctly for
+# each JDK version.
+#
+#case "$jdkVersion" in
+#(*) export JAVA_HOME=/usr/lib/jvm/${jdkVersion};;
+#esac
 
 if [ ! -d "$JAVA_HOME" ]; then
     echo "$0: Invalid JAVA_HOME $JAVA_HOME; skipping compile."
@@ -24,8 +31,8 @@ fi
 export PATH=$JAVA_HOME/bin:$PATH
 
 echo Using JAVA_HOME: $JAVA_HOME
-echo Using Ant arguments: $@
+echo Using Ant arguments: -Drequested.java.version="$jdkVersion" $@
 
-ant "$@"
+ant -Drequested.java.version="$jdkVersion" "$@"
 
 # End buildOnJdk.sh
