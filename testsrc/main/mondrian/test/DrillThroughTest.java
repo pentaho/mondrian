@@ -12,6 +12,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
@@ -1188,6 +1189,40 @@ public class DrillThroughTest extends FoodMartTestCase {
             return;
         }
         getTestContext().assertSqlEquals(expectedSql, sql, 27402);
+    }
+
+    public void testDrillthroughDisable() {
+        propSaver.set(
+            MondrianProperties.instance().EnableDrillThrough,
+            true);
+        Result result =
+            executeQuery(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+                + " {[Product].[All Products]} ON ROWS\n"
+                + "FROM [Sales]\n"
+                + "WHERE {[Time].[1997].[Q1], [Time].[1997].[Q2]}");
+        Cell cell = result.getCell(new int[]{0, 0});
+        assertTrue(cell.canDrillThrough());
+
+        propSaver.set(
+            MondrianProperties.instance().EnableDrillThrough,
+            false);
+        result =
+            executeQuery(
+                "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
+                + " {[Product].[All Products]} ON ROWS\n"
+                + "FROM [Sales]\n"
+                + "WHERE {[Time].[1997].[Q1], [Time].[1997].[Q2]}");
+        cell = result.getCell(new int[]{0, 0});
+        assertFalse(cell.canDrillThrough());
+        try {
+            cell.getDrillThroughSQL(false);
+            fail();
+        } catch (MondrianException e) {
+            assertTrue(
+                e.getMessage().contains(
+                    "Can't perform drillthrough operations because"));
+        }
     }
 }
 

@@ -785,6 +785,16 @@ unrecognized action is specified)</li>
         <Default>OFF</Default>
     </PropertyDefinition>
     <PropertyDefinition>
+        <Name>EnableDrillThrough</Name>
+        <Path>mondrian.drillthrough.enable</Path>
+        <Description>
+If disabled, Mondrian will throw an exception if someone attempts to
+perform a drillthrough of any kind.
+        </Description>
+        <Type>boolean</Type>
+        <Default>true</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
         <Name>EnableTotalCount</Name>
         <Path>mondrian.xmla.drillthroughTotalCount.enable</Path>
         <Category>XML/A</Category>

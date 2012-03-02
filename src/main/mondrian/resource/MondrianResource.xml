@@ -280,6 +280,10 @@
     <text>Don''t know how to rollup aggregator ''avg'' because the cube doesn''t contain at least one ''count'' and one ''sum'' measures based on the same column.</text>
 </exception>
 
+<exception id="350650" name="DrillthroughDisabled">
+    <text>Can''t perform drillthrough operations because ''{0}'' is set to false.</text>
+</exception>bacon
+
 <!-- ====================================================================== -->
 <!-- Connectivity errors -->
 
