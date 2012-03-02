@@ -1168,8 +1168,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "{[Store].[USA].[CA].[San Diego]}\n"
             + "{[Store].[USA].[CA].[San Francisco]}\n"
             + "{[Store].[USA].[OR]}\n"
-            + "Row #0: 100,827\n"
-            + "Row #1: 100,827\n"
+            + "Row #0: 74,748\n"
+            + "Row #1: 74,748\n"
             + "Row #2: 74,748\n"
             + "Row #3: \n"
             + "Row #4: 21,333\n"
@@ -2390,6 +2390,42 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #3: 1,580\n"
             + "Row #4: 539\n"
             + "Row #5: 1,554\n");
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1030">MONDRIAN-1030</a>
+     * When a query is based on a level higher than one in the same hierarchy
+     * which has access controls, it would only constrain at the current level
+     * if the rollup policy of partial is used.
+     *
+     * <p>Example. A query on USA where only Los-Angeles is accessible would
+     * return the values for California instead of only LA.
+     */
+    public void testBugMondrian1030_2() {
+        TestContext.instance().create(
+            null, null, null, null, null,
+            "<Role name=\"Bacon\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Customers].[USA].[CA].[Los Angeles]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>")
+            .withRole("Bacon")
+            .assertQueryReturns(
+                "select {[Measures].[Unit Sales]} on 0,\n"
+                + "   {[Customers].[USA]} on 1\n"
+                + "from [Sales]",
+                "Axis #0:\n"
+                + "{}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Unit Sales]}\n"
+                + "Axis #2:\n"
+                + "{[Customers].[USA]}\n"
+                + "Row #0: 2,009\n");
     }
 }
 
