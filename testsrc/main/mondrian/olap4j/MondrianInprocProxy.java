@@ -8,8 +8,8 @@
 */
 package mondrian.olap4j;
 
+import mondrian.olap.Util;
 import mondrian.tui.XmlaSupport;
-import mondrian.util.CompletedFuture;
 
 import org.apache.commons.collections.map.ReferenceMap;
 import org.olap4j.driver.xmla.proxy.XmlaOlap4jProxy;
@@ -29,6 +29,9 @@ import java.util.concurrent.*;
 public class MondrianInprocProxy
     implements XmlaOlap4jProxy
 {
+    private final ExecutorService executor =
+        Util.getExecutorService(
+            1, 1, 1, -1, "MondrianInprocProxy$executor");
     private final Map<String, String> catalogNameUrls;
     private final String urlString;
     private final Map servletCache =
@@ -71,7 +74,12 @@ public class MondrianInprocProxy
         final XmlaOlap4jServerInfos infos,
         final String request)
     {
-        return new CompletedFuture<byte[]>(get(infos, request), null);
+        return this.executor.submit(
+            new Callable<byte[]>() {
+                public byte[] call() throws Exception {
+                    return get(infos, request);
+                }
+            });
     }
 
     public String getEncodingCharsetName() {

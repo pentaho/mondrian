@@ -16,6 +16,7 @@ import mondrian.server.monitor.*;
 
 import org.apache.log4j.MDC;
 
+import java.util.EmptyStackException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -87,7 +88,18 @@ public class Execution {
     private final Map<String, Object> mdc =
         new HashMap<String, Object>();
 
-    public Execution(Statement statement, long timeoutIntervalMillis) {
+    private final Execution parent;
+
+    public Execution(
+        Statement statement,
+        long timeoutIntervalMillis) {
+        Execution parentExec;
+        try {
+            parentExec = Locus.peek().execution;
+        } catch (EmptyStackException e) {
+            parentExec = null;
+        }
+        this.parent = parentExec;
         this.id = SEQ.getAndIncrement();
         this.statement = (StatementImpl) statement;
         this.timeoutIntervalMillis = timeoutIntervalMillis;
@@ -177,6 +189,9 @@ public class Execution {
      */
     public void cancel() {
         this.state = State.CANCELED;
+        if (parent != null) {
+            parent.cancel();
+        }
         fireExecutionEndEvent();
     }
 
@@ -202,6 +217,9 @@ public class Execution {
      * @throws MondrianException The exception encountered.
      */
     public void checkCancelOrTimeout() throws MondrianException {
+        if (parent != null) {
+            parent.checkCancelOrTimeout();
+        }
         switch (this.state) {
         case CANCELED:
             fireExecutionEndEvent();
@@ -230,6 +248,11 @@ public class Execution {
      * @return True or false, depending on the timeout state.
      */
     public boolean isCancelOrTimeout() {
+        if (parent != null
+            && parent.isCancelOrTimeout())
+        {
+            return true;
+        }
         if (state == State.CANCELED
             || state == State.ERROR
             || (state == State.RUNNING
@@ -237,9 +260,8 @@ public class Execution {
                 && System.currentTimeMillis() > timeoutTimeMillis))
         {
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
@@ -255,6 +277,9 @@ public class Execution {
      * {@link Execution#isCancelOrTimeout()} instead.
      */
     public void cancelSqlStatements() {
+        if (parent != null) {
+            parent.cancelSqlStatements();
+        }
         synchronized (sqlStateLock) {
             if (sqlState == SqlState.CLEAN) {
                 return;
