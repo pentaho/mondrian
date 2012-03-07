@@ -1,3 +1,4 @@
+#!/bin/bash
 # $Id$
 # Called recursively from 'ant release' to build the files which can only be
 # built under a particular JDK version.
@@ -35,7 +36,7 @@ versionSansJdk=`echo "${jdkVersion}" | sed 's/jdk\([0-9]\.[0-9]\)/\1/'`
 #
 # 3. Customize this method with the correct JDK location.
 #
-function chooseJavaHome() {
+chooseJavaHome() {
     # If JAVA_HOME_xx is specified in the environment, use it.
     case "$jdkVersion" in
     (jdk1.5)
