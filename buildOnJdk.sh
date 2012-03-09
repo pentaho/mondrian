@@ -67,7 +67,7 @@ chooseJavaHome() {
     (Darwin)
         defaultJavaHome=/System/Library/Frameworks/JavaVM.framework/Versions/${versionSansJdk}/Home;;
     (*)
-        defaultJavaHome=/usr/lib/jvm/${jdkVersion};;
+        defaultJavaHome=`readlink -f /usr/lib/jvm/${jdkVersion}`;;
     esac
 
     if [ -d "$defaultJavaHome" ]; then
