@@ -3417,10 +3417,7 @@ public class RolapSchemaLoader {
                 "Validate calculated members in cube",
                 new Locus.Action<Query>() {
                     public Query execute() {
-                        final Query queryExp =
-                            (Query) conn.parseStatement(
-                                Locus.peek().execution.getMondrianStatement(),
-                                queryString, null, false);
+                        final Query queryExp = conn.parseQuery(queryString);
                         queryExp.resolve();
                         return queryExp;
                     }
@@ -3540,7 +3537,13 @@ public class RolapSchemaLoader {
         // Lookup hierarchy
         Hierarchy hierarchy = null;
         String dimName = null;
-        if (xmlCalcMember.dimension != null) {
+        if (xmlCalcMember.hierarchy != null
+            && xmlCalcMember.dimension != null)
+        {
+            throw MondrianResource.instance()
+                .CalcMemberHasBothDimensionAndHierarchy.ex(
+                    xmlCalcMember.name, cube.getName());
+        } else if (xmlCalcMember.dimension != null) {
             dimName = xmlCalcMember.dimension;
             final Dimension dimension =
                 cube.lookupDimension(
@@ -3553,7 +3556,7 @@ public class RolapSchemaLoader {
         } else if (xmlCalcMember.hierarchy != null) {
             dimName = xmlCalcMember.hierarchy;
             hierarchy = (Hierarchy)
-                cube.getSchemaReader().lookupCompound(
+                cube.getSchemaReader().withLocus().lookupCompound(
                     cube,
                     Util.parseIdentifier(dimName),
                     false,
@@ -3570,6 +3573,31 @@ public class RolapSchemaLoader {
             parentFqName = xmlCalcMember.parent;
         } else {
             parentFqName = hierarchy.getUniqueNameSsas();
+        }
+
+        if (!hierarchy.getDimension().isMeasures()) {
+            // Check if the parent exists.
+            final OlapElement parent =
+                Util.lookupCompound(
+                    cube.getSchemaReader().withLocus(),
+                    cube,
+                    Util.parseIdentifier(parentFqName),
+                    false,
+                    Category.Unknown);
+
+            if (parent == null) {
+                throw MondrianResource.instance()
+                    .CalcMemberHasUnknownParent.ex(
+                        parentFqName, xmlCalcMember.name, cube.getName());
+            }
+
+            if (parent.getHierarchy() != hierarchy) {
+                throw MondrianResource.instance()
+                    .CalcMemberHasDifferentParentAndHierarchy.ex(
+                        xmlCalcMember.name,
+                        cube.getName(),
+                        hierarchy.getUniqueName());
+            }
         }
 
         // If we're processing a virtual cube, it's possible that we've

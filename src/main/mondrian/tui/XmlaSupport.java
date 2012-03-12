@@ -24,8 +24,6 @@ import org.apache.log4j.Logger;
 import org.eigenbase.xom.*;
 import org.eigenbase.xom.Parser;
 
-import org.olap4j.impl.Olap4jUtil;
-
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -269,7 +267,7 @@ public class XmlaSupport {
             dataSourcesConfigString =
                 Util.replaceProperties(
                     dataSourcesConfigString,
-                    Olap4jUtil.toMap(System.getProperties()));
+                    Util.toMap(System.getProperties()));
 
             if (logger.isDebugEnabled()) {
                 logger.debug(

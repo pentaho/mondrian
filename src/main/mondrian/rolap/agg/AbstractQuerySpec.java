@@ -62,6 +62,9 @@ public abstract class AbstractQuerySpec implements QuerySpec {
      */
     protected void addMeasure(final int i, final SqlQuery sqlQuery) {
         RolapStar.Measure measure = getMeasure(i);
+        if (!isPartOfSelect(measure)) {
+            return;
+        }
         assert measure.getTable() == getStar().getFactTable();
         measure.getTable().addToFrom(sqlQuery, false, true);
 
@@ -109,6 +112,10 @@ public abstract class AbstractQuerySpec implements QuerySpec {
                 continue;
             }
 
+            if (!isPartOfSelect(column)) {
+                continue;
+            }
+
             // some DB2 (AS400) versions throw an error, if a column alias is
             // there and *not* used in a subsequent order by/group by
             final String alias;
@@ -144,6 +151,22 @@ public abstract class AbstractQuerySpec implements QuerySpec {
         }
 
         return Collections.emptyMap();
+    }
+
+    /**
+     * Allows subclasses to specify if a given column must
+     * be returned as part of the result set, in the select clause.
+     */
+    protected boolean isPartOfSelect(RolapStar.Column col) {
+        return true;
+    }
+
+    /**
+     * Allows subclasses to specify if a given column must
+     * be returned as part of the result set, in the select clause.
+     */
+    protected boolean isPartOfSelect(RolapStar.Measure measure) {
+        return true;
     }
 
     /**

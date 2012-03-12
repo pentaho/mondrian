@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 import org.eigenbase.util.property.StringProperty;
 
 import org.olap4j.Scenario;
-import org.olap4j.impl.Olap4jUtil;
 
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -368,7 +367,7 @@ public class RolapConnection extends ConnectionBase {
             RolapUtil.loadDrivers(jdbcDriversProp);
 
             Properties jdbcProperties = getJdbcProperties(connectInfo);
-            final Map<String, String> map = Olap4jUtil.toMap(jdbcProperties);
+            final Map<String, String> map = Util.toMap(jdbcProperties);
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 // FIXME ordering is non-deterministic
                 appendKeyValue(buf, entry.getKey(), entry.getValue());
@@ -620,6 +619,7 @@ public class RolapConnection extends ConnectionBase {
      *     the property file
      */
     public Result execute(final Execution execution) {
+        execution.copyMDC();
         return
             server.getResultShepherd()
                 .shepherdExecution(
@@ -632,6 +632,7 @@ public class RolapConnection extends ConnectionBase {
     }
 
     private Result executeInternal(final Execution execution) {
+        execution.setContextMap();
         final Statement statement = execution.getMondrianStatement();
         // Cleanup any previous executions still running
         synchronized (statement) {

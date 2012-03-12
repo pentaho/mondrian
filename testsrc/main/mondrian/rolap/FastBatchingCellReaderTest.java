@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.MondrianProperties;
+import mondrian.olap.MondrianServer;
 import mondrian.rolap.agg.*;
 import mondrian.server.*;
 import mondrian.spi.Dialect;
@@ -1180,28 +1181,57 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 cubeNameSales,
                 measureUnitSales);
 
-        BatchLoader.CompositeBatch compositeBatch =
+        final BatchLoader.CompositeBatch compositeBatch =
             new BatchLoader.CompositeBatch(detailedBatch);
 
         compositeBatch.add(summaryBatch);
 
         final List<Future<Map<Segment, SegmentWithData>>> segmentFutures =
             new ArrayList<Future<Map<Segment, SegmentWithData>>>();
-        compositeBatch.load(segmentFutures);
+        MondrianServer.forConnection(
+            getTestContext().getConnection())
+                .getAggregationManager().cacheMgr.execute(
+                    new SegmentCacheManager.Command<Void>() {
+                        private final Locus locus =
+                            Locus.peek();
+                        public Void call() throws Exception {
+                            compositeBatch.load(segmentFutures);
+                            return null;
+                        }
+                        public Locus getLocus() {
+                            return locus;
+                        }
+                    });
 
-        assertEquals(2, segmentFutures.size());
-        final Map<Segment, SegmentWithData> map0 = segmentFutures.get(0).get();
-        assertEquals(1, map0.size());
-        final Segment segment0 = map0.keySet().iterator().next();
-        assertEquals(
-            detailedBatch.getConstrainedColumnsBitKey(),
-            segment0.getConstrainedColumnsBitKey());
-        final Map<Segment, SegmentWithData> map1 = segmentFutures.get(1).get();
-        assertEquals(1, map1.size());
-        final Segment segment1 = map1.keySet().iterator().next();
-        assertEquals(
-            summaryBatch.getConstrainedColumnsBitKey(),
-            segment1.getConstrainedColumnsBitKey());
+        assertEquals(1, segmentFutures.size());
+        assertEquals(2, segmentFutures.get(0).get().size());
+        // The order of the segments is not deterministic, so we need to
+        // iterate over the segments and find a match for the batch.
+        // If none are found, we fail.
+        boolean found = false;
+        for (Segment seg : segmentFutures.get(0).get().keySet()) {
+            if (detailedBatch.getConstrainedColumnsBitKey()
+                .equals(seg.getConstrainedColumnsBitKey()))
+            {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            fail("No bitkey match found.");
+        }
+        found = false;
+        for (Segment seg : segmentFutures.get(0).get().keySet()) {
+            if (summaryBatch.getConstrainedColumnsBitKey()
+                .equals(seg.getConstrainedColumnsBitKey()))
+            {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            fail("No bitkey match found.");
+        }
     }
 
     /**

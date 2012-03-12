@@ -10,7 +10,7 @@
 package mondrian.spi.impl;
 
 import mondrian.rolap.*;
-import mondrian.rolap.agg.Aggregation;
+import mondrian.rolap.agg.AggregationKey;
 import mondrian.spi.DataSourceChangeListener;
 
 import java.util.HashSet;
@@ -56,7 +56,9 @@ public class DataSourceChangeListenerImpl implements DataSourceChangeListener {
         return false;
     }
 
-    public synchronized boolean isAggregationChanged(Aggregation aggregation) {
+    public synchronized boolean isAggregationChanged(
+        AggregationKey aggregation)
+    {
         return false;
     }
 }

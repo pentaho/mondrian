@@ -243,8 +243,10 @@ public class SegmentCacheManager {
 
     private static final Logger LOGGER =
         Logger.getLogger(AggregationManager.class);
+    private final MondrianServer server;
 
-    public SegmentCacheManager() {
+    public SegmentCacheManager(MondrianServer server) {
+        this.server = server;
         ACTOR = new Actor();
         thread = new Thread(
             ACTOR, "mondrian.rolap.agg.SegmentCacheManager$ACTOR");
@@ -268,7 +270,7 @@ public class SegmentCacheManager {
                 new SegmentCacheWorker(externalCache, thread));
             // Hook up a listener so it can update
             // the segment index.
-            externalCache.addListener(new AsyncCacheListener(this));
+            externalCache.addListener(new AsyncCacheListener(this, server));
         }
 
         compositeCache = new CompositeSegmentCache(segmentCacheWorkers);
@@ -376,18 +378,19 @@ public class SegmentCacheManager {
     /**
      * Tells the cache that a segment is newly available in an external cache.
      */
-    public void externalSegmentCreated(SegmentHeader header) {
-        final Locus locus = Locus.peek();
+    public void externalSegmentCreated(
+        SegmentHeader header,
+        MondrianServer server)
+    {
         ACTOR.event(
             handler,
             new ExternalSegmentCreatedEvent(
                 System.currentTimeMillis(),
-                locus.getServer().getMonitor(),
-                locus.getServer().getId(),
-                locus.execution.getMondrianStatement()
-                    .getMondrianConnection().getId(),
-                locus.execution.getMondrianStatement().getId(),
-                locus.execution.getId(),
+                server.getMonitor(),
+                server.getId(),
+                0,
+                0,
+                0,
                 this,
                 header));
     }
@@ -396,18 +399,19 @@ public class SegmentCacheManager {
      * Tells the cache that a segment is no longer available in an external
      * cache.
      */
-    public void externalSegmentDeleted(SegmentHeader header) {
-        final Locus locus = Locus.peek();
+    public void externalSegmentDeleted(
+        SegmentHeader header,
+        MondrianServer server)
+    {
         ACTOR.event(
             handler,
             new ExternalSegmentDeletedEvent(
                 System.currentTimeMillis(),
-                locus.getServer().getMonitor(),
-                locus.getServer().getId(),
-                locus.execution.getMondrianStatement()
-                    .getMondrianConnection().getId(),
-                locus.execution.getMondrianStatement().getId(),
-                locus.execution.getId(),
+                server.getMonitor(),
+                server.getId(),
+                0,
+                0,
+                0,
                 this,
                 header));
     }
@@ -1218,9 +1222,14 @@ public class SegmentCacheManager {
         implements SegmentCache.SegmentCacheListener
     {
         private final SegmentCacheManager cacheMgr;
+        private final MondrianServer server;
 
-        public AsyncCacheListener(SegmentCacheManager cacheMgr) {
+        public AsyncCacheListener(
+            SegmentCacheManager cacheMgr,
+            MondrianServer server)
+        {
             this.cacheMgr = cacheMgr;
+            this.server = server;
         }
 
         public void handle(final SegmentCacheEvent e) {
@@ -1240,7 +1249,8 @@ public class SegmentCacheManager {
                                 new Command<Void>() {
                                     public Void call() {
                                         cacheMgr.externalSegmentCreated(
-                                            e.getSource());
+                                            e.getSource(),
+                                            server);
                                         return null;
                                     }
                                     public Locus getLocus() {
@@ -1253,7 +1263,8 @@ public class SegmentCacheManager {
                                 new Command<Void>() {
                                     public Void call() {
                                         cacheMgr.externalSegmentDeleted(
-                                            e.getSource());
+                                            e.getSource(),
+                                            server);
                                         return null;
                                     }
                                     public Locus getLocus() {
@@ -1422,11 +1433,36 @@ public class SegmentCacheManager {
 
             // Is there a pending segment? (A segment that has been created and
             // is loading via SQL.)
-            for (SegmentHeader header : headers) {
+            for (final SegmentHeader header : headers) {
                 final Future<SegmentBody> bodyFuture =
                     indexRegistry.getIndex(star)
                         .getFuture(header);
                 if (bodyFuture != null) {
+                    // Check if the DataSourceChangeListener wants us to clear
+                    // the current segment
+                    if (star.getChangeListener() != null
+                        && star.getChangeListener().isAggregationChanged(key))
+                    {
+                        /*
+                         * We can't satisfy this request, and we must clear the
+                         * data from our cache. We clear it from the index
+                         * first, then queue up a job in the background
+                         * to remove the data from all the caches.
+                         */
+                        indexRegistry.getIndex(star).remove(header);
+                        Util.discard(cacheExecutor.submit(
+                            new Runnable() {
+                                public void run() {
+                                    try {
+                                        compositeCache.remove(header);
+                                    } catch (Throwable e) {
+                                        LOGGER.warn(
+                                            "remove header failed: " + header,
+                                            e);
+                                    }
+                                }
+                            }));
+                    }
                     converterMap.put(
                         SegmentCacheIndexImpl.makeConverterKey(header),
                         getConverter(star, header));
@@ -1467,7 +1503,7 @@ public class SegmentCacheManager {
          * Returns the {@link SegmentCacheIndex} for a given
          * {@link RolapStar}.
          */
-        public synchronized SegmentCacheIndex getIndex(RolapStar star) {
+        public SegmentCacheIndex getIndex(RolapStar star) {
             if (!indexes.containsKey(star)) {
                 indexes.put(star, new SegmentCacheIndexImpl(thread));
             }
@@ -1477,9 +1513,11 @@ public class SegmentCacheManager {
          * Returns the {@link SegmentCacheIndex} for a given
          * {@link SegmentHeader}.
          */
-        private synchronized SegmentCacheIndex getIndex(
+        private SegmentCacheIndex getIndex(
             SegmentHeader header)
         {
+            // First we check the indexes that already exist.
+            // This is fast.
             for (Entry<RolapStar, SegmentCacheIndex> entry
                 : indexes.entrySet())
             {
@@ -1494,6 +1532,20 @@ public class SegmentCacheManager {
                     continue;
                 }
                 return entry.getValue();
+            }
+            //The index doesn't exist. Let's create it.
+            for (RolapSchema schema : RolapSchema.getRolapSchemas()) {
+                if (!schema.getChecksum().equals(header.schemaChecksum)) {
+                    continue;
+                }
+                // We have a schema match.
+                RolapStar star =
+                    schema.getStar(header.rolapStarFactTableName);
+                if (star != null) {
+                    // Found it.
+                    indexes.put(star, new SegmentCacheIndexImpl(thread));
+                }
+                return indexes.get(star);
             }
             return null;
         }

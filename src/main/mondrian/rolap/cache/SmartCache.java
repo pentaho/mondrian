@@ -3,7 +3,7 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde and others
+// Copyright (C) 2006-2012 Julian Hyde and others
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
@@ -33,6 +33,15 @@ public interface SmartCache <K, V> extends Iterable<Map.Entry<K, V>> {
     V put(K key, V value);
 
     V get(K key);
+
+    /**
+     * Removes a key from the cache.
+     *
+     * @param key Key
+     *
+     * @return Previous value associated with the key
+     */
+    V remove(K key);
 
     void clear();
 

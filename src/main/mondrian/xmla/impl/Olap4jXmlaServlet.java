@@ -9,6 +9,7 @@
 */
 package mondrian.xmla.impl;
 
+import mondrian.olap.Util;
 import mondrian.xmla.XmlaHandler;
 import mondrian.xmla.XmlaRequest;
 
@@ -18,7 +19,6 @@ import org.apache.log4j.Logger;
 
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapWrapper;
-import org.olap4j.impl.Olap4jUtil;
 
 import java.lang.reflect.*;
 import java.sql.Connection;
@@ -390,7 +390,7 @@ public class Olap4jXmlaServlet extends DefaultXmlaServlet {
 
         // Get system properties.
         final Map<String, String> systemProps =
-            Olap4jUtil.toMap(System.getProperties());
+            Util.toMap(System.getProperties());
         for (Map.Entry<String, String> entry : systemProps.entrySet()) {
             String sk = entry.getKey();
             if (sk.startsWith(prefix)) {

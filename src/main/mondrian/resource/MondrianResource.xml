@@ -332,6 +332,18 @@
     <text>Unknown dimension ''{0}'' for calculated member ''{1}'' in cube ''{2}''</text>
 </exception>
 
+<exception id="40121" name="CalcMemberHasBothDimensionAndHierarchy">
+    <text>Cannot specify both a dimension and hierarchy for calculated member ''{0}'' in cube ''{1}''</text>
+</exception>
+
+<exception id="40122" name="CalcMemberHasUnknownParent">
+    <text>Cannot find a parent with name ''{0}'' for calculated member ''{1}'' in cube ''{2}''</text>
+</exception>
+
+<exception id="40123" name="CalcMemberHasDifferentParentAndHierarchy">
+    <text>The calculated member ''{0}'' in cube ''{1}'' is defined for hierarchy ''{2}'' but its parent member is not part of that hierarchy</text>
+</exception>
+
 <exception id="40130" name="CalcMemberNotUnique">
     <text>Calculated member ''{0}'' already exists in cube ''{1}''</text>
 </exception>

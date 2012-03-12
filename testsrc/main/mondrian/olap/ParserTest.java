@@ -607,6 +607,18 @@ public class ParserTest extends FoodMartTestCase {
             + "from [Cube]\n");
     }
 
+    public void testDrillThroughExtended1() {
+        assertParseQuery(
+            "DRILLTHROUGH MAXROWS 5 FIRSTROWSET 7\n"
+            + "SELECT [Foo] on 0, [Bar] on 1 FROM [Cube]\n"
+            + "RETURN [Xxx].[AAa]",
+            "drillthrough maxrows 5 firstrowset 7\n"
+            + "select [Foo] ON COLUMNS,\n"
+            + "  [Bar] ON ROWS\n"
+            + "from [Cube]\n"
+            + " return  return [Xxx].[AAa]");
+    }
+
     public void testDrillThroughExtended() {
         assertParseQuery(
             "DRILLTHROUGH MAXROWS 5 FIRSTROWSET 7\n"
@@ -617,6 +629,18 @@ public class ParserTest extends FoodMartTestCase {
             + "  [Bar] ON ROWS\n"
             + "from [Cube]\n"
             + " return  return [Xxx].[AAa], [YYY]");
+    }
+
+    public void testDrillThroughExtended3() {
+        assertParseQuery(
+            "DRILLTHROUGH MAXROWS 5 FIRSTROWSET 7\n"
+            + "SELECT [Foo] on 0, [Bar] on 1 FROM [Cube]\n"
+            + "RETURN [Xxx].[AAa], [YYY], [zzz]",
+            "drillthrough maxrows 5 firstrowset 7\n"
+            + "select [Foo] ON COLUMNS,\n"
+            + "  [Bar] ON ROWS\n"
+            + "from [Cube]\n"
+            + " return  return [Xxx].[AAa], [YYY], [zzz]");
     }
 
     public void testExplain() {

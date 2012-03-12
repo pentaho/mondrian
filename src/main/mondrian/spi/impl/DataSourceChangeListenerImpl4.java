@@ -10,7 +10,7 @@
 package mondrian.spi.impl;
 
 import mondrian.rolap.RolapHierarchy;
-import mondrian.rolap.agg.Aggregation;
+import mondrian.rolap.agg.AggregationKey;
 import mondrian.spi.DataSourceChangeListener;
 
 import java.util.Random;
@@ -75,7 +75,9 @@ public class DataSourceChangeListenerImpl4 implements DataSourceChangeListener {
         }
     }
 
-    public synchronized boolean isAggregationChanged(Aggregation aggregation) {
+    public synchronized boolean isAggregationChanged(
+        AggregationKey aggregation)
+    {
         if (flushInverseFrequencyAggregation != 0) {
             if (random.nextInt(flushInverseFrequencyAggregation) == 0) {
                 return true;

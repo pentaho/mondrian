@@ -14,9 +14,12 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnection;
 import mondrian.server.monitor.*;
 
+import org.apache.log4j.MDC;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -81,10 +84,38 @@ public class Execution {
 
     public static final Execution NONE = new Execution(null, 0);
 
+    private final Map<String, Object> mdc =
+        new HashMap<String, Object>();
+
     public Execution(Statement statement, long timeoutIntervalMillis) {
         this.id = SEQ.getAndIncrement();
         this.statement = (StatementImpl) statement;
         this.timeoutIntervalMillis = timeoutIntervalMillis;
+    }
+
+    /**
+     * Copy the current MDC so it can be used later
+     */
+    public void copyMDC() {
+        this.mdc.clear();
+        final Map<String, Object> currentMdc =
+            MDC.getContext();
+        if (currentMdc != null) {
+            this.mdc.putAll(currentMdc);
+        }
+    }
+
+    /**
+     * Set the copied mdc into the current MDC. This should be called
+     * any time there will be logging in a thread handled by the
+     * RolapResultShepherd where original MDC needs to be retrieved
+     */
+    public void setContextMap() {
+        final Map<String, Object> old = MDC.getContext();
+        if (old != null) {
+            old.clear();
+            old.putAll(mdc);
+        }
     }
 
     /**
@@ -320,6 +351,7 @@ public class Execution {
                 id,
                 getMdx()));
     }
+
     /**
      * Enumeration of the states of an Execution instance.
      */

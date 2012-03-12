@@ -4,13 +4,14 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2010 Julian Hyde and others
+// Copyright (C) 2001-2012 Julian Hyde and others
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
+import mondrian.olap.Level;
 import mondrian.olap.Util;
 import mondrian.rolap.cache.SmartCache;
 import mondrian.rolap.cache.SoftSmartCache;
@@ -163,6 +164,10 @@ public class MemberCacheHelper implements MemberCache {
         mapMemberToChildren.clear();
         mapKeyToMember.clear();
         mapLevelToMembers.clear();
+        // We also need to clear the approxRowCount of each level.
+        for (Level level : rolapHierarchy.getLevels()) {
+            ((RolapLevel)level).setApproxRowCount(Integer.MIN_VALUE);
+        }
     }
 
     public DataSourceChangeListener getChangeListener() {
@@ -180,25 +185,28 @@ public class MemberCacheHelper implements MemberCache {
 
     public synchronized RolapMember removeMember(RolapLevel level, Object key)
     {
+        // Flush entries from the level-to-members map
+        // for member's level and all child levels.
+        // Important: Do this even if the member is apparently not in the cache.
+        for (Iterator<Map.Entry<Pair<RolapLevel, Object>, List<RolapMember>>>
+                 iterator = mapLevelToMembers.getCache().iterator();
+             iterator.hasNext();)
+        {
+            Map.Entry<Pair<RolapLevel, Object>, List<RolapMember>> entry =
+                iterator.next();
+            final RolapLevel cacheLevel = entry.getKey().left;
+            if (cacheLevel.equals(level)
+                || (cacheLevel.getHierarchy().equals(level.getHierarchy())
+                    && cacheLevel.getDepth() >= level.getDepth()))
+            {
+                iterator.remove();
+            }
+        }
+
         RolapMember member = getMember(level, key);
         if (member == null) {
             // not in cache
             return null;
-        }
-
-        // Drop member from the level-to-members map.
-        // Cache key is a (level, constraint) pair,
-        // cache value is a list of RolapMember.
-        // For each cache key whose level matches, remove from the list,
-        // regardless of the constraint.
-        for (Map.Entry<Pair<RolapLevel, Object>, List<RolapMember>> entry
-            : mapLevelToMembers.getCache())
-        {
-            if (entry.getKey().left.equals(level)) {
-                List<RolapMember> peers = entry.getValue();
-                boolean removedIt = peers.remove(member);
-                Util.discard(removedIt);
-            }
         }
 
         // Drop member from the member-to-children map, wherever it occurs as
@@ -246,7 +254,6 @@ public class MemberCacheHelper implements MemberCache {
         // lists of children. Do need to update inferior lists of level-peers.
         return null; // STUB
     }
-
 }
 
 // End MemberCacheHelper.java

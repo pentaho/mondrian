@@ -11,6 +11,8 @@ package mondrian.util;
 
 import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapUtil;
+import mondrian.rolap.RolapUtil.RolapUtilComparable;
 
 import org.apache.log4j.Logger;
 
@@ -98,7 +100,9 @@ public class UtilCompatibleJdk16 extends UtilCompatibleJdk15 {
     public <T extends Comparable<T>> int binarySearch(
         T[] ts, int start, int end, T t)
     {
-        return Arrays.binarySearch(ts, start, end, t);
+        return Arrays.binarySearch(
+            ts, start, end, t,
+            RolapUtil.ROLAP_COMPARATOR);
     }
 }
 

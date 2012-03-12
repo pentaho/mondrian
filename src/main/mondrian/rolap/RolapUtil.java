@@ -28,6 +28,7 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.sql.SQLException;
 import java.util.*;
+
 import javax.sql.DataSource;
 
 /**
@@ -125,7 +126,7 @@ public class RolapUtil {
         }
     }
 
-    private final static class RolapUtilComparable
+    public final static class RolapUtilComparable
         implements Comparable, Serializable
     {
         private static final long serialVersionUID = -2595758291465179116L;
@@ -140,6 +141,31 @@ public class RolapUtil {
         }
         public int compareTo(Object o) {
             return o == this ? 0 : -1;
+        }
+    }
+
+    /**
+     * A comparator singleton instance which can handle the presence of
+     * {@link RolapUtilComparable} instances in a collection.
+     */
+    public static final Comparator ROLAP_COMPARATOR =
+        new RolapUtilComparator();
+
+    private static final class RolapUtilComparator<T extends Comparable<T>>
+        implements Comparator<T>
+    {
+        public int compare(T o1, T o2) {
+            try {
+                return o1.compareTo(o2);
+            } catch (ClassCastException cce) {
+                if (o1 instanceof RolapUtilComparable) {
+                    return -1;
+                }
+                if (o2 instanceof RolapUtilComparable) {
+                    return 1;
+                }
+                throw new MondrianException(cce);
+            }
         }
     }
 

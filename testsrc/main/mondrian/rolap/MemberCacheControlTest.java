@@ -11,11 +11,15 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.CacheControl.MemberEditCommand;
+import mondrian.olap.Hierarchy;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.Statement;
 import mondrian.test.*;
+
+import org.apache.log4j.*;
+import org.apache.log4j.Level;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -129,7 +133,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
     protected static RolapMember findMember(
         TestContext tc,
         String cubeName,
-        String ... names)
+        String... names)
     {
         Cube cube = tc.getConnection().getSchema().lookupCube(cubeName, true);
         SchemaReader scr = cube.getSchemaReader(null).withLocus();
@@ -970,6 +974,205 @@ public class MemberCacheControlTest extends FoodMartTestCase {
             assertEquals(
                 "all members in set must belong to same level",
                 e.getMessage());
+        }
+    }
+
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1076">MONDRIAN-1076,
+     * "Add CacheControl API to flush members from dimension cache"</a>.
+     */
+    public void testFlushHierarchy() {
+        final TestContext testContext = getTestContext();
+        CacheControlTest.flushCache(testContext);
+        final CacheControl cacheControl =
+            testContext.getConnection().getCacheControl(null);
+        final Cube salesCube =
+            testContext.getConnection()
+                .getSchema().lookupCube("Sales", true);
+
+        final Logger logger = RolapUtil.SQL_LOGGER;
+        final Level level = logger.getLevel();
+        final StringWriter sw = new StringWriter();
+        final WriterAppender appender =
+            new WriterAppender(new SimpleLayout(), sw);
+        try {
+            logger.setLevel(Level.DEBUG);
+            logger.addAppender(appender);
+
+            final Hierarchy storeHierarchy =
+                salesCube.getDimensions()[1].getHierarchies()[0];
+            assertEquals("Store", storeHierarchy.getName());
+            final CacheControl.MemberSet storeMemberSet =
+                cacheControl.createMemberSet(
+                    storeHierarchy.getAllMember(), true);
+            final Runnable storeFlusher =
+                new Runnable() {
+                    public void run() {
+                        cacheControl.flush(storeMemberSet);
+                    }
+                };
+
+            final Result result =
+                testContext.executeQuery(
+                    "select [Store].[Mexico].[Yucatan] on 0 from [Sales]");
+            final Member storeYucatanMember =
+                result.getAxes()[0].getPositions().get(0).get(0);
+            final CacheControl.MemberSet storeYucatanMemberSet =
+                cacheControl.createMemberSet(
+                    storeYucatanMember, true);
+            final Runnable storeYucatanFlusher =
+                new Runnable() {
+                    public void run() {
+                        cacheControl.flush(storeYucatanMemberSet);
+                    }
+                };
+
+            checkFlushHierarchy(
+                sw, true, storeFlusher,
+                new Runnable() {
+                    public void run() {
+                        // Check that <Member>.Children uses cache when applied
+                        // to an 'all' member.
+                        testContext.assertAxisReturns(
+                            "[Store].Children",
+                            "[Store].[Canada]\n"
+                            + "[Store].[Mexico]\n"
+                            + "[Store].[USA]");
+                    }
+                });
+            checkFlushHierarchy(
+                sw, true, storeFlusher,
+                new Runnable() {
+                    public void run() {
+                        // Check that <Member>.Children uses cache when applied
+                        // to regular member.
+                        testContext.assertAxisReturns(
+                            "[Store].[USA].[CA].Children",
+                            "[Store].[USA].[CA].[Alameda]\n"
+                            + "[Store].[USA].[CA].[Beverly Hills]\n"
+                            + "[Store].[USA].[CA].[Los Angeles]\n"
+                            + "[Store].[USA].[CA].[San Diego]\n"
+                            + "[Store].[USA].[CA].[San Francisco]");
+                    }
+                });
+
+            // In contrast to preceding, flushing Yucatan should not affect
+            // California.
+            checkFlushHierarchy(
+                sw, false, storeYucatanFlusher,
+                new Runnable() {
+                    public void run() {
+                        // Check that <Member>.Children uses cache when applied
+                        // to regular member.
+                        testContext.assertAxisReturns(
+                            "[Store].[USA].[CA].Children",
+                            "[Store].[USA].[CA].[Alameda]\n"
+                            + "[Store].[USA].[CA].[Beverly Hills]\n"
+                            + "[Store].[USA].[CA].[Los Angeles]\n"
+                            + "[Store].[USA].[CA].[San Diego]\n"
+                            + "[Store].[USA].[CA].[San Francisco]");
+                    }
+                });
+
+            checkFlushHierarchy(
+                sw, true, storeFlusher, new Runnable() {
+                    public void run() {
+                        // Check that <Hierarchy>.Members uses cache.
+                        testContext.assertExprReturns(
+                            "Count([Store].Members)", "63");
+                    }
+                });
+            checkFlushHierarchy(
+                sw, true, storeFlusher, new Runnable() {
+                    public void run() {
+                        // Check that <Level>.Members uses cache.
+                        testContext.assertExprReturns(
+                            "Count([Store].[Store Name].Members)", "25");
+                    }
+                });
+
+
+            // Time hierarchy is interesting because it has public 'all' member.
+            // But you can still use the private all member for purposes like
+            // flushing.
+            final Hierarchy timeHierarchy =
+                salesCube.getDimensions()[4].getHierarchies()[0];
+            assertEquals("Time", timeHierarchy.getName());
+            final CacheControl.MemberSet timeMemberSet =
+                cacheControl.createMemberSet(
+                    timeHierarchy.getAllMember(), true);
+            final Runnable timeFlusher =
+                new Runnable() {
+                    public void run() {
+                        cacheControl.flush(timeMemberSet);
+                    }
+                };
+
+            checkFlushHierarchy(
+                sw, true, timeFlusher,
+                new Runnable() {
+                    public void run() {
+                        // Check that <Level>.Members uses cache.
+                        testContext.assertExprReturns(
+                            "Count([Time].[Month].Members)",
+                            "24");
+                    }
+                });
+            checkFlushHierarchy(
+                sw, true, timeFlusher,
+                new Runnable() {
+                    public void run() {
+                        // Check that <Level>.Members uses cache.
+                        testContext.assertAxisReturns(
+                            "[Time].[1997].[Q2].Children",
+                            "[Time].[1997].[Q2].[4]\n"
+                            + "[Time].[1997].[Q2].[5]\n"
+                            + "[Time].[1997].[Q2].[6]");
+                    }
+                });
+        } finally {
+            logger.setLevel(level);
+            logger.removeAppender(appender);
+        }
+    }
+
+    /**
+     * Runs the same command ({@code foo(testContext, k)}) three times. Between
+     * the 2nd and the 3rd, flushes the cache, and makes sure that the 3rd time
+     * causes SQL to be executed.
+     *
+     * @param writer Writer, written into each time a SQL statement is executed
+     * @param affected Whether the cache flush affects the command
+     * @param flusher Functor that performs cache flushing action to be tested
+     * @param command Command to execute that requires cache contents
+     */
+    private void checkFlushHierarchy(
+        StringWriter writer,
+        boolean affected,
+        Runnable flusher,
+        Runnable command)
+    {
+        // Run command for first time.
+        command.run();
+
+        // Now cache is primed, running the command for second time should not
+        // require any additional SQL. (There is a small chance that GC will
+        // kick in and we'll lose the cache, but we've never seen that happen
+        // in the wild.)
+        int length1 = writer.getBuffer().length();
+        command.run();
+        final String since1 = writer.getBuffer().substring(length1);
+        assertEquals("", since1);
+        flusher.run();
+
+        // Now cache has been flushed, it should be impossible to execute the
+        // command without running additional SQL.
+        int length2 = writer.getBuffer().length();
+        command.run();
+        final String since2 = writer.getBuffer().substring(length2);
+        if (affected) {
+            assertNotSame("", since2);
         }
     }
 }

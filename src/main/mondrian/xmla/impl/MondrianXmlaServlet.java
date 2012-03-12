@@ -17,8 +17,6 @@ import mondrian.spi.CatalogLocator;
 import mondrian.spi.impl.ServletContextCatalogLocator;
 import mondrian.xmla.XmlaHandler;
 
-import org.olap4j.impl.Olap4jUtil;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -135,7 +133,7 @@ public class MondrianXmlaServlet extends DefaultXmlaServlet {
             } else {
                 paramValue = Util.replaceProperties(
                     paramValue,
-                    Olap4jUtil.toMap(System.getProperties()));
+                    Util.toMap(System.getProperties()));
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
                         "XmlaServlet.makeDataSources: paramValue="

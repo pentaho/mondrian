@@ -403,7 +403,7 @@ public class RolapStar {
             && changeListener != null)
         {
             Util.discard(
-                changeListener.isAggregationChanged(aggregation));
+                changeListener.isAggregationChanged(aggregationKey));
         }
         return aggregation;
     }

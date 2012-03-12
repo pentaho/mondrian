@@ -9,6 +9,7 @@
 */
 package mondrian.olap;
 
+import mondrian.rolap.RolapUtil;
 import mondrian.util.*;
 
 import junit.framework.TestCase;
@@ -1401,6 +1402,20 @@ public class UtilTestCase extends TestCase {
         assertEquals("<5, foo, false>", triple1.toString());
         assertEquals("<5, foo, true>", triple2.toString());
         assertEquals("<null, foo, true>", triple3.toString());
+    }
+
+    public void testRolapUtilComparator() throws Exception {
+        final Comparable[] compArray =
+            new Comparable[] {
+                "1",
+                "2",
+                "3",
+                "4"
+        };
+        // Will throw a ClassCastException if it fails.
+        Util.binarySearch(
+            compArray, 0, compArray.length,
+            RolapUtil.sqlNullValue);
     }
 
     public void testDirectedGraph() {

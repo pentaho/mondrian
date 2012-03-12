@@ -219,6 +219,14 @@ public abstract class RolapAggregator
                 return "count(distinct " + operand + ")";
             }
 
+            public boolean supportsFastAggregates(
+                mondrian.spi.Dialect.Datatype dataType)
+            {
+                // We can't rollup using the raw data, because this is
+                // a distinct-count operation.
+                return false;
+            }
+
             public Dialect.Datatype deriveDatatype(
                 List<Dialect.Datatype> parameterDatatypes)
             {

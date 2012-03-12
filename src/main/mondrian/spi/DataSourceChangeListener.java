@@ -11,7 +11,7 @@ package mondrian.spi;
 
 
 import mondrian.rolap.RolapHierarchy;
-import mondrian.rolap.agg.Aggregation;
+import mondrian.rolap.agg.AggregationKey;
 
 
 /**
@@ -36,11 +36,12 @@ import mondrian.rolap.agg.Aggregation;
  * even before cache is build.  This way, the plugin is able to register
  * the first timestamp mondrian tries to read the datasource.
  *
+ * @deprecated Will be removed with Mondrian 4.0.
  * @author Bart Pappyn
  * @version $Id$
  * @since Dec 12, 2006
  */
-
+@Deprecated
 public interface DataSourceChangeListener {
 
     /**
@@ -65,7 +66,7 @@ public interface DataSourceChangeListener {
      * is still empty.  This is because the plugin is able to register
      * the first timestamp the function was accessed.
      */
-    public boolean isAggregationChanged(Aggregation aggregation);
+    public boolean isAggregationChanged(AggregationKey aggregation);
 }
 
 // End DataSourceChangeListener.java

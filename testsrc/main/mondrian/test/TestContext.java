@@ -224,9 +224,9 @@ public class TestContext {
         }
         final Connection connection =
             DriverManager.getConnection(
-                getConnectionProperties(),
-                null,
-                null);
+            getConnectionProperties(),
+            null,
+            null);
         connectionRef = new SoftReference<Connection>(connection);
         return connection;
     }

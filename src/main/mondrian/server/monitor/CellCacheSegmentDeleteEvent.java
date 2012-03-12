@@ -22,8 +22,13 @@ public class CellCacheSegmentDeleteEvent extends CellCacheEvent {
      * Creates a CellCacheSegmentCreateEvent.
      *
      * @param timestamp Timestamp
-     * @param locus Locus
+     * @param serverId ID of the server from which the event originates.
+     * @param connectionId ID of the connection from which the event
+     * originates.
+     * @param statementId ID of the statement from which the event originates.
+     * @param executionId ID of the execution from which the event originates.
      * @param coordinateCount Number of coordinates of segment header
+     * @param source Source of segment
      */
     public CellCacheSegmentDeleteEvent(
         long timestamp,
