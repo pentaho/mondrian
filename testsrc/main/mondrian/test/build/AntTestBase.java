@@ -1,12 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2008 SQLstream, Inc.
-// Copyright (C) 2009-2010 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2006-2008 SQLstream, Inc.
+// Copyright (C) 2009-2010 Pentaho
+// All Rights Reserved.
 */
 package mondrian.test.build;
 
@@ -45,7 +45,6 @@ import java.io.*;
  *
  * @author Stephan Zuercher
  * @since Mar 11, 2006
- * @version $Id$
  */
 abstract class AntTestBase extends TestCase
 {

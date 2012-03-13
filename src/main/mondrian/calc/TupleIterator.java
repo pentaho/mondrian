@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011-2011 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2011-2011 Pentaho
+// All Rights Reserved.
 */
 package mondrian.calc;
 
@@ -22,7 +22,6 @@ import java.util.List;
  * {@link #next} and {@link #hasNext} methods) may be more expensive than using
  * cursor's {@link #forward} method.
  *
- * @version $Id$
  * @author jhyde
  */
 public interface TupleIterator extends Iterator<List<Member>>, TupleCursor {

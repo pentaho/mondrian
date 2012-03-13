@@ -1,13 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2012 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// jhyde, Feb 14, 2003
+// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2005-2012 Pentaho
+// All Rights Reserved.
 */
 package mondrian.test;
 
@@ -24,7 +23,6 @@ import java.util.Collections;
  *
  * @author jhyde
  * @since April 30, 2005
- * @version $Id$
  */
 public class NamedSetTest extends FoodMartTestCase {
 
@@ -34,6 +32,7 @@ public class NamedSetTest extends FoodMartTestCase {
     public NamedSetTest(String name) {
         super(name);
     }
+
     /**
      * Set defined in query according measures, hence context-dependent.
      */

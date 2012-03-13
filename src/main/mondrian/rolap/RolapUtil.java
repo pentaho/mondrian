@@ -1,12 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2012 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2001-2005 Julian Hyde
+// Copyright (C) 2005-2012 Pentaho and others
+// All Rights Reserved.
 //
 // jhyde, 22 December, 2001
 */
@@ -36,7 +36,6 @@ import javax.sql.DataSource;
  *
  * @author jhyde
  * @since 22 December, 2001
- * @version $Id$
  */
 public class RolapUtil {
     public static final Logger MDX_LOGGER = Logger.getLogger("mondrian.mdx");
@@ -126,7 +125,7 @@ public class RolapUtil {
         }
     }
 
-    public final static class RolapUtilComparable
+    public static final class RolapUtilComparable
         implements Comparable, Serializable
     {
         private static final long serialVersionUID = -2595758291465179116L;

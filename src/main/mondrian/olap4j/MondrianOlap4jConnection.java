@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2012 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2007-2012 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.olap4j;
 
@@ -46,7 +46,6 @@ import java.util.*;
  * {@link Factory#newConnection(MondrianOlap4jDriver, String, java.util.Properties)}.</p>
  *
  * @author jhyde
- * @version $Id$
  * @since May 23, 2007
  */
 abstract class MondrianOlap4jConnection implements OlapConnection {

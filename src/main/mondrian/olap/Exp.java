@@ -1,14 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2006 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// jhyde, 20 January, 1999
+// Copyright (C) 1999-2005 Julian Hyde
+// Copyright (C) 2005-2006 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.olap;
 
@@ -22,9 +20,8 @@ import java.io.PrintWriter;
 /**
  * An <code>Exp</code> is an MDX expression.
  *
- * @author jhyde
+ * @author jhyde, 20 January, 1999
  * @since 1.0
- * @version $Id$
  */
 public interface Exp {
 

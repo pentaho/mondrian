@@ -1,14 +1,13 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2011 Julian Hyde and others
-// Copyright (C) 2004-2005 SAS Institute, Inc.
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// sasebb, 16 December, 2004
+// Copyright (C) 2005-2005 Julian Hyde
+// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2004-2005 SAS Institute, Inc.
+// All Rights Reserved.
 */
 package mondrian.olap.fun;
 
@@ -23,8 +22,9 @@ import mondrian.rolap.RolapEvaluator;
  * Definition of the <code>NonEmptyCrossJoin</code> MDX function.
  *
  * @author jhyde
- * @version $Id$
  * @since Mar 23, 2006
+ *
+ * author 16 December, 2004
  */
 public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
     static final ReflectiveMultiResolver Resolver = new ReflectiveMultiResolver(

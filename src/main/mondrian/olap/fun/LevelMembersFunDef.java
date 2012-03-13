@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2011 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2009-2011 Pentaho
+// All Rights Reserved.
 */
 package mondrian.olap.fun;
 
@@ -19,7 +19,6 @@ import mondrian.olap.Level;
  * Definition of the <code>&lt;Level&gt;.Members</code> MDX function.
  *
  * @author jhyde
- * @version $Id$
  * @since Jan 17, 2009
  */
 public class LevelMembersFunDef extends FunDefBase {

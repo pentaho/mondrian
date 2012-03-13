@@ -1,11 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2012 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2005-2012 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
@@ -42,7 +43,6 @@ import java.util.concurrent.*;
  * and make usage of the SegmentCache provided as an SPI.
  *
  * @author Thiyagu, LBoudreau
- * @version $Id$
  * @since 24 May 2007
  */
 public class SegmentLoader {

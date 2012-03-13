@@ -1,14 +1,13 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2011 Julian Hyde
-// Copyright (C) 2004-2005 TONBELLER AG
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// jhyde, Feb 26, 2003
+// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2004-2005 TONBELLER AG
+// All Rights Reserved.
 */
 package mondrian.olap;
 
@@ -28,7 +27,6 @@ import javax.sql.DataSource;
  *
  * @author jhyde
  * @since Feb 26, 2003
- * @version $Id$
  */
 public abstract class DelegatingSchemaReader implements SchemaReader {
     protected final SchemaReader schemaReader;

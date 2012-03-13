@@ -1,11 +1,13 @@
 #!/bin/bash
-# $Id$
+#
 # This software is subject to the terms of the Eclipse Public License v1.0
 # Agreement, available at the following URL:
 # http://www.eclipse.org/legal/epl-v10.html.
-# Copyright (C) 2003 Julian Hyde
-# All Rights Reserved.
 # You must accept the terms of that agreement to use this software.
+#
+# Copyright (C) 2003-2005 Julian Hyde
+# Copyright (C) 2005-2005 Pentaho
+# All Rights Reserved.
 
 export SRCROOT=$(cd $(dirname $0); pwd)
 export PREFIX="E:" # E.g. "/usr" on Unix, "E:" on Windows

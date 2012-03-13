@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2007 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2005-2007 Pentaho
+// All Rights Reserved.
 */
 package mondrian.xmla;
 
@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletResponse;
  * {@link XmlaServlet#handleSoapHeader} and {@link XmlaServlet#handleSoapBody}.
  *
  * @author Gang Chen
- * @version $Id$
  */
 public interface XmlaRequestCallback {
     String AUTHORIZATION = "Authorization";

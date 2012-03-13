@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2006-2011 Pentaho
+// All Rights Reserved.
 */
 package mondrian.server;
 
@@ -31,7 +31,6 @@ import java.util.TimerTask;
  * It is important to call {@link DynamicContentFinder#shutdown()}
  * once this object can be disposed of.
  *
- * @version $Id$
  * @author Thiyagu Ajit
  * @author Luc Boudreau
  * @author Julian Hyde

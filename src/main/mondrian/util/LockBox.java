@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2012 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2010-2012 Pentaho
+// All Rights Reserved.
 */
 package mondrian.util;
 
@@ -42,8 +42,7 @@ import java.util.*;
  * <p>All methods are thread-safe.
  *
  * @author jhyde
- * @version $Id$
- * @since 2010/11/18
+  * @since 2010/11/18
  */
 public class LockBox {
     private static final Object DUMMY = new Object();

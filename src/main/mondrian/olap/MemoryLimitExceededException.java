@@ -1,12 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2006-2009 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.olap;
 
@@ -17,8 +17,6 @@ package mondrian.olap;
  * counted on being correct - specifically data structures could be
  * in an inconsistent state or missing entirely. No attempt should be
  * make to access or use the result objects.
- *
- * @version $Id$
  */
 public class MemoryLimitExceededException
     extends ResultLimitExceededException

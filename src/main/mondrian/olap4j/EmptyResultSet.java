@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2007-2011 Pentaho
+// All Rights Reserved.
 */
 package mondrian.olap4j;
 
@@ -31,7 +31,6 @@ import javax.sql.rowset.RowSetMetaDataImpl;
  * it is instantiated using {@link Factory#newEmptyResultSet}.</p>
  *
  * @author jhyde
- * @version $Id$
  * @since May 24, 2007
  */
 abstract class EmptyResultSet implements ResultSet, OlapWrapper {

@@ -1,14 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2005 Kana Software, Inc. and others
-// Copyright (C) 2002-2011 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// jhyde, Feb 12, 2003
+// Copyright (C) 2002-2005 Julian Hyde and others
+// Copyright (C) 2005-2011 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.olap.fun;
 
@@ -23,7 +21,6 @@ import java.util.List;
  *
  * @author jhyde
  * @since Feb 12, 2003
- * @version $Id$
  */
 public abstract class MultiResolver extends FunUtil implements Resolver {
     private final String name;

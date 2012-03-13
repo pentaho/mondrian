@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2011 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2010-2011 Pentaho
+// All Rights Reserved.
 */
 package mondrian.server;
 
@@ -35,21 +35,20 @@ import java.util.concurrent.*;
  * Databases. This is why those two concepts are linked, as in
  * {@link FileRepository#getDatabaseNames(RolapConnection)} for example.
  *
- * @version $Id$
  * @author Julian Hyde, Luc Boudreau
  */
 public class FileRepository implements Repository {
-    private final static Object SERVER_INFO_LOCK = new Object();
-    private ServerInfo serverInfo;
+    private static final Object SERVER_INFO_LOCK = new Object();
     private final RepositoryContentFinder repositoryContentFinder;
 
     private static final Logger LOGGER = Logger.getLogger(MondrianServer.class);
 
-    private final static ScheduledExecutorService executorService =
+    private static final ScheduledExecutorService executorService =
         Util.getScheduledExecutorService(
             1,
             "mondrian.server.DynamicContentFinder$executorService");
 
+    private ServerInfo serverInfo;
     private final ScheduledFuture<?> scheduledFuture;
     private final CatalogLocator locator;
 

@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2007-2011 Pentaho and others
+// All Rights Reserved.
 //
 // ajogleka, 19 December, 2007
 */
@@ -31,7 +31,6 @@ import java.util.*;
  * Distinct Count functionality with tuples and members.
  *
  * @author ajogleka
- * @version $Id$
  * @since 19 December, 2007
  */
 public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {

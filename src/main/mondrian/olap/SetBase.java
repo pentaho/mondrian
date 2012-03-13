@@ -1,14 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2009 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// jhyde, 6 August, 2001
+// Copyright (C) 2001-2005 Julian Hyde
+// Copyright (C) 2005-2009 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.olap;
 
@@ -23,7 +21,6 @@ import java.util.Map;
  *
  * @author jhyde
  * @since 6 August, 2001
- * @version $Id$
  */
 public class SetBase extends OlapElementBase implements NamedSet {
 

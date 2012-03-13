@@ -1,14 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2006 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// jhyde, 21 April, 1999
+// Copyright (C) 1999-2005 Julian Hyde
+// Copyright (C) 2005-2006 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.olap;
 
@@ -19,8 +17,9 @@ import mondrian.mdx.ResolvedFunCall;
 import java.io.PrintWriter;
 
 /**
- * <code>FunDef</code> is the definition of an MDX function. See also {@link
- * FunTable}.
+ * Definition of an MDX function. See also {@link FunTable}.
+ *
+ * @author jhyde, 21 April, 1999
  */
 public interface FunDef {
     /**

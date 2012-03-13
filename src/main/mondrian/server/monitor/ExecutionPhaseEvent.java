@@ -1,10 +1,10 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
-// Copyright (C) 2011-2011 Julian Hyde
+//
+// Copyright (C) 2011-2011 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server.monitor;
@@ -17,8 +17,6 @@ package mondrian.server.monitor;
  * result. It generates one or more SQL statements to load those cells, and
  * starts a new phase. Most MDX statements can be completed in 3 or fewer
  * phases.</p>
- *
- * @version $Id$
  */
 public class ExecutionPhaseEvent extends ExecutionEvent {
     public final int phase;

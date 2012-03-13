@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2006 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2006-2006 Pentaho
+// All Rights Reserved.
 */
 package mondrian.calc;
 
@@ -18,7 +18,6 @@ import mondrian.olap.Evaluator;
  * {@link mondrian.calc.impl.AbstractDoubleCalc}, but it is not required.
  *
  * @author jhyde
- * @version $Id$
  * @since Sep 27, 2005
  */
 public interface DoubleCalc extends Calc {

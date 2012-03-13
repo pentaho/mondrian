@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2007-2011 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2007-2011 Pentaho
+// All Rights Reserved.
 */
 package mondrian.olap4j;
 
@@ -22,7 +22,6 @@ import java.util.*;
  * Abstract JDBC classes, for JDBC 4.0 and 4.1.
  *
  * @author jhyde
- * @version $Id$
  * @since Jun 14, 2007
  */
 class FactoryJdbc4Plus {

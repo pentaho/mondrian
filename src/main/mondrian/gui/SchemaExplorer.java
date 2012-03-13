@@ -1,15 +1,13 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2011 Julian Hyde and others
-// Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// Created on October 2, 2002, 5:42 PM
-// Modified on 15-Jun-2003 by ebengtso
+// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
+// All Rights Reserved.
 */
 package mondrian.gui;
 
@@ -35,7 +33,6 @@ import javax.swing.tree.*;
 
 /**
  * @author sean
- * @version $Id$
  */
 public class SchemaExplorer
     extends javax.swing.JPanel

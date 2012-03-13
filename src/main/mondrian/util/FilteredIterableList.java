@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2006-2011 Pentaho
+// All Rights Reserved.
 */
 package mondrian.util;
 
@@ -16,7 +16,6 @@ import java.util.*;
  * To be used instead of removing elements from an iterable list.
  *
  * @author Luis F. Canals
- * @version $Id$
  * @since december, 2007
  */
 public class FilteredIterableList<T> extends AbstractSequentialList<T> {

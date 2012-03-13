@@ -1,13 +1,13 @@
 <?xml version='1.0'?>
 <!--
-  == $Id$
   == This software is subject to the terms of the Eclipse Public License v1.0
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
-  == Copyright (C) 2000-2002 Kana Software, Inc.
-  == Copyright (C) 2002-2006 Julian Hyde and others.
-  == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
+  ==
+  == Copyright (C) 2000-2005 Julian Hyde
+  == Copyright (C) 2005-2006 Pentaho and others
+  == All Rights Reserved.
   -->
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 

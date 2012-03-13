@@ -1,13 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2012 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// jhyde, Feb 24, 2003
+// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2005-2012 Pentaho
+// All Rights Reserved.
 */
 package mondrian.rolap;
 
@@ -33,7 +32,6 @@ import javax.sql.DataSource;
  * observing the access-control profile specified by a given role.
  *
  * @author jhyde
- * @version $Id$
  * @since Feb 24, 2003
  */
 public class RolapSchemaReader

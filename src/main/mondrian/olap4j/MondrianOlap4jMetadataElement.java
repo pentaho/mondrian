@@ -3,7 +3,8 @@
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
-// Copyright (C) 2012-2012 Julian Hyde
+//
+// Copyright (C) 2012-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
@@ -18,7 +19,6 @@ import java.sql.SQLException;
  * Basic features of metadata elements in Mondrian's olap4j driver.
  *
  * @author jhyde
- * @version $Id$
  */
 abstract class MondrianOlap4jMetadataElement
     implements OlapWrapper

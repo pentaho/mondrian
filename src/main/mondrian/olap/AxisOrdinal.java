@@ -1,13 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// jhyde, Feb 21, 2003
+// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2005-2009 Pentaho
+// All Rights Reserved.
 */
 package mondrian.olap;
 
@@ -16,7 +15,6 @@ package mondrian.olap;
  *
  * @author jhyde
  * @since Feb 21, 2003
- * @version $Id$
  */
 public interface AxisOrdinal {
     /**

@@ -1,12 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2012 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2005-2012 Pentaho and others
+// All Rights Reserved.
 //
 // jhyde, 21 March, 2002
 */
@@ -22,7 +22,6 @@ import java.util.*;
  *
  * @author jhyde
  * @since 21 March, 2002
- * @version $Id$
  */
 public class CellRequest {
     private final RolapStar.Measure measure;

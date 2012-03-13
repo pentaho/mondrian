@@ -1,10 +1,10 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
-// Copyright (C) 2011-2011 Julian Hyde
+//
+// Copyright (C) 2011-2011 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server.monitor;
@@ -13,8 +13,6 @@ import mondrian.server.Locus;
 
 /**
  * Event created just after Mondrian has executed a SQL statement.
- *
- * @version $Id$
  */
 public class SqlStatementExecuteEvent extends SqlStatementEvent {
     public final long executeNanos;

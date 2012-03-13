@@ -1,12 +1,13 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2009 Julian Hyde and others
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2005-2009 Pentaho and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
-// You must accept the terms of that agreement to use this software.
 */
 package mondrian.gui;
 
@@ -18,7 +19,6 @@ import javax.swing.table.TableCellRenderer;
 
 /**
  * @author sean
- * @version $Id$
  */
 public class SchemaPropertyCellRenderer
     extends javax.swing.table.DefaultTableCellRenderer
@@ -38,13 +38,13 @@ public class SchemaPropertyCellRenderer
     JComboBox relationList;  // Join, Table
     JTable relationTable;
     JPanel relationRenderer, rlPanel;
-    ;
+
     JScrollPane jScrollPaneT;
 
     // All objects of this class will use this color value to render attribute
     // column this value is initialized by SchemaExplorer to the scrollpane
     // background color value.
-    static public Color attributeBackground;
+    public static Color attributeBackground;
 
     /**
      * Creates a new instance of SchemaPropertyCellRenderer
