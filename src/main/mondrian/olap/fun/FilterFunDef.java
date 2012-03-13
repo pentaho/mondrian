@@ -13,6 +13,7 @@ import mondrian.calc.*;
 import mondrian.calc.impl.*;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
+import mondrian.server.Locus;
 
 import java.util.List;
 
@@ -225,6 +226,7 @@ class FilterFunDef extends FunDefBase {
 
                         public boolean forward() {
                             while (cursor.forward()) {
+                                Locus.peek().execution.checkCancelOrTimeout();
                                 cursor.setContext(evaluator2);
                                 if (bcalc.evaluateBoolean(evaluator2)) {
                                     return true;

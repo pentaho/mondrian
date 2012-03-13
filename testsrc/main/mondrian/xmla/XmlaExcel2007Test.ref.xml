@@ -1775,7 +1775,7 @@ where [Measures].[Unit Sales]
                         <PROPERTY_NAME>ACTION_TYPE</PROPERTY_NAME>
                         <PROPERTY_CAPTION>ACTION_TYPE</PROPERTY_CAPTION>
                         <PROPERTY_TYPE>2</PROPERTY_TYPE>
-                        <DATA_TYPE>19</DATA_TYPE>
+                        <DATA_TYPE>1009</DATA_TYPE>
                     </row>
                     <row>
                         <PROPERTY_NAME>UPDATEABLE</PROPERTY_NAME>

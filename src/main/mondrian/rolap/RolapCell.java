@@ -13,6 +13,7 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
 import mondrian.olap.fun.SetFunDef;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.*;
 import mondrian.server.*;
 import mondrian.server.monitor.SqlStatementEvent;
@@ -103,6 +104,14 @@ public class RolapCell implements Cell {
         List<Exp> fields,
         boolean extendedContext)
     {
+        if (!MondrianProperties.instance()
+            .EnableDrillThrough.get())
+        {
+            throw MondrianResource.instance()
+                .DrillthroughDisabled.ex(
+                    MondrianProperties.instance()
+                        .EnableDrillThrough.getPath());
+        }
         final Member[] currentMembers = getMembersForDrillThrough();
         // Create a StarPredicate to represent the compound slicer
         // (if necessary)
@@ -307,6 +316,11 @@ public class RolapCell implements Cell {
      * @return true if can drill through
      */
     public boolean canDrillThrough() {
+        if (!MondrianProperties.instance()
+            .EnableDrillThrough.get())
+        {
+            return false;
+        }
         // get current members
         final Member[] currentMembers = getMembersForDrillThrough();
         if (containsCalcMembers(currentMembers)) {

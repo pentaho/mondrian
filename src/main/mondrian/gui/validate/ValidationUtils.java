@@ -443,7 +443,7 @@ public class ValidationUtils {
                                 }
                                 if (!(agIndex == -1
                                     || (colType >= 2 && colType <= 8)
-                                    || colType == -5))
+                                    || colType == -5 || colType == -6))
                                 {
                                     return messages.getFormattedString(
                                         "schemaTreeCellRenderer.aggregatorNotValidForColumn.alert",

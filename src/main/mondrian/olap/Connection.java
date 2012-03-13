@@ -16,8 +16,6 @@ import java.io.PrintWriter;
 import java.util.Locale;
 import javax.sql.DataSource;
 
-import javax.validation.constraints.*;
-
 /**
  * Connection to a multi-dimensional database.
  *
@@ -128,7 +126,7 @@ public interface Connection {
      *
      * @param pw Writer to which to write logging information; may be null
      */
-    CacheControl getCacheControl(@Null PrintWriter pw);
+    CacheControl getCacheControl(PrintWriter pw);
 
     /**
      * Returns the data source this connection uses to create connections

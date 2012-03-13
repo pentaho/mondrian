@@ -22,6 +22,7 @@ import mondrian.olap.Hierarchy;
 import mondrian.olap.Level;
 import mondrian.olap.Member;
 import mondrian.olap.Property;
+import mondrian.olap.Role.HierarchyAccess;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
@@ -425,7 +426,7 @@ public class RolapHierarchy extends HierarchyBase {
     }
 
     protected static MemberReader createMemberReader(
-        RolapHierarchy hierarchy,
+        final RolapHierarchy hierarchy,
         Role role)
     {
         final Access access = role.getAccess(hierarchy);
@@ -463,11 +464,10 @@ public class RolapHierarchy extends HierarchyBase {
                         public TupleList evaluateList(
                             Evaluator evaluator)
                         {
-                            return new UnaryTupleList(
-                                FunUtil.getNonEmptyMemberChildren(
-                                    evaluator,
-                                    ((RolapEvaluator) evaluator)
-                                        .getExpanding()));
+                            return
+                                new UnaryTupleList(
+                                    hierarchy.getLowestMembersForAccess(
+                                        evaluator, hierarchyAccess, null));
                         }
 
                         public boolean dependsOn(Hierarchy hierarchy) {
@@ -528,6 +528,55 @@ public class RolapHierarchy extends HierarchyBase {
         default:
             throw Util.badValue(access);
         }
+    }
+
+    /**
+     * Goes recursively down a hierarchy and builds a list of the
+     * members that should be constrained on because of access controls.
+     * It isn't sufficient to constrain on the current level in the
+     * evaluator because the actual constraint could be even more limited
+     * <p>Example. If we only give access to Seattle but the query is on
+     * the country level, we have to constrain at the city level, not state,
+     * or else all the values of all cities in the state will be returned.
+     */
+    private List<Member> getLowestMembersForAccess(
+        Evaluator evaluator,
+        HierarchyAccess hAccess,
+        List<Member> currentList)
+    {
+        if (currentList == null) {
+            currentList =
+                FunUtil.getNonEmptyMemberChildren(
+                    evaluator,
+                    ((RolapEvaluator) evaluator)
+                        .getExpanding());
+        }
+        boolean goesLower = false;
+        for (Member member : currentList) {
+            if (hAccess.getAccess(member) != Access.ALL) {
+                goesLower = true;
+                break;
+            }
+        }
+        if (goesLower) {
+            // We still have to go one more level down.
+            List<Member> newList = new ArrayList<Member>();
+            for (Member member : currentList) {
+                int savepoint = evaluator.savepoint();
+                try {
+                    evaluator.setContext(member);
+                    newList.addAll(
+                        FunUtil.getNonEmptyMemberChildren(
+                            evaluator,
+                            member));
+                } finally {
+                    evaluator.restore(savepoint);
+                }
+                // Now pass it recursively to this method.
+                return getLowestMembersForAccess(evaluator, hAccess, newList);
+            }
+        }
+        return currentList;
     }
 
     /**
