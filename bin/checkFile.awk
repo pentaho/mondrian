@@ -1,5 +1,4 @@
 #!/bin/gawk
-# $Id$
 # Checks that a file is valid.
 
 function error(fname, linum, msg) {

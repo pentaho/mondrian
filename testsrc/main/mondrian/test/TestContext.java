@@ -1,12 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2005-2011 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.test;
 
@@ -55,7 +55,6 @@ import javax.sql.DataSource;
  *
  * @author jhyde
  * @since 29 March, 2002
- * @version $Id$
  */
 public class TestContext {
     private static TestContext instance; // the singleton
@@ -214,9 +213,9 @@ public class TestContext {
         }
         final Connection connection =
             DriverManager.getConnection(
-            getConnectionProperties(),
-            null,
-            null);
+                getConnectionProperties(),
+                null,
+                null);
         connectionRef = new SoftReference<Connection>(connection);
         return connection;
     }

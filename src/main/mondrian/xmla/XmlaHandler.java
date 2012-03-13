@@ -1,11 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2012 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2005-2012 Pentaho
+// All Rights Reserved.
 */
 package mondrian.xmla;
 
@@ -41,7 +42,6 @@ import static org.olap4j.metadata.XmlaConstants.*;
  * An <code>XmlaHandler</code> responds to XML for Analysis (XML/A) requests.
  *
  * @author jhyde, Gang Chen
- * @version $Id$
  * @since 27 April, 2003
  */
 public class XmlaHandler {

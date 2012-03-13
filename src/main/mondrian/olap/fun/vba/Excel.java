@@ -2,9 +2,10 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2009 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2008-2009 Pentaho
+// All Rights Reserved.
 */
 package mondrian.olap.fun.vba;
 
@@ -20,7 +21,6 @@ import static mondrian.olap.fun.JavaFunDef.FunctionName;
  * <p>Functions are loaded into the function table by reflection.
  *
  * @author jhyde
- * @version $Id$
  * @since Dec 31, 2007
  */
 public abstract class Excel {

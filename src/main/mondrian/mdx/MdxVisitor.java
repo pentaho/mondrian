@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2006 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2006-2006 Pentaho
+// All Rights Reserved.
 */
 package mondrian.mdx;
 
@@ -15,7 +15,6 @@ import mondrian.olap.*;
  * Interface for a visitor to an MDX parse tree.
  *
  * @author jhyde
- * @version $Id$
  * @since Jul 21, 2006
  */
 public interface MdxVisitor {

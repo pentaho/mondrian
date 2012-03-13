@@ -1,16 +1,14 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2011 Julian Hyde and others
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2006-2011 Pentaho and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
-// You must accept the terms of that agreement to use this software.
-//
-// Created on April 28, 2006, 2:43 PM
- */
+*/
 package mondrian.gui;
 
 import org.apache.log4j.Logger;
@@ -19,7 +17,6 @@ import java.sql.*;
 import java.util.*;
 
 /**
- * @version $Id$
  */
 public class JdbcMetaData {
 

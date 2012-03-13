@@ -1,14 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// jhyde, 20 January, 1999
+// Copyright (C) 1999-2005 Julian Hyde
+// Copyright (C) 2005-2011 Pentaho and others
+// All Rights Reserved.
 //
 // Grammar condensed from OLE DB reference
 // (http://www.microsoft.com/data/reference/oledb2.htm) by jhyde on 990120.
@@ -27,7 +25,7 @@ import mondrian.server.Statement;
 // Preliminaries to set up and use the scanner.
 // action code {: ... :};
 parser code {:
-    // Generated from $Id$
+    // Generated from Parser.cup.
     private Scanner scanner;
     private String queryString;
     Statement statement;

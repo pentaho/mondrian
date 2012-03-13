@@ -2,10 +2,12 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2009 Julian Hyde
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2005-2009 Pentaho
 // Copyright (C) 2004-2005 TONBELLER AG
 // All Rights Reserved.
-// You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
@@ -24,8 +26,6 @@ import java.util.EventObject;
  * TopCount, Filter etc. If the arguments of these functions are simple enough
  * to be evaluated in SQL then a NativeEvaluator will be returned that performs
  * the computations in SQL. Otherwise null will be returned.
- *
- * @version $Id$
  */
 public abstract class RolapNative {
 

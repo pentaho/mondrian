@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2010 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2010-2010 Pentaho
+// All Rights Reserved.
 */
 package mondrian.olap4j;
 
@@ -19,7 +19,6 @@ import java.util.Map;
  * Strategy to locate schemas and catalogs. Allows different
  * {@link mondrian.olap.MondrianServer servers} to do things differently.
  *
- * @version $Id$
  * @author jhyde
  * @since 2010/11/12
  */

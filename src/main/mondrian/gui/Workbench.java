@@ -1,17 +1,14 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
-// Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
+//
+// Copyright (C) 1999-2005 Julian Hyde
+// Copyright (C) 2005-2011 Pentaho and others
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
-//
-// Created on September 26, 2002, 11:28 AM
-// Modified on 15-Jun-2003 by ebengtso
 */
 package mondrian.gui;
 
@@ -54,7 +51,6 @@ import javax.swing.tree.TreePath;
 
 /**
  * @author sean
- * @version $Id$
  */
 public class Workbench extends javax.swing.JFrame {
 

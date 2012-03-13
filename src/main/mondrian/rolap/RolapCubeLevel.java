@@ -1,14 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2001-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// wgorman, 19 October 2007
+// Copyright (C) 2001-2005 Julian Hyde
+// Copyright (C) 2005-2011 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.rolap;
 
@@ -19,8 +17,7 @@ import mondrian.spi.MemberFormatter;
 /**
  * RolapCubeLevel wraps a RolapLevel for a specific Cube.
  *
- * @author Will Gorman
- * @version $Id$
+ * @author Will Gorman, 19 October 2007
  */
 public class RolapCubeLevel extends RolapLevel {
 

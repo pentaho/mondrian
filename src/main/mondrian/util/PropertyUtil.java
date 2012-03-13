@@ -1,10 +1,10 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
-// Copyright (C) 2011-2011 Julian Hyde
+//
+// Copyright (C) 2011-2011 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -25,7 +25,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
  * Utilities to generate MondrianProperties.java and mondrian.properties
  * from property definitions in MondrianProperties.xml.
  *
- * @version $Id$
  * @author jhyde
  */
 public class PropertyUtil {
@@ -341,8 +340,9 @@ public class PropertyUtil {
                         + "Agreement, available at the following URL:\n"
                         + "http://www.eclipse.org/legal/epl-v10.html.\n"
                         + "You must accept the terms of that agreement to use this software.\n"
-                        + "Copyright (C) 2001-2002 Kana Software, Inc.\n"
-                        + "Copyright (C) 2001-2011 Julian Hyde and others\n"
+                        + "\n"
+                        + "Copyright (C) 2001-2005 Julian Hyde\n"
+                        + "Copyright (C) 2005-2011 Pentaho and others\n"
                         + "All Rights Reserved."));
                 out.println();
 

@@ -2,9 +2,10 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2009-2011 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2009-2011 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.rolap;
 
@@ -20,7 +21,6 @@ import mondrian.test.TestContext;
  *
  * @author Rushan Chen
  * @since April 28, 2009
- * @version $Id$
  */
 public class FilterTest extends BatchTestCase {
     public FilterTest() {

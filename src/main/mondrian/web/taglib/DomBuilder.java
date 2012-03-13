@@ -1,14 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2009 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// Andreas Voss, 22 March, 2002
+// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2005-2009 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.web.taglib;
 
@@ -29,6 +27,8 @@ import javax.xml.transform.stream.StreamSource;
 
 /**
  * Transforms a mondrian result into a DOM (Document Object Model).
+ *
+ * @author Andreas Voss, 22 March, 2002
  */
 public class DomBuilder {
     private static final Logger LOGGER = Logger.getLogger(DomBuilder.class);

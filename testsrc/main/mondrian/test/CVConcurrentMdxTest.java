@@ -1,11 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2010 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2005-2010 Pentaho and others
+// All Rights Reserved.
 //
 */
 package mondrian.test;
@@ -29,7 +30,6 @@ import java.util.*;
  * again with a fresh connection.
  *
  * @author Khanh Vu
- * @version $Id$
  */
 public class CVConcurrentMdxTest extends FoodMartTestCase {
     private MondrianProperties props;

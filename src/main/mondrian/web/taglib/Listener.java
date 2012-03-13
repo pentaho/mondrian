@@ -1,14 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2007 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// Julian Hyde, 28 March, 2002
+// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2005-2007 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.web.taglib;
 
@@ -23,10 +21,7 @@ import javax.servlet.ServletContextListener;
  * <code>javax.transform</code>) because it is loaded when Tomcat starts, not
  * when the servlet is loaded. (This might be a bug in Tomcat 4.0.3, because
  * it worked in 4.0.1. But anyway.)
- *
- * @version $Id$
  */
-
 public class Listener implements ServletContextListener {
 
     ApplicationContext applicationContext;

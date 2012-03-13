@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-$Id$
-
 This software is subject to the terms of the Eclipse Public License v1.0
 Agreement, available at the following URL:
 http://www.eclipse.org/legal/epl-v10.html.
-(C) Copyright 2003-2005 Julian Hyde and others.
-All Rights Reserved.
 You must accept the terms of that agreement to use this software.
+
+Copyright (C) 2003-2005 Julian Hyde
+Copyright (C) 2005-2005 Pentaho and others
+All Rights Reserved.
 
 This is the default mondrian.war web.xml customized to use a Derby FoodMart
 database which is exploded in the class path of the WAR.

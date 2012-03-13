@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2005-2011 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2005-2011 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.test;
 
@@ -20,7 +20,6 @@ import java.util.List;
 /**
  * Unit test special "caption" settings.
  *
- * @version $Id$
  * @author hhaas
  */
 public class CaptionTest extends TestCase {
@@ -131,7 +130,7 @@ public class CaptionTest extends TestCase {
      * some captions added.
      */
     public static class MyFoodmart implements DynamicSchemaProcessor {
-        final static String foodmart =
+        static final String foodmart =
             "<?xml version=\"1.0\"?>\n"
             + "<Schema name=\"FoodMart\">\n"
             + "<!-- Shared dimensions -->\n"

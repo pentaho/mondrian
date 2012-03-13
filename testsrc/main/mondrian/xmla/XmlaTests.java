@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2006-2009 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.xmla;
 
@@ -26,7 +26,6 @@ import java.math.BigInteger;
  *
  * @author Richard M. Emberson
  * @since Jul 12 2007
- * @version $Id$
  */
 
 public class XmlaTests extends FoodMartTestCase {

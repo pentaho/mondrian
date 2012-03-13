@@ -1,12 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2011 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2005-2011 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.olap.fun;
 
@@ -31,7 +31,6 @@ import java.util.*;
  * mondrian.olap.fun} package.
  *
  * @author jhyde
- * @version $Id$
  * @since 1.0
  */
 public class FunUtil extends Util {
@@ -1688,7 +1687,7 @@ public class FunUtil extends Util {
         return cousin;
     }
 
-    static private Member cousin2(
+    private static Member cousin2(
         SchemaReader schemaReader,
         Member member1,
         Member member2)
@@ -2679,8 +2678,8 @@ public class FunUtil extends Util {
         final Evaluator evaluator;
         final Calc exp;
 
-        final private int descMask;
-        final private Map<Member, Object> valueMap;
+        private final int descMask;
+        private final Map<Member, Object> valueMap;
 
         MemberComparator(Evaluator evaluator, Calc exp, boolean desc)
         {

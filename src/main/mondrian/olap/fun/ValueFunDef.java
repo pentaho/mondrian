@@ -1,14 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2002-2002 Kana Software, Inc.
-// Copyright (C) 2002-2006 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// jhyde, Jun 14, 2002
+// Copyright (C) 2002-2005 Julian Hyde
+// Copyright (C) 2005-2006 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.olap.fun;
 
@@ -23,7 +21,6 @@ import java.io.PrintWriter;
  *
  * @author jhyde
  * @since Jun 14, 2002
- * @version $Id$
  */
 class ValueFunDef extends FunDefBase {
     private final int[] argTypes;

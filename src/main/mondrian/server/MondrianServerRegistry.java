@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2010 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2010-2010 Pentaho
+// All Rights Reserved.
 */
 package mondrian.server;
 
@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
  * methods in {@link mondrian.olap.MondrianServer}.
  *
  * @author jhyde
- * @version $Id$
  */
 public class MondrianServerRegistry {
     public static final MondrianServerRegistry INSTANCE =

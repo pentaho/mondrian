@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2012 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2006-2012 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.xmla;
 
@@ -35,7 +35,6 @@ import javax.servlet.http.HttpServletResponse;
  * functionality, for example LAST_SCHEMA_UPDATE
  *
  * @author mkambol
- * @version $Id$
  */
 public abstract class XmlaBaseTestCase extends FoodMartTestCase {
     protected static final String LAST_SCHEMA_UPDATE_DATE =

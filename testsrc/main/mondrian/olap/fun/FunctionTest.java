@@ -1,11 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2012 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2005-2012 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.olap.fun;
 
@@ -31,7 +32,6 @@ import java.util.*;
  * {@link BuiltinFunTable}.
  *
  * @author gjohnson
- * @version $Id$
  */
 public class FunctionTest extends FoodMartTestCase {
 

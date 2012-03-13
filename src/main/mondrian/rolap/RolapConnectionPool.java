@@ -1,12 +1,13 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2003-2006 Robin Bagot and others
-// Copyright (C) 2003-2010 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2003-2006 Robin Bagot and others
+// Copyright (C) 2003-2005 Julian Hyde
+// Copyright (C) 2005-2010 Pentaho
+// All Rights Reserved.
 */
 package mondrian.rolap;
 
@@ -27,7 +28,6 @@ import javax.sql.DataSource;
  * @author jhyde
  * @author Robin Bagot
  * @since 7 July, 2003
- * @version $Id$
  */
 class RolapConnectionPool {
 

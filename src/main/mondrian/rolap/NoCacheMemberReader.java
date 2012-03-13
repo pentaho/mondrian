@@ -1,14 +1,14 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2001-2002 Kana Software, Inc.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2001-2002 Julian Hyde
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2007-2008 StrateBI
-// Copyright (C) 2008-2010 Julian Hyde and others
+// Copyright (C) 2008-2010 Pentaho and others
 // All Rights Reserved.
-// You must accept the terms of that agreement to use this software.
 */
 package mondrian.rolap;
 
@@ -28,7 +28,6 @@ import java.util.*;
  *
  * @author jlopez, lcanals
  * @since 06 October, 2007
- * @version $Id$
  */
 public class NoCacheMemberReader implements MemberReader, MemberCache {
     private static final Logger LOGGER =

@@ -1,11 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2011 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2004-2005 Julian Hyde
+// Copyright (C) 2005-2011 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.rolap.sql;
 
@@ -21,7 +22,6 @@ import java.util.*;
  * Test for <code>SqlQuery</code>.
  *
  * @author Thiyagu
- * @version $Id$
  * @since 06-Jun-2007
  */
 public class SqlQueryTest extends BatchTestCase {

@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2006-2009 Pentaho
+// All Rights Reserved.
 */
 package mondrian.util;
 
@@ -29,7 +29,6 @@ import java.util.*;
  * a subset of all the methods.
  *
  * @author Richard Emberson
- * @version $Id$
  * @since Jan 16, 2007
  */
 public abstract class UnsupportedList<T> implements List<T> {

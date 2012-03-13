@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2012 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2010-2012 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
@@ -26,7 +26,6 @@ import java.util.SortedSet;
  *
  * @author jhyde
  * @since 21 March, 2002
- * @version $Id$
  */
 class DenseObjectSegmentDataset extends DenseSegmentDataset {
     final Object[] values; // length == m[0] * ... * m[axes.length-1]

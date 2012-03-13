@@ -1,13 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2012 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// jhyde, 21 March, 2002
+// Copyright (C) 2012-2012 Pentaho
+// All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
@@ -18,12 +16,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * This is a subclass of {@link CellRequest} which allows to specify
+ * Subclass of {@link CellRequest} that allows to specify
  * which columns and measures to return as part of the ResultSet
  * which we return to the client.
- *
- * @since Feb. 2010.
- * @version $Id$
  */
 public class DrillThroughCellRequest extends CellRequest {
 

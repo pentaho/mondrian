@@ -1,14 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 1999-2002 Kana Software, Inc.
-// Copyright (C) 2001-2011 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
 //
-// lkrivopaltsev, 01 November, 1999
+// Copyright (C) 1999-2005 Julian Hyde
+// Copyright (C) 2005-2011 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.olap;
 
@@ -20,6 +18,8 @@ import java.util.List;
 /**
  * This class implements object of type GrantCube to apply permissions
  * on user's MDX query
+ *
+ * @author lkrivopaltsev, 01 November, 1999
  */
 public class CubeAccess {
 

@@ -1,13 +1,13 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2006-2009 Julian Hyde, Cincom Systems, Inc.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2006-2009 Pentaho
 // Copyright (C) 2006-2007 Cincom Systems, Inc.
 // Copyright (C) 2006-2007 JasperSoft
 // All Rights Reserved.
-// You must accept the terms of that agreement to use this software.
 */
 package mondrian.gui;
 
@@ -23,7 +23,6 @@ import javax.swing.tree.TreePath;
  * reloading the tree.
  *
  * @author erik
- * @version $Id$
  */
 public class JTreeUpdater
     implements TreeExpansionListener, TreeSelectionListener

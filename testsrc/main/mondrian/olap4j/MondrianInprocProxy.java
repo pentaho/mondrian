@@ -2,9 +2,10 @@
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2008-2011 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2008-2011 Pentaho
+// All Rights Reserved.
 */
 package mondrian.olap4j;
 
@@ -12,8 +13,9 @@ import mondrian.olap.Util;
 import mondrian.tui.XmlaSupport;
 
 import org.apache.commons.collections.map.ReferenceMap;
-import org.olap4j.driver.xmla.proxy.XmlaOlap4jProxy;
+
 import org.olap4j.driver.xmla.XmlaOlap4jServerInfos;
+import org.olap4j.driver.xmla.proxy.XmlaOlap4jProxy;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -23,7 +25,6 @@ import java.util.concurrent.*;
  * in-process. This is more convenient to debug than an inter-process
  * request using HTTP.
  *
- * @version $Id$
  * @author jhyde
  */
 public class MondrianInprocProxy

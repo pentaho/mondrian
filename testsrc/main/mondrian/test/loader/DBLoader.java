@@ -1,11 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2011 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2004-2005 Julian Hyde
+// Copyright (C) 2005-2011 Pentaho
+// All Rights Reserved.
 */
 package mondrian.test.loader;
 
@@ -158,7 +159,6 @@ import java.util.regex.Pattern;
  * MondrianFoodMartLoader class.
  *
  * @author Richard M. Emberson
- * @version $Id$
  */
 public abstract class DBLoader {
     protected static final Logger LOGGER = Logger.getLogger(DBLoader.class);
@@ -166,53 +166,53 @@ public abstract class DBLoader {
     private static final int DEFAULT_BATCH_SIZE = 50;
 
     public static final String BATCH_SIZE_PROP =
-            "mondrian.test.loader.batch.size";
+        "mondrian.test.loader.batch.size";
     public static final String JDBC_DRIVER_PROP =
-            "mondrian.test.loader.jdbc.driver";
+        "mondrian.test.loader.jdbc.driver";
     public static final String JDBC_URL_PROP =
-            "mondrian.test.loader.jdbc.url";
+        "mondrian.test.loader.jdbc.url";
     public static final String JDBC_USER_PROP =
-            "mondrian.test.loader.jdbc.user";
+        "mondrian.test.loader.jdbc.user";
     public static final String JDBC_PASSWORD_PROP =
-            "mondrian.test.loader.jdbc.password";
+        "mondrian.test.loader.jdbc.password";
     public static final String OUTPUT_DIRECTORY_PROP =
-            "mondrian.test.loader.output.directory";
+        "mondrian.test.loader.output.directory";
     public static final String FORCE_PROP =
-            "mondrian.test.loader.force";
+        "mondrian.test.loader.force";
 
     // suffixes of output files
     public static final String DROP_TABLE_INDEX_PROP =
-            "mondrian.test.loader.drop.table.index.suffix";
+        "mondrian.test.loader.drop.table.index.suffix";
     public static final String DROP_TABLE_INDEX_SUFFIX_DEFAULT =
-            "dropindex.sql";
+        "dropindex.sql";
     public static final String CREATE_TABLE_INDEX_PROP =
-            "mondrian.test.loader.create.table.index.suffix";
+        "mondrian.test.loader.create.table.index.suffix";
     public static final String CREATE_TABLE_INDEX_SUFFIX_DEFAULT =
-            "createindex.sql";
+        "createindex.sql";
 
     public static final String DROP_TABLE_PROP =
-            "mondrian.test.loader.drop.table.suffix";
+        "mondrian.test.loader.drop.table.suffix";
     public static final String DROP_TABLE_SUFFIX_DEFAULT = "drop.sql";
     public static final String DROP_TABLE_ROWS_PROP =
-            "mondrian.test.loader.drop.table.rows.suffix";
+        "mondrian.test.loader.drop.table.rows.suffix";
     public static final String DROP_TABLE_ROWS_SUFFIX_DEFAULT = "droprows.sql";
     public static final String CREATE_TABLE_PROP =
-            "mondrian.test.loader.create.table.suffix";
+        "mondrian.test.loader.create.table.suffix";
     public static final String CREATE_TABLE_SUFFIX_DEFAULT = "create.sql";
     public static final String LOAD_TABLE_ROWS_PROP =
-            "mondrian.test.loader.load.table.rows.suffix";
+        "mondrian.test.loader.load.table.rows.suffix";
     public static final String LOAD_TABLE_ROWS_SUFFIX_DEFAULT = "loadrows.sql";
 
-    final static Pattern decimalDataTypeRegex =
-            Pattern.compile("DECIMAL\\((.*),(.*)\\)");
-    final static Pattern varcharDataTypeRegex =
-            Pattern.compile("VARCHAR\\((.*)\\)");
-    final static DecimalFormat integerFormatter =
-            new DecimalFormat(decimalFormat(15, 0));
-    final static String dateFormatString = "yyyy-MM-dd";
-    final static String oracleDateFormatString = "YYYY-MM-DD";
-    final static DateFormat dateFormatter =
-            new SimpleDateFormat(dateFormatString);
+    static final Pattern decimalDataTypeRegex =
+        Pattern.compile("DECIMAL\\((.*),(.*)\\)");
+    static final Pattern varcharDataTypeRegex =
+        Pattern.compile("VARCHAR\\((.*)\\)");
+    static final DecimalFormat integerFormatter =
+        new DecimalFormat(decimalFormat(15, 0));
+    static final String dateFormatString = "yyyy-MM-dd";
+    static final String oracleDateFormatString = "YYYY-MM-DD";
+    static final DateFormat dateFormatter =
+        new SimpleDateFormat(dateFormatString);
 
     /**
      * Generate an appropriate number format string for doubles etc

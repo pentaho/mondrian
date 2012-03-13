@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2011-2012 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2011-2012 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.rolap.agg;
 
@@ -24,7 +24,6 @@ import java.util.concurrent.*;
  * {@link SegmentBody} objects that are sent to it.
  *
  * @author LBoudreau
- * @version $Id$
  */
 public class MockSegmentCache implements SegmentCache {
     private static final Map<SegmentHeader, SegmentBody> cache =
@@ -35,7 +34,7 @@ public class MockSegmentCache implements SegmentCache {
 
     private Random rnd;
 
-    private final static int maxElements = 100;
+    private static final int maxElements = 100;
 
     public boolean contains(SegmentHeader header) {
         return cache.containsKey(header);

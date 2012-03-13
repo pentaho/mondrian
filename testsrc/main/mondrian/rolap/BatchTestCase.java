@@ -1,11 +1,12 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2004-2012 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2004-2005 Julian Hyde
+// Copyright (C) 2005-2012 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.rolap;
 
@@ -31,8 +32,7 @@ import java.util.concurrent.Future;
  * To support all <code>Batch</code> related tests.
  *
  * @author Thiyagu
- * @version $Id$
- * @since 06-Jun-2007
+  * @since 06-Jun-2007
  */
 public class BatchTestCase extends FoodMartTestCase {
 

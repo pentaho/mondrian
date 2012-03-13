@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2010-2010 Julian Hyde
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2010-2010 Pentaho
+// All Rights Reserved.
 */
 package mondrian.test;
 
@@ -18,7 +18,6 @@ import java.util.Properties;
  * Abstract implementation of the {@link org.olap4j.test.TestContext.Tester}
  * callback required by olap4j's Test Compatability Kit (TCK).
  *
- * @version $Id$
  * @author Julian Hyde
  */
 abstract class AbstractMondrianOlap4jTester implements TestContext.Tester {
