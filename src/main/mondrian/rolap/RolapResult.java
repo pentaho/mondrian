@@ -588,6 +588,7 @@ public class RolapResult extends ResultBase {
         evaluator.setCellReader(batchingReader);
         while (true) {
             axisMembers.clearAxisCount();
+            final int savepoint = evaluator.savepoint();
             try {
                 evalLoad(
                     nonAllMembers,
@@ -601,6 +602,8 @@ public class RolapResult extends ResultBase {
                 // Decrement count because it wasn't a recursive formula that
                 // caused the iteration.
                 --attempt;
+            } finally {
+                evaluator.restore(savepoint);
             }
 
             if (!phase()) {
