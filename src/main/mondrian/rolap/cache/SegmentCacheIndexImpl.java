@@ -363,13 +363,36 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
 
     public void printCacheState(PrintWriter pw) {
         checkThread();
-
-        for (List<SegmentHeader> headerList : bitkeyMap.values()) {
+        final List<List<SegmentHeader>> values =
+            new ArrayList<List<SegmentHeader>>(
+                bitkeyMap.values());
+        Collections.sort(
+            values,
+            new Comparator<List<SegmentHeader>>() {
+                public int compare(
+                    List<SegmentHeader> o1,
+                    List<SegmentHeader> o2)
+                {
+                    if (o1.size() == 0) {
+                        return -1;
+                    }
+                    if (o2.size() == 0) {
+                        return 1;
+                    }
+                    return o1.get(0).getUniqueID()
+                        .compareTo(o2.get(0).getUniqueID());
+                }
+            });
+        for (List<SegmentHeader> key : values) {
+            final List<SegmentHeader> headerList =
+                new ArrayList<SegmentHeader>(key);
             Collections.sort(
-                headerList, new Comparator<SegmentHeader>() {
+                headerList,
+                new Comparator<SegmentHeader>() {
                     public int compare(SegmentHeader o1, SegmentHeader o2) {
                         return o1.getUniqueID().compareTo(o2.getUniqueID());
-                    }});
+                    }
+                });
             for (SegmentHeader header : headerList) {
                 pw.println(header.getDescription());
             }
