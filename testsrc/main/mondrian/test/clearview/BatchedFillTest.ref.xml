@@ -138,8 +138,8 @@ group by
 select
   "time_by_day"."the_year" as "c0",
   "product_class"."product_family" as "c1",
-  sum("sales_fact_1997"."store_sales") as "m0",
-  sum("sales_fact_1997"."unit_sales") as "m1"
+  sum("sales_fact_1997"."unit_sales") as "m0",
+  sum("sales_fact_1997"."store_sales") as "m1"
 from
   "time_by_day" as "time_by_day",
   "sales_fact_1997" as "sales_fact_1997",
