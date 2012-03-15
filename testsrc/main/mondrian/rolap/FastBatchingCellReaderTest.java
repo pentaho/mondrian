@@ -34,10 +34,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     private Locus locus;
     private Execution e;
     private AggregationManager aggMgr;
+    private RolapCube salesCube;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        getTestContext().getConnection()
+            .getCacheControl(null).flushSchemaCache();
         final Statement statement =
             ((RolapConnection) getTestContext().getConnection())
                 .getInternalStatement();
@@ -48,11 +51,19 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 .getServer().getAggregationManager();
         locus = new Locus(e, "FastBatchingCellReaderTest", null);
         Locus.push(locus);
+        salesCube = (RolapCube)
+            getTestContext().getConnection().getSchemaReader()
+                .withLocus().getCubes()[0];
     }
 
     @Override
     protected void tearDown() throws Exception {
         Locus.pop(locus);
+        // cleanup
+        e = null;
+        aggMgr = null;
+        locus = null;
+        salesCube = null;
         super.tearDown();
     }
 
@@ -66,8 +77,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         }
         return new BatchLoader(
             Locus.peek(),
-            e.getMondrianStatement().getMondrianConnection()
-                .getServer().getAggregationManager().cacheMgr,
+            aggMgr.cacheMgr,
             dialect,
             cube);
     }
@@ -191,10 +201,6 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             break;
         }
     }
-
-    private RolapCube salesCube = (RolapCube)
-        getTestContext().getConnection().getSchemaReader()
-            .withLocus().getCubes()[0];
 
     public void testGroupBatchesForNonGroupableBatchesWithSorting() {
         final BatchLoader fbcr = createFbcr(null, salesCube);
@@ -1070,8 +1076,6 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             // tables, so this test will fail.
             return;
         }
-        propSaver.set(propSaver.properties.UseAggregates, true);
-        propSaver.set(propSaver.properties.ReadAggregates, true);
 
         final BatchLoader fbcr = createFbcr(null, salesCube);
 
@@ -1093,8 +1097,15 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
                 cubeNameSales,
                 measureUnitSales);
 
-        assertFalse(detailedBatch.canBatch(summaryBatch));
-        assertFalse(summaryBatch.canBatch(detailedBatch));
+        if (MondrianProperties.instance().UseAggregates.get()
+            && MondrianProperties.instance().ReadAggregates.get())
+        {
+            assertFalse(detailedBatch.canBatch(summaryBatch));
+            assertFalse(summaryBatch.canBatch(detailedBatch));
+        } else {
+            assertTrue(detailedBatch.canBatch(summaryBatch));
+            assertFalse(summaryBatch.canBatch(detailedBatch));
+        }
     }
 
     public void testCannotBatchTwoBatchesAtTheSameLevel() {
