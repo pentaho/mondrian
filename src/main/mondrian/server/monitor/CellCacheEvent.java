@@ -24,7 +24,7 @@ public abstract class CellCacheEvent extends ExecutionEvent {
      * @param serverId Server ID from which originated the event.
      * @param connectionId Connection ID from which originated the event.
      * @param statementId Statement ID from which originated the event.
-     * @param executionIdExecution ID from which originated the event.
+     * @param executionId Execution ID from which originated the event.
      * @param source The source of the event, being a value of Source.
      */
     public CellCacheEvent(
