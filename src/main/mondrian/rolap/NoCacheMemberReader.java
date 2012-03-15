@@ -104,7 +104,7 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
         // todo: optimize by walking to children for members we know about
         for (RolapLevel level : getHierarchy().getLevelList()) {
             List<RolapMember> membersInLevel =
-                getMembersInLevel(level, 0, Integer.MAX_VALUE);
+                getMembersInLevel(level);
             v.addAll(membersInLevel);
         }
         return v;
@@ -116,24 +116,25 @@ public class NoCacheMemberReader implements MemberReader, MemberCache {
     }
 
     public List<RolapMember> getMembersInLevel(
-        final RolapLevel level,
-        final int startOrdinal,
-        final int endOrdinal)
+        final RolapLevel level)
     {
         TupleConstraint constraint =
             sqlConstraintFactory.getLevelMembersConstraint(null);
-        return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
+        return getMembersInLevel(level, constraint);
     }
 
     public List<RolapMember> getMembersInLevel(
-        final RolapLevel level,
-        final int startOrdinal,
-        final int endOrdinal,
-        final TupleConstraint constraint)
+        final RolapLevel level, final TupleConstraint constraint)
     {
         LOGGER.debug("Entering getMembersInLevel");
         return source.getMembersInLevel(
-            level, startOrdinal, endOrdinal, constraint);
+            level, constraint);
+    }
+
+    public RolapMember getMemberByKey(
+        RolapLevel level, List<Comparable> keyValues)
+    {
+        return source.getMemberByKey(level, keyValues);
     }
 
     public void getMemberChildren(

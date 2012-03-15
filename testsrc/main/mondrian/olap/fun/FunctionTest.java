@@ -3443,14 +3443,14 @@ public class FunctionTest extends FoodMartTestCase {
         // We do not allow FORMATTED_VALUE.
         assertExprThrows(
             "[Measures].[Store Sales].FORMATTED_VALUE",
-            "MDX object '[Measures].[Store Sales].[FORMATTED_VALUE]' not found in cube 'Sales'");
+            "MDX object '[Measures].[Store Sales].FORMATTED_VALUE' not found in cube 'Sales'");
 
         assertExprReturns("[Measures].[Store Sales].NAME", "Store Sales");
         // MS says that ID and KEY are standard member properties for
         // OLE DB for OLAP, but not for XML/A. We don't support them.
         assertExprThrows(
             "[Measures].[Store Sales].ID",
-            "MDX object '[Measures].[Store Sales].[ID]' not found in cube 'Sales'");
+            "MDX object '[Measures].[Store Sales].ID' not found in cube 'Sales'");
 
         // Error for KEY is slightly different than for ID. It doesn't matter
         // very much.
@@ -3687,7 +3687,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "  Measures.[Unit Sales] * ([Gender].Members as t) on 0,\n"
             + "  {t} on 1\n"
             + "from [Sales]",
-            "MDX object '[t]' not found in cube 'Sales'");
+            "MDX object 't' not found in cube 'Sales'");
 
         // As above, with parentheses. Tuple valued.
         // On SSAS 2005, finds t, and gives error,
@@ -3698,7 +3698,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "  (Measures.[Unit Sales] * [Gender].Members) as t on 0,\n"
             + "  {t} on 1\n"
             + "from [Sales]",
-            "MDX object '[t]' not found in cube 'Sales'");
+            "MDX object 't' not found in cube 'Sales'");
 
         // Calculated set, CurrentMember
         assertQueryReturns(
@@ -3821,7 +3821,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "      (x.Current, [Marital Status].[S]) > 50000),\n"
             + "    ALL) on 1\n"
             + "from [Sales]",
-            "MDX object '[x]' not found in cube 'Sales'");
+            "MDX object 'x' not found in cube 'Sales'");
 
         // As above, but set is not out of scope; it does not exist; but error
         // should be the same.
@@ -3837,7 +3837,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "      (s.Current, [Marital Status].[S]) > 50000),\n"
             + "    ALL) on 1\n"
             + "from [Sales]",
-            "MDX object '[z]' not found in cube 'Sales'");
+            "MDX object 'z' not found in cube 'Sales'");
 
         // 'set AS string' is invalid
         assertQueryThrows(

@@ -85,6 +85,36 @@ class SqlMemberSource
         return member;
     }
 
+    public RolapMember getMemberByKey(
+        RolapLevel level,
+        List<Comparable> keyValues)
+    {
+        if (level.isAll()) {
+            return null;
+        }
+        List<RolapSchema.PhysColumn> columnList =
+            new ArrayList<RolapSchema.PhysColumn>();
+        for (RolapSchema.PhysColumn column : level.attribute.keyList) {
+            columnList.add(column);
+        }
+        final List<RolapMember> list =
+            getMembersInLevel(
+                level,
+                new MemberKeyConstraint(
+                    columnList,
+                    keyValues));
+        switch (list.size()) {
+        case 0:
+            return null;
+        case 1:
+            return list.get(0);
+        default:
+            throw Util.newError(
+                "More than one member in level " + level + " with key "
+                + keyValues);
+        }
+    }
+
     public RolapMember lookupMember(
         List<Id.Segment> uniqueNameParts,
         boolean failIfNotFound)
@@ -98,7 +128,7 @@ class SqlMemberSource
         }
         if (level.isMeasure()) {
             return level.getHierarchy().getMemberReader()
-                .getMembersInLevel(level, 0, Integer.MAX_VALUE).size();
+                .getMembersInLevel(level).size();
         }
         return getMemberCount(level, dataSource);
     }
@@ -468,35 +498,20 @@ class SqlMemberSource
 
     // implement MemberReader
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        int startOrdinal,
-        int endOrdinal)
+        RolapLevel level)
     {
         TupleConstraint constraint =
             sqlConstraintFactory.getLevelMembersConstraint(null);
-        return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
+        return getMembersInLevel(level, constraint);
     }
 
     public List<RolapMember> getMembersInLevel(
         RolapLevel level,
-        int startOrdinal,
-        int endOrdinal,
         TupleConstraint constraint)
     {
         if (level.isAll()) {
-            final List<RolapMember> list = new ArrayList<RolapMember>();
-            list.add(hierarchy.getAllMember());
-            Util.deprecated("why is line below commented out?", false);
-            //return Collections.singletonList(hierarchy.getAllMember());
-            return list;
+            return Collections.singletonList(hierarchy.getAllMember());
         }
-        return getMembersInLevel(level, constraint);
-    }
-
-    private List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        TupleConstraint constraint)
-    {
         final TupleReader tupleReader =
             level.getDimension().isHighCardinality()
                 ? new HighCardSqlTupleReader(constraint)
@@ -519,8 +534,7 @@ class SqlMemberSource
 
     // implement MemberSource
     public List<RolapMember> getRootMembers() {
-        return getMembersInLevel(
-            hierarchy.getLevelList().get(0), 0, Integer.MAX_VALUE);
+        return getMembersInLevel(hierarchy.getLevelList().get(0));
     }
 
     /**
@@ -819,7 +833,7 @@ class SqlMemberSource
                 sqlConstraintFactory.getDescendantsConstraint(
                     parentMembers, mcc);
             List<RolapMember> list =
-                getMembersInLevel(childLevel, 0, Integer.MAX_VALUE, lmc);
+                getMembersInLevel(childLevel, lmc);
             children.addAll(list);
             return;
         }

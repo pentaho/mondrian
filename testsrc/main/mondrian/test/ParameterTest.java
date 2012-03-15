@@ -708,10 +708,10 @@ public class ParameterTest extends FoodMartTestCase {
     public void testAssignMemberParameter() {
         final String para = "Parameter(\"x\", [Customers], [Customers].[USA])";
         assertAssignParameter(
-            para, false, "8", "MDX object '[8]' not found in cube 'Sales'");
+            para, false, "8", "MDX object '8' not found in cube 'Sales'");
         assertAssignParameter(
             para, false, "8.24",
-            "MDX object '[8].[24]' not found in cube 'Sales'");
+            "MDX object '8.24' not found in cube 'Sales'");
         assertAssignParameter(
             para, false, 8,
             "Invalid value '8' for parameter 'x',"
@@ -803,10 +803,10 @@ public class ParameterTest extends FoodMartTestCase {
             "Parameter(\"x\", [Customers], {[Customers].[USA], [Customers].[USA].[CA]})";
         assertAssignParameter(
             para, true, "8",
-            "MDX object '[8]' not found in cube 'Sales'");
+            "MDX object '8' not found in cube 'Sales'");
         assertAssignParameter(
             para, true, "foobar",
-            "MDX object '[foobar]' not found in cube 'Sales'");
+            "MDX object 'foobar' not found in cube 'Sales'");
         assertAssignParameter(
             para, true, 8,
             "Invalid value '8' for parameter 'x', type SetType<MemberType<hierarchy=[Customer].[Customers]>");

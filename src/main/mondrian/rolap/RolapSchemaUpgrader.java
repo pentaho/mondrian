@@ -608,7 +608,7 @@ public class RolapSchemaUpgrader {
         for (MondrianDef.CalculatedMember xmlCalcMember : xmlCalcMemberList) {
             Dimension dimension =
                 lookupDimension(
-                    new Id.Segment(
+                    new Id.NameSegment(
                         xmlCalcMember.dimension,
                         Id.Quoting.UNQUOTED));
             if (formula.getName().equals(xmlCalcMember.name)

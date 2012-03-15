@@ -541,13 +541,13 @@ public class BatchTestCase extends FoodMartTestCase {
             getConnection().getSchema().lookupCube("Sales", true);
         RolapCubeHierarchy hierarchy =
             (RolapCubeHierarchy) salesCube.lookupHierarchy(
-                new Id.Segment("Stores", Id.Quoting.UNQUOTED),
+                new Id.NameSegment("Stores", Id.Quoting.UNQUOTED),
                 false);
         if (hierarchy == null) {
             // In legacy schema, hierarchy is called "Store".
             hierarchy =
                 (RolapCubeHierarchy) salesCube.lookupHierarchy(
-                    new Id.Segment("Store", Id.Quoting.UNQUOTED),
+                    new Id.NameSegment("Store", Id.Quoting.UNQUOTED),
                     false);
         }
         if (hierarchy.getMemberReader() instanceof SmartMemberReader) {

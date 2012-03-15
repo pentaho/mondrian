@@ -468,9 +468,9 @@ public class AccessControlTest extends FoodMartTestCase {
                 Cube salesCube = schema.lookupCube("Sales", mustGet);
                 Cube warehouseCube = schema.lookupCube("Warehouse", mustGet);
                 Hierarchy measuresInSales = salesCube.lookupHierarchy(
-                    new Id.Segment("Measures", Id.Quoting.UNQUOTED), false);
+                    new Id.NameSegment("Measures", Id.Quoting.UNQUOTED), false);
                 Hierarchy storeInWarehouse = warehouseCube.lookupHierarchy(
-                    new Id.Segment("Store", Id.Quoting.UNQUOTED), false);
+                    new Id.NameSegment("Store", Id.Quoting.UNQUOTED), false);
 
                 RoleImpl role = new RoleImpl();
                 role.grant(schema, Access.NONE);
@@ -523,7 +523,7 @@ public class AccessControlTest extends FoodMartTestCase {
         final SchemaReader schemaReader =
             salesCube.getSchemaReader(null).withLocus();
         Hierarchy storeHierarchy = salesCube.lookupHierarchy(
-            new Id.Segment("Stores", Id.Quoting.UNQUOTED), false);
+            new Id.NameSegment("Stores", Id.Quoting.UNQUOTED), false);
         role.grant(schema, Access.ALL_DIMENSIONS);
         role.grant(salesCube, Access.ALL);
         Level nationLevel =
@@ -567,7 +567,8 @@ public class AccessControlTest extends FoodMartTestCase {
         if (restrictCustomers) {
             Hierarchy customersHierarchy =
                 salesCube.lookupHierarchy(
-                    new Id.Segment("Customers", Id.Quoting.UNQUOTED), false);
+                    new Id.NameSegment("Customers", Id.Quoting.UNQUOTED),
+                    false);
             Level stateProvinceLevel =
                 Util.lookupHierarchyLevel(customersHierarchy, "State Province");
             Level customersCityLevel =
@@ -2186,7 +2187,7 @@ public class AccessControlTest extends FoodMartTestCase {
             role.grant(cube, Access.ALL);
 
             Hierarchy hierarchy = cube.lookupHierarchy(
-                new Id.Segment("Employees", Id.Quoting.QUOTED), false);
+                new Id.NameSegment("Employees"), false);
 
             List<? extends Level> levels = hierarchy.getLevelList();
             Level topLevel = levels.get(1);

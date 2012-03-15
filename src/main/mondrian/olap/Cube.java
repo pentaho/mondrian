@@ -16,7 +16,7 @@ import java.util.Set;
 /**
  * Cube.
  *
- * @author jhyde
+ * @author jhyde, 2 March, 1999
  */
 public interface Cube extends OlapElement, Annotated {
 
@@ -47,7 +47,7 @@ public interface Cube extends OlapElement, Annotated {
      * Finds a hierarchy whose name (or unique name, if <code>unique</code> is
      * true) equals <code>s</code>.
      */
-    Hierarchy lookupHierarchy(Id.Segment s, boolean unique);
+    Hierarchy lookupHierarchy(Id.NameSegment s, boolean unique);
 
     /**
      * Returns Member[]. It builds Member[] by analyzing cellset, which

@@ -62,7 +62,8 @@ public class RolapUtil {
     /**
      * Special value represents a null key.
      */
-    public static final Comparable<?> sqlNullValue = new RolapUtilComparable();
+    public static final Comparable<?> sqlNullValue =
+        RolapUtilComparable.INSTANCE;
 
     /**
      * Wraps a schema reader in a proxy so that each call to schema reader
@@ -96,6 +97,8 @@ public class RolapUtil {
                     Locus.push(locus);
                     try {
                         return method.invoke(schemaReader, args);
+                    } catch (InvocationTargetException e) {
+                        throw e.getCause();
                     } finally {
                         Locus.pop(locus);
                     }
@@ -125,20 +128,30 @@ public class RolapUtil {
         }
     }
 
-    public static final class RolapUtilComparable
+    /**
+     * Comparable value, equal only to itself. Used to represent the NULL value,
+     * as returned from a SQL query.
+     */
+    private static final class RolapUtilComparable
         implements Comparable, Serializable
     {
         private static final long serialVersionUID = -2595758291465179116L;
-        public boolean equals(Object o) {
-            return o == this;
+
+        public static final RolapUtilComparable INSTANCE =
+            new RolapUtilComparable();
+
+        // singleton
+        private RolapUtilComparable() {
         }
-        public int hashCode() {
-            return super.hashCode();
-        }
+
+        // do not override equals and hashCode -- use identity
+
         public String toString() {
             return "#null";
         }
+
         public int compareTo(Object o) {
+            // collates after everything (except itself)
             return o == this ? 0 : -1;
         }
     }
@@ -157,10 +170,7 @@ public class RolapUtil {
             try {
                 return o1.compareTo(o2);
             } catch (ClassCastException cce) {
-                if (o1 instanceof RolapUtilComparable) {
-                    return -1;
-                }
-                if (o2 instanceof RolapUtilComparable) {
+                if (o2 == RolapUtilComparable.INSTANCE) {
                     return 1;
                 }
                 throw new MondrianException(cce);
@@ -235,6 +245,10 @@ public class RolapUtil {
         boolean failIfNotFound)
     {
         for (Id.Segment segment : segments) {
+            if (!(segment instanceof Id.NameSegment)) {
+                break;
+            }
+            final Id.NameSegment nameSegment = (Id.NameSegment) segment;
             List<RolapMember> children;
             if (member == null) {
                 children = reader.getRootMembers();
@@ -244,7 +258,7 @@ public class RolapUtil {
                 member = null;
             }
             for (RolapMember child : children) {
-                if (child.getName().equals(segment.name)) {
+                if (child.getName().equals(nameSegment.name)) {
                     member = child;
                     break;
                 }
@@ -426,6 +440,10 @@ public class RolapUtil {
         MatchType matchType,
         boolean caseInsensitive)
     {
+        if (!(searchName instanceof Id.NameSegment)) {
+            return null;
+        }
+        final Id.NameSegment nameSegment = (Id.NameSegment) searchName;
         switch (matchType) {
         case FIRST:
             return members.get(0);
@@ -449,26 +467,26 @@ public class RolapUtil {
         Member bestMatch = null;
         for (Member member : members) {
             int rc;
-            if (searchName.quoting == Id.Quoting.KEY
+            if (nameSegment.quoting == Id.Quoting.KEY
                 && member instanceof RolapMember)
             {
                 if (((RolapMember) member).getKey().toString().equals(
-                        searchName.name))
+                        nameSegment.name))
                 {
                     return member;
                 }
             }
             if (matchType.isExact()) {
                 if (caseInsensitive) {
-                    rc = Util.compareName(member.getName(), searchName.name);
+                    rc = Util.compareName(member.getName(), nameSegment.name);
                 } else {
-                    rc = member.getName().compareTo(searchName.name);
+                    rc = member.getName().compareTo(nameSegment.name);
                 }
             } else {
                 if (searchMember == null) {
                     searchMember =
                         level2.getHierarchy().createMember(
-                            parent, level2, searchName.name, null);
+                            parent, level2, nameSegment.name, null);
                 }
                 rc =
                     FunUtil.compareSiblingMembers(

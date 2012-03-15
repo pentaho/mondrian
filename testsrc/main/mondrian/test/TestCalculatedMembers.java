@@ -1844,7 +1844,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             "with member [Gender].[M].[X] as 4\n"
             + " select [Gender].[M].[X] on 0\n"
             + " from [Sales]",
-            "The 'X' calculated member cannot be created because its parent is "
+            "The '[X]' calculated member cannot be created because its parent is "
             + "at the lowest level in the [Customer].[Gender] hierarchy.");
     }
 }

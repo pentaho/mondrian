@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1999-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -119,7 +119,7 @@ public class CubeAccess {
             boolean fail = false;
             Hierarchy hierarchy =
                 mdxCube.lookupHierarchy(
-                    new Id.Segment(sHierarchy, Id.Quoting.UNQUOTED),
+                    new Id.NameSegment(sHierarchy),
                     fail);
             if (hierarchy == null) {
                 throw MondrianResource.instance().MdxCubeSlicerHierarchyError

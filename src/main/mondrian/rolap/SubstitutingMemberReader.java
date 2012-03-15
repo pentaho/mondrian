@@ -67,12 +67,9 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
 
     @Override
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        int startOrdinal,
-        int endOrdinal)
+        RolapLevel level)
     {
-        return substitute(
-            memberReader.getMembersInLevel(level, startOrdinal, endOrdinal));
+        return substitute(memberReader.getMembersInLevel(level));
     }
 
     @Override
@@ -183,14 +180,11 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
 
     @Override
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        int startOrdinal,
-        int endOrdinal,
-        TupleConstraint constraint)
+        RolapLevel level, TupleConstraint constraint)
     {
         return substitute(
             memberReader.getMembersInLevel(
-                level, startOrdinal, endOrdinal, constraint));
+                level, constraint));
     }
 
     @Override

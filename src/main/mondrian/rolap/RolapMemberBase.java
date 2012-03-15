@@ -926,8 +926,8 @@ public class RolapMemberBase
         } else if (key instanceof List) {
             List list = (List) key;
             return keyToString(list.get(list.size() - 1));
-        } else if (key instanceof Id.Segment) {
-            return ((Id.Segment) key).name;
+        } else if (key instanceof Id.NameSegment) {
+            return ((Id.NameSegment) key).name;
         } else if (key instanceof Number) {
             String name = key.toString();
             if (name.endsWith(".0")) {

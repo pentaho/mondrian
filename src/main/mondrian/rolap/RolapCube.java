@@ -169,8 +169,12 @@ public class RolapCube extends CubeBase {
 
     @Override
     public RolapDimension lookupDimension(Id.Segment s) {
+        if (!(s instanceof Id.NameSegment)) {
+            return null;
+        }
+        final Id.NameSegment nameSegment = (Id.NameSegment) s;
         for (RolapDimension dimension : dimensionList) {
-            if (Util.equalName(dimension.getName(), s.name)) {
+            if (Util.equalName(dimension.getName(), nameSegment.name)) {
                 return dimension;
             }
         }
@@ -498,6 +502,11 @@ public class RolapCube extends CubeBase {
     public OlapElement lookupChild(
         SchemaReader schemaReader, Id.Segment s, MatchType matchType)
     {
+        if (!(s instanceof Id.NameSegment)) {
+            return null;
+        }
+        final Id.NameSegment nameSegment = (Id.NameSegment) s;
+
         // Note that non-exact matches aren't supported at this level,
         // so the matchType is ignored
         if (matchType != MatchType.EXACT_SCHEMA) {
@@ -540,7 +549,7 @@ public class RolapCube extends CubeBase {
         final List<Id.Segment> segmentList = new ArrayList<Id.Segment>();
         segmentList.addAll(
             Util.parseIdentifier(hierarchy.getUniqueName()));
-        segmentList.add(new Id.Segment(name, Id.Quoting.QUOTED));
+        segmentList.add(new Id.NameSegment(name));
         final Formula formula = new Formula(
             new Id(segmentList),
             createDummyExp(calc),

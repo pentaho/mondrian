@@ -334,13 +334,32 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         return cubeDimension.cube;
     }
 
+    private static RolapCubeMember createAncestorMembers(
+        RolapCubeHierarchyMemberReader memberReader,
+        RolapCubeLevel level,
+        RolapMember member)
+    {
+        if (member == null) {
+            return null;
+        }
+        RolapCubeMember parent = null;
+        if (member.getParentMember() != null) {
+            parent =
+                createAncestorMembers(
+                    memberReader,
+                    level.getParentLevel(),
+                    member.getParentMember());
+        }
+        return memberReader.lookupCubeMember(parent, member, level);
+    }
+
     public List<? extends RolapCubeLevel> getLevelList() {
         return Util.cast(levelList);
     }
 
     /**
      * TODO: Since this is part of a caching strategy, should be implemented
-     * as a Strategy Pattern, avoiding hirarchy.
+     * as a Strategy Pattern, avoiding hierarchy.
      */
     public static interface RolapCubeHierarchyMemberReader
         extends MemberReader
@@ -349,6 +368,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             final RolapCubeMember parent,
             final RolapMember member,
             final RolapCubeLevel level);
+
         public MemberCacheHelper getRolapCubeMemberCacheHelper();
     }
 
@@ -435,8 +455,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
         public List<RolapMember> getRootMembers() {
             if (rootMembers == null) {
-                rootMembers =
-                    getMembersInLevel(levelList.get(0), 0, Integer.MAX_VALUE);
+                rootMembers = getMembersInLevel(levelList.get(0));
             }
             return rootMembers;
         }
@@ -581,8 +600,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
         public List<RolapMember> getMembersInLevel(
             RolapLevel level,
-            int startOrdinal,
-            int endOrdinal,
             TupleConstraint constraint)
         {
             synchronized (cacheHelper) {
@@ -604,12 +621,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 if (!joinReq) {
                     list =
                         rolapHierarchy.getMemberReader().getMembersInLevel(
-                            cubeLevel.getRolapLevel(),
-                            startOrdinal, endOrdinal, constraint);
+                            cubeLevel.getRolapLevel(), constraint);
                 } else {
                     list =
                         super.getMembersInLevel(
-                            level, startOrdinal, endOrdinal, constraint);
+                            level, constraint);
                 }
                 List<RolapMember> newlist = new ArrayList<RolapMember>();
                 for (RolapMember member : list) {
@@ -657,6 +673,18 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             }
             return lookupCubeMember(
                 parentCubeMember, member, cubeLevel);
+        }
+
+        @Override
+        public RolapMember getMemberByKey(
+            RolapLevel level, List<Comparable> keyValues)
+        {
+            synchronized (cacheHelper) {
+                final RolapMember member =
+                    super.getMemberByKey(level, keyValues);
+                return createAncestorMembers(
+                    this, (RolapCubeLevel) level, member);
+            }
         }
 
         public RolapCubeMember lookupCubeMember(
@@ -776,7 +804,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         }
 
         public List<RolapMember> getRootMembers() {
-            return getMembersInLevel(levelList.get(0), 0, Integer.MAX_VALUE);
+            return getMembersInLevel(levelList.get(0));
         }
 
         protected void readMemberChildren(
@@ -871,8 +899,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
 
         public List<RolapMember> getMembersInLevel(
             final RolapLevel level,
-            int startOrdinal,
-            int endOrdinal,
             TupleConstraint constraint)
         {
                 List<RolapMember> members = null;
@@ -887,11 +913,11 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     list =
                         rolapHierarchy.getMemberReader().getMembersInLevel(
                             ((RolapCubeLevel) level).getRolapLevel(),
-                            startOrdinal, endOrdinal, constraint);
+                            constraint);
                 } else {
                     list =
                         super.getMembersInLevel(
-                            level, startOrdinal, endOrdinal, constraint);
+                            level, constraint);
                 }
 
                 return new UnsupportedList<RolapMember>() {
@@ -924,6 +950,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                         if (member.getParentMember() != null) {
                             parent =
                                 createAncestorMembers(
+                                    NoCacheRolapCubeHierarchyMemberReader.this,
                                     (RolapCubeLevel) level.getParentLevel(),
                                     member.getParentMember());
                         }
@@ -931,19 +958,6 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                             parent, member, (RolapCubeLevel) level);
                     }
                 };
-        }
-
-        private RolapCubeMember createAncestorMembers(
-            RolapCubeLevel level,
-            RolapMember member)
-        {
-            RolapCubeMember parent = null;
-            if (member.getParentMember() != null) {
-                parent =
-                    createAncestorMembers(
-                        level.getParentLevel(), member.getParentMember());
-            }
-            return lookupCubeMember(parent, member, level);
         }
 
         public RolapCubeMember lookupCubeMember(

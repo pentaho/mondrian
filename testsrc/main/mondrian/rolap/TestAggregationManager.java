@@ -1237,6 +1237,12 @@ public class TestAggregationManager extends BatchTestCase {
         assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-663">bug MONDRIAN-663,
+     * "Improve metadata query (TupleReader) support for aggregation tables to
+     * include dimensions defining more than one column"</a>.
+     */
     public void testOrdinalExprAggTuplesAndChildren() {
         // this verifies that we can load properties, ordinals, etc out of
         // agg tables in member lookups (tuples and children)
@@ -1502,8 +1508,11 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     /**
-     * Testcase for <a href="http://jira.pentaho.com/browse/MONDRIAN-812">
-     * bug MONDRIAN-812</a>. Using a key expression for a level
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-812">bug MONDRIAN-812,
+     * "Issues with aggregate table recognition when using
+     * &lt;KeyExpression&gt;&lt;SQL&gt; ... &lt;/SQL&gt;&lt;/KeyExpression&gt;
+     * to define a level"</a>. Using a key expression for a level
      * element would make aggregate tables fail to be used.
      */
     public void testLevelKeyAsSqlExpWithAgg() {

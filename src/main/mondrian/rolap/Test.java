@@ -106,12 +106,12 @@ public class Test {
 
         RolapHierarchy genderHierarchy = (RolapHierarchy)
             salesCube.lookupHierarchy(
-                new Id.Segment("Gender", Id.Quoting.QUOTED), false);
+                new Id.NameSegment("Gender"), false);
         testMemberReader(genderHierarchy.getMemberReader());
 
         RolapHierarchy customerHierarchy = (RolapHierarchy)
             salesCube.lookupHierarchy(
-                new Id.Segment("Customers", Id.Quoting.QUOTED), false);
+                new Id.NameSegment("Customers"), false);
         testMemberReader(customerHierarchy.getMemberReader());
     }
 
@@ -130,8 +130,7 @@ public class Test {
             rootMembers.get(0).getHierarchy().getLevelList();
         RolapLevel level = levels.get(levels.size() > 1 ? 1 : 0);
         pw.print("Members at level " + level.getUniqueName() + " are ");
-        List<RolapMember> members =
-            reader.getMembersInLevel(level, 0, Integer.MAX_VALUE);
+        List<RolapMember> members = reader.getMembersInLevel(level);
         print(members);
         pw.println();
 

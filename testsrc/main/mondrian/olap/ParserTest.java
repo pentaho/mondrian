@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -22,6 +22,7 @@ import mondrian.util.Bug;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,6 +36,10 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     static final BuiltinFunTable funTable = BuiltinFunTable.instance();
+
+    protected TestParser createParser() {
+        return new TestParser();
+    }
 
     public void testAxisParsing() throws Exception {
         checkAxisAllWays(0, "COLUMNS");
@@ -54,7 +59,7 @@ public class ParserTest extends FoodMartTestCase {
         String s,
         String expectedName)
     {
-        TestParser p = new TestParser();
+        TestParser p = createParser();
         String q = "select [member] on " + s + " from [cube]";
         QueryPart query = p.parseInternal(null, q, false, funTable, false);
         assertNull("Test parser should return null query", query);
@@ -72,7 +77,7 @@ public class ParserTest extends FoodMartTestCase {
         assertParseQueryFails(
             "select [member] on axis(1.7) from sales",
             "Invalid axis specification. "
-            + "The axis number must be non-negative integer, but it was 1.7.");
+            + "The axis number must be a non-negative integer, but it was 1.7.");
         assertParseQueryFails(
             "select [member] on axis(-1) from sales",
             "Syntax error at line");
@@ -87,7 +92,7 @@ public class ParserTest extends FoodMartTestCase {
         assertParseQueryFails(
             "select [member] on 0.5 from sales",
             "Invalid axis specification. "
-            + "The axis number must be non-negative integer, but it was 0.5.");
+            + "The axis number must be a non-negative integer, but it was 0.5.");
         assertParseQuery(
             "select [member] on 555 from sales",
             "select [member] ON AXIS(555)\n"
@@ -140,7 +145,7 @@ public class ParserTest extends FoodMartTestCase {
             "select [measures].[$foo] ON COLUMNS\n"
             + "from [sales]\n");
 
-        // ']' unexcpected
+        // ']' unexpected
         assertParseQueryFails(
             "select { Customers].Children } on columns from [Sales]",
             "Unexpected character ']'");
@@ -172,11 +177,11 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     private void assertParseQueryFails(String query, String expected) {
-        checkFails(new TestParser(), query, expected);
+        checkFails(createParser(), query, expected);
     }
 
     private void assertParseExprFails(String expr, String expected) {
-        checkFails(new TestParser(), wrapExpr(expr), expected);
+        checkFails(createParser(), wrapExpr(expr), expected);
     }
 
     private void checkFails(TestParser p, String query, String expected) {
@@ -196,7 +201,7 @@ public class ParserTest extends FoodMartTestCase {
     }
 
     public void testMultipleAxes() throws Exception {
-        TestParser p = new TestParser();
+        TestParser p = createParser();
         String query = "select {[axis0mbr]} on axis(0), "
                 + "{[axis1mbr]} on axis(1) from cube";
 
@@ -237,14 +242,16 @@ public class ParserTest extends FoodMartTestCase {
         assertNotNull("Column tuples", colsSetExpr);
 
         UnresolvedFunCall fun = (UnresolvedFunCall)colsSetExpr;
-        Id.Segment id = ((Id)(fun.getArgs()[0])).getElement(0);
+        Id arg0 = (Id) (fun.getArgs()[0]);
+        Id.NameSegment id = (Id.NameSegment) arg0.getElement(0);
         assertEquals("Correct member on axis", "axis0mbr", id.name);
 
         Exp rowsSetExpr = axes[1].getSet();
         assertNotNull("Row tuples", rowsSetExpr);
 
         fun = (UnresolvedFunCall) rowsSetExpr;
-        id = ((Id) (fun.getArgs()[0])).getElement(0);
+        arg0 = (Id) (fun.getArgs()[0]);
+        id = (Id.NameSegment) arg0.getElement(0);
         assertEquals("Correct member on axis", "axis1mbr", id.name);
     }
 
@@ -359,9 +366,10 @@ public class ParserTest extends FoodMartTestCase {
             "((x IS NULL) OR ((y IS NULL) AND (z = 5)))");
 
         assertParseExpr(
-            "(x is null) + 56 > 6", "((((x IS NULL)) + 56) > 6)");
+            "(x is null) + 56 > 6",
+            "((((x IS NULL)) + 56) > 6)");
 
-        // FIXME: Should be
+        // FIXME: Should be:
         //  "(((((x IS NULL) AND (a = b)) OR ((c = (d + 5))) IS NULL) + 5)"
         // FIXME: Gives error at token '+' with new parser.
         assertParseExpr(
@@ -382,7 +390,8 @@ public class ParserTest extends FoodMartTestCase {
             "CAST([Measures].[Unit Sales] AS Numeric)");
 
         assertParseExpr(
-            "Cast(1 + 2 AS String)", "CAST((1 + 2) AS String)");
+            "Cast(1 + 2 AS String)",
+            "CAST((1 + 2) AS String)");
     }
 
     /**
@@ -423,7 +432,93 @@ public class ParserTest extends FoodMartTestCase {
         assertParseExpr("foo", "foo");
         assertParseExpr("fOo", "fOo");
         assertParseExpr("[Foo].[Bar Baz]", "[Foo].[Bar Baz]");
-        assertParseExpr("[Foo].&[Bar]", "[Foo].&[Bar]");
+        assertParseExpr("[Foo].&[Bar]", "[Foo].&[Bar]", false);
+    }
+
+    public void testIdWithKey() {
+        // two segments each with a compound key
+        final String mdx = "[Foo].&Key1&Key2.&[Key3]&Key4&[5]";
+        assertParseExpr(mdx, mdx, false);
+
+        TestParser p = createParser();
+        final String mdxQuery = wrapExpr(mdx);
+        new JavaccParserValidatorImpl(p).parseInternal(
+            null, mdxQuery, false, funTable, false);
+        assertEquals(1, p.getFormulas().length);
+        Formula withMember = p.getFormulas()[0];
+        final Exp expr = withMember.getExpression();
+        Id id = (Id) expr;
+        assertEquals(3, id.getSegments().size());
+
+        final Id.NameSegment seg0 = (Id.NameSegment) id.getSegments().get(0);
+        assertEquals("Foo", seg0.getName());
+        assertEquals(Id.Quoting.QUOTED, seg0.getQuoting());
+
+        final Id.KeySegment seg1 = (Id.KeySegment) id.getSegments().get(1);
+        assertEquals(Id.Quoting.KEY, seg1.getQuoting());
+        List<Id.NameSegment> keyParts = seg1.getKeyParts();
+        assertNotNull(keyParts);
+        assertEquals(2, keyParts.size());
+        assertEquals("Key1", keyParts.get(0).getName());
+        assertEquals(
+            Id.Quoting.UNQUOTED, keyParts.get(0).getQuoting());
+        assertEquals("Key2", keyParts.get(1).getName());
+        assertEquals(
+            Id.Quoting.UNQUOTED, keyParts.get(1).getQuoting());
+
+        final Id.Segment seg2 = id.getSegments().get(2);
+        assertEquals(Id.Quoting.KEY, seg2.getQuoting());
+        List<Id.NameSegment> keyParts2 = seg2.getKeyParts();
+        assertNotNull(keyParts2);
+        assertEquals(3, keyParts2.size());
+        assertEquals(
+            Id.Quoting.QUOTED, keyParts2.get(0).getQuoting());
+        assertEquals(
+            Id.Quoting.UNQUOTED, keyParts2.get(1).getQuoting());
+        assertEquals(
+            Id.Quoting.QUOTED, keyParts2.get(2).getQuoting());
+        assertEquals("5", keyParts2.get(2).getName());
+
+        final String actual = expr.toString();
+        TestContext.assertEqualsVerbose(mdx, actual);
+    }
+
+    public void testIdComplex() {
+        // simple key
+        assertParseExpr(
+            "[Foo].&[Key1]&[Key2].[Bar]",
+            "[Foo].&[Key1]&[Key2].[Bar]",
+            false);
+        // compound key
+        assertParseExpr(
+            "[Foo].&[1]&[Key 2]&[3].[Bar]",
+            "[Foo].&[1]&[Key 2]&[3].[Bar]",
+            false);
+        // compound key sans brackets
+        assertParseExpr(
+            "[Foo].&Key1&Key2 + 4",
+            "([Foo].&Key1&Key2 + 4)",
+            false);
+        // brackets are required for numbers
+        if (false)
+        assertParseExprFails(
+            "[Foo].&[1]&[Key2]&^3.[Bar]",
+            "Lexical error at line 1, column 51\\.  Encountered: \"3\" \\(51\\), after : \"&\"");
+        // space between ampersand and key is unacceptable
+        if (false)
+        assertParseExprFails(
+            "[Foo].&^ [Key2].[Bar]",
+            "Lexical error at line 1, column 40\\.  Encountered: \" \" \\(32\\), after : \"&\"");
+        // underscore after ampersand is unacceptable
+        if (false)
+        assertParseExprFails(
+            "[Foo].&^_Key2.[Bar]",
+            "Lexical error at line 1, column 40\\.  Encountered: \"_\" \\(95\\), after : \"&\"");
+        // but underscore is OK within brackets
+        assertParseExpr(
+            "[Foo].&[_Key2].[Bar]",
+            "[Foo].&[_Key2].[Bar]",
+            false);
     }
 
     public void testCloneQuery() {
@@ -473,11 +568,14 @@ public class ParserTest extends FoodMartTestCase {
         // exponents akimbo
         assertParseExpr("1e2", "100", true);
         assertParseExpr("1e2", Util.PreJdk15 ? "100" : "1E+2", false);
+
         assertParseExprFails(
             "1e2e3",
             "Syntax error at line 1, column 37, token 'e3'");
+
         assertParseExpr("1.2e3", "1200", true);
         assertParseExpr("1.2e3", Util.PreJdk15 ? "1200" : "1.2E+3", false);
+
         assertParseExpr("-1.2345e3", "(- 1234.5)");
         assertParseExprFails(
             "1.2e3.4",
@@ -515,12 +613,94 @@ public class ParserTest extends FoodMartTestCase {
             + "where ([Time].[1997].[Q2].[4])\n");
     }
 
+    public void testIdentifier() {
+        // must have at least one segment
+        Id id;
+        try {
+            id = new Id(Collections.<Id.Segment>emptyList());
+            fail("expected exception, got " + id);
+        } catch (IllegalArgumentException e) {
+            // ok
+        }
+
+        id = new Id(new Id.NameSegment("foo"));
+        assertEquals("[foo]", id.toString());
+
+        // append does not mutate
+        Id id2 = id.append(
+            new Id.KeySegment(
+                new Id.NameSegment(
+                    "bar", Id.Quoting.QUOTED)));
+        assertTrue(id != id2);
+        assertEquals("[foo]", id.toString());
+        assertEquals("[foo].&[bar]", id2.toString());
+
+        // cannot mutate segment list
+        final List<Id.Segment> segments = id.getSegments();
+        try {
+            segments.remove(0);
+            fail("expected exception");
+        } catch (UnsupportedOperationException e) {
+            // ok
+        }
+        try {
+            segments.clear();
+            fail("expected exception");
+        } catch (UnsupportedOperationException e) {
+            // ok
+        }
+        try {
+            segments.add(
+                new Id.NameSegment("baz"));
+            fail("expected exception");
+        } catch (UnsupportedOperationException e) {
+            // ok
+        }
+    }
+
+    /**
+     * Test case for empty expressions. Test case for <a href=
+  "http://sf.net/tracker/?func=detail&aid=3030772&group_id=168953&atid=848534"
+     * > bug 3030772, "DrilldownLevelTop parser error"</a>.
+     */
     public void testEmptyExpr() {
         assertParseQuery(
-            "SELECT NON EMPTY HIERARCHIZE({DrillDownLevelTop({[Product].[All Products]},\n"
-            + "3, , [Measures].[Unit Sales])}) on columns from [Sales]",
+            "select NON EMPTY HIERARCHIZE(\n"
+            + "  {DrillDownLevelTop(\n"
+            + "     {[Product].[All Products]},3,,[Measures].[Unit Sales])}"
+            + "  ) ON COLUMNS\n"
+            + "from [Sales]\n",
             "select NON EMPTY HIERARCHIZE({DrillDownLevelTop({[Product].[All Products]}, 3, , [Measures].[Unit Sales])}) ON COLUMNS\n"
             + "from [Sales]\n");
+
+        // more advanced; the actual test case in the bug
+        assertParseQuery(
+            "SELECT {[Measures].[NetSales]}"
+            + " DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON COLUMNS ,"
+            + " NON EMPTY HIERARCHIZE(AddCalculatedMembers("
+            + "{DrillDownLevelTop({[ProductDim].[Name].[All]}, 10, ,"
+            + " [Measures].[NetSales])}))"
+            + " DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON ROWS "
+            + "FROM [cube]",
+            "select {[Measures].[NetSales]} DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON COLUMNS,\n"
+            + "  NON EMPTY HIERARCHIZE(AddCalculatedMembers({DrillDownLevelTop({[ProductDim].[Name].[All]}, 10, , [Measures].[NetSales])})) DIMENSION PROPERTIES PARENT_UNIQUE_NAME ON ROWS\n"
+            + "from [cube]\n");
+    }
+
+    /**
+     * Test case for SELECT in the FROM clause.
+     */
+    public void _testInnerSelect() {
+        assertParseQuery(
+            "SELECT FROM "
+            + "(SELECT ({[ProductDim].[Product Group].&[Mobile Phones]}) "
+            + "ON COLUMNS FROM [cube]) CELL PROPERTIES VALUE",
+            "SELECT\n"
+            + "FROM (\n"
+            + "    SELECT\n"
+            + "    {[ProductDim].[Product Group].&[Mobile Phones]} ON COLUMNS\n"
+            + "    FROM [cube])\n"
+            + "CELL PROPERTIES VALUE");
     }
 
     /**
@@ -731,7 +911,7 @@ public class ParserTest extends FoodMartTestCase {
     private void assertParseQuery(
         String mdx, final String expected, boolean old)
     {
-        TestParser p = new TestParser();
+        TestParser p = createParser();
         final QueryPart query;
         if (old) {
             query = p.parseInternal(null, mdx, false, funTable, false);
@@ -766,7 +946,7 @@ public class ParserTest extends FoodMartTestCase {
     private void assertParseExpr(
         String expr, final String expected, boolean old)
     {
-        TestParser p = new TestParser();
+        TestParser p = createParser();
         final String mdx = wrapExpr(expr);
         final QueryPart query;
         if (old) {

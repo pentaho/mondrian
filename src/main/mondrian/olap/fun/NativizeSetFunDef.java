@@ -1535,7 +1535,7 @@ public class NativizeSetFunDef extends FunDefBase {
     }
 
     private static Id.Segment q(String s) {
-        return new Id.Segment(s, Id.Quoting.QUOTED);
+        return new Id.NameSegment(s);
     }
 
     private static String createMangledName(Level level, String prefix) {

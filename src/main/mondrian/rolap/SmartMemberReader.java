@@ -42,7 +42,7 @@ import java.util.*;
  */
 public class SmartMemberReader implements MemberReader {
     private final SqlConstraintFactory sqlConstraintFactory =
-            SqlConstraintFactory.instance();
+        SqlConstraintFactory.instance();
 
     /** access to <code>source</code> must be synchronized(this) */
     protected final MemberReader source;
@@ -85,15 +85,19 @@ public class SmartMemberReader implements MemberReader {
         return member;
     }
 
+    public RolapMember getMemberByKey(
+        RolapLevel level, List<Comparable> keyValues)
+    {
+        // Caching by key is not supported.
+        return source.getMemberByKey(level, keyValues);
+    }
+
     // implement MemberReader
     public List<RolapMember> getMembers() {
         List<RolapMember> v = new ConcatenableList<RolapMember>();
         // todo: optimize by walking to children for members we know about
         for (RolapLevel level : getHierarchy().getLevelList()) {
-            List<RolapMember> membersInLevel = getMembersInLevel(
-                level,
-                0,
-                Integer.MAX_VALUE);
+            List<RolapMember> membersInLevel = getMembersInLevel(level);
             v.addAll(membersInLevel);
         }
         return v;
@@ -107,13 +111,11 @@ public class SmartMemberReader implements MemberReader {
     }
 
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        int startOrdinal,
-        int endOrdinal)
+        RolapLevel level)
     {
         TupleConstraint constraint =
             sqlConstraintFactory.getLevelMembersConstraint(null);
-        return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
+        return getMembersInLevel(level, constraint);
     }
 
     protected void checkCacheStatus() {
@@ -121,10 +123,7 @@ public class SmartMemberReader implements MemberReader {
     }
 
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        int startOrdinal,
-        int endOrdinal,
-        TupleConstraint constraint)
+        RolapLevel level, TupleConstraint constraint)
     {
         synchronized (cacheHelper) {
             checkCacheStatus();
@@ -137,7 +136,7 @@ public class SmartMemberReader implements MemberReader {
 
             members =
                 source.getMembersInLevel(
-                    level, startOrdinal, endOrdinal, constraint);
+                    level, constraint);
             cacheHelper.putLevelMembersInCache(level, constraint, members);
             return members;
         }

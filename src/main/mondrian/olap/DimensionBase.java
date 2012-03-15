@@ -99,7 +99,10 @@ public abstract class DimensionBase
     public OlapElement lookupChild(
         SchemaReader schemaReader, Id.Segment s, MatchType matchType)
     {
-        OlapElement oe = lookupHierarchy(s);
+        OlapElement oe = null;
+        if (s instanceof Id.NameSegment) {
+            oe = lookupHierarchy((Id.NameSegment) s);
+        }
 
         // Original mondrian behavior:
         // If the user is looking for [Marital Status].[Marital Status] we
@@ -138,9 +141,9 @@ public abstract class DimensionBase
         return false;
     }
 
-    private Hierarchy lookupHierarchy(Id.Segment s) {
+    private Hierarchy lookupHierarchy(Id.NameSegment s) {
         for (Hierarchy hierarchy : hierarchyList) {
-            if (Util.equalName(hierarchy.getName(), s.name)) {
+            if (Util.equalName(hierarchy.getName(), s.getName())) {
                 return hierarchy;
             }
         }

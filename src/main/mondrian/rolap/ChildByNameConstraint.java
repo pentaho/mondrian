@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2010 Pentaho
+// Copyright (C) 2006-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -33,7 +33,7 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
      *
      * @param childName Name of child
      */
-    public ChildByNameConstraint(Id.Segment childName) {
+    public ChildByNameConstraint(Id.NameSegment childName) {
         this.childName = childName.name;
         this.cacheKey = Arrays.asList(ChildByNameConstraint.class, childName);
     }

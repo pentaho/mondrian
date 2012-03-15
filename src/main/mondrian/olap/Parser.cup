@@ -423,6 +423,7 @@ non terminal QueryPart
     explain_statement;
 non terminal Id
     bang_compound_id,
+    cell_property,
     compound_id,
     cube_name,
     cube_specification,
@@ -433,7 +434,7 @@ non terminal AxisOrdinal.StandardAxisOrdinal
 non terminal String
     comp_op,
     keyword;
-non terminal Id.Segment
+non terminal Id.NameSegment
     identifier,
     quoted_identifier,
     unquoted_identifier,
@@ -446,7 +447,6 @@ non terminal MemberProperty
     member_property_definition;
 non terminal
     cell_opt,
-    cell_property,
     dimension_opt,
     property;
 
@@ -493,22 +493,22 @@ start with statement;
 
 quoted_identifier ::=
         QUOTED_ID:i  {:
-            RESULT = new Id.Segment(i, Id.Quoting.QUOTED);
+            RESULT = new Id.NameSegment(i, Id.Quoting.QUOTED);
         :}
     ;
 
 amp_quoted_identifier ::=
         AMP_QUOTED_ID:i {:
-            RESULT = new Id.Segment(i, Id.Quoting.KEY);
+            RESULT = new Id.NameSegment(i, Id.Quoting.KEY); // yuck
         :}
     ;
 
 unquoted_identifier ::=
         ID:i {:
-            RESULT = new Id.Segment(i, Id.Quoting.UNQUOTED);
+            RESULT = new Id.NameSegment(i, Id.Quoting.UNQUOTED);
         :}
     |   keyword:i {:
-            RESULT = new Id.Segment(i, Id.Quoting.UNQUOTED);
+            RESULT = new Id.NameSegment(i, Id.Quoting.UNQUOTED);
         :}
     ;
 
@@ -926,13 +926,13 @@ value_expression_primary ::=
         :}
     |   bang_compound_id:i LPAREN exp_list_opt:lis RPAREN {:
             RESULT = new UnresolvedFunCall(
-                i.getSegments().get(i.getSegments().size() - 1).name,
+                ((Id.NameSegment) Util.last(i.getSegments())).name,
                 Syntax.Function, Parser.toExpArray(lis));
         :}
     |   CAST LPAREN aliasedExpression:ae RPAREN {:
             assert ae.getArgCount() == 2;
             Exp e = ae.getArg(0);
-            Id.Segment t = ((Id) ae.getArg(1)).getSegments().get(0);
+            Id.NameSegment t = (Id.NameSegment) ((Id) ae.getArg(1)).getSegments().get(0);
             RESULT = new UnresolvedFunCall(
                 "CAST", Syntax.Cast, new Exp[] {
                     e,
@@ -1393,7 +1393,7 @@ select_statement ::=
             Parser parser = (Parser) CUP$Parser$parser;
             // We want 'Sales', not '[Sales]', and can't handle 'Schema.Sales'
             // yet.
-            String cubeName = c.getElement(0).name;
+            String cubeName = ((Id.NameSegment) c.getElement(0)).name;
             RESULT = parser.factory.makeQuery(
                 parser.statement,
                 Parser.toFormulaArray(f),
@@ -1672,10 +1672,10 @@ cell_opt ::=
 cell_property_list ::=
     cell_property:p {:
         RESULT = new LinkedList();
-        RESULT.add(new CellProperty(p));
+        RESULT.add(new CellProperty(p.getSegments()));
     :}
     |   cell_property:p COMMA cell_property_list:p1 {:
-        p1.add(0, new CellProperty(p));
+        p1.add(0, new CellProperty(p.getSegments()));
         RESULT = p1;
     :}
 ;

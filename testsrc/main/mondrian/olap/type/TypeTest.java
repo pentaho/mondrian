@@ -15,8 +15,7 @@ import mondrian.test.TestContext;
 
 import junit.framework.TestCase;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Unit test for mondrian type facility.
@@ -251,12 +250,12 @@ public class TypeTest extends TestCase {
     }
 
     private Member getStoreChild() {
-        List<Id.Segment> storeParts = new ArrayList<Id.Segment>();
-        storeParts.add(new Id.Segment("Store", Id.Quoting.UNQUOTED));
-        storeParts.add(new Id.Segment("Stores", Id.Quoting.UNQUOTED));
-        storeParts.add(new Id.Segment("All Stores", Id.Quoting.UNQUOTED));
-        storeParts.add(new Id.Segment("USA", Id.Quoting.UNQUOTED));
-        storeParts.add(new Id.Segment("CA", Id.Quoting.UNQUOTED));
+        List<Id.Segment> storeParts = Arrays.<Id.Segment>asList(
+            new Id.NameSegment("Store", Id.Quoting.UNQUOTED),
+            new Id.NameSegment("Stores", Id.Quoting.UNQUOTED),
+            new Id.NameSegment("All Stores", Id.Quoting.UNQUOTED),
+            new Id.NameSegment("USA", Id.Quoting.UNQUOTED),
+            new Id.NameSegment("CA", Id.Quoting.UNQUOTED));
         return getSalesCubeSchemaReader().getMemberByUniqueName(
             storeParts, false);
     }
@@ -278,18 +277,18 @@ public class TypeTest extends TestCase {
     }
 
     private Member getMaleChild() {
-        List<Id.Segment> genderParts = new ArrayList<Id.Segment>();
-        genderParts.add(new Id.Segment("Customer", Id.Quoting.UNQUOTED));
-        genderParts.add(new Id.Segment("Gender", Id.Quoting.UNQUOTED));
-        genderParts.add(new Id.Segment("M", Id.Quoting.UNQUOTED));
+        List<Id.Segment> genderParts = Arrays.<Id.Segment>asList(
+            new Id.NameSegment("Customer", Id.Quoting.UNQUOTED),
+            new Id.NameSegment("Gender", Id.Quoting.UNQUOTED),
+            new Id.NameSegment("M", Id.Quoting.UNQUOTED));
         return getSalesCubeSchemaReader().getMemberByUniqueName(
             genderParts, false);
     }
 
     private Member getUnitSalesMeasure() {
-        List<Id.Segment> measureParts = new ArrayList<Id.Segment>();
-        measureParts.add(new Id.Segment("Measures", Id.Quoting.UNQUOTED));
-        measureParts.add(new Id.Segment("Unit Sales", Id.Quoting.UNQUOTED));
+        List<Id.Segment> measureParts = Arrays.<Id.Segment>asList(
+            new Id.NameSegment("Measures", Id.Quoting.UNQUOTED),
+            new Id.NameSegment("Unit Sales", Id.Quoting.UNQUOTED));
         return getSalesCubeSchemaReader().getMemberByUniqueName(
             measureParts, false);
     }

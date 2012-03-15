@@ -16,11 +16,13 @@ import mondrian.spi.Dialect;
 import junit.framework.Assert;
 
 /**
- * <code>CompatibilityTest</code> is a test case which tests
- * MDX syntax compatibility with Microsoft and SAS servers.
- * There is no MDX spec document per se, so compatibility with de-facto
- * standards from the major vendors is important. Uses the FoodMart database.
+ * Test for MDX syntax compatibility with Microsoft and SAS servers.
  *
+ * <p>There is no MDX spec document per se, so compatibility with de facto
+ * standards from the major vendors is important. Uses the FoodMart
+ * database.</p>
+ *
+ * @see Ssas2005CompatibilityTest
  * @author sasebb
  * @since March 30, 2005
  */
@@ -589,13 +591,13 @@ public class CompatibilityTest extends FoodMartTestCase {
             "Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
         assertAxisThrows(
             "{M}",
-            "Mondrian Error:MDX object '[M]' not found in cube 'Sales'");
+            "Mondrian Error:MDX object 'M' not found in cube 'Sales'");
         assertAxisThrows(
             "{[USA].[CA]}",
             "Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
         assertAxisThrows(
             "{USA.CA}",
-            "Mondrian Error:MDX object '[USA].[CA]' not found in cube 'Sales'");
+            "Mondrian Error:MDX object 'USA.CA' not found in cube 'Sales'");
     }
 }
 

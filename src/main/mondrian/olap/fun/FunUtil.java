@@ -1904,7 +1904,7 @@ public class FunUtil extends Util {
             //noinspection unchecked
             return k1.compareTo(k2);
         }
-        int c = Util.compareIntegers(m1.getOrdinal(), m2.getOrdinal());
+        int c = Util.compare(m1.getOrdinal(), m2.getOrdinal());
         if (c != 0) {
             return c;
         }

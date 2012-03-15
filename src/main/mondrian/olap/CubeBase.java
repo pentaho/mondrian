@@ -100,12 +100,12 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return description;
     }
 
-    public Hierarchy lookupHierarchy(Id.Segment s, boolean unique) {
+    public Hierarchy lookupHierarchy(Id.NameSegment s, boolean unique) {
         for (Dimension dimension : getDimensionList()) {
             for (Hierarchy hierarchy : dimension.getHierarchyList()) {
                 String name = unique
                     ? hierarchy.getUniqueName() : hierarchy.getName();
-                if (name.equals(s.name)) {
+                if (name.equals(s.getName())) {
                     return hierarchy;
                 }
             }
@@ -127,10 +127,12 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
         // Look for hierarchies named '[dimension.hierarchy]'.
         if (MondrianProperties.instance().SsasCompatibleNaming.get()
-            && s.name.contains("."))
+            && s instanceof Id.NameSegment
+            && ((Id.NameSegment) s).name.contains("."))
         {
             for (Dimension dimension : dimensions) {
-                if (!s.name.startsWith(dimension.getName())) {
+                if (!((Id.NameSegment) s).name.startsWith(dimension.getName()))
+                {
                     // Rough check to save time.
                     continue;
                 }
@@ -138,7 +140,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
                     : schemaReader.getDimensionHierarchies(dimension))
                 {
                     if (Util.equalName(
-                            s.name,
+                            ((Id.NameSegment) s).name,
                             dimension.getName()
                             + "."
                             + hierarchy.getName()))
@@ -176,8 +178,12 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
      * @return Dimension, or null if not found
      */
     public Dimension lookupDimension(Id.Segment s) {
+        if (!(s instanceof Id.NameSegment)) {
+            return null;
+        }
+        final Id.NameSegment nameSegment = (Id.NameSegment) s;
         for (Dimension dimension : getDimensionList()) {
-            if (Util.equalName(dimension.getName(), s.name)) {
+            if (Util.equalName(dimension.getName(), nameSegment.name)) {
                 return dimension;
             }
         }

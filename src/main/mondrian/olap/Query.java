@@ -1001,11 +1001,15 @@ public class Query extends QueryPart {
     /**
      * Looks up a named set.
      */
-    private NamedSet lookupNamedSet(String name) {
+    private NamedSet lookupNamedSet(Id.Segment segment) {
+        if (!(segment instanceof Id.NameSegment)) {
+            return null;
+        }
+        Id.NameSegment nameSegment = (Id.NameSegment) segment;
         for (Formula formula : formulas) {
             if (!formula.isMember()
                 && formula.getElement() != null
-                && formula.getName().equals(name))
+                && formula.getName().equals(nameSegment.getName()))
             {
                 return (NamedSet) formula.getElement();
             }
@@ -1041,7 +1045,10 @@ public class Query extends QueryPart {
         if (nameParts.size() != 1) {
             return null;
         }
-        String name = nameParts.get(0).name;
+        if (!(nameParts.get(0) instanceof Id.NameSegment)) {
+            return null;
+        }
+        String name = ((Id.NameSegment) nameParts.get(0)).getName();
         ScopedNamedSet bestScopedNamedSet = null;
         int bestScopeOrdinal = -1;
         for (ScopedNamedSet scopedNamedSet : scopedNamedSets) {
@@ -1612,13 +1619,17 @@ public class Query extends QueryPart {
             // then look in defined members (fixes MONDRIAN-77)
 
             // then in defined sets
+            if (!(s instanceof Id.NameSegment)) {
+                return null;
+            }
+            String name = ((Id.NameSegment) s).getName();
             for (Formula formula : query.formulas) {
                 if (formula.isMember()) {
                     continue;       // have already done these
                 }
                 Id id = formula.getIdentifier();
                 if (id.getSegments().size() == 1
-                    && id.getSegments().get(0).matches(s.name))
+                    && id.getSegments().get(0).matches(name))
                 {
                     return formula.getNamedSet();
                 }
@@ -1688,7 +1699,7 @@ public class Query extends QueryPart {
             if (nameParts.size() != 1) {
                 return null;
             }
-            return query.lookupNamedSet(nameParts.get(0).name);
+            return query.lookupNamedSet(nameParts.get(0));
         }
 
         public Parameter getParameter(String name) {
@@ -2100,7 +2111,8 @@ public class Query extends QueryPart {
                     if (call2.getArg(1) instanceof Id) {
                         final Id id = (Id) call2.getArg(1);
                         createScopedNamedSet(
-                            id.getSegments().get(0).name,
+                            ((Id.NameSegment) id.getSegments().get(0))
+                                .getName(),
                             parent,
                             call2.getArg(0));
                     } else if (call2.getArg(1) instanceof NamedSetExpr) {

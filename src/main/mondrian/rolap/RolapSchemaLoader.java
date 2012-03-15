@@ -3102,7 +3102,7 @@ public class RolapSchemaLoader {
         final Formula formula =
             new Formula(
                 new Id(
-                    new Id.Segment(
+                    new Id.NameSegment(
                         xmlNamedSet.name,
                         Id.Quoting.UNQUOTED)),
                 exp);
@@ -3547,7 +3547,7 @@ public class RolapSchemaLoader {
             dimName = xmlCalcMember.dimension;
             final Dimension dimension =
                 cube.lookupDimension(
-                    new Id.Segment(
+                    new Id.NameSegment(
                         xmlCalcMember.dimension,
                         Id.Quoting.UNQUOTED));
             if (dimension != null) {

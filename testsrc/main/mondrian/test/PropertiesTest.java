@@ -216,7 +216,7 @@ public class PropertiesTest extends FoodMartTestCase {
         assertEquals(axesProperties.length, props.length);
         int i = 0;
         for (String prop : props) {
-            assertEquals("[" + prop + "]", axesProperties[i++].toString());
+            assertEquals(prop, axesProperties[i++].toString());
         }
     }
 

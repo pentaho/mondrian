@@ -318,10 +318,10 @@ public class UtilTestCase extends TestCase {
         assertEquals(
             "[Store].[USA].[California]",
             Util.quoteMdxIdentifier(
-                Arrays.asList(
-                    new Id.Segment("Store", Id.Quoting.QUOTED),
-                    new Id.Segment("USA", Id.Quoting.QUOTED),
-                    new Id.Segment("California", Id.Quoting.QUOTED))));
+                Arrays.<Id.Segment>asList(
+                    new Id.NameSegment("Store"),
+                    new Id.NameSegment("USA"),
+                    new Id.NameSegment("California"))));
     }
 
     public void testQuoteJava() {
@@ -384,18 +384,18 @@ public class UtilTestCase extends TestCase {
     }
 
     public void testImplode() {
-        List<Id.Segment> fooBar = Arrays.asList(
-            new Id.Segment("foo", Id.Quoting.UNQUOTED),
-            new Id.Segment("bar", Id.Quoting.UNQUOTED));
+        List<Id.Segment> fooBar = Arrays.<Id.Segment>asList(
+            new Id.NameSegment("foo", Id.Quoting.UNQUOTED),
+            new Id.NameSegment("bar", Id.Quoting.UNQUOTED));
         assertEquals("[foo].[bar]", Util.implode(fooBar));
 
         List<Id.Segment> empty = Collections.emptyList();
         assertEquals("", Util.implode(empty));
 
-        List<Id.Segment> nasty = Arrays.asList(
-            new Id.Segment("string", Id.Quoting.UNQUOTED),
-            new Id.Segment("with", Id.Quoting.UNQUOTED),
-            new Id.Segment("a [bracket] in it", Id.Quoting.UNQUOTED));
+        List<Id.Segment> nasty = Arrays.<Id.Segment>asList(
+            new Id.NameSegment("string", Id.Quoting.UNQUOTED),
+            new Id.NameSegment("with", Id.Quoting.UNQUOTED),
+            new Id.NameSegment("a [bracket] in it", Id.Quoting.UNQUOTED));
         assertEquals(
             "[string].[with].[a [bracket]] in it]",
             Util.implode(nasty));
@@ -405,31 +405,32 @@ public class UtilTestCase extends TestCase {
         List<Id.Segment> strings =
                 Util.parseIdentifier("[string].[with].[a [bracket]] in it]");
         assertEquals(3, strings.size());
-        assertEquals("a [bracket] in it", strings.get(2).name);
+        assertEquals("a [bracket] in it", name(strings, 2));
 
         strings =
             Util.parseIdentifier("[Worklog].[All].[calendar-[LANGUAGE]].js]");
         assertEquals(3, strings.size());
-        assertEquals("calendar-[LANGUAGE].js", strings.get(2).name);
+        assertEquals("calendar-[LANGUAGE].js", name(strings, 2));
 
         // allow spaces before, after and between
         strings = Util.parseIdentifier("  [foo] . [bar].[baz]  ");
         assertEquals(3, strings.size());
-        assertEquals("foo", strings.get(0).name);
+        final int index = 0;
+        assertEquals("foo", name(strings, index));
 
         // first segment not quoted
         strings = Util.parseIdentifier("Time.1997.[Q3]");
         assertEquals(3, strings.size());
-        assertEquals("Time", strings.get(0).name);
-        assertEquals("1997", strings.get(1).name);
-        assertEquals("Q3", strings.get(2).name);
+        assertEquals("Time", name(strings, 0));
+        assertEquals("1997", name(strings, 1));
+        assertEquals("Q3", name(strings, 2));
 
         // spaces ignored after unquoted segment
         strings = Util.parseIdentifier("[Time . Weekly ] . 1997 . [Q3]");
         assertEquals(3, strings.size());
-        assertEquals("Time . Weekly ", strings.get(0).name);
-        assertEquals("1997", strings.get(1).name);
-        assertEquals("Q3", strings.get(2).name);
+        assertEquals("Time . Weekly ", name(strings, 0));
+        assertEquals("1997", name(strings, 1));
+        assertEquals("Q3", name(strings, 2));
 
         // identifier ending in '.' is invalid
         try {
@@ -459,6 +460,11 @@ public class UtilTestCase extends TestCase {
                 "Invalid member identifier '[Foo].[Bar], [Baz]'",
                 e.getMessage());
         }
+    }
+
+    private String name(List<Id.Segment> strings, int index) {
+        final Id.Segment segment = strings.get(index);
+        return ((Id.NameSegment) segment).name;
     }
 
     public void testReplaceProperties() {

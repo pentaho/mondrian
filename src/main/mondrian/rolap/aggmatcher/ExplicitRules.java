@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -682,13 +682,13 @@ RME TODO
                                 msgRecorder.reportError(
                                     mres.UnknownHierarchyName.str(
                                         msgRecorder.getContext(),
-                                        names.get(0).name));
+                                        names.get(0).toString()));
                             } else {
                                 msgRecorder.reportError(
                                     mres.UnknownLevelName.str(
                                         msgRecorder.getContext(),
-                                        names.get(0).name,
-                                        names.get(1).name));
+                                        names.get(0).toString(),
+                                        names.get(1).toString()));
                             }
                         }
                         rlevel = level;
@@ -798,30 +798,36 @@ RME TODO
                             false,
                             Category.Member);
                         if (member == null) {
-                            if (! names.get(0).name.equals("Measures")) {
+                            if (!(names.get(0) instanceof Id.NameSegment
+                                    && ((Id.NameSegment) names.get(0)).name
+                                        .equals("Measures")))
+                            {
                                 msgRecorder.reportError(
                                     mres.BadMeasures.str(
                                         msgRecorder.getContext(),
-                                        names.get(0).name));
+                                        names.get(0).toString()));
                             } else {
                                 msgRecorder.reportError(
                                     mres.UnknownMeasureName.str(
                                         msgRecorder.getContext(),
-                                        names.get(1).name));
+                                        names.get(1).toString()));
                             }
                         }
                         RolapStar star = cube.getStar();
                         rolapMeasure =
-                            star.getFactTable().lookupMeasureByName(
-                                cube.getName(), names.get(1).name);
+                            names.get(1) instanceof Id.NameSegment
+                                ? star.getFactTable().lookupMeasureByName(
+                                    cube.getName(),
+                                    ((Id.NameSegment) names.get(1)).name)
+                                : null;
                         if (rolapMeasure == null) {
                             msgRecorder.reportError(
                                 mres.BadMeasureName.str(
                                     msgRecorder.getContext(),
-                                    names.get(1).name,
+                                    names.get(1).toString(),
                                     cube.getName()));
                         }
-                        symbolicName = names.get(1).name;
+                        symbolicName = names.get(1).toString();
                     }
                 } finally {
                     msgRecorder.popContextName();

@@ -2300,7 +2300,7 @@ public class NonEmptyTest extends BatchTestCase {
         list = ssmrch.mapMemberToChildren.get(
             ca, scf.getChildByNameConstraint(
                 ca,
-                new Id.Segment("San Francisco", Id.Quoting.QUOTED)));
+                new Id.NameSegment("San Francisco")));
         assertNotNull("child [San Francisco] of [CA] is in cache", list);
         assertEquals("[San Francisco] expected", sf, list.get(0));
     }
@@ -4647,7 +4647,7 @@ public class NonEmptyTest extends BatchTestCase {
             (RolapSchemaReader) cube.getSchemaReader();
         RolapHierarchy hierarchy =
             (RolapHierarchy) cube.lookupHierarchy(
-                new Id.Segment(hierName, Id.Quoting.UNQUOTED),
+                new Id.NameSegment(hierName, Id.Quoting.UNQUOTED),
                 false);
         assertNotNull(hierarchy);
         return (SmartMemberReader)
@@ -4667,7 +4667,7 @@ public class NonEmptyTest extends BatchTestCase {
             (RolapSchemaReader) cube.getSchemaReader();
         RolapCubeHierarchy hierarchy =
             (RolapCubeHierarchy) cube.lookupHierarchy(
-                new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
+                new Id.NameSegment(hierName, Id.Quoting.UNQUOTED), false);
         assertNotNull(hierarchy);
         return (SmartMemberReader) hierarchy.getRolapHierarchy()
             .createMemberReader(schemaReader.getRole());

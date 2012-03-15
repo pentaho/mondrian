@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -13,13 +13,15 @@ package mondrian.olap;
 import mondrian.mdx.MdxVisitor;
 import mondrian.olap.type.Type;
 
+import org.olap4j.impl.UnmodifiableArrayList;
+
 import java.io.PrintWriter;
 import java.util.*;
 
 /**
  * Multi-part identifier.
  *
- * author jhyde, 21 January, 1999
+ * @author jhyde, 21 January, 1999
  */
 public class Id
     extends ExpBase
@@ -39,6 +41,9 @@ public class Id
 
     public Id(List<Segment> segments) {
         this.segments = segments;
+        if (segments.size() <= 0) {
+            throw new IllegalArgumentException();
+        }
     }
 
     public Id clone() {
@@ -65,7 +70,7 @@ public class Id
         String[] names = new String[segments.size()];
         int k = 0;
         for (Segment segment : segments) {
-            names[k++] = segment.name;
+            names[k++] = ((NameSegment) segment).getName();
         }
         return names;
     }
@@ -94,10 +99,12 @@ public class Id
     public Exp accept(Validator validator) {
         if (segments.size() == 1) {
             final Segment s = segments.get(0);
-            if (s.quoting == Quoting.UNQUOTED
-                && validator.getFunTable().isReserved(s.name))
-            {
-                return Literal.createSymbol(s.name.toUpperCase());
+            if (s.quoting == Quoting.UNQUOTED) {
+                NameSegment nameSegment = (NameSegment) s;
+                if (validator.getFunTable().isReserved(nameSegment.getName())) {
+                    return Literal.createSymbol(
+                        nameSegment.getName().toUpperCase());
+                }
             }
         }
         final Exp element =
@@ -118,23 +125,7 @@ public class Id
     }
 
     public void unparse(PrintWriter pw) {
-        int k = 0;
-        for (Segment s : segments) {
-            if (k++ > 0) {
-                pw.print(".");
-            }
-            switch (s.quoting) {
-            case UNQUOTED:
-                pw.print(s.name);
-                break;
-            case KEY:
-                pw.print("&[" + Util.mdxEncodeString(s.name) + "]");
-                break;
-            case QUOTED:
-                pw.print("[" + Util.mdxEncodeString(s.name) + "]");
-                break;
-            }
-        }
+        pw.print(toString());
     }
 
     /**
@@ -149,63 +140,24 @@ public class Id
      * <li>"45", {@link mondrian.olap.Id.Quoting#KEY}</li>
      * </ul>
      */
-    public static class Segment {
-        public final String name;
+    public static abstract class Segment {
         public final Quoting quoting;
 
-        public Segment(String name, Quoting quoting) {
-            this.name = name;
+        protected Segment(Quoting quoting) {
             this.quoting = quoting;
         }
 
         public String toString() {
-            switch (quoting) {
-            case UNQUOTED:
-                //return name; Disabled to pass old tests...
-            case QUOTED:
-                return "[" + name + "]";
-            case KEY:
-                return "&[" + name + "]";
-            default:
-                return "UNKNOWN:" + name;
-            }
+            final StringBuilder buf = new StringBuilder();
+            toString(buf);
+            return buf.toString();
         }
 
-        /**
-         * Appends this segment to a StringBuffer
-         *
-         * @param buf StringBuffer
-         */
-        public void toString(StringBuilder buf) {
-            switch (quoting) {
-            case UNQUOTED:
-                buf.append(name);
-                return;
-            case QUOTED:
-                Util.quoteMdxIdentifier(name, buf);
-                return;
-            case KEY:
-                buf.append('&');
-                Util.quoteMdxIdentifier(name, buf);
-                return;
-            default:
-                throw Util.unexpected(quoting);
-            }
+        public Quoting getQuoting() {
+            return quoting;
         }
 
-        public boolean equals(final Object o) {
-            if (o instanceof Segment) {
-                Segment that = (Segment) o;
-                return that.name.equals(this.name)
-                    && that.quoting == this.quoting;
-            } else {
-                return false;
-            }
-        }
-
-        public int hashCode() {
-            return name.hashCode();
-        }
+        public abstract List<NameSegment> getKeyParts();
 
         /**
          * Converts an array of names to a list of segments.
@@ -217,7 +169,7 @@ public class Id
             final List<Segment> segments =
                 new ArrayList<Segment>(nameParts.length);
             for (String namePart : nameParts) {
-                segments.add(new Segment(namePart, Id.Quoting.QUOTED));
+                segments.add(new NameSegment(namePart));
             }
             return segments;
         }
@@ -229,6 +181,87 @@ public class Id
          * @param name Name to match
          * @return Whether matches
          */
+        public abstract boolean matches(String name);
+
+        /**
+         * Appends this segment to a StringBuilder.
+         *
+         * @param buf String builder to write to
+         */
+        public abstract void toString(StringBuilder buf);
+    }
+
+    /**
+     * Component in a compound identifier that describes the name of an object.
+     * Optionally, the name is quoted in brackets.
+     *
+     * @see KeySegment
+     */
+    public static class NameSegment extends Segment {
+        public final String name;
+
+        /**
+         * Creates a name segment with the given quoting.
+         *
+         * @param name Name
+         * @param quoting Quoting style
+         */
+        public NameSegment(String name, Quoting quoting) {
+            super(quoting);
+            this.name = name;
+            if (name == null) {
+                throw new NullPointerException();
+            }
+            if (!(quoting == Quoting.QUOTED || quoting == Quoting.UNQUOTED)) {
+                throw new IllegalArgumentException();
+            }
+        }
+
+        /**
+         * Creates a quoted name segment.
+         *
+         * @param name Name
+         */
+        public NameSegment(String name) {
+            this(name, Quoting.QUOTED);
+        }
+
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof NameSegment)) {
+                return false;
+            }
+            NameSegment that = (NameSegment) o;
+            return that.name.equals(this.name);
+        }
+
+        public int hashCode() {
+            return name.hashCode();
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public List<NameSegment> getKeyParts() {
+            return null;
+        }
+
+        public void toString(StringBuilder buf) {
+            switch (quoting) {
+            case UNQUOTED:
+                buf.append(name);
+                return;
+            case QUOTED:
+                Util.quoteMdxIdentifier(name, buf);
+                return;
+            default:
+                throw Util.unexpected(quoting);
+            }
+        }
+
         public boolean matches(String name) {
             switch (quoting) {
             case UNQUOTED:
@@ -238,6 +271,72 @@ public class Id
             default:
                 return false;
             }
+        }
+    }
+
+    /**
+     * Identifier segment representing a key, possibly composite.
+     */
+    public static class KeySegment extends Segment {
+        public final List<NameSegment> subSegmentList;
+
+        /**
+         * Creates a KeySegment with one or more sub-segments.
+         *
+         * @param subSegments Array of sub-segments
+         */
+        public KeySegment(NameSegment... subSegments) {
+            super(Quoting.KEY);
+            if (subSegments.length < 1) {
+                throw new IllegalArgumentException();
+            }
+            this.subSegmentList = UnmodifiableArrayList.asCopyOf(subSegments);
+        }
+
+        /**
+         * Creates a KeySegment a list of sub-segments.
+         *
+         * @param subSegmentList List of sub-segments
+         */
+        public KeySegment(List<NameSegment> subSegmentList) {
+            super(Quoting.KEY);
+            if (subSegmentList.size() < 1) {
+                throw new IllegalArgumentException();
+            }
+            this.subSegmentList =
+                new UnmodifiableArrayList<NameSegment>(
+                    subSegmentList.toArray(
+                        new NameSegment[subSegmentList.size()]));
+        }
+
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof KeySegment)) {
+                return false;
+            }
+            KeySegment that = (KeySegment) o;
+            return this.subSegmentList.equals(that.subSegmentList);
+        }
+
+        public int hashCode() {
+            return subSegmentList.hashCode();
+        }
+
+        public void toString(StringBuilder buf) {
+            for (NameSegment segment : subSegmentList) {
+                buf.append('&');
+                segment.toString(buf);
+            }
+        }
+
+        public List<NameSegment> getKeyParts() {
+            return subSegmentList;
+        }
+
+        public boolean matches(String name) {
+            return false;
         }
     }
 
@@ -255,7 +354,7 @@ public class Id
 
         /**
          * Identifier quoted with an ampersand to indicate a key value, for
-         * example the second segment in "[Employees].&[89]".
+         * example the second segment in "[Employees].&amp;[89]".
          */
         KEY
     }
