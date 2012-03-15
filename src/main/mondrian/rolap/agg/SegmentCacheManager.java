@@ -785,7 +785,19 @@ public class SegmentCacheManager {
         }
 
         public Void call() {
-            for (RolapStar star : CacheControlImpl.getStars(region)) {
+            final Collection<RolapStar> starList =
+                CacheControlImpl.getStars(region);
+            final RolapStar[] starArray =
+                starList.toArray(new RolapStar[starList.size()]);
+            Arrays.sort(
+                starArray,
+                new Comparator<RolapStar>() {
+                    public int compare(RolapStar o1, RolapStar o2) {
+                        return o1.getFactTable().getAlias().compareTo(
+                            o2.getFactTable().getAlias());
+                    }
+                });
+            for (RolapStar star : starArray) {
                 indexRegistry.getIndex(star)
                     .printCacheState(pw);
             }
