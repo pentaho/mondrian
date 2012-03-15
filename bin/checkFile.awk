@@ -248,7 +248,9 @@ FNR == 1 {
     prevImport = thisImport;
     prevImportGroup = importGroup;
 }
-/^\/\/ Copyright .* Julian/ && strict > 1 {
+/^\/\/ Copyright .* Pentaho/ && strict > 1 {
+    # We assume that '--strict' is only invoked on files currently being
+    # edited. Therefore we would expect the copyright to be current.
     if ($0 !~ /-2012/) {
         error(fname, FNR, "copyright is not current");
     }
@@ -257,22 +259,22 @@ FNR == 1 {
     # Order of qualifiers: "public/private/protected static final abstract class ..."
     s2 = s;
     gsub(/\(.*$/, "", s2);
-    if (s2 ~ /abstract .*final/) {
+    if (s2 ~ /abstract .*final /) {
         error(fname, FNR, "'final' must come before 'abstract'");
     }
-    if (s2 ~ /final .*static/) {
+    if (s2 ~ /final .*static /) {
         error(fname, FNR, "'static' must come before 'final'");
     }
-    if (s2 ~ /abstract .*static/) {
+    if (s2 ~ /abstract .*static /) {
         error(fname, FNR, "'static' must come before 'abstract'");
     }
-    if (s2 ~ /static .*(public|protected|private)/) {
+    if (s2 ~ /static .*(public|protected|private) /) {
         error(fname, FNR, "'public/private/protected' must come before 'static'");
     }
-    if (s2 ~ /final .*(public|protected|private)/) {
+    if (s2 ~ /final .*(public|protected|private) /) {
         error(fname, FNR, "'public/private/protected' must come before 'final'");
     }
-    if (s2 ~ /abstract .*(public|protected|private)/) {
+    if (s2 ~ /abstract .*(public|protected|private) /) {
         error(fname, FNR, "'public/private/protected' must come before 'abstract'");
     }
 }
