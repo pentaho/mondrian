@@ -5,10 +5,8 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
-//
-// jhyde, Feb 13, 2003
 */
 package mondrian.test;
 
@@ -709,10 +707,10 @@ public class ParameterTest extends FoodMartTestCase {
     public void testAssignMemberParameter() {
         final String para = "Parameter(\"x\", [Customers], [Customers].[USA])";
         assertAssignParameter(
-            para, false, "8", "MDX object '[8]' not found in cube 'Sales'");
+            para, false, "8", "MDX object '8' not found in cube 'Sales'");
         assertAssignParameter(
             para, false, "8.24",
-            "MDX object '[8].[24]' not found in cube 'Sales'");
+            "MDX object '8.24' not found in cube 'Sales'");
         assertAssignParameter(
             para, false, 8,
             "Invalid value '8' for parameter 'x',"
@@ -804,10 +802,10 @@ public class ParameterTest extends FoodMartTestCase {
             "Parameter(\"x\", [Customers], {[Customers].[USA], [Customers].[USA].[CA]})";
         assertAssignParameter(
             para, true, "8",
-            "MDX object '[8]' not found in cube 'Sales'");
+            "MDX object '8' not found in cube 'Sales'");
         assertAssignParameter(
             para, true, "foobar",
-            "MDX object '[foobar]' not found in cube 'Sales'");
+            "MDX object 'foobar' not found in cube 'Sales'");
         assertAssignParameter(
             para, true, 8,
             "Invalid value '8' for parameter 'x', type SetType<MemberType<hierarchy=[Customers]>");

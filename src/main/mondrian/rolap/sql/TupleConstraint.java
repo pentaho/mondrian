@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2011 Pentaho and others
+// Copyright (C) 2006-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
@@ -17,7 +17,7 @@ import mondrian.rolap.aggmatcher.AggStar;
 /**
  * Restricts the SQL result of {@link mondrian.rolap.TupleReader}. This is also
  * used by
- * {@link mondrian.rolap.SqlMemberSource#getMembersInLevel(RolapLevel, int, int, TupleConstraint)}.
+ * {@link SqlMemberSource#getMembersInLevel(RolapLevel, TupleConstraint)}.
  *
  * @see mondrian.rolap.TupleReader
  * @see mondrian.rolap.SqlMemberSource
@@ -44,13 +44,13 @@ public interface TupleConstraint extends SqlConstraint {
      * If the condition requires so,
      * it may join the levels table to the fact table.
      *
-     * @param query the query to modify
+     * @param sqlQuery the query to modify
      * @param baseCube base cube for virtual cube constraints
      * @param aggStar Aggregate table, or null if query is against fact table
      * @param level the level which is accessed in the Level.Members query
      */
     public void addLevelConstraint(
-        SqlQuery query,
+        SqlQuery sqlQuery,
         RolapCube baseCube,
         AggStar aggStar,
         RolapLevel level);

@@ -5,10 +5,8 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
-//
-// jhyde, 26 July, 2001
 */
 package mondrian.rolap;
 
@@ -662,7 +660,7 @@ public class RolapSchema implements Schema {
         final Formula formula =
             new Formula(
                 new Id(
-                    new Id.Segment(
+                    new Id.NameSegment(
                         xmlNamedSet.name,
                         Id.Quoting.UNQUOTED)),
                 exp);

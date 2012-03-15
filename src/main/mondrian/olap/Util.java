@@ -15,9 +15,7 @@ import mondrian.olap.fun.FunUtil;
 import mondrian.olap.fun.Resolver;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapCube;
-import mondrian.rolap.RolapCubeDimension;
-import mondrian.rolap.RolapUtil;
+import mondrian.rolap.*;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.util.*;
 
@@ -298,6 +296,7 @@ public class Util extends XOMUtil {
             }
         );
     }
+
     /**
      * Creates an {@link ExecutorService} object backed by an expanding
      * cached thread pool.
@@ -477,7 +476,7 @@ public class Util extends XOMUtil {
             if (i > 0) {
                 sb.append('.');
             }
-            sb.append(ids.get(i).toString());
+            ids.get(i).toString(sb);
         }
     }
 
@@ -722,7 +721,12 @@ public class Util extends XOMUtil {
             // FIXME: should be:
             //   names.get(i).toString(sb);
             // but that causes some tests to fail
-            quoteMdxIdentifier(names.get(i).name, sb);
+            Id.Segment segment = names.get(i);
+            switch (segment.getQuoting()) {
+            case UNQUOTED:
+                segment = new Id.NameSegment(((Id.NameSegment) segment).name);
+            }
+            segment.toString(sb);
         }
         return sb.toString();
     }
@@ -830,16 +834,44 @@ public class Util extends XOMUtil {
 
         // Now resolve the name one part at a time.
         for (int i = 0; i < names.size(); i++) {
-            Id.Segment name = names.get(i);
-            OlapElement child =
-                schemaReader.getElementChild(parent, name, matchType);
+            OlapElement child;
+            Id.NameSegment name;
+            if (names.get(i) instanceof Id.NameSegment) {
+                name = (Id.NameSegment) names.get(i);
+                child = schemaReader.getElementChild(parent, name, matchType);
+            } else if (parent instanceof RolapLevel
+                       && names.get(i) instanceof Id.KeySegment
+                       && names.get(i).getKeyParts().size() == 1)
+            {
+                // The following code is for SsasCompatibleNaming=false.
+                // Continues the very limited support for key segments in
+                // mondrian-3.x. To be removed in mondrian-4, when
+                // SsasCompatibleNaming=true is the only option.
+                final Id.KeySegment keySegment = (Id.KeySegment) names.get(i);
+                name = keySegment.getKeyParts().get(0);
+                final List<Member> levelMembers =
+                    schemaReader.getLevelMembers(
+                        (Level) parent, false);
+                child = null;
+                for (Member member : levelMembers) {
+                    if (((RolapMember) member).getKey().toString().equals(
+                            name.getName()))
+                    {
+                        child = member;
+                        break;
+                    }
+                }
+            } else {
+                name = null;
+                child = schemaReader.getElementChild(parent, name, matchType);
+            }
             // if we're doing a non-exact match, and we find a non-exact
             // match, then for an after match, return the first child
             // of each subsequent level; for a before match, return the
             // last child
             if (child instanceof Member
                 && !matchType.isExact()
-                && !Util.equalName(child.getName(), name.name))
+                && !Util.equalName(child.getName(), name.getName()))
             {
                 Member bestChild = (Member) child;
                 for (int j = i + 1; j < names.size(); j++) {
@@ -877,7 +909,7 @@ public class Util extends XOMUtil {
                         quoteMdxIdentifier(names));
                 } else {
                     throw MondrianResource.instance().MdxChildObjectNotFound
-                        .ex(name.name, parent.getQualifiedName());
+                        .ex(name.toString(), parent.getQualifiedName());
                 }
             }
             parent = child;
@@ -997,18 +1029,18 @@ public class Util extends XOMUtil {
      *
      * @param q Query expression belongs to
      * @param schemaReader Schema reader
-     * @param nameParts Parts of the identifier
+     * @param segments Parts of the identifier
      * @param allowProp Whether to allow property references
      * @return OLAP object or property reference
      */
     public static Exp lookup(
         Query q,
         SchemaReader schemaReader,
-        List<Id.Segment> nameParts,
+        List<Id.Segment> segments,
         boolean allowProp)
     {
         // First, look for a calculated member defined in the query.
-        final String fullName = quoteMdxIdentifier(nameParts);
+        final String fullName = quoteMdxIdentifier(segments);
         // Look for any kind of object (member, level, hierarchy,
         // dimension) in the cube. Use a schema reader without restrictions.
         final SchemaReader schemaReaderSansAc =
@@ -1016,7 +1048,7 @@ public class Util extends XOMUtil {
         final Cube cube = q.getCube();
         OlapElement olapElement =
             schemaReaderSansAc.lookupCompound(
-                cube, nameParts, false, Category.Unknown);
+                cube, segments, false, Category.Unknown);
         if (olapElement != null) {
             Role role = schemaReader.getRole();
             if (!role.canAccess(olapElement)) {
@@ -1028,15 +1060,19 @@ public class Util extends XOMUtil {
             }
         }
         if (olapElement == null) {
-            if (allowProp && nameParts.size() > 1) {
-                List<Id.Segment> namePartsButOne =
-                    nameParts.subList(0, nameParts.size() - 1);
+            if (allowProp && segments.size() > 1) {
+                List<Id.Segment> segmentsButOne =
+                    segments.subList(0, segments.size() - 1);
+                final Id.Segment lastSegment = last(segments);
                 final String propertyName =
-                    nameParts.get(nameParts.size() - 1).name;
+                    lastSegment instanceof Id.NameSegment
+                        ? ((Id.NameSegment) lastSegment).getName()
+                        : null;
                 final Member member =
                     (Member) schemaReaderSansAc.lookupCompound(
-                        cube, namePartsButOne, false, Category.Member);
+                        cube, segmentsButOne, false, Category.Member);
                 if (member != null
+                    && propertyName != null
                     && isValidProperty(propertyName, member.getLevel()))
                 {
                     return new UnresolvedFunCall(
@@ -1045,8 +1081,9 @@ public class Util extends XOMUtil {
                 }
                 final Level level =
                     (Level) schemaReaderSansAc.lookupCompound(
-                        cube, namePartsButOne, false, Category.Level);
+                        cube, segmentsButOne, false, Category.Level);
                 if (level != null
+                    && propertyName != null
                     && isValidProperty(propertyName, level))
                 {
                     return new UnresolvedFunCall(
@@ -1060,11 +1097,11 @@ public class Util extends XOMUtil {
             // hierarchy of the element we're looking for; locate the
             // hierarchy by incrementally truncating the name of the element
             if (q.ignoreInvalidMembers()) {
-                int nameLen = nameParts.size() - 1;
+                int nameLen = segments.size() - 1;
                 olapElement = null;
                 while (nameLen > 0 && olapElement == null) {
                     List<Id.Segment> partialName =
-                        nameParts.subList(0, nameLen);
+                        segments.subList(0, nameLen);
                     olapElement = schemaReaderSansAc.lookupCompound(
                         cube, partialName, false, Category.Unknown);
                     nameLen--;
@@ -1137,7 +1174,7 @@ public class Util extends XOMUtil {
     }
 
     public static Member lookupHierarchyRootMember(
-        SchemaReader reader, Hierarchy hierarchy, Id.Segment memberName)
+        SchemaReader reader, Hierarchy hierarchy, Id.NameSegment memberName)
     {
         return lookupHierarchyRootMember(
             reader, hierarchy, memberName, MatchType.EXACT);
@@ -1153,7 +1190,7 @@ public class Util extends XOMUtil {
     public static Member lookupHierarchyRootMember(
         SchemaReader reader,
         Hierarchy hierarchy,
-        Id.Segment memberName,
+        Id.NameSegment memberName,
         MatchType matchType)
     {
         // Lookup member at first level.
@@ -1162,7 +1199,7 @@ public class Util extends XOMUtil {
         // we still want to be able to resolve '[Customer].[USA].[CA]'.
         List<Member> rootMembers = reader.getHierarchyRootMembers(hierarchy);
 
-        // if doing an inexact search on a non-all hieararchy, create
+        // if doing an inexact search on a non-all hierarchy, create
         // a member corresponding to the name we're searching for so
         // we can use it in a hierarchical search
         Member searchMember = null;
@@ -1858,24 +1895,41 @@ public class Util extends XOMUtil {
      */
     public static Id.Segment convert(IdentifierSegment olap4jSegment) {
         if (olap4jSegment instanceof NameSegment) {
-            NameSegment nameSegment =
-                (NameSegment) olap4jSegment;
-            return new Id.Segment(
-                nameSegment.getName(),
-                nameSegment.getQuoting() == Quoting.QUOTED
-                    ? Id.Quoting.QUOTED
-                    : Id.Quoting.UNQUOTED);
+            return convert((NameSegment) olap4jSegment);
         } else {
-            // Mondrian's representation of segments is inferior to olap4j's.
-            // 1. Mondrian assumes that the key has only one part
-            // 2. Mondrian does not specify whether key is quoted (e.g. &[foo]
-            //    vs. &foo)
-            final KeySegment keySegment =
-                (KeySegment) olap4jSegment;
-            assert keySegment.getKeyParts().size() == 1 : keySegment;
-            return new Id.Segment(
-                keySegment.getKeyParts().get(0).getName(),
-                Id.Quoting.KEY);
+            return convert((KeySegment) olap4jSegment);
+        }
+    }
+
+    private static Id.KeySegment convert(final KeySegment keySegment) {
+        return new Id.KeySegment(
+            new AbstractList<Id.NameSegment>() {
+                public Id.NameSegment get(int index) {
+                    return convert(keySegment.getKeyParts().get(index));
+                }
+
+                public int size() {
+                    return keySegment.getKeyParts().size();
+                }
+            });
+    }
+
+    private static Id.NameSegment convert(NameSegment nameSegment) {
+        return new Id.NameSegment(
+            nameSegment.getName(),
+            convert(nameSegment.getQuoting()));
+    }
+
+    private static Id.Quoting convert(Quoting quoting) {
+        switch (quoting) {
+        case QUOTED:
+            return Id.Quoting.QUOTED;
+        case UNQUOTED:
+            return Id.Quoting.UNQUOTED;
+        case KEY:
+            return Id.Quoting.KEY;
+        default:
+            throw Util.unexpected(quoting);
         }
     }
 
@@ -1991,30 +2045,46 @@ public class Util extends XOMUtil {
     }
 
     public static List<IdentifierSegment> toOlap4j(
-        List<Id.Segment> segments)
+        final List<Id.Segment> segments)
     {
-        List<IdentifierSegment> list =
-            new ArrayList<IdentifierSegment>();
-        for (Id.Segment segment : segments) {
-            list.add(toOlap4j(segment));
-        }
-        return list;
+        return new AbstractList<IdentifierSegment>() {
+            public IdentifierSegment get(int index) {
+                return toOlap4j(segments.get(index));
+            }
+
+            public int size() {
+                return segments.size();
+            }
+        };
     }
 
     public static IdentifierSegment toOlap4j(Id.Segment segment) {
         switch (segment.quoting) {
         case KEY:
-            return new KeySegment(
-                new NameSegment(
-                    null,
-                    segment.name,
-                    Quoting.QUOTED));
+            return toOlap4j((Id.KeySegment) segment);
         default:
-            return new NameSegment(
-                null,
-                segment.name,
-                toOlap4j(segment.quoting));
+            return toOlap4j((Id.NameSegment) segment);
         }
+    }
+
+    private static KeySegment toOlap4j(final Id.KeySegment keySegment) {
+        return new KeySegment(
+            new AbstractList<NameSegment>() {
+                public NameSegment get(int index) {
+                    return toOlap4j(keySegment.subSegmentList.get(index));
+                }
+
+                public int size() {
+                    return keySegment.subSegmentList.size();
+                }
+            });
+    }
+
+    private static NameSegment toOlap4j(Id.NameSegment nameSegment) {
+        return new NameSegment(
+            null,
+            nameSegment.name,
+            toOlap4j(nameSegment.quoting));
     }
 
     public static Quoting toOlap4j(Id.Quoting quoting) {
@@ -2213,6 +2283,49 @@ public class Util extends XOMUtil {
             }
         }
         return new ArraySortedSet(result, 0, i);
+    }
+
+    /**
+     * Compares two integers using the same algorithm as
+     * {@link Integer#compareTo(Integer)}.
+     *
+     * @param i0 First integer
+     * @param i1 Second integer
+     * @return Comparison
+     */
+    public static int compareIntegers(int i0, int i1) {
+        return (i0 < i1 ? -1 : (i0 == i1 ? 0 : 1));
+    }
+
+    /**
+     * Returns the last item in a list.
+     *
+     * @param list List
+     * @param <T> Element type
+     * @return Last item in the list
+     * @throws IndexOutOfBoundsException if list is empty
+     */
+    public static <T> T last(List<T> list) {
+        return list.get(list.size() - 1);
+    }
+
+    /**
+     * Returns the sole item in a list.
+     *
+     * <p>If the list has 0 or more than one element, throws.</p>
+     *
+     * @param list List
+     * @param <T> Element type
+     * @return Sole item in the list
+     * @throws IndexOutOfBoundsException if list is empty or has more than 1 elt
+     */
+    public static <T> T only(List<T> list) {
+        if (list.size() != 1) {
+            throw new IndexOutOfBoundsException(
+                "list " + list + " has " + list.size()
+                + " elements, expected 1");
+        }
+        return list.get(0);
     }
 
     public static class ErrorCellValue {

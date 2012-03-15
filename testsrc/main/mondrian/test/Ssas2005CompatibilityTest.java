@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2011 Pentaho
+// Copyright (C) 2008-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -48,11 +48,6 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     public static final boolean AXIS_IMPL = false;
 
     /**
-     * Keys as part of member names.
-     */
-    public static final boolean KEY_IMPL = Bug.BugMondrian485Fixed;
-
-    /**
      * Catch-all for tests that depend on something that hasn't been
      * implemented.
      */
@@ -78,7 +73,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // 1. Dimension [Product] has hierarchies [Products] and at least one
         //    other.
         // 2. Dimension [Currency] has one unnamed hierarchy
-        // 3. Dimnsion [Time] has hierarchies [Time2] and [Time by Week]
+        // 3. Dimension [Time] has hierarchies [Time2] and [Time by Week]
         //    (intentionally named hierarchy differently from dimension)
         return TestContext.instance().withSchema(
             "<Schema name=\"FoodMart\">\n"
@@ -112,7 +107,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "          levelType=\"TimeYears\"/>\n"
             + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
             + "          levelType=\"TimeQuarters\"/>\n"
-            + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+            + "      <Level name=\"Month\" column=\"month_of_year\" nameColumn=\"the_month\" uniqueMembers=\"false\" type=\"Numeric\"\n"
             + "          levelType=\"TimeMonths\"/>\n"
             + "    </Hierarchy>\n"
             + "  </Dimension>\n"
@@ -131,7 +126,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "      <Level name=\"Product Subcategory\" table=\"product_class\" column=\"product_subcategory\"\n"
             + "          uniqueMembers=\"false\"/>\n"
             + "      <Level name=\"Brand Name\" table=\"product\" column=\"brand_name\" uniqueMembers=\"false\"/>\n"
-            + "      <Level name=\"Product Name\" table=\"product\" column=\"product_name\"\n"
+            + "      <Level name=\"Product Name\" table=\"product\" nameColumn=\"product_name\" column=\"product_id\" \n"
             + "          uniqueMembers=\"true\"/>\n"
             + "    </Hierarchy>\n"
             + "    <Hierarchy name=\"Product Name\" hasAll=\"true\" primaryKey=\"product_id\" primaryKeyTable=\"product\">\n"
@@ -180,7 +175,13 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "uniqueMembers=\"true\"/>\n"
             + "    </Hierarchy>\n"
             */
-            + "  </Dimension>"
+            + "  </Dimension>\n"
+            + "  <Dimension name='Store Size in SQFT' foreignKey='store_id'>\n"
+            + "    <Hierarchy hasAll='true' primaryKey='store_id'>\n"
+            + "      <Table name='store'/>\n"
+            + "      <Level name='Store Sqft' column='store_sqft' type='Numeric' uniqueMembers='true'/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
             + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
             + "      formatString=\"Standard\"/>\n"
             + "</Cube>\n"
@@ -1193,12 +1194,13 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     }
 
     public void testMemberIdentifiedByDimensionAndKey() {
-        if (!KEY_IMPL) {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
             return;
         }
-        // member identified by dimension, key
-        // works on SSAS
-        // gives {[Washington Berry Juice], 231}
+        // Member identified by dimension, key;
+        // works on SSAS;
+        // gives {[Washington Berry Juice], 231}.
+        // Presumably, if level is not specified, it defaults to lowest level?
         runQ(
             "select [Measures].[Unit Sales] on 0,\n"
             + "[Product].[Products].&[1] on 1\n"
@@ -1206,7 +1208,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     }
 
     public void testDimensionHierarchyKey() {
-        if (!KEY_IMPL) {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
             return;
         }
         // member identified by dimension, hierarchy, key
@@ -1219,37 +1221,172 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     }
 
     public void testCompoundKey() {
-        if (!KEY_IMPL) {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
             return;
         }
         // compound key
         // succeeds on SSAS
-        runQ(
+        assertQueryReturns(
             "select [Measures].[Unit Sales] on 0,\n"
-            + "[Product].[Products].[Brand].&[43]&[Walrus] on 1\n"
-            + "from [Warehouse and Sales]");
+            + "[Time].[Time2].[Month].&[12]&Q4&[1997] on 1\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[Time2].[1997].[Q4].[December]}\n"
+            + "Row #0: 26,796\n");
     }
 
     public void testCompoundKeySyntaxError() {
-        if (!KEY_IMPL) {
+        // without [] fails on SSAS (syntax error because a number)
+        assertQueryThrows(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Product].[Products].[Brand Name].&43&[Walrus] on 1\n"
+            + "from [Warehouse and Sales]",
+            "mondrian.parser.TokenMgrError: Lexical error at line 2, column 36.  Encountered: \"4\" (52), after : \"&\"");
+    }
+
+    public void testCompoundKeyStringBad() {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
             return;
         }
-        // without [] fails on SSAS (syntax error because a number)
-        runQ(
+        // too few values in key
+        assertQueryThrows(
             "select [Measures].[Unit Sales] on 0,\n"
-            + "[Product].[Products].[Brand].&43&[Walrus] on 1\n"
-            + "from [Warehouse and Sales]");
+            + "[Product].[Products].[Brand Name].&[43]&Walrus&Foo on 1\n"
+            + "from [Warehouse and Sales]",
+            "Wrong number of values in member key; &[43]&Walrus&Foo has 3 "
+            + "values, whereas level's key has 5 columns [product.brand_name, "
+            + "product_class.product_subcategory, "
+            + "product_class.product_category, "
+            + "product_class.product_department, "
+            + "product_class.product_family].");
+
+        // too few values in key
+        assertQueryThrows(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Time].[Time2].[Quarter].&Q3 on 1\n"
+            + "from [Warehouse and Sales]",
+            "Wrong number of values in member key; &Q3 has 1 values, whereas level's key has 2 columns [time_by_day.quarter, time_by_day.the_year].");
+
+        // too many values in key
+        assertQueryThrows(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Time].[Time2].[Quarter].&Q3&[1997]&ABC on 1\n"
+            + "from [Warehouse and Sales]",
+            "Wrong number of values in member key; &Q3&[1997]&ABC has 3 values, whereas level's key has 2 columns [time_by_day.quarter, time_by_day.the_year].");
     }
 
     public void testCompoundKeyString() {
-        if (!KEY_IMPL) {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
             return;
         }
         // succeeds on SSAS (gives 1 row)
-        runQ(
+        assertQueryReturns(
             "select [Measures].[Unit Sales] on 0,\n"
-            + "[Product].[Products].[Brand].&[43]&Walrus on 1\n"
-            + "from [Warehouse and Sales]");
+            + "[Store].[Stores].[Store City].&[San Francisco]&CA on 1\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 2,117\n");
+    }
+
+    /**
+     * Tests a member where a name segments {@code [San Francisco].[Store 14]}
+     * occur after a key segment {@code &amp;&amp;CA}.
+     *
+     * <p>Needs to work regardless of the value of
+     * {@link MondrianProperties#SsasCompatibleNaming}. Mondrian-3 had this
+     * functionality.</p>
+     */
+    public void testNameAfterKey() {
+        assertQueryReturns(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + TestContext.hierarchyName("Store", "Stores")
+            + ".[Store State].&CA.[San Francisco].[Store 14] on 1\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{"
+            + TestContext.hierarchyName("Store", "Stores")
+            + ".[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "Row #0: 2,117\n");
+    }
+
+    /**
+     * Tests a member where a name segment {@code [Store 14]} occurs after a
+     * composite key segment {@code &amp;[San Francisco]&amp;CA}.
+     */
+    public void testNameAfterCompositeKey() {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
+        assertQueryReturns(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Store].[Stores].[Store City].&[San Francisco]&CA.[Store 14] on 1\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[Stores].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "Row #0: 2,117\n");
+    }
+
+    public void testCompoundKeyAll() {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
+        getTestContext()
+            .assertExprReturns(
+                "[Customer].Level.Name",
+                "(All)");
+        assertQueryThrows(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Customer].[(All)].&All on 1\n"
+            + "from [Warehouse and Sales]",
+            "Wrong number of values in member key; &All has 1 values, whereas level's key has 0 columns [].");
+    }
+
+    public void testCompoundKeyParent() {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
+        getTestContext()
+            .withCube("[Warehouse and Sales]")
+            .assertAxisReturns(
+                "[Store].[Stores].[Store City].&[San Francisco]&CA.Parent",
+                "[Store].[Stores].[USA].[CA]");
+    }
+
+    public void testCompoundKeyNull() {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
+        // Note: [Store Size in SQFT].[#null] is the member whose name is null;
+        //   [Store Size in SQFT].&[#null] is the member whose key is null.
+        // REVIEW: Does SSAS use the same syntax, '&[#null]', for null key?
+        assertQueryReturns(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Store Size in SQFT].[Store Size in SQFT].&[#null] on 1\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store Size in SQFT].[#null]}\n"
+            + "Row #0: 39,329\n");
     }
 
     public void testFoo56() {
@@ -1259,19 +1396,42 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         // succeeds on SSAS (gives 1 row)
         runQ(
             "select [Measures].[Unit Sales] on 0,\n"
-            + "[Product].[Products].[Brand].[Walrus] on 1\n"
+            + "[Product].[Products].[Brand Name].[Walrus] on 1\n"
             + "from [Warehouse and Sales]");
     }
 
     public void testKeyNonExistent() {
-        if (!KEY_IMPL) {
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
             return;
         }
-        // SSAS gives 0 rows
+        // SSAS gives 1 row
         runQ(
             "select [Measures].[Unit Sales] on 0,\n"
-            + "[Product].[Products].[Brand].&[43] on 1\n"
+            + "[Time].[Time2].[Quarter].&Q3&[1997] on 1\n"
             + "from [Warehouse and Sales]");
+
+        propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
+            true);
+        // SSAS gives 0 rows
+        assertQueryReturns(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Time].[Time2].[Quarter].&Q5&[1997] on 1\n"
+            + "from [Warehouse and Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n");
+
+        propSaver.set(
+            MondrianProperties.instance().IgnoreInvalidMembersDuringQuery,
+            false);
+        assertQueryThrows(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + "[Time].[Time2].[Quarter].&Q5&[1997] on 1\n"
+            + "from [Warehouse and Sales]",
+            "MDX object '[Time].[Time2].[Quarter].&Q5&[1997]' not found in cube 'Warehouse and Sales'");
     }
 
     public void testAxesLabelsOutOfSequence() {
@@ -1348,7 +1508,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         assertQueryThrows(
             "select [Measures].[Unit Sales] on 0.4\n"
             + "from [Warehouse and Sales]",
-            "Invalid axis specification. The axis number must be non-negative"
+            "Invalid axis specification. The axis number must be a non-negative"
             + " integer, but it was 0.4.");
     }
 

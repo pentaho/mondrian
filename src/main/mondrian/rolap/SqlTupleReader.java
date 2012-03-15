@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -123,10 +123,9 @@ public class SqlTupleReader implements TupleReader {
             parentChild = level.isParentChild();
             // members[i] is the current member of level#i, and siblings[i]
             // is the current member of level#i plus its siblings
-            members = new ArrayList<RolapMember>();
-            for (int i = 0; i < levels.length; i++) {
-                members.add(null);
-            }
+            members =
+                new ArrayList<RolapMember>(
+                    Collections.<RolapMember>nCopies(levels.length, null));
             siblings = new ArrayList<List<RolapMember>>();
             for (int i = 0; i < levels.length + 1; i++) {
                 siblings.add(new ArrayList<RolapMember>());

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -376,8 +376,10 @@ public class RolapHierarchy extends HierarchyBase {
                 uniqueNameParts = Util.parseIdentifier(defaultMemberName);
             } else {
                 uniqueNameParts =
-                    Collections.singletonList(
-                        new Id.Segment(defaultMemberName, Id.Quoting.UNQUOTED));
+                    Collections.<Id.Segment>singletonList(
+                        new Id.NameSegment(
+                            defaultMemberName,
+                            Id.Quoting.UNQUOTED));
             }
 
             // First look up from within this hierarchy. Works for unqualified
@@ -1455,11 +1457,20 @@ public class RolapHierarchy extends HierarchyBase {
             Id.Segment s,
             MatchType matchType)
         {
-            if (Util.equalName(s.name, dimension.getName())) {
+            if (!(s instanceof Id.NameSegment)) {
+                return null;
+            }
+            final Id.NameSegment nameSegment = (Id.NameSegment) s;
+
+            if (Util.equalName(nameSegment.name, dimension.getName())) {
                 return dimension;
             }
             // Archaic form <dimension>.<hierarchy>, e.g. [Time.Weekly].[1997]
-            if (Util.equalName(s.name, dimension.getName() + "." + subName)) {
+            if (!MondrianProperties.instance().SsasCompatibleNaming.get()
+                && Util.equalName(
+                    nameSegment.name,
+                    dimension.getName() + "." + subName))
+            {
                 return RolapHierarchy.this;
             }
             return null;

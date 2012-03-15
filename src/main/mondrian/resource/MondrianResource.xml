@@ -217,7 +217,7 @@
 </exception>
 
 <exception id="350540" name="InvalidAxis">
-    <text>Invalid axis specification. The axis number must be non-negative integer, but it was {0,number}.</text>
+    <text>Invalid axis specification. The axis number must be a non-negative integer, but it was {0,number}.</text>
 </exception>
 
 <exception id="350545" name="DuplicateAxis">

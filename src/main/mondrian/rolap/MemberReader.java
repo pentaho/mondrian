@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 10 August, 2001
@@ -51,9 +51,7 @@ interface MemberReader extends MemberSource {
      * @return {@link List} of {@link RolapMember}
      */
     List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        int startOrdinal,
-        int endOrdinal);
+        RolapLevel level);
 
     /**
      * Writes all members between <code>startMember</code> and
@@ -107,19 +105,14 @@ interface MemberReader extends MemberSource {
         MemberChildrenConstraint constraint);
 
     /**
-     * Returns the members in the given Level, optionally between a range
-     * of ordinals and applying a constraint.
+     * Returns the members in the given Level, optionally applying a constraint.
      *
      * @param level Level
-     * @param startOrdinal Ordinal of first member to retrieve
-     * @param endOrdinal Ordinal of last member to upper bound
      * @param constraint Constraint
      * @return list of members
      */
     List<RolapMember> getMembersInLevel(
         RolapLevel level,
-        int startOrdinal,
-        int endOrdinal,
         TupleConstraint constraint);
 
     /**
@@ -161,6 +154,17 @@ interface MemberReader extends MemberSource {
      * @return Internal member
      */
     RolapMember desubstitute(RolapMember member);
+
+    /**
+     * Looks up a member by its key value.
+     *
+     * @param level Level
+     * @param keyValues Key values
+     * @return Member, or null
+     */
+    RolapMember getMemberByKey(
+        RolapLevel level,
+        List<Comparable> keyValues);
 }
 
 // End MemberReader.java

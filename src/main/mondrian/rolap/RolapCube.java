@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -695,7 +695,7 @@ public class RolapCube extends CubeBase {
             if (xmlCalcMember.dimension != null) {
                 Dimension dimension =
                     lookupDimension(
-                        new Id.Segment(
+                        new Id.NameSegment(
                             xmlCalcMember.dimension,
                             Id.Quoting.UNQUOTED));
                 if (dimension != null
@@ -706,7 +706,7 @@ public class RolapCube extends CubeBase {
             } else if (xmlCalcMember.hierarchy != null) {
                 hierarchy =
                     lookupHierarchy(
-                        new Id.Segment(
+                        new Id.NameSegment(
                             xmlCalcMember.hierarchy,
                             Id.Quoting.UNQUOTED),
                         true);
@@ -1046,7 +1046,7 @@ public class RolapCube extends CubeBase {
             dimName = xmlCalcMember.dimension;
             final Dimension dimension =
                 lookupDimension(
-                    new Id.Segment(
+                    new Id.NameSegment(
                         xmlCalcMember.dimension,
                         Id.Quoting.UNQUOTED));
             if (dimension != null) {
@@ -2614,25 +2614,32 @@ public class RolapCube extends CubeBase {
     public OlapElement lookupChild(
         SchemaReader schemaReader, Id.Segment s, MatchType matchType)
     {
+        if (!(s instanceof Id.NameSegment)) {
+            return null;
+        }
+        final Id.NameSegment nameSegment = (Id.NameSegment) s;
+
         // Note that non-exact matches aren't supported at this level,
         // so the matchType is ignored
         String status = null;
         OlapElement oe = null;
         if (matchType == MatchType.EXACT_SCHEMA) {
-            oe = super.lookupChild(schemaReader, s, MatchType.EXACT_SCHEMA);
+            oe = super.lookupChild(
+                schemaReader, nameSegment, MatchType.EXACT_SCHEMA);
         } else {
-            oe = super.lookupChild(schemaReader, s, MatchType.EXACT);
+            oe = super.lookupChild(
+                schemaReader, nameSegment, MatchType.EXACT);
         }
 
         if (oe == null) {
-            HierarchyUsage[] usages = getUsagesBySource(s.name);
+            HierarchyUsage[] usages = getUsagesBySource(nameSegment.name);
             if (usages.length > 0) {
                 StringBuilder buf = new StringBuilder(64);
                 buf.append("RolapCube.lookupChild: ");
                 buf.append("In cube \"");
                 buf.append(getName());
                 buf.append("\" use of unaliased Dimension name \"");
-                buf.append(s);
+                buf.append(nameSegment);
                 if (usages.length == 1) {
                     // ERROR: this will work but is bad coding
                     buf.append("\" rather than the alias name ");
@@ -2656,8 +2663,8 @@ public class RolapCube extends CubeBase {
         }
 
         if (getLogger().isDebugEnabled()) {
-            if (!s.matches("Measures")) {
-                HierarchyUsage hierUsage = getUsageByName(s.name);
+            if (!nameSegment.matches("Measures")) {
+                HierarchyUsage hierUsage = getUsageByName(nameSegment.name);
                 if (hierUsage == null) {
                     status = "hierUsage == null";
                 } else {
@@ -2671,7 +2678,7 @@ public class RolapCube extends CubeBase {
             buf.append("name=");
             buf.append(getName());
             buf.append(", childname=");
-            buf.append(s);
+            buf.append(nameSegment);
             if (status != null) {
                 buf.append(", status=");
                 buf.append(status);
@@ -2753,7 +2760,7 @@ public class RolapCube extends CubeBase {
         final List<Id.Segment> segmentList = new ArrayList<Id.Segment>();
         segmentList.addAll(
             Util.parseIdentifier(hierarchy.getUniqueName()));
-        segmentList.add(new Id.Segment(name, Id.Quoting.QUOTED));
+        segmentList.add(new Id.NameSegment(name));
         final Formula formula = new Formula(
             new Id(segmentList),
             createDummyExp(calc),

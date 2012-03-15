@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -95,7 +95,10 @@ public abstract class DimensionBase
     public OlapElement lookupChild(
         SchemaReader schemaReader, Id.Segment s, MatchType matchType)
     {
-        OlapElement oe = lookupHierarchy(s);
+        OlapElement oe = null;
+        if (s instanceof Id.NameSegment) {
+            oe = lookupHierarchy((Id.NameSegment) s);
+        }
 
         // Original mondrian behavior:
         // If the user is looking for [Marital Status].[Marital Status] we
@@ -134,9 +137,9 @@ public abstract class DimensionBase
         return this.highCardinality;
     }
 
-    private Hierarchy lookupHierarchy(Id.Segment s) {
+    private Hierarchy lookupHierarchy(Id.NameSegment s) {
         for (Hierarchy hierarchy : hierarchies) {
-            if (Util.equalName(hierarchy.getName(), s.name)) {
+            if (Util.equalName(hierarchy.getName(), s.getName())) {
                 return hierarchy;
             }
         }

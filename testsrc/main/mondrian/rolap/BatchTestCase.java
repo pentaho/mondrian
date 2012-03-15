@@ -538,7 +538,7 @@ public class BatchTestCase extends FoodMartTestCase {
             getConnection().getSchema().lookupCube("Sales", true);
         RolapHierarchy hierarchy =
             (RolapHierarchy) salesCube.lookupHierarchy(
-                new Id.Segment("Store", Id.Quoting.UNQUOTED),
+                new Id.NameSegment("Store", Id.Quoting.UNQUOTED),
                 false);
         SmartMemberReader memberReader =
             (SmartMemberReader) hierarchy.getMemberReader();

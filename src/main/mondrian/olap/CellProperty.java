@@ -5,10 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
+
+import java.util.List;
 
 /**
  * Represents Cell Property.
@@ -20,8 +22,8 @@ package mondrian.olap;
 public class CellProperty extends QueryPart {
     private String name;
 
-    public CellProperty(Object name) {
-        this.name = name.toString();
+    public CellProperty(List<Id.Segment> segments) {
+        this.name = Util.implode(segments);
     }
 
     /**

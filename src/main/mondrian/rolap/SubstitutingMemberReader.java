@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2010 Pentaho
+// Copyright (C) 2007-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -67,12 +67,9 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
 
     @Override
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        int startOrdinal,
-        int endOrdinal)
+        RolapLevel level)
     {
-        return substitute(
-            memberReader.getMembersInLevel(level, startOrdinal, endOrdinal));
+        return substitute(memberReader.getMembersInLevel(level));
     }
 
     @Override
@@ -183,14 +180,11 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
 
     @Override
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        int startOrdinal,
-        int endOrdinal,
-        TupleConstraint constraint)
+        RolapLevel level, TupleConstraint constraint)
     {
         return substitute(
             memberReader.getMembersInLevel(
-                level, startOrdinal, endOrdinal, constraint));
+                level, constraint));
     }
 
     @Override

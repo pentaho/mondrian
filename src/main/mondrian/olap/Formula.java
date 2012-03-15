@@ -176,7 +176,12 @@ public class Formula extends QueryPart {
             OlapElement mdxElement = q.getCube();
             final SchemaReader schemaReader = q.getSchemaReader(false);
             for (int i = 0; i < segments.size(); i++) {
-                final Id.Segment segment = segments.get(i);
+                final Id.Segment segment0 = segments.get(i);
+                if (!(segment0 instanceof Id.NameSegment)) {
+                    throw Util.newError(
+                        "Calculated member name must not contain member keys");
+                }
+                final Id.NameSegment segment = (Id.NameSegment) segment0;
                 OlapElement parent = mdxElement;
                 mdxElement = null;
                 // The last segment of the id is the name of the calculated
@@ -201,7 +206,7 @@ public class Formula extends QueryPart {
                         if (level == null) {
                             throw Util.newError(
                                 "The '"
-                                + segment.name
+                                + segment
                                 + "' calculated member cannot be created "
                                 + "because its parent is at the lowest level "
                                 + "in the "
@@ -240,7 +245,7 @@ public class Formula extends QueryPart {
                     }
                     Member mdxMember =
                         level.getHierarchy().createMember(
-                            parentMember, level, segment.name, this);
+                            parentMember, level, segment.getName(), this);
                     assert mdxMember != null;
                     mdxElement = mdxMember;
                 }
@@ -251,12 +256,17 @@ public class Formula extends QueryPart {
             Util.assertTrue(
                 segments.size() == 1,
                 "set names must not be compound");
+            final Id.Segment segment0 = segments.get(0);
+            if (!(segment0 instanceof Id.NameSegment)) {
+                throw Util.newError(
+                    "Calculated member name must not contain member keys");
+            }
             // Caption and description are initialized to null, and annotations
             // to the empty map. If named set is defined in the schema, we will
             // give these their true values later.
             mdxSet =
                 new SetBase(
-                    segments.get(0).name,
+                    ((Id.NameSegment) segment0).getName(),
                     null,
                     null,
                     exp,
@@ -340,11 +350,12 @@ public class Formula extends QueryPart {
     {
         String oldName = getElement().getName();
         final List<Id.Segment> segments = this.id.getSegments();
-        Util.assertTrue(
-            segments.get(segments.size() - 1).name.equalsIgnoreCase(oldName));
+        assert Util.last(segments) instanceof Id.NameSegment;
+        assert ((Id.NameSegment) Util.last(segments)).name
+            .equalsIgnoreCase(oldName);
         segments.set(
             segments.size() - 1,
-            new Id.Segment(newName, Id.Quoting.QUOTED));
+            new Id.NameSegment(newName));
         if (isMember) {
             mdxMember.setName(newName);
         } else {

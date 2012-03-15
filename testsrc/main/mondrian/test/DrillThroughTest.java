@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -231,7 +231,7 @@ public class DrillThroughTest extends FoodMartTestCase {
 
         Hierarchy h =
             cube.lookupHierarchy(
-                new Id.Segment(hierName, Id.Quoting.UNQUOTED), false);
+                new Id.NameSegment(hierName, Id.Quoting.UNQUOTED), false);
         if (h == null) {
             return null;
         }

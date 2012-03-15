@@ -5,10 +5,8 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
-//
-// jhyde, 21 December, 2001
 */
 package mondrian.rolap;
 
@@ -66,6 +64,13 @@ class CacheMemberReader implements MemberReader, MemberCache {
 
     public RolapMember desubstitute(RolapMember member) {
         return member;
+    }
+
+    public RolapMember getMemberByKey(
+        RolapLevel level, List<Comparable> keyValues)
+    {
+        assert keyValues.size() == 1;
+        return mapKeyToMember.get(keyValues.get(0));
     }
 
     // implement MemberReader
@@ -163,17 +168,12 @@ class CacheMemberReader implements MemberReader, MemberCache {
     }
 
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        int startOrdinal,
-        int endOrdinal)
+        RolapLevel level)
     {
         List<RolapMember> list = new ArrayList<RolapMember>();
         int levelDepth = level.getDepth();
         for (RolapMember member : members) {
-            if ((member.getLevel().getDepth() == levelDepth)
-                && (startOrdinal <= member.getOrdinal())
-                && (member.getOrdinal() < endOrdinal))
-            {
+            if (member.getLevel().getDepth() == levelDepth) {
                 list.add(member);
             }
         }
@@ -182,11 +182,9 @@ class CacheMemberReader implements MemberReader, MemberCache {
 
     public List<RolapMember> getMembersInLevel(
         RolapLevel level,
-        int startOrdinal,
-        int endOrdinal,
         TupleConstraint constraint)
     {
-        return getMembersInLevel(level, startOrdinal, endOrdinal);
+        return getMembersInLevel(level);
     }
 
     public int getLevelMemberCount(RolapLevel level) {

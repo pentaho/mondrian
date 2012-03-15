@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1998-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -23,7 +23,7 @@ public class CellPropertyTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        cellProperty = new CellProperty("[Format_String]");
+        cellProperty = new CellProperty(Id.Segment.toList("Format_String"));
     }
 
     public void testIsNameEquals() {

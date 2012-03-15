@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -117,10 +117,14 @@ public abstract class LevelBase
     public OlapElement lookupChild(
         SchemaReader schemaReader, Id.Segment s, MatchType matchType)
     {
-        return areMembersUnique()
-            ? Util.lookupHierarchyRootMember(
-                schemaReader, hierarchy, s, matchType)
-            : null;
+        if (areMembersUnique()
+            && s instanceof Id.NameSegment)
+        {
+            return Util.lookupHierarchyRootMember(
+                schemaReader, hierarchy, ((Id.NameSegment) s), matchType);
+        } else {
+            return null;
+        }
     }
 
     public MemberFormatter getMemberFormatter() {

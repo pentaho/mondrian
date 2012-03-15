@@ -550,6 +550,38 @@ public class RolapLevel extends LevelBase {
     public OlapElement lookupChild(
         SchemaReader schemaReader, Id.Segment name, MatchType matchType)
     {
+        if (name instanceof Id.KeySegment) {
+            Id.KeySegment keySegment = (Id.KeySegment) name;
+            List<Comparable> keyValues = new ArrayList<Comparable>();
+            for (Id.NameSegment nameSegment : keySegment.getKeyParts()) {
+                final String keyValue = nameSegment.name;
+                if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(keyValue)) {
+                    keyValues.add(RolapUtil.sqlNullValue);
+                } else {
+                    keyValues.add(keyValue);
+                }
+            }
+            final List<MondrianDef.Expression> keyExps = getInheritedKeyExps();
+            if (keyExps.size() != keyValues.size()) {
+                throw Util.newError(
+                    "Wrong number of values in member key; "
+                    + keySegment + " has " + keyValues.size()
+                    + " values, whereas level's key has " + keyExps.size()
+                    + " columns "
+                    + new AbstractList<String>() {
+                        public String get(int index) {
+                            return keyExps.get(index).getGenericExpression();
+                        }
+
+                        public int size() {
+                            return keyExps.size();
+                        }
+                    }
+                    + ".");
+            }
+            return getHierarchy().getMemberReader().getMemberByKey(
+                this, keyValues);
+        }
         List<Member> levelMembers = schemaReader.getLevelMembers(this, true);
         if (levelMembers.size() > 0) {
             Member parent = levelMembers.get(0).getParentMember();
@@ -563,6 +595,21 @@ public class RolapLevel extends LevelBase {
                     false);
         }
         return null;
+    }
+
+    private List<MondrianDef.Expression> getInheritedKeyExps() {
+        final List<MondrianDef.Expression> list =
+            new ArrayList<MondrianDef.Expression>();
+        for (RolapLevel x = this;; x = (RolapLevel) x.getParentLevel()) {
+            final MondrianDef.Expression keyExp1 = x.getKeyExp();
+            if (keyExp1 != null) {
+                list.add(keyExp1);
+            }
+            if (x.isUnique()) {
+                break;
+            }
+        }
+        return list;
     }
 
     /**

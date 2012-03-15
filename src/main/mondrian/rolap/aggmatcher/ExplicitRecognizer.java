@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -107,11 +107,14 @@ class ExplicitRecognizer extends Recognizer {
                     {
                         String name = measure.getName();
                         List<Id.Segment> parts = Util.parseIdentifier(name);
-                        String nameLast = parts.get(parts.size() - 1).name;
+                        Id.Segment nameLast = Util.last(parts);
 
-                        RolapStar.Measure m =
-                            star.getFactTable().lookupMeasureByName(
-                                cube.getName(), nameLast);
+                        RolapStar.Measure m = null;
+                        if (nameLast instanceof Id.NameSegment) {
+                            m = star.getFactTable().lookupMeasureByName(
+                                cube.getName(),
+                                ((Id.NameSegment) nameLast).name);
+                        }
                         RolapAggregator agg = null;
                         if (m != null) {
                             agg = m.getAggregator();
@@ -286,10 +289,9 @@ class ExplicitRecognizer extends Recognizer {
                         Pair<RolapLevel, Column> o1,
                         Pair<RolapLevel, Column> o2)
                     {
-                        return
-                            Integer.valueOf(
-                                o1.left.getDepth()).compareTo(
-                                    Integer.valueOf(o2.left.getDepth()));
+                        return Util.compareIntegers(
+                            o1.left.getDepth(),
+                            o2.left.getDepth());
                     }
                 });
             Collections.sort(
@@ -301,11 +303,9 @@ class ExplicitRecognizer extends Recognizer {
                         mondrian.rolap.aggmatcher
                             .ExplicitRules.TableDef.Level o2)
                     {
-                        return
-                            Integer.valueOf(o1.getRolapLevel().getDepth())
-                                .compareTo(
-                                    Integer.valueOf(
-                                        o2.getRolapLevel().getDepth()));
+                        return Util.compareIntegers(
+                            o1.getRolapLevel().getDepth(),
+                            o2.getRolapLevel().getDepth());
                     }
                 });
             // Validate by iterating.
@@ -322,7 +322,7 @@ class ExplicitRecognizer extends Recognizer {
                 {
                     msgRecorder.reportError(
                         "The aggregate table "
-                            + aggTable.getName()
+                        + aggTable.getName()
                         + " contains the column "
                         + pair.right.getName()
                         + " which maps to the level "

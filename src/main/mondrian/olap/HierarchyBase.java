@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -160,11 +160,22 @@ public abstract class HierarchyBase
         Id.Segment s,
         MatchType matchType)
     {
-        OlapElement oe = Util.lookupHierarchyLevel(this, s.name);
-        if (oe == null) {
-            oe = Util.lookupHierarchyRootMember(
-                schemaReader, this, s, matchType);
+        OlapElement oe;
+        if (s instanceof Id.NameSegment) {
+            Id.NameSegment nameSegment = (Id.NameSegment) s;
+            oe = Util.lookupHierarchyLevel(this, nameSegment.getName());
+            if (oe == null) {
+                oe = Util.lookupHierarchyRootMember(
+                    schemaReader, this, nameSegment, matchType);
+            }
+        } else {
+            // Key segment searches bottom level by default. For example,
+            // [Products].&[1] is shorthand for [Products].[Product Name].&[1].
+            final Id.KeySegment keySegment = (Id.KeySegment) s;
+            oe = levels[levels.length - 1]
+                .lookupChild(schemaReader, keySegment, matchType);
         }
+
         if (getLogger().isDebugEnabled()) {
             StringBuilder buf = new StringBuilder(64);
             buf.append("HierarchyBase.lookupChild: ");

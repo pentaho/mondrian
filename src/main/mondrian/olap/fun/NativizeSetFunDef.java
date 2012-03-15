@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2009-2011 Pentaho and others
+// Copyright (C) 2009-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -1537,7 +1537,7 @@ public class NativizeSetFunDef extends FunDefBase {
     }
 
     private static Id.Segment q(String s) {
-        return new Id.Segment(s, Id.Quoting.QUOTED);
+        return new Id.NameSegment(s);
     }
 
     private static String createMangledName(Level level, String prefix) {

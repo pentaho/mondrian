@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 1999-2005 Julian Hyde
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -16,7 +16,7 @@ import java.util.Set;
 /**
  * Cube.
  *
- * @author jhyde
+ * @author jhyde, 2 March, 1999
  */
 public interface Cube extends OlapElement, Annotated {
 
@@ -38,7 +38,7 @@ public interface Cube extends OlapElement, Annotated {
      * Finds a hierarchy whose name (or unique name, if <code>unique</code> is
      * true) equals <code>s</code>.
      */
-    Hierarchy lookupHierarchy(Id.Segment s, boolean unique);
+    Hierarchy lookupHierarchy(Id.NameSegment s, boolean unique);
 
     /**
      * Returns Member[]. It builds Member[] by analyzing cellset, which

@@ -5,10 +5,8 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
-//
-// jhyde, Feb 24, 2003
 */
 package mondrian.rolap;
 
@@ -469,9 +467,11 @@ public class RolapSchemaReader
         assert !(parent instanceof RolapHierarchy.LimitedRollupMember);
         try {
             MemberChildrenConstraint constraint;
-            if (matchType.isExact()) {
+            if (childName instanceof Id.NameSegment
+                && matchType.isExact())
+            {
                 constraint = sqlConstraintFactory.getChildByNameConstraint(
-                    (RolapMember) parent, childName);
+                    (RolapMember) parent, (Id.NameSegment) childName);
             } else {
                 constraint =
                     sqlConstraintFactory.getMemberChildrenConstraint(null);
@@ -516,7 +516,10 @@ public class RolapSchemaReader
         if (nameParts.size() != 1) {
             return null;
         }
-        final String name = nameParts.get(0).name;
+        if (!(nameParts.get(0) instanceof Id.NameSegment)) {
+            return null;
+        }
+        final String name = ((Id.NameSegment) nameParts.get(0)).name;
         return schema.getNamedSet(name);
     }
 
@@ -544,7 +547,7 @@ public class RolapSchemaReader
             getMemberReader(level.getHierarchy());
         List<RolapMember> membersInLevel =
             memberReader.getMembersInLevel(
-                (RolapLevel) level, 0, Integer.MAX_VALUE, constraint);
+                (RolapLevel) level, constraint);
         return Util.cast(membersInLevel);
     }
 

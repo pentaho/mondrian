@@ -5,10 +5,8 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
-//
-// jhyde, 21 December, 2001
 */
 package mondrian.rolap;
 
@@ -86,6 +84,42 @@ class SqlMemberSource
 
     public RolapMember desubstitute(RolapMember member) {
         return member;
+    }
+
+    public RolapMember getMemberByKey(
+        RolapLevel level,
+        List<Comparable> keyValues)
+    {
+        if (level.isAll()) {
+            return null;
+        }
+        List<Dialect.Datatype> datatypeList = new ArrayList<Dialect.Datatype>();
+        List<MondrianDef.Expression> columnList =
+            new ArrayList<MondrianDef.Expression>();
+        for (RolapLevel x = level;; x = (RolapLevel) x.getParentLevel()) {
+            columnList.add(x.getKeyExp());
+            datatypeList.add(x.getDatatype());
+            if (x.isUnique()) {
+                break;
+            }
+        }
+        final List<RolapMember> list =
+            getMembersInLevel(
+                level,
+                new MemberKeyConstraint(
+                    columnList,
+                    datatypeList,
+                    keyValues));
+        switch (list.size()) {
+        case 0:
+            return null;
+        case 1:
+            return list.get(0);
+        default:
+            throw Util.newError(
+                "More than one member in level " + level + " with key "
+                + keyValues);
+        }
     }
 
     public RolapMember lookupMember(
@@ -451,34 +485,20 @@ RME is this right
 
     // implement MemberReader
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        int startOrdinal,
-        int endOrdinal)
+        RolapLevel level)
     {
         TupleConstraint constraint =
             sqlConstraintFactory.getLevelMembersConstraint(null);
-        return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
+        return getMembersInLevel(level, constraint);
     }
 
     public List<RolapMember> getMembersInLevel(
         RolapLevel level,
-        int startOrdinal,
-        int endOrdinal,
         TupleConstraint constraint)
     {
         if (level.isAll()) {
-            final List<RolapMember> list = new ArrayList<RolapMember>();
-            list.add(hierarchy.getAllMember());
-                //return Collections.singletonList(hierarchy.getAllMember());
-            return list;
+            return Collections.singletonList(hierarchy.getAllMember());
         }
-        return getMembersInLevel(level, constraint);
-    }
-
-    private List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        TupleConstraint constraint)
-    {
         final TupleReader tupleReader =
             level.getDimension().isHighCardinality()
                 ? new HighCardSqlTupleReader(constraint)
@@ -501,10 +521,7 @@ RME is this right
 
     // implement MemberSource
     public List<RolapMember> getRootMembers() {
-        return getMembersInLevel(
-            (RolapLevel) hierarchy.getLevels()[0],
-            0,
-            Integer.MAX_VALUE);
+        return getMembersInLevel((RolapLevel) hierarchy.getLevels()[0]);
     }
 
     /**
@@ -796,7 +813,7 @@ RME is this right
                 sqlConstraintFactory.getDescendantsConstraint(
                     parentMembers, mcc);
             List<RolapMember> list =
-                getMembersInLevel(childLevel, 0, Integer.MAX_VALUE, lmc);
+                getMembersInLevel(childLevel, lmc);
             children.addAll(list);
             return;
         }

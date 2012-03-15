@@ -156,16 +156,19 @@ public class MdxParserImpl
         Id.Segment segment,
         List<Exp> argList)
     {
+        final String name = segment instanceof Id.NameSegment
+            ? ((Id.NameSegment) segment).name
+            : null;
         if (argList != null) {
             if (left != null) {
                 // Method syntax: "x.foo(arg1, arg2)" or "x.foo()"
                 argList.add(0, left);
                 return new UnresolvedFunCall(
-                    segment.name, Syntax.Method, toExpArray(argList));
+                    name, Syntax.Method, toExpArray(argList));
             } else {
                 // Function syntax: "foo(arg1, arg2)" or "foo()"
                 return new UnresolvedFunCall(
-                    segment.name, Syntax.Function, toExpArray(argList));
+                    name, Syntax.Function, toExpArray(argList));
             }
         } else {
             // Member syntax: "foo.bar"
@@ -175,7 +178,7 @@ public class MdxParserImpl
             switch (segment.quoting) {
             case UNQUOTED:
                 syntax = Syntax.Property;
-                call = funTable.isProperty(segment.name);
+                call = funTable.isProperty(name);
                 break;
             case QUOTED:
                 syntax = Syntax.QuotedProperty;
@@ -190,7 +193,7 @@ public class MdxParserImpl
                 return new Id(segment);
             } else {
                 return new UnresolvedFunCall(
-                    segment.name, syntax, new Exp[] {left});
+                    name, syntax, new Exp[] {left});
             }
         }
     }
@@ -359,6 +362,8 @@ TOKEN :
     |
     < AMP_QUOTED_ID: "&" <QUOTED_ID> >
     |
+    < AMP_UNQUOTED_ID: "&" ["a"-"z","A"-"Z"] (<LETTER> | <DIGIT>)* >
+    |
     < #LETTER:
     [
         "\u0024",
@@ -430,25 +435,70 @@ Exp expressionEof() :
 
 Id.Segment identifier() :
 {
+    Id.Segment segment;
+}
+{
+    (
+        segment = nameSegment()
+    |
+        segment = keyIdentifier()
+    )
+    {
+        return segment;
+    }
+}
+
+Id.NameSegment nameSegment() :
+{
     String id;
 }
 {
     id = keyword() {
         // Allow a non-reserved keyword to be converted back into an identifier
         // if it is not in a context where it is meaningful.
-        return new Id.Segment(id, Id.Quoting.UNQUOTED);
+        return new Id.NameSegment(id, Id.Quoting.UNQUOTED);
     }
 |   <ID> {
-        return new Id.Segment(token.image, Id.Quoting.UNQUOTED);
+        return new Id.NameSegment(token.image, Id.Quoting.UNQUOTED);
     }
 |   <QUOTED_ID> {
-        return new Id.Segment(
+        return new Id.NameSegment(
             stripQuotes(token.image, "[", "]", "]]"),
             Id.Quoting.QUOTED);
     }
-|   <AMP_QUOTED_ID> {
-        return new Id.Segment(
-            stripQuotes(token.image, "&[", "]", "]]"), Id.Quoting.KEY);
+}
+
+// for example '&foo&[1]&bar' in '[x].&foo&[1]&bar.[y]'
+Id.KeySegment keyIdentifier() :
+{
+    List<Id.NameSegment> list = new ArrayList<Id.NameSegment>();
+    Id.NameSegment key;
+}
+{
+    (
+        key = ampId() {
+            list.add(key);
+        }
+    )+
+    {
+        return new Id.KeySegment(list);
+    }
+}
+
+Id.NameSegment ampId() :
+{
+}
+{
+    <AMP_QUOTED_ID> {
+        return new Id.NameSegment(
+            stripQuotes(token.image, "&[", "]", "]]"),
+            Id.Quoting.QUOTED);
+    }
+|
+    <AMP_UNQUOTED_ID> {
+        return new Id.NameSegment(
+            token.image.substring(1),
+            Id.Quoting.UNQUOTED);
     }
 }
 
@@ -715,7 +765,7 @@ Literal numericLiteral() :
 Exp atom() :
 {
     Exp e;
-    Id.Segment segment;
+    Id.NameSegment segment;
     List<Exp> lis;
 }
 {
@@ -732,7 +782,7 @@ Exp atom() :
         return Literal.nullValue;
     }
 |   <CAST> <LPAREN> e = unaliasedExpression()
-    <AS> segment = identifier() <RPAREN>
+    <AS> segment = nameSegment() <RPAREN>
     {
         return new UnresolvedFunCall(
             "CAST", Syntax.Cast, new Exp[] {
@@ -765,9 +815,9 @@ Exp atom() :
 |
     // Function call "foo(a, b)" or "whiz!bang!foo(a, b)".
     // Properties "x.PROP" and methods "exp.meth(a)" are in primary().
-    segment = identifier()
+    segment = nameSegment()
     (
-        <BANG> segment = identifier() {
+        <BANG> segment = nameSegment() {
             // We support the syntax for qualifying function names with package
             // names separated by bang ('!'), e.g. 'whiz!bang!foo(a, b)'
             // but currently we ignore the qualifiers. The previous example is
@@ -1004,19 +1054,19 @@ Query selectStatement() :
         (<CELL>)?
         <PROPERTIES>
         p = compoundId() {
-            cellPropList.add(new CellProperty(p));
+            cellPropList.add(new CellProperty(p.getSegments()));
         }
         (
             <COMMA>
             p = compoundId() {
-                cellPropList.add(new CellProperty(p));
+                cellPropList.add(new CellProperty(p.getSegments()));
             }
         )*
     )?
     {
         // We want 'Sales', not '[Sales]', and can't handle 'Schema.Sales'
         // yet.
-        String cubeName = c.getElement(0).name;
+        String cubeName = ((Id.NameSegment) c.getElement(0)).name;
         return factory.makeQuery(
             statement,
             toFormulaArray(f),
@@ -1071,11 +1121,11 @@ Exp formulaExpression() :
 
 MemberProperty memberPropertyDefinition() :
 {
-    Id.Segment id;
+    Id.NameSegment id;
     Exp e;
 }
 {
-    id = identifier() <EQ> e = expression() {
+    id = nameSegment() <EQ> e = expression() {
         return new MemberProperty(id.name, e);
     }
 }

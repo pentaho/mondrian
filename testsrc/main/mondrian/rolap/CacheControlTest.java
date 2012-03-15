@@ -1027,7 +1027,7 @@ public class CacheControlTest extends FoodMartTestCase {
             String name = names[i];
             assert name.startsWith("[") && name.endsWith("]");
             names[i] = name.substring(1, name.length() - 1);
-            ids.add(new Id.Segment(names[i], Id.Quoting.QUOTED));
+            ids.add(new Id.NameSegment(names[i]));
         }
         final TestContext testContext = getTestContext();
         final Connection connection = testContext.getConnection();

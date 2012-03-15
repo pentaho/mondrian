@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -102,13 +102,13 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
         return dimensions;
     }
 
-    public Hierarchy lookupHierarchy(Id.Segment s, boolean unique) {
+    public Hierarchy lookupHierarchy(Id.NameSegment s, boolean unique) {
         for (Dimension dimension : dimensions) {
             Hierarchy[] hierarchies = dimension.getHierarchies();
             for (Hierarchy hierarchy : hierarchies) {
                 String name = unique
                     ? hierarchy.getUniqueName() : hierarchy.getName();
-                if (name.equals(s.name)) {
+                if (name.equals(s.getName())) {
                     return hierarchy;
                 }
             }
@@ -130,10 +130,12 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
 
         // Look for hierarchies named '[dimension.hierarchy]'.
         if (MondrianProperties.instance().SsasCompatibleNaming.get()
-            && s.name.contains("."))
+            && s instanceof Id.NameSegment
+            && ((Id.NameSegment) s).name.contains("."))
         {
             for (Dimension dimension : dimensions) {
-                if (!s.name.startsWith(dimension.getName())) {
+                if (!((Id.NameSegment) s).name.startsWith(dimension.getName()))
+                {
                     // Rough check to save time.
                     continue;
                 }
@@ -141,7 +143,7 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
                     : schemaReader.getDimensionHierarchies(dimension))
                 {
                     if (Util.equalName(
-                            s.name,
+                            ((Id.NameSegment) s).name,
                             dimension.getName()
                             + "."
                             + hierarchy.getName()))
@@ -179,8 +181,12 @@ public abstract class CubeBase extends OlapElementBase implements Cube {
      * @return Dimension, or null if not found
      */
     public Dimension lookupDimension(Id.Segment s) {
+        if (!(s instanceof Id.NameSegment)) {
+            return null;
+        }
+        final Id.NameSegment nameSegment = (Id.NameSegment) s;
         for (Dimension dimension : dimensions) {
-            if (Util.equalName(dimension.getName(), s.name)) {
+            if (Util.equalName(dimension.getName(), nameSegment.name)) {
                 return dimension;
             }
         }

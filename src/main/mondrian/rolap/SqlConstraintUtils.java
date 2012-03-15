@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
  */
 package mondrian.rolap;
@@ -560,7 +560,7 @@ public class SqlConstraintUtils {
         boolean firstParent = true;
         StringBuilder condition2 = new StringBuilder();
 
-        if (condition1.toString().length() > 0) {
+        if (condition1.length() > 0) {
             // Some members have already been translated into IN list.
             firstParent = false;
             condition.append(condition1.toString());
@@ -867,6 +867,34 @@ public class SqlConstraintUtils {
         }
 
         return constraint;
+    }
+
+    /**
+     * Generates a sql expression constraining a level by some value
+     *
+     * @param exp Key expression
+     * @param datatype Key datatype
+     * @param query the query that the sql expression will be added to
+     * @param columnValue value constraining the level
+     *
+     * @return generated string corresponding to the expression
+     */
+    public static String constrainLevel2(
+        SqlQuery query,
+        MondrianDef.Expression exp,
+        Dialect.Datatype datatype,
+        Comparable columnValue)
+    {
+        String columnString = exp.getExpression(query);
+        if (columnValue == RolapUtil.sqlNullValue) {
+            return columnString + " is " + RolapUtil.sqlNullLiteral;
+        } else {
+            final StringBuilder buf = new StringBuilder();
+            buf.append(columnString);
+            buf.append(" = ");
+            query.getDialect().quote(buf, columnValue, datatype);
+            return buf.toString();
+        }
     }
 
     /**

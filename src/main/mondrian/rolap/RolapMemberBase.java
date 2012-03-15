@@ -884,8 +884,8 @@ public class RolapMemberBase
         String name;
         if (key == null || RolapUtil.sqlNullValue.equals(key)) {
             name = RolapUtil.mdxNullLiteral();
-        } else if (key instanceof Id.Segment) {
-            name = ((Id.Segment) key).name;
+        } else if (key instanceof Id.NameSegment) {
+            name = ((Id.NameSegment) key).name;
         } else {
             name = key.toString();
         }

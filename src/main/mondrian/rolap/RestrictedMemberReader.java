@@ -5,10 +5,8 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
-//
-// jhyde, Feb 26, 2003
 */
 package mondrian.rolap;
 
@@ -207,7 +205,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
             RolapLevel topLevel =
                 (RolapLevel) getHierarchy().getLevels()[topLevelDepth];
             final List<RolapMember> memberList =
-                getMembersInLevel(topLevel, 0, Integer.MAX_VALUE);
+                getMembersInLevel(topLevel);
             if (memberList.isEmpty()) {
                 throw MondrianResource.instance()
                     .HierarchyHasNoAccessibleMembers.ex(
@@ -219,20 +217,15 @@ class RestrictedMemberReader extends DelegatingMemberReader {
     }
 
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        int startOrdinal,
-        int endOrdinal)
+        RolapLevel level)
     {
         TupleConstraint constraint =
             sqlConstraintFactory.getLevelMembersConstraint(null);
-        return getMembersInLevel(level, startOrdinal, endOrdinal, constraint);
+        return getMembersInLevel(level, constraint);
     }
 
     public List<RolapMember> getMembersInLevel(
-        RolapLevel level,
-        int startOrdinal,
-        int endOrdinal,
-        TupleConstraint constraint)
+        RolapLevel level, TupleConstraint constraint)
     {
         if (hierarchyAccess != null) {
             final int depth = level.getDepth();
@@ -245,7 +238,7 @@ class RestrictedMemberReader extends DelegatingMemberReader {
         }
         final List<RolapMember> membersInLevel =
             memberReader.getMembersInLevel(
-                level, startOrdinal, endOrdinal, constraint);
+                level, constraint);
         List<RolapMember> filteredMembers = new ArrayList<RolapMember>();
         filterMembers(membersInLevel, filteredMembers);
         return filteredMembers;

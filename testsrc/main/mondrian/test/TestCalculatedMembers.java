@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1827,7 +1827,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             "with member [Gender].[M].[X] as 4\n"
             + " select [Gender].[M].[X] on 0\n"
             + " from [Sales]",
-            "The 'X' calculated member cannot be created because its parent is "
+            "The '[X]' calculated member cannot be created because its parent is "
             + "at the lowest level in the [Gender] hierarchy.");
     }
 }

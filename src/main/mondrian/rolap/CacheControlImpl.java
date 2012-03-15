@@ -1147,7 +1147,8 @@ public class CacheControlImpl implements CacheControl {
     }
 
     /**
-     * Visitor which visits various sub-types of {@link CellRegion}.
+     * Visitor that visits various sub-types of
+     * {@link mondrian.olap.CacheControl.CellRegion}.
      */
     interface CellRegionVisitor {
         void visit(MemberCellRegion region);
@@ -1763,7 +1764,7 @@ public class CacheControlImpl implements CacheControl {
                 final MemberCache memberCache = getMemberCache(member);
                 final MemberChildrenConstraint memberConstraint =
                     new ChildByNameConstraint(
-                        new Id.Segment(member.getName(), Quoting.QUOTED));
+                        new Id.NameSegment(member.getName()));
 
                 // Remove the member from its parent's lists. First try the
                 // unconstrained cache.
@@ -1836,7 +1837,7 @@ public class CacheControlImpl implements CacheControl {
                 final MemberCache memberCache = getMemberCache(member);
                 final MemberChildrenConstraint memberConstraint =
                     new ChildByNameConstraint(
-                        new Id.Segment(member.getName(), Quoting.QUOTED));
+                        new Id.NameSegment(member.getName()));
 
                 // Check if there is already a list in cache
                 // constrained by a wildcard.

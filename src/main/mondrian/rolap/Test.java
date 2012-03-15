@@ -5,10 +5,8 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
-//
-// jhyde, 21 December, 2001
 */
 package mondrian.rolap;
 
@@ -109,12 +107,12 @@ public class Test {
 
         RolapHierarchy genderHierarchy = (RolapHierarchy)
             salesCube.lookupHierarchy(
-                new Id.Segment("Gender", Id.Quoting.QUOTED), false);
+                new Id.NameSegment("Gender"), false);
         testMemberReader(genderHierarchy.getMemberReader());
 
         RolapHierarchy customerHierarchy = (RolapHierarchy)
             salesCube.lookupHierarchy(
-                new Id.Segment("Customers", Id.Quoting.QUOTED), false);
+                new Id.NameSegment("Customers"), false);
         testMemberReader(customerHierarchy.getMemberReader());
     }
     void testMemberReader(MemberReader reader)
@@ -132,7 +130,7 @@ public class Test {
         Level level = levels[levels.length > 1 ? 1 : 0];
         pw.print("Members at level " + level.getUniqueName() + " are ");
         List<RolapMember> members =
-            reader.getMembersInLevel((RolapLevel)level, 0, Integer.MAX_VALUE);
+            reader.getMembersInLevel((RolapLevel) level);
         print(members);
         pw.println();
 
