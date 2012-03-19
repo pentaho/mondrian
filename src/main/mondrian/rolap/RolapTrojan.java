@@ -6,7 +6,6 @@ package mondrian.rolap;
  * <p>Methods in this class are subject to change without notice.
  *
  * @author jhyde
- * @version $Id$
  */
 public class RolapTrojan {
     public static final RolapTrojan INSTANCE = new RolapTrojan();

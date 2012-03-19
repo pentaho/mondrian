@@ -1,5 +1,13 @@
 #!/bin/bash
-# $Id$
+#
+# This software is subject to the terms of the Eclipse Public License v1.0
+# Agreement, available at the following URL:
+# http://www.eclipse.org/legal/epl-v10.html.
+# You must accept the terms of that agreement to use this software.
+#
+# Copyright (C) 2011-2012 Pentaho
+# All Rights Reserved.
+#
 # Called recursively from 'ant release' to build the files which can only be
 # built under a particular JDK version.
 #

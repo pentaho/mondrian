@@ -314,7 +314,8 @@
     <custom-packaging allow="false" />
   </component>
   <component name="VcsDirectoryMappings">
-    <mapping directory="" vcs="Perforce" />
+    <mapping directory="" vcs="" />
+    <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../mondrianpro" vcs="svn" />
     <mapping directory="$PROJECT_DIR$/../../olap4j" vcs="svn" />
     <mapping directory="$PROJECT_DIR$/../../pentaho-aggdesigner/pentaho-aggdesigner-core" vcs="svn" />

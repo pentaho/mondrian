@@ -1,10 +1,10 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
-// Copyright (C) 2011-2012 Julian Hyde
+//
+// Copyright (C) 2011-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -19,7 +19,7 @@ import java.util.*;
  * Agent that converts an old-style schema to a new-style schema.
  * It builds a physical schema as it goes.
  *
- * @version $Id$
+ * @author jhyde
  */
 class PhysSchemaConverter extends RolapSchemaLoader.PhysSchemaBuilder {
     /**

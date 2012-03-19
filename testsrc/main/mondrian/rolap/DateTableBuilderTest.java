@@ -1,11 +1,11 @@
 /*
-// $Id$
 // This software is subject to the terms of the Eclipse Public License v1.0
 // Agreement, available at the following URL:
 // http://www.eclipse.org/legal/epl-v10.html.
-// Copyright (C) 2012-2012 Julian Hyde and others
-// All Rights Reserved.
 // You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2012-2012 Pentaho and others
+// All Rights Reserved.
 */
 package mondrian.rolap;
 
@@ -25,7 +25,7 @@ import java.util.Locale;
 /**
  * Unit test for {@link DateTableBuilder}.
  *
- * @version $Id$
+ * @author jhyde
  */
 public class DateTableBuilderTest extends TestCase {
     public DateTableBuilderTest() {
@@ -123,15 +123,14 @@ public class DateTableBuilderTest extends TestCase {
     public void testDatePopulater1996() throws SQLException {
         final StringBuilder buf = new StringBuilder();
         PreparedStatement pstmt = createMockPreparedStatement(buf);
-        List<TimeColumnRole.Struct> roles1 =
+        List<TimeColumnRole.Struct> roles =
             new ArrayList<TimeColumnRole.Struct>();
-        roles1.add(new TimeColumnRole.Struct(TimeColumnRole.YYMMDD, null));
+        roles.add(new TimeColumnRole.Struct(TimeColumnRole.YYMMDD, null));
         buf.append("yymmdd|");
         Date epoch = createDate(1996, 1, 1);
-        roles1.add(new TimeColumnRole.Struct(TimeColumnRole.JULIAN, epoch));
+        roles.add(new TimeColumnRole.Struct(TimeColumnRole.JULIAN, epoch));
         buf.append("time_id|");
         buf.append("\n");
-        List<TimeColumnRole.Struct> roles = roles1;
         DateTableBuilder.populate(
             roles,
             pstmt,
