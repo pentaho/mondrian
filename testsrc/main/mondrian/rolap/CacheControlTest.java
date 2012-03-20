@@ -1176,7 +1176,7 @@ public class CacheControlTest extends FoodMartTestCase {
             getConnection().getSchema().lookupCube("Sales", true);
         final Hierarchy storeHierarchy =
             salesCube.lookupHierarchy(
-                new Id.NameSegment(
+                new Id.Segment(
                     "Store",
                     Id.Quoting.UNQUOTED),
                 false);
