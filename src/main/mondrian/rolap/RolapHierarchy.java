@@ -1102,10 +1102,35 @@ public class RolapHierarchy extends HierarchyBase {
         peerHier.sharedHierarchyName = getSharedHierarchyName();
         MondrianDef.Join join = new MondrianDef.Join();
         peerHier.relation = join;
-        join.left = clos.table;         // the closure table
-        join.leftKey = clos.parentColumn;
-        join.right = relation;     // the unclosed base table
-        join.rightKey = clos.childColumn;
+
+        // patl
+        // Mar 7 2012
+        // MONDRIAN-441
+        try {
+            if ( !peerHier.closureFor.getXmlHierarchy().primaryKey.equalsIgnoreCase(clos.childColumn) ) {
+                getLogger().debug("Keys don't match - mapping closure table through fact table");
+                MondrianDef.Hierarchy cloHier = (mondrian.olap.MondrianDef.Hierarchy) peerHier.closureFor.getXmlHierarchy().deepCopy();
+                getLogger().trace("cloHier.primaryKey = " + cloHier.primaryKey + ", clos.childColumn = " + clos.childColumn);
+                getLogger().trace("cloHier.relation = " + cloHier.relation.toString());
+
+                MondrianDef.RelationOrJoin parentRel = cloHier.relation;
+                cloHier.relation = new MondrianDef.Join(null, clos.childColumn, parentRel, null, clos.childColumn, clos.table);
+                peerHier.relation = cloHier.relation;
+
+                getLogger().trace("cloHier.relation = " + cloHier.relation.toString());
+                getLogger().trace("peerHier.relation = " + peerHier.relation.toString());
+
+                peerHier.xmlHierarchy = cloHier;
+            } else {
+                join.left = clos.table; // the closure table
+                join.leftKey = clos.parentColumn;
+                join.right = relation; // the unclosed base table
+                join.rightKey = clos.childColumn;
+            }
+        } catch (Exception e) {
+            getLogger().error("Exception while building closure hierarchy", e);
+        }
+        // MONDRIAN-441
 
         // Create the upper level.
         // This represents all groups of descendants. For example, in the
