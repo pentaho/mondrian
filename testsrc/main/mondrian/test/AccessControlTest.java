@@ -16,6 +16,8 @@ import junit.framework.Assert;
 
 import java.util.List;
 
+import org.olap4j.mdx.IdentifierNode;
+
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
  * For these tests, all of the roles are of type RoleImpl.
@@ -2425,6 +2427,71 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "Axis #2:\n"
                 + "{[Customers].[USA]}\n"
                 + "Row #0: 2,009\n");
+    }
+
+    /**
+     * Test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1091">MONDRIAN-1091</a>
+     * The RoleImpl would try to search for member grants by object identity
+     * rather than unique name. When using the partial rollup policy, the
+     * members are wrapped, so identity checks would fail.
+     */
+    public void testMondrian1091() throws Exception {
+        final TestContext testContext = TestContext.instance().create(
+            null, null, null, null, null,
+            "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Store]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Store].[USA].[CA]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role>")
+            .withRole("Role1");
+        testContext.assertQueryReturns(
+            "select {[Store].Members} on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[All Stores]}\n"
+            + "{[Store].[USA]}\n"
+            + "{[Store].[USA].[CA]}\n"
+            + "{[Store].[USA].[CA].[Alameda]}\n"
+            + "{[Store].[USA].[CA].[Alameda].[HQ]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills].[Store 6]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[Los Angeles].[Store 7]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[USA].[CA].[San Diego].[Store 24]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "{[Store].[USA].[CA].[San Francisco].[Store 14]}\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: 74,748\n"
+            + "Row #0: \n"
+            + "Row #0: \n"
+            + "Row #0: 21,333\n"
+            + "Row #0: 21,333\n"
+            + "Row #0: 25,663\n"
+            + "Row #0: 25,663\n"
+            + "Row #0: 25,635\n"
+            + "Row #0: 25,635\n"
+            + "Row #0: 2,117\n"
+            + "Row #0: 2,117\n");
+        org.olap4j.metadata.Cube cube =
+            testContext.getOlap4jConnection()
+                .getOlapSchema().getCubes().get("Sales");
+        org.olap4j.metadata.Member allMember =
+            cube.lookupMember(
+                IdentifierNode.parseIdentifier("[Store].[All Stores]")
+                    .getSegmentList());
+        assertNotNull(allMember);
+        assertEquals(1, allMember.getHierarchy().getRootMembers().size());
+        assertEquals(
+            "[Store].[All Stores]",
+            allMember.getHierarchy().getRootMembers().get(0).getUniqueName());
     }
 }
 
