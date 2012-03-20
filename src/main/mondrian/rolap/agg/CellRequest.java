@@ -354,9 +354,7 @@ public class CellRequest {
             final Object o = values[i];
             map.put(
                 column.getExpression().getGenericExpression(),
-                o == RolapUtil.sqlNullValue
-                    ? null
-                    : (Comparable) o);
+                (Comparable) o);
         }
         return map;
     }
