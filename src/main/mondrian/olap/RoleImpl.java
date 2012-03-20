@@ -12,8 +12,10 @@ package mondrian.olap;
 
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapCubeDimension;
+import mondrian.util.Pair;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Default implementation of the {@link Role} interface.
@@ -510,8 +512,8 @@ public class RoleImpl implements Role {
         private final Level topLevel;
         private final Access access;
         private final Level bottomLevel;
-        private final Map<Member, Access> memberGrants =
-            new HashMap<Member, Access>();
+        private final Map<String, Pair<Member,Access>> memberGrants =
+            new HashMap<String, Pair<Member,Access>>();
         private final RollupPolicy rollupPolicy;
         private final Role role;
 
@@ -569,16 +571,18 @@ public class RoleImpl implements Role {
             Util.assertTrue(member.getHierarchy() == hierarchy);
 
             // Remove any existing grants to descendants of "member"
-            for (Iterator<Member> memberIter =
-                memberGrants.keySet().iterator(); memberIter.hasNext();)
+            for (Iterator<Pair<Member, Access>> memberIter =
+                memberGrants.values().iterator(); memberIter.hasNext();)
             {
-                Member m = memberIter.next();
+                Member m = memberIter.next().left;
                 if (m.isChildOrEqualTo(member)) {
                     memberIter.remove();
                 }
             }
 
-            memberGrants.put(member, access);
+            memberGrants.put(
+                member.getUniqueName(),
+                new Pair<Member, Access>(member, access));
 
             if (access == Access.NONE) {
                 // Since we're denying access, the immediate parent
@@ -587,14 +591,19 @@ public class RoleImpl implements Role {
                      m != null;
                      m = m.getParentMember())
                 {
-                    final Access memberAccess = memberGrants.get(m);
+                    Pair<Member, Access> pair =
+                        memberGrants.get(m.getUniqueName());
+                    final Access memberAccess =
+                        pair == null ? null : pair.right;
                     // If no current access is allowed, upgrade to "custom"
                     if (memberAccess == Access.NONE
                         && checkLevelIsOkWithRestrictions(
                             this,
                             m.getLevel()))
                     {
-                        memberGrants.put(m, Access.CUSTOM);
+                        memberGrants.put(
+                            m.getUniqueName(),
+                            new Pair<Member, Access>(m, Access.CUSTOM));
                     }
                 }
             } else {
@@ -609,10 +618,14 @@ public class RoleImpl implements Role {
                             this,
                             m.getLevel()))
                     {
+                        Pair<Member, Access> pair =
+                            memberGrants.get(m.getUniqueName());
                         final Access parentAccess =
-                            toAccess(memberGrants.get(m));
+                            toAccess(pair == null ? null : pair.right);
                         if (parentAccess == Access.NONE) {
-                            memberGrants.put(m, Access.CUSTOM);
+                            memberGrants.put(
+                                m.getUniqueName(),
+                                new Pair<Member, Access>(m, Access.CUSTOM));
                         }
                     }
                 }
@@ -635,7 +648,9 @@ public class RoleImpl implements Role {
             if (this.access != Access.CUSTOM) {
                 return this.access;
             }
-            Access access = memberGrants.get(member);
+            Pair<Member, Access> pair =
+                memberGrants.get(member.getUniqueName());
+            Access access = pair == null? null : pair.right;
             // Check for an explicit deny.
             if (access == Access.NONE) {
                 return Access.NONE;
@@ -655,7 +670,11 @@ public class RoleImpl implements Role {
                 m != null;
                 m = m.getParentMember())
             {
-                final Access parentAccess = memberGrants.get(m);
+                Pair<Member, Access> parentPair =
+                    memberGrants.get(m.getUniqueName());
+                final Access parentAccess = parentPair == null
+                    ? null
+                    : parentPair.right;
                 if (parentAccess == null) {
                     // No explicit rules for this parent
                     continue;
@@ -702,10 +721,10 @@ public class RoleImpl implements Role {
         }
 
         public boolean hasInaccessibleDescendants(Member member) {
-            for (Map.Entry<Member, Access> entry : memberGrants.entrySet()) {
-                switch (entry.getValue()) {
+            for (Entry<String, Pair<Member, Access>> entry : memberGrants.entrySet()) {
+                switch (entry.getValue().right) {
                 case NONE:
-                    Member grantedMember = entry.getKey();
+                    Member grantedMember = entry.getValue().left;
                     for (Member m = grantedMember;
                          m != null; m = m.getParentMember())
                     {
