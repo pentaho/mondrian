@@ -690,6 +690,9 @@ public class SegmentCacheManager {
                     // Remove the segment from external caches. Use an
                     // executor, because it may take some time. We discard
                     // the future, because we don't care too much if it fails.
+                    cacheControlImpl.trace(
+                        "discard segment - it cannot be constrained and maintain consistency:\n"
+                        + header.getDescription());
                     Util.discard(cacheMgr.cacheExecutor.submit(
                         new Runnable() {
                             public void run() {
