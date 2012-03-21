@@ -245,6 +245,15 @@
       </item>
     </group>
   </component>
+  <component name="ProjectCodeStyleSettingsManager">
+    <option name="PER_PROJECT_SETTINGS">
+      <value>
+        <XML>
+          <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
+        </XML>
+      </value>
+    </option>
+  </component>
   <component name="ProjectDetails">
     <option name="projectName" value="mondrian" />
   </component>
@@ -252,12 +261,13 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/mondrian.iml" filepath="$PROJECT_DIR$/mondrian.iml" />
       <module fileurl="file://$PROJECT_DIR$/mondrianTest.iml" filepath="$PROJECT_DIR$/mondrianTest.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../olap4j/olap4j.iml" filepath="$PROJECT_DIR$/../../olap4j/olap4j.iml" />
     </modules>
   </component>
   <component name="ProjectResources">
     <default-html-doctype>http://www.w3.org/1999/xhtml</default-html-doctype>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.7" project-jdk-type="JavaSDK" />
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
       <value>
@@ -285,7 +295,8 @@
     <custom-packaging allow="false" />
   </component>
   <component name="VcsDirectoryMappings">
-    <mapping directory="" vcs="Perforce" />
+    <mapping directory="" vcs="" />
+    <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../mondrianpro" vcs="svn" />
     <mapping directory="$PROJECT_DIR$/../../olap4j" vcs="svn" />
     <mapping directory="$PROJECT_DIR$/../../pentaho-aggdesigner/pentaho-aggdesigner-core" vcs="svn" />

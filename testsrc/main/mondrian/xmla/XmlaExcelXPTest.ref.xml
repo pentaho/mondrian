@@ -2676,7 +2676,6 @@
                                     <PARENT_UNIQUE_NAME name="[Store].[PARENT_UNIQUE_NAME]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
-                            <AxisInfo name="SlicerAxis"/>
                         </AxesInfo>
                         <CellInfo>
                             <Value name="VALUE"/>
@@ -2788,11 +2787,6 @@
                                         <PARENT_UNIQUE_NAME>[Store].[USA]</PARENT_UNIQUE_NAME>
                                     </Member>
                                 </Tuple>
-                            </Tuples>
-                        </Axis>
-                        <Axis name="SlicerAxis">
-                            <Tuples>
-                                <Tuple/>
                             </Tuples>
                         </Axis>
                     </Axes>
