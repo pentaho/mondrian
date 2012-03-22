@@ -802,8 +802,7 @@ doRandom() {
 }
 
 doQuick() {
-#  doTest jdk1.7 mysql ${DISABLE_SSAS}
-  doTest jdk1.7 mysql ${ENABLE_SSAS}
+  doTest jdk1.7 mysql
 }
 
 # Runs the tests that are believed to be working.
