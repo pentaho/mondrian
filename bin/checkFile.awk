@@ -248,7 +248,7 @@ FNR == 1 {
     prevImport = thisImport;
     prevImportGroup = importGroup;
 }
-/^\/\/ Copyright .* Julian/ && strict > 1 {
+/^\/\/ Copyright .* Pentaho/ && strict > 1 {
     if ($0 !~ /-2012/) {
         error(fname, FNR, "copyright is not current");
     }

@@ -1147,7 +1147,8 @@ public class CacheControlImpl implements CacheControl {
     }
 
     /**
-     * Visitor which visits various sub-types of {@link CellRegion}.
+     * Visitor that visits various sub-types of
+     * {@link mondrian.olap.CacheControl.CellRegion}.
      */
     interface CellRegionVisitor {
         void visit(MemberCellRegion region);

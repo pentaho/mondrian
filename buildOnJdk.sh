@@ -87,7 +87,7 @@ chooseJavaHome() {
     # ant will no-op.
 }
 
-chooseJavaHome
+#chooseJavaHome
 
 if [ ! -d "$JAVA_HOME" ]; then
     echo "$0: Invalid JAVA_HOME $JAVA_HOME; skipping compile."
