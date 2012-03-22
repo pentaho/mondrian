@@ -1149,7 +1149,7 @@ public class CacheControlTest extends FoodMartTestCase {
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
             + "{[Store].[USA]}\n"
-            + "Row #0: 266.773\n");
+            + "Row #0: 266,773\n");
 
         if (MondrianProperties.instance().DisableCaching.get()) {
             return;
@@ -1180,7 +1180,7 @@ public class CacheControlTest extends FoodMartTestCase {
                     "Store",
                     Id.Quoting.UNQUOTED),
                 false);
-/*        final CacheControl.CellRegion measuresRegion =
+        final CacheControl.CellRegion measuresRegion =
             cacheControl.createMeasuresRegion(salesCube);
         final CacheControl.CellRegion hierarchyRegion =
             cacheControl.createMemberRegion(
@@ -1188,9 +1188,6 @@ public class CacheControlTest extends FoodMartTestCase {
         final CacheControl.CellRegion region =
             cacheControl.createCrossjoinRegion(
                 measuresRegion, hierarchyRegion);
-  */      
-        CellRegion region = cacheControl.createMeasuresRegion(salesCube);        
-        
         cacheControl.flush(region);
         pw.flush();
 
