@@ -16,6 +16,7 @@ import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
+import mondrian.server.Locus;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.*;
 import mondrian.spi.MemberFormatter;
@@ -1755,6 +1756,11 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             if (star == null) {
                 star = makeRolapStar(fact);
                 stars.put(factTableName, star);
+                // Sync the segment index.
+                MondrianServer.forConnection(getInternalConnection())
+                    .getAggregationManager().cacheMgr.sync(
+                        Locus.peek(),
+                        star);
             }
             return star;
         }

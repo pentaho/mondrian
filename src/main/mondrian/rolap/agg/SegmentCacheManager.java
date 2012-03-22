@@ -17,8 +17,8 @@ import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.*;
 import mondrian.spi.*;
-import mondrian.util.ByteString;
 import mondrian.util.Pair;
+import mondrian.util.SlotFuture;
 
 import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.log4j.Logger;
@@ -449,6 +449,14 @@ public class SegmentCacheManager {
     }
 
     /**
+     * Syncs the segment indexes with a newly created RolapStar
+     * instance. This is usually called by RolapStar() only.
+     */
+    public void sync(Locus locus, RolapStar star) {
+        execute(new SyncCommand(locus, star));
+    }
+
+    /**
      * Makes a quick request to the aggregation manager to see whether the
      * cell value required by a particular cell request is in external cache.
      *
@@ -583,17 +591,19 @@ public class SegmentCacheManager {
             final SegmentCacheIndex index =
                 event.cacheMgr.indexRegistry.getIndex(event.header);
             if (index != null) {
-                index.add(event.header, false, null);
-                event.monitor.sendEvent(
-                    new CellCacheSegmentCreateEvent(
-                        event.timestamp,
-                        event.serverId,
-                        event.connectionId,
-                        event.statementId,
-                        event.executionId,
-                        event.header.getConstrainedColumns().size(),
-                        0,
-                        CellCacheEvent.Source.EXTERNAL));
+                if (!index.contains(event.header)) {
+                    index.add(event.header, false, null);
+                    event.monitor.sendEvent(
+                        new CellCacheSegmentCreateEvent(
+                            event.timestamp,
+                            event.serverId,
+                            event.connectionId,
+                            event.statementId,
+                            event.executionId,
+                            event.header.getConstrainedColumns().size(),
+                            0,
+                            CellCacheEvent.Source.EXTERNAL));
+                }
             }
         }
 
@@ -1445,41 +1455,66 @@ public class SegmentCacheManager {
             // Is there a pending segment? (A segment that has been created and
             // is loading via SQL.)
             for (final SegmentHeader header : headers) {
-                final Future<SegmentBody> bodyFuture =
+                // Check if the DataSourceChangeListener wants us to clear
+                // the current segment
+                if (star.getChangeListener() != null
+                    && star.getChangeListener().isAggregationChanged(key))
+                {
+                    /*
+                     * We can't satisfy this request, and we must clear the
+                     * data from our cache. We clear it from the index
+                     * first, then queue up a job in the background
+                     * to remove the data from all the caches.
+                     */
+                    indexRegistry.getIndex(star).remove(header);
+                    Util.discard(cacheExecutor.submit(
+                        new Runnable() {
+                            public void run() {
+                                try {
+                                    compositeCache.remove(header);
+                                } catch (Throwable e) {
+                                    LOGGER.warn(
+                                        "remove header failed: " + header,
+                                        e);
+                                }
+                            }
+                        }));
+                    continue;
+                }
+                Future<SegmentBody> bodyFuture =
                     indexRegistry.getIndex(star)
                         .getFuture(header);
-                if (bodyFuture != null) {
-                    // Check if the DataSourceChangeListener wants us to clear
-                    // the current segment
-                    if (star.getChangeListener() != null
-                        && star.getChangeListener().isAggregationChanged(key))
-                    {
-                        /*
-                         * We can't satisfy this request, and we must clear the
-                         * data from our cache. We clear it from the index
-                         * first, then queue up a job in the background
-                         * to remove the data from all the caches.
-                         */
-                        indexRegistry.getIndex(star).remove(header);
-                        Util.discard(cacheExecutor.submit(
-                            new Runnable() {
-                                public void run() {
-                                    try {
-                                        compositeCache.remove(header);
-                                    } catch (Throwable e) {
-                                        LOGGER.warn(
-                                            "remove header failed: " + header,
-                                            e);
-                                    }
-                                }
-                            }));
-                    }
-                    converterMap.put(
-                        SegmentCacheIndexImpl.makeConverterKey(header),
-                        getConverter(star, header));
-                    headerMap.put(
-                        header, bodyFuture);
+                if (bodyFuture == null) {
+                    /*
+                     * This can happen when the segment was present in an
+                     * external cache but we didn't have access to the
+                     * "rich" objects to create a converter. We can do it now.
+                     */
+                    indexRegistry.getIndex(star).add(
+                        header,
+                        true,
+                        new SegmentBuilder.SegmentConverterImpl(
+                            key,
+                            request));
+                    bodyFuture =
+                        indexRegistry.getIndex(star).getFuture(header);
+                    final Future<SegmentBody> futureRef = bodyFuture;
+                    /*
+                     * Because loading the SegmentBody from the caches might
+                     * take a few ms, we pass it to the cacheExecutor thread.
+                     */
+                    cacheExecutor.execute(new Runnable() {
+                        public void run() {
+                            ((SlotFuture<SegmentBody>)futureRef).put(
+                                compositeCache.get(header));
+                        }
+                    });
                 }
+                converterMap.put(
+                    SegmentCacheIndexImpl.makeConverterKey(header),
+                    getConverter(star, header));
+                headerMap.put(
+                    header, bodyFuture);
             }
 
             return new PeekResponse(headerMap, converterMap);
@@ -1500,6 +1535,75 @@ public class SegmentCacheManager {
         {
             this.headerMap = headerMap;
             this.converterMap = converterMap;
+        }
+    }
+
+    /**
+     * A Sync command is performed when a new RolapStar is created
+     * and we need to sync the segment indexes with the external caches.
+     */
+    private class SyncCommand
+        implements SegmentCacheManager.Command<Void>
+    {
+        private final Locus locus;
+        private final RolapStar star;
+
+        /**
+         * Creates a SyncCommand.
+         */
+        public SyncCommand(
+            Locus locus,
+            RolapStar star)
+        {
+            this.locus = locus;
+            this.star = star;
+        }
+
+        public Void call() {
+            /*
+             * We push that operation in async mode. It will be a two pass
+             * process. First, we use the cache executor to fetch a list
+             * of all the headers. Once we have that list, we will add
+             * the headers one by one by calling back the actor.
+             * This might take a while, but it's ok. It will run in
+             * the background while other stuff happens.
+             */
+            final SegmentCacheIndex index =
+                indexRegistry.getIndex(star);
+            SegmentCacheManager.this.cacheExecutor.execute(
+                new Runnable() {
+                    public void run() {
+                        final List<SegmentHeader> segmentHeaders =
+                            compositeCache.getSegmentHeaders();
+                        if (segmentHeaders.size() == 0) {
+                            return;
+                        }
+                        SegmentCacheManager.this.execute(
+                            new Command<Void>() {
+                                public Void call() throws Exception {
+                                    // Let's update the index.
+                                    for (final SegmentHeader header
+                                        : segmentHeaders)
+                                    {
+                                        if (star.isParentStar(header)
+                                            && !index.contains(header))
+                                        {
+                                            index.add(header, false, null);
+                                        }
+                                    }
+                                    return null;
+                                }
+                                public Locus getLocus() {
+                                    return locus;
+                                }
+                            });
+                    }
+                });
+            return null;
+        }
+
+        public Locus getLocus() {
+            return locus;
         }
     }
 
@@ -1532,31 +1636,21 @@ public class SegmentCacheManager {
             for (Entry<RolapStar, SegmentCacheIndex> entry
                 : indexes.entrySet())
             {
-                final String factTableName =
-                    entry.getKey().getFactTable().getTableName();
-                final ByteString schemaChecksum =
-                    entry.getKey().getSchema().getChecksum();
-                if (!factTableName.equals(header.rolapStarFactTableName)) {
-                    continue;
+                if (entry.getKey().isParentStar(header)) {
+                    return entry.getValue();
                 }
-                if (!schemaChecksum.equals(header.schemaChecksum)) {
-                    continue;
-                }
-                return entry.getValue();
             }
             //The index doesn't exist. Let's create it.
             for (RolapSchema schema : RolapSchema.getRolapSchemas()) {
                 if (!schema.getChecksum().equals(header.schemaChecksum)) {
                     continue;
                 }
-                // We have a schema match.
-                RolapStar star =
-                    schema.getStar(header.rolapStarFactTableName);
-                if (star != null) {
+                RolapStar star = schema.getStar(header.rolapStarFactTableName);
+                if (star.isParentStar(header)) {
                     // Found it.
                     indexes.put(star, new SegmentCacheIndexImpl(thread));
+                    return indexes.get(star);
                 }
-                return indexes.get(star);
             }
             return null;
         }

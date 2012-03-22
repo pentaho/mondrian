@@ -128,6 +128,10 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         return list;
     }
 
+    public boolean contains(SegmentHeader header) {
+        return headerMap.containsKey(header);
+    }
+
     public void add(
         SegmentHeader header,
         boolean loading,
