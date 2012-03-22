@@ -5,6 +5,8 @@
 /dist
 
 *.jar
+*.log
+*.log.*
 VERSION.txt
 classes/
 demo/FoodMartCreateData.sql
