@@ -1239,28 +1239,28 @@ must be run under JDK 1.5." />
   </target>
 
   <target name="compileJdk15">
-    <exec osfamily="unix" executable="${unix.script}">
+    <exec osfamily="unix" failonerror="true" executable="${unix.script}">
       <arg line="jdk1.5 -Dskip.download=true compile.java"/>
     </exec>
-    <exec osfamily="windows" dir="." executable="cmd">
+    <exec osfamily="windows" failonerror="true" dir="." executable="cmd">
       <arg line="/c .\buildOnJdk.bat jdk1.5 -Dskip.download=true compile.java"/>
     </exec>
   </target>
 
   <target name="compileJdk16">
-    <exec osfamily="unix" executable="${unix.script}">
+    <exec osfamily="unix" failonerror="true" executable="${unix.script}">
       <arg line="jdk1.6 -Dskip.download=true compile.java"/>
     </exec>
-    <exec osfamily="windows" dir="." executable="cmd">
+    <exec osfamily="windows" failonerror="true" dir="." executable="cmd">
       <arg line="/c .\buildOnJdk.bat jdk1.6 -Dskip.download=true compile.java"/>
     </exec>
   </target>
 
   <target name="compileJdk17">
-    <exec osfamily="unix" executable="${unix.script}">
+    <exec osfamily="unix" failonerror="true" executable="${unix.script}">
       <arg line="jdk1.7 -Dskip.download=true compile.java"/>
     </exec>
-    <exec osfamily="windows" dir="." executable="cmd">
+    <exec osfamily="windows" failonerror="true" dir="." executable="cmd">
       <arg line="/c .\buildOnJdk.bat jdk1.7 -Dskip.download=true compile.java"/>
     </exec>
   </target>
