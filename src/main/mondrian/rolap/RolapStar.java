@@ -183,6 +183,20 @@ public class RolapStar {
         return segment.getCellValue(request.getSingleValues());
     }
 
+    /**
+     * Given a SegmentHeader, tells if this RolapStar is the parent of the
+     * header.
+     */
+    public boolean isParentStar(SegmentHeader header) {
+        if (!header.schemaChecksum.equals(schema.getChecksum())) {
+            return false;
+        }
+        if (!header.rolapStarFactTableName.equals(factTable.getAlias())) {
+            return false;
+        }
+        return true;
+    }
+
     public void register(SegmentWithData segment) {
         localBars.get().segmentRefs.add(
             new SoftReference<SegmentWithData>(segment));
