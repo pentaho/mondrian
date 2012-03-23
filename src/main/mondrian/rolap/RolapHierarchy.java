@@ -1103,9 +1103,8 @@ public class RolapHierarchy extends HierarchyBase {
         MondrianDef.Join join = new MondrianDef.Join();
         peerHier.relation = join;
 
-        // patl
+        // pleckey
         // Mar 7 2012
-        // MONDRIAN-441
         try {
             if ( !peerHier.closureFor.getXmlHierarchy().primaryKey.equalsIgnoreCase(clos.childColumn) ) {
                 getLogger().debug("Keys don't match - mapping closure table through fact table");
@@ -1130,7 +1129,6 @@ public class RolapHierarchy extends HierarchyBase {
         } catch (Exception e) {
             getLogger().error("Exception while building closure hierarchy", e);
         }
-        // MONDRIAN-441
 
         // Create the upper level.
         // This represents all groups of descendants. For example, in the

@@ -1,0 +1,9 @@
+# non_pkey_closure_test table
+## TableName: non_pkey_closure_test
+## ColumnNames: store_id,employee_id,supervisor_id,full_name,manager_rank
+## ColumnTypes: INTEGER,INTEGER,INTEGER,VARCHAR(30),INTEGER
+## NosOfRows: 4
+1,11,5,Jonathan Murraiin,1
+2,29,22,Kevin Armstrong,2
+3,30,22,Cody Goldey,3
+4,15,5,Walter Cavestany,4

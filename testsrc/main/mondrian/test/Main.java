@@ -288,6 +288,7 @@ public class Main extends TestSuite {
             // GroupingSetQueryTest must be run before any test derived from
             // CsvDBTestCase
             addTest(suite, GroupingSetQueryTest.class);
+            addTest(suite, NonPrimaryKeyClosureTest.class); // CsvDBTestCase - pleckey - Mar 23, 2012
             addTest(suite, CmdRunnerTest.class);
             addTest(suite, DataSourceChangeListenerTest.class);
             addTest(suite, ModulosTest.class);
