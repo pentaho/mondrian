@@ -11,8 +11,8 @@ package mondrian.spi;
 
 import mondrian.olap.MondrianProperties;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 
 /**
  * SPI definition of the segments cache.
@@ -20,18 +20,27 @@ import java.util.concurrent.Future;
  * <p>Lookups are performed using {@link SegmentHeader}s and
  * {@link SegmentBody}s. Both are immutable and fully serializable.
  *
- * <p>There are two ways to declare a SegmentCache implementation in
- * Mondrian. The first one (and the one which will be used by default)
- * is to set the {@link MondrianProperties#SegmentCache} property. The
- * second one is to use the Java Services API. You will need to create
- * a jar file, accessible through the same class loader as Mondrian,
- * and add a file called <code>/META-INF/services/mondrian.spi.SegmentCache
- * </code> which contains the name of the segment cache implementation
- * to use. If more than one SegmentCache Java service is found, the first
- * one found is used. This is a non-deterministic choice as there are
- * no guarantees as to which will appear first. This later mean of discovery
- * is overridden by defining the {@link MondrianProperties#SegmentCache}
- * property.
+ * <p>There are a few ways to declare a SegmentCache implementation in
+ * Mondrian. The first one is to set the
+ * {@link MondrianProperties#SegmentCache} property.
+ *
+ * <p>The second one is to use the Java Services API. This is the preferred
+ * mean. You will need to create a jar file, accessible through the same
+ * class loader as Mondrian, and add a file called
+ * <code>/META-INF/services/mondrian.spi.SegmentCache</code> which contains
+ * the name of the segment cache implementation to use.
+ *
+ * <p>The third method is to use the {@link SegmentCacheInjector}.
+ * This is to be used as a last resort, in environments where the
+ * cache implementation is not part of the same class loader as Mondrian.
+ * In those cases, Mondrian can't dynamically load the segment cache class.
+ * The injector serves as an IoC-like service.
+ *
+ * <p>All of the segment caches that Mondrian discovers, throughout all
+ * of these means of discovery, will be used simultaneously. It is not possible
+ * to register new segment caches for a previously existing instance
+ * of a Mondrian server. The caches are scanned and configured when each
+ * Mondrian instance gets created.
  *
  * <p>Implementations are expected to be thread-safe. Mondrian is likely to
  * submit multiple requests at the same time, from different threads. It is the
@@ -51,7 +60,6 @@ import java.util.concurrent.Future;
  * Mondrian creates one segment cache instance per Mondrian server.
  * There could be more than one Mondrian server running in the same JVM.
  *
- * @see MondrianProperties#SegmentCache
  * @author LBoudreau
  */
 public interface SegmentCache {
@@ -200,6 +208,31 @@ public interface SegmentCache {
              * support remote nodes, always return false.
              */
             boolean isLocal();
+        }
+    }
+
+    /**
+     * The {@link SegmentCacheInjector} is a means to inject
+     * {@link SegmentCache} instances directly into Mondrian,
+     * instead of passing a class name. This is particularly
+     * useful in plugin environments, like the Pentaho Platform.
+     * Mondrian can't always get access to the child class loader,
+     * therefore passing an instance is the only way.
+     *
+     * It is recommended to use the Java Services API when possible
+     * instead of the injector. See {@link SegmentCache}.
+     */
+    public static class SegmentCacheInjector {
+        private final static List<SegmentCache> caches =
+            new ArrayList<SegmentCache>();
+        /**
+         * Adds a {@link SegmentCache} instance for Mondrian's use.
+         */
+        public static void addCache(SegmentCache cache) {
+            caches.add(cache);
+        }
+        public static List<SegmentCache> getCaches() {
+            return caches;
         }
     }
 }

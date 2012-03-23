@@ -59,13 +59,15 @@ public final class SegmentCacheWorker {
      *
      * @return Cache
      */
-    public static SegmentCache initCache() {
+    public static List<SegmentCache> initCache() {
+        final List<SegmentCache> caches =
+            new ArrayList<SegmentCache>();
         // First try to get the segmentcache impl class from
         // mondrian properties.
         final String cacheName =
             MondrianProperties.instance().SegmentCache.get();
         if (cacheName != null) {
-            return instantiateCache(cacheName);
+            caches.add(instantiateCache(cacheName));
         }
 
         // There was no property set. Let's look for Java services.
@@ -76,11 +78,16 @@ public final class SegmentCacheWorker {
             SegmentCache cache =
                 instantiateCache(implementors.get(0).getName());
             if (cache != null) {
-                return cache;
+                caches.add(cache);
             }
         }
 
-        return null;
+        // Check the SegmentCacheInjector
+        // People might have sent instances into this thing.
+        caches.addAll(SegmentCache.SegmentCacheInjector.getCaches());
+
+        // Done.
+        return caches;
     }
 
     /**

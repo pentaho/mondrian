@@ -261,15 +261,17 @@ public class SegmentCacheManager {
             segmentCacheWorkers.add(
                 new SegmentCacheWorker(cache, thread));
         }
+
         // Add an external cache, if configured.
-        final SegmentCache externalCache = SegmentCacheWorker.initCache();
-        if (externalCache != null) {
+        final List<SegmentCache> externalCache = SegmentCacheWorker.initCache();
+        for (SegmentCache cache : externalCache) {
             // Create a worker for this external cache
             segmentCacheWorkers.add(
-                new SegmentCacheWorker(externalCache, thread));
+                new SegmentCacheWorker(cache, thread));
             // Hook up a listener so it can update
             // the segment index.
-            externalCache.addListener(new AsyncCacheListener(this, server));
+            cache.addListener(
+                new AsyncCacheListener(this, server));
         }
 
         compositeCache = new CompositeSegmentCache(segmentCacheWorkers);
