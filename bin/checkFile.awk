@@ -248,7 +248,7 @@ FNR == 1 {
     prevImport = thisImport;
     prevImportGroup = importGroup;
 }
-/^\/\/ Copyright .* Julian/ && strict > 1 {
+/^\/\/ Copyright .* Pentaho/ && strict > 1 {
     if ($0 !~ /-2012/) {
         error(fname, FNR, "copyright is not current");
     }
@@ -669,7 +669,8 @@ s ~ / throws\>/ {
 }
 length($0) > maxLineLength                      \
 && $0 !~ /@(throws|see|link)/                   \
-&& $0 !~ /\$Id$0 !~ /^import /                             \
+&& $0 !~ /[$]Id: /                              \
+&& $0 !~ /^import /                             \
 && $0 !~ /http:/                                \
 && $0 !~ /\/\/ Expect "/                        \
 && s !~ /^ *(\+ |<< )?string\)?[;,]?$/ {
