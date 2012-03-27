@@ -151,12 +151,6 @@ public interface SegmentCacheIndex {
         Throwable throwable);
 
     /**
-     * Tells if the index is already aware of a given SegmentHeader.
-     * @param header The header to look for.
-     */
-    boolean contains(SegmentHeader header);
-
-    /**
      * Removes a header from the index.
      *
      * @param header Segment header
