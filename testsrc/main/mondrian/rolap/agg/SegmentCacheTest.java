@@ -13,7 +13,6 @@ import mondrian.olap.CacheControl;
 import mondrian.olap.Cube;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianServer;
-import mondrian.spi.SegmentBody;
 import mondrian.spi.SegmentCache;
 import mondrian.spi.SegmentHeader;
 import mondrian.test.BasicQueryTest;
@@ -83,102 +82,6 @@ public class SegmentCacheTest extends BasicQueryTest {
             + "Row #0: 2,716\n";
         assertQueryReturns(query, result);
         assertQueryReturns(query2, result2);
-    }
-
-    public void testSegmentCacheSync() throws Exception {
-        // Flush the cache before we start. Wait a second for the cache
-        // flush to propagate.
-        final CacheControl cc =
-            getTestContext().getConnection().getCacheControl(null);
-        Cube salesCube = getCube("Sales");
-        cc.flush(cc.createMeasuresRegion(salesCube));
-        Thread.sleep(1000);
-
-        final List<SegmentHeader> createdHeaders =
-            new ArrayList<SegmentHeader>();
-        final List<SegmentHeader> deletedHeaders =
-            new ArrayList<SegmentHeader>();
-        final SegmentCache.SegmentCacheListener listener =
-            new SegmentCache.SegmentCacheListener() {
-                public void handle(SegmentCacheEvent e) {
-                    switch (e.getEventType()) {
-                    case ENTRY_CREATED:
-                        createdHeaders.add(e.getSource());
-                        break;
-                    case ENTRY_DELETED:
-                        deletedHeaders.add(e.getSource());
-                        break;
-                    default:
-                        throw new UnsupportedOperationException();
-                    }
-                }
-            };
-
-        try {
-            // Register our custom listener.
-            mockCache.addListener(listener);
-            // Now execute a query and check the events
-            assertQueryReturns(
-                "select {[Measures].[Unit Sales]} on columns from [Sales]",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Row #0: 266,773\n");
-            // Wait for propagation.
-            Thread.sleep(2000);
-            assertEquals(1, createdHeaders.size());
-            assertEquals(0, deletedHeaders.size());
-            assertEquals("Sales", createdHeaders.get(0).cubeName);
-            assertEquals("FoodMart", createdHeaders.get(0).schemaName);
-            assertEquals("Unit Sales", createdHeaders.get(0).measureName);
-            createdHeaders.clear();
-            deletedHeaders.clear();
-
-            // Now grab a header out of the cache.
-            final SegmentHeader segmentHeader =
-                mockCache.getSegmentHeaders().get(0);
-            final SegmentBody segmentBody = mockCache.get(segmentHeader);
-
-            // Now flush the segment and check the events.
-            cc.flush(cc.createMeasuresRegion(salesCube));
-
-            // Wait for propagation.
-            Thread.sleep(1000);
-            assertEquals(0, createdHeaders.size());
-            assertEquals(1, deletedHeaders.size());
-            createdHeaders.clear();
-            deletedHeaders.clear();
-
-            // We shove the header into the cache manually.
-            mockCache.put(segmentHeader, segmentBody);
-
-            // Wait for propagation.
-            Thread.sleep(1000);
-            assertEquals(1, createdHeaders.size());
-            assertEquals(0, deletedHeaders.size());
-            createdHeaders.clear();
-            deletedHeaders.clear();
-
-            // Execute the query again, this time with a fresh connection.
-            // This will force Mondrian to create a new RolapStar object
-            // and resync. If the sync worked, it should be able to answer
-            // the query without saving a new segment.
-            getTestContext().withFreshConnection().assertQueryReturns(
-                "select {[Measures].[Unit Sales]} on columns from [Sales]",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Row #0: 266,773\n");
-
-            // Wait for propagation.
-            Thread.sleep(1000);
-            // We expect no segments to be created.
-            assertEquals(0, createdHeaders.size());
-        } finally {
-            mockCache.removeListener(listener);
-        }
     }
 
     public void testSegmentCacheEvents() throws Exception {
