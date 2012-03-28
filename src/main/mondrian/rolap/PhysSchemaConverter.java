@@ -307,6 +307,8 @@ class PhysSchemaConverter extends RolapSchemaLoader.PhysSchemaBuilder {
         }
         RolapSchema.PhysCalcColumn physCalcColumn =
             new RolapSchema.PhysCalcColumn(
+                loader,
+                legacyExpression,
                 physTable,
                 "calc$" + physTable.columnsByName.size(),
                 expr.getDatatype(),

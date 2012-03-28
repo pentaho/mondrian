@@ -994,25 +994,27 @@ public class RolapSchemaLoader {
         final RolapSchema.PhysTable physTable =
             (RolapSchema.PhysTable) physRelation;
         if (column instanceof MondrianDef.CalculatedColumnDef) {
-            MondrianDef.CalculatedColumnDef calcColumnDef =
+            MondrianDef.CalculatedColumnDef xmlCalcColumnDef =
                 (MondrianDef.CalculatedColumnDef) column;
             final List<RolapSchema.PhysExpr> list =
                 new ArrayList<RolapSchema.PhysExpr>();
             final RolapSchema.PhysCalcColumn physCalcColumn =
                 new RolapSchema.PhysCalcColumn(
+                    this,
+                    xmlCalcColumnDef,
                     physTable,
                     column.name,
                     toType(column.type),
                     toInternalType(column.internalType),
                     list);
             final MondrianDef.SQL sql;
-            assert calcColumnDef.expression != null;
-            if (calcColumnDef.expression
+            assert xmlCalcColumnDef.expression != null;
+            if (xmlCalcColumnDef.expression
                 instanceof MondrianDef.ExpressionView)
             {
                 MondrianDef.ExpressionView expressionView =
                     (MondrianDef.ExpressionView)
-                        calcColumnDef.expression;
+                        xmlCalcColumnDef.expression;
                 sql = MondrianDef.SQL.choose(
                     expressionView.expressions,
                     dialect);
@@ -1024,7 +1026,7 @@ public class RolapSchemaLoader {
                 sql.children =
                     new NodeDef[] {
                         (MondrianDef.Column)
-                            calcColumnDef.expression
+                            xmlCalcColumnDef.expression
                     };
             }
             for (int i = 0; i < sql.children.length; i++) {
@@ -1293,7 +1295,7 @@ public class RolapSchemaLoader {
                 if (xmlDimensionLink
                     instanceof MondrianDef.ForeignKeyLink)
                 {
-                    addRegularLink(
+                    addForeignKeyLink(
                         fact,
                         measureGroup,
                         dimension,
@@ -1771,7 +1773,7 @@ public class RolapSchemaLoader {
         return aggregator;
     }
 
-    private void addRegularLink(
+    private void addForeignKeyLink(
         RolapSchema.PhysRelation fact,
         RolapMeasureGroup measureGroup,
         RolapCubeDimension dimension,
@@ -1790,7 +1792,8 @@ public class RolapSchemaLoader {
                 "Dimension '"
                 + dimension.getName()
                 + "' is used in a dimension link but has no key attribute. Please "
-                + "specify key.", xmlForeignKeyLink,
+                + "specify key.",
+                xmlForeignKeyLink,
                 null);
             return;
         }
@@ -4124,6 +4127,8 @@ public class RolapSchemaLoader {
                         relationSet.iterator().next();
                     final RolapSchema.PhysCalcColumn physCalcColumn =
                         new RolapSchema.PhysCalcColumn(
+                            loader,
+                            null,
                             relation,
                             "$" + (nextId++),
                             null,
@@ -4271,6 +4276,8 @@ public class RolapSchemaLoader {
             }
             return
                 new RolapSchema.PhysCalcColumn(
+                    loader,
+                    null,
                     relation,
                     "dummy$" + (nextId++),
                     null,

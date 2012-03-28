@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -504,9 +504,11 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
             Dimension dimension,
             RolapMeasureGroup measureGroup)
         {
-            HashSet<Dimension> dimensions = new HashSet<Dimension>();
-            dimensions.add(dimension);
-            return measureGroup.nonJoiningDimensions(dimensions).size() == 0;
+            return !measureGroup
+                .nonJoiningDimensions(
+                    Collections.singletonList((RolapCubeDimension) dimension))
+                .iterator()
+                .hasNext();
         }
 
         private static int getChildCount(

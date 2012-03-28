@@ -12,6 +12,8 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.util.Pair;
 
+import org.apache.commons.collections.iterators.FilterIterator;
+
 import java.util.*;
 
 /**
@@ -56,8 +58,6 @@ public class RolapMeasureGroup {
      */
     RolapBaseCubeMeasure factCountMeasure;
 
-    private final Map<RolapAttribute, List<RolapAttribute>> attrMap =
-        new HashMap<RolapAttribute, List<RolapAttribute>>();
     final Map<Pair<RolapCubeDimension, RolapSchema.PhysColumn>,
               RolapStar.Column>
         starColumnMap =
@@ -94,42 +94,45 @@ public class RolapMeasureGroup {
      * <p>Useful for finding out non-joining dimensions for a stored measure
      * from a base cube.
      *
-     * @param tuple array of members
+     * @param tuple List of members
      * @return Set of dimensions that do not exist (non joining) in this cube
      */
-    public Set<Dimension> nonJoiningDimensions(Member[] tuple) {
-        Set<Dimension> otherDims = new HashSet<Dimension>();
+    public Iterable<RolapCubeDimension> nonJoiningDimensions(List<Member> tuple)
+    {
+        Set<RolapCubeDimension> otherDims = new HashSet<RolapCubeDimension>();
         for (Member member : tuple) {
             if (!member.isCalculated()) {
-                otherDims.add(member.getDimension());
+                otherDims.add((RolapCubeDimension) member.getDimension());
             }
         }
         return nonJoiningDimensions(otherDims);
     }
 
     /**
-     * Finds out non joining dimensions for this cube.  Equality test for
-     * dimensions is done based on the unique name. Object equality can't be
-     * used.
+     * Finds out non-joining dimensions for this measure group.
      *
-     * @param otherDims Set of dimensions to be tested for existence in this
-     * cube
+     * <p>The result preserves the order in {@code otherDims}.</p>
+     *
+     * @param otherDims Collection of dimensions to be tested for existence in
+     *                  this measure group
      * @return Set of dimensions that do not exist (non joining) in this cube
      */
-    public Set<Dimension> nonJoiningDimensions(Set<Dimension> otherDims) {
-        Dimension[] baseCubeDimensions =
-            new Dimension[0]; // TODO: getDimensions();
-        Set<String>  baseCubeDimNames = new HashSet<String>();
-        for (Dimension baseCubeDimension : baseCubeDimensions) {
-            baseCubeDimNames.add(baseCubeDimension.getUniqueName());
-        }
-        Set<Dimension> nonJoiningDimensions = new HashSet<Dimension>();
-        for (Dimension otherDim : otherDims) {
-            if (!baseCubeDimNames.contains(otherDim.getUniqueName())) {
-                nonJoiningDimensions.add(otherDim);
+    public Iterable<RolapCubeDimension> nonJoiningDimensions(
+        final Iterable<? extends RolapCubeDimension> otherDims)
+    {
+        return new Iterable<RolapCubeDimension>() {
+            public Iterator<RolapCubeDimension> iterator() {
+                //noinspection unchecked
+                return (Iterator<RolapCubeDimension>) new FilterIterator(
+                    otherDims.iterator(),
+                    new Util.Predicate1<RolapCubeDimension>() {
+                        public boolean test(RolapCubeDimension dimension) {
+                            return !dimensionMap3.containsKey(dimension)
+                                && !dimension.isMeasures();
+                        }
+                    });
             }
-        }
-        return nonJoiningDimensions;
+        };
     }
 
     /**

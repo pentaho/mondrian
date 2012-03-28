@@ -246,9 +246,10 @@ public class RolapEvaluator implements Evaluator {
         if (measureGroup.ignoreUnrelatedDimensions) {
             return false;
         }
-        Set<Dimension> nonJoiningDimensions =
-            measureGroup.nonJoiningDimensions(members);
-        return !nonJoiningDimensions.isEmpty();
+        return measureGroup
+            .nonJoiningDimensions(Arrays.asList(members))
+            .iterator()
+            .hasNext();
     }
 
     public boolean nativeEnabled() {

@@ -19,6 +19,7 @@ import mondrian.rolap.*;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.util.*;
 
+import org.apache.commons.collections.Predicate;
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
@@ -2456,6 +2457,14 @@ public class Util extends XOMUtil {
             - 32045;
     }
 
+    public static <T> List<T> toList(Iterable<? extends T> iterable) {
+        final List<T> list = new ArrayList<T>();
+        for (T t : iterable) {
+            list.add(t);
+        }
+        return list;
+    }
+
     public static class ErrorCellValue {
         public String toString() {
             return "#ERR";
@@ -4434,6 +4443,21 @@ public class Util extends XOMUtil {
 
     public static interface Functor1<RT, PT> {
         RT apply(PT param);
+    }
+
+    public static abstract class Predicate1<PT>
+        implements Predicate, Functor1<Boolean, PT>
+    {
+        public Boolean apply(PT param) {
+            return test(param);
+        }
+
+        public boolean evaluate(Object o) {
+            //noinspection unchecked
+            return test((PT) o);
+        }
+
+        public abstract boolean test(PT pt);
     }
 
     public static <T> Functor1<T, T> identityFunctor() {

@@ -357,6 +357,7 @@ public class RolapCube extends CubeBase {
      * @param dimension Dimension
      */
     void addDimension(RolapCubeDimension dimension) {
+        assert dimensionList.get(dimension.getName()) == null;
         dimensionList.add(dimension);
     }
 

@@ -2214,10 +2214,7 @@ public class RolapSchemaUpgrader {
         // For each dimension name, build a list of things that dimension links
         // to.
         final Map<String, MondrianDef.Dimension> xmlDimensionMap =
-            new HashMap<String, MondrianDef.Dimension>();
-        final NamedList<MondrianDef.Dimension> xmlDimensions =
-            xmlCube.children.holder(
-                new MondrianDef.Dimensions()).list();
+            new LinkedHashMap<String, MondrianDef.Dimension>();
         for (Mondrian3Def.VirtualCubeDimension xmlVirtualCubeDimension
             : xmlLegacyVirtualCube.dimensions)
         {
@@ -2258,8 +2255,6 @@ public class RolapSchemaUpgrader {
                         xmlLegacyCubeDimension,
                         schema,
                         xmlLegacySchema);
-                xmlDimensions.add(xmlDimension);
-                xmlDimensionMap.put(xmlDimension.name, xmlDimension);
                 cubeInfo.dimensionKeys.put(
                     xmlDimension.name, xmlLegacyCubeDimension.foreignKey);
             }
@@ -2276,6 +2271,9 @@ public class RolapSchemaUpgrader {
                     null);
             }
         }
+
+        xmlCube.children.holder(new MondrianDef.Dimensions())
+            .list().addAll(xmlDimensionMap.values());
 
         // Create measures, looking up measures in existing cubes.
         final Set<String> measureNames = new HashSet<String>();

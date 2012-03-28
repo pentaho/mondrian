@@ -15,7 +15,6 @@ import mondrian.resource.MondrianResource;
 import org.olap4j.impl.NamedListImpl;
 import org.olap4j.metadata.NamedList;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -113,7 +112,8 @@ public abstract class DimensionBase
         if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
             if (oe == null || oe.getName().equalsIgnoreCase(getName())) {
                 OlapElement oeLevel =
-                    getHierarchy().lookupChild(schemaReader, s, matchType);
+                    hierarchyList.get(0)
+                        .lookupChild(schemaReader, s, matchType);
                 if (oeLevel != null) {
                     return oeLevel; // level match overrides hierarchy match
                 }

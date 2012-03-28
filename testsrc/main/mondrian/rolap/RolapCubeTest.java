@@ -238,9 +238,9 @@ public class RolapCubeTest extends FoodMartTestCase {
             Dimension storeDim = storeMembers.get(0).getDimension();
             members.addAll(storeMembers);
 
-            Set<Dimension> nonJoiningDims =
+            List<Dimension> nonJoiningDims = Util.<Dimension>toList(
                 salesCube.getMeasureGroups().get(0).nonJoiningDimensions(
-                    members.toArray(new Member[members.size()]));
+                    members));
             assertFalse(nonJoiningDims.contains(storeDim));
             assertTrue(nonJoiningDims.contains(warehouseDim));
         } finally {

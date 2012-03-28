@@ -730,14 +730,15 @@ public class RolapStar {
             if (approxCardinality == Integer.MIN_VALUE) {
                 final RolapSchema.PhysStatistic statistic =
                     getStar().getSchema().getStatistic();
-                statistic.getCardinality(
-                    table.getRelation(),
-                    expression,
-                    new Util.Functor0<Integer>() {
-                        public Integer apply() {
-                            return computeCardinality();
-                        }
-                    });
+                approxCardinality =
+                    statistic.getCardinality(
+                        table.getRelation(),
+                        expression,
+                        new Util.Functor0<Integer>() {
+                            public Integer apply() {
+                                return computeCardinality();
+                            }
+                        });
             }
             return approxCardinality;
         }
@@ -828,7 +829,7 @@ public class RolapStar {
          * @return String representation of column's datatype
          */
         public String getDatatypeString(Dialect dialect) {
-            Util.deprecated("move to dialect?", false);
+            Util.deprecated("move to dialect, or remove?; not used?", true);
             final SqlQuery query = new SqlQuery(dialect);
             query.addFrom(
                 table.star.factTable.relation, table.star.factTable.alias,
@@ -1127,7 +1128,7 @@ public class RolapStar {
                         null,
                         // TODO: pass in usagePrefix (from DimensionUsage)
                         null,
-                        -1,
+                        Integer.MIN_VALUE,
                         star.getColumnCount());
                 addColumn(column);
                 return column;
@@ -1496,7 +1497,7 @@ public class RolapStar {
 
         public String toString(SqlQuery query) {
             Util.deprecated("obsolete query param", false);
-            return left.toSql() + " = " + right.toSql();
+            return right.toSql() + " = " + left.toSql();
         }
 
         public int hashCode() {

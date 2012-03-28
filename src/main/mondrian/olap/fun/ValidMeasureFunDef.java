@@ -66,9 +66,10 @@ public class ValidMeasureFunDef extends FunDefBase
         public Object evaluate(Evaluator evaluator) {
             final List<Member> memberList;
             if (calc.isWrapperFor(MemberCalc.class)) {
-                memberList = new ArrayList<Member>(1);
-                memberList.add(
-                    calc.unwrap(MemberCalc.class).evaluateMember(evaluator));
+                memberList =
+                    Collections.singletonList(
+                        calc.unwrap(MemberCalc.class)
+                            .evaluateMember(evaluator));
             } else {
                 final Member[] tupleMembers =
                     calc.unwrap((TupleCalc.class)).evaluateTuple(evaluator);
@@ -86,31 +87,23 @@ public class ValidMeasureFunDef extends FunDefBase
             // problem: if measure is in two base cubes
             RolapMeasureGroup measureGroup =
                 getMeasureGroup(memberList.get(measurePosition));
-            List<Dimension> vMinusBDimensions =
-                getDimensionsToForceToAllLevel(
-                    virtualCube, measureGroup, memberList);
             // declare members array and fill in with all needed members
             final List<Member> validMeasureMembers =
-                new ArrayList<Member>(memberList);
-            // start adding to validMeasureMembers at right place
-            for (Dimension vMinusBDimension : vMinusBDimensions) {
-                final Hierarchy hierarchy = vMinusBDimension.getHierarchy();
-                if (hierarchy.hasAll()) {
-                    validMeasureMembers.add(hierarchy.getAllMember());
-                } else {
-                    validMeasureMembers.add(hierarchy.getDefaultMember());
-                }
-            }
-            // this needs to be done before validmeasuremembers are set on the
+                forceMembersToAll(memberList, virtualCube, measureGroup);
+            // this needs to be done before validMeasureMembers are set on the
             // context since calculated members defined on a non joining
             // dimension might have been pulled to default member
             List<Member> calculatedMembers =
                 getCalculatedMembersFromContext(evaluator);
 
-            evaluator.setContext(validMeasureMembers);
-            evaluator.setContext(calculatedMembers);
-
-            return evaluator.evaluateCurrent();
+            final int savepoint = evaluator.savepoint();
+            try {
+                evaluator.setContext(validMeasureMembers);
+                evaluator.setContext(calculatedMembers);
+                return evaluator.evaluateCurrent();
+            } finally {
+                evaluator.restore(savepoint);
+            }
         }
 
         private List<Member> getCalculatedMembersFromContext(
@@ -134,35 +127,35 @@ public class ValidMeasureFunDef extends FunDefBase
             return ((RolapStoredMeasure) member).getMeasureGroup();
         }
 
-        private List<Dimension> getDimensionsToForceToAllLevel(
+        // REVIEW: We could compute some of this information at prepare time.
+        private List<Member> forceMembersToAll(
+            List<Member> memberList,
             RolapCube virtualCube,
-            RolapMeasureGroup measureGroup,
-            List<Member> memberList)
+            RolapMeasureGroup measureGroup)
         {
-            List<Dimension> vMinusBDimensions = new ArrayList<Dimension>();
-            Set<Dimension> virtualCubeDims =
-                new HashSet<Dimension>(virtualCube.getDimensionList());
-            Set<Dimension> nonJoiningDims =
-                measureGroup.nonJoiningDimensions(virtualCubeDims);
+            final List<Member> validMeasureMembers =
+                new ArrayList<Member>(memberList);
 
-            for (Dimension nonJoiningDim : nonJoiningDims) {
-                if (!isDimInMembersList(memberList, nonJoiningDim)) {
-                    vMinusBDimensions.add(nonJoiningDim);
+            final Set<Hierarchy> hierarchies = new HashSet<Hierarchy>();
+            for (Member member : memberList) {
+                hierarchies.add(member.getHierarchy());
+            }
+
+            // start adding to validMeasureMembers at right place
+            for (RolapCubeDimension nonJoiningDim
+                : measureGroup.nonJoiningDimensions(
+                    virtualCube.getDimensionList()))
+            {
+                for (Hierarchy hierarchy : nonJoiningDim.getHierarchyList()) {
+                    if (!hierarchies.contains(hierarchy)) {
+                        validMeasureMembers.add(
+                            hierarchy.hasAll()
+                                ? hierarchy.getAllMember()
+                                : hierarchy.getDefaultMember());
+                    }
                 }
             }
-            return vMinusBDimensions;
-        }
-
-        private boolean isDimInMembersList(
-            List<Member> members,
-            Dimension dimension)
-        {
-            for (Member member : members) {
-                if (member.getName().equalsIgnoreCase(dimension.getName())) {
-                    return true;
-                }
-            }
-            return false;
+            return validMeasureMembers;
         }
 
         public boolean dependsOn(Hierarchy hierarchy) {

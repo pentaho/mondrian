@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -69,7 +69,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
     }
 
     public TestContext getTestContext() {
-        return TestContext.instance().create(
+        return TestContext.instance().legacy().create(
             null,
             null,
             "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n"
@@ -153,7 +153,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
     public void testAggMemberDefinedOnNonJoiningDimensionWithNonAllDefltMember()
     {
         // Gender dim to have Gender.F as default member
-        final TestContext context = TestContext.instance().create(
+        final TestContext context = TestContext.instance().legacy().create(
             null, cubeSales3, cubeWarehouseAndSales3, null, null, null);
         context.assertQueryReturns(
             "WITH MEMBER [Measures].[Total Sales] AS "
@@ -190,7 +190,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "{[Measures].[Unit Sales VM]}\n"
             + "{[Measures].[Store Cost]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Products].[G]}\n"
+            + "{[Product].[G]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: 225,627.23\n");
     }
@@ -205,13 +205,13 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "AGGREGATE([COG_OQP_INT_s1]))', SOLVE_ORDER = 4 "
             + "MEMBER [Gender].[COG_OQP_INT_m2] AS "
             + "'AGGREGATE([COG_OQP_INT_s1])', SOLVE_ORDER = 4 "
-            + "MEMBER [WAREHOUSES].[COG_OQP_USR_Aggregate(WAREHOUSE SET)] AS "
+            + "MEMBER [WAREHOUSE].[COG_OQP_USR_Aggregate(WAREHOUSE SET)] AS "
             + "'IIF([Measures].CURRENTMEMBER IS [Measures].[Unit Sales VM], "
             + "([WAREHOUSE].[COG_OQP_INT_m1], [Measures].[Unit Sales VM]), "
             + "AGGREGATE({[Warehouse].[State Province].&[DF].[Mexico City].[Freeman And Co], "
             + "[Warehouse].[State Province].&[BC].[Vancouver].[Bellmont Distributing]}))', "
             + "SOLVE_ORDER = 8 "
-            + "MEMBER [WAREHOUSES].[COG_OQP_INT_m1] AS "
+            + "MEMBER [WAREHOUSE].[COG_OQP_INT_m1] AS "
             + "'AGGREGATE({[Warehouse].[State Province].&[DF].[Mexico City].[Freeman And Co], "
             + "[Warehouse].[State Province].&[BC].[Vancouver].[Bellmont Distributing]})', "
             + "SOLVE_ORDER = 8 "
@@ -257,13 +257,13 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "'ValidMeasure([Measures].[Unit Sales])', SOLVE_ORDER =3000"
             + "MEMBER MEASURES.[VirtualMeasure] AS "
             + "'[Measures].[Store Invoice]/[Measures].[Unit Sales VM]', SOLVE_ORDER=3000 "
-            + "MEMBER [Warehouses].[COG_OQP_USR_Aggregate(Warehouse set)] AS "
+            + "MEMBER [Warehouse].[COG_OQP_USR_Aggregate(Warehouse set)] AS "
             + "'IIF([Measures].CURRENTMEMBER IS "
             + "[Measures].[VirtualMeasure], ([Warehouse].[COG_OQP_INT_m1], "
             + "[Measures].[VirtualMeasure]), "
             + "AGGREGATE({[Warehouse].[All Warehouses].[USA].[OR],"
             + "[Warehouse].[All Warehouses].[USA].[WA]}))', SOLVE_ORDER = 8 "
-            + "MEMBER [Warehouses].[COG_OQP_INT_m1] AS "
+            + "MEMBER [Warehouse].[COG_OQP_INT_m1] AS "
             + "'AGGREGATE({[Warehouse].[All Warehouses].[USA].[OR],"
             + "[Warehouse].[All Warehouses].[USA].[WA]})', SOLVE_ORDER = 8 "
             + "MEMBER [Product].[COG_OQP_USR_Aggregate(Product Set)1] "
@@ -353,8 +353,8 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Total Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Products].[AggSP1_1]}\n"
-            + "{[Product].[Products].[AggSP1_2]}\n"
+            + "{[Product].[AggSP1_1]}\n"
+            + "{[Product].[AggSP1_2]}\n"
             + "Row #0: 762,009.02\n"
             + "Row #1: 762,009.02\n");
         prop.IgnoreMeasureForNonJoiningDimension.set(origIgnoreMeasure);

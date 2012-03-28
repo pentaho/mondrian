@@ -10,7 +10,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.Id.Quoting;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.SegmentCacheManager;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -165,7 +164,9 @@ public class CacheControlImpl implements CacheControl {
         }
         final List<Member> measures =
             cube.getSchemaReader(null).withLocus().getLevelMembers(
-                measuresDimension.getHierarchy().getLevelList().get(0),
+                measuresDimension
+                    .getHierarchyList().get(0)
+                    .getLevelList().get(0),
                 false);
         if (measures.size() == 0) {
             return new EmptyCellRegion();

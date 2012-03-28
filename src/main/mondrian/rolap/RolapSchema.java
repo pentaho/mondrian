@@ -1030,6 +1030,62 @@ public class RolapSchema implements Schema {
         public int getColumnCount() {
             return columnCount;
         }
+
+        List<ColumnInfo> describe(
+            RolapSchemaLoader loader,
+            NodeDef xmlNode,
+            String sql)
+        {
+            java.sql.Connection connection = null;
+            try {
+                connection =
+                    jdbcSchema.getDataSource().getConnection();
+                final PreparedStatement pstmt =
+                    connection.prepareStatement(sql);
+                final ResultSetMetaData metaData = pstmt.getMetaData();
+                final int columnCount = metaData.getColumnCount();
+                final List<ColumnInfo> columnInfoList =
+                    new ArrayList<ColumnInfo>();
+                for (int i = 0; i < columnCount; i++) {
+                    final String columnName =  metaData.getColumnName(i + 1);
+                    final String typeName = metaData.getColumnTypeName(i + 1);
+                    final int type = metaData.getColumnType(i + 1);
+                    // REVIEW: We want the physical size of the column in bytes.
+                    //  Ideally it would be comparable with the value returned
+                    //  from DatabaseMetaData.getColumns for a base table.
+                    final int columnSize = metaData.getColumnDisplaySize(i + 1);
+                    assert columnSize > 0;
+                    final Dialect.Datatype datatype =
+                        dialect.sqlTypeToDatatype(typeName, type);
+                    if (datatype == null) {
+                        loader.getHandler().warning(
+                            "Unknown data type "
+                            + typeName + " (" + type + ") for column "
+                            + columnName + " of view; mondrian is probably"
+                            + " not familiar with this database's type"
+                            + " system",
+                            xmlNode,
+                            null);
+                        continue;
+                    }
+                    columnInfoList.add(
+                        new ColumnInfo(columnName, datatype, columnSize));
+                }
+                return columnInfoList;
+            } catch (SQLException e) {
+                loader.getHandler().warning(
+                    "View is invalid: " + e.getMessage(), xmlNode, null, e);
+                return null;
+            } finally {
+                if (connection != null) {
+                    try {
+                        connection.close();
+                    } catch (SQLException e) {
+                        // ignore
+                    }
+                }
+            }
+        }
     }
 
     public static abstract class AttributeLink
@@ -1468,15 +1524,17 @@ public class RolapSchema implements Schema {
         /**
          * Populates the columns of a table by querying JDBC metadata.
          *
-         * <p>Throws if table was not found or view had an error.
+         * <p>Returns whether populated successfully. If there was an error (say
+         * if table was not found or view had an error), posts a warning and
+         * returns false.
          *
          * @return Whether table was found
-         * @param schema Schema (for logging errors)
+         * @param loader Schema (for logging errors)
          * @param xmlNode XML element
          * @param rowCountAndSize Output array, to hold the number of rows in
          */
         protected abstract boolean populateColumns(
-            RolapSchemaLoader schema,
+            RolapSchemaLoader loader,
             NodeDef xmlNode,
             int[] rowCountAndSize);
 
@@ -1552,60 +1610,40 @@ public class RolapSchema implements Schema {
             NodeDef xmlNode,
             int[] rowCountAndSize)
         {
-            java.sql.Connection connection = null;
-            try {
-                connection =
-                    physSchema.jdbcSchema.getDataSource().getConnection();
-                final PreparedStatement pstmt =
-                    connection.prepareStatement(sqlString);
-                final ResultSetMetaData metaData = pstmt.getMetaData();
-                final int columnCount = metaData.getColumnCount();
-                for (int i = 0; i < columnCount; i++) {
-                    final String columnName =  metaData.getColumnName(i + 1);
-                    final String typeName = metaData.getColumnTypeName(i + 1);
-                    final int type = metaData.getColumnType(i + 1);
-                    // REVIEW: We want the physical size of the column in bytes.
-                    //  Ideally it would be comparable with the value returned
-                    //  from DatabaseMetaData.getColumns for a base table.
-                    final int columnSize = metaData.getColumnDisplaySize(i + 1);
-                    assert columnSize > 0;
-                    final Dialect.Datatype datatype =
-                        physSchema.dialect.sqlTypeToDatatype(typeName, type);
-                    if (datatype == null) {
-                        loader.getHandler().warning(
-                            "Unknown data type "
-                            + typeName + " (" + type + ") for column "
-                            + columnName + " of view; mondrian is probably"
-                            + " not familiar with this database's type"
-                            + " system", xmlNode,
-                            null);
-                    }
-                    addColumn(
-                        new RolapSchema.PhysRealColumn(
-                            this, columnName, datatype,
-                            null, columnSize));
-                }
-                final int rowCount = 1; // TODO:
-                int rowByteCount = 0;
-                for (PhysColumn physColumn : columnsByName.values()) {
-                    rowByteCount += physColumn.getColumnSize();
-                }
-                rowCountAndSize[0] = rowCount;
-                rowCountAndSize[1] = rowByteCount;
-                return true;
-            } catch (SQLException e) {
-                loader.getHandler().warning(
-                    "View is invalid: " + e.getMessage(), xmlNode, null, e);
+            final List<ColumnInfo> columnInfoList =
+                physSchema.describe(loader, xmlNode, sqlString);
+            if (columnInfoList == null) {
                 return false;
-            } finally {
-                if (connection != null) {
-                    try {
-                        connection.close();
-                    } catch (SQLException e) {
-                        // ignore
-                    }
-                }
             }
+            for (ColumnInfo columnInfo : columnInfoList) {
+                addColumn(
+                    new RolapSchema.PhysRealColumn(
+                        this,
+                        columnInfo.name,
+                        columnInfo.datatype,
+                        null,
+                        columnInfo.size));
+            }
+            final int rowCount = 1; // TODO:
+            int rowByteCount = 0;
+            for (PhysColumn physColumn : columnsByName.values()) {
+                rowByteCount += physColumn.getColumnSize();
+            }
+            rowCountAndSize[0] = rowCount;
+            rowCountAndSize[1] = rowByteCount;
+            return true;
+        }
+    }
+
+    static class ColumnInfo {
+        String name;
+        Dialect.Datatype datatype;
+        int size;
+
+        public ColumnInfo(String name, Dialect.Datatype datatype, int size) {
+            this.name = name;
+            this.datatype = datatype;
+            this.size = size;
         }
     }
 
@@ -1655,7 +1693,7 @@ public class RolapSchema implements Schema {
         }
 
         protected boolean populateColumns(
-            RolapSchemaLoader schema, NodeDef xmlNode, int[] rowCountAndSize)
+            RolapSchemaLoader loader, NodeDef xmlNode, int[] rowCountAndSize)
         {
             // not much to do; was populated on creation
             rowCountAndSize[0] = rowList.size();
@@ -2063,7 +2101,7 @@ public class RolapSchema implements Schema {
     public static abstract class PhysColumn extends PhysExpr {
         public final PhysRelation relation;
         public final String name;
-        Dialect.Datatype datatype;
+        Dialect.Datatype datatype; // may be null, temporarily
         protected final int columnSize;
         private final int ordinal;
         private SqlStatement.Type internalType; // may be null
@@ -2169,10 +2207,14 @@ public class RolapSchema implements Schema {
     }
 
     public static final class PhysCalcColumn extends PhysColumn {
+        private RolapSchemaLoader loader; // cleared once compute succeeds
+        private NodeDef xmlNode; // cleared once compute succeeds
         private List<RolapSchema.PhysExpr> list;
         private String sql;
 
         PhysCalcColumn(
+            RolapSchemaLoader loader,
+            NodeDef xmlNode,
             PhysRelation table,
             String name,
             Dialect.Datatype datatype,
@@ -2180,20 +2222,44 @@ public class RolapSchema implements Schema {
             List<PhysExpr> list)
         {
             super(table, name, 4, datatype, internalType);
+            this.loader = loader;
+            this.xmlNode = xmlNode;
             this.list = list;
             compute();
         }
 
         public void compute() {
+            if (loader != null
+                && !list.isEmpty()
+                && getUnresolvedColumnCount() == 0)
+            {
+                sql = deriveSql();
+                if (datatype == null) {
+                    final PhysSchema physSchema = relation.getSchema();
+                    final SqlQuery query = new SqlQuery(physSchema.dialect);
+                    query.addSelect(sql, null);
+                    query.addFrom(relation, relation.getAlias(), true);
+                    final List<ColumnInfo> columnInfoList =
+                        physSchema.describe(loader, xmlNode, query.toSql());
+                    if (columnInfoList != null
+                        && columnInfoList.size() == 1)
+                    {
+                        datatype = columnInfoList.get(0).datatype;
+                    }
+                }
+                loader = null;
+                xmlNode = null;
+            }
+        }
+
+        private int getUnresolvedColumnCount() {
             int unresolvedCount = 0;
             for (PhysExpr expr : list) {
                 if (expr instanceof UnresolvedColumn) {
                     ++unresolvedCount;
                 }
             }
-            if (unresolvedCount == 0) {
-                sql = deriveSql();
-            }
+            return unresolvedCount;
         }
 
         public String toSql() {
@@ -2274,7 +2340,8 @@ public class RolapSchema implements Schema {
             String name,
             ElementDef xml)
         {
-            super(relation, name, 0, null, null);
+            // Boolean datatype is a dummy value, to keep an assert happy.
+            super(relation, name, 0, Dialect.Datatype.Boolean, null);
             assert tableName != null;
             assert name != null;
             this.tableName = tableName;

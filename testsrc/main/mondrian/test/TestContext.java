@@ -328,6 +328,11 @@ public class TestContext {
             int i = s.indexOf(
                 "<VirtualCube name=\"Warehouse and Sales\" "
                 + "defaultMeasure=\"Store Sales\">");
+            if (i < 0) {
+                throw new RuntimeException(
+                    "VirtualCube may only specified in legacy TestContext; see "
+                    + "TestContext.legacy()");
+            }
             s = s.substring(0, i)
                 + virtualCubeDefs
                 + s.substring(i);
