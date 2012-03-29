@@ -645,7 +645,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             "with member [Measures].[Foo] as ' \"quoted string with 'apostrophe' in it\" ' "
             + "select {[Measures].[Foo]} on columns "
             + "from [Sales]",
-            "mondrian.parser.TokenMgrError: "
+            "Mondrian Error:"
             + "Lexical error at line 2, column 0.  "
             + "Encountered: <EOF> after : \"\\\"quoted string with \\n\"");
 
