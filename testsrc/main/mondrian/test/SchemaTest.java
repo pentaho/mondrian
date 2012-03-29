@@ -6432,6 +6432,25 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     // TODO: document that the name of an attribute's property defaults to the
     // name of the source attribute
+
+    // TODO: test that if name of MeasureGroup is missing, defaults to alias of
+    // table
+
+    // TODO: test that names of MeasureGroups in cube are enforced unique; even
+    // if one of them is missing and therefore defaults to name of table
+
+    // TODO: test that mondrian gives error if MeasureRef occurs in a
+    // MeasureGroup whose type is not aggregate.
+
+    // TODO: test MeasureRef@aggColumn references non-existent measure.
+
+    // TODO: test that mondrian gives error if Column@aggColumn is specified in
+    // a column that is in an expression or in a key.
+
+    // TODO: test that mondrian gives error if Column@aggColumn is not specified
+    // in a column in a CopyLink.
+
+    // TODO: test for warning AggTableZeroSize "Zero size Aggregate table ..."
 }
 
 // End SchemaTest.java

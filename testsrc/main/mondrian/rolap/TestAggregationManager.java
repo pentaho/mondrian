@@ -1664,12 +1664,13 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     /**
-     * This is a test for MONDRIAN-918 and MONDRIAN-903. We have added
+     * Test for MONDRIAN-918 and MONDRIAN-903, on the legacy (mondrian
+     * version 3) schema. We have added
      * an attribute to AggName called approxRowCount so that the
      * aggregation manager can optimize the aggregation tables without
      * having to issue a select count() query.
      */
-    public void testAggNameApproxRowCount() {
+    public void testAggNameApproxRowCountLegacy() {
         propSaver.set(MondrianProperties.instance().UseAggregates, true);
         propSaver.set(MondrianProperties.instance().ReadAggregates, true);
         final TestContext context =
@@ -1829,7 +1830,73 @@ public class TestAggregationManager extends BatchTestCase {
             "select count(*) as \"c0\" from \"agg_pl_01_sales_fact_1997\" \"agg_pl_01_sales_fact_1997\"";
         final String sqlMysql =
             "select count(*) as `c0` from `agg_pl_01_sales_fact_1997` as `agg_pl_01_sales_fact_1997`";
-        // If the approxRowcount is used, there should not be
+        // If the approxRowCount is used, there should not be
+        // a query like : select count(*) from agg_pl_01_sales_fact_1997
+        assertQuerySqlOrNot(
+            context,
+            mdxQuery,
+            new SqlPattern[] {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.ORACLE,
+                    sqlOracle,
+                    sqlOracle.length()),
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysql,
+                    sqlMysql.length())
+            },
+            true,
+            false,
+            false);
+    }
+
+    /**
+     * Test for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-918">MONDRIAN-918,
+     * "Add an approxRowCount attribute to aggregate tables in the schema"</a>.
+     * We have added
+     * an attribute to AggName called approxRowCount so that the
+     * aggregation manager can optimize the aggregation tables without
+     * having to issue a select count() query.
+     */
+    public void testAggNameApproxRowCount() {
+        propSaver.set(MondrianProperties.instance().UseAggregates, true);
+        propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+        final TestContext context =
+            getTestContext().withSubstitution(
+                new Util.Functor1<String, String>() {
+                    public String apply(String schema) {
+                        int i = schema.indexOf("</MeasureGroup>");
+                        assert i >= 0;
+                        i += "</MeasureGroup>".length();
+                        return schema.substring(0, i)
+                            + "\n"
+                            + "<MeasureGroup table='agg_pl_01_sales_fact_1997' approxRowCount='86000' type='aggregate'>\n"
+                            + "    <Measures>\n"
+                            + "        <MeasureRef name='Fact Count' aggColumn='FACT_COUNT'/>\n"
+                            + "        <MeasureRef name='Unit Sales' aggColumn='UNIT_SALES_SUM'/>\n"
+                            + "        <MeasureRef name='Store Cost' aggColumn='STORE_COST_SUM'/>\n"
+                            + "        <MeasureRef name='Store Sales' aggColumn='STORE_SALES_SUM'/>\n"
+                            + "    </Measures>\n"
+                            + "    <DimensionLinks>\n"
+                            + "        <ForeignKeyLink dimension='Product' foreignKeyColumn='product_id'/>\n"
+                            + "        <ForeignKeyLink dimension='Customer' foreignKeyColumn='customer_id'/>\n"
+                            + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>\n"
+                            + "    </DimensionLinks>\n"
+                            + "</MeasureGroup>\n"
+                            + schema.substring(i);
+                    }
+                }
+            );
+        final String mdxQuery =
+            "select {[Measures].[Unit Sales]} on columns, "
+            + "non empty CrossJoin({[Time.Weekly].[1997].[1].[15]},CrossJoin({[Customers].[USA].[CA].[Lincoln Acres].[William Smith]}, {[Product].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Washington].[Washington Diet Cola]})) on rows "
+            + "from [Sales_Foo] ";
+        final String sqlOracle =
+            "select count(*) as \"c0\" from \"agg_pl_01_sales_fact_1997\" \"agg_pl_01_sales_fact_1997\"";
+        final String sqlMysql =
+            "select count(*) as `c0` from `agg_pl_01_sales_fact_1997` as `agg_pl_01_sales_fact_1997`";
+        // If the approxRowCount is used, there should not be
         // a query like : select count(*) from agg_pl_01_sales_fact_1997
         assertQuerySqlOrNot(
             context,

@@ -5,8 +5,9 @@
   == This software is subject to the terms of the Eclipse Public License v1.0
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
-  == Copyright (C) 2001-2002 Kana Software, Inc.
-  == Copyright (C) 2001-2012 Julian Hyde and others
+  ==
+  == Copyright (C) 2001-2005 Julian Hyde
+  == Copyright (C) 2005-2012 Pentaho and others
   == All Rights Reserved.
   == You must accept the terms of that agreement to use this software.
   ==
@@ -190,6 +191,7 @@ Revision is $Id$
         <Code>
             <![CDATA[
                 List<? extends NodeDef> list();
+                Holder copy();
             ]]>
         </Code>
     </Class>
@@ -314,7 +316,7 @@ Revision is $Id$
             return s1;
         }
 
-        private static <T> T only(Object[] os, Class<T> clazz, T dflt) {
+        private static <T> T only(Object[] os, Class<T> clazz) {
             T t = null;
             int count = 0;
             for (Object o : os) {
@@ -325,7 +327,26 @@ Revision is $Id$
             }
             switch (count) {
             case 0:
-                return dflt;
+                return null;
+            case 1:
+                return t;
+            default:
+                throw new RuntimeException(); // TODO: user error
+            }
+        }
+
+        private static <T extends Holder> T onlyDeflt(Object[] os, Class<T> clazz, T dflt) {
+            T t = null;
+            int count = 0;
+            for (Object o : os) {
+                if (clazz.isInstance(o)) {
+                    t = clazz.cast(o);
+                    ++count;
+                }
+            }
+            switch (count) {
+            case 0:
+                return (T) dflt.copy();
             case 1:
                 return t;
             default:
@@ -389,11 +410,11 @@ Revision is $Id$
             }
 
             <T2> T2 singleton(Class<T2> clazz) {
-                return MondrianDef.only(getArray(), clazz, null);
+                return MondrianDef.only(getArray(), clazz);
             }
 
-            <T2> T2 only(T2 empty) {
-                return MondrianDef.only(getArray(), (Class<T2>) empty.getClass(), empty);
+            <T2 extends Holder> T2 only(T2 empty) {
+                return MondrianDef.onlyDeflt(getArray(), (Class<T2>) empty.getClass(), empty);
             }
 
             public void add(T t) {
@@ -627,6 +648,11 @@ Revision is $Id$
                 EMPTY = new Dimensions();
                 EMPTY.array = new Dimension[0];
             }
+            public Dimensions copy() {
+                Dimensions c = new Dimensions();
+                c.array = array.clone();
+                return c;
+            }
             public NamedList<Dimension> list() {
                 return new NamedListImpl<Dimension>(
                     new MutableArrayList<Dimension>() {
@@ -750,6 +776,11 @@ Revision is $Id$
                 EMPTY = new Hierarchies();
                 EMPTY.array = new Hierarchy[0];
             }
+            public Hierarchies copy() {
+                Hierarchies c = new Hierarchies();
+                c.array = array.clone();
+                return c;
+            }
             public NamedList<Hierarchy> list() {
                 return new NamedListImpl<Hierarchy>(
                     new MutableArrayList<Hierarchy>() {
@@ -775,6 +806,11 @@ Revision is $Id$
             static {
                 EMPTY = new Attributes();
                 EMPTY.array = new Attribute[0];
+            }
+            public Attributes copy() {
+                Attributes c = new Attributes();
+                c.array = array.clone();
+                return c;
             }
             public NamedList<Attribute> list() {
                 return new NamedListImpl<Attribute>(
@@ -1242,7 +1278,34 @@ Revision is $Id$
         </Code>
     </Element>
 
-    <Element type="Measure" class="NamedElement">
+    <Element type="MeasureOrRef" class="NamedElement" abstract="true">
+    </Element>
+
+    <Element type="MeasureRef" class="MeasureOrRef">
+        <Doc>
+            Specifies the column where the aggregation of a given measure is
+            stored in the current aggregate table.
+
+            <p>Can only occur in a MeasureGroup whose type is 'aggregate'.</p>
+        </Doc>
+        <Attribute name="name" required="true">
+            <Doc>Name of the referenced measure.</Doc>
+        </Attribute>
+        <Attribute name="aggColumn" required="true">
+            <Doc>
+                Column where the aggregation is stored.
+            </Doc>
+        </Attribute>
+        <Code>
+            <![CDATA[
+            public String getNameAttribute() {
+                return name;
+            }
+            ]]>
+        </Code>
+    </Element>
+
+    <Element type="Measure" class="MeasureOrRef">
         <Attribute name="name" required="true">
             <Doc>Name of this measure.</Doc>
         </Attribute>
@@ -1372,6 +1435,11 @@ Revision is $Id$
             static {
                 EMPTY = new CalculatedMembers();
                 EMPTY.array = new CalculatedMember[0];
+            }
+            public CalculatedMembers copy() {
+                CalculatedMembers c = new CalculatedMembers();
+                c.array = array.clone();
+                return c;
             }
             public NamedList<CalculatedMember> list() {
                 return new NamedListImpl<CalculatedMember>(
@@ -1544,6 +1612,11 @@ Revision is $Id$
             static {
                 EMPTY = new NamedSets();
                 EMPTY.array = new NamedSet[0];
+            }
+            public NamedSets copy() {
+                NamedSets c = new NamedSets();
+                c.array = array.clone();
+                return c;
             }
             public NamedList<NamedSet> list() {
                 return new NamedListImpl<NamedSet>(
@@ -1832,20 +1905,32 @@ Revision is $Id$
         ]]></Code>
     </Element>
 
-    <Element type="Hints" class="TableElement">
+    <Element type="Hints" class="Holder,TableElement">
         <Doc>
             Collection of hints.
         </Doc>
         <Array name="array" type="Hint"/>
         <Code><![CDATA[
-        private static final Hints EMPTY;
-        static {
-            EMPTY = new Hints();
-            EMPTY.array = new Hint[0];
-        }
-        private List<Hint> list() {
-            return MondrianDef.list(array);
-        }
+            private static final Hints EMPTY;
+            static {
+                EMPTY = new Hints();
+                EMPTY.array = new Hint[0];
+            }
+            public Hints copy() {
+                Hints c = new Hints();
+                c.array = array.clone();
+                return c;
+            }
+            public List<Hint> list() {
+                return new MutableArrayList<Hint>() {
+                    protected Hint[] getArray() {
+                        return array == null ? EMPTY.array : array;
+                    }
+                    protected void setArray(Hint[] ts) {
+                        array = ts;
+                    }
+                };
+            }
         ]]></Code>
     </Element>
 
@@ -1952,6 +2037,11 @@ Revision is $Id$
             static {
                 EMPTY = new ColumnDefs();
                 EMPTY.array = new RealOrCalcColumnDef[0];
+            }
+            public ColumnDefs copy() {
+                ColumnDefs c = new ColumnDefs();
+                c.array = array.clone();
+                return c;
             }
             public List<RealOrCalcColumnDef> list() {
                 return new MutableArrayList<RealOrCalcColumnDef>() {
@@ -2061,6 +2151,11 @@ Revision is $Id$
                 EMPTY = new Rows();
                 EMPTY.array = new Row[0];
             }
+            public Rows copy() {
+                Rows c = new Rows();
+                c.array = array.clone();
+                return c;
+            }
             public List<Row> list() {
                 return new MutableArrayList<Row>() {
                     protected Row[] getArray() {
@@ -2097,7 +2192,7 @@ Revision is $Id$
     </Element>
 
     <!-- AggTable ======================================================= -->
-    <Element type="AggTable" abstract="true">
+    <Element type="AggTable">
         <Doc>
             A definition of an aggregate table for a base fact table.
             This aggregate table must be in the same schema as the
@@ -2283,7 +2378,7 @@ Revision is $Id$
         </Code>
     </Element>
 
-    <Element type="Aggregates" class="MeasureGroupElement">
+    <Element type="Aggregates" class="Holder,MeasureGroupElement">
         <Doc>
             Holder element for {@link MondrianDef.AggTable} elements.
         </Doc>
@@ -2299,8 +2394,20 @@ Revision is $Id$
                 EMPTY = new Aggregates();
                 EMPTY.array = new AggTable[0];
             }
-            private List<AggTable> list() {
-                return MondrianDef.list(array);
+            public Aggregates copy() {
+                Aggregates c = new Aggregates();
+                c.array = array.clone();
+                return c;
+            }
+            public List<AggTable> list() {
+                return new MutableArrayList<AggTable>() {
+                    protected AggTable[] getArray() {
+                        return array == null ? EMPTY.array : array;
+                    }
+                    protected void setArray(AggTable[] ts) {
+                        array = ts;
+                    }
+                };
             }
             ]]>
         </Code>
@@ -2318,6 +2425,11 @@ Revision is $Id$
             static {
                 EMPTY = new Columns();
                 EMPTY.array = new Column[0];
+            }
+            public Columns copy() {
+                Columns c = new Columns();
+                c.array = array.clone();
+                return c;
             }
             public List<Column> list() {
                 return new MutableArrayList<Column>() {
@@ -2372,7 +2484,7 @@ Revision is $Id$
 
     <Element type="Column" class="Expression">
         <Doc>
-            Reference to a column in an expression or key.
+            Reference to a column in an expression, key, or CopyLink.
 
             <p>Table name is optional if the column is being used within a
                 table definition. If the column reference is used within a key,
@@ -2388,6 +2500,14 @@ Revision is $Id$
         <Attribute name="name" required="true">
             <Doc>
                 Name of the column.
+            </Doc>
+        </Attribute>
+        <Attribute name="aggColumn" required="false">
+            <Doc>
+                Applicable only for columns in a CopyLink (part of the
+                definition of an aggregate MeasureGroup), specifies the
+                column in the aggregate table that corresponds to the given
+                dimension table column.
             </Doc>
         </Attribute>
         <Code><![CDATA[
@@ -2587,6 +2707,11 @@ Revision is $Id$
                  EMPTY = new Union();
                  EMPTY.array = new RoleUsage[0];
             }
+            public Union copy() {
+                Union c = new Union();
+                c.array = array.clone();
+                return c;
+            }
             public List<RoleUsage> list() {
                 return new MutableArrayList<RoleUsage>() {
                     protected RoleUsage[] getArray() {
@@ -2701,6 +2826,11 @@ Revision is $Id$
             static {
                 EMPTY = new Annotations();
                 EMPTY.array = new Annotation[0];
+            }
+            public Annotations copy() {
+                Annotations c = new Annotations();
+                c.array = array.clone();
+                return c;
             }
             public NamedList<Annotation> list() {
                 return new NamedListImpl<Annotation>(
@@ -2916,6 +3046,11 @@ Revision is $Id$
                 EMPTY = new MeasureGroups();
                 EMPTY.array = new MeasureGroup[0];
             }
+            public MeasureGroups copy() {
+                MeasureGroups c = new MeasureGroups();
+                c.array = array.clone();
+                return c;
+            }
             public NamedList<MeasureGroup> list() {
                 return new NamedListImpl<MeasureGroup>(
                     new MutableArrayList<MeasureGroup>() {
@@ -2936,10 +3071,20 @@ Revision is $Id$
         <Doc>
             Collection of measures that reside in the same fact table.
         </Doc>
-        <Attribute name="name" required="true" type="String">
+        <Attribute name="name" type="String">
             <Doc>
                 Name of this measure group.
+
+                <p>If not specified, defaults to name of table. Must be
+                    unique within cube.</p>
             </Doc>
+        </Attribute>
+        <Attribute name="type" type="String" default="fact">
+            <Doc>
+                Whether this measure group is defining a fact or aggregate table.
+            </Doc>
+            <Value>fact</Value>
+            <Value>aggregate</Value>
         </Attribute>
         <Attribute name="table" required="true" type="String">
             <Doc>
@@ -2951,6 +3096,15 @@ Revision is $Id$
             <Doc>
                 If true, dimensions that are not related to measures in this
                 measure group will be pushed to top level member.
+            </Doc>
+        </Attribute>
+        <Attribute name="approxRowCount" required="false">
+            <Doc>
+                The estimated number of rows in this measure group's
+                (fact or aggregate) table. Setting this property improves the
+                performance of the aggregation optimizer and
+                prevents it from issuing 'select count(*)'
+                queries over the aggregation table.
             </Doc>
         </Attribute>
         <Array name="childArray" type="MeasureGroupElement">
@@ -2980,7 +3134,7 @@ Revision is $Id$
             public List<DimensionLink> getDimensionLinks() {
                 return children.only(DimensionLinks.EMPTY).list();
             }
-            public NamedList<Measure> getMeasures() {
+            public NamedList<MeasureOrRef> getMeasures() {
                 return children.only(Measures.EMPTY).list();
             }
             public List<AggTable> getAggregates() {
@@ -2994,7 +3148,7 @@ Revision is $Id$
         <Doc>
             Holder element for {@link MondrianDef.Measure} elements.
         </Doc>
-        <Array name="array" type="Measure">
+        <Array name="array" type="MeasureOrRef">
             <Doc>
                 Measures.
             </Doc>
@@ -3004,15 +3158,20 @@ Revision is $Id$
             private static final Measures EMPTY;
             static {
                 EMPTY = new Measures();
-                EMPTY.array = new Measure[0];
+                EMPTY.array = new MeasureOrRef[0];
             }
-            public NamedList<Measure> list() {
-                return new NamedListImpl<Measure>(
-                    new MutableArrayList<Measure>() {
-                        protected Measure[] getArray() {
+            public Measures copy() {
+                Measures c = new Measures();
+                c.array = array.clone();
+                return c;
+            }
+            public NamedList<MeasureOrRef> list() {
+                return new NamedListImpl<MeasureOrRef>(
+                    new MutableArrayList<MeasureOrRef>() {
+                        protected MeasureOrRef[] getArray() {
                             return array == null ? EMPTY.array : array;
                         }
-                        protected void setArray(Measure[] ts) {
+                        protected void setArray(MeasureOrRef[] ts) {
                             array = ts;
                         }
                     }
@@ -3037,6 +3196,11 @@ Revision is $Id$
             static {
                 EMPTY = new DimensionLinks();
                 EMPTY.array = new DimensionLink[0];
+            }
+            public DimensionLinks copy() {
+                DimensionLinks c = new DimensionLinks();
+                c.array = array.clone();
+                return c;
             }
             public List<DimensionLink> list() {
                 return new MutableArrayList<DimensionLink>() {
@@ -3139,6 +3303,18 @@ Revision is $Id$
             Schema.missingLink=warning (the default) and create explicit links
             for all dimensions.</p>
         </Doc>
+    </Element>
+
+    <Element type="CopyLink" class="DimensionLink">
+        <Doc>
+            Indicates dimension that is represented by key columns in the fact
+            table; or rather, the aggregate table, since this kind of link may
+            only be used in a MeasureGroup whose type is 'aggregate'.
+        </Doc>
+        <Array name="columnRefs" type="Column">
+            <Doc>Columns from the given dimension that are present in this
+                aggregate table.</Doc>
+        </Array>
     </Element>
 
     <!--

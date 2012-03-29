@@ -261,12 +261,13 @@ public class RolapSchemaUpgrader {
 
         final MondrianDef.MeasureGroup xmlMeasureGroup =
             new MondrianDef.MeasureGroup();
+        xmlMeasureGroup.type = "fact";
         xmlMeasureGroup.name = xmlCube.name;
         xmlMeasureGroup.table = xmlFact.getAlias();
 
         xmlMeasureGroups.add(xmlMeasureGroup);
 
-        final NamedList<MondrianDef.Measure> xmlMeasures =
+        final NamedList<MondrianDef.MeasureOrRef> xmlMeasures =
             xmlMeasureGroup.children.holder(new MondrianDef.Measures()).list();
         for (Mondrian3Def.Measure xmlLegacyMeasure : xmlCube.measures) {
             xmlMeasures.add(
@@ -2204,6 +2205,7 @@ public class RolapSchemaUpgrader {
             MondrianDef.MeasureGroup xmlMeasureGroup =
                 new MondrianDef.MeasureGroup();
             info.xmlMeasureGroup = xmlMeasureGroup;
+            xmlMeasureGroup.type = "fact";
             xmlMeasureGroup.ignoreUnrelatedDimensions =
                 info.ignoreUnrelatedDimensions;
             xmlMeasureGroup.table = info.xmlLegacyCube.fact.getAlias();

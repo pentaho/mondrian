@@ -1174,6 +1174,9 @@ public class RolapSchemaLoader {
         List<RolapMember> measureList = new ArrayList<RolapMember>();
         final Set<String> measureGroupNames = new HashSet<String>();
         for (MondrianDef.MeasureGroup xmlMeasureGroup : xmlMeasureGroups) {
+            if (first(xmlMeasureGroup.type, "base").equals("aggregate")) {
+                continue;
+            }
             if (!measureGroupNames.add(xmlMeasureGroup.name)) {
                 handler.warning(
                     "Duplicate measure group '" + xmlMeasureGroup.name
@@ -1204,8 +1207,14 @@ public class RolapSchemaLoader {
             validator.putXml(measureGroup, xmlMeasureGroup);
             cube.addMeasureGroup(measureGroup);
 
-            for (MondrianDef.Measure xmlMeasure : xmlMeasureGroup.getMeasures())
+            for (MondrianDef.MeasureOrRef xmlMeasureOrRef
+                : xmlMeasureGroup.getMeasures())
             {
+                if (xmlMeasureOrRef instanceof MondrianDef.MeasureRef) {
+                    throw new AssertionError("TODO: msg");
+                }
+                MondrianDef.Measure xmlMeasure =
+                    (MondrianDef.Measure) xmlMeasureOrRef;
                 RolapSchema.PhysRelation relation =
                     xmlMeasureGroup.table == null
                         ? null
