@@ -512,8 +512,8 @@ public class RoleImpl implements Role {
         private final Level topLevel;
         private final Access access;
         private final Level bottomLevel;
-        private final Map<String, Pair<Member,Access>> memberGrants =
-            new HashMap<String, Pair<Member,Access>>();
+        private final Map<String, Pair<Member, Access>> memberGrants =
+            new HashMap<String, Pair<Member, Access>>();
         private final RollupPolicy rollupPolicy;
         private final Role role;
 
@@ -650,7 +650,7 @@ public class RoleImpl implements Role {
             }
             Pair<Member, Access> pair =
                 memberGrants.get(member.getUniqueName());
-            Access access = pair == null? null : pair.right;
+            Access access = pair == null ? null : pair.right;
             // Check for an explicit deny.
             if (access == Access.NONE) {
                 return Access.NONE;
@@ -721,7 +721,9 @@ public class RoleImpl implements Role {
         }
 
         public boolean hasInaccessibleDescendants(Member member) {
-            for (Entry<String, Pair<Member, Access>> entry : memberGrants.entrySet()) {
+            for (Entry<String, Pair<Member, Access>> entry
+                : memberGrants.entrySet())
+            {
                 switch (entry.getValue().right) {
                 case NONE:
                     Member grantedMember = entry.getValue().left;
