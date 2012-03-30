@@ -12,9 +12,8 @@ package mondrian.test;
 
 import mondrian.olap.*;
 
-import junit.framework.Assert;
-
 import java.util.List;
+import junit.framework.Assert;
 
 import org.olap4j.mdx.IdentifierNode;
 
