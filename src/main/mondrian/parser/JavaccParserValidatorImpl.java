@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2011 Pentaho
+// Copyright (C) 2010-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.parser;
@@ -57,6 +57,8 @@ public class JavaccParserValidatorImpl implements MdxParserValidator {
             return mdxParser.statementEof();
         } catch (ParseException e) {
             throw convertException(queryString, e);
+        } catch (TokenMgrError e) {
+            throw convertException(queryString, e);
         }
     }
 
@@ -78,6 +80,8 @@ public class JavaccParserValidatorImpl implements MdxParserValidator {
             return mdxParser.expressionEof();
         } catch (ParseException e) {
             throw convertException(queryString, e);
+        } catch (TokenMgrError e) {
+            throw convertException(queryString, e);
         }
     }
 
@@ -87,25 +91,31 @@ public class JavaccParserValidatorImpl implements MdxParserValidator {
      * changes during the transition from JavaCUP to JavaCC.)
      *
      * @param queryString MDX query string
-     * @param pe JavaCC parse exception
+     * @param throwable JavaCC parse exception or {@link TokenMgrError}
      * @return Wrapped exception
      */
     private RuntimeException convertException(
         String queryString,
-        ParseException pe)
+        Throwable throwable)
     {
-        Exception e;
-        if (pe.getMessage().startsWith("Encountered ")) {
-            e = new MondrianException(
-                "Syntax error at line "
-                + pe.currentToken.next.beginLine
-                + ", column "
-                + pe.currentToken.next.beginColumn
-                + ", token '"
-                + pe.currentToken.next.image
-                + "'");
+        Throwable e = throwable;
+        if (throwable instanceof ParseException) {
+            ParseException pe = (ParseException) throwable;
+            if (pe.getMessage().startsWith("Encountered ")) {
+                e = new MondrianException(
+                    "Syntax error at line "
+                    + pe.currentToken.next.beginLine
+                    + ", column "
+                    + pe.currentToken.next.beginColumn
+                    + ", token '"
+                    + pe.currentToken.next.image
+                    + "'");
+            }
         } else {
-            e = pe;
+            // Typical message:
+            //   Lexical error at line 1, column 1.  Encountered: "`" (96),
+            //   after : ""
+            e = new MondrianException(e.getMessage());
         }
         return Util.newError(e, "While parsing " + queryString);
     }
