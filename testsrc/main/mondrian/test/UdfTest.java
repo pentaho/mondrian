@@ -1367,6 +1367,12 @@ public class UdfTest extends FoodMartTestCase {
     private static String MDC_KEY = "Chunky Bacon!";
     private static Object MDC_OBJECT = new Object();
 
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-994">MONDRIAN-994</a>.
+     * It checks that the MDC logging context is passed through all the
+     * threads.
+     */
     public void testMdc() {
         final TestContext context =
             udfTestContext(
@@ -1385,7 +1391,7 @@ public class UdfTest extends FoodMartTestCase {
 
     // ~ Inner classes --------------------------------------------------------
 
-    /*
+    /**
      * A simple UDF that checks the object inside of the MDC logging context.
      */
     public static class MdcUdf implements UserDefinedFunction {
