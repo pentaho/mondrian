@@ -17,6 +17,7 @@ import mondrian.spi.MemberFormatter;
 import mondrian.spi.PropertyFormatter;
 import mondrian.spi.*;
 
+import org.apache.log4j.MDC;
 import org.olap4j.CellSet;
 import org.olap4j.metadata.Property;
 
@@ -1363,8 +1364,65 @@ public class UdfTest extends FoodMartTestCase {
             member.getPropertyFormattedValue(property));
     }
 
+    private static String MDC_KEY = "Chunky Bacon!";
+    private static Object MDC_OBJECT = new Object();
+
+    public void testMdc() {
+        final TestContext context =
+            udfTestContext(
+                "<UserDefinedFunction name=\"Mdc\" className=\""
+                + MdcUdf.class.getName()
+                + "\"/>\n");
+        MDC.put(MDC_KEY, MDC_OBJECT);
+        try {
+            context.executeQuery(
+                "with member [Measures].[MDC] as 'Mdc([Measures].[Unit Sales])' "
+                + "select {[Measures].[MDC]} on columns from [Sales]");
+        } finally {
+            MDC.remove(MDC_KEY);
+        }
+    }
+
     // ~ Inner classes --------------------------------------------------------
 
+    /*
+     * A simple UDF that checks the object inside of the MDC logging context.
+     */
+    public static class MdcUdf implements UserDefinedFunction {
+        public String getName() {
+            return "Mdc";
+        }
+
+        public String getDescription() {
+            return "";
+        }
+
+        public Syntax getSyntax() {
+            return Syntax.Function;
+        }
+
+        public Type getReturnType(Type[] parameterTypes) {
+            return new NumericType();
+        }
+
+        public Type[] getParameterTypes() {
+            return new Type[] {new NumericType()};
+        }
+
+        public Object execute(Evaluator evaluator, Argument[] arguments) {
+            Map<String, Object> context = org.apache.log4j.MDC.getContext();
+            if (!context.containsKey(MDC_KEY)
+                || context.get(MDC_KEY) != MDC_OBJECT)
+            {
+                fail();
+            }
+            return arguments[0].evaluateScalar(evaluator);
+        }
+
+        public String[] getReservedWords() {
+            return null;
+        }
+    }
 
     /**
      * A simple user-defined function which adds one to its argument.
