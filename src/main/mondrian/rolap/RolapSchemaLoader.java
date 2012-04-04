@@ -1489,17 +1489,17 @@ public class RolapSchemaLoader {
     {
         for (RolapSchema.PhysColumn column : attribute.keyList) {
             registerExpr(
-                measureGroup, dimension, path, column, attribute.name, "Key");
+                measureGroup, dimension, path, column, attribute.caption, "Key");
         }
         registerExpr(
-            measureGroup, dimension, path, attribute.nameExp, attribute.name,
+            measureGroup, dimension, path, attribute.nameExp, attribute.caption,
             "Name");
         registerExpr(
-            measureGroup, dimension, path, attribute.captionExp, attribute.name,
+            measureGroup, dimension, path, attribute.captionExp, attribute.caption,
             "Caption");
         for (RolapSchema.PhysColumn column : attribute.orderByList) {
             registerExpr(
-                measureGroup, dimension, path, column, attribute.name,
+                measureGroup, dimension, path, column, attribute.caption,
                 "OrderBy");
         }
 
@@ -2627,11 +2627,35 @@ public class RolapSchemaLoader {
             stringToLevelType(
                 xmlAttribute.levelType);
 
+        /*
+         * Here we figure out a proper caption for
+         * the attribute. That is, if none was
+         * supplied in the schema.
+         */
+        final String caption;
+        if (xmlAttribute.caption == null) {
+            StringBuilder sb =
+                new StringBuilder(dimension.getName());
+            sb.append(" - ");
+            if (xmlAttribute.name.startsWith("$")) {
+                sb.append(
+                    xmlAttribute.name
+                        .replaceFirst("\\$", "")
+                        .replaceAll("\\$", " - "));
+            } else {
+                sb.append(
+                    xmlAttribute.name
+                        .replaceAll("\\$", " - "));
+            }
+            caption = sb.toString();
+        } else {
+            caption = xmlAttribute.caption;
+        }
         final RolapAttribute attribute =
             new RolapAttribute(
                 xmlAttribute.name,
                 toBoolean(xmlAttribute.visible, true),
-                xmlAttribute.caption,
+                caption,
                 xmlAttribute.description,
                 keyList,
                 nameExpr,
