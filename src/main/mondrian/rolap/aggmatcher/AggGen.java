@@ -153,12 +153,7 @@ public class AggGen {
      */
     private void init() {
         JdbcSchema db = JdbcSchema.makeDB(star.getDataSource());
-        try {
-            db.load();
-        } catch (SQLException ex) {
-            getLogger().error(ex);
-            return;
-        }
+        db.load();
 
         JdbcSchema.Table factTable = getTable(db, getFactTableName());
         if (factTable == null) {

@@ -83,7 +83,7 @@ public class JdbcSchema {
 
     private static Factory factory;
 
-    private static void makeFactory() {
+    private synchronized static void makeFactory() {
         if (factory == null) {
             String classname =
                 MondrianProperties.instance().JdbcFactoryClass.get();
@@ -144,24 +144,6 @@ public class JdbcSchema {
                 db.clear();
             } else {
                 dbMap.remove(dataSource);
-            }
-        }
-        sweepDB();
-    }
-
-    /**
-     * Removes a JdbcSchema associated with a DataSource.
-     *
-     * @param dataSource DataSource
-     */
-    public static synchronized void removeDB(DataSource dataSource) {
-        makeFactory();
-
-        SoftReference<JdbcSchema> ref = dbMap.remove(dataSource);
-        if (ref != null) {
-            JdbcSchema db = ref.get();
-            if (db != null) {
-                db.remove();
             }
         }
         sweepDB();
@@ -1080,7 +1062,7 @@ public class JdbcSchema {
      *
      * @throws SQLException on error
      */
-    public void load() throws SQLException {
+    public synchronized void load() {
         if (!allTablesLoaded) {
             loadTables("%");
             allTablesLoaded = true;
@@ -1093,12 +1075,6 @@ public class JdbcSchema {
         schema = null;
         catalog = null;
         tables.clear();
-    }
-
-    protected void remove() {
-        // set ALL instance variables to null
-        clear();
-        dataSource = null;
     }
 
     public DataSource getDataSource() {
@@ -1170,7 +1146,7 @@ public class JdbcSchema {
         return sw.toString();
     }
 
-    public void print(final PrintWriter pw, final String prefix) {
+    public synchronized void print(final PrintWriter pw, final String prefix) {
         pw.print(prefix);
         pw.println("JdbcSchema:");
         String subprefix = prefix + "  ";
@@ -1192,7 +1168,7 @@ public class JdbcSchema {
      * @param tableName Table name
      * @throws SQLException on error
      */
-    private void loadTables(String tableName) throws SQLException {
+    private void loadTables(String tableName) {
         Connection conn = null;
         try {
             conn = getDataSource().getConnection();
@@ -1210,9 +1186,16 @@ public class JdbcSchema {
             } else {
                 loadTablesOfType(databaseMetaData, tableTypes, tableName);
             }
+        } catch (SQLException e) {
+            throw Util.newError(
+                e, "Error while loading JDBC schema");
         } finally {
             if (conn != null) {
-                conn.close();
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    // no op.
+                }
             }
         }
     }
@@ -1270,7 +1253,10 @@ public class JdbcSchema {
      * @param rs Result set
      * @throws SQLException on error
      */
-    protected void addTable(final ResultSet rs) throws SQLException {
+    protected synchronized void addTable(
+        final ResultSet rs)
+        throws SQLException
+    {
         String name = rs.getString(3);
         String tableType = rs.getString(4);
         Table table = new Table(name, tableType);
@@ -1279,6 +1265,7 @@ public class JdbcSchema {
     }
 
     private SortedMap<String, Table> getTablesMap() {
+        load();
         return tables;
     }
 

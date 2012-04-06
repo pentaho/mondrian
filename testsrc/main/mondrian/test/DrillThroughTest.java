@@ -408,10 +408,13 @@ public class DrillThroughTest extends FoodMartTestCase {
             } else {
                 assertEquals(6, columnCount);
             }
-            final String columnName = resultSet.getMetaData().getColumnLabel(5);
+            final String columnName =
+                resultSet.getMetaData().getColumnLabel(5);
             assertTrue(
                 columnName,
-                columnName.equals("Education Level2 - Education Level but with a very long name tha"));
+                columnName.equals(
+                    "Education Level2 - Education Level but with a very long "
+                    + "name tha"));
             int n = 0;
             while (resultSet.next()) {
                 ++n;

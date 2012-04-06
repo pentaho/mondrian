@@ -1055,7 +1055,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
             + " {[Time].[Time].[1997].Children} ON ROWS\n"
             + "FROM [Sales]"
-            + "WHERE ([Customer].[Marital Status].[S], " + timeWeekly + ".[1997].[20])",
+            + "WHERE ([Customer].[Marital Status].[S], "
+            + timeWeekly
+            + ".[1997].[20])",
             "Axis #0:\n"
             + "{[Customer].[Marital Status].[S], [Time].[Weekly].[1997].[20]}\n"
             + "Axis #1:\n"

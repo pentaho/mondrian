@@ -10,6 +10,8 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.rolap.RolapSchema.PhysColumn;
+import mondrian.rolap.RolapSchema.PhysKey;
 
 import org.eigenbase.xom.*;
 
@@ -219,6 +221,24 @@ class PhysSchemaConverter extends RolapSchemaLoader.PhysSchemaBuilder {
             xmlColumn.type = elementDef.datatype.name();
             xmlColumnDefs.add(xmlColumn);
         }
+
+        for (PhysKey pKey : physInlineTable.getKeyList()) {
+            final MondrianDef.Key key = new MondrianDef.Key();
+            List<MondrianDef.Column> columns =
+                new ArrayList<MondrianDef.Column>();
+            for (PhysColumn pColumn : pKey.columnList) {
+                MondrianDef.Column column = new MondrianDef.Column();
+                column.name = pColumn.name;
+                column.table = pColumn.relation.getAlias();
+                columns.add(column);
+            }
+            key.array =
+                columns.toArray(
+                    new MondrianDef.Column[columns.size()]);
+            key.name = pKey.name;
+            xmlInlineTable.children.add(key);
+        }
+
         final List<MondrianDef.Row> xmlRows =
             xmlInlineTable.children.holder(new MondrianDef.Rows()).list();
         for (String[] values : physInlineTable.rowList) {

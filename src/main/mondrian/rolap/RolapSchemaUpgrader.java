@@ -1717,6 +1717,15 @@ public class RolapSchemaUpgrader {
                             null,
                             4));
                 }
+                // We must define a Key element. This wasn't present in
+                // 3.4 schemas, so by default we use the first column.
+                assert physInlineTable.getTotalColumnSize() > 0
+                    : "Inline tables must have at least one column to work properly in Mondrian 4+.";
+                physInlineTable.lookupKey(
+                    Collections.singletonList(
+                        physInlineTable.columnsByName
+                            .values().iterator().next()),
+                    true);
                 final int columnCount =
                     physInlineTable.columnsByName.size();
                 for (Mondrian3Def.Row row : xmlInlineTable.rows.array) {
@@ -1836,10 +1845,19 @@ public class RolapSchemaUpgrader {
                             columnDef.name,
                             Dialect.Datatype.valueOf(columnDef.type),
                             null,
-                            -1 /* TODO: jdbcColumn.getColumnSize() */));
+                            -1)); // TODO: jdbcColumn.getColumnSize()
                 }
                 final int columnCount =
                     physInlineTable.columnsByName.size();
+                // We must define a Key element. This wasn't present in
+                // 3.4 schemas, so by default we use the first column.
+                assert columnCount > 0
+                    : "Inline tables must have at least one column to work properly in Mondrian 4+.";
+                physInlineTable.lookupKey(
+                    Collections.singletonList(
+                        physInlineTable.columnsByName
+                            .values().iterator().next()),
+                    true);
                 for (Mondrian3Def.Row row : xmlLegacyInlineTable.rows.array) {
                     String[] values = new String[columnCount];
                     for (Mondrian3Def.Value value : row.values) {
@@ -1930,6 +1948,22 @@ public class RolapSchemaUpgrader {
             xmlColumnDefs.add(
                 convert((Mondrian3Def.ColumnDef) xmlLegacyColumnDef));
         }
+
+        // We must define a Key element. This wasn't present in
+        // 3.4 schemas, so by default we use the first column.
+        assert xmlColumnDefs.size() > 0
+            : "Inline tables must have at least one column to work properly in Mondrian 4+.";
+        final List<MondrianDef.Column> xmlKeys =
+            xmlInlineTable.children.holder(new MondrianDef.Key()).list();
+        final MondrianDef.Key key = new MondrianDef.Key();
+        final MondrianDef.Column column = new MondrianDef.Column();
+        column.name = xmlColumnDefs.get(0).name;
+        column.table = xmlLegacyInlineTable.alias;
+        key.array = new MondrianDef.Column[1];
+        key.array[0] = column;
+        key.name = "key$0";
+        xmlKeys.add(column);
+
         List<MondrianDef.Row> xmlRows =
             xmlInlineTable.children.holder(new MondrianDef.Rows()).list();
         for (Mondrian3Def.Row xmlLegacyRow : xmlLegacyInlineTable.rows.array) {

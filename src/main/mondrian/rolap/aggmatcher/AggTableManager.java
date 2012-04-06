@@ -65,7 +65,6 @@ public class AggTableManager {
      * associated RolapSchema object.
      */
     public void finalCleanUp() {
-        removeJdbcSchema();
         deregisterTriggers(MondrianProperties.instance());
 
         if (getLogger().isDebugEnabled()) {
@@ -162,14 +161,6 @@ public class AggTableManager {
     private void clearJdbcSchema() {
         DataSource dataSource = schema.getInternalConnection().getDataSource();
         JdbcSchema.clearDB(dataSource);
-    }
-
-    /**
-     * Remove the possibly already loaded snapshot of what is in the database.
-     */
-    private void removeJdbcSchema() {
-        DataSource dataSource = schema.getInternalConnection().getDataSource();
-        JdbcSchema.removeDB(dataSource);
     }
 
 

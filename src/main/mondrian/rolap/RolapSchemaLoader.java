@@ -16,6 +16,7 @@ import mondrian.olap.DimensionType;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.Level;
 import mondrian.olap.Member;
+import mondrian.olap.MondrianDef.RealOrCalcColumnDef;
 import mondrian.olap.NamedSet;
 import mondrian.olap.Property;
 import mondrian.olap.fun.UdfResolver;
@@ -45,7 +46,6 @@ import java.lang.reflect.Constructor;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Date;
 import javax.sql.DataSource;
 
 import static mondrian.olap.Util.first;
@@ -708,6 +708,18 @@ public class RolapSchemaLoader {
         registerKey(
             handler, inlineTable.getKey(), unresolvedColumnList,
             physInlineTable);
+        for (MondrianDef.Row row : inlineTable.getRows()) {
+            assert row.values.length == inlineTable.getColumnDefs().size();
+            List<String> newRow = new ArrayList<String>();
+            for (int i = 0; i < row.values.length; i++) {
+                RealOrCalcColumnDef colDef =
+                    inlineTable.getColumnDefs().get(i);
+                assert colDef.name.equals(row.values[i].column);
+                newRow.add(row.values[i].cdata);
+            }
+            physInlineTable.rowList.add(
+                newRow.toArray(new String[newRow.size()]));
+        }
         return physInlineTable;
     }
 
@@ -1489,18 +1501,19 @@ public class RolapSchemaLoader {
     {
         for (RolapSchema.PhysColumn column : attribute.keyList) {
             registerExpr(
-                measureGroup, dimension, path, column, attribute.caption, "Key");
+                measureGroup, dimension, path, column,
+                attribute.caption, "Key");
         }
         registerExpr(
-            measureGroup, dimension, path, attribute.nameExp, attribute.caption,
-            "Name");
+            measureGroup, dimension, path, attribute.nameExp,
+            attribute.caption, "Name");
         registerExpr(
-            measureGroup, dimension, path, attribute.captionExp, attribute.caption,
-            "Caption");
+            measureGroup, dimension, path, attribute.captionExp,
+            attribute.caption, "Caption");
         for (RolapSchema.PhysColumn column : attribute.orderByList) {
             registerExpr(
-                measureGroup, dimension, path, column, attribute.caption,
-                "OrderBy");
+                measureGroup, dimension, path, column,
+                attribute.caption, "OrderBy");
         }
 
         // No need to register properties, or the parent attribute. They are all
