@@ -87,16 +87,14 @@ public class ParserTest extends FoodMartTestCase {
             "select [member] ON AXIS(5)\n"
             + "from [sales]\n");
         assertParseQueryFails(
-            "select [member] on axes(0) from sales",
-            "Syntax error at line");
+            "select [member] on axes(0) from sales", "Syntax error at line");
         assertParseQueryFails(
             "select [member] on 0.5 from sales",
             "Invalid axis specification. "
             + "The axis number must be a non-negative integer, but it was 0.5.");
         assertParseQuery(
             "select [member] on 555 from sales",
-            "select [member] ON AXIS(555)\n"
-            + "from [sales]\n");
+            "select [member] ON AXIS(555)\n" + "from [sales]\n");
     }
 
     /**
@@ -128,8 +126,7 @@ public class ParserTest extends FoodMartTestCase {
         assertParseQueryFails(
             "with member [Measures].Foo as 1 + 2\n"
             + "select Foo on 0\n"
-            + "from Bar#Baz",
-            "Unexpected character '#'");
+            + "from Bar#Baz", "Unexpected character '#'");
 
         // The spec doesn't allow $ but SSAS allows it so we allow it too.
         assertParseQuery(
@@ -894,6 +891,35 @@ public class ParserTest extends FoodMartTestCase {
             + "{[Store].[USA].[WA].[Yakima].[Store   23]}\n"
             + "Row #0: 0\n");
         }
+    }
+
+    /**
+     * Test case for olap4j bug
+     * <a href="http://sourceforge.net/tracker/?func=detail&aid=3515404&group_id=168953&atid=848534">3515404</a>,
+     * "Inconsistent parsing behavior('.CHILDREN' and '.Children')".
+     */
+    public void testChildren() {
+        TestParser p = createParser();
+
+        checkChildren0(p, "CHILDREN");
+        checkChildren0(p, "Children");
+        checkChildren0(p, "children");
+    }
+
+    private void checkChildren0(TestParser p, String name) {
+        Exp node =
+            p.parseExpression(
+                null, null, "[Store].[USA]." + name, false, funTable);
+        checkChildren(node, name);
+    }
+
+    private void checkChildren(Exp node, String name) {
+        assertTrue(node instanceof FunCall);
+        FunCall call = (FunCall) node;
+        assertEquals(name, call.getFunName());
+        assertTrue(call.getArgs()[0] instanceof Id);
+        assertEquals("[Store].[USA]", call.getArgs()[0].toString());
+        assertEquals(1, call.getArgCount());
     }
 
     /**
