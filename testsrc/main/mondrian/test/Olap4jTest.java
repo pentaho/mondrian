@@ -23,11 +23,11 @@ import org.olap4j.metadata.Member;
 import org.olap4j.metadata.Property;
 
 import java.lang.reflect.Method;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.*;
 
 /**
  * Tests mondrian's olap4j API.
@@ -321,6 +321,63 @@ public class Olap4jTest extends FoodMartTestCase {
     static void closeOnCompletion(Object statement) throws Exception {
         Method method = java.sql.Statement.class.getMethod("closeOnCompletion");
         method.invoke(statement);
+    }
+
+    public void testDrillThrough() throws Exception {
+        final OlapConnection connection =
+            getTestContext().getOlap4jConnection();
+        final OlapStatement statement = connection.createStatement();
+        final ResultSet resultSet =
+            statement.executeQuery(
+                "DRILLTHROUGH MAXROWS 100\n"
+                + "SELECT FROM [Sales] WHERE [Measures].[Unit Sales]");
+        final ArrayBlockingQueue<String> results =
+            new ArrayBlockingQueue<String>(1);
+
+        // Synchronous. Works fine.
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        results.add("foreground " + metaData.getColumnCount());
+        assertEquals("foreground 29", results.poll(10, TimeUnit.SECONDS));
+        metaData = null;
+
+        // Background. Works fine.
+        Executor executor =
+            Executors.newSingleThreadExecutor();
+        executor.execute(
+            new Runnable() {
+                public void run() {
+                    try {
+                        ResultSetMetaData metaData = resultSet.getMetaData();
+                        results.add("background " + metaData.getColumnCount());
+                    } catch (SQLException e) {
+                        System.out.println(e);
+                    }
+                }
+            });
+        assertEquals("background 29", results.poll(10, TimeUnit.SECONDS));
+
+        // Background, after result set has been closed. Expect an
+        // error saying that the statement has been closed.
+        executor.execute(
+            new Runnable() {
+                public void run() {
+                    try {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            results.add(e.toString());
+                        }
+                        ResultSetMetaData metaData = resultSet.getMetaData();
+                        results.add("background2 " + metaData.getColumnCount());
+                    } catch (SQLException e) {
+                        results.add(e.toString());
+                    }
+                }
+            });
+        resultSet.close();
+        assertEquals(
+            "java.sql.SQLException: Invalid operation. Statement is closed.",
+            results.poll(10, TimeUnit.SECONDS));
     }
 }
 

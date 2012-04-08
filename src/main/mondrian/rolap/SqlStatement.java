@@ -15,6 +15,7 @@ import mondrian.server.Locus;
 import mondrian.server.monitor.*;
 import mondrian.util.DelegatingInvocationHandler;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.util.ArrayList;
@@ -589,8 +590,14 @@ public class SqlStatement {
             this.sqlStatement = sqlStatement;
         }
 
-        protected Object getTarget() {
-            return sqlStatement.getResultSet();
+        protected Object getTarget() throws InvocationTargetException {
+            final ResultSet resultSet = sqlStatement.getResultSet();
+            if (resultSet == null) {
+                throw new InvocationTargetException(
+                    new SQLException(
+                        "Invalid operation. Statement is closed."));
+            }
+            return resultSet;
         }
 
         /**

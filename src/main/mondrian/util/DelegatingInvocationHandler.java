@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2007 Pentaho
+// Copyright (C) 2007-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -92,8 +92,11 @@ public abstract class DelegatingInvocationHandler
      * does not have the required method.
      *
      * @return object to forward method calls to
+     *
+     * @throws InvocationTargetException if there is an error acquiring the
+     * target
      */
-    protected Object getTarget() {
+    protected Object getTarget() throws InvocationTargetException {
         return null;
     }
 }
