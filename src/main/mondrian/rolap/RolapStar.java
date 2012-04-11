@@ -86,6 +86,8 @@ public class RolapStar {
     private Map<String, StarNetworkNode> nodeLookup =
         new HashMap<String, StarNetworkNode>();
 
+    private final RolapStatisticsCache statisticsCache;
+
     /**
      * Creates a RolapStar. Please use
      * {@link RolapSchema.RolapStarRegistry#getOrCreateStar} to create a
@@ -107,6 +109,7 @@ public class RolapStar {
 
         this.sqlQueryDialect = schema.getDialect();
         this.changeListener = schema.getDataSourceChangeListener();
+        this.statisticsCache = new RolapStatisticsCache(this);
     }
 
     /**
@@ -186,6 +189,10 @@ public class RolapStar {
     public void register(SegmentWithData segment) {
         localBars.get().segmentRefs.add(
             new SoftReference<SegmentWithData>(segment));
+    }
+
+    public RolapStatisticsCache getStatisticsCache() {
+        return statisticsCache;
     }
 
     /**
@@ -1010,78 +1017,12 @@ public class RolapStar {
          * @return the column cardinality.
          */
         public int getCardinality() {
-            if (approxCardinality == Integer.MIN_VALUE) {
-                RolapStar star = getStar();
-                RolapSchema schema = star.getSchema();
-                Integer card =
-                    schema.getCachedRelationExprCardinality(
-                        table.getRelation(),
-                        expression);
-
-                if (card != null) {
-                    approxCardinality = card.intValue();
-                } else {
-                    // If not cached, issue SQL to get the cardinality for
-                    // this column.
-                    approxCardinality = getCardinality(star.getDataSource());
-                    schema.putCachedRelationExprCardinality(
-                        table.getRelation(),
-                        expression,
-                        approxCardinality);
-                }
+            if (approxCardinality < 0) {
+                approxCardinality =
+                    table.star.getStatisticsCache().getColumnCardinality(
+                        table.relation, expression, approxCardinality);
             }
             return approxCardinality;
-        }
-
-        private int getCardinality(DataSource dataSource) {
-            SqlQuery sqlQuery = getSqlQuery();
-            if (sqlQuery.getDialect().allowsCountDistinct()) {
-                // e.g. "select count(distinct product_id) from product"
-                sqlQuery.addSelect(
-                    "count(distinct "
-                    + generateExprString(sqlQuery) + ")",
-                    null);
-
-                // no need to join fact table here
-                table.addToFrom(sqlQuery, true, false);
-            } else if (sqlQuery.getDialect().allowsFromQuery()) {
-                // Some databases (e.g. Access) don't like 'count(distinct)',
-                // so use, e.g., "select count(*) from (select distinct
-                // product_id from product)"
-                SqlQuery inner = sqlQuery.cloneEmpty();
-                inner.setDistinct(true);
-                inner.addSelect(generateExprString(inner), null);
-                boolean failIfExists = true,
-                    joinToParent = false;
-                table.addToFrom(inner, failIfExists, joinToParent);
-                sqlQuery.addSelect("count(*)", null);
-                sqlQuery.addFrom(inner, "init", failIfExists);
-            } else {
-                throw Util.newInternal(
-                    "Cannot compute cardinality: this "
-                    + "database neither supports COUNT DISTINCT nor SELECT in "
-                    + "the FROM clause.");
-            }
-            String sql = sqlQuery.toString();
-            final SqlStatement stmt =
-                RolapUtil.executeQuery(
-                    dataSource,
-                    sql,
-                    new Locus(
-                        Locus.peek().execution,
-                        "RolapStar.Column.getCardinality",
-                        "while counting distinct values of column '"
-                        + expression.getGenericExpression()));
-            try {
-                ResultSet resultSet = stmt.getResultSet();
-                Util.assertTrue(resultSet.next());
-                ++stmt.rowCount;
-                return resultSet.getInt(1);
-            } catch (SQLException e) {
-                throw stmt.handle(e);
-            } finally {
-                stmt.close();
-            }
         }
 
         /**

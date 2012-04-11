@@ -1141,10 +1141,10 @@ public class TestAggregationManager extends BatchTestCase {
             "select count(distinct `store_country`) as `c0` from `store` as `store`";
 
         String cardinalitySqlDerby2 =
-            "select count(distinct \"store_country\") from \"store_ragged\" as \"store_ragged\"";
+            "select count(*) from (select distinct \"store_country\" as \"c0\" from \"store_ragged\" as \"store_ragged\") as \"init\"";
 
         String cardinalitySqlMySql2 =
-            "select count(distinct `store_country`) as `c0` from `store_ragged` as `store_ragged`";
+            "select count(*) from (select distinct `store_country` as `c0` from `store_ragged` as `store_ragged`) as `init`";
 
         SqlPattern[] patterns1 =
             new SqlPattern[] {

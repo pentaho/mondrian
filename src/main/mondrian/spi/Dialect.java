@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2011 Pentaho
+// Copyright (C) 2008-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi;
@@ -758,6 +758,21 @@ public interface Dialect {
     String generateRegularExpression(
         String source,
         String javaRegExp);
+
+    /**
+     * Returns a list of statistics providers for this dialect.
+     *
+     * <p>The default implementation looks for the value of the property
+     * {@code mondrian.statistics.providers.PRODUCT} where product is the
+     * current dialect's product name (for example "MYSQL"). If that property
+     * has no value, looks at the property
+     * {@code mondrian.statistics.providers}. The property value should be
+     * a comma-separated list of names of classes that implement the
+     * {@link StatisticsProvider} interface. For each statistic required,
+     * Mondrian will call the method each statistics provider in turn, until one
+     * of them returns a non-negative value.</p>
+     */
+    List<StatisticsProvider> getStatisticsProviders();
 
     /**
      * Enumeration of common database types.

@@ -146,19 +146,6 @@ public class RolapSchema implements Schema {
     private DataSourceChangeListener dataSourceChangeListener;
 
     /**
-     * Map containing column cardinality. The combination of
-     * Mondrianef.Relation and MondrianDef.Expression uniquely
-     * identifies a relational expression(e.g. a column) specified
-     * in the xml schema.
-     */
-    private final Map<
-        MondrianDef.Relation,
-        Map<MondrianDef.Expression, Integer>>
-        relationExprCardinalityMap = new HashMap<
-            MondrianDef.Relation,
-            Map<MondrianDef.Expression, Integer>>();
-
-    /**
      * List of warnings. Populated when a schema is created by a connection
      * that has
      * {@link mondrian.rolap.RolapConnectionProperties#Ignore Ignore}=true.
@@ -1680,51 +1667,6 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
      */
     public RolapConnection getInternalConnection() {
         return internalConnection;
-    }
-
-    /**
-     * Returns the cached cardinality for the column.
-     * The cache is stored in the schema so that queries on different
-     * cubes can share them.
-     * @return the cardinality map
-     */
-    Integer getCachedRelationExprCardinality(
-        MondrianDef.Relation relation,
-        MondrianDef.Expression columnExpr)
-    {
-        Integer card = null;
-        synchronized (relationExprCardinalityMap) {
-            Map<MondrianDef.Expression, Integer> exprCardinalityMap =
-                relationExprCardinalityMap.get(relation);
-            if (exprCardinalityMap != null) {
-                card = exprCardinalityMap.get(columnExpr);
-            }
-        }
-        return card;
-    }
-
-    /**
-     * Sets the cardinality for a given column in cache.
-     *
-     * @param relation the relation associated with the column expression
-     * @param columnExpr the column expression to cache the cardinality for
-     * @param cardinality the cardinality for the column expression
-     */
-    void putCachedRelationExprCardinality(
-        MondrianDef.Relation relation,
-        MondrianDef.Expression columnExpr,
-        Integer cardinality)
-    {
-        synchronized (relationExprCardinalityMap) {
-            Map<MondrianDef.Expression, Integer> exprCardinalityMap =
-                relationExprCardinalityMap.get(relation);
-            if (exprCardinalityMap == null) {
-                exprCardinalityMap =
-                    new HashMap<MondrianDef.Expression, Integer>();
-                relationExprCardinalityMap.put(relation, exprCardinalityMap);
-            }
-            exprCardinalityMap.put(columnExpr, cardinality);
-        }
     }
 
     private RolapStar makeRolapStar(final MondrianDef.Relation fact) {

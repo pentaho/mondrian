@@ -20,10 +20,16 @@ import mondrian.olap.*;
 import mondrian.olap.Position;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
+import mondrian.rolap.RolapSchema;
+import mondrian.server.Execution;
 import mondrian.spi.*;
+import mondrian.spi.impl.JdbcStatisticsProvider;
+import mondrian.spi.impl.SqlStatisticsProvider;
 import mondrian.util.Bug;
 
 import junit.framework.Assert;
+
+import org.eigenbase.util.property.StringProperty;
 
 import org.olap4j.*;
 import org.olap4j.layout.RectangularCellSetFormatter;
@@ -7509,6 +7515,81 @@ public class BasicQueryTest extends FoodMartTestCase {
             break;
         case 4:
         }
+    }
+
+    /**
+     * Unit test for {@link StatisticsProvider} and implementations
+     * {@link JdbcStatisticsProvider} and
+     * {@link SqlStatisticsProvider}.
+     */
+    public void testStatistics() {
+        final String product =
+            getTestContext().getDialect().getDatabaseProduct().name();
+        propSaver.set(
+            new StringProperty(
+                MondrianProperties.instance(),
+                MondrianProperties.instance().StatisticsProviders.getPath()
+                + "."
+                + product,
+                null),
+            MyJdbcStatisticsProvider.class.getName()
+            + ","
+            + SqlStatisticsProvider.class.getName());
+        final TestContext testContext = getTestContext().withFreshConnection();
+        testContext.assertSimpleQuery();
+
+        final List<StatisticsProvider> statisticsProviders =
+            testContext.getDialect().getStatisticsProviders();
+        assertEquals(2, statisticsProviders.size());
+        assertTrue(
+            statisticsProviders.get(0) instanceof MyJdbcStatisticsProvider);
+        assertTrue(
+            statisticsProviders.get(1) instanceof SqlStatisticsProvider);
+
+        for (StatisticsProvider statisticsProvider : statisticsProviders) {
+            int rowCount =
+                statisticsProvider.getTableCardinality(
+                    testContext.getDialect(),
+                    testContext.getConnection().getDataSource(),
+                    null,
+                    null,
+                    "customer",
+                    new Execution(
+                        ((RolapSchema) testContext.getConnection().getSchema())
+                            .getInternalConnection()
+                            .getInternalStatement(),
+                        0));
+            assertTrue(
+                "Row count estimate: " + rowCount + " (actual 10281)",
+                rowCount > 10000 && rowCount < 15000);
+
+            int valueCount =
+                statisticsProvider.getColumnCardinality(
+                    testContext.getDialect(),
+                    testContext.getConnection().getDataSource(),
+                    null,
+                    null,
+                    "customer",
+                    "gender",
+                    new Execution(
+                        ((RolapSchema) testContext.getConnection().getSchema())
+                            .getInternalConnection().getInternalStatement(),
+                        0));
+            assertTrue(
+                "Value count estimate: " + valueCount + " (actual 2)",
+                statisticsProvider instanceof JdbcStatisticsProvider
+                    ? valueCount == -1
+                    : valueCount == 2);
+        }
+    }
+
+    /**
+     * Dummy statistics provider for
+     * {@link mondrian.test.BasicQueryTest#testStatistics()}.
+     */
+    public static class MyJdbcStatisticsProvider
+        extends JdbcStatisticsProvider
+    {
     }
 }
 

@@ -30,12 +30,13 @@ import org.olap4j.mdx.*;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.reflect.*;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
@@ -2326,6 +2327,42 @@ public class Util extends XOMUtil {
                 + " elements, expected 1");
         }
         return list.get(0);
+    }
+
+    /**
+     * Closes a JDBC result set, statement, and connection, ignoring any errors.
+     * If any of them are null, that's fine.
+     *
+     * @param resultSet Result set
+     * @param statement Statement
+     * @param connection Connection
+     */
+    public static void close(
+        ResultSet resultSet,
+        Statement statement,
+        java.sql.Connection connection)
+    {
+        if (resultSet != null) {
+            try {
+                resultSet.close();
+            } catch (SQLException e) {
+                // ignore
+            }
+        }
+        if (statement != null) {
+            try {
+                statement.close();
+            } catch (SQLException e) {
+                // ignore
+            }
+        }
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                // ignore
+            }
+        }
     }
 
     public static class ErrorCellValue {
