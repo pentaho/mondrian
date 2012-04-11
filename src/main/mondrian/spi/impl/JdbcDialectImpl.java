@@ -955,7 +955,7 @@ public class JdbcDialectImpl implements Dialect {
             + "."
             + getDatabaseProduct().name();
         String nameList = MondrianProperties.instance().getProperty(path);
-        if (nameList != null && !nameList.isEmpty()) {
+        if (nameList != null && nameList.length() > 0) {
             return Arrays.asList(nameList.split(","));
         }
 
