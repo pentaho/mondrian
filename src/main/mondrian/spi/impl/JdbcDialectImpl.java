@@ -941,7 +941,7 @@ public class JdbcDialectImpl implements Dialect {
 
         // Generic property, "mondrian.statistics.providers"
         nameList = MondrianProperties.instance().StatisticsProviders.get();
-        if (nameList != null && !nameList.isEmpty()) {
+        if (nameList != null && nameList.length() > 0) {
             return Arrays.asList(nameList.split(","));
         }
         return null;
