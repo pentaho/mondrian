@@ -1340,7 +1340,7 @@ public class AggStar {
                         convertTable(
                             AggStar.this.star.getColumn(bitPosition)
                                 .getTable(),
-                            null);
+                            usage.levelColumnName);
                     /*
                      * Make sure to return the last child table, since
                      * AggQuerySpec will take care of going up the

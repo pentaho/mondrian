@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -189,7 +189,7 @@ public class NonCollapsedAggTest extends AggTableTestCase {
         final String mdx =
             "select {[Measures].[Unit Sales]} on columns, {[dimension.tenant].[tenant].Members} on rows from [foo]";
 
-        final TestContext context = getCubeTestContext();
+        final TestContext context = getTestContext();
 
         // We expect the correct cell value + 1 if the agg table is used.
         context.assertQueryReturns(
@@ -213,7 +213,7 @@ public class NonCollapsedAggTest extends AggTableTestCase {
         final String mdx =
             "select {[Measures].[Unit Sales]} on columns, {[dimension.distributor].[line class].Members} on rows from [foo]";
 
-        final TestContext context = getCubeTestContext();
+        final TestContext context = getTestContext();
 
         // We expect the correct cell value + 1 if the agg table is used.
         context.assertQueryReturns(
@@ -249,7 +249,7 @@ public class NonCollapsedAggTest extends AggTableTestCase {
             return;
         }
 
-        final TestContext context = getCubeTestContext();
+        final TestContext context = getTestContext();
 
         // We expect the correct cell value + 2 if the agg table is used.
         final String mdx =

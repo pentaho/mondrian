@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -45,13 +45,13 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
 
         String mdx =
             "select {[Measures].[Total]} on columns from [Fact]";
-        Result result = getCubeTestContext().executeQuery(mdx);
+        Result result = getTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
         String mdx2 =
             "select {[Measures].[Total]} on columns from [Fact] where "
             + "{[Product].[Cat One].[Prod Cat One].[One]}";
-        Result aresult = getCubeTestContext().executeQuery(mdx2);
+        Result aresult = getTestContext().executeQuery(mdx2);
         Object av = aresult.getCell(new int[]{0}).getValue();
 
         // unless there is a way to flush the cache,
@@ -59,12 +59,12 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
         propSaver.set(props.UseAggregates, true);
         propSaver.set(props.ReadAggregates, false);
 
-        Result result1 = getCubeTestContext().executeQuery(mdx);
+        Result result1 = getTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
 
         assertTrue(v.equals(v1));
 
-        Result aresult2 = getCubeTestContext().executeQuery(mdx2);
+        Result aresult2 = getTestContext().executeQuery(mdx2);
         Object av1 = aresult2.getCell(new int[]{0}).getValue();
 
         assertTrue(av.equals(av1));
@@ -82,7 +82,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
             + "{[Store].[All Stores]}) on rows "
             + "from [Fact]";
 
-        getCubeTestContext().assertQueryReturns(
+        getTestContext().assertQueryReturns(
             mdx,
             "Axis #0:\n"
             + "{}\n"
@@ -101,7 +101,7 @@ public class MultipleColsInTupleAggTest extends AggTableTestCase {
 
         String mdx = "select {[Measures].[Total]} on columns, "
             + "non empty [Product].[Cat One].Children on rows from [Fact]";
-        getCubeTestContext().assertQueryReturns(
+        getTestContext().assertQueryReturns(
             mdx,
             "Axis #0:\n"
             + "{}\n"

@@ -1,0 +1,44 @@
+# animal_schema.csv
+# @version  $Id:$
+## TableName: DIM_FAMILY
+## ColumnNames: FAMILY_ID,FAMILY_NAME
+## ColumnTypes: INTEGER,VARCHAR(30)
+## NosOfRows: 3
+100,Loricariidae
+200,Cichlidae
+300,Cyprinidae
+## TableName: DIM_GENUS
+## ColumnNames: FAMILY_ID,GENUS_ID,GENUS_NAME
+## ColumnTypes: INTEGER,INTEGER,VARCHAR(30)
+## NosOfRows: 4
+100,110,g110
+100,120,g120
+200,230,g230
+300,340,g340
+## TableName: DIM_SPECIES
+## ColumnNames: FAMILY_ID,GENUS_ID,SPECIES_ID,SPECIES_NAME
+## ColumnTypes: INTEGER,INTEGER,INTEGER,VARCHAR(30)
+## NosOfRows: 5
+100,110,111,s111
+100,110,112,s112
+100,120,123,s123
+200,230,231,s231
+300,340,345,s345
+## TableName: SPECIES_MART
+## ColumnNames: SPECIES_ID,POPULATION
+## ColumnTypes: INTEGER,INTEGER
+## NosOfRows: 5
+111,123
+112,543
+123,555
+231,444
+345,666
+## TableName: AGG_SPECIES_MART
+## ColumnNames: GEN_ID,POPULATION,FACT_COUNT
+## ColumnTypes: INTEGER,INTEGER,INTEGER
+## NosOfRows: 4
+110,123,2
+120,543,1
+230,579,1
+340,479,1
+# End

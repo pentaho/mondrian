@@ -47,7 +47,7 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
     }
 
     protected final boolean isApplicable() {
-        final Dialect dialect = getTestContext().getDialect();
+        final Dialect dialect = TestContext.instance().getDialect();
         return dialect.allowsDdl()
             && dialect.getDatabaseProduct()
             != Dialect.DatabaseProduct.INFOBRIGHT;
@@ -78,19 +78,31 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
         // create database tables
         this.loader.executeStatements(this.tables);
 
+        this.testContext = createTestContext();
+    }
+
+    protected TestContext createTestContext() {
         String parameterDefs = getParameterDescription();
         String cubeDefs = getCubeDescription();
         String virtualCubeDefs = getVirtualCubeDescription();
         String namedSetDefs = getNamedSetDescription();
         String udfDefs = getUdfDescription();
         String roleDefs = getRoleDescription();
-        this.testContext = TestContext.instance().create(
+        return TestContext.instance().create(
             parameterDefs,
             cubeDefs,
             virtualCubeDefs,
             namedSetDefs,
             udfDefs,
             roleDefs);
+    }
+
+    @Override
+    public TestContext getTestContext() {
+        // Return default test context if we haven't yet completed setUp.
+        return testContext == null
+            ? TestContext.instance()
+            : testContext;
     }
 
     protected void tearDown() throws Exception {
@@ -120,10 +132,6 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
         return getConnection().getSchema();
     }
 
-    protected TestContext getCubeTestContext() {
-        return testContext;
-    }
-
     protected abstract String getDirectoryName();
     protected abstract String getFileName();
 
@@ -131,7 +139,9 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
         return null;
     }
 
-    protected abstract String getCubeDescription();
+    protected String getCubeDescription() {
+        throw new UnsupportedOperationException();
+    }
 
     protected String getVirtualCubeDescription() {
         return null;

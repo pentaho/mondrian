@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2009 Pentaho and others
+// Copyright (C) 2006-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -27,12 +27,9 @@ import mondrian.test.loader.CsvDBTestCase;
  */
 public class Checkin_7641 extends CsvDBTestCase {
     private static final String DIRECTORY =
-                            "testsrc/main/mondrian/rolap/aggmatcher";
+        "testsrc/main/mondrian/rolap/aggmatcher";
     private static final String CHECKIN_7641 = "Checkin_7641.csv";
 
-    public static final String PROP_NAME =  "mondrian.test.checkin.7641";
-
-    //private boolean useImplicitMembers;
     public Checkin_7641() {
         super();
     }
@@ -59,9 +56,9 @@ public class Checkin_7641 extends CsvDBTestCase {
             + "[Geography].[All Regions].Children)) ON ROWS"
             + " from [ImplicitMember]";
 
-        Result result1 = getCubeTestContext().executeQuery(mdx);
+        Result result1 = getTestContext().executeQuery(mdx);
         String resultString1 = TestContext.toString(result1);
-        Result result2 = getCubeTestContext().executeQuery(mdx);
+        Result result2 = getTestContext().executeQuery(mdx);
         String resultString2 = TestContext.toString(result2);
 
         assertEquals(resultString1, resultString2);

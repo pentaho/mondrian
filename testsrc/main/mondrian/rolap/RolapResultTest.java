@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -98,7 +98,7 @@ public class RolapResultTest extends AggTableTestCase {
             + " ON ROWS "
             + "from FTAll";
 
-        getCubeTestContext().assertQueryReturns(mdx, RESULTS_ALL);
+        getTestContext().assertQueryReturns(mdx, RESULTS_ALL);
 /*
         Result result = getCubeTestContext().executeQuery(mdx);
         String resultString = TestContext.toString(result);
@@ -122,7 +122,7 @@ public class RolapResultTest extends AggTableTestCase {
             + "from FT1";
 
         //getCubeTestContext().assertQueryReturns(mdx, RESULTS);
-        Result result = getCubeTestContext().executeQuery(mdx);
+        Result result = getTestContext().executeQuery(mdx);
         String resultString = TestContext.toString(result);
 //System.out.println(resultString);
 /*
@@ -151,7 +151,7 @@ Axis #2:
             + " ON ROWS "
             + "from FT2";
 
-        getCubeTestContext().assertQueryReturns(mdx, RESULTS);
+        getTestContext().assertQueryReturns(mdx, RESULTS);
 /*
         Result result = getCubeTestContext().executeQuery(mdx);
         String resultString = TestContext.toString(result);
@@ -184,7 +184,7 @@ Axis #2:
             + "from FT2Extra";
 
         //getCubeTestContext().assertQueryReturns(mdx, RESULTS);
-        Result result = getCubeTestContext().executeQuery(mdx);
+        Result result = getTestContext().executeQuery(mdx);
         String resultString = TestContext.toString(result);
         assertTrue(resultString.equals(RESULTS));
     }

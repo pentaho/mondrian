@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -43,12 +43,12 @@ public class BUG_1541077 extends AggTableTestCase {
 
         String mdx =
             "select {[Measures].[Store Count]} on columns from Cheques";
-        Result result = getCubeTestContext().executeQuery(mdx);
+        Result result = getTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
         propSaver.set(props.UseAggregates, true);
 
-        Result result1 = getCubeTestContext().executeQuery(mdx);
+        Result result1 = getTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
 
         assertTrue(v.equals(v1));
@@ -66,12 +66,12 @@ public class BUG_1541077 extends AggTableTestCase {
 
         String mdx =
             "select {[Measures].[Sales Count]} on columns from Cheques";
-        Result result = getCubeTestContext().executeQuery(mdx);
+        Result result = getTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
         propSaver.set(props.UseAggregates, true);
 
-        Result result1 = getCubeTestContext().executeQuery(mdx);
+        Result result1 = getTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
 
         assertTrue(v.equals(v1));
@@ -89,12 +89,12 @@ public class BUG_1541077 extends AggTableTestCase {
 
         String mdx =
             "select {[Measures].[Total Amount]} on columns from Cheques";
-        Result result = getCubeTestContext().executeQuery(mdx);
+        Result result = getTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getValue();
 
         propSaver.set(props.UseAggregates, false);
 
-        Result result1 = getCubeTestContext().executeQuery(mdx);
+        Result result1 = getTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getValue();
 
         assertTrue(v.equals(v1));
@@ -112,13 +112,13 @@ public class BUG_1541077 extends AggTableTestCase {
 
         String mdx = "select {[Measures].[Avg Amount]} on columns from Cheques";
 
-        Result result = getCubeTestContext().executeQuery(mdx);
+        Result result = getTestContext().executeQuery(mdx);
         Object v = result.getCell(new int[]{0}).getFormattedValue();
 
         // get value with aggregates
         propSaver.set(props.UseAggregates, true);
 
-        Result result1 = getCubeTestContext().executeQuery(mdx);
+        Result result1 = getTestContext().executeQuery(mdx);
         Object v1 = result1.getCell(new int[]{0}).getFormattedValue();
 
         assertTrue(v.equals(v1));
