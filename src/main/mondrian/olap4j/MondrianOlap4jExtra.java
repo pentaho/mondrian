@@ -64,10 +64,14 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
         if (level instanceof MondrianOlap4jLevel) {
             // Improved implementation if the provider is mondrian.
             final MondrianOlap4jLevel olap4jLevel = (MondrianOlap4jLevel) level;
+            final RolapCube cube =
+                ((RolapCubeLevel)olap4jLevel.level).getCube();
+            final MondrianOlap4jConnection olapConnection =
+                (MondrianOlap4jConnection) olap4jLevel.olap4jSchema
+                    .olap4jCatalog.olap4jDatabase.getOlapConnection();
             final mondrian.olap.SchemaReader schemaReader =
-                olap4jLevel.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-                    .olap4jConnection.getMondrianConnection().getSchemaReader()
-                    .withLocus();
+                cube.getSchemaReader(
+                    olapConnection.getMondrianConnection2().getRole());
             return schemaReader.getLevelCardinality(
                 olap4jLevel.level, true, true);
         } else {
@@ -162,10 +166,14 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
     {
         final MondrianOlap4jHierarchy olap4jHierarchy =
             (MondrianOlap4jHierarchy) hierarchy;
+        final RolapCube cube =
+            ((RolapCubeHierarchy)olap4jHierarchy.hierarchy).getCube();
+        final MondrianOlap4jConnection olapConnection =
+            (MondrianOlap4jConnection) olap4jHierarchy.olap4jSchema
+                .olap4jCatalog.olap4jDatabase.getOlapConnection();
         final mondrian.olap.SchemaReader schemaReader =
-            olap4jHierarchy.olap4jSchema.olap4jCatalog.olap4jDatabaseMetaData
-                .olap4jConnection.getMondrianConnection().getSchemaReader()
-                .withLocus();
+            cube.getSchemaReader(
+                olapConnection.getMondrianConnection2().getRole());
         return RolapMemberBase.getHierarchyCardinality(
             schemaReader, olap4jHierarchy.hierarchy);
     }
@@ -249,10 +257,7 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
 
     public String getCubeType(Cube cube) {
         return
-            (cube instanceof MondrianOlap4jCube)
-            && ((RolapCube) ((MondrianOlap4jCube) cube).cube).isVirtual()
-                ? RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_VIRTUAL_CUBE
-                : RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_CUBE;
+            RowsetDefinition.MdschemaCubesRowset.MD_CUBTYPE_CUBE;
     }
 
     public boolean isLevelUnique(Level level) {

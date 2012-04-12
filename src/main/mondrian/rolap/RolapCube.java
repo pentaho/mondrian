@@ -624,6 +624,17 @@ public class RolapCube extends CubeBase {
             return members;
         }
 
+        public int getLevelCardinality(
+            Level level, boolean approximate,
+            boolean materialize)
+        {
+            int levelCardinality =
+                super.getLevelCardinality(
+                    level, approximate, materialize);
+            levelCardinality += getCalculatedMembers(level).size();
+            return levelCardinality;
+        }
+
         public Member getCalculatedMember(List<Id.Segment> nameParts) {
             final String uniqueName = Util.implode(nameParts);
             for (Formula formula : calculatedMemberList) {
