@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2012 Pentaho
+// Copyright (C) 2006-2011 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -827,49 +827,6 @@ public class FormatTest extends TestCase {
             new BigDecimal("1.2"),
             "" + Format.intlCurrencySymbol + "#",
             "$1");
-    }
-
-    /**
-     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1098">
-     * MONDRIAN-1098</a>, "Trying to get formatted value of a cell results in
-     * ArrayIndexOutOfBoundsException".
-     */
-    public void testBugMondrian1098() {
-        final double v = 0.5616000000000001;
-        assertFormat("$000,000.56", "$000,000.00", v);
-        assertFormat("$0,000,000.56", "$0,000,000.00", v);
-        assertFormat("$00,000,000.56", "$00,000,000.00", v); // was also broken
-        assertFormat("$000,000,000.56", "$000,000,000.00", v); // the actual bug
-
-        // for various huge format strings
-        Random random = new Random(123);
-        for (int i = 0; i < 200; i++) {
-            check1098(i);
-            check1098(random.nextInt(20000));
-        }
-    }
-
-    private void check1098(int i) {
-        final double v = 0.5616000000000001;
-        StringBuilder buf = new StringBuilder("$");
-        for (int j = 0; j < i; j++) {
-            if ((i - j) % 3 == 0 && j > 0) {
-                buf.append(",");
-            }
-            buf.append("0");
-        }
-        buf.append(".00");
-        final String formatString = buf.toString();
-        final Format format = Format.get(formatString, Locale.US);
-        final String s = format.format(v);
-        assertEquals(s, formatString.length(), s.length());
-        assertTrue(s, s.endsWith(".56"));
-    }
-
-    private void assertFormat(
-        String expected, String formatString, Object v)
-    {
-        assertEquals(expected, Format.get(formatString, Locale.US).format(v));
     }
 }
 

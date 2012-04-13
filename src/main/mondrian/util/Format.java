@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2000-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2011 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 2 November, 2000
@@ -2193,10 +2193,12 @@ public class Format {
         buf.append(currencyRight);
         String currencyFormatString = buf.toString();
 
-        // If the locale passed is only a language, Java cannot
-        // resolve the currency symbol and will instead return
-        // u00a4 (The international currency symbol). For those cases,
-        // we use the default system locale currency symbol.
+        /*
+         * If the locale passed is only a language, Java cannot
+         * resolve the currency symbol and will instead return
+         * u00a4 (The international currency symbol). For those cases,
+         * we use the default system locale currency symbol.
+         */
         String currencySymbol = decimalSymbols.getCurrencySymbol();
         if (currencySymbol.equals(Format.intlCurrencySymbol + "")) {
             final DecimalFormatSymbols defaultDecimalSymbols =
@@ -2849,9 +2851,11 @@ static class FloatingDecimal {
     char        digits[];
     int         nDigits;
 
-    // Constants of the implementation
-    // Most are IEEE-754 related.
-    // (There are more really boring constants at the end.)
+    /*
+     * Constants of the implementation
+     * Most are IEEE-754 related.
+     * (There are more really boring constants at the end.)
+     */
     static final long   signMask = 0x8000000000000000L;
     static final long   expMask  = 0x7ff0000000000000L;
     static final long   fractMask = ~(signMask | expMask);
@@ -3223,19 +3227,21 @@ static class FloatingDecimal {
             if ((nTinyBits < long5pow.length)
                 && ((nFractBits + n5bits[nTinyBits]) < 64))
             {
-                // We can do this:
-                // take the fraction bits, which are normalized.
-                // (a) nTinyBits == 0: Shift left or right appropriately
-                //     to align the binary point at the extreme right, i.e.
-                //     where a long int point is expected to be. The integer
-                //     result is easily converted to a string.
-                // (b) nTinyBits > 0: Shift right by expShift-nFractBits,
-                //     which effectively converts to long and scales by
-                //     2^nTinyBits. Then multiply by 5^nTinyBits to
-                //     complete the scaling. We know this won't overflow
-                //     because we just counted the number of bits necessary
-                //     in the result. The integer you get from this can
-                //     then be converted to a string pretty easily.
+                /*
+                 * We can do this:
+                 * take the fraction bits, which are normalized.
+                 * (a) nTinyBits == 0: Shift left or right appropriately
+                 *     to align the binary point at the extreme right, i.e.
+                 *     where a long int point is expected to be. The integer
+                 *     result is easily converted to a string.
+                 * (b) nTinyBits > 0: Shift right by expShift-nFractBits,
+                 *     which effectively converts to long and scales by
+                 *     2^nTinyBits. Then multiply by 5^nTinyBits to
+                 *     complete the scaling. We know this won't overflow
+                 *     because we just counted the number of bits necessary
+                 *     in the result. The integer you get from this can
+                 *     then be converted to a string pretty easily.
+                 */
                 long halfULP;
                 if (nTinyBits == 0) {
                     if (binExp > nSignificantBits) {
@@ -3251,53 +3257,58 @@ static class FloatingDecimal {
                     developLongDigits(0, fractBits, halfULP);
                     return;
                 }
-                // The following causes excess digits to be printed
-                // out in the single-float case. Our manipulation of
-                // halfULP here is apparently not correct. If we
-                // better understand how this works, perhaps we can
-                // use this special case again. But for the time being,
-                // we do not.
-                //
-                // else {
-                //     fractBits >>>= expShift + 1-nFractBits;
-                //     fractBits *= long5pow[ nTinyBits ];
-                //     halfULP = long5pow[ nTinyBits ]
-                //         >> (1 + nSignificantBits - nFractBits);
-                //     developLongDigits(-nTinyBits, fractBits, halfULP);
-                //     return;
-                // }
+                /*
+                 * The following causes excess digits to be printed
+                 * out in the single-float case. Our manipulation of
+                 * halfULP here is apparently not correct. If we
+                 * better understand how this works, perhaps we can
+                 * use this special case again. But for the time being,
+                 * we do not.
+                 * else {
+                 *     fractBits >>>= expShift + 1-nFractBits;
+                 *     fractBits *= long5pow[ nTinyBits ];
+                 *     halfULP = long5pow[ nTinyBits ]
+                 *         >> (1 + nSignificantBits - nFractBits);
+                 *     developLongDigits(-nTinyBits, fractBits, halfULP);
+                 *     return;
+                 * }
+                 */
             }
         }
-        // This is the hard case. We are going to compute large positive
-        // integers B and S and integer decExp, s.t.
-        //      d = (B / S) * 10^decExp
-        //      1 <= B / S < 10
-        // Obvious choices are:
-        //      decExp = floor(log10(d))
-        //      B      = d * 2^nTinyBits * 10^max(0, -decExp)
-        //      S      = 10^max(0, decExp) * 2^nTinyBits
-        // (noting that nTinyBits has already been forced to non-negative)
-        // I am also going to compute a large positive integer
-        //      M      = (1/2^nSignificantBits)
-        //               * 2^nTinyBits
-        //               * 10^max(0, -decExp)
-        // i.e. M is (1/2) of the ULP of d, scaled like B.
-        // When we iterate through dividing B/S and picking off the
-        // quotient bits, we will know when to stop when the remainder
-        // is <= M.
-        //
-        // We keep track of powers of 2 and powers of 5.
+        /*
+         * This is the hard case. We are going to compute large positive
+         * integers B and S and integer decExp, s.t.
+         *      d = (B / S) * 10^decExp
+         *      1 <= B / S < 10
+         * Obvious choices are:
+         *      decExp = floor(log10(d))
+         *      B      = d * 2^nTinyBits * 10^max(0, -decExp)
+         *      S      = 10^max(0, decExp) * 2^nTinyBits
+         * (noting that nTinyBits has already been forced to non-negative)
+         * I am also going to compute a large positive integer
+         *      M      = (1/2^nSignificantBits)
+         *               * 2^nTinyBits
+         *               * 10^max(0, -decExp)
+         * i.e. M is (1/2) of the ULP of d, scaled like B.
+         * When we iterate through dividing B/S and picking off the
+         * quotient bits, we will know when to stop when the remainder
+         * is <= M.
+         *
+         * We keep track of powers of 2 and powers of 5.
+         */
 
-        // Estimate decimal exponent. (If it is small-ish,
-        // we could double-check.)
-        //
-        // First, scale the mantissa bits such that 1 <= d2 < 2.
-        // We are then going to estimate
-        //          log10(d2) ~=~  (d2-1.5)/1.5 + log(1.5)
-        // and so we can estimate
-        //      log10(d) ~=~ log10(d2) + binExp * log10(2)
-        // take the floor and call it decExp.
-        // FIXME -- use more precise constants here. It costs no more.
+        /*
+         * Estimate decimal exponent. (If it is small-ish,
+         * we could double-check.)
+         *
+         * First, scale the mantissa bits such that 1 <= d2 < 2.
+         * We are then going to estimate
+         *          log10(d2) ~=~  (d2-1.5)/1.5 + log(1.5)
+         * and so we can estimate
+         *      log10(d) ~=~ log10(d2) + binExp * log10(2)
+         * take the floor and call it decExp.
+         * FIXME -- use more precise constants here. It costs no more.
+         */
         double d2 = Double.longBitsToDouble(
             expOne | (fractBits &~ fractHOB));
         decExp = (int)Math.floor(
@@ -3320,12 +3331,14 @@ static class FloatingDecimal {
         M5 = B5;
         M2 = B2 - nSignificantBits;
 
-        // the long integer fractBits contains the (nFractBits) interesting
-        // bits from the mantissa of d (hidden 1 added if necessary) followed
-        // by (expShift + 1-nFractBits) zeros. In the interest of compactness,
-        // I will shift out those zeros before turning fractBits into a
-        // FDBigInt. The resulting whole number will be
-        //      d * 2^(nFractBits-1-binExp).
+        /*
+         * the long integer fractBits contains the (nFractBits) interesting
+         * bits from the mantissa of d (hidden 1 added if necessary) followed
+         * by (expShift + 1-nFractBits) zeros. In the interest of compactness,
+         * I will shift out those zeros before turning fractBits into a
+         * FDBigInt. The resulting whole number will be
+         *      d * 2^(nFractBits-1-binExp).
+         */
         fractBits >>>= (expShift + 1 - nFractBits);
         B2 -= nFractBits - 1;
         int common2factor = Math.min(B2, S2);
@@ -3333,10 +3346,12 @@ static class FloatingDecimal {
         S2 -= common2factor;
         M2 -= common2factor;
 
-        // HACK!! For exact powers of two, the next smallest number
-        // is only half as far away as we think (because the meaning of
-        // ULP changes at power-of-two bounds) for this reason, we
-        // hack M2. Hope this works.
+        /*
+         * HACK!! For exact powers of two, the next smallest number
+         * is only half as far away as we think (because the meaning of
+         * ULP changes at power-of-two bounds) for this reason, we
+         * hack M2. Hope this works.
+         */
         if (nFractBits == 1) {
             M2 -= 1;
         }
@@ -3348,32 +3363,35 @@ static class FloatingDecimal {
             S2 -= M2;
             M2 =  0;
         }
-
-        // Construct, Scale, iterate.
-        // Some day, we'll write a stopping test that takes
-        // account of the assymetry of the spacing of floating-point
-        // numbers below perfect powers of 2
-        // 26 Sept 96 is not that day.
-        // So we use a symmetric test.
+        /*
+         * Construct, Scale, iterate.
+         * Some day, we'll write a stopping test that takes
+         * account of the assymetry of the spacing of floating-point
+         * numbers below perfect powers of 2
+         * 26 Sept 96 is not that day.
+         * So we use a symmetric test.
+         */
         char digits[] = this.digits = new char[18];
         int  ndigit = 0;
         boolean low, high;
         long lowDigitDifference;
         int  q;
 
-        // Detect the special cases where all the numbers we are about
-        // to compute will fit in int or long integers.
-        // In these cases, we will avoid doing FDBigInt arithmetic.
-        // We use the same algorithms, except that we "normalize"
-        // our FDBigInts before iterating. This is to make division easier,
-        // as it makes our fist guess (quotient of high-order words)
-        // more accurate!
-        //
-        // Some day, we'll write a stopping test that takes
-        // account of the assymetry of the spacing of floating-point
-        // numbers below perfect powers of 2
-        // 26 Sept 96 is not that day.
-        // So we use a symmetric test.
+        /*
+         * Detect the special cases where all the numbers we are about
+         * to compute will fit in int or long integers.
+         * In these cases, we will avoid doing FDBigInt arithmetic.
+         * We use the same algorithms, except that we "normalize"
+         * our FDBigInts before iterating. This is to make division easier,
+         * as it makes our fist guess (quotient of high-order words)
+         * more accurate!
+         *
+         * Some day, we'll write a stopping test that takes
+         * account of the assymetry of the spacing of floating-point
+         * numbers below perfect powers of 2
+         * 26 Sept 96 is not that day.
+         * So we use a symmetric test.
+         */
         Bbits =
             nFractBits
             + B2
@@ -3389,10 +3407,11 @@ static class FloatingDecimal {
                 int s = small5pow[S5] << S2;
                 int m = small5pow[M5] << M2;
                 int tens = s * 10;
-
-                // Unroll the first iteration. If our decExp estimate
-                // was too high, our first quotient will be zero. In this
-                // case, we discard it and decrement decExp.
+                /*
+                 * Unroll the first iteration. If our decExp estimate
+                 * was too high, our first quotient will be zero. In this
+                 * case, we discard it and decrement decExp.
+                 */
                 ndigit = 0;
                 q = (b / s);
                 b = 10 * (b % s);
@@ -3409,11 +3428,12 @@ static class FloatingDecimal {
                 } else {
                     digits[ndigit++] = (char)('0' + q);
                 }
-
-                // HACK! Java spec sez that we always have at least
-                // one digit after the . in either F- or E-form output.
-                // Thus we will need more than one digit if we're using
-                // E-form
+                /*
+                 * HACK! Java spec sez that we always have at least
+                 * one digit after the . in either F- or E-form output.
+                 * Thus we will need more than one digit if we're using
+                 * E-form
+                 */
                 if (decExp <= -3 || decExp >= 8) {
                     high = low = false;
                 }
@@ -3447,10 +3467,11 @@ static class FloatingDecimal {
                 long s = long5pow[S5] << S2;
                 long m = long5pow[M5] << M2;
                 long tens = s * 10L;
-
-                // Unroll the first iteration. If our decExp estimate
-                // was too high, our first quotient will be zero. In this
-                // case, we discard it and decrement decExp.
+                /*
+                 * Unroll the first iteration. If our decExp estimate
+                 * was too high, our first quotient will be zero. In this
+                 * case, we discard it and decrement decExp.
+                 */
                 ndigit = 0;
                 q = (int) (b / s);
                 b = 10L * (b % s);
@@ -3467,11 +3488,12 @@ static class FloatingDecimal {
                 } else {
                     digits[ndigit++] = (char)('0' + q);
                 }
-
-                // HACK! Java spec sez that we always have at least
-                // one digit after the . in either F- or E-form output.
-                // Thus we will need more than one digit if we're using
-                // E-form
+                /*
+                 * HACK! Java spec sez that we always have at least
+                 * one digit after the . in either F- or E-form output.
+                 * Thus we will need more than one digit if we're using
+                 * E-form
+                 */
                 if (decExp <= -3 || decExp >= 8) {
                     high = low = false;
                 }
@@ -3504,8 +3526,10 @@ static class FloatingDecimal {
             FDBigInt tenSval;
             int  shiftBias;
 
-            // We really must do FDBigInt arithmetic.
-            // Fist, construct our FDBigInt initial values.
+            /*
+             * We really must do FDBigInt arithmetic.
+             * Fist, construct our FDBigInt initial values.
+             */
             Bval = new FDBigInt(fractBits);
             if (B5 != 0) {
                 if (B5 < small5pow.length) {
@@ -3531,10 +3555,11 @@ static class FloatingDecimal {
             Bval.lshiftMe(shiftBias = Sval.normalizeMe());
             Mval.lshiftMe(shiftBias);
             tenSval = Sval.mult(10);
-
-            // Unroll the first iteration. If our decExp estimate
-            // was too high, our first quotient will be zero. In this
-            // case, we discard it and decrement decExp.
+            /*
+             * Unroll the first iteration. If our decExp estimate
+             * was too high, our first quotient will be zero. In this
+             * case, we discard it and decrement decExp.
+             */
             ndigit = 0;
             q = Bval.quoRemIteration(Sval);
             Mval = Mval.mult(10);
@@ -3550,11 +3575,12 @@ static class FloatingDecimal {
             } else {
                 digits[ndigit++] = (char)('0' + q);
             }
-
-            // HACK! Java spec sez that we always have at least
-            // one digit after the . in either F- or E-form output.
-            // Thus we will need more than one digit if we're using
-            // E-form
+            /*
+             * HACK! Java spec sez that we always have at least
+             * one digit after the . in either F- or E-form output.
+             * Thus we will need more than one digit if we're using
+             * E-form
+             */
             if (decExp <= -3 || decExp >= 8) {
                 high = low = false;
             }
@@ -3580,8 +3606,9 @@ static class FloatingDecimal {
         this.decExponent = decExp + 1;
         this.digits = digits;
         this.nDigits = ndigit;
-
-        // Last digit gets rounded based on stopping condition.
+        /*
+         * Last digit gets rounded based on stopping condition.
+         */
         if (high) {
             if (low) {
                 if (lowDigitDifference == 0L) {
@@ -3753,9 +3780,7 @@ static class FloatingDecimal {
         //          + 10  (for decimal point and sign or -Infinity)
         //         +decExponent/3 (for the thousand separators)
         int resultLen =
-            10
-            + (Math.abs(decExponent) + minDigitsLeftOfDecimal) * 4 / 3
-            + maxDigitsRightOfDecimal;
+            10 + Math.abs(decExponent) * 4 / 3 + maxDigitsRightOfDecimal;
         char result[] = new char[resultLen];
         int i = toJavaFormatString(
             result, 0, minDigitsLeftOfDecimal, decimalChar,
@@ -3802,9 +3827,12 @@ static class FloatingDecimal {
                     nDigits - decExponent, minDigitsRightOfDecimal),
                 totalDigits = wholeDigits + fractionDigits;
             char[] digits2 = new char[totalDigits];
-            Arrays.fill(digits2, '0');
-            System.arraycopy(
-                digits, 0, digits2, wholeDigits - decExponent, nDigits);
+            for (int j = 0; j < totalDigits; j++) {
+                digits2[j] = '0';
+            }
+            for (int j = 0; j < nDigits; j++) {
+                digits2[wholeDigits - decExponent + j] = digits[j];
+            }
 
             // Now round.  Suppose that we want to round 1234.56 to 1 decimal
             // place (that is, maxDigitsRightOfDecimal = 1).  Then lastDigit
@@ -3878,8 +3906,8 @@ static class FloatingDecimal {
                 && thousandSeparatorPositions.size() > 0)
             {
                 // Now print the number. That will happen backwards, so we
-                // store it temporarily and then invert.
-                ArrayStack<Character> formattedWholeDigits =
+                // store it temporarely and then invert.
+                ArrayStack<Character> formatedWholeDigits =
                     new ArrayStack<Character>();
                 // We need to keep track of how many digits we printed in the
                 // current token.
@@ -3889,7 +3917,7 @@ static class FloatingDecimal {
                     if (nbInserted % thousandSeparatorPositions.peek() == 0
                         && nbInserted > 0)
                     {
-                        formattedWholeDigits.push(thousandChar);
+                        formatedWholeDigits.push(thousandChar);
                         nbInserted = 0;
                         // The last format token is kept because we re-apply it
                         // until the end of the digits.
@@ -3898,13 +3926,13 @@ static class FloatingDecimal {
                         }
                     }
                     // Insert the next digit.
-                    formattedWholeDigits.push(digits2[j]);
+                    formatedWholeDigits.push(digits2[j]);
                     nbInserted++;
                 }
                 // We're done. Invert the print out and add it to
                 // the result array.
-                while (formattedWholeDigits.size() > 0) {
-                    result[i++] = formattedWholeDigits.pop();
+                while (formatedWholeDigits.size() > 0) {
+                    result[i++] = formatedWholeDigits.pop();
                 }
             } else {
                 // There are no thousand separators. Just put the
@@ -4104,8 +4132,10 @@ static class FDBigInt {
         nWords = n;
     }
 
-    // Left shift by c bits.
-    // Shifts this in place.
+    /*
+     * Left shift by c bits.
+     * Shifts this in place.
+     */
     public void
     lshiftMe(int c)throws IllegalArgumentException {
         if (c <= 0) {
@@ -4173,14 +4203,18 @@ static class FDBigInt {
             // oops. Value is zero. Cannot normalize it!
             throw new IllegalArgumentException("zero value");
         }
-        // In most cases, we assume that wordcount is zero. This only
-        // makes sense, as we try not to maintain any high-order
-        // words full of zeros. In fact, if there are zeros, we will
-        // simply SHORTEN our number at this point. Watch closely...
+        /*
+         * In most cases, we assume that wordcount is zero. This only
+         * makes sense, as we try not to maintain any high-order
+         * words full of zeros. In fact, if there are zeros, we will
+         * simply SHORTEN our number at this point. Watch closely...
+         */
         nWords -= wordcount;
-        // Compute how far left we have to shift v s.t. its highest-
-        // order bit is in the right place. Then call lshiftMe to
-        // do the work.
+        /*
+         * Compute how far left we have to shift v s.t. its highest-
+         * order bit is in the right place. Then call lshiftMe to
+         * do the work.
+         */
         if ((v & 0xf0000000) != 0) {
             // will have to shift up into the next word.
             // too bad.
@@ -4449,13 +4483,15 @@ static class FDBigInt {
                     data[i] = (int) sum;
                     sum >>= 32; // Signed or unsigned, answer is 0 or 1
                 }
-                // Originally the following line read
-                // "if (sum !=0 && sum != -1)"
-                // but that would be wrong, because of the
-                // treatment of the two values as entirely unsigned,
-                // it would be impossible for a carry-out to be interpreted
-                // as -1 -- it would have to be a single-bit carry-out, or
-                //  + 1.
+                /*
+                 * Originally the following line read
+                 * "if (sum !=0 && sum != -1)"
+                 * but that would be wrong, because of the
+                 * treatment of the two values as entirely unsigned,
+                 * it would be impossible for a carry-out to be interpreted
+                 * as -1 -- it would have to be a single-bit carry-out, or
+                 *  + 1.
+                 */
                 if (sum != 0 && sum != 1) {
                     throw new RuntimeException(
                         "Assertion botch: " + sum

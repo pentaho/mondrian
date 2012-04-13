@@ -17,7 +17,6 @@
     <orderEntry type="library" name="junit" level="project" />
     <orderEntry type="library" name="xmlunit" level="project" />
     <orderEntry type="module" module-name="olap4j" />
-    <orderEntry type="library" name="simple-jndi" level="project" />
   </component>
 </module>
 

@@ -131,14 +131,10 @@ FNR == 1 {
         inComment = 0;
         gsub(/^.*\*\//, "/* comment */", s);
     } else if (inComment) {
-        if (strict > 1 && !inJavadocComment && s ~ /^ *\*/) {
-            error(fname, FNR, "Block comment not allowed; use //");
-        }
         s = "/* comment */";
     } else if ($0 ~ /\/\*/ && $0 !~ /\/\*.*\*\//) {
         # beginning of multiline comment "/*"
         inComment = 1;
-        inJavadocComment = $0 ~ /\/\*\*/;
         gsub(/\/\*.*$/, "/* comment */", s);
     } else {
         # mask out /* */ comments

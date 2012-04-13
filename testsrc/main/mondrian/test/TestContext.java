@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2011 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -1321,53 +1321,6 @@ public class TestContext {
     }
 
     /**
-     * Returns a test context based on a particular data set.
-     *
-     * @param dataSet Data set
-     * @return Test context based on given data set
-     */
-    public TestContext with(DataSet dataSet) {
-        switch (dataSet) {
-        case FOODMART:
-            return withPropertiesReplace(
-                RolapConnectionProperties.Catalog,
-                "FoodMart.xml",
-                "NewFoodMart.xml");
-        case LEGACY_FOODMART:
-            return withPropertiesReplace(
-                RolapConnectionProperties.Catalog,
-                "NewFoodMart.xml",
-                "FoodMart.xml");
-        case ANALYZER_FOODMART:
-            return withPropertiesReplace(
-                RolapConnectionProperties.Catalog,
-                "FoodMart.xml",
-                "AnalyzerFoodMart.xml");
-        case STEELWHEELS:
-            return SteelWheelsTestCase.createContext(this, null);
-        default:
-            throw Util.unexpected(dataSet);
-        }
-    }
-
-    private TestContext withPropertiesReplace(
-        RolapConnectionProperties property,
-        String find,
-        String replace)
-    {
-        final Util.PropertyList properties =
-            getConnectionProperties().clone();
-        final String catalog =
-            properties.get(property.name());
-        String catalog2 = Util.replace(catalog, find, replace);
-        if (catalog.equals(catalog2)) {
-            return this;
-        }
-        properties.put(property.name(), catalog2);
-        return withProperties(properties);
-    }
-
-    /**
      * Wrapper around a string that indicates that all line endings have been
      * converted to platform-specific line endings.
      *
@@ -2085,13 +2038,6 @@ public class TestContext {
             }
             return s;
         }
-    }
-
-    enum DataSet {
-        FOODMART,
-        STEELWHEELS,
-        LEGACY_FOODMART,
-        ANALYZER_FOODMART
     }
 }
 

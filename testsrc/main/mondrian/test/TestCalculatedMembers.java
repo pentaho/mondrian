@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2011 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -317,7 +317,9 @@ public class TestCalculatedMembers extends BatchTestCase {
     }
 
     public void _testWhole() {
-        // "allmembers" tests compatibility with MSAS
+        /*
+         * "allmembers" tests compatibility with MSAS
+         */
 
         executeQuery(
             "with\n"
@@ -645,7 +647,7 @@ public class TestCalculatedMembers extends BatchTestCase {
             "with member [Measures].[Foo] as ' \"quoted string with 'apostrophe' in it\" ' "
             + "select {[Measures].[Foo]} on columns "
             + "from [Sales]",
-            "Mondrian Error:"
+            "mondrian.parser.TokenMgrError: "
             + "Lexical error at line 2, column 0.  "
             + "Encountered: <EOF> after : \"\\\"quoted string with \\n\"");
 
@@ -1827,36 +1829,6 @@ public class TestCalculatedMembers extends BatchTestCase {
             + " from [Sales]",
             "The 'X' calculated member cannot be created because its parent is "
             + "at the lowest level in the [Gender] hierarchy.");
-    }
-
-    /**
-     * System test for bug
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1098">
-     * MONDRIAN-1098</a>, "Trying to get formatted value of a cell results in
-     * ArrayIndexOutOfBoundsException".
-     *
-     * @see mondrian.util.FormatTest#testBugMondrian1098()
-     */
-    public void testBugMondrian1098() {
-        final TestContext testContext =
-            getTestContext().with(TestContext.DataSet.ANALYZER_FOODMART);
-        Result result = testContext.executeQuery(
-            "With\n"
-            + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Fact Attribute], Not IsEmpty ([Measures].[Formatted Profit]))'\n"
-            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Fact Attribute].CurrentMember.OrderKey,BASC)'\n"
-            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
-            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Fact Attribute].currentMember)})'\n"
-            + "Set [*BASE_MEMBERS_Fact Attribute] as '[Fact Attribute].[Customer ID].Members'\n"
-            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n"
-            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Formatted Profit]', FORMAT_STRING = '$000,000,000.00', SOLVE_ORDER=400\n"
-            + "Select\n"
-            + "[*BASE_MEMBERS_Measures] on columns,\n"
-            + "[*SORTED_ROW_AXIS] on rows\n"
-            + "From [Sales]");
-        String resultString = TestContext.toString(result);
-        assertTrue(
-            resultString,
-            resultString.endsWith("Row #5580: $000,000,018.32\n"));
     }
 }
 

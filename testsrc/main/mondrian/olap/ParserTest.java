@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2005-2011 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -714,32 +714,6 @@ public class ParserTest extends FoodMartTestCase {
             + "{[Store].[USA].[WA].[Yakima].[Store   23]}\n"
             + "Row #0: 0\n");
         }
-    }
-
-    /**
-     * Bad token should cause unchecked exception, not {@link Error}.
-     */
-    public void testBadToken() {
-        assertParseQueryFails(
-            "select\nfrom",
-            "Mondrian Error:Syntax error at line 2, column 7, token 'EOF'");
-        assertParseQueryFails(
-            "`\nselect\nfrom Sales\n",
-            "Unexpected character '`'");
-        assertParseQueryFails(
-            "'\nselect\nfrom Sales\n",
-            "Mondrian Error:Syntax error at line 1, column 1, token '\n"
-            + "select\n"
-            + "from Sales\n"
-            + "'");
-        assertParseQueryFails(
-            "select\nfrom 'Sales",
-            "Mondrian Error:Syntax error at line 2, column 7, token 'Sales'");
-        assertParseQueryFails(
-            "with member Measures.Test as '\n"
-            + "select\n"
-            + "from Sales",
-            "Mondrian Error:Syntax error at line 3, column 13, token 'EOF'");
     }
 
     /**

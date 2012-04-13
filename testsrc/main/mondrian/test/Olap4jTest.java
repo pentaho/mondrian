@@ -322,43 +322,6 @@ public class Olap4jTest extends FoodMartTestCase {
         Method method = java.sql.Statement.class.getMethod("closeOnCompletion");
         method.invoke(statement);
     }
-
-    public void testParse() throws SQLException {
-        assertParseQueryFails(
-            "select\nfrom",
-            "Mondrian Error:Syntax error at line 2, column 5, token ''");
-        assertParseQueryFails(
-            "`\nselect\nfrom Sales\n",
-            "Lexical error at line 1, column 1.  Encountered: \"`\" (96), after : \"\"");
-        assertParseQueryFails(
-            "'\nselect\nfrom Sales\n",
-            "Lexical error at line 4, column 0.  Encountered: <EOF> after : \"\\'\\nselect\\nfrom Sales\\n\"");
-        assertParseQueryFails(
-            "select\nfrom 'Sales",
-            "Lexical error at line 3, column 0.  Encountered: <EOF> after : \"\\'Sales\\n\"");
-        assertParseQueryFails(
-            "with member Measures.Test as '\n"
-            + "select\n"
-            + "from Sales",
-            "Lexical error at line 4, column 0.  Encountered: <EOF> after : \"\\'\\nselect\\nfrom Sales\\n\"");
-    }
-
-    private void assertParseQueryFails(String mdx, String expectedError)
-        throws SQLException
-    {
-        final OlapConnection connection =
-            getTestContext().getOlap4jConnection();
-        try {
-            final PreparedOlapStatement statement =
-                connection.prepareOlapStatement(mdx);
-            fail("expected exception, got " + statement);
-        } catch (OlapException e) {
-            final String actual = TestContext.getStackTrace(e);
-            assertTrue(actual, actual.contains(expectedError));
-        } finally {
-            connection.close();
-        }
-    }
 }
 
 // End Olap4jTest.java
