@@ -167,7 +167,7 @@ public class SqlStatisticsProvider implements StatisticsProvider {
                 } else {
                     buf.append(' ');
                 }
-                dialect.quoteIdentifier("init");
+                dialect.quoteIdentifier(buf, "init");
             }
             return buf.toString();
         } else {
