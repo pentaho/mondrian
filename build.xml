@@ -899,9 +899,15 @@ in {mondrian.foodmart.jdbcURL}."
   </target>
 
   <target name="version">
+    <exec executable="git" outputproperty="git.head.sha">
+      <arg value="log"/>
+      <arg value="-n1"/>
+      <arg value="--format=format:%H"/>
+    </exec>
     <echo file="VERSION.txt">Title: ${name}
 Version: ${project.revision}
 Vendor: ${vendor}
+Git head SHA: ${git.head.sha}
 </echo>
    <echo file="${java.dir}/mondrian/olap4j/MondrianOlap4jDriverVersion.java">/*
  * Project version information. Generated - do not modify.
@@ -913,6 +919,7 @@ package mondrian.olap4j;
 class MondrianOlap4jDriverVersion {
     static final String NAME = "${driver.name}";
     static final String VERSION = "${driver.version}";
+    static final String GIT_HEAD_SHA = "${git.head.sha}";
     static final int MAJOR_VERSION = ${driver.version.major};
     static final int MINOR_VERSION = ${driver.version.minor};
 }
