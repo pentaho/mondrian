@@ -16,9 +16,8 @@
     <orderEntry type="library" name="eigenbase-properties" level="project" />
     <orderEntry type="library" name="junit" level="project" />
     <orderEntry type="library" name="xmlunit" level="project" />
-    <orderEntry type="library" name="olap4j" level="project" />
-    <orderEntry type="library" name="olap4j-tck" level="project" />
-    <orderEntry type="library" name="olap4j-xmla" level="project" />
+    <orderEntry type="module" module-name="olap4j" />
+    <orderEntry type="library" name="simple-jndi" level="project" />
   </component>
 </module>
 

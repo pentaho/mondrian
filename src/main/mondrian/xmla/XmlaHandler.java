@@ -1859,6 +1859,7 @@ public class XmlaHandler {
         private List<Hierarchy> slicerAxisHierarchies;
         private final boolean omitDefaultSlicerInfo;
         private final boolean json;
+        private final Hierarchy measuresHierarchy;
         private XmlaUtil.ElementNameEncoder encoder =
             XmlaUtil.ElementNameEncoder.INSTANCE;
         private XmlaExtra extra;
@@ -1872,6 +1873,8 @@ public class XmlaHandler {
             super(cellSet);
             this.omitDefaultSlicerInfo = omitDefaultSlicerInfo;
             this.json = json;
+            this.measuresHierarchy =
+                cellSet.getMetaData().getCube().getHierarchies().get(0);
             this.extra = getExtra(cellSet.getStatement().getConnection());
         }
 
@@ -1888,7 +1891,7 @@ public class XmlaHandler {
         }
 
         private void olapInfo(SaxWriter writer) throws OlapException {
-            // What are all of the cube's hierachies
+            // What are all of the cube's hierarchies
             Cube cube = cellSet.getMetaData().getCube();
 
             writer.startElement("OlapInfo");
@@ -1904,9 +1907,9 @@ public class XmlaHandler {
             final List<CellSetAxis> axes = cellSet.getAxes();
             List<Hierarchy> axisHierarchyList = new ArrayList<Hierarchy>();
             for (int i = 0; i < axes.size(); i++) {
-                List<Hierarchy> hiers =
+                List<Hierarchy> hierarchyList =
                     axisInfo(writer, axes.get(i), "Axis" + i);
-                axisHierarchyList.addAll(hiers);
+                axisHierarchyList.addAll(hierarchyList);
             }
             ///////////////////////////////////////////////
             // create AxesInfo for slicer axes
@@ -1914,9 +1917,15 @@ public class XmlaHandler {
             List<Hierarchy> hierarchies;
             CellSetAxis slicerAxis = cellSet.getFilterAxis();
             if (omitDefaultSlicerInfo) {
-                hierarchies =
-                    axisInfo(
-                        writer, slicerAxis, "SlicerAxis");
+                hierarchies = slicerAxis.getAxisMetaData().getHierarchies();
+                if (hierarchies.isEmpty()) {
+                    // Slicer axis has one tuple. This occurs when the query
+                    // has no WHERE clause. Don't emit SlicerAxis.
+                } else {
+                    hierarchies =
+                        axisInfo(
+                            writer, slicerAxis, "SlicerAxis");
+                }
             } else {
                 // The slicer axes contains the default hierarchy
                 // of each dimension not seen on another axis.
@@ -1998,6 +2007,12 @@ public class XmlaHandler {
                 for (Member member : position.getMembers()) {
                     hierarchies.add(member.getHierarchy());
                 }
+                if (hierarchies.isEmpty()
+                    && axis.getAxisOrdinal().isFilter())
+                {
+                    // Excel 2007 abhors empty slicer.
+                    hierarchies.add(measuresHierarchy);
+                }
             } else {
                 hierarchies = axis.getAxisMetaData().getHierarchies();
             }
@@ -2063,7 +2078,6 @@ public class XmlaHandler {
 
         private void axes(SaxWriter writer) throws OlapException {
             writer.startSequence("Axes", "Axis");
-            //axis(writer, result.getSlicerAxis(), "SlicerAxis");
             final List<CellSetAxis> axes = cellSet.getAxes();
             for (int i = 0; i < axes.size(); i++) {
                 final CellSetAxis axis = axes.get(i);
@@ -2076,16 +2090,25 @@ public class XmlaHandler {
             //
             if (omitDefaultSlicerInfo) {
                 CellSetAxis slicerAxis = cellSet.getFilterAxis();
-                // We always write a slicer axis. There are two 'empty' cases:
-                // zero positions (which happens when the WHERE clause evalutes
-                // to an empty set) or one position containing a tuple of zero
-                // members (which happens when there is no WHERE clause) and we
-                // need to be able to distinguish between the two.
-                axis(
-                    writer,
-                    slicerAxis,
-                    getProps(slicerAxis.getAxisMetaData()),
-                    "SlicerAxis");
+                // There are two kinds of 'empty' slicer axis, and we
+                // need to be able to distinguish between them.
+                //
+                // 1. Slicer axis has zero positions (which happens when the
+                // WHERE clause evaluates to an empty set). We write an Axis
+                // element, with 0 tuples.
+                //
+                // 2. One position containing a tuple of zero
+                // members (which happens when there is no WHERE clause). We
+                // omit the Axis element altogether.
+                if (slicerAxis.getAxisMetaData().getHierarchies().isEmpty()) {
+                    assert slicerAxis.getPositions().size() == 1;
+                } else {
+                    axis(
+                        writer,
+                        slicerAxis,
+                        getProps(slicerAxis.getAxisMetaData()),
+                        "SlicerAxis");
+                }
             } else {
                 List<Hierarchy> hierarchies = slicerAxisHierarchies;
                 writer.startElement(
@@ -2099,9 +2122,7 @@ public class XmlaHandler {
                 CellSetAxis slicerAxis = cellSet.getFilterAxis();
                 final List<Position> slicerPositions =
                     slicerAxis.getPositions();
-                if (slicerPositions != null
-                    && slicerPositions.size() > 0)
-                {
+                if (slicerPositions.size() > 0) {
                     final Position pos0 = slicerPositions.get(0);
                     int i = 0;
                     for (Member member : pos0.getMembers()) {
@@ -2188,7 +2209,14 @@ public class XmlaHandler {
             while (position != null) {
                 writer.startSequence("Tuple", "Member");
                 int k = 0;
-                for (Member member : position.getMembers()) {
+                List<Member> memberList = position.getMembers();
+                if (axis.getAxisOrdinal().isFilter()
+                    && memberList.size() == 0)
+                {
+                    memberList = Collections.singletonList(
+                        measuresHierarchy.getDefaultMember());
+                }
+                for (Member member : memberList) {
                     writeMember(
                         writer, member, prevPosition, nextPosition, k++, props);
                 }

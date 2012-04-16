@@ -15168,7 +15168,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <MEMBER_KEY name="[Customers].[MEMBER_KEY]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
-                            <AxisInfo name="SlicerAxis"/>
                         </AxesInfo>
                         <CellInfo>
                             <Value name="VALUE"/>
@@ -15189,11 +15188,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                         <MEMBER_KEY>4422</MEMBER_KEY>
                                     </Member>
                                 </Tuple>
-                            </Tuples>
-                        </Axis>
-                        <Axis name="SlicerAxis">
-                            <Tuples>
-                                <Tuple/>
                             </Tuples>
                         </Axis>
                     </Axes>
@@ -15431,7 +15425,6 @@ FROM Sales
                                     <MEMBER_KEY name="[Customers].[MEMBER_KEY]" type="xsd:string"/>
                                 </HierarchyInfo>
                             </AxisInfo>
-                            <AxisInfo name="SlicerAxis"/>
                         </AxesInfo>
                         <CellInfo>
                             <Value name="VALUE"/>
@@ -15452,11 +15445,6 @@ FROM Sales
                                         <MEMBER_KEY>0</MEMBER_KEY>
                                     </Member>
                                 </Tuple>
-                            </Tuples>
-                        </Axis>
-                        <Axis name="SlicerAxis">
-                            <Tuples>
-                                <Tuple/>
                             </Tuples>
                         </Axis>
                     </Axes>
@@ -15693,7 +15681,6 @@ FROM Sales
                                     <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
                             </AxisInfo>
-                            <AxisInfo name="SlicerAxis"/>
                         </AxesInfo>
                         <CellInfo>
                             <Value name="VALUE"/>
@@ -15714,11 +15701,6 @@ FROM Sales
                                         <DisplayInfo>0</DisplayInfo>
                                     </Member>
                                 </Tuple>
-                            </Tuples>
-                        </Axis>
-                        <Axis name="SlicerAxis">
-                            <Tuples>
-                                <Tuple/>
                             </Tuples>
                         </Axis>
                     </Axes>
@@ -18067,7 +18049,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                     <DisplayInfo name="[Gender].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
                             </AxisInfo>
-                            <AxisInfo name="SlicerAxis"/>
                         </AxesInfo>
                         <CellInfo>
                             <Value name="VALUE"/>
@@ -18127,11 +18108,6 @@ WHERE ([Time].[1997].[Q2], [Marital Status], [Measures].[Store Sales])
                                         <DisplayInfo>131072</DisplayInfo>
                                     </Member>
                                 </Tuple>
-                            </Tuples>
-                        </Axis>
-                        <Axis name="SlicerAxis">
-                            <Tuples>
-                                <Tuple/>
                             </Tuples>
                         </Axis>
                     </Axes>
@@ -19185,7 +19161,6 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                                     <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
                             </AxisInfo>
-                            <AxisInfo name="SlicerAxis"/>
                         </AxesInfo>
                         <CellInfo>
                             <Value name="VALUE"/>
@@ -19292,11 +19267,6 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                                         <DisplayInfo>131075</DisplayInfo>
                                     </Member>
                                 </Tuple>
-                            </Tuples>
-                        </Axis>
-                        <Axis name="SlicerAxis">
-                            <Tuples>
-                                <Tuple/>
                             </Tuples>
                         </Axis>
                     </Axes>
@@ -19526,7 +19496,6 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                                     <DisplayInfo name="[Customers].[DISPLAY_INFO]"/>
                                 </HierarchyInfo>
                             </AxisInfo>
-                            <AxisInfo name="SlicerAxis"/>
                         </AxesInfo>
                         <CellInfo>
                             <Value name="VALUE"/>
@@ -19681,11 +19650,6 @@ WHERE [Marital Status].Parent * [Time].[1997].[Q1]
                                         <DisplayInfo>131075</DisplayInfo>
                                     </Member>
                                 </Tuple>
-                            </Tuples>
-                        </Axis>
-                        <Axis name="SlicerAxis">
-                            <Tuples>
-                                <Tuple/>
                             </Tuples>
                         </Axis>
                     </Axes>

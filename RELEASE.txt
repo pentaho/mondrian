@@ -1,3 +1,82 @@
+Mondrian 3.4.0-GA production release notes
+=============================================
+
+Introduction
+------------
+
+Mondrian 3.4.0-GA is a major refactoring of Mondrian's internals
+and the way it handles & stores the cell data. This release makes
+Mondrian much more scalable and much more effective in the way it
+uses the system threads.
+
+This release also introduces a new algorithm to load, share and
+rollup the data cells, or segments. Mondrian will rollup and union
+the segment data from low levels, in memory, to answer queries
+related to higher levels. This provides a huge improvement in
+performance on systems with high user interactivity.
+
+It is also worth noting that the Mondrian project now hosts its
+source code on github. The official source code can now be found
+at: github.com/pentaho/mondrian
+
+To find out more about Mondrian, go to http://mondrian.pentaho.com.
+
+Contents
+--------
+
+As usual, there are two distributions for this release:
+ * mondrian-<version>.zip contains the FoodMart dataset in
+   SQL and Access format
+ * mondrian-<version>-derby.zip contains the FoodMart
+   dataset as an Apache Derby database
+
+Each distribution contains the full mondrian source code, as
+mondrian-<version>-src.zip, documentation including
+generated API documentation, and a web archive mondrian.war.
+This web archive contains all classes and libraries (jars)
+necessary to run mondrian.
+
+This release runs on Java version 1.5 and higher. For
+backwards compatibility on Java 1.4, substitute
+mondrian-jdk14.jar for mondrian.jar, and add
+retroweaver-rt-1.2.4.jar to your classpath.
+
+For further installation instructions, see
+http://mondrian.pentaho.com/documentation/installation.php
+or the included file doc/installation.html.
+
+Main functionality in this release
+----------------------------------
+ - Support for olap4j 1.0.1 and JDBC 4.1.
+ - Simplified and improved the SegmentCache SPI.
+ - Introduces the Mondrian Monitor API.
+ - Refactored some key parts of the engine into an
+   implementation of the Actor design pattern, providing more
+   effective resource sharing and the elimination of many
+   synchronization blocks.
+ - SQL queries for cell data is now fetched by a multi-threaded
+   executor and the tasks are shared among the query threads.
+ - More than one SegmentCache implementations can now be used
+   at a time.
+ - Ability to combine the data of multiple segments for a single
+   query.
+ - Ability to combine data of an existing segment with data form SQL.
+ - Support for the DRILLTHROUGH RETURN clause.
+ - Ability to define non-measure calculated members in a cube
+   under a specific parent.
+ - Allow aggregate tables to join to middle levels of snowflake
+   dimension.
+ - As usual, many other bug fixes and performance tweaks.
+
+API changes from 3.3.to 3.4
+---------------------------
+ - Substantial changes to SegmentCache
+ - Upgraded to olap4j-1.0.1.500
+
+See CHANGES.txt for a list of all source code changes
+since the previous release.
+
+
 Mondrian 3.3.0.14703 production release notes
 =============================================
 

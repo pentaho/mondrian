@@ -117,12 +117,6 @@ public class RolapUtil {
 
     public static synchronized void setHook(ExecuteQueryHook hook) {
         queryHook = hook;
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public static final class RolapUtilComparable

@@ -255,10 +255,10 @@ public class RolapMemberBase
     }
 
     public String getName() {
-        final String name =
-            (String) getPropertyValue(Property.NAME.name);
+        final Object name =
+            getPropertyValue(Property.NAME.name);
         return (name != null)
-            ? name
+            ? String.valueOf(name)
             : keyToString(key);
     }
 
