@@ -341,11 +341,11 @@ public class BasicQueryTest extends FoodMartTestCase {
 
     private static final String query6 =
             "with\n"
-            + "   member [Product].[Drink].[Percent of Alcoholic Drinks] as '[Product].[Drink].[Alcoholic Beverages]/[Product].[Drink]',\n"
+            + "   member [Product].[Products].[Drink].[Percent of Alcoholic Drinks] as '[Product].[Products].[Drink].[Alcoholic Beverages]/[Product].[Products].[Drink]',\n"
             + "       format_string = '#.00%'\n"
             + "select\n"
-            + "   { [Product].[Drink].[Percent of Alcoholic Drinks] } on columns,\n"
-            + "   order([Customers].[USA].[WA].Children, [Product].[Drink].[Percent of Alcoholic Drinks],BDESC) on rows\n"
+            + "   { [Product].[Products].[Drink].[Percent of Alcoholic Drinks] } on columns,\n"
+            + "   order([Customer].[Customers].[USA].[WA].Children, [Product].[Products].[Drink].[Percent of Alcoholic Drinks],BDESC) on rows\n"
             + "from Sales\n"
             + "where ([Measures].[Unit Sales])";
 
@@ -781,13 +781,13 @@ public class BasicQueryTest extends FoodMartTestCase {
 
         assertQueryReturns(
             "// now for some comments in a larger command\n"
-            + "with // create calculate measure [Product].[Drink].[Percent of Alcoholic Drinks]\n"
-            + "   member [Product].[Drink].[Percent of Alcoholic Drinks]/*the measure name*/as '                        // begin the definition of the measure next\n"
-            + "       [Product]./****this is crazy****/[All Products].[Drink].[Alcoholic Beverages]/[Product].[Drink]',  // divide number of alcoholic drinks by total # of drinks\n"
+            + "with // create calculate measure [Product].[Products].[Drink].[Percent of Alcoholic Drinks]\n"
+            + "   member [Product].[Products].[Drink].[Percent of Alcoholic Drinks]/*the measure name*/as '                        // begin the definition of the measure next\n"
+            + "       [Product].[Products]./****this is crazy****/[All Products].[Drink].[Alcoholic Beverages]/[Product].[Drink]',  // divide number of alcoholic drinks by total # of drinks\n"
             + "       format_string = '#.00%'  // a custom format for our measure\n"
             + "select\n"
-            + "   { [Product]/**** still crazy ****/.[Drink].[Percent of Alcoholic Drinks] } on columns,\n"
-            + "   order(/****do not put a comment inside square brackets****/[Customers].[USA].[WA].Children, [Product].[Drink].[Percent of Alcoholic Drinks],BDESC) on rows\n"
+            + "   { [Product].[Products]/**** still crazy ****/.[Drink].[Percent of Alcoholic Drinks] } on columns,\n"
+            + "   order(/****do not put a comment inside square brackets****/[Customer].[Customers].[USA].[WA].Children, [Product].[Products].[Drink].[Percent of Alcoholic Drinks],BDESC) on rows\n"
             + "from Sales\n"
             + "where ([Measures].[Unit Sales] /****,[Time].[1997]****/) -- a comment at the end of the command",
 
@@ -1053,9 +1053,11 @@ public class BasicQueryTest extends FoodMartTestCase {
         // filter
         assertQueryReturns(
             "SELECT {[Measures].[Unit Sales]} ON COLUMNS,\n"
-            + " {[Time].[1997].Children} ON ROWS\n"
+            + " {[Time].[Time].[1997].Children} ON ROWS\n"
             + "FROM [Sales]"
-            + "WHERE ([Marital Status].[S], " + timeWeekly + ".[1997].[20])",
+            + "WHERE ([Customer].[Marital Status].[S], "
+            + timeWeekly
+            + ".[1997].[20])",
             "Axis #0:\n"
             + "{[Customer].[Marital Status].[S], [Time].[Weekly].[1997].[20]}\n"
             + "Axis #1:\n"

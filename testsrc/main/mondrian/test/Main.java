@@ -213,7 +213,7 @@ public class Main extends TestSuite {
             addTest(suite, IndexedValuesTest.class);
             addTest(suite, MemoryMonitorTest.class);
             addTest(suite, ObjectPoolTest.class);
-            addTest(suite, Ssas2005CompatibilityTest.OldBehaviorTest.class);
+            addTest(suite, Ssas2005CompatibilityTest.class);
             addTest(suite, DialectTest.class);
             addTest(suite, ResultComparatorTest.class, "suite");
             addTest(suite, DrillThroughTest.class);

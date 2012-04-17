@@ -1066,7 +1066,10 @@ public class TestContext {
      *   member. Throws otherwise.
      */
     public Member executeSingletonAxis(String expression) {
-        final String cubeName = getDefaultCubeName();
+        String cubeName = getDefaultCubeName();
+        if (cubeName.indexOf(' ') >= 0) {
+            cubeName = Util.quoteMdxIdentifier(cubeName);
+        }
         Result result = executeQuery(
             "select {" + expression + "} on columns from " + cubeName);
         Axis axis = result.getAxes()[0];
@@ -1095,9 +1098,13 @@ public class TestContext {
      * whole axis.
      */
     public Axis executeAxis(String expression) {
+        String cubeName = getDefaultCubeName();
+        if (cubeName.indexOf(' ') >= 0) {
+            cubeName = Util.quoteMdxIdentifier(cubeName);
+        }
         Result result = executeQuery(
             "select {" + expression + "} on columns from "
-            + getDefaultCubeName());
+            + cubeName);
         return result.getAxes()[0];
     }
 
@@ -1113,7 +1120,10 @@ public class TestContext {
         Throwable throwable = null;
         Connection connection = getConnection();
         try {
-            final String cubeName = getDefaultCubeName();
+            String cubeName = getDefaultCubeName();
+            if (cubeName.indexOf(' ') >= 0) {
+                cubeName = Util.quoteMdxIdentifier(cubeName);
+            }
             final String queryString =
                     "select {" + expression + "} on columns from " + cubeName;
             Query query = connection.parseQuery(queryString);
@@ -1919,11 +1929,15 @@ public class TestContext {
         // Construct a query, and mine it for a parsed expression.
         // Use a fresh connection, because some tests define their own dims.
         final Connection connection = getConnection();
+        String cubeName = getDefaultCubeName();
+        if (cubeName.indexOf(' ') >= 0) {
+            cubeName = Util.quoteMdxIdentifier(cubeName);
+        }
         final String queryString =
             "WITH MEMBER [Measures].[Foo] AS "
             + Util.singleQuoteString(expr)
             + " SELECT FROM "
-            + getDefaultCubeName();
+            + cubeName;
         final Query query = connection.parseQuery(queryString);
         query.resolve();
         final Formula formula = query.getFormulas()[0];
@@ -2220,10 +2234,12 @@ public class TestContext {
      * @param cubeName Cube name
      * @return Test context with the given default cube
      */
-    public final TestContext withCube(final String cubeName) {
+    public final TestContext withCube(String cubeName) {
+        final String cubeNameRef =
+            cubeName.replaceAll("\\[", "");
         return new DelegatingTestContext(this) {
             public String getDefaultCubeName() {
-                return cubeName;
+                return cubeNameRef;
             }
         };
     }
@@ -2468,11 +2484,7 @@ public class TestContext {
     }
 
     public static String hierarchyName(String dimension, String hierarchy) {
-        return MondrianProperties.instance().SsasCompatibleNaming.get()
-            ? "[" + dimension + "].[" + hierarchy + "]"
-            : (hierarchy.equals(dimension)
-                ? "[" + dimension + "]"
-                : "[" + dimension + "." + hierarchy + "]");
+        return "[" + dimension + "].[" + hierarchy + "]";
     }
 
     public static String levelName(

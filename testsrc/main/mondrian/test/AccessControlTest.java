@@ -2445,7 +2445,7 @@ public class AccessControlTest extends FoodMartTestCase {
                 + "Axis #1:\n"
                 + "{[Measures].[Unit Sales]}\n"
                 + "Axis #2:\n"
-                + "{[Customers].[USA]}\n"
+                + "{[Customer].[Customers].[USA]}\n"
                 + "Row #0: 2,009\n");
     }
 }

@@ -221,7 +221,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         // Products].[Drink].[Dairy], [Measures].[Store Cost]
         Cell cell = result.getCell(new int[]{0, 4});
 
-        String sql = getDrillThroughSql(cell, true, false);
+        String sql = getDrillThroughSql(cell, true, true);
         getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 141);
     }
 
@@ -253,7 +253,7 @@ public class DrillThroughTest extends FoodMartTestCase {
 
         // For backwards compatibility, generate drill-through SQL (ignoring
         // calculated members) even though we said we could not drill through.
-        String sql = getDrillThroughSql(cell, true, false);
+        String sql = getDrillThroughSql(cell, true, true);
         getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 6815);
     }
 
@@ -355,13 +355,13 @@ public class DrillThroughTest extends FoodMartTestCase {
 
         Result result = testContext.executeQuery(
             "SELECT {[Measures].[Unit Sales]} on columns, "
-            + "{[Store2].members} on rows FROM [Sales]");
+            + "{[Store2].[Store Id].members} on rows FROM [Sales]");
 
         // Prior to fix the request for the drill through SQL would result in
         // an assertion error
-        final Cell cell00 = result.getCell(new int[]{0, 0});
+        final Cell cell00 = result.getCell(new int[]{0, 7});
         String sql = getDrillThroughSql(cell00, true, true);
-        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 86837);
+        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 8095);
     }
 
     /**
@@ -408,10 +408,63 @@ public class DrillThroughTest extends FoodMartTestCase {
             } else {
                 assertEquals(6, columnCount);
             }
+            final String columnName =
+                resultSet.getMetaData().getColumnLabel(5);
+            assertTrue(
+                columnName,
+                columnName.equals(
+                    "Education Level2 - Education Level but with a very long "
+                    + "name tha"));
+            int n = 0;
+            while (resultSet.next()) {
+                ++n;
+            }
+            assertEquals(2, n);
+        } finally {
+            if (connection != null) {
+                connection.close();
+            }
+        }
+    }
+
+    public void testAttributeCaption() throws Exception {
+        TestContext testContext = getTestContext().createSubstitutingCube(
+            "Sales",
+            "  <Dimension name=\"Education Level2\" foreignKey=\"customer_id\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
+            + "      <Table name=\"customer\"/>\n"
+            + "      <Level name=\"Education Level\" caption=\"Bacon\" column=\"education\" uniqueMembers=\"true\"/>\n"
+            + "    </Hierarchy>\n" + "  </Dimension>",
+            null);
+
+        Result result = testContext.executeQuery(
+            "SELECT {[Measures].[Unit Sales]} on columns,\n"
+            + "{[Education Level2].Children} on rows\n"
+            + "FROM [Sales]\n"
+            + "WHERE ([Time].[1997].[Q1].[1], [Product].[Non-Consumable].[Carousel].[Specialty].[Sunglasses].[ADJ].[ADJ Rosy Sunglasses]) ");
+
+        final Cell cell00 = result.getCell(new int[]{0, 0});
+        String sql = getDrillThroughSql(cell00, false, false);
+
+        // Check that SQL is valid.
+        java.sql.Connection connection = null;
+        try {
+            DataSource dataSource = getConnection().getDataSource();
+            connection = dataSource.getConnection();
+            final Statement statement = connection.createStatement();
+            final ResultSet resultSet = statement.executeQuery(sql);
+            final int columnCount = resultSet.getMetaData().getColumnCount();
+            final Dialect dialect = testContext.getDialect();
+            if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.DERBY) {
+                // derby counts ORDER BY columns as columns. insane!
+                assertEquals(11, columnCount);
+            } else {
+                assertEquals(6, columnCount);
+            }
             final String columnName = resultSet.getMetaData().getColumnLabel(5);
             assertTrue(
                 columnName,
-                columnName.startsWith("Education Level but with a"));
+                columnName.equals("Bacon (Key)"));
             int n = 0;
             while (resultSet.next()) {
                 ++n;
@@ -451,9 +504,9 @@ public class DrillThroughTest extends FoodMartTestCase {
             true,
             "Warehouse and Sales",
             "[Measures].[Unit Sales] * 2.0");
-        // in virtual cube, mixture of measures from two cubes is not drillable
+        // in virtual cube, mixture of measures from two cubes is drillable
         assertCanDrillThrough(
-            false,
+            true,
             "Warehouse and Sales",
             "[Measures].[Unit Sales] + [Measures].[Units Ordered]");
         // expr with measures both from [Sales] is drillable

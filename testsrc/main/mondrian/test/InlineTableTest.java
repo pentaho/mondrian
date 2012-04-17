@@ -185,7 +185,7 @@ public class InlineTableTest extends FoodMartTestCase {
             null,
             null);
         testContext.assertQueryReturns(
-            "select {[Store].[Stores].children} ON COLUMNS\n"
+            "select {[Store].[Store].children} ON COLUMNS\n"
             + "from [" + cubeName + "] ",
             "Axis #0:\n"
             + "{}\n"

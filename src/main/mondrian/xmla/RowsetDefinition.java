@@ -3082,35 +3082,11 @@ TODO: see above
         private void populateHierarchy(
             Cube cube, Hierarchy hierarchy, List<Row> rows)
         {
-/*
-            String schemaName = cube.getSchema().getName();
-            String cubeName = cube.getName();
-            String hierarchyName = hierarchy.getName();
-
-            String desc = hierarchy.getDescription();
-            if (desc == null) {
-                //TODO: currently this is always null
-                desc = schemaName +
-                    " - " +
-                    cubeName +
-                    " Cube - " +
-                    hierarchyName +
-                    " Hierarchy";
+            if (hierarchy.getName().endsWith("$Parent")) {
+                // We don't return generated Parent-Child
+                // hierarchies.
+                return;
             }
-
-            if (hierarchy.hasAll()) {
-                String tableName = cubeName +
-                    ':' + hierarchyName + ':' + "(All)";
-
-                Row row = new Row();
-                row.set(TableCatalog.name, schemaName);
-                row.set(TableName.name, tableName);
-                row.set(TableType.name, "SYSTEM TABLE");
-                row.set(Description.name, desc);
-                row.set(DateModified.name, dateModified);
-                addRow(row, rows);
-            }
-*/
             for (Level level : hierarchy.getLevels()) {
                 populateLevel(cube, hierarchy, level, rows);
             }
@@ -4502,6 +4478,11 @@ TODO: see above
             List<Row> rows)
             throws XmlaException, SQLException
         {
+            if (hierarchy.getName().endsWith("$Parent")) {
+                // We don't return generated Parent-Child
+                // hierarchies.
+                return;
+            }
             final XmlaHandler.XmlaExtra extra = getExtra(connection);
             String desc = hierarchy.getDescription();
             if (desc == null) {
@@ -5101,6 +5082,9 @@ TODO: see above
                             continue;
                         }
                         for (Hierarchy hierarchy : dimension.getHierarchies()) {
+                            if (hierarchy.getName().endsWith("$Parent")) {
+                                continue;
+                            }
                             NamedList<Level> levels = hierarchy.getLevels();
                             Level lastLevel = levels.get(levels.size() - 1);
                             if (j++ > 0) {

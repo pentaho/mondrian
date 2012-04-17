@@ -24,7 +24,6 @@ public class NativeFilterMatchingTest extends BatchTestCase {
             // No point testing these if the native filters are turned off.
             return;
         }
-        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
         final String sqlOracle =
             MondrianProperties.instance().UseAggregates.get()
                 ? "select "
@@ -39,62 +38,10 @@ public class NativeFilterMatchingTest extends BatchTestCase {
                     + "\"customer\".\"country\" as \"c0\", \"customer\".\"state_province\" as \"c1\", \"customer\".\"city\" as \"c2\", \"customer\".\"customer_id\" as \"c3\", fullname as \"c4\", fullname as \"c5\", \"customer\".\"gender\" as \"c6\", \"customer\".\"marital_status\" as \"c7\", \"customer\".\"education\" as \"c8\", \"customer\".\"yearly_income\" as \"c9\" from \"customer\" as \"customer\", \"sales_fact_1997\" as \"sales_fact_1997\", \"time_by_day\" as \"time_by_day\" where \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" and \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" and \"time_by_day\".\"the_year\" = 1997 group by \"customer\".\"country\", \"customer\".\"state_province\", \"customer\".\"city\", \"customer\".\"customer_id\", fullname, \"customer\".\"gender\", \"customer\".\"marital_status\", \"customer\".\"education\", \"customer\".\"yearly_income\" having fullname ~ '(?i).*jeanne.*' order by \"customer\".\"country\" ASC NULLS LAST, \"customer\".\"state_province\" ASC NULLS LAST, \"customer\".\"city\" ASC NULLS LAST, fullname ASC NULLS LAST";
         final String sqlMysql =
             MondrianProperties.instance().UseAggregates.get()
-                ? "select\n"
-                  + "    `customer`.`country` as `c0`,\n"
-                  + "    `customer`.`state_province` as `c1`,\n"
-                  + "    `customer`.`city` as `c2`,\n"
-                  + "    `customer`.`customer_id` as `c3`,\n"
-                  + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`\n"
-                  + "from\n"
-                  + "    `sales_fact_1997` as `sales_fact_1997`,\n"
-                  + "    `customer` as `customer`,\n"
-                  + "    `time_by_day` as `time_by_day`\n"
-                  + "where\n"
-                  + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
-                  + "and\n"
-                  + "    `customer`.`customer_id` = `sales_fact_1997`.`customer_id`\n"
-                  + "and\n"
-                  + "    `time_by_day`.`time_id` = `sales_fact_1997`.`time_id`\n"
-                  + "and\n"
-                  + "    `time_by_day`.`the_year` = 1997\n"
-                  + "group by\n"
-                  + "    `customer`.`country`,\n"
-                  + "    `customer`.`state_province`,\n"
-                  + "    `customer`.`city`,\n"
-                  + "    `customer`.`customer_id`,\n"
-                  + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)\n"
-                  + "having\n"
-                  + "    UPPER(c4) REGEXP '.*jeanne.*'\n"
-                  + "order by\n"
-                  + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC"
-                : "select\n"
-                  + "    `customer`.`country` as `c0`,\n"
-                  + "    `customer`.`state_province` as `c1`,\n"
-                  + "    `customer`.`city` as `c2`,\n"
-                  + "    `customer`.`customer_id` as `c3`,\n"
-                  + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`\n"
-                  + "from\n"
-                  + "    `sales_fact_1997` as `sales_fact_1997`,\n"
-                  + "    `customer` as `customer`,\n"
-                  + "    `time_by_day` as `time_by_day`\n"
-                  + "where\n"
-                  + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
-                  + "and\n"
-                  + "    `customer`.`customer_id` = `sales_fact_1997`.`customer_id`\n"
-                  + "and\n"
-                  + "    `time_by_day`.`time_id` = `sales_fact_1997`.`time_id`\n"
-                  + "and\n"
-                  + "    `time_by_day`.`the_year` = 1997\n"
-                  + "group by\n"
-                  + "    `customer`.`country`,\n"
-                  + "    `customer`.`state_province`,\n"
-                  + "    `customer`.`city`,\n"
-                  + "    `customer`.`customer_id`,\n"
-                  + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)\n"
-                  + "having\n"
-                  + "    UPPER(c4) REGEXP '.*jeanne.*'\n"
-                  + "order by\n"
-                  + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC";
+                ? "select "
+                    + "`customer`.`country` as `c0`, `customer`.`state_province` as `c1`, `customer`.`city` as `c2`, `customer`.`customer_id` as `c3`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4` from `sales_fact_1997` as `sales_fact_1997`, `customer` as `customer`, `time_by_day` as `time_by_day` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `customer`.`customer_id` = `sales_fact_1997`.`customer_id` and `time_by_day`.`time_id` = `sales_fact_1997`.`time_id` and `time_by_day`.`the_year` = 1997 group by `customer`.`country`, `customer`.`state_province`, `customer`.`city`, `customer`.`customer_id`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) having UPPER(c4) REGEXP '.*jeanne.*' order by ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC"
+                : "select "
+                    + "`customer`.`country` as `c0`, `customer`.`state_province` as `c1`, `customer`.`city` as `c2`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c3`, `customer`.`customer_id` as `c4` from `sales_fact_1997` as `sales_fact_1997`, `customer` as `customer`, `time_by_day` as `time_by_day` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 group by `customer`.`country`, `customer`.`state_province`, `customer`.`city`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`), `customer`.`customer_id` having UPPER(c3) REGEXP '.*jeanne.*' order by ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC, ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC, ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC, ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC, ISNULL(`customer`.`customer_id`) ASC, `customer`.`customer_id` ASC";
         SqlPattern[] patterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.ORACLE,
@@ -161,7 +108,6 @@ public class NativeFilterMatchingTest extends BatchTestCase {
             // No point testing these if the native filters are turned off.
             return;
         }
-        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
         final String sqlOracle =
             MondrianProperties.instance().UseAggregates.get()
                 ? "select "
@@ -178,34 +124,8 @@ public class NativeFilterMatchingTest extends BatchTestCase {
             MondrianProperties.instance().UseAggregates.get()
                 ? "select "
                     + "`customer`.`country` as `c0`, `customer`.`state_province` as `c1`, `customer`.`city` as `c2`, `customer`.`customer_id` as `c3`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c5`, `customer`.`gender` as `c6`, `customer`.`marital_status` as `c7`, `customer`.`education` as `c8`, `customer`.`yearly_income` as `c9` from `customer` as `customer`, `agg_l_03_sales_fact_1997` as `agg_l_03_sales_fact_1997`, `time_by_day` as `time_by_day` where `agg_l_03_sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `agg_l_03_sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 group by `customer`.`country`, `customer`.`state_province`, `customer`.`city`, `customer`.`customer_id`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`), `customer`.`gender`, `customer`.`marital_status`, `customer`.`education`, `customer`.`yearly_income` having NOT(UPPER(c5) REGEXP '.*jeanne.*')  order by ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC, ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC, ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC, ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC"
-                : "select\n"
-                  + "    `customer`.`country` as `c0`,\n"
-                  + "    `customer`.`state_province` as `c1`,\n"
-                  + "    `customer`.`city` as `c2`,\n"
-                  + "    `customer`.`customer_id` as `c3`,\n"
-                  + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c4`\n"
-                  + "from\n"
-                  + "    `sales_fact_1997` as `sales_fact_1997`,\n"
-                  + "    `customer` as `customer`,\n"
-                  + "    `time_by_day` as `time_by_day`\n"
-                  + "where\n"
-                  + "    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
-                  + "and\n"
-                  + "    `customer`.`customer_id` = `sales_fact_1997`.`customer_id`\n"
-                  + "and\n"
-                  + "    `time_by_day`.`time_id` = `sales_fact_1997`.`time_id`\n"
-                  + "and\n"
-                  + "    `time_by_day`.`the_year` = 1997\n"
-                  + "group by\n"
-                  + "    `customer`.`country`,\n"
-                  + "    `customer`.`state_province`,\n"
-                  + "    `customer`.`city`,\n"
-                  + "    `customer`.`customer_id`,\n"
-                  + "    CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)\n"
-                  + "having\n"
-                  + "    NOT(UPPER(c4) REGEXP '.*jeanne.*')\n"
-                  + "order by\n"
-                  + "    ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC";
+                : "select "
+                    + "`customer`.`country` as `c0`, `customer`.`state_province` as `c1`, `customer`.`city` as `c2`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) as `c3`, `customer`.`customer_id` as `c4` from `sales_fact_1997` as `sales_fact_1997`, `customer` as `customer`, `time_by_day` as `time_by_day` where `sales_fact_1997`.`customer_id` = `customer`.`customer_id` and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` and `time_by_day`.`the_year` = 1997 group by `customer`.`country`, `customer`.`state_province`, `customer`.`city`, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`), `customer`.`customer_id` having NOT(UPPER(c3) REGEXP '.*jeanne.*') order by ISNULL(`customer`.`country`) ASC, `customer`.`country` ASC, ISNULL(`customer`.`state_province`) ASC, `customer`.`state_province` ASC, ISNULL(`customer`.`city`) ASC, `customer`.`city` ASC, ISNULL(CONCAT(`customer`.`fname`, ' ', `customer`.`lname`)) ASC, CONCAT(`customer`.`fname`, ' ', `customer`.`lname`) ASC, ISNULL(`customer`.`customer_id`) ASC, `customer`.`customer_id` ASC";
 
         SqlPattern[] patterns = {
             new SqlPattern(

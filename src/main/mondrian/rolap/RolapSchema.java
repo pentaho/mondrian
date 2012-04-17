@@ -946,11 +946,7 @@ public class RolapSchema implements Schema {
         {
             this.dialect = dialect;
             this.jdbcSchema = JdbcSchema.makeDB(dataSource);
-            try {
-                jdbcSchema.load();
-            } catch (SQLException e) {
-                throw Util.newError(e, "Error while loading JDBC schema");
-            }
+            jdbcSchema.load();
         }
 
         /**
