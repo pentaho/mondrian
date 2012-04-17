@@ -1120,7 +1120,7 @@ public class RolapSchemaLoader {
     private RolapSchema.PhysSchema createSyntheticPhysicalSchema() {
         return new RolapSchema.PhysSchema(
             schema.getDialect(),
-            schema.getInternalConnection().getDataSource());
+            schema.getInternalConnection());
     }
 
     static DimensionType getDimensionType(MondrianDef.Dimension xmlDimension) {

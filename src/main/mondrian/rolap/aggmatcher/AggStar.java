@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -1115,6 +1115,9 @@ public class AggStar extends RolapStar {
          */
         public int getNumberOfRows() {
             if (numberOfRows < 0) {
+                numberOfRows =
+                    getRelation().getSchema().statistic.getRelationCardinality(
+                        getRelation(), getName(), approxRowCount);
                 makeNumberOfRows();
             }
             return numberOfRows;

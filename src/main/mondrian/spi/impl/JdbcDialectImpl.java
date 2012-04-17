@@ -9,8 +9,13 @@
 */
 package mondrian.spi.impl;
 
+import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
 import mondrian.spi.Dialect;
+import mondrian.spi.StatisticsProvider;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.sql.*;
 import java.sql.Date;
@@ -33,6 +38,8 @@ import java.util.*;
  * @since Oct 10, 2008
  */
 public class JdbcDialectImpl implements Dialect {
+    private static final Log LOGGER = LogFactory.getLog(JdbcDialectImpl.class);
+
     /**
      * String used to quote identifiers.
      */
@@ -73,6 +80,11 @@ public class JdbcDialectImpl implements Dialect {
      * Major database product (or null if product is not a common one)
      */
     protected final DatabaseProduct databaseProduct;
+
+    /**
+     * List of statistics providers.
+     */
+    private final List<StatisticsProvider> statisticsProviders;
 
     private static final int[] RESULT_SET_TYPE_VALUES = {
         ResultSet.TYPE_FORWARD_ONLY,
@@ -120,6 +132,7 @@ public class JdbcDialectImpl implements Dialect {
             getProduct(this.productName, this.productVersion);
         this.permitsSelectNotInGroupBy =
             deduceSupportsSelectNotInGroupBy(connection);
+        this.statisticsProviders = computeStatisticsProviders();
     }
 
     public DatabaseProduct getDatabaseProduct() {
@@ -722,14 +735,6 @@ public class JdbcDialectImpl implements Dialect {
     public String generateOrderItem(
         String expr,
         boolean nullable,
-        boolean ascending)
-    {
-        return this.generateOrderItem(expr, nullable, ascending, true);
-    }
-
-    public String generateOrderItem(
-        String expr,
-        boolean nullable,
         boolean ascending,
         boolean collateNullsLast)
     {
@@ -897,6 +902,68 @@ public class JdbcDialectImpl implements Dialect {
         String source,
         String javaRegExp)
     {
+        return null;
+    }
+
+    public List<StatisticsProvider> getStatisticsProviders() {
+        return statisticsProviders;
+    }
+
+    protected List<StatisticsProvider> computeStatisticsProviders() {
+        List<String> names = getStatisticsProviderNames();
+        if (names == null) {
+            return Collections.<StatisticsProvider>singletonList(
+                new SqlStatisticsProvider());
+        }
+        final List<StatisticsProvider> providerList =
+            new ArrayList<StatisticsProvider>();
+        for (String name : names) {
+            try {
+                final Class<?> clazz = Class.forName(name);
+                StatisticsProvider provider =
+                    (StatisticsProvider) clazz.newInstance();
+                providerList.add(provider);
+            } catch (ClassNotFoundException e) {
+                LOGGER.info(
+                    "Error instantiating statistics provider (class=" + name
+                    + ")",
+                    e);
+            } catch (InstantiationException e) {
+                LOGGER.info(
+                    "Error instantiating statistics provider (class=" + name
+                    + ")",
+                    e);
+            } catch (IllegalAccessException e) {
+                LOGGER.info(
+                    "Error instantiating statistics provider (class="
+                    + name
+                    + ")", e);
+            } catch (ClassCastException e) {
+                LOGGER.info(
+                    "Error instantiating statistics provider (class="
+                    + name
+                    + ")", e);
+            }
+        }
+        return providerList;
+    }
+
+    private List<String> getStatisticsProviderNames() {
+        // Dialect-specific path, e.g. "mondrian.statistics.providers.MYSQL"
+        final String path =
+            MondrianProperties.instance().StatisticsProviders.getPath()
+            + "."
+            + getDatabaseProduct().name();
+        String nameList = MondrianProperties.instance().getProperty(path);
+        if (nameList != null && !nameList.isEmpty()) {
+            return Arrays.asList(nameList.split(","));
+        }
+
+        // Generic property, "mondrian.statistics.providers"
+        nameList = MondrianProperties.instance().StatisticsProviders.get();
+        if (nameList != null && !nameList.isEmpty()) {
+            return Arrays.asList(nameList.split(","));
+        }
         return null;
     }
 

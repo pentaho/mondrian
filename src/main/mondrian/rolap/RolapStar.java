@@ -727,71 +727,12 @@ public class RolapStar {
          * @return the column cardinality.
          */
         public int getCardinality() {
-            if (approxCardinality == Integer.MIN_VALUE) {
-                final RolapSchema.PhysStatistic statistic =
-                    getStar().getSchema().getStatistic();
+            if (approxCardinality < 0) {
                 approxCardinality =
-                    statistic.getCardinality(
-                        table.getRelation(),
-                        expression,
-                        new Util.Functor0<Integer>() {
-                            public Integer apply() {
-                                return computeCardinality();
-                            }
-                        });
+                    table.relation.getSchema().statistic.getColumnCardinality(
+                        table.relation, expression, approxCardinality);
             }
             return approxCardinality;
-        }
-
-        private int computeCardinality() {
-            final DataSource dataSource = table.star.getDataSource();
-            Dialect dialect = table.star.getSqlQueryDialect();
-            SqlQuery sqlQuery = new SqlQuery(dialect);
-            if (dialect.allowsCountDistinct()) {
-                // e.g. "select count(distinct product_id) from product"
-                sqlQuery.addSelect(
-                    "count(distinct " + getExpression().toSql() + ")",
-                    null);
-
-                // no need to join fact table here
-                table.addToFrom(sqlQuery, true, false);
-            } else if (dialect.allowsFromQuery()) {
-                // Some databases (e.g. Access) don't like 'count(distinct)',
-                // so use, e.g., "select count(*) from (select distinct
-                // product_id from product)"
-                SqlQuery inner = sqlQuery.cloneEmpty();
-                inner.setDistinct(true);
-                inner.addSelect(getExpression().toSql(), null);
-                boolean failIfExists = true,
-                    joinToParent = false;
-                table.addToFrom(inner, failIfExists, joinToParent);
-                sqlQuery.addSelect("count(*)", null);
-                sqlQuery.addFrom(inner, "init", failIfExists);
-            } else {
-                throw Util.newInternal(
-                    "Cannot compute cardinality: this database neither "
-                    + "supports COUNT DISTINCT nor SELECT in the FROM clause.");
-            }
-            String sql = sqlQuery.toString();
-            final SqlStatement stmt =
-                RolapUtil.executeQuery(
-                    dataSource,
-                    sql,
-                    new Locus(
-                        Locus.peek().execution,
-                        "RolapStar.Column.getCardinality",
-                        "while counting distinct values of column '"
-                        + expression.toSql()));
-            try {
-                ResultSet resultSet = stmt.getResultSet();
-                Util.assertTrue(resultSet.next());
-                ++stmt.rowCount;
-                return resultSet.getInt(1);
-            } catch (SQLException e) {
-                throw stmt.handle(e);
-            } finally {
-                stmt.close();
-            }
         }
 
         public String toString() {

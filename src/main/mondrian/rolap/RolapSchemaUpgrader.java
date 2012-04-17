@@ -104,7 +104,7 @@ public class RolapSchemaUpgrader {
         tempSchema.physicalSchema =
             new RolapSchema.PhysSchema(
                 tempSchema.getDialect(),
-                tempSchema.getInternalConnection().getDataSource());
+                tempSchema.getInternalConnection());
         RolapSchemaUpgrader upgrader =
             new RolapSchemaUpgrader(
                 loader, tempSchema, tempSchema.physicalSchema);

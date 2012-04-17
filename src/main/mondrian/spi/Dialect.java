@@ -793,6 +793,21 @@ public interface Dialect {
         int scale);
 
     /**
+     * Returns a list of statistics providers for this dialect.
+     *
+     * <p>The default implementation looks for the value of the property
+     * {@code mondrian.statistics.providers.PRODUCT} where product is the
+     * current dialect's product name (for example "MYSQL"). If that property
+     * has no value, looks at the property
+     * {@code mondrian.statistics.providers}. The property value should be
+     * a comma-separated list of names of classes that implement the
+     * {@link StatisticsProvider} interface. For each statistic required,
+     * Mondrian will call the method each statistics provider in turn, until one
+     * of them returns a non-negative value.</p>
+     */
+    List<StatisticsProvider> getStatisticsProviders();
+
+    /**
      * Enumeration of common database types.
      *
      * <p>Branching on this enumeration allows you to write code which behaves

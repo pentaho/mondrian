@@ -583,16 +583,10 @@ public class SegmentBuilder {
             ccs.add(
                 new SegmentColumn(
                     predicate.getColumn().physColumn.toSql(),
-                    statistic.getCardinality(
+                    statistic.getColumnCardinality(
                         predicate.getColumn().physColumn.relation,
                         predicate.getColumn().physColumn,
-                        new Util.Functor0<Integer>() {
-                            public Integer apply() {
-                                // -1 means "I don't know".
-                                // FIXME: generate SQL to find cardinality
-                                return -1;
-                            }
-                        }),
+                        -1),
                     valueList));
         }
         return ccs;
