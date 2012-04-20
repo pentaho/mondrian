@@ -289,16 +289,20 @@ public class SegmentBuilder {
                         continue;
                     }
                     final int ordinal = vEntry.getKey().getOrdinals()[i];
-                    final Comparable value = valueArray[ordinal];
-                    int targetOrdinal;
-                    if (value == null) {
+                    final int targetOrdinal;
+                    if (axes[z].hasNull && ordinal == valueArray.length) {
                         targetOrdinal = axes[z].valueSet.size();
                     } else {
-                        targetOrdinal =
-                            Util.binarySearch(
-                                axes[z].values,
-                                0, axes[z].values.length,
-                                value);
+                        final Comparable value = valueArray[ordinal];
+                        if (value == null) {
+                            targetOrdinal = axes[z].valueSet.size();
+                        } else {
+                            targetOrdinal =
+                                Util.binarySearch(
+                                    axes[z].values,
+                                    0, axes[z].values.length,
+                                    value);
+                        }
                     }
                     pos[z++] = targetOrdinal;
                 }
@@ -320,8 +324,11 @@ public class SegmentBuilder {
                 new Pair<SortedSet<Comparable>, Boolean>(
                     axes[i].valueSet, axes[i].hasNull));
             nullIndicators.set(i, axes[i].hasNull);
-            nbValues *= axes[i].values.length;
-        }
+            nbValues *= axes[i].hasNull
+                ? axes[i].values.length + 1
+                : axes[i].values.length;
+         }
+
         final int[] axisMultipliers =
             computeAxisMultipliers(axisList);
 
@@ -375,7 +382,7 @@ public class SegmentBuilder {
                         data,
                         axisList);
             } else if (peek instanceof Integer) {
-                final int[] data = new int[cellValues.size()];
+                final int[] data = new int[nbValues];
                 for (Entry<CellKey, List<Object>> entry
                     : cellValues.entrySet())
                 {
@@ -391,7 +398,7 @@ public class SegmentBuilder {
                         data,
                         axisList);
             } else {
-                final Object[] data = new Object[cellValues.size()];
+                final Object[] data = new Object[nbValues];
                 for (Entry<CellKey, List<Object>> entry
                     : cellValues.entrySet())
                 {
