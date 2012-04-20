@@ -6517,8 +6517,8 @@ TODO: see above
         public NamedList<Hierarchy> getHierarchies() {
             final NamedList<Hierarchy> hierarchyList =
                 new ArrayNamedListImpl<Hierarchy>() {
-                    protected String getName(Hierarchy hierarchy) {
-                        return hierarchy.getName();
+                    public String getName(Object hierarchy) {
+                        return ((Hierarchy)hierarchy).getName();
                     }
                 };
             for (Dimension dimension : getDimensions()) {
