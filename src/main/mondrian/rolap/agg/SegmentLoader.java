@@ -597,17 +597,9 @@ public class SegmentLoader {
         }
         final RowList processedRows = new RowList(processedTypes, 100);
 
-        final int resultLimit =
-            MondrianProperties.instance().ResultLimit.get();
-
         while (rawRows.next()) {
+            checkResultLimit(++stmt.rowCount);
 
-            if (resultLimit <= ++stmt.rowCount) {
-                throw MondrianResource.instance()
-                    .SegmentFetchLimitExceeded.ex(resultLimit);
-            }
-
-            processedRows.createRow();
             // get the columns
             int columnIndex = 0;
             for (int axisIndex = 0; axisIndex < arity;
@@ -760,6 +752,15 @@ public class SegmentLoader {
             }
         }
         return processedRows;
+    }
+
+    private void checkResultLimit(int currentCount) {
+        final int limit =
+            MondrianProperties.instance().ResultLimit.get();
+        if (limit > 0 && currentCount >= limit) {
+            throw MondrianResource.instance()
+                .SegmentFetchLimitExceeded.ex(limit);
+        }
     }
 
     /**
