@@ -508,6 +508,44 @@ public class CacheControlTest extends FoodMartTestCase {
     }
 
     /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1120">MONDRIAN-1120</a>
+     * <p>SegmentCacheIndexImpl.intersects was not comparing the
+     * header column values to those of the cache region.
+     */
+    public void testPartialFlush_2() throws Exception {
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            return;
+        }
+
+        final TestContext testContext = getTestContext();
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw);
+        final CacheControl cacheControl =
+            testContext.getConnection().getCacheControl(pw);
+
+        final CacheControl.CellRegion regionF =
+            createCellRegionFemale(testContext, cacheControl);
+        final CacheControl.CellRegion regionM =
+            createCellRegionMale(testContext, cacheControl);
+
+        flushCache(testContext);
+
+        executeQuery(
+            "select {[Measures].[Unit Sales]} on columns, {[Gender].[M]} on rows from [Sales]");
+
+        sw.getBuffer().setLength(0);
+        cacheControl.flush(regionF);
+        pw.flush();
+        assertCacheStateEquals("output", "${output}", sw.toString());
+
+        sw.getBuffer().setLength(0);
+        cacheControl.flush(regionM);
+        pw.flush();
+        assertCacheStateEquals("output2", "${output2}", sw.toString());
+    }
+
+    /**
      * Creates a partial cell region over a range, runs a query, then flushes
      * the cache.
      */
@@ -767,6 +805,54 @@ public class CacheControlTest extends FoodMartTestCase {
             cacheControl.createMeasuresRegion(salesCube);
         return cacheControl.createCrossjoinRegion(
             regionProductFoodDrink,
+            measuresRegion,
+            regionFemale);
+    }
+
+    private CacheControl.CellRegion createCellRegionFemale(
+        TestContext testContext,
+        CacheControl cacheControl)
+    {
+        final Connection connection = testContext.getConnection();
+        final Cube salesCube =
+            connection.getSchema().lookupCube("Sales", true);
+
+        final SchemaReader schemaReader =
+            salesCube.getSchemaReader(null).withLocus();
+        final Member memberFemale =
+            schemaReader.getMemberByUniqueName(
+                Id.Segment.toList("Gender", "F"), true);
+
+        final CacheControl.CellRegion regionFemale =
+            cacheControl.createMemberRegion(memberFemale, true);
+
+        final CacheControl.CellRegion measuresRegion =
+            cacheControl.createMeasuresRegion(salesCube);
+        return cacheControl.createCrossjoinRegion(
+            measuresRegion,
+            regionFemale);
+    }
+
+    private CacheControl.CellRegion createCellRegionMale(
+        TestContext testContext,
+        CacheControl cacheControl)
+    {
+        final Connection connection = testContext.getConnection();
+        final Cube salesCube =
+            connection.getSchema().lookupCube("Sales", true);
+
+        final SchemaReader schemaReader =
+            salesCube.getSchemaReader(null).withLocus();
+        final Member memberFemale =
+            schemaReader.getMemberByUniqueName(
+                Id.Segment.toList("Gender", "M"), true);
+
+        final CacheControl.CellRegion regionFemale =
+            cacheControl.createMemberRegion(memberFemale, true);
+
+        final CacheControl.CellRegion measuresRegion =
+            cacheControl.createMeasuresRegion(salesCube);
+        return cacheControl.createCrossjoinRegion(
             measuresRegion,
             regionFemale);
     }

@@ -18,6 +18,7 @@ import mondrian.spi.PropertyFormatter;
 import mondrian.spi.*;
 
 import org.apache.log4j.MDC;
+
 import org.olap4j.CellSet;
 import org.olap4j.metadata.Property;
 

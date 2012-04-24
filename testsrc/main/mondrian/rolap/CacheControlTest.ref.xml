@@ -1,5 +1,70 @@
 <?xml version="1.0" ?>
 <Root>
+    <TestCase name="testPartialFlush_2">
+        <Resource name="output">
+            <![CDATA[Cache state before flush:
+*Segment Header
+Schema:[FoodMart]
+Checksum:[9cca66327439577753dd5c3144ab59b5]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=('1997')}
+    {customer.gender=('M')}]
+Excluded Regions:[]
+Compound Predicates:[]
+ID:[b70a039adfe811d6fed1c5b5de9eda03416bbb1eed70db8589ad788bc4ded83a]
+
+
+Cache state after flush:
+*Segment Header
+Schema:[FoodMart]
+Checksum:[9cca66327439577753dd5c3144ab59b5]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=('1997')}
+    {customer.gender=('M')}]
+Excluded Regions:[]
+Compound Predicates:[]
+ID:[b70a039adfe811d6fed1c5b5de9eda03416bbb1eed70db8589ad788bc4ded83a]
+
+
+]]>
+        </Resource>
+        <Resource name="output2">
+            <![CDATA[Cache state before flush:
+*Segment Header
+Schema:[FoodMart]
+Checksum:[9cca66327439577753dd5c3144ab59b5]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=('1997')}
+    {customer.gender=('M')}]
+Excluded Regions:[]
+Compound Predicates:[]
+ID:[b70a039adfe811d6fed1c5b5de9eda03416bbb1eed70db8589ad788bc4ded83a]
+
+
+discard segment - it cannot be constrained and maintain consistency:
+*Segment Header
+Schema:[FoodMart]
+Checksum:[9cca66327439577753dd5c3144ab59b5]
+Cube:[Sales]
+Measure:[Unit Sales]
+Axes:[
+    {time_by_day.the_year=('1997')}
+    {customer.gender=('M')}]
+Excluded Regions:[]
+Compound Predicates:[]
+ID:[b70a039adfe811d6fed1c5b5de9eda03416bbb1eed70db8589ad788bc4ded83a]
+
+Cache state after flush:
+
+]]>
+        </Resource>
+    </TestCase>
     <TestCase name="testMondrian1094">
         <Resource name="output">
             <![CDATA[Cache state before flush:
