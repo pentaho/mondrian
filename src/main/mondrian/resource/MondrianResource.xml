@@ -494,6 +494,10 @@
    <text>Number of members to be read exceeded limit ({0,number})</text>
 </exception>
 
+<exception id="600025" name="SegmentFetchLimitExceeded" className="mondrian.olap.ResourceLimitExceededException">
+   <text>Number of cell results to be read exceeded limit of ({0,number})</text>
+</exception>
+
 <exception id="600030" name="QueryCanceled" className="mondrian.olap.QueryCanceledException">
     <text>Query canceled</text>
 </exception>

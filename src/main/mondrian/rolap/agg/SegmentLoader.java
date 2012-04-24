@@ -13,6 +13,7 @@ package mondrian.rolap.agg;
 import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.Util;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.rolap.cache.SegmentCacheIndex;
 import mondrian.server.Locus;
@@ -596,8 +597,17 @@ public class SegmentLoader {
         }
         final RowList processedRows = new RowList(processedTypes, 100);
 
+        final int resultLimit =
+            MondrianProperties.instance().ResultLimit.get();
+
         while (rawRows.next()) {
             ++stmt.rowCount;
+
+            if (resultLimit <= stmt.rowCount) {
+                throw MondrianResource.instance()
+                    .SegmentFetchLimitExceeded.ex(resultLimit);
+            }
+
             processedRows.createRow();
             // get the columns
             int columnIndex = 0;
