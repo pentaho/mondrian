@@ -599,6 +599,7 @@ public class SegmentLoader {
 
         while (rawRows.next()) {
             checkResultLimit(++stmt.rowCount);
+            processedRows.createRow();
 
             // get the columns
             int columnIndex = 0;
