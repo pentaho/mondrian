@@ -3185,7 +3185,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // members in set are a cross product of (1997, 1998) and (Q1, Q2, Q3)
         checkNative(
-            15, 15,
+            50, 15,
             "select "
             + "{[Measures].[Unit Sales]} on columns, "
             + "NonEmptyCrossJoin(" + EDUCATION_LEVEL_LEVEL + ".Members, "
