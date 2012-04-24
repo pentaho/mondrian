@@ -875,7 +875,7 @@ public class SegmentLoader {
     private void checkResultLimit(int currentCount) {
         final int limit =
             MondrianProperties.instance().ResultLimit.get();
-        if (limit > 0 && currentCount >= limit) {
+        if (limit > 0 && currentCount > limit) {
             throw MondrianResource.instance()
                 .SegmentFetchLimitExceeded.ex(limit);
         }
