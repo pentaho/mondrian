@@ -103,7 +103,7 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 88, query, null, requestFreshConnection);
+        checkNative(200, 88, query, null, requestFreshConnection);
     }
 
     public void testIsFilterSimple() throws Exception {
@@ -171,7 +171,7 @@ public class FilterTest extends BatchTestCase {
             + "Non Empty [*CJ_ROW_AXIS] on rows "
             + "From [Sales]";
 
-        checkNative(100, 88, query, null, requestFreshConnection);
+        checkNative(200, 88, query, null, requestFreshConnection);
     }
 
     /**
