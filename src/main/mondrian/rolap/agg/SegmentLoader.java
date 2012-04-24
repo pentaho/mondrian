@@ -721,9 +721,8 @@ public class SegmentLoader {
             MondrianProperties.instance().ResultLimit.get();
 
         while (rawRows.next()) {
-            ++stmt.rowCount;
 
-            if (resultLimit <= stmt.rowCount) {
+            if (resultLimit <= ++stmt.rowCount) {
                 throw MondrianResource.instance()
                     .SegmentFetchLimitExceeded.ex(resultLimit);
             }
