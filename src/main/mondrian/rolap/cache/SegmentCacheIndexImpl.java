@@ -347,7 +347,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             final SortedSet<Comparable> regionValues =
                 regionColumn.getValues();
             final SortedSet<Comparable> headerValues =
-                regionColumn.getValues();
+                headerColumn.getValues();
             if (headerValues == null || regionValues == null) {
                 // This is a wildcard, so it always intersects.
                 return true;
