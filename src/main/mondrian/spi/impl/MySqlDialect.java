@@ -292,9 +292,8 @@ public class MySqlDialect extends JdbcDialectImpl {
                     escapeMatcher.group(2));
         }
         final StringBuilder sb = new StringBuilder();
-        sb.append("UPPER(");
         sb.append(source);
-        sb.append(") REGEXP ");
+        sb.append(" REGEXP ");
         quoteStringLiteral(sb, javaRegex);
         return sb.toString();
     }
