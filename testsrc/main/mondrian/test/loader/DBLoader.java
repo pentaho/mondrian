@@ -909,6 +909,9 @@ public abstract class DBLoader {
      * is no longer going to be used.
      */
     public void close() {
+        if (connection != null) {
+            Util.close(null, null, connection);
+        }
     }
 
     protected void check() throws Exception {

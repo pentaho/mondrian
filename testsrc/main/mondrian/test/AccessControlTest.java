@@ -13,9 +13,9 @@ package mondrian.test;
 import mondrian.olap.*;
 import mondrian.util.Bug;
 
-import junit.framework.Assert;
-
 import java.util.List;
+
+import junit.framework.Assert;
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.

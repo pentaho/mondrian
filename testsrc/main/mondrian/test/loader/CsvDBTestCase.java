@@ -106,8 +106,15 @@ public abstract class CsvDBTestCase extends FoodMartTestCase {
         } catch (Exception ex) {
             // ignore
         }
+        try {
+            this.loader.close();
+        } catch (Exception ex) {
+            // ignore
+        }
 
+        tables = null;
         testContext = null; // allow gc
+        loader = null;
 
         super.tearDown();
     }
