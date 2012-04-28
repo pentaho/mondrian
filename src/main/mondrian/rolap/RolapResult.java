@@ -360,7 +360,8 @@ public class RolapResult extends ResultBase {
                     tupleList =
                         AggregateFunDef.AggregateCalc.optimizeTupleList(
                             slicerEvaluator,
-                            tupleList);
+                            tupleList,
+                            false);
 
                     final Calc valueCalc =
                         new ValueCalc(
