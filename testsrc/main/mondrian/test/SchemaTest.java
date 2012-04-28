@@ -4493,11 +4493,21 @@ public class SchemaTest extends FoodMartTestCase {
         default:
             return;
         }
+        checkBugMondrian1047(100); // 115 bits
+        checkBugMondrian1047(50); // 65 bits
+        checkBugMondrian1047(49); // 64 bits
+        checkBugMondrian1047(48); // 63 bits
+        checkBugMondrian1047(113); // 128 bits
+        checkBugMondrian1047(114); // 129 bits
+    }
+
+
+    public void checkBugMondrian1047(int n) {
         TestContext testContext =
             TestContext.instance().createSubstitutingCube(
                 "HR",
                 TestContext.repeatString(
-                    100,
+                    n,
                     "<Dimension name='Position %1$d' foreignKey='employee_id'>\n"
                     + "  <Hierarchy hasAll='true' allMemberName='All Position' primaryKey='employee_id'>\n"
                     + "    <Table name='employee'/>\n"
