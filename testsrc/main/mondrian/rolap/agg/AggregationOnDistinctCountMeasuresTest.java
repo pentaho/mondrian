@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho and others
+// Copyright (C) 2007-2012 Pentaho and others
 // All Rights Reserved.
 //
 // ajogleka, 19 December, 2007
@@ -407,35 +407,74 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOverLargeListGeneratesError() {
-        int origMaxConstraint = props.MaxConstraints.get();
-        props.MaxConstraints.set(7);
+        propSaver.set(props.MaxConstraints, 7);
 
-        String result;
-        final Dialect dialect = getTestContext().getDialect();
-        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.LUCIDDB) {
-            // LucidDB has no limit on the size of IN list
-            result =
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Customer Count]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[X]}\n"
-                + "Row #0: 1,360\n";
-        } else {
-            result =
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Customer Count]}\n"
-                + "Axis #2:\n"
-                + "{[Product].[X]}\n"
-                + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: "
-                + "Aggregation is not supported over a list with more than 7 predicates (see property mondrian.rolap.maxConstraints)\n";
-        }
+        // LucidDB has no limit on the size of IN list
+        final boolean isLuciddb =
+            getTestContext().getDialect().getDatabaseProduct()
+            == Dialect.DatabaseProduct.LUCIDDB;
 
         assertQueryReturns(
-            "WITH MEMBER PRODUCT.X as 'Aggregate({"
+            makeQuery("[MEASURES].[CUSTOMER COUNT]"),
+            isLuciddb
+            ? "Axis #0:\n"
+              + "{}\n"
+              + "Axis #1:\n"
+              + "{[Measures].[Customer Count]}\n"
+              + "Axis #2:\n"
+              + "{[Product].[X]}\n"
+              + "Row #0: 1,360\n"
+            : "Axis #0:\n"
+              + "{}\n"
+              + "Axis #1:\n"
+              + "{[Measures].[Customer Count]}\n"
+              + "Axis #2:\n"
+              + "{[Product].[X]}\n"
+              + "Row #0: #ERR: mondrian.olap.fun.MondrianEvaluationException: "
+              + "Aggregation is not supported over a list with more than 7 predicates (see property mondrian.rolap.maxConstraints)\n");
+
+        // aggregation over a non-distinct-count measure is OK
+        assertQueryReturns(
+            makeQuery("[Measures].[Store Sales]"),
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[X]}\n"
+            + "Row #0: 11,257.28\n");
+
+        // aggregation over a non-distinct-count measure in slicer should be
+        // OK. Before bug MONDRIAN-1122 was fixed, a large set in the slicer
+        // would cause an error even if there was not a distinct-count measure.
+        assertQueryReturns(
+            "SELECT {[Measures].[Store Sales]} ON COLUMNS\n"
+            + "FROM [WAREHOUSE AND SALES2]\n"
+            + "WHERE {\n"
+            + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good],\n"
+            + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth],\n"
+            + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure],\n"
+            + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus],\n"
+            + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl],\n"
+            + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth],\n"
+            + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure],\n"
+            + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus]}",
+            "Axis #0:\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Walrus]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Pearl]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure]}\n"
+            + "{[Product].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Row #0: 11,257.28\n");
+    }
+
+    private String makeQuery(String measureName) {
+        return "WITH MEMBER PRODUCT.X as 'Aggregate({"
             + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Good],\n"
             + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Portsmouth],\n"
             + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Beer].[Top Measure],\n"
@@ -444,12 +483,50 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Portsmouth],\n"
             + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Top Measure],\n"
             + "[Product].[All Products].[Drink].[Alcoholic Beverages].[Beer and Wine].[Wine].[Walrus]})' "
-            + "SELECT PRODUCT.X  ON ROWS, "
-            + "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n"
-            + "FROM [WAREHOUSE AND SALES2]",
-            result);
+            + "SELECT PRODUCT.X  ON ROWS,\n"
+            + " {" + measureName + "} ON COLUMNS\n"
+            + "FROM [WAREHOUSE AND SALES2]";
+    }
 
-        props.MaxConstraints.set(origMaxConstraint);
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.org/browse/MONDRIAN-1122">MONDRIAN-1122,
+     * "Aggregation is not supported over a list with more than 1000
+     * predicates"</a>.
+     *
+     * @see #testAggregationOverLargeListGeneratesError
+     */
+    public void testAggregateMaxConstraints() {
+        propSaver.set(MondrianProperties.instance().SsasCompatibleNaming, true);
+        propSaver.set(MondrianProperties.instance().MaxConstraints, 5);
+        TestContext.instance().assertQueryReturns(
+            "SELECT\n"
+            + "  Measures.[Unit Sales] on columns,\n"
+            + "  Product.[Product Family].Members on rows\n"
+            + "FROM Sales\n"
+            + "WHERE {\n"
+            + "  [Time].[All Weeklys].[1997].[1].[15],\n"
+            + "  [Time].[All Weeklys].[1997].[2].[1],\n"
+            + "  [Time].[All Weeklys].[1997].[3].[11],\n"
+            + "  [Time].[All Weeklys].[1997].[4].[13],\n"
+            + "  [Time].[All Weeklys].[1997].[5].[22],\n"
+            + "  [Time].[All Weeklys].[1997].[6].[1]}",
+            "Axis #0:\n"
+            + "{[Time].[Weekly].[1997].[1].[15]}\n"
+            + "{[Time].[Weekly].[1997].[2].[1]}\n"
+            + "{[Time].[Weekly].[1997].[3].[11]}\n"
+            + "{[Time].[Weekly].[1997].[4].[13]}\n"
+            + "{[Time].[Weekly].[1997].[5].[22]}\n"
+            + "{[Time].[Weekly].[1997].[6].[1]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 458\n"
+            + "Row #1: 3,746\n"
+            + "Row #2: 937\n");
     }
 
     public void testMultiLevelMembersNullParents() {

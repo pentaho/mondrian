@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -143,7 +143,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                 // very slow.  May want to revisit this if someone
                 // improves the algorithm.
             } else {
-                tupleList = optimizeTupleList(evaluator, tupleList);
+                tupleList = optimizeTupleList(evaluator, tupleList, true);
             }
 
             // Can't aggregate distinct-count values in the same way
@@ -188,8 +188,7 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
         }
 
         public static TupleList optimizeTupleList(
-            Evaluator evaluator,
-            TupleList tupleList)
+            Evaluator evaluator, TupleList tupleList, boolean checkSize)
         {
             if (!canOptimize(evaluator, tupleList)) {
                 return tupleList;
@@ -210,7 +209,9 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     tupleList,
                     evaluator.getSchemaReader(),
                     evaluator.getMeasureCube());
-            checkIfAggregationSizeIsTooLarge(tupleList);
+            if (checkSize) {
+                checkIfAggregationSizeIsTooLarge(tupleList);
+            }
             return tupleList;
         }
 
