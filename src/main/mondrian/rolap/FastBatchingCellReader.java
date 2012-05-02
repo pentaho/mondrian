@@ -12,6 +12,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
+import mondrian.rolap.agg.SegmentBuilder.StarSegmentConverter;
 import mondrian.rolap.aggmatcher.AggGen;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.cache.SegmentCacheIndex;
@@ -263,25 +264,18 @@ public class FastBatchingCellReader implements CellReader {
 
             // Perform each suggested rollup.
 
-            // Rollups that failed. If there are any, we may need to re-process
-            // some cell requests.
-            final List<BatchLoader.RollupInfo> failedRollups =
-                new ArrayList<BatchLoader.RollupInfo>();
-
             // Rollups that succeeded. Will tell cache mgr to put the headers
             // into the index and the header/bodies in cache.
             final Map<SegmentHeader, SegmentBody> succeededRollups =
                 new HashMap<SegmentHeader, SegmentBody>();
 
-            for (BatchLoader.RollupInfo rollup : response.rollups) {
+            for (final BatchLoader.RollupInfo rollup : response.rollups) {
                 // Gather the required segments.
                 Map<SegmentHeader, SegmentBody> map =
                     findResidentRollupCandidate(headerBodies, rollup);
                 if (map == null) {
                     // None of the candidate segment-sets for this rollup was
                     // all present in the cache.
-                    failedRollups.add(rollup);
-                    ++failureCount;
                     continue;
                 }
 
@@ -310,6 +304,33 @@ public class FastBatchingCellReader implements CellReader {
 
                 final SegmentWithData segmentWithData =
                     response.convert(header, body);
+                /*
+                 * Make sure that the cache manager knows about this new
+                 * segment. First thing we do is to add it to the index.
+                 * Then we insert the segment body into the SlotFuture.
+                 * This has to be done on the SegmentCacheManager's
+                 * Actor thread to ensure thread safety.
+                 */
+                final Locus locus = Locus.peek();
+                cacheMgr.execute(
+                    new SegmentCacheManager.Command<Void>() {
+                        public Void call() throws Exception {
+                            SegmentCacheIndex index =
+                                cacheMgr.getIndexRegistry()
+                                    .getIndex(segmentWithData.getStar());
+                            index.add(
+                                segmentWithData.getHeader(), true,
+                                response.converterMap.get(
+                                    SegmentCacheIndexImpl
+                                        .makeConverterKey(segmentWithData.getHeader())));
+                            ((SlotFuture<SegmentBody>)index.getFuture(segmentWithData.getHeader()))
+                                .put(body);
+                            return null;
+                        }
+                        public Locus getLocus() {
+                            return locus;
+                        }
+                    });
                 segmentWithData.getStar().register(segmentWithData);
             }
 
