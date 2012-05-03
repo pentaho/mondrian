@@ -100,10 +100,13 @@ public class SqlContextConstraint
         // requires that we have access to the slicer axis (so we can iterate
         // over its positions). Alas, the evaluator does not give us access to
         // the slicer axis, but only the members on it
-        if (SqlConstraintUtils.hasMultiPositionSlicer(context)) {
+  
+        
+       
+/*        if (SqlConstraintUtils.hasMultiPositionSlicer(context)) {
             return false;
         }
-
+*/
         // we can not handle calc members in slicer except calc measure
         Member[] members = context.getMembers();
         for (int i = 1; i < members.length; i++) {

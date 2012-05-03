@@ -106,6 +106,10 @@ public class RolapNativeTopCount extends RolapNativeSet {
             }
             key.add(ascending);
             key.add(topCount);
+            
+            if (this.getEvaluator() instanceof RolapEvaluator)
+                key.add(((RolapEvaluator)this.getEvaluator()).getSlicerMembers());
+            
             return key;
         }
     }
