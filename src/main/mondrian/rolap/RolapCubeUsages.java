@@ -1,6 +1,10 @@
+
 /*
 // $Id$Id: //open/mondrian-release/3.3.1/src/main/mondrian/rolap/RolapCubeUsages.java#3 $
  */
+package mondrian.rolap;
+
+import mondrian.olap.MondrianDef;
 
 public class RolapCubeUsages {
     private MondrianDef.CubeUsages cubeUsages;
