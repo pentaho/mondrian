@@ -20,6 +20,7 @@ import org.olap4j.metadata.Level;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,8 +37,7 @@ public class RolapAttribute extends OlapElementBase {
     // Add intrinsic property NAME.
     // TODO: make key, parent etc. all properties
     private static final List<RolapProperty> INTRINSIC_PROPERTIES =
-        Arrays.asList(
-            RolapLevel.NAME_PROPERTY);
+        Collections.emptyList();
 
     final String name;
     final String description;
