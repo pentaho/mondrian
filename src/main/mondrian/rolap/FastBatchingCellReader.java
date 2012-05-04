@@ -601,7 +601,9 @@ class BatchLoader {
         // for example. Both the measure's aggregator and its rollup
         // aggregator must support raw data aggregation. We call
         // Aggregator.supportsFastAggregates() to verify.
-        if (measure.getAggregator().supportsFastAggregates(
+        if (MondrianProperties.instance()
+                .EnableInMemoryRollup.get()
+            && measure.getAggregator().supportsFastAggregates(
                 measure.getDatatype())
             && measure.getAggregator().getRollup().supportsFastAggregates(
                 measure.getDatatype())
@@ -634,6 +636,11 @@ class BatchLoader {
                         key.getCompoundPredicateList()));
                 return;
             }
+        }
+
+        // Skip the batch if we already have a rollup for it.
+        if (rollupBitmaps.contains(request.getConstrainedColumnsBitKey())) {
+            return;
         }
 
         // Finally, add to a batch. It will turn in to a SQL request.

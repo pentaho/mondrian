@@ -7297,6 +7297,20 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
     }
 
+    public void testResultLimit() throws Exception {
+        propSaver.set(
+            MondrianProperties.instance().ResultLimit,
+            1000);
+        assertAxisThrows(
+            "CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members)",
+            "Mondrian Error:Number of cell results to be read exceeded limit of (1,000)");
+        propSaver.set(
+            MondrianProperties.instance().ResultLimit,
+            5000);
+        executeQuery(
+            "select CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members) on columns from [Sales]");
+    }
+
     /**
      * Dummy statistics provider for
      * {@link mondrian.test.BasicQueryTest#testStatistics()}.

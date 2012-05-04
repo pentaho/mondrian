@@ -43,6 +43,7 @@
       <file url="file://$PROJECT_DIR$/../../olap4j/src/mondrian/olap4j/FactoryJdbc3Impl.java" />
       <file url="file://$PROJECT_DIR$/../../olap4j/src/org/olap4j/driver/xmla/FactoryJdbc3Impl.java" />
       <file url="file://$PROJECT_DIR$/../src/main/mondrian/olap4j/FactoryJdbc3Impl.java" />
+      <file url="file://$PROJECT_DIR$/../src/main/mondrian/olap4j/FactoryJdbc4Impl.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
@@ -286,7 +287,7 @@
   <component name="ProjectResources">
     <default-html-doctype>http://www.w3.org/1999/xhtml</default-html-doctype>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.7" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="openjdk version &quot;1.7.0-ea&quot;" project-jdk-type="JavaSDK" />
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
       <value>
