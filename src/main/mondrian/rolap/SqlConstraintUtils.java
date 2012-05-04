@@ -54,6 +54,10 @@ public class SqlConstraintUtils {
         // Add constraint using the current evaluator context
         Member[] members = evaluator.getNonAllMembers();
         RolapCube baseCube = null;
+        
+        if (evaluator instanceof RolapEvaluator)
+            baseCube = ((RolapEvaluator)evaluator).getCube();
+                                             
         Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =new HashMap<RelationOrJoin, Set<RolapMember>>(); 
         Map<RelationOrJoin, Boolean> done = new HashMap<RelationOrJoin, Boolean>();
         if (restrictMemberTypes) {
@@ -63,7 +67,7 @@ public class SqlConstraintUtils {
             }
             if (hasMultiPositionSlicer(evaluator)) {
                 List<Member> slicerMembers = ((RolapEvaluator)evaluator).getSlicerMembers();
-                baseCube = ((RolapEvaluator)evaluator).getCube();
+
                 for (Member slicerMember : slicerMembers) {
                     RelationOrJoin rel = ((RolapCubeHierarchy)slicerMember.getHierarchy()).getRelation();
                     if (!mapOfSlicerMembers.containsKey(rel)) {
