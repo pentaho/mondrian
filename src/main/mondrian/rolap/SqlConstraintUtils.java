@@ -142,11 +142,35 @@ public class SqlConstraintUtils {
                     if (!done.containsKey(column.getTable().getRelation())) {                       
                         Set<RolapMember> slicerMembersArray = mapOfSlicerMembers.get(column.getTable().getRelation());
                         List<RolapMember> slicerMembers = new ArrayList<RolapMember>(slicerMembersArray);
-                    
-
-                        final String where = generateMultiValueInExpr(sqlQuery, baseCube, aggStar, slicerMembers,(RolapLevel) slicerMembers.get(0).getHierarchy().getLevels()[0], restrictMemberTypes, null);
-                        sqlQuery.addWhere(where);
+                        
+                        RolapMember allMember = null;
+                        for (RolapMember slicerMember: slicerMembers) {
+                            if (slicerMember.isAll())
+                            {
+                                allMember = slicerMember;
+                                break;
+                            }                            
+                        }
+                        
+                        
+                        if (allMember != null) {
+                            slicerMembers.remove(allMember);
+                        }
+                        
+                        if (slicerMembers.size() > 0) {
+                            final String where = generateMultiValueInExpr(sqlQuery, baseCube, aggStar, slicerMembers,(RolapLevel) slicerMembers.get(0).getHierarchy().getLevels()[0], restrictMemberTypes, null);
+                            sqlQuery.addWhere(where);
+                        } else {
+                            //No extra slicers.... just use the = method
+                            final StringBuilder buf = new StringBuilder();
+                            sqlQuery.getDialect().quote(buf, value, column.getDatatype());
+                            sqlQuery.addWhere(
+                                    expr,
+                                    " = ",
+                                    buf.toString());                                                                                                              
+                        }
                         done.put(column.getTable().getRelation(), Boolean.TRUE);
+                        
                     }
 
                 } else {
