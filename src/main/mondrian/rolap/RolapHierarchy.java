@@ -145,7 +145,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 0,
-                ALL_ATTRIBUTE,
+                ALL_ATTRIBUTE.inDimension(getDimension()),
                 RolapLevel.HideMemberCondition.Never,
                 Collections.<String, Annotation>emptyMap());
         if (hasAll) {
@@ -162,7 +162,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 0,
-                NULL_ATTRIBUTE,
+                NULL_ATTRIBUTE.inDimension(getDimension()),
                 RolapLevel.HideMemberCondition.Never,
                 Collections.<String, Annotation>emptyMap());
 
@@ -175,7 +175,7 @@ public class RolapHierarchy extends HierarchyBase {
                     null,
                     null,
                     levelList.size(),
-                    MEASURES_ATTRIBUTE,
+                    MEASURES_ATTRIBUTE.inDimension(getDimension()),
                     RolapLevel.HideMemberCondition.Never,
                     Collections.<String, Annotation>emptyMap()));
         }
@@ -1068,7 +1068,7 @@ public class RolapHierarchy extends HierarchyBase {
         }
     }
 
-    private static final RolapAttribute ALL_ATTRIBUTE =
+    private static final RolapSharedAttribute ALL_ATTRIBUTE =
         new RolapSharedAttribute(
             "All",
             true,
@@ -1083,7 +1083,7 @@ public class RolapHierarchy extends HierarchyBase {
             org.olap4j.metadata.Level.Type.ALL,
             ALL_LEVEL_CARDINALITY);
 
-    private static final RolapAttribute NULL_ATTRIBUTE =
+    private static final RolapSharedAttribute NULL_ATTRIBUTE =
         new RolapSharedAttribute(
             "Null",
             true,
@@ -1098,7 +1098,7 @@ public class RolapHierarchy extends HierarchyBase {
             org.olap4j.metadata.Level.Type.NULL,
             NULL_LEVEL_CARDINALITY);
 
-    private static final RolapAttribute MEASURES_ATTRIBUTE =
+    private static final RolapSharedAttribute MEASURES_ATTRIBUTE =
         new RolapSharedAttribute(
             "Measures",
             true,

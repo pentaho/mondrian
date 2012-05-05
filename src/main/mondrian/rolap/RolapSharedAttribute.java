@@ -15,7 +15,7 @@ import mondrian.spi.MemberFormatter;
 
 import org.olap4j.metadata.Level;
 
-import java.util.List;
+import java.util.*;
 
 /**
  * Attribute that is intrinsic to all dimensions, and therefore does not belong
@@ -102,6 +102,18 @@ public class RolapSharedAttribute extends RolapAttributeImpl {
 
         public RolapDimension getDimension() {
             return delegate.getDimension();
+        }
+
+        public String getCaption() {
+            return delegate.getCaption();
+        }
+
+        public String getLocalized(LocalizedProperty prop, Locale locale) {
+            return delegate.getLocalized(prop, locale);
+        }
+
+        public boolean isVisible() {
+            return delegate.isVisible();
         }
 
         public List<RolapProperty> getExplicitProperties() {

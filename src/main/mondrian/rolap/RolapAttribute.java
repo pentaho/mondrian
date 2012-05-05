@@ -10,14 +10,11 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Property;
 import mondrian.spi.*;
 import mondrian.spi.MemberFormatter;
 
 import org.apache.log4j.Logger;
 
-import org.olap4j.metadata.*;
 import org.olap4j.metadata.Level;
 
 import java.util.List;
@@ -30,21 +27,8 @@ import java.util.List;
  *
  * @author jhyde
  */
-interface RolapAttribute {
+public interface RolapAttribute extends OlapElement {
     final Logger LOGGER = Logger.getLogger(RolapAttribute.class);
-
-    String getUniqueName();
-
-    String getName();
-
-    String getDescription();
-
-    OlapElement lookupChild(
-        SchemaReader schemaReader, Id.Segment s, MatchType matchType);
-
-    String getQualifiedName();
-
-    Hierarchy getHierarchy();
 
     RolapDimension getDimension();
 
@@ -52,8 +36,10 @@ interface RolapAttribute {
 
     List<RolapProperty> getProperties();
 
+    // TODO: obsolete
     Property.Datatype getType();
 
+    // TODO: obsolete this method; use datatype of columns in getKeyList()
     Dialect.Datatype getDatatype();
 
     int getApproxRowCount();
