@@ -274,7 +274,9 @@ public class RolapCubeLevel extends RolapLevel {
             }
 
             int keyOrdinal = 0;
-            for (RolapSchema.PhysColumn column : cubeLevel.attribute.keyList) {
+            for (RolapSchema.PhysColumn column
+                : cubeLevel.attribute.getKeyList())
+            {
                 RolapStar.Column starColumn =
                     measureGroup.getRolapStarColumn(
                         cubeLevel.cubeDimension, column, false);
@@ -308,12 +310,12 @@ public class RolapCubeLevel extends RolapLevel {
             }
 
             if (request.extendedContext
-                && cubeLevel.attribute.nameExp != null)
+                && cubeLevel.attribute.getNameExp() != null)
             {
                 final RolapStar.Column nameColumn =
                     measureGroup.getRolapStarColumn(
                         cubeLevel.cubeDimension,
-                        cubeLevel.attribute.nameExp,
+                        cubeLevel.attribute.getNameExp(),
                         true);
                 request.addConstrainedColumn(nameColumn, null);
             }
@@ -348,7 +350,7 @@ public class RolapCubeLevel extends RolapLevel {
                 //  optimization potential
                 Util.deprecated("adding predicate multiple times?", false);
                 for (RolapSchema.PhysColumn physColumn
-                    : cubeLevel.attribute.keyList)
+                    : cubeLevel.attribute.getKeyList())
                 {
                     cacheRegion.addPredicate(predicate);
                 }

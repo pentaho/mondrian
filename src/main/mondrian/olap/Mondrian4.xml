@@ -3089,17 +3089,13 @@ Revision is $Id$
                 specify the 'ForeignKey' element.
             </Doc>
         </Attribute>
-        <!--
-        <Object name="key" type="Key" required="false">
+        <Attribute name="attribute" required="false">
             <Doc>
-                Array of references to the columns that form the primary key
-                of this dimension.
-
-                <p/>This element should be omitted if you specify the
-                'factColumn' attribute.
+                Name of the attribute in the dimension that is referenced by
+                the foreign key. Not required; if not specified, the dimension's
+                key attribute is used.
             </Doc>
-        </Object>
-        -->
+        </Attribute>
         <Object name="foreignKey" type="ForeignKey" required="false">
             <Doc>
                 Column in the fact table that links to this attribute (or

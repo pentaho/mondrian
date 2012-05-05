@@ -1319,7 +1319,7 @@ public class AggStar extends RolapStar {
                      * will do that for us later on.
                      */
                     final RolapSchema.PhysColumn key0 =
-                        parentLevel.getAttribute().keyList.get(0);
+                        parentLevel.getAttribute().getKeyList().get(0);
                     final BitKey bk = AggStar.this.star.getBitKey(
                         new String[] {key0.relation.getAlias()},
                         new String[] {key0.name});

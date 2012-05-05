@@ -40,9 +40,9 @@ public class MemberColumnPredicate
         super(column, member.getKey());
         this.member = member;
         assert column != null;
-        assert member.getLevel().getAttribute().keyList.size() == 1;
+        assert member.getLevel().getAttribute().getKeyList().size() == 1;
         assert column.physColumn
-               == member.getLevel().getAttribute().keyList.get(0);
+               == member.getLevel().getAttribute().getKeyList().get(0);
     }
 
     // for debug

@@ -14,7 +14,7 @@ public class RolapTrojan {
     }
 
     public RolapSchema.PhysExpr getAttributeNameExpr(RolapAttribute attribute) {
-        return attribute.nameExp;
+        return attribute.getNameExp();
     }
 }
 

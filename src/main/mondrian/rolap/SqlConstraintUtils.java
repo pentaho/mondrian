@@ -622,7 +622,8 @@ public class SqlConstraintUtils {
                 final RolapAttribute attribute = p.getLevel().getAttribute();
                 final List<Object> keyList = cubeMember.getKeyAsList();
                 int j = 0;
-                for (RolapSchema.PhysColumn physColumn : attribute.keyList) {
+                for (RolapSchema.PhysColumn physColumn : attribute.getKeyList())
+                {
                     final RolapStar.Column column =
                         measureGroup.getRolapStarColumn(
                             cubeMember.getDimension(), physColumn);
@@ -861,7 +862,7 @@ public class SqlConstraintUtils {
             }
         } else {
             assert aggStar == null;
-            RolapSchema.PhysExpr exp = level.getAttribute().nameExp;
+            RolapSchema.PhysExpr exp = level.getAttribute().getNameExp();
             datatype = exp.getDatatype();
             columnString = exp.toSql();
         }
@@ -973,7 +974,8 @@ public class SqlConstraintUtils {
         if (level instanceof RolapCubeLevel) {
             final RolapCubeLevel cubeLevel = (RolapCubeLevel) level;
             columns = new ArrayList<RolapStar.Column>();
-            for (RolapSchema.PhysColumn key : cubeLevel.attribute.keyList) {
+            for (RolapSchema.PhysColumn key : cubeLevel.attribute.getKeyList())
+            {
                 columns.add(
                     measureGroup.getRolapStarColumn(
                         cubeLevel.cubeDimension,
@@ -1021,7 +1023,7 @@ public class SqlConstraintUtils {
             }
         } else {
             assert aggStar == null;
-            RolapSchema.PhysExpr nameExp = level.getAttribute().nameExp;
+            RolapSchema.PhysExpr nameExp = level.getAttribute().getNameExp();
             columnString = nameExp.toSql();
         }
 
@@ -1046,7 +1048,7 @@ public class SqlConstraintUtils {
             memberBuf.append("(");
 
             for (Pair<RolapSchema.PhysColumn, Object> pair
-                : Pair.iterate(level.attribute.keyList, m.getKeyAsList()))
+                : Pair.iterate(level.attribute.getKeyList(), m.getKeyAsList()))
             {
                 final Object o = pair.right;
                 final Dialect.Datatype datatype = pair.left.getDatatype();
@@ -1148,8 +1150,7 @@ public class SqlConstraintUtils {
                 }
                 columnString = nameColumn.getExpression().toSql();
             } else {
-                RolapSchema.PhysExpr nameExp = level.getAttribute().nameExp;
-                columnString = nameExp.toSql();
+                columnString = level.getAttribute().getNameExp().toSql();
             }
 
             if (!isFirstLevelInMultiple) {
@@ -1234,7 +1235,8 @@ public class SqlConstraintUtils {
             }
 
             final RolapLevel level = m.getLevel();
-            for (RolapSchema.PhysColumn key : level.getAttribute().keyList) {
+            for (RolapSchema.PhysColumn key : level.getAttribute().getKeyList())
+            {
                 // this method can be called within the context of shared
                 // members, outside of the normal rolap star, therefore we need
                 // to check the level to see if it is a shared or cube level.
@@ -1284,7 +1286,7 @@ public class SqlConstraintUtils {
                 StarPredicate cc =
                     getColumnPredicates(
                         measureGroup,
-                        level.getAttribute().keyList.get(0).relation
+                        level.getAttribute().getKeyList().get(0).relation
                             .getSchema(),
                         members2);
 

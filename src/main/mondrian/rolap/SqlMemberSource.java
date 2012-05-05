@@ -94,7 +94,7 @@ class SqlMemberSource
         }
         List<RolapSchema.PhysColumn> columnList =
             new ArrayList<RolapSchema.PhysColumn>();
-        for (RolapSchema.PhysColumn column : level.attribute.keyList) {
+        for (RolapSchema.PhysColumn column : level.attribute.getKeyList()) {
             columnList.add(column);
         }
         final List<RolapMember> list =
@@ -222,7 +222,7 @@ class SqlMemberSource
         if (!sqlQuery.getDialect().allowsFromQuery()) {
             List<String> columnList = new ArrayList<String>();
             int columnCount = 0;
-            for (RolapSchema.PhysColumn column : attribute.keyList) {
+            for (RolapSchema.PhysColumn column : attribute.getKeyList()) {
                 if (columnCount > 0) {
                     if (sqlQuery.getDialect().allowsCompoundCountDistinct()) {
                         // no op.
@@ -273,7 +273,7 @@ class SqlMemberSource
 
         } else {
             sqlQuery.setDistinct(true);
-            for (RolapSchema.PhysColumn column : attribute.keyList) {
+            for (RolapSchema.PhysColumn column : attribute.getKeyList()) {
                 queryBuilder.addToFrom(column);
                 sqlQuery.addSelect(column.toSql(), column.getInternalType());
             }
@@ -300,7 +300,7 @@ class SqlMemberSource
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
             new SqlTupleReader.ColumnLayoutBuilder(
                 Collections.singletonList(
-                    Util.last(hierarchy.levelList).attribute.keyList));
+                    Util.last(hierarchy.levelList).attribute.getKeyList()));
         String sql = makeKeysSql(dataSource, layoutBuilder);
         List<SqlStatement.Type> types = layoutBuilder.types;
         SqlStatement stmt =
@@ -346,7 +346,7 @@ class SqlMemberSource
                     // TODO: pre-allocate these, one per level; remember to
                     // clone list (using Flat2List or Flat3List if appropriate)
                     final Comparable[] keyValues =
-                        new Comparable[level.attribute.keyList.size()];
+                        new Comparable[level.attribute.getKeyList().size()];
 
                     // It's cheaper to reuse the same list for probing the
                     // hashmap. Composite keys are stored using a different
@@ -472,16 +472,19 @@ class SqlMemberSource
         final RolapSchema.SqlQueryBuilder queryBuilder =
             new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
         for (RolapLevel level : hierarchy.getLevelList()) {
-            for (RolapSchema.PhysColumn column : level.attribute.orderByList) {
+            for (RolapSchema.PhysColumn column
+                : level.attribute.getOrderByList())
+            {
                 queryBuilder.addColumn(column, Sgo.SELECT_ORDER);
             }
-            for (RolapSchema.PhysColumn column : level.attribute.keyList) {
+            for (RolapSchema.PhysColumn column : level.attribute.getKeyList()) {
                 queryBuilder.addColumn(column, Sgo.SELECT_GROUP);
             }
             for (RolapProperty property
                 : level.attribute.getExplicitProperties())
             {
-                for (RolapSchema.PhysColumn column : property.attribute.keyList)
+                for (RolapSchema.PhysColumn column
+                    : property.attribute.getKeyList())
                 {
                     // Some dialects allow us to eliminate properties from
                     // the group by that are functionally dependent on the
@@ -592,7 +595,7 @@ class SqlMemberSource
         // the fact table (via the table containing the dimension's key, if
         // the dimension is a snowflake). Otherwise just add the path from the
         // dimension's key.
-        for (RolapSchema.PhysColumn column : level.attribute.keyList) {
+        for (RolapSchema.PhysColumn column : level.attribute.getKeyList()) {
             final RolapSchema.PhysPath keyPath =
                 level.getDimension().getKeyPath(column);
             keyPath.addToFrom(sqlQuery, false);
@@ -632,7 +635,7 @@ class SqlMemberSource
             // also may need to join parent levels to make selection unique
             final RolapCubeLevel cubeLevel = (RolapCubeLevel) level;
             final RolapMeasureGroup measureGroup = starSet.getMeasureGroup();
-            for (RolapSchema.PhysColumn column : level.attribute.keyList) {
+            for (RolapSchema.PhysColumn column : level.attribute.getKeyList()) {
                 hierarchy.addToFromInverse(sqlQuery, column);
                 RolapStar.Column starColumn =
                     measureGroup.getRolapStarColumn(
@@ -661,32 +664,32 @@ class SqlMemberSource
         final SqlTupleReader.LevelLayoutBuilder levelLayout =
             layoutBuilder.createLayoutFor(level);
 
-        for (RolapSchema.PhysColumn key : level.attribute.orderByList) {
+        for (RolapSchema.PhysColumn key : level.attribute.getOrderByList()) {
             levelLayout.orderByOrdinalList.add(
                 queryBuilder.addColumn(key, Sgo.SELECT_GROUP_ORDER));
         }
 
-        for (RolapSchema.PhysColumn column : level.attribute.keyList) {
+        for (RolapSchema.PhysColumn column : level.attribute.getKeyList()) {
             // REVIEW: also need to join each attr to dim key?
             levelLayout.keyOrdinalList.add(
                 queryBuilder.addColumn(column, Sgo.SELECT_GROUP));
         }
 
-        if (level.attribute.nameExp != null) {
+        if (level.attribute.getNameExp() != null) {
             levelLayout.nameOrdinal =
                 queryBuilder.addColumn(
-                    level.attribute.nameExp, Sgo.SELECT_GROUP);
+                    level.attribute.getNameExp(), Sgo.SELECT_GROUP);
         }
 
-        if (level.attribute.captionExp != null) {
+        if (level.attribute.getCaptionExp() != null) {
             levelLayout.captionOrdinal =
                 queryBuilder.addColumn(
-                    level.attribute.captionExp, Sgo.SELECT_GROUP);
+                    level.attribute.getCaptionExp(), Sgo.SELECT_GROUP);
         }
 
         for (RolapProperty property : level.attribute.getExplicitProperties()) {
             // TODO: properties that are composite, or have key != name exp
-            final RolapSchema.PhysColumn exp = property.attribute.nameExp;
+            final RolapSchema.PhysColumn exp = property.attribute.getNameExp();
             queryBuilder.addToFrom(exp);
             final String s = exp.toSql();
             int ordinal = layoutBuilder.lookup(s);
@@ -921,7 +924,7 @@ class SqlMemberSource
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
             new SqlTupleReader.ColumnLayoutBuilder(
                 Collections.singletonList(
-                    parentLevel.attribute.keyList));
+                    parentLevel.attribute.getKeyList()));
         if (parentLevel.isParentChild()) {
             sql = makeChildMemberSqlPC(parentMember, layoutBuilder);
             parentChild = true;
@@ -1169,14 +1172,14 @@ class SqlMemberSource
 
         StringBuilder condition = new StringBuilder(64);
         for (RolapSchema.PhysColumn parentKey
-            : level.attribute.parentAttribute.keyList)
+            : level.attribute.getParentAttribute().getKeyList())
         {
             queryBuilder.addToFrom(parentKey);
             String parentId = parentKey.toSql();
             condition.append(parentId);
         }
         final String nullParentValue =
-            level.attribute.parentAttribute.nullValue;
+            level.attribute.getParentAttribute().getNullValue();
         if (nullParentValue == null
             || nullParentValue.equalsIgnoreCase("NULL"))
         {
@@ -1227,12 +1230,15 @@ class SqlMemberSource
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
 
-        final int keyListSize = level.attribute.parentAttribute.keyList.size();
-        for (int i = 0; i < keyListSize; i++) {
-            RolapSchema.PhysColumn parentKey =
-                level.attribute.parentAttribute.keyList.get(i);
-            final RolapSchema.PhysColumn key = level.attribute.keyList.get(i);
-            final Object keyVal = member.getKeyAsList().get(i);
+        for (Tuple3<RolapSchema.PhysColumn, RolapSchema.PhysColumn, Object> pair
+            : Tuple3.iterate(
+                level.getAttribute().getParentAttribute().getKeyList(),
+                level.getAttribute().getKeyList(),
+                member.getKeyAsList()))
+        {
+            RolapSchema.PhysColumn parentKey = pair.v0;
+            final RolapSchema.PhysColumn key = pair.v1;
+            final Object keyVal = pair.v2;
             queryBuilder.addToFrom(parentKey);
             String parentId = parentKey.toSql();
             StringBuilder buf = new StringBuilder();

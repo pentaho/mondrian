@@ -1499,21 +1499,21 @@ public class RolapSchemaLoader {
         RolapAttribute attribute,
         RolapSchema.PhysPath path)
     {
-        for (RolapSchema.PhysColumn column : attribute.keyList) {
+        for (RolapSchema.PhysColumn column : attribute.getKeyList()) {
             registerExpr(
                 measureGroup, dimension, path, column,
-                attribute.caption, "Key");
+                attribute.getName(), "Key");
         }
         registerExpr(
-            measureGroup, dimension, path, attribute.nameExp,
-            attribute.caption, "Name");
+            measureGroup, dimension, path, attribute.getNameExp(),
+            attribute.getName(), "Name");
         registerExpr(
-            measureGroup, dimension, path, attribute.captionExp,
-            attribute.caption, "Caption");
-        for (RolapSchema.PhysColumn column : attribute.orderByList) {
+            measureGroup, dimension, path, attribute.getCaptionExp(),
+            attribute.getName(), "Caption");
+        for (RolapSchema.PhysColumn column : attribute.getOrderByList()) {
             registerExpr(
                 measureGroup, dimension, path, column,
-                attribute.caption, "OrderBy");
+                attribute.getName(), "OrderBy");
         }
 
         // No need to register properties, or the parent attribute. They are all
@@ -1800,19 +1800,45 @@ public class RolapSchemaLoader {
                 xmlForeignKeyLink.foreignKeyColumn,
                 xmlForeignKeyLink.foreignKey);
 
-        if (dimension.rolapDimension.keyAttribute == null) {
-            getHandler().error(
-                "Dimension '"
-                + dimension.getName()
-                + "' is used in a dimension link but has no key attribute. Please "
-                + "specify key.",
-                xmlForeignKeyLink,
-                null);
-            return;
+        RolapAttribute keyAttribute;
+        RolapSchema.PhysKey sourceKey;
+
+        if (xmlForeignKeyLink.attribute == null) {
+            keyAttribute = dimension.rolapDimension.keyAttribute;
+            if (keyAttribute == null) {
+                getHandler().error(
+                    "Dimension '"
+                    + dimension.getName()
+                    + "' is used in a dimension link but has no key attribute. "
+                    + "Please specify key.",
+                    xmlForeignKeyLink,
+                    null);
+                return;
+            }
+            sourceKey = dimension.rolapDimension.key.get();
+        } else {
+            keyAttribute =
+                dimension.rolapDimension.attributeMap
+                    .get(xmlForeignKeyLink.attribute);
+            if (keyAttribute == null) {
+                getHandler().error(
+                    "Invalid attribute '"
+                    + xmlForeignKeyLink.attribute
+                    + "' in ForeignKeyLink. Dimension '"
+                    + dimension.getName()
+                    + "' has no such attribute.",
+                    xmlForeignKeyLink,
+                    "attribute");
+                return;
+            }
+            sourceKey =
+                lookupKey(
+                    null, // TODO:
+                    true,
+                    keyAttribute);
         }
 
-        final List<RolapSchema.PhysColumn> keyList =
-            dimension.rolapDimension.keyAttribute.keyList;
+        final List<RolapSchema.PhysColumn> keyList = keyAttribute.getKeyList();
 
         if (foreignKeyList.size() != keyList.size()) {
             handler.error(
@@ -1914,7 +1940,7 @@ public class RolapSchemaLoader {
 
         final RolapSchema.PhysPathBuilder pathBuilderOrig =
             new RolapSchema.PhysPathBuilder(fact)
-                .add(dimension.rolapDimension.key.get(), foreignKeyList);
+                .add(sourceKey, foreignKeyList);
         RolapSchema.PhysPath path = pathBuilderOrig.clone().done();
 
         measureGroup.addLink(dimension, path);
@@ -1927,19 +1953,19 @@ public class RolapSchemaLoader {
             RolapSchema.PhysSchemaGraph graph =
                 measureGroup.getFactRelation().getSchema().getGraph();
             final RolapSchema.PhysRelation relation =
-                uniqueTable(attribute.keyList);
+                uniqueTable(attribute.getKeyList());
             if (relation == null && false) {
-                if (attribute.keyList.isEmpty()) {
+                if (attribute.getKeyList().isEmpty()) {
                     throw Util.newInternal(
                         "attribute " + attribute + " has empty key");
                 } else {
                     throw Util.newInternal(
                         "attribute " + attribute + " has key whose columns "
                         + "belong to inconsistent relations "
-                        + attribute.keyList);
+                        + attribute.getKeyList());
                 }
             }
-            for (RolapSchema.PhysColumn column : attribute.keyList) {
+            for (RolapSchema.PhysColumn column : attribute.getKeyList()) {
                 final Pair<RolapCubeDimension, RolapSchema.PhysColumn> key =
                     Pair.of(dimension, column);
                 if (measureGroup.starColumnMap.containsKey(key)) {
@@ -2189,7 +2215,7 @@ public class RolapSchemaLoader {
         {
             RolapAttribute attribute =
                 createAttribute(xmlAttribute, dimensionRelation, dimension);
-            dimension.attributeMap.put(attribute.name, attribute);
+            dimension.attributeMap.put(attribute.getName(), attribute);
             attributeList.add(attribute);
         }
 
@@ -2200,9 +2226,9 @@ public class RolapSchemaLoader {
                 validator.getXml(attribute, true);
 
             if (xmlAttribute.parent != null) {
-                attribute.parentAttribute =
+                ((RolapAttributeImpl) attribute).parentAttribute =
                     dimension.attributeMap.get(xmlAttribute.parent);
-                if (attribute.parentAttribute == null) {
+                if (attribute.getParentAttribute() == null) {
                     getHandler().error(
                         "Unknown parent attribute ''",
                         xmlAttribute,
@@ -2260,9 +2286,7 @@ public class RolapSchemaLoader {
                 new Util.Functor0<RolapSchema.PhysKey>() {
                     public RolapSchema.PhysKey apply() {
                         return lookupKey(
-                            xmlDimension,
-                            dimension,
-                            true);
+                            xmlDimension, true, dimension.keyAttribute);
                     }
                 }
             );
@@ -2462,29 +2486,30 @@ public class RolapSchemaLoader {
      * a key.</p>
      *
      * @param xmlDimension Dimension XML element
-     * @param dimension Dimension
      * @param create Whether to create a key if not found
+     * @param keyAttribute Key attribute of target dimension
      * @return Key, or null if not found
      */
     private RolapSchema.PhysKey lookupKey(
         MondrianDef.Dimension xmlDimension,
-        RolapDimension dimension,
-        boolean create)
+        boolean create,
+        RolapAttribute keyAttribute)
     {
         // Find the unique relation of the attribute's list of key columns.
-        final RolapSchema.PhysRelation relation = uniqueRelation(dimension);
+        final RolapSchema.PhysRelation relation =
+            uniqueRelation(keyAttribute.getDimension());
         if (relation == null) {
             return null;
         }
         for (RolapSchema.PhysKey key : relation.getKeyList()) {
-            if (key.columnList.equals(dimension.keyAttribute.keyList)) {
+            if (key.columnList.equals(keyAttribute.getKeyList())) {
                 return key;
             }
         }
         if (create) {
             return relation.addKey(
                 "k$" + relation.getKeyList().size(),
-                dimension.keyAttribute.keyList);
+                keyAttribute.getKeyList());
         }
         getHandler().error(
             "The columns of dimension's key attribute do not match "
@@ -2499,7 +2524,7 @@ public class RolapSchemaLoader {
     {
         final Set<RolapSchema.PhysRelation> relations =
             new HashSet<RolapSchema.PhysRelation>();
-        for (RolapSchema.PhysColumn key : dimension.keyAttribute.keyList) {
+        for (RolapSchema.PhysColumn key : dimension.keyAttribute.getKeyList()) {
             relations.add(key.relation);
         }
         return relations.size() != 1 ? null : relations.iterator().next();
@@ -2566,7 +2591,7 @@ public class RolapSchemaLoader {
     RolapAttribute createAttribute(
         MondrianDef.Attribute xmlAttribute,
         RolapSchema.PhysRelation inheritedRelation,
-        RolapDimension dimension)
+        final RolapDimension dimension)
     {
         final RolapSchema.PhysRelation relation =
             last(
@@ -2665,7 +2690,7 @@ public class RolapSchemaLoader {
             caption = xmlAttribute.caption;
         }
         final RolapAttribute attribute =
-            new RolapAttribute(
+            new RolapAttributeImpl(
                 xmlAttribute.name,
                 toBoolean(xmlAttribute.visible, true),
                 caption,
@@ -2677,7 +2702,12 @@ public class RolapSchemaLoader {
                 makeMemberFormatter(xmlAttribute),
                 xmlAttribute.nullValue,
                 levelType,
-                approxRowCount);
+                approxRowCount)
+            {
+                public RolapDimension getDimension() {
+                    return dimension;
+                }
+            };
 
         validator.putXml(attribute, xmlAttribute);
         return attribute;
@@ -3902,7 +3932,7 @@ public class RolapSchemaLoader {
      */
     static String getTableName(RolapLevel level) {
         Set<String> tableNames = new HashSet<String>();
-        for (RolapSchema.PhysColumn expr : level.getAttribute().keyList) {
+        for (RolapSchema.PhysColumn expr : level.getAttribute().getKeyList()) {
             if (expr instanceof RolapSchema.PhysRealColumn) {
                 RolapSchema.PhysRealColumn mc =
                     (RolapSchema.PhysRealColumn) expr;

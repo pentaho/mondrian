@@ -6447,6 +6447,9 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     // TODO: document that the name of an attribute's property defaults to the
     // name of the source attribute
+
+    // TODO: check that get an error if and only if ForeignKeyLink.attribute
+    // is null and dimension has no key attribute
 }
 
 // End SchemaTest.java

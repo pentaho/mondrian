@@ -719,7 +719,7 @@ public class RolapHierarchy extends HierarchyBase {
                 caption,
                 description,
                 peerHier.levelList.size(),
-                src.attribute.parentAttribute,
+                src.attribute.getParentAttribute(),
                 src.getHideMemberCondition(),
                 Collections.<String, Annotation>emptyMap());
         peerHier.levelList.add(level);
@@ -1069,7 +1069,7 @@ public class RolapHierarchy extends HierarchyBase {
     }
 
     private static final RolapAttribute ALL_ATTRIBUTE =
-        new RolapAttribute(
+        new RolapSharedAttribute(
             "All",
             true,
             null,
@@ -1084,7 +1084,7 @@ public class RolapHierarchy extends HierarchyBase {
             ALL_LEVEL_CARDINALITY);
 
     private static final RolapAttribute NULL_ATTRIBUTE =
-        new RolapAttribute(
+        new RolapSharedAttribute(
             "Null",
             true,
             null,
@@ -1099,7 +1099,7 @@ public class RolapHierarchy extends HierarchyBase {
             NULL_LEVEL_CARDINALITY);
 
     private static final RolapAttribute MEASURES_ATTRIBUTE =
-        new RolapAttribute(
+        new RolapSharedAttribute(
             "Measures",
             true,
             null,

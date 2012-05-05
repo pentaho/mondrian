@@ -303,7 +303,7 @@ public abstract class RolapAggregationManager {
         final CellRequest request)
     {
         final RolapAttribute level1 = member.getLevel().getAttribute();
-        for (RolapSchema.PhysColumn column : level1.keyList) {
+        for (RolapSchema.PhysColumn column : level1.getKeyList()) {
             RolapStar.Column starColumn =
                 measureGroup.getRolapStarColumn(
                     member.getDimension(),
@@ -313,12 +313,12 @@ public abstract class RolapAggregationManager {
             }
         }
         if (request.extendedContext
-            && level1.nameExp != null)
+            && level1.getNameExp() != null)
         {
             RolapStar.Column starColumn =
                 measureGroup.getRolapStarColumn(
                     member.getDimension(),
-                    level1.nameExp);
+                    level1.getNameExp());
             // REVIEW: Is it valid to assume that the level has a join path to
             //     the measure group? If it has no join path, will we notice
             //     that getRolapStarColumn returns null for the key cols?
@@ -507,7 +507,7 @@ public abstract class RolapAggregationManager {
     {
         assert measureGroup != null;
         final RolapCubeLevel level = member.getLevel();
-        for (RolapSchema.PhysColumn key : level.getAttribute().keyList) {
+        for (RolapSchema.PhysColumn key : level.getAttribute().getKeyList()) {
             final RolapStar.Column column =
                 measureGroup.getRolapStarColumn(
                     level.getDimension(),
@@ -647,7 +647,8 @@ public abstract class RolapAggregationManager {
         StarPredicate memberPredicate)
     {
         final RolapCubeLevel level = member.getLevel();
-        final List<RolapSchema.PhysColumn> keyList = level.attribute.keyList;
+        final List<RolapSchema.PhysColumn> keyList =
+            level.attribute.getKeyList();
         final List<Object> valueList = member.getKeyAsList();
         for (Pair<RolapSchema.PhysColumn, Object> pair
             : Pair.iterate(keyList, valueList))

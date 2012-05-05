@@ -121,7 +121,7 @@ public final class ScenarioImpl implements Scenario {
             final List<Object> keyList = member.getKeyAsList();
             int j = 0;
             for (RolapSchema.PhysColumn physColumn
-                : member.getLevel().getAttribute().keyList)
+                : member.getLevel().getAttribute().getKeyList())
             {
                 final RolapStar.Column column =
                     measure.getMeasureGroup().getRolapStarColumn(
