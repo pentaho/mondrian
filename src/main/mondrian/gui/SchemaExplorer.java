@@ -1603,9 +1603,15 @@ public class SchemaExplorer
 
 
         NodeDef[] temp = factTable.aggTables;
-        factTable.aggTables = new MondrianGuiDef.AggTable[temp.length + 1];
-        for (int i = 0; i < temp.length; i++) {
-            factTable.aggTables[i] = (MondrianGuiDef.AggTable) temp[i];
+        if (temp == null) {
+            factTable.aggTables =
+                new MondrianGuiDef.AggTable[1];
+        } else {
+            factTable.aggTables =
+                new MondrianGuiDef.AggTable[temp.length + 1];
+            for (int i = 0; i < temp.length; i++) {
+                factTable.aggTables[i] = (MondrianGuiDef.AggTable) temp[i];
+            }
         }
 
         factTable.aggTables[factTable.aggTables.length - 1] = aggname;
@@ -1941,6 +1947,7 @@ public class SchemaExplorer
         }
 
         aggTable.levels[aggTable.levels.length - 1] = agglevel;
+        agglevel.collapsed = Boolean.TRUE;
 
         Object[] parentPathObjs = new Object[parentIndex + 1];
         for (int i = 0; i <= parentIndex; i++) {
@@ -5187,7 +5194,7 @@ public class SchemaExplorer
                             if (((MondrianGuiDef.AggPattern) pathSelected)
                                 .factcount == null)
                             {
-                                addAggFactCount.setEnabled(false);
+                                addAggFactCount.setEnabled(true);
                             } else {
                                 addAggFactCount.setEnabled(false);
                             }
@@ -5195,7 +5202,7 @@ public class SchemaExplorer
                             if (((MondrianGuiDef.AggName) pathSelected)
                                 .factcount == null)
                             {
-                                addAggFactCount.setEnabled(false);
+                                addAggFactCount.setEnabled(true);
                             } else {
                                 addAggFactCount.setEnabled(false);
                             }
@@ -5314,7 +5321,11 @@ public class SchemaExplorer
     static final String[] DEF_AGG_IGNORE_COLUMN = {"column"};
     static final String[] DEF_AGG_FOREIGN_KEY = {"factColumn", "aggColumn"};
     static final String[] DEF_AGG_MEASURE = {"column", "name"};
-    static final String[] DEF_AGG_LEVEL = {"column", "name"};
+    static final String[] DEF_AGG_LEVEL = {
+        "column",
+        "name",
+        "collapsed"
+    };
 
     static final String[] DEF_CLOSURE = {"parentColumn", "childColumn"};
     static final String[] DEF_RELATION = {"name"};
