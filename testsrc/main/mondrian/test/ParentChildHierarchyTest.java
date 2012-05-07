@@ -45,7 +45,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * relates each descendant to all its ancestors.
      */
     private TestContext getEmpClosureTestContext() {
-        return TestContext.instance().createSubstitutingCube(
+        return getTestContext().legacy().createSubstitutingCube(
             "HR",
             "  <Dimension name=\"EmployeesClosure\" foreignKey=\"employee_id\">\n"
             + "      <Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"\n"
@@ -69,7 +69,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * to validate joins with closures work
      */
     private TestContext getEmpSnowFlakeClosureTestContext() {
-        return TestContext.instance().createSubstitutingCube(
+        return getTestContext().legacy().createSubstitutingCube(
             "HR",
             "<Dimension name=\"EmployeeSnowFlake\" foreignKey=\"employee_id\">"
             + "<Hierarchy hasAll=\"true\" allMemberName=\"All Employees\""
@@ -147,7 +147,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "    formatString=\"#,#\"/>"
             + "</Cube>";
 
-        return TestContext.instance().create(
+        return getTestContext().legacy().create(
             sharedClosureDimension, cube, null, null, null, null);
     }
 
@@ -158,7 +158,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * closure to validate that non-closures work
      */
     private TestContext getEmpNonClosureTestContext() {
-        return TestContext.instance().createSubstitutingCube(
+        return getTestContext().createSubstitutingCube(
             "HR",
             "<Dimension name=\"EmployeesNonClosure\" foreignKey=\"employee_id\">"
             + "<Hierarchy hasAll=\"true\" allMemberName=\"All Employees\""
@@ -654,7 +654,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Org Salary]}\n"
             + "Row #0: $39,431.67\n");
 
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = getTestContext().create(
             null,
             "<Cube name='HR-fewer-dims'>\n"
             + "    <Table name='salary'/>\n"
@@ -965,7 +965,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         if (Bug.avoidSlowTestOnLucidDB(getTestContext().getDialect())) {
             return;
         }
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = getTestContext().legacy().create(
             null,
             "<Cube name=\"HR-ordered\">\n"
             + "  <Table name=\"salary\"/>\n"
@@ -1029,11 +1029,8 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     }
 
     public void testLevelMembers() {
-        final TestContext testContext = new TestContext() {
-            public String getDefaultCubeName() {
-                return "HR";
-            }
-        };
+        final TestContext testContext =
+            getTestContext().legacy().withCube("HR");
         // <Dimension>.MEMBERS
         testContext.assertExprReturns("[Employees].Members.Count", "1,156");
         // <Level>.MEMBERS
@@ -1067,7 +1064,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
      * "Closure Tables not working with Virtual Cubes"</a>.
      */
     public void testClosureTableInVirtualCube() {
-        final TestContext testContext = TestContext.instance().create(
+        final TestContext testContext = getTestContext().legacy().create(
             "<Dimension name=\"Employees\" >"
             + "   <Hierarchy hasAll=\"true\" allMemberName=\"All Employees\""
             + "      primaryKey=\"employee_id\" primaryKeyTable=\"employee\">"
@@ -1155,10 +1152,11 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "  <Measure name=\"Count\" column=\"employee_id\" aggregator=\"count\" />\n"
             + "</Cube>\n";
 
-        final TestContext testClosureContext = TestContext.instance().create(
+        final TestContext testClosureContext = getTestContext().legacy().create(
             null, cubestart + closure + cubeend, null, null, null, null);
-        final TestContext testNoClosureContext = TestContext.instance().create(
-            null, cubestart + cubeend, null, null, null, null);
+        final TestContext testNoClosureContext =
+            getTestContext().legacy().create(
+                null, cubestart + cubeend, null, null, null, null);
 
         String mdx;
         String expected;
@@ -1216,8 +1214,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
     public void testSchemaReaderLevelMembers()
     {
         final SchemaReader schemaReader =
-            TestContext.instance().getConnection()
-            .getSchemaReader().withLocus();
+            getTestContext().getConnection().getSchemaReader().withLocus();
         int found = 0;
         for (Cube cube : schemaReader.getCubes()) {
             if (!cube.getName().equals("HR")) {
