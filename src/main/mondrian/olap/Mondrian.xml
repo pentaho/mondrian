@@ -1353,6 +1353,7 @@ Revision is $Id$
                 <li>infobright</li>
                 <li>luciddb</li>
                 <li>vertica</li>
+                <li>neoview</li>
                 </ul>
             </Doc>
         </Attribute>
