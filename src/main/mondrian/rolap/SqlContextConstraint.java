@@ -94,19 +94,6 @@ public class SqlContextConstraint
             return true;
         }
 
-        // Although it is technically possible to build a native SQL predicate
-        // to represent a multi-position compound slicer (see
-        // http://jira.pentaho.com/browse/MONDRIAN-791), this trick
-        // requires that we have access to the slicer axis (so we can iterate
-        // over its positions). Alas, the evaluator does not give us access to
-        // the slicer axis, but only the members on it
-  
-        
-       
-/*        if (SqlConstraintUtils.hasMultiPositionSlicer(context)) {
-            return false;
-        }
-*/
         // we can not handle calc members in slicer except calc measure
         Member[] members = context.getMembers();
         for (int i = 1; i < members.length; i++) {

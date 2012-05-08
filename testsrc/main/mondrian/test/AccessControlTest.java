@@ -12,11 +12,12 @@ package mondrian.test;
 
 import mondrian.olap.*;
 
-import java.util.List;
-
 import junit.framework.Assert;
 
 import org.olap4j.mdx.IdentifierNode;
+
+import java.util.List;
+
 
 /**
  * <code>AccessControlTest</code> is a set of unit-tests for access-control.
@@ -404,6 +405,93 @@ public class AccessControlTest extends FoodMartTestCase {
         Axis axis = testContext.executeAxis("[Customers].allmembers");
         // 13 states, 109 cities
         Assert.assertEquals(122, axis.getPositions().size());
+    }
+
+    /**
+     * Tests for Mondrian BUG 1127 - Native Top Count was not taking into
+     * account user roles
+     */
+    public void testBugMondrian1127OneSlicerOnly() {
+        final TestContext testContext = getRestrictedTestContext();
+        testContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  TopCount([Store].[USA].[CA].Children, 10,"
+            + "           [Measures].[Unit Sales]) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[1997].[Q1].[2])",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1].[2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 2,614\n"
+            + "Row #1: 187\n");
+
+        final TestContext unrestrictedTestContext = getTestContext();
+        unrestrictedTestContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  TopCount([Store].[USA].[CA].Children, 10, "
+            + "           [Measures].[Unit Sales]) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[1997].[Q1].[2])",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1].[2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 2,614\n"
+            + "Row #1: 1,879\n"
+            + "Row #2: 1,341\n"
+            + "Row #3: 187\n");
+    }
+
+
+    public void testBugMondrian1127MultipleSlicers() {
+        final TestContext testContext = getRestrictedTestContext();
+        testContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  TopCount([Store].[USA].[CA].Children, 10,"
+            + "           [Measures].[Unit Sales]) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[1997].[Q1].[2] : [Time].[1997].[Q1].[3])",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1].[2]}\n"
+            + "{[Time].[1997].[Q1].[3]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 4,497\n"
+            + "Row #1: 337\n");
+
+        final TestContext unrestrictedTestContext = getTestContext();
+        unrestrictedTestContext.assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  TopCount([Store].[USA].[CA].Children, 10, "
+            + "           [Measures].[Unit Sales]) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time].[1997].[Q1].[2] : [Time].[1997].[Q1].[3])",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1].[2]}\n"
+            + "{[Time].[1997].[Q1].[3]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 4,497\n"
+            + "Row #1: 4,094\n"
+            + "Row #2: 2,585\n"
+            + "Row #3: 337\n");
     }
 
     /**

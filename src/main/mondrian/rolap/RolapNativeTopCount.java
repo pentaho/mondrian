@@ -106,10 +106,13 @@ public class RolapNativeTopCount extends RolapNativeSet {
             }
             key.add(ascending);
             key.add(topCount);
-            
-            if (this.getEvaluator() instanceof RolapEvaluator)
-                key.add(((RolapEvaluator)this.getEvaluator()).getSlicerMembers());
-            
+
+            if (this.getEvaluator() instanceof RolapEvaluator) {
+                key.add(
+                    ((RolapEvaluator)this.getEvaluator())
+                    .getSlicerMembers());
+            }
+
             return key;
         }
     }
@@ -189,26 +192,24 @@ public class RolapNativeTopCount extends RolapNativeSet {
             if (orderBySQL == null) {
                 return null;
             }
-        }    
+        }
         LOGGER.debug("using native topcount");
         final int savepoint = evaluator.savepoint();
         overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
         Member[] mm = evaluator.getMembers();
         for (int mIndex = 0; mIndex < mm.length; mIndex++) {
             if (mm[mIndex] instanceof RolapHierarchy.LimitedRollupMember) {
-                
-                List<Level> hierarchyLevels = schemaReader.getHierarchyLevels(mm[mIndex].getHierarchy());
-                for (Level affectedLevel:hierarchyLevels) {
-                    List<Member> availableMembers = schemaReader.getLevelMembers(affectedLevel, false);                                            
-                    evaluator.setContext(availableMembers);                    
+                List<Level> hierarchyLevels =
+                        schemaReader
+                        .getHierarchyLevels(mm[mIndex].getHierarchy());
+                for (Level affectedLevel : hierarchyLevels) {
+                    List<Member> availableMembers =
+                            schemaReader.getLevelMembers(affectedLevel, false);
+                    evaluator.setContext(availableMembers);
                 }
             }
         }
-         
-        
-        
-                    
-        
+
         CrossJoinArg[] predicateArgs = null;
         if (allArgs.size() == 2) {
             predicateArgs = allArgs.get(1);

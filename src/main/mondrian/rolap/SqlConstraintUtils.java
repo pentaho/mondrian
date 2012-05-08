@@ -12,6 +12,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.MondrianDef.RelationOrJoin;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -19,8 +20,6 @@ import mondrian.spi.Dialect;
 import mondrian.util.FilteredIterableList;
 
 import java.util.*;
-import mondrian.olap.MondrianDef.Relation;
-import mondrian.olap.MondrianDef.RelationOrJoin;
 
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
@@ -54,41 +53,38 @@ public class SqlConstraintUtils {
         // Add constraint using the current evaluator context
         Member[] members = evaluator.getNonAllMembers();
         RolapCube baseCube = null;
-        
-        if (evaluator instanceof RolapEvaluator)
+        if (evaluator instanceof RolapEvaluator) {
             baseCube = ((RolapEvaluator)evaluator).getCube();
-                                             
-        Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =new HashMap<RelationOrJoin, Set<RolapMember>>(); 
-        Map<RelationOrJoin, Boolean> done = new HashMap<RelationOrJoin, Boolean>();
+        }
+
+        Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =
+                new HashMap<RelationOrJoin, Set<RolapMember>>();
+        Map<RelationOrJoin, Boolean> done =
+                new HashMap<RelationOrJoin, Boolean>();
         if (restrictMemberTypes) {
             if (containsCalculatedMember(members)) {
                 throw Util.newInternal(
                     "can not restrict SQL to calculated Members");
             }
             if (hasMultiPositionSlicer(evaluator)) {
-                List<Member> slicerMembers = ((RolapEvaluator)evaluator).getSlicerMembers();
+                List<Member> slicerMembers =
+                        ((RolapEvaluator)evaluator).getSlicerMembers();
 
                 for (Member slicerMember : slicerMembers) {
-                    RelationOrJoin rel = ((RolapCubeHierarchy)slicerMember.getHierarchy()).getRelation();
+                    RelationOrJoin rel =
+                            ((RolapCubeHierarchy)slicerMember.getHierarchy())
+                            .getRelation();
                     if (!mapOfSlicerMembers.containsKey(rel)) {
                         mapOfSlicerMembers.put(rel, new HashSet<RolapMember>());
                     }
                     mapOfSlicerMembers.get(rel).add((RolapMember)slicerMember);
-                } 
+                }
+            }
 
-
-                                                               
-/*                throw Util.newInternal(
-                    "can not restrict SQL to context with multi-position slicer");
-                 * 
-                 */
-            }              
-             
         } else {
             members = removeCalculatedAndDefaultMembers(members);
             members = removeMultiPositionSlicerMembers(members, evaluator);
         }
-
         final CellRequest request =
             RolapAggregationManager.makeRequest(members);
         if (request == null) {
@@ -113,12 +109,10 @@ public class SqlConstraintUtils {
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 AggStar.Table table = aggColumn.getTable();
                 table.addToFrom(sqlQuery, false, true);
-
                 expr = aggColumn.generateExprString(sqlQuery);
             } else {
                 RolapStar.Table table = column.getTable();
                 table.addToFrom(sqlQuery, false, true);
-
                 expr = column.generateExprString(sqlQuery);
             }
 
@@ -136,51 +130,63 @@ public class SqlConstraintUtils {
                     Double.valueOf(value);
                 }
 
-                
-                if (mapOfSlicerMembers.containsKey(column.getTable().getRelation())) {   
-                    
-                    if (!done.containsKey(column.getTable().getRelation())) {                       
-                        Set<RolapMember> slicerMembersArray = mapOfSlicerMembers.get(column.getTable().getRelation());
-                        List<RolapMember> slicerMembers = new ArrayList<RolapMember>(slicerMembersArray);
-                        
+                RelationOrJoin keyForSlicerMap =
+                        column.getTable().getRelation();
+                if (mapOfSlicerMembers.containsKey(keyForSlicerMap)) {
+                    if (!done.containsKey(keyForSlicerMap)) {
+                        Set<RolapMember> slicerMembersArray =
+                                mapOfSlicerMembers.get(keyForSlicerMap);
+                        List<RolapMember> slicerMembers =
+                                new ArrayList<RolapMember>(slicerMembersArray);
+
                         RolapMember allMember = null;
-                        for (RolapMember slicerMember: slicerMembers) {
-                            if (slicerMember.isAll())
-                            {
+                        for (RolapMember slicerMember : slicerMembers) {
+                            if (slicerMember.isAll()) {
                                 allMember = slicerMember;
                                 break;
-                            }                            
+                            }
                         }
-                        
-                        
+
                         if (allMember != null) {
                             slicerMembers.remove(allMember);
                         }
-                        
+
                         if (slicerMembers.size() > 0) {
-                            final String where = generateMultiValueInExpr(sqlQuery, baseCube, aggStar, slicerMembers,(RolapLevel) slicerMembers.get(0).getHierarchy().getLevels()[0], restrictMemberTypes, null);
+                            RolapLevel levelForWhere =
+                                    (RolapLevel) slicerMembers.get(0)
+                                    .getHierarchy()
+                                    .getLevels()[0];
+                            final String where =
+                                    generateMultiValueInExpr(
+                                        sqlQuery, baseCube,
+                                        aggStar, slicerMembers,
+                                        levelForWhere,
+                                        restrictMemberTypes, null);
                             sqlQuery.addWhere(where);
                         } else {
                             //No extra slicers.... just use the = method
                             final StringBuilder buf = new StringBuilder();
-                            sqlQuery.getDialect().quote(buf, value, column.getDatatype());
+                            sqlQuery.getDialect().quote(
+                                buf, value,
+                                column.getDatatype());
                             sqlQuery.addWhere(
-                                    expr,
-                                    " = ",
-                                    buf.toString());                                                                                                              
+                                expr,
+                                " = ",
+                                buf.toString());
                         }
-                        done.put(column.getTable().getRelation(), Boolean.TRUE);
-                        
+                        done.put(keyForSlicerMap, Boolean.TRUE);
                     }
 
                 } else {
                     final StringBuilder buf = new StringBuilder();
-                    sqlQuery.getDialect().quote(buf, value, column.getDatatype());
+                    sqlQuery.getDialect().quote(
+                        buf, value,
+                        column.getDatatype());
                     sqlQuery.addWhere(
                         expr,
                         " = ",
-                        buf.toString());                                                            
-                }                               
+                        buf.toString());
+                }
             }
         }
     }
