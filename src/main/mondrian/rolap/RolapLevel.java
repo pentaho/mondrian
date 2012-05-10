@@ -89,7 +89,7 @@ public class RolapLevel extends LevelBase {
     }
 
     public org.olap4j.metadata.Level.Type getLevelType() {
-        return attribute.levelType;
+        return attribute.getLevelType();
     }
 
     public RolapHierarchy getHierarchy() {
@@ -101,7 +101,7 @@ public class RolapLevel extends LevelBase {
     }
 
     public MemberFormatter getMemberFormatter() {
-        return attribute.memberFormatter;
+        return attribute.getMemberFormatter();
     }
 
     // override with refined return type
@@ -138,7 +138,7 @@ public class RolapLevel extends LevelBase {
      * Returns whether this level is parent-child.
      */
     public boolean isParentChild() {
-        return attribute.parentAttribute != null;
+        return attribute.getParentAttribute() != null;
     }
 
     private Property lookupProperty(
@@ -192,7 +192,7 @@ public class RolapLevel extends LevelBase {
     }
 
     public final boolean isAll() {
-        return attribute.levelType == org.olap4j.metadata.Level.Type.ALL;
+        return attribute.getLevelType() == org.olap4j.metadata.Level.Type.ALL;
     }
 
     public boolean areMembersUnique() {
@@ -248,7 +248,7 @@ public class RolapLevel extends LevelBase {
                     keyValues.add(keyValue);
                 }
             }
-            final List<RolapSchema.PhysColumn> keyExps = attribute.keyList;
+            final List<RolapSchema.PhysColumn> keyExps = attribute.getKeyList();
             if (keyExps.size() != keyValues.size()) {
                 throw Util.newError(
                     "Wrong number of values in member key; "
@@ -257,7 +257,8 @@ public class RolapLevel extends LevelBase {
                     + " columns "
                     + new AbstractList<String>() {
                         public String get(int index) {
-                            return keyExps.get(index).toSql();
+                            return keyExps.get(keyExps.size() - 1 - index)
+                                .toSql();
                         }
 
                         public int size() {

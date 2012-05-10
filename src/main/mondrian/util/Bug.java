@@ -240,6 +240,14 @@ public class Bug {
     public static final boolean BugMondrian1001Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1129">bug MONDRIAN-1129,
+     * "Re-enable Olap4jTckTest in lagunitas (mondrian-4 development)
+     * branch"</a> is fixed.
+     */
+    public static final boolean BugMondrian1129Fixed = false;
+
+    /**
      * Whether RolapCubeMember and RolapMember have been fully segregated; any
      * piece of code should be working with one or the other, not both.
      */

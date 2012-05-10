@@ -1874,7 +1874,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Axis #2:\n"
-            + "{[Department].[14], [Employees].[All Employees]}\n"
+            + "{[Department].[14], [Employee].[Employees].[All Employees]}\n"
             + "Row #0: $97.20\n");
 
         // This query gave the right answer, even with MONDRIAN-694.
@@ -1887,8 +1887,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Axis #2:\n"
-            + "{[Department].[14], [Employees].[All Employees]}\n"
-            + "{[Department].[14], [Employees].[Sheri Nowmer]}\n"
+            + "{[Store].[Department].[14], [Employee].[Employees].[All Employees]}\n"
+            + "{[Store].[Department].[14], [Employee].[Employees].[Sheri Nowmer]}\n"
             + "Row #0: $97.20\n"
             + "Row #1: $97.20\n");
 
@@ -1903,8 +1903,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Axis #2:\n"
-            + "{[Department].[14], [Employees].[All Employees]}\n"
-            + "{[Department].[14], [Employees].[Sheri Nowmer]}\n"
+            + "{[Store].[Department].[14], [Employee].[Employees].[All Employees]}\n"
+            + "{[Store].[Department].[14], [Employee].[Employees].[Sheri Nowmer]}\n"
             + "Row #0: $97.20\n"
             + "Row #1: $97.20\n");
 
@@ -1917,8 +1917,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Org Salary]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[All Employees], [Department].[14]}\n"
-            + "{[Employees].[Sheri Nowmer], [Department].[14]}\n"
+            + "{[Employee].[Employees].[All Employees], [Store].[Department].[14]}\n"
+            + "{[Employee].[Employees].[Sheri Nowmer], [Store].[Department].[14]}\n"
             + "Row #0: $97.20\n"
             + "Row #1: $97.20\n");
     }

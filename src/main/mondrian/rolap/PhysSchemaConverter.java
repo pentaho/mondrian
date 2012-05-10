@@ -140,6 +140,7 @@ class PhysSchemaConverter extends RolapSchemaLoader.PhysSchemaBuilder {
     {
         MondrianDef.Table xmlTable = new MondrianDef.Table();
         xmlTable.name = physTable.name;
+        xmlTable.alias = physTable.alias;
         List<MondrianDef.RealOrCalcColumnDef> columnDefs =
             xmlTable.children.holder(
                 new MondrianDef.ColumnDefs()).list();

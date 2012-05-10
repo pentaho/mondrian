@@ -153,7 +153,7 @@ public interface RolapMember extends Member, RolapCalculation {
             if (level.isAll()) {
                 return key.equals(Util.COMPARABLE_EMPTY_LIST);
             }
-            final int keyCount = level.attribute.keyList.size();
+            final int keyCount = level.attribute.getKeyList().size();
             if (key instanceof String
                 || key instanceof Number
                 || key instanceof Boolean

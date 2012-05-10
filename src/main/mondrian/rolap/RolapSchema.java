@@ -18,6 +18,8 @@ import mondrian.resource.MondrianResource;
 import mondrian.rolap.aggmatcher.AggTableManager;
 import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.rolap.sql.SqlQuery;
+import mondrian.server.*;
+import mondrian.server.Statement;
 import mondrian.spi.*;
 import mondrian.spi.impl.Scripts;
 import mondrian.util.*;
@@ -140,8 +142,6 @@ public class RolapSchema implements Schema {
      * <p>Expect a different ID for each Mondrian instance node.
      */
     private final String id;
-
-    private final PhysStatistic statistic = new PhysStatistic();
 
     /**
      * Creates a schema.
@@ -749,10 +749,6 @@ public class RolapSchema implements Schema {
         ((RolapSchemaFunctionTable) funTable).init();
     }
 
-    public PhysStatistic getStatistic() {
-        return statistic;
-    }
-
     /**
      * <code>RolapStarRegistry</code> is a registry for {@link RolapStar}s.
      */
@@ -934,19 +930,24 @@ public class RolapSchema implements Schema {
 
         private int columnCount;
 
+        public final PhysStatistic statistic;
+
         /**
          * Creates a physical schema.
          *
          * @param dialect Dialect
-         * @param dataSource JDBC data source
+         * @param internalConnection Internal connection (for data source, and
+         *                           accounting of stats queries)
          */
         public PhysSchema(
             Dialect dialect,
-            DataSource dataSource)
+            RolapConnection internalConnection)
         {
             this.dialect = dialect;
-            this.jdbcSchema = JdbcSchema.makeDB(dataSource);
+            this.jdbcSchema =
+                JdbcSchema.makeDB(internalConnection.getDataSource());
             jdbcSchema.load();
+            statistic = new PhysStatistic(dialect, internalConnection);
         }
 
         /**
@@ -2866,40 +2867,185 @@ public class RolapSchema implements Schema {
     }
 
     /**
-     * Caches the cardinality of columns.
+     * Provides and caches statistics of relations and columns.
      *
-     * <p>The cache is stored in the schema so that queries on different
-     * cubes can share them.</p>
+     * <p>Wrapper around a chain of {@link mondrian.spi.StatisticsProvider}s,
+     * followed by a cache to store the results.</p>
      */
-    public class PhysStatistic {
-        private final Map<Pair<PhysRelation, PhysExpr>, Integer> map =
-            new HashMap<Pair<PhysRelation, PhysExpr>, Integer>();
+    public static class PhysStatistic {
+        private final Map<List, Integer> columnMap =
+            new HashMap<List, Integer>();
+        private final Map<List, Integer> tableMap =
+            new HashMap<List, Integer>();
+        private final Map<String, Integer> queryMap =
+            new HashMap<String, Integer>();
+        private final Dialect dialect;
+        private final Statement internalStatement;
+        private final DataSource dataSource;
 
-        /**
-         * Gets the cardinality for a given column (the number of distinct
-         * values of the column). If there is no value in cache, executes the
-         * callback to find the cardinality.
-         *
-         * @param relation the relation associated with the column expression
-         * @param expression the column expression to cache the cardinality for
-         * @param functor Computes the cardinality for the column expression
-         * @return Cardinality of given column
-         */
-        public int getCardinality(
-            PhysRelation relation,
-            PhysExpr expression,
-            Util.Functor0<Integer> functor)
+        PhysStatistic(
+            Dialect dialect,
+            RolapConnection internalConnection)
         {
-            final Pair<PhysRelation, PhysExpr> key =
-                Pair.of(relation, expression);
-            Integer card = map.get(key);
-            if (card == null) {
-                // If not cached, issue SQL to get the cardinality for
-                // this column.
-                card = functor.apply();
-                map.put(key, card);
+            this.dialect = dialect;
+            this.internalStatement = internalConnection.getInternalStatement();
+            this.dataSource = internalConnection.getDataSource();
+        }
+
+        public int getRelationCardinality(
+            RolapSchema.PhysRelation relation,
+            String alias,
+            int approxRowCount)
+        {
+            if (approxRowCount >= 0) {
+                return approxRowCount;
             }
-            return card;
+            if (relation instanceof MondrianDef.Table) {
+                final MondrianDef.Table table = (MondrianDef.Table) relation;
+                return getTableCardinality(
+                    null, table.schema, table.name);
+            } else {
+                final SqlQuery sqlQuery = new SqlQuery(dialect);
+                sqlQuery.addSelect("*", null);
+                sqlQuery.addFrom(relation, null, true);
+                return getQueryCardinality(sqlQuery.toString());
+            }
+        }
+
+        private int getTableCardinality(
+            String catalog,
+            String schema,
+            String table)
+        {
+            final List<String> key = Arrays.asList(catalog, schema, table);
+            int rowCount = -1;
+            if (tableMap.containsKey(key)) {
+                rowCount = tableMap.get(key);
+            } else {
+                final Dialect dialect = this.dialect;
+                final List<StatisticsProvider> statisticsProviders =
+                    dialect.getStatisticsProviders();
+                final Execution execution =
+                    new Execution(internalStatement, 0);
+                for (StatisticsProvider statisticsProvider
+                    : statisticsProviders)
+                {
+                    rowCount = statisticsProvider.getTableCardinality(
+                        dialect,
+                        dataSource,
+                        catalog,
+                        schema,
+                        table,
+                        execution);
+                    if (rowCount >= 0) {
+                        break;
+                    }
+                }
+
+                // Note: If all providers fail, we put -1 into the cache,
+                // to ensure that we won't try again.
+                tableMap.put(key, rowCount);
+            }
+            return rowCount;
+        }
+
+        private int getQueryCardinality(String sql) {
+            int rowCount = -1;
+            if (queryMap.containsKey(sql)) {
+                rowCount = queryMap.get(sql);
+            } else {
+                final Dialect dialect = this.dialect;
+                final List<StatisticsProvider> statisticsProviders =
+                    dialect.getStatisticsProviders();
+                final Execution execution =
+                    new Execution(
+                        internalStatement,
+                        0);
+                for (StatisticsProvider statisticsProvider
+                    : statisticsProviders)
+                {
+                    rowCount = statisticsProvider.getQueryCardinality(
+                        dialect, dataSource, sql, execution);
+                    if (rowCount >= 0) {
+                        break;
+                    }
+                }
+
+                // Note: If all providers fail, we put -1 into the cache,
+                // to ensure that we won't try again.
+                queryMap.put(sql, rowCount);
+            }
+            return rowCount;
+        }
+
+        public int getColumnCardinality(
+            RolapSchema.PhysRelation relation,
+            RolapSchema.PhysExpr expression,
+            int approxCardinality)
+        {
+            if (approxCardinality >= 0) {
+                return approxCardinality;
+            }
+            if (relation instanceof RolapSchema.PhysTable
+                && expression instanceof RolapSchema.PhysColumn)
+            {
+                final RolapSchema.PhysTable table =
+                    (RolapSchema.PhysTable) relation;
+                final RolapSchema.PhysColumn column =
+                    (RolapSchema.PhysColumn) expression;
+                return getColumnCardinality(
+                    null,
+                    table.getSchemaName(),
+                    table.name,
+                    column.name);
+            } else {
+                final SqlQuery sqlQuery = new SqlQuery(dialect);
+                sqlQuery.setDistinct(true);
+                sqlQuery.addSelect(expression.toSql(), null);
+                sqlQuery.addFrom(relation, null, true);
+                return getQueryCardinality(sqlQuery.toString());
+            }
+        }
+
+        private int getColumnCardinality(
+            String catalog,
+            String schema,
+            String table,
+            String column)
+        {
+            final List<String> key =
+                Arrays.asList(catalog, schema, table, column);
+            int rowCount = -1;
+            if (columnMap.containsKey(key)) {
+                rowCount = columnMap.get(key);
+            } else {
+                final List<StatisticsProvider> statisticsProviders =
+                    dialect.getStatisticsProviders();
+                final Execution execution =
+                    new Execution(
+                        internalStatement,
+                        0);
+                for (StatisticsProvider statisticsProvider
+                    : statisticsProviders)
+                {
+                    rowCount = statisticsProvider.getColumnCardinality(
+                        dialect,
+                        dataSource,
+                        catalog,
+                        schema,
+                        table,
+                        column,
+                        execution);
+                    if (rowCount >= 0) {
+                        break;
+                    }
+                }
+
+                // Note: If all providers fail, we put -1 into the cache,
+                //to ensure that we won't try again.
+                columnMap.put(key, rowCount);
+            }
+            return rowCount;
         }
     }
 }

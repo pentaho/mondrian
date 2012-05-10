@@ -170,8 +170,8 @@ public class SqlTupleReader implements TupleReader {
                                 // value for uniformity in hashmaps.
                                 break pc;
                             } else if (value.toString().equals(
-                                    childLevel.attribute.parentAttribute
-                                        .nullValue))
+                                    childLevel.attribute.getParentAttribute()
+                                        .getNullValue()))
                             {
                                 // member is at top of hierarchy; its parent is
                                 // the 'all' member
@@ -200,12 +200,23 @@ public class SqlTupleReader implements TupleReader {
                         Object value = accessors.get(keyOrdinal).get();
                         keyValues[j] = SqlMemberSource.toComparable(value);
                     }
-                    Object captionValue;
+                    final Object captionValue;
                     if (layout.captionOrdinal >= 0) {
                         captionValue =
                             accessors.get(layout.captionOrdinal).get();
                     } else {
                         captionValue = null;
+                    }
+                    final String nameValue;
+                    if (layout.nameOrdinal >= 0) {
+                        final Object nameObject =
+                            accessors.get(layout.nameOrdinal).get();
+                        nameValue =
+                            nameObject == null
+                                ? null
+                                : String.valueOf(nameObject);
+                    } else {
+                        nameValue = null;
                     }
                     final Object key =
                         keyValues.length == 1
@@ -228,7 +239,8 @@ public class SqlTupleReader implements TupleReader {
                                 RolapMember.Key.create(keyValues);
                             member = memberBuilder.makeMember(
                                 parentMember, childLevel, keyClone,
-                                captionValue, parentChild, stmt, layout);
+                                captionValue, nameValue,
+                                parentChild, stmt, layout);
                         }
                     }
 
@@ -877,13 +889,14 @@ Util.deprecated("obsolete basecube parameter", false);
                     // skip degenerate dimensions, which have no key attribute
                     if (dimension.keyAttribute != null) {
                         queryBuilder.addListToFrom(
-                            dimension.keyAttribute.keyList);
+                            dimension.keyAttribute.getKeyList());
                     }
                 }
             } else {
                 // start at target level
                 for (TargetBase target : unevaluatedTargets) {
-                    queryBuilder.addListToFrom(target.level.attribute.keyList);
+                    queryBuilder.addListToFrom(
+                        target.level.attribute.getKeyList());
                 }
             }
 
@@ -1037,9 +1050,9 @@ Util.deprecated("obsolete basecube parameter", false);
             }
             final RolapAttribute attribute = currLevel.getAttribute();
 
-            if (attribute.parentAttribute != null) {
+            if (attribute.getParentAttribute() != null) {
                 List<RolapSchema.PhysColumn> parentExps =
-                    attribute.parentAttribute.keyList;
+                    attribute.getParentAttribute().getKeyList();
                 SqlMemberSource.Sgo sgo =
                     selectOrdinal == selectCount - 1
                         ? SqlMemberSource.Sgo.SELECT_GROUP_ORDER
@@ -1062,12 +1075,12 @@ Util.deprecated("obsolete basecube parameter", false);
             SqlMemberSource.Sgo sgo =
                 SqlMemberSource.Sgo.SELECT_ORDER.maybeGroup(needsGroupBy);
 
-            for (RolapSchema.PhysColumn column : attribute.orderByList) {
+            for (RolapSchema.PhysColumn column : attribute.getOrderByList()) {
                 levelLayoutBuilder.orderByOrdinalList.add(
                     queryBuilder.addColumn(column, sgo));
             }
 
-            for (RolapSchema.PhysColumn column : attribute.keyList) {
+            for (RolapSchema.PhysColumn column : attribute.getKeyList()) {
                 levelLayoutBuilder.keyOrdinalList.add(
                     queryBuilder.addColumn(column, sgo));
                 if (measureGroup != null) {
@@ -1079,20 +1092,20 @@ Util.deprecated("obsolete basecube parameter", false);
 
             levelLayoutBuilder.nameOrdinal =
                 queryBuilder.addColumn(
-                    attribute.nameExp,
+                    attribute.getNameExp(),
                     SqlMemberSource.Sgo.SELECT.maybeGroup(needsGroupBy));
 
             levelLayoutBuilder.captionOrdinal =
                 queryBuilder.addColumn(
-                    attribute.captionExp,
+                    attribute.getCaptionExp(),
                     SqlMemberSource.Sgo.SELECT.maybeGroup(needsGroupBy));
-            if (attribute.captionExp != null) {
+            if (attribute.getCaptionExp() != null) {
                 if (starSet.cube != null) {
                     Util.deprecated(
                         "join to layoutbuilder key sufficient?",
                         false);
                     if (measureGroup != null) {
-                        attribute.captionExp.joinToStarRoot(
+                        attribute.getCaptionExp().joinToStarRoot(
                             sqlQuery, measureGroup, cubeDimension);
                     }
                 }
@@ -1106,7 +1119,7 @@ Util.deprecated("obsolete basecube parameter", false);
                 // join to dimension tables starting
                 // at the lowest granularity and working
                 // towards the fact table
-                for (RolapSchema.PhysColumn column : attribute.keyList) {
+                for (RolapSchema.PhysColumn column : attribute.getKeyList()) {
                     hierarchy.addToFromInverse(sqlQuery, column);
                 }
 
@@ -1116,10 +1129,11 @@ Util.deprecated("obsolete basecube parameter", false);
                         measureGroup);
                 int bitPos = starColumn.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
-                assert attribute.keyList.size() == 1 : "TODO:";
+                assert attribute.getKeyList().size() == 1 : "TODO:";
                 RolapStar.Condition condition =
                     new RolapStar.Condition(
-                        attribute.keyList.get(0), aggColumn.getExpression());
+                        attribute.getKeyList().get(0),
+                        aggColumn.getExpression());
                 sqlQuery.addWhere(condition.toString(sqlQuery));
             }
 
@@ -1149,7 +1163,9 @@ Util.deprecated("obsolete basecube parameter", false);
             }
 
             if (selectOrdinal == 0 && selectCount == 1) {
-                for (RolapSchema.PhysColumn column : attribute.orderByList) {
+                for (RolapSchema.PhysColumn column
+                    : attribute.getOrderByList())
+                {
                     sqlQuery.addOrderBy(column.toSql(), true, false, true);
                 }
             }
@@ -1159,9 +1175,9 @@ Util.deprecated("obsolete basecube parameter", false);
             {
                 // FIXME: For now assume that properties have a single-column
                 //    key and name etc. are the same.
-                assert property.attribute.keyList.size() == 1;
+                assert property.attribute.getKeyList().size() == 1;
                 RolapSchema.PhysColumn column =
-                    property.attribute.keyList.get(0);
+                    property.attribute.getKeyList().get(0);
                 String propSql = column.toSql();
                 int ordinal = layoutBuilder.lookup(propSql);
                 if (ordinal < 0) {
@@ -1187,7 +1203,7 @@ Util.deprecated("obsolete basecube parameter", false);
         // that have no children. For backwards compatibility, but less
         // efficient.
         if (measureGroup != null) {
-            for (RolapSchema.PhysColumn column : level.attribute.keyList) {
+            for (RolapSchema.PhysColumn column : level.attribute.getKeyList()) {
                 final RolapSchema.PhysPath keyPath =
                     level.getDimension().getKeyPath(column);
                 keyPath.addToFrom(sqlQuery, false);
@@ -1311,7 +1327,7 @@ Util.deprecated("obsolete basecube parameter", false);
                     if (level != null && !level.isAll()) {
                         final RolapCubeLevel cubeLevel = (RolapCubeLevel) level;
                         for (RolapSchema.PhysColumn physColumn
-                            : cubeLevel.attribute.keyList)
+                            : cubeLevel.attribute.getKeyList())
                         {
                             RolapStar.Column column =
                                 starSet.getMeasureGroup().getRolapStarColumn(

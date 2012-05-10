@@ -67,6 +67,7 @@ public interface TupleReader {
             RolapLevel childLevel,
             Comparable key,
             Object captionValue,
+            String nameValue,
             boolean parentChild,
             SqlStatement stmt,
             SqlTupleReader.LevelColumnLayout layout)

@@ -992,7 +992,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "from [Sales] "
             + "where [Store Type].[Store Type].[Small Grocery]",
             "Axis #0:\n"
-            + "{[Store Type].[Small Grocery]}\n"
+            + "{[Store Type].[Store Type].[Small Grocery]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n");
@@ -1113,10 +1113,10 @@ public class TestAggregationManager extends BatchTestCase {
             "select count(distinct `store`.`store_country`) as `c0` from `store` as `store`";
 
         String cardinalitySqlDerby2 =
-            "select count(distinct \"store_ragged\".\"store_country\") from \"store_ragged\" as \"store_ragged\"";
+            "select count(*) from (select distinct \"store_country\" as \"c0\" from \"store_ragged\" as \"store_ragged\") as \"init\"";
 
         String cardinalitySqlMySql2 =
-            "select count(distinct `store_ragged`.`store_country`) as `c0` from `store_ragged` as `store_ragged`";
+            "select count(*) from (select distinct `store_country` as `c0` from `store_ragged` as `store_ragged`) as `init`";
 
         SqlPattern[] patterns1 =
             new SqlPattern[] {
@@ -1517,6 +1517,17 @@ public class TestAggregationManager extends BatchTestCase {
      * element would make aggregate tables fail to be used.
      */
     public void testLevelKeyAsSqlExpWithAgg() {
+        final boolean p;
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case POSTGRESQL:
+            // Results are slightly different order on Postgres. It collates
+            // "Sale Winners" before "Sales Days", because " " < "A".
+            p = true;
+            break;
+        default:
+            p = false;
+            break;
+        }
         propSaver.set(MondrianProperties.instance().UseAggregates, true);
         propSaver.set(MondrianProperties.instance().ReadAggregates, true);
         final String mdxQuery =
@@ -1594,9 +1605,10 @@ public class TestAggregationManager extends BatchTestCase {
             + "{[Promotions].[Price Slashers]}\n"
             + "{[Promotions].[Price Smashers]}\n"
             + "{[Promotions].[Price Winners]}\n"
-            + "{[Promotions].[Sale Winners]}\n"
+            + (p ? "" : "{[Promotions].[Sale Winners]}\n")
             + "{[Promotions].[Sales Days]}\n"
             + "{[Promotions].[Sales Galore]}\n"
+            + (!p ? "" : "{[Promotions].[Sale Winners]}\n")
             + "{[Promotions].[Save-It Sale]}\n"
             + "{[Promotions].[Saving Days]}\n"
             + "{[Promotions].[Savings Galore]}\n"
@@ -1642,9 +1654,13 @@ public class TestAggregationManager extends BatchTestCase {
             + "Row #26: 1,148\n"
             + "Row #27: 504\n"
             + "Row #28: 1,294\n"
-            + "Row #29: 444\n"
-            + "Row #30: 2,055\n"
-            + "Row #31: 2,572\n"
+            + (p
+                ? ("Row #29: 2,055\n"
+                   + "Row #30: 2,572\n"
+                   + "Row #31: 444\n")
+                : ("Row #29: 444\n"
+                   + "Row #30: 2,055\n"
+                   + "Row #31: 2,572\n"))
             + "Row #32: 2,203\n"
             + "Row #33: 1,446\n"
             + "Row #34: 1,382\n"

@@ -31,7 +31,7 @@ public abstract class Predicates
         RolapMember member)
     {
         List<RolapSchema.PhysColumn> keyList =
-            member.getLevel().getAttribute().keyList;
+            member.getLevel().getAttribute().getKeyList();
         int size = keyList.size();
         switch (size) {
         case 1:
@@ -65,11 +65,11 @@ public abstract class Predicates
             || upperBound != null;
         final RolapLevel level =
             (lowerBound == null ? upperBound : lowerBound).getLevel();
-        if (level.getAttribute().keyList.size() == 1) {
+        if (level.getAttribute().getKeyList().size() == 1) {
             return new RangeColumnPredicate(
                 new PredicateColumn(
                     router,
-                    level.getAttribute().keyList.get(0)),
+                    level.getAttribute().getKeyList().get(0)),
                 lowerInclusive,
                 (lowerBound == null
                  ? null
@@ -143,7 +143,7 @@ public abstract class Predicates
         return new MemberTuplePredicate(
             router,
             physSchema,
-            member.getLevel().getAttribute().keyList,
+            member.getLevel().getAttribute().getKeyList(),
             Collections.singletonList(
                 MemberTuplePredicate.createRange(
                     lower, lowerStrict, upper, upperStrict)));
@@ -167,7 +167,7 @@ public abstract class Predicates
         return new MemberTuplePredicate(
             router,
             physSchema,
-            level.getAttribute().keyList,
+            level.getAttribute().getKeyList(),
             MemberTuplePredicate.createList(members));
     }
 

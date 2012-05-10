@@ -587,8 +587,6 @@ META-INF/**"/>
   </target>
 
   <target name="compile.tests" depends="info">
-  	<pathconvert property="test.classpath.formatted" pathsep="${line.separator} " refid="test.classpath" />
-  	<echo message="Test Classpath: ${test.classpath.formatted}" /> 
     <javac
         srcdir="${javatest.dir}"
         destdir="${testclasses.dir}"

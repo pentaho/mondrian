@@ -676,8 +676,8 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "where [Measures].[Avg Unit Sales]\n"
             + "   * {[Customers].[USA].[OR], [Customers].[USA].[CA]}",
             "Axis #0:\n"
-            + "{[Measures].[Avg Unit Sales], [Customers].[USA].[OR]}\n"
-            + "{[Measures].[Avg Unit Sales], [Customers].[USA].[CA]}\n"
+            + "{[Measures].[Avg Unit Sales], [Customers].[Customers].[USA].[OR]}\n"
+            + "{[Measures].[Avg Unit Sales], [Customers].[Customers].[USA].[CA]}\n"
             + "6.189");
 
         // roll up using a named set
@@ -687,7 +687,7 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "select from [Sales]\n"
             + "where ([Measures].[Avg Unit Sales], [Customers].[OR and CA])",
             "Axis #0:\n"
-            + "{[Measures].[Avg Unit Sales], [Customers].[OR and CA]}\n"
+            + "{[Measures].[Avg Unit Sales], [Customers].[Customers].[OR and CA]}\n"
             + "3.094");
     }
 

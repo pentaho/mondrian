@@ -867,7 +867,7 @@
                              aggregator='distinct-count' formatString='#,#'/>
                 </Measures>
                 <DimensionLinks>
-                    <ForeignKeyLink dimension='Time' foreignKeyColumn='pay_date' attribute='date'/>
+                    <ForeignKeyLink dimension='Time' foreignKeyColumn='pay_date' attribute='Date'/>
                     <ForeignKeyLink dimension='Department' foreignKeyColumn='department_id'/>
                     <ForeignKeyLink dimension='Employee' foreignKeyColumn='employee_id'/>
                     <ReferenceLink dimension='Store' viaDimension='Employee' viaAttribute='Store Id'/>

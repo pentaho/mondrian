@@ -38,7 +38,9 @@ public class RolapVirtualCubeMeasure
         RolapStoredMeasure cubeMeasure,
         Map<String, Annotation> annotationMap)
     {
-        super(parentMember, level, cubeMeasure.getName());
+        super(
+            parentMember, level, cubeMeasure.getName(),
+            cubeMeasure.getName(), MemberType.MEASURE);
         this.measureGroup = measureGroup;
         Util.deprecated(
             "since all cubes are now virtual, is this class obsolete? we just need a way to clone RolapStoredMeasure in a different measure group",

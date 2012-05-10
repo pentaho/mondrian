@@ -153,7 +153,9 @@ public class Segment {
                 star,
                 compoundPredicateBitKeys);
         this.segmentHeader =
-            SegmentBuilder.toHeader(star.getSchema().getStatistic(), this);
+            SegmentBuilder.toHeader(
+                star.getFactTable().getRelation().getSchema().statistic,
+                this);
     }
 
     /**

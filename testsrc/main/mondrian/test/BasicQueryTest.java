@@ -20,10 +20,16 @@ import mondrian.olap.*;
 import mondrian.olap.fun.FunctionTest;
 import mondrian.olap.type.NumericType;
 import mondrian.olap.type.Type;
+import mondrian.rolap.RolapSchema;
+import mondrian.server.Execution;
 import mondrian.spi.*;
+import mondrian.spi.impl.JdbcStatisticsProvider;
+import mondrian.spi.impl.SqlStatisticsProvider;
 import mondrian.util.Bug;
 
 import junit.framework.Assert;
+
+import org.eigenbase.util.property.StringProperty;
 
 import org.olap4j.*;
 import org.olap4j.impl.ArrayMap;
@@ -6235,9 +6241,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Product].[Products].[Non-Consumable].[Household]}\n"
             + "{[Product].[Products].[Non-Consumable].[Periodicals]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
-            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[Gender].[F]}\n"
+            + "{[Gender].[Gender].[M]}\n"
+            + "{[Gender].[Gender].[All Gender]}\n"
             + "Row #0: 3,439\n"
             + "Row #0: 6,776\n"
             + "Row #0: 1,987\n"
@@ -6339,8 +6345,8 @@ public class BasicQueryTest extends FoodMartTestCase {
             null,
             ArrayMap.of(
                 "Sales",
-                "<ForeignKeyLink dimension='Customer_2' foreignKeyColumn='customer_id'/>")
-);
+                "<ForeignKeyLink dimension='Customer_2' "
+                + "foreignKeyColumn='customer_id'/>"));
 
         Result result = testContext.executeQuery(
             "WITH SET [#DataSet#] AS "
@@ -7223,6 +7229,95 @@ public class BasicQueryTest extends FoodMartTestCase {
             break;
         case 4:
         }
+    }
+
+    /**
+     * Unit test for {@link StatisticsProvider} and implementations
+     * {@link JdbcStatisticsProvider} and
+     * {@link SqlStatisticsProvider}.
+     */
+    public void testStatistics() {
+        final String product =
+            getTestContext().getDialect().getDatabaseProduct().name();
+        propSaver.set(
+            new StringProperty(
+                MondrianProperties.instance(),
+                MondrianProperties.instance().StatisticsProviders.getPath()
+                + "."
+                + product,
+                null),
+            MyJdbcStatisticsProvider.class.getName()
+            + ","
+            + SqlStatisticsProvider.class.getName());
+        final TestContext testContext = getTestContext().withFreshConnection();
+        testContext.assertSimpleQuery();
+
+        final List<StatisticsProvider> statisticsProviders =
+            testContext.getDialect().getStatisticsProviders();
+        assertEquals(2, statisticsProviders.size());
+        assertTrue(
+            statisticsProviders.get(0) instanceof MyJdbcStatisticsProvider);
+        assertTrue(
+            statisticsProviders.get(1) instanceof SqlStatisticsProvider);
+
+        for (StatisticsProvider statisticsProvider : statisticsProviders) {
+            int rowCount =
+                statisticsProvider.getTableCardinality(
+                    testContext.getDialect(),
+                    testContext.getConnection().getDataSource(),
+                    null,
+                    null,
+                    "customer",
+                    new Execution(
+                        ((RolapSchema) testContext.getConnection().getSchema())
+                            .getInternalConnection()
+                            .getInternalStatement(),
+                        0));
+            assertTrue(
+                "Row count estimate: " + rowCount + " (actual 10281)",
+                rowCount > 9000 && rowCount < 15000);
+
+            int valueCount =
+                statisticsProvider.getColumnCardinality(
+                    testContext.getDialect(),
+                    testContext.getConnection().getDataSource(),
+                    null,
+                    null,
+                    "customer",
+                    "gender",
+                    new Execution(
+                        ((RolapSchema) testContext.getConnection().getSchema())
+                            .getInternalConnection().getInternalStatement(),
+                        0));
+            assertTrue(
+                "Value count estimate: " + valueCount + " (actual 2)",
+                statisticsProvider instanceof JdbcStatisticsProvider
+                    ? valueCount == -1
+                    : valueCount == 2);
+        }
+    }
+
+    public void testResultLimit() throws Exception {
+        propSaver.set(
+            MondrianProperties.instance().ResultLimit,
+            1000);
+        assertAxisThrows(
+            "CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members)",
+            "Mondrian Error:Number of cell results to be read exceeded limit of (1,000)");
+        propSaver.set(
+            MondrianProperties.instance().ResultLimit,
+            5000);
+        executeQuery(
+            "select CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members) on columns from [Sales]");
+    }
+
+    /**
+     * Dummy statistics provider for
+     * {@link mondrian.test.BasicQueryTest#testStatistics()}.
+     */
+    public static class MyJdbcStatisticsProvider
+        extends JdbcStatisticsProvider
+    {
     }
 }
 

@@ -7,7 +7,7 @@
   == You must accept the terms of that agreement to use this software.
   ==
   == Copyright (C) 2000-2005 Julian Hyde
-  == Copyright (C) 2005-2011 Pentaho and others
+  == Copyright (C) 2005-2012 Pentaho and others
   == All Rights Reserved.
   -->
 
@@ -354,7 +354,7 @@ CONCAT(CONCAT(<Column table="customer" name="fname"/>, ' '), <Column table="cust
     <CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
   </CalculatedMember>
   <NamedSet name="Top Sellers">
-    <Formula>TopCount([Warehouse].[Warehouse Name].MEMBERS, 5, [Measures].[Warehouse Sales])</Formula>
+    <Formula>TopCount([Warehouse].[Warehouse].[Warehouse Name].MEMBERS, 5, [Measures].[Warehouse Sales])</Formula>
   </NamedSet>    
 </Cube>
 

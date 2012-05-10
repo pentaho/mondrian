@@ -43,7 +43,7 @@ public class CompositeMemberPredicate
         this.member = member;
         assert member != null;
         for (RolapSchema.PhysColumn physColumn
-            : member.getLevel().getAttribute().keyList)
+            : member.getLevel().getAttribute().getKeyList())
         {
             columnList.add(
                 new PredicateColumn(

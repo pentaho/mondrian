@@ -43,6 +43,7 @@
       <file url="file://$PROJECT_DIR$/../../olap4j/src/mondrian/olap4j/FactoryJdbc3Impl.java" />
       <file url="file://$PROJECT_DIR$/../../olap4j/src/org/olap4j/driver/xmla/FactoryJdbc3Impl.java" />
       <file url="file://$PROJECT_DIR$/../src/main/mondrian/olap4j/FactoryJdbc3Impl.java" />
+      <file url="file://$PROJECT_DIR$/../src/main/mondrian/olap4j/FactoryJdbc4Impl.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />

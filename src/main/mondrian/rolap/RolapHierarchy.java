@@ -145,7 +145,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 0,
-                ALL_ATTRIBUTE,
+                ALL_ATTRIBUTE.inDimension(getDimension()),
                 RolapLevel.HideMemberCondition.Never,
                 Collections.<String, Annotation>emptyMap());
         if (hasAll) {
@@ -162,7 +162,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 null,
                 0,
-                NULL_ATTRIBUTE,
+                NULL_ATTRIBUTE.inDimension(getDimension()),
                 RolapLevel.HideMemberCondition.Never,
                 Collections.<String, Annotation>emptyMap());
 
@@ -175,7 +175,7 @@ public class RolapHierarchy extends HierarchyBase {
                     null,
                     null,
                     levelList.size(),
-                    MEASURES_ATTRIBUTE,
+                    MEASURES_ATTRIBUTE.inDimension(getDimension()),
                     RolapLevel.HideMemberCondition.Never,
                     Collections.<String, Annotation>emptyMap()));
         }
@@ -366,7 +366,8 @@ public class RolapHierarchy extends HierarchyBase {
     {
         if (formula == null) {
             return new RolapMemberBase(
-                (RolapMember) parent, (RolapLevel) level, name);
+                (RolapMember) parent, (RolapLevel) level, name,
+                name, mondrian.olap.Member.MemberType.REGULAR);
         } else if (level.getDimension().isMeasures()) {
             return new RolapCalculatedMeasure(
                 (RolapMember) parent, (RolapLevel) level, name, formula);
@@ -719,7 +720,7 @@ public class RolapHierarchy extends HierarchyBase {
                 caption,
                 description,
                 peerHier.levelList.size(),
-                src.attribute.parentAttribute,
+                src.attribute.getParentAttribute(),
                 src.getHideMemberCondition(),
                 Collections.<String, Annotation>emptyMap());
         peerHier.levelList.add(level);
@@ -1068,8 +1069,8 @@ public class RolapHierarchy extends HierarchyBase {
         }
     }
 
-    private static final RolapAttribute ALL_ATTRIBUTE =
-        new RolapAttribute(
+    private static final RolapSharedAttribute ALL_ATTRIBUTE =
+        new RolapSharedAttribute(
             "All",
             true,
             null,
@@ -1083,8 +1084,8 @@ public class RolapHierarchy extends HierarchyBase {
             org.olap4j.metadata.Level.Type.ALL,
             ALL_LEVEL_CARDINALITY);
 
-    private static final RolapAttribute NULL_ATTRIBUTE =
-        new RolapAttribute(
+    private static final RolapSharedAttribute NULL_ATTRIBUTE =
+        new RolapSharedAttribute(
             "Null",
             true,
             null,
@@ -1098,8 +1099,8 @@ public class RolapHierarchy extends HierarchyBase {
             org.olap4j.metadata.Level.Type.NULL,
             NULL_LEVEL_CARDINALITY);
 
-    private static final RolapAttribute MEASURES_ATTRIBUTE =
-        new RolapAttribute(
+    private static final RolapSharedAttribute MEASURES_ATTRIBUTE =
+        new RolapSharedAttribute(
             "Measures",
             true,
             null,

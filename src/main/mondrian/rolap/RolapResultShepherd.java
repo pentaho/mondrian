@@ -46,7 +46,7 @@ public class RolapResultShepherd {
     /**
      * List of tasks that should be monitored by the shepherd thread.
      */
-    private static final List<Pair<FutureTask<Result>, Execution>> tasks =
+    private final List<Pair<FutureTask<Result>, Execution>> tasks =
         new CopyOnWriteArrayList<Pair<FutureTask<Result>,Execution>>();
 
     private final Timer timer =
@@ -169,6 +169,7 @@ public class RolapResultShepherd {
     public void shutdown() {
         this.timer.cancel();
         this.executor.shutdown();
+        this.tasks.clear();
     }
 }
 

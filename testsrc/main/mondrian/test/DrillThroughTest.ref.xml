@@ -3,8 +3,8 @@
     <TestCase name="testTrivialCalcMemberDrillThrough">
         <Resource name="sql">
             <![CDATA[select
-    `time_by_day`.`the_year` as `Time - Year (Key)`,
-    `product_class`.`product_family` as `Product - Product Subcategory (Key)`,
+    `time_by_day`.`the_year` as `Year (Key)`,
+    `product_class`.`product_family` as `Product Subcategory (Key)`,
     `sales_fact_1997`.`unit_sales` as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
@@ -27,8 +27,8 @@ order by
         </Resource>
         <Resource name="sql2">
             <![CDATA[select
-    `time_by_day`.`the_year` as `Time - Year (Key)`,
-    `product_class`.`product_family` as `Product - Product Subcategory (Key)`,
+    `time_by_day`.`the_year` as `Year (Key)`,
+    `product_class`.`product_family` as `Product Subcategory (Key)`,
     `sales_fact_1997`.`unit_sales` as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
@@ -53,8 +53,8 @@ order by
     <TestCase name="testDrillThrough">
         <Resource name="sql">
             <![CDATA[select
-    `time_by_day`.`the_year` as `Time - Year (Key)`,
-    `product_class`.`product_family` as `Product - Product Subcategory (Key)`,
+    `time_by_day`.`the_year` as `Year (Key)`,
+    `product_class`.`product_family` as `Product Subcategory (Key)`,
     `sales_fact_1997`.`unit_sales` as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
@@ -79,8 +79,8 @@ order by
     <TestCase name="testDrillThrough2">
         <Resource name="sql">
             <![CDATA[select
-    `time_by_day`.`the_year` as `Time - Year (Key)`,
-    `product_class`.`product_family` as `Product - Product Subcategory (Key)`,
+    `time_by_day`.`the_year` as `Year (Key)`,
+    `product_class`.`product_family` as `Product Subcategory (Key)`,
     `sales_fact_1997`.`unit_sales` as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
@@ -105,10 +105,10 @@ order by
     <TestCase name="testDrillThrough3">
         <Resource name="sql">
             <![CDATA[select
-    `time_by_day`.`the_year` as `Time - Year (Key)`,
-    `time_by_day`.`month_of_year` as `Time - Month (Key)`,
-    `product_class`.`product_family` as `Product - Product Subcategory (Key)`,
-    `product_class`.`product_department` as `Product - Product Subcategory (Key)_0`,
+    `time_by_day`.`the_year` as `Year (Key)`,
+    `time_by_day`.`month_of_year` as `Month (Key)`,
+    `product_class`.`product_family` as `Product Subcategory (Key)`,
+    `product_class`.`product_department` as `Product Subcategory (Key)_0`,
     `sales_fact_1997`.`unit_sales` as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
@@ -139,9 +139,9 @@ order by
     <TestCase name="testDrillThroughBugMondrian180">
         <Resource name="sql">
             <![CDATA[select
-    `store`.`store_state` as `Store - Store City (Key)`,
-    `store`.`store_city` as `Store - Store City (Key)_0`,
-    `time_by_day`.`the_year` as `Time - Year (Key)`,
+    `store`.`store_state` as `Store City (Key)`,
+    `store`.`store_city` as `Store City (Key)_0`,
+    `time_by_day`.`the_year` as `Year (Key)`,
     `sales_fact_1997`.`unit_sales` as `Unit Sales`
 from
     `store` as `store`,
@@ -164,8 +164,8 @@ order by
     <TestCase name="testDrillThroughMeasureExp">
         <Resource name="sql">
             <![CDATA[select
-    `time_by_day`.`the_year` as `Time - Year (Key)`,
-    `product_class`.`product_family` as `Product - Product Subcategory (Key)`,
+    `time_by_day`.`the_year` as `Year (Key)`,
+    `product_class`.`product_family` as `Product Subcategory (Key)`,
     `sales_fact_1997`.`store_sales` as `Promotion Sales`
 from
     `time_by_day` as `time_by_day`,
@@ -190,9 +190,9 @@ order by
     <TestCase name="testDrillThroughDupKeys">
         <Resource name="sql">
             <![CDATA[select
-    `store`.`store_id` as `Store - Id (Key)`,
-    `time_by_day`.`the_year` as `Time - Year (Key)`,
-    `store_ragged`.`store_id` as `Store2 - Id (Key)`,
+    `store`.`store_id` as `Id (Key)`,
+    `time_by_day`.`the_year` as `Year (Key)`,
+    `store_ragged`.`store_id` as `Id (Key)`,
     `sales_fact_1997`.`unit_sales` as `Unit Sales`
 from
     `store` as `store`,
@@ -220,12 +220,12 @@ order by
     <TestCase name="testDrillThroughVirtualCube">
         <Resource name="sql">
             <![CDATA[select
-    `time_by_day`.`the_year` as `Time - Year (Key)`,
-    `time_by_day`.`quarter` as `Time - Quarter (Key)`,
-    `time_by_day`.`month_of_year` as `Time - Month (Key)`,
-    `customer`.`state_province` as `Customers - State Province (Key)`,
-    `customer`.`gender` as `Customers - Name - Gender (Key)`,
-    `customer`.`city` as `Customers - City (Key)`,
+    `time_by_day`.`the_year` as `Year (Key)`,
+    `time_by_day`.`quarter` as `Quarter (Key)`,
+    `time_by_day`.`month_of_year` as `Month (Key)`,
+    `customer`.`state_province` as `State Province (Key)`,
+    `customer`.`gender` as `Name$Gender (Key)`,
+    `customer`.`city` as `City (Key)`,
     `sales_fact_1997`.`unit_sales` as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,
@@ -259,8 +259,8 @@ order by
     <TestCase name="testBug1438285">
         <Resource name="sql">
             <![CDATA[select
-    `time_by_day`.`the_year` as `Time - Year (Key)`,
-    `store_ragged`.`store_id` as `Store2 - Id (Key)`,
+    `time_by_day`.`the_year` as `Year (Key)`,
+    `store_ragged`.`store_id` as `Id (Key)`,
     `sales_fact_1997`.`unit_sales` as `Unit Sales`
 from
     `time_by_day` as `time_by_day`,

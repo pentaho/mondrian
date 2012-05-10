@@ -498,7 +498,7 @@ public class CacheControlImpl implements CacheControl {
                         // FIXME: assumes non-composite key
                         final String ccName =
                             ((RolapLevel)member.getLevel()).getAttribute()
-                                .keyList.get(0).toSql();
+                                .getKeyList().get(0).toSql();
                         Set<Comparable> levelValueSet = levels.get(ccName);
                         if (levelValueSet == null) {
                             levelValueSet = new HashSet<Comparable>();
@@ -545,7 +545,8 @@ public class CacheControlImpl implements CacheControl {
                     // FIXME: Don't assume key is non-composite.
                     list.add(
                         new SegmentColumn(
-                            region.level.getAttribute().keyList.get(0).toSql(),
+                            region.level.getAttribute().getKeyList().get(0)
+                                .toSql(),
                             -1,
                             null));
                 }

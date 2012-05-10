@@ -345,7 +345,7 @@ public class CompatibilityTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Alternative Promotion].[#null]}\n"
+            + "{[Alternative Promotion].[Alternative Promotion].[#null]}\n"
             + "Row #0: \n");
     }
 
@@ -492,11 +492,11 @@ public class CompatibilityTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Store Sqft]}\n"
             + "Axis #2:\n"
-            + "{[Store].[Store 3]}\n"
-            + "{[Store].[Store 18]}\n"
-            + "{[Store].[Store 9]}\n"
-            + "{[Store].[Store 10]}\n"
-            + "{[Store].[Store 20]}\n"
+            + "{[Store].[Store].[Store 3]}\n"
+            + "{[Store].[Store].[Store 18]}\n"
+            + "{[Store].[Store].[Store 9]}\n"
+            + "{[Store].[Store].[Store 10]}\n"
+            + "{[Store].[Store].[Store 20]}\n"
             + "Row #0: 39,696\n"
             + "Row #1: 38,382\n"
             + "Row #2: 36,509\n"

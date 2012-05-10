@@ -2329,14 +2329,13 @@ public class NonEmptyTest extends BatchTestCase {
             MondrianProperties.instance().EnableNativeCrossJoin, false);
         boolean oldEnableNativeNonEmpty =
             MondrianProperties.instance().EnableNativeNonEmpty.get();
-        MondrianProperties.instance().EnableNativeNonEmpty.set(false);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeNonEmpty, false);
 
         executeQuery(
             "select non empty CrossJoin([Customers].[Name].Members, "
             + "{[Promotions].[All Promotions].[Fantastic Discounts]}) "
             + "ON COLUMNS FROM [Sales]");
-        MondrianProperties.instance().EnableNativeNonEmpty.set(
-            oldEnableNativeNonEmpty);
     }
 
     /**
@@ -2389,7 +2388,7 @@ public class NonEmptyTest extends BatchTestCase {
         clearAndHardenCache(ssmrch);
 
         LimitedQuery c = new LimitedQuery(
-            50,
+            100,
             21,
             "select \n"
             + "{[Measures].[Unit Sales]} ON columns,\n"
@@ -3190,7 +3189,7 @@ public class NonEmptyTest extends BatchTestCase {
 
         // members in set are a cross product of (1997, 1998) and (Q1, Q2, Q3)
         checkNative(
-            15, 15,
+            50, 15,
             "select "
             + "{[Measures].[Unit Sales]} on columns, "
             + "NonEmptyCrossJoin(" + EDUCATION_LEVEL_LEVEL + ".Members, "
@@ -3688,13 +3687,55 @@ public class NonEmptyTest extends BatchTestCase {
      * 1722959, "NON EMPTY Level.MEMBERS fails if nonempty.enable=false"
      */
     public void testNonEmptyLevelMembers() {
-        boolean currentNativeNonEmpty =
-                MondrianProperties.instance().EnableNativeNonEmpty.get();
-        boolean currentNonEmptyOnAllAxis =
-                MondrianProperties.instance().EnableNonEmptyOnAllAxis.get();
-        try {
-            MondrianProperties.instance().EnableNativeNonEmpty.set(false);
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(true);
+        propSaver.set(
+            MondrianProperties.instance().EnableNativeNonEmpty, false);
+        propSaver.set(
+            MondrianProperties.instance().EnableNonEmptyOnAllAxis, true);
+        assertQueryReturns(
+            "WITH MEMBER [Measures].[One] AS '1' "
+            + "SELECT "
+            + "NON EMPTY {[Measures].[One], [Measures].[Store Sales]} ON rows, "
+            + "NON EMPTY [Store].[Store State].MEMBERS on columns "
+            + "FROM sales",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Store].[Stores].[Canada].[BC]}\n"
+            + "{[Store].[Stores].[Mexico].[DF]}\n"
+            + "{[Store].[Stores].[Mexico].[Guerrero]}\n"
+            + "{[Store].[Stores].[Mexico].[Jalisco]}\n"
+            + "{[Store].[Stores].[Mexico].[Veracruz]}\n"
+            + "{[Store].[Stores].[Mexico].[Yucatan]}\n"
+            + "{[Store].[Stores].[Mexico].[Zacatecas]}\n"
+            + "{[Store].[Stores].[USA].[CA]}\n"
+            + "{[Store].[Stores].[USA].[OR]}\n"
+            + "{[Store].[Stores].[USA].[WA]}\n"
+            + "Axis #2:\n"
+            + "{[Measures].[One]}\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #0: 1\n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: \n"
+            + "Row #1: 159,167.84\n"
+            + "Row #1: 142,277.07\n"
+            + "Row #1: 263,793.22\n");
+
+        if (Bug.BugMondrian446Fixed) {
+            MondrianProperties.instance().EnableNativeNonEmpty.set(true);
             assertQueryReturns(
                 "WITH MEMBER [Measures].[One] AS '1' "
                 + "SELECT "
@@ -3737,57 +3778,6 @@ public class NonEmptyTest extends BatchTestCase {
                 + "Row #1: 159,167.84\n"
                 + "Row #1: 142,277.07\n"
                 + "Row #1: 263,793.22\n");
-
-            if (Bug.BugMondrian446Fixed) {
-                MondrianProperties.instance().EnableNativeNonEmpty.set(true);
-                assertQueryReturns(
-                    "WITH MEMBER [Measures].[One] AS '1' "
-                    + "SELECT "
-                    + "NON EMPTY {[Measures].[One], [Measures].[Store Sales]} ON rows, "
-                    + "NON EMPTY [Store].[Store State].MEMBERS on columns "
-                    + "FROM sales",
-                    "Axis #0:\n"
-                    + "{}\n"
-                    + "Axis #1:\n"
-                    + "{[Store].[Stores].[Canada].[BC]}\n"
-                    + "{[Store].[Stores].[Mexico].[DF]}\n"
-                    + "{[Store].[Stores].[Mexico].[Guerrero]}\n"
-                    + "{[Store].[Stores].[Mexico].[Jalisco]}\n"
-                    + "{[Store].[Stores].[Mexico].[Veracruz]}\n"
-                    + "{[Store].[Stores].[Mexico].[Yucatan]}\n"
-                    + "{[Store].[Stores].[Mexico].[Zacatecas]}\n"
-                    + "{[Store].[Stores].[USA].[CA]}\n"
-                    + "{[Store].[Stores].[USA].[OR]}\n"
-                    + "{[Store].[Stores].[USA].[WA]}\n"
-                    + "Axis #2:\n"
-                    + "{[Measures].[One]}\n"
-                    + "{[Measures].[Store Sales]}\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #0: 1\n"
-                    + "Row #1: \n"
-                    + "Row #1: \n"
-                    + "Row #1: \n"
-                    + "Row #1: \n"
-                    + "Row #1: \n"
-                    + "Row #1: \n"
-                    + "Row #1: \n"
-                    + "Row #1: 159,167.84\n"
-                    + "Row #1: 142,277.07\n"
-                    + "Row #1: 263,793.22\n");
-            }
-        } finally {
-            MondrianProperties.instance().EnableNativeNonEmpty.set(
-                currentNativeNonEmpty);
-            MondrianProperties.instance().EnableNonEmptyOnAllAxis.set(
-                currentNonEmptyOnAllAxis);
         }
     }
 

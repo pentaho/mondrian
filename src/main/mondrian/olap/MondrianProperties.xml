@@ -283,15 +283,14 @@ The default value is null, to cope with DBMSs that don't need this.
         <Type>String</Type>
     </PropertyDefinition>
     <PropertyDefinition>
-        <Name>RollupAnalyzerNumberThreads</Name>
-        <Path>mondrian.rolap.RollupAnalyzerNumberThreads</Path>
+        <Name>EnableInMemoryRollup</Name>
+        <Path>mondrian.rolap.EnableInMemoryRollup</Path>
         <Description>
-Property which defines how many threads are created in order to
-analyze possible segment rollup opportunities. This value defaults
-to 4, but it can be set to a higher value on big multi-core systems.
+Property which turns on or off the in-memory rollup
+of segment data. Defaults to <code>true</code>.
         </Description>
-        <Type>int</Type>
-        <Default>4</Default>
+        <Type>boolean</Type>
+        <Default>true</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>SegmentCache</Name>
@@ -1326,6 +1325,34 @@ table, during your ETL process, and to set this property to
         <Type>boolean</Type>
         <Default>true</Default>
     </PropertyDefinition>
+
+    <PropertyDefinition>
+        <Name>StatisticsProviders</Name>
+        <Path>mondrian.statistics.providers</Path>
+        <Description>
+<p>Comma-separated list of classes to be used to get statistics about the
+number of rows in a table, or the number of distinct values in a column.</p>
+
+<p>If there is a value for mondrian.statistics.providers.DATABASE, where
+DAtABASE is the current database name (e.g. MYSQL or ORACLE), then that
+property overrides.</p>
+
+<p>Example:</p>
+
+<blockquote><code>
+mondrian.statistics.providers=mondrian.spi.impl.JdbcStatisticsProvider<br/>
+mondrian.statistics.providers.MYSQL=mondrian.spi.impl.JdbcStatisticsProvider,mondrian.spi.impl.JdbcStatisticsProvider</code></blockquote>
+
+<p>This would use JDBC's statistics (via the
+java.sql.DatabaseMetaData.getIndexInfo method) for most
+databases, but for connections to a MySQL database, would use
+external statistics first, and fall back to JDBC statistics
+only if external statistics were not available.</p>
+        </Description>
+        <Core>true</Core>
+        <Type>String</Type>
+    </PropertyDefinition>
+
     <PropertyDefinition>
         <Name>WebappDeploy</Name>
         <Path>mondrian.webapp.deploy</Path>
@@ -1365,5 +1392,4 @@ log4j.configuration=file:log4j.properties</code></blockquote>
         <Core>false</Core>
         <Type>String</Type>
     </PropertyDefinition>
-    
 </PropertyDefinitions>

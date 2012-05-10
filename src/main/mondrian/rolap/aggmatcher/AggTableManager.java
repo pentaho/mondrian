@@ -17,9 +17,6 @@ import mondrian.rolap.*;
 
 import org.apache.log4j.Logger;
 
-import org.eigenbase.util.property.Property;
-import org.eigenbase.util.property.Trigger;
-
 import java.sql.SQLException;
 import java.util.*;
 import javax.sql.DataSource;
@@ -49,12 +46,6 @@ public class AggTableManager {
 
     private static final MondrianResource mres = MondrianResource.instance();
 
-    /**
-     * This is used to create forward references to triggers (so they do not
-     * get reaped until the RolapSchema is reaped).
-     */
-    private Trigger[] triggers;
-
     public AggTableManager(final RolapSchema schema) {
         this.schema = schema;
     }
@@ -65,8 +56,6 @@ public class AggTableManager {
      * associated RolapSchema object.
      */
     public void finalCleanUp() {
-        deregisterTriggers(MondrianProperties.instance());
-
         if (getLogger().isDebugEnabled()) {
             getLogger().debug(
                 "AggTableManager.finalCleanUp: schema="
@@ -88,40 +77,13 @@ public class AggTableManager {
      */
     public void initialize() {
         if (MondrianProperties.instance().ReadAggregates.get()) {
-            try {
-                loadRolapStarAggregates();
-            } catch (SQLException ex) {
-                throw mres.AggLoadingError.ex(ex);
-            }
+            reLoadRolapStarAggregates();
+            reOrderAggStarList();
         }
-        registerTriggers();
         printResults();
     }
 
     private void printResults() {
-/*
- *   This was too much information at the INFO level, compared to the
- *   rest of Mondrian
- *
- *         if (getLogger().isInfoEnabled()) {
-            // print just Star table alias and AggStar table names
-            StringBuilder buf = new StringBuilder(1024);
-            buf.append(Util.nl);
-            for (Iterator it = getStars(); it.hasNext();) {
-                RolapStar star = (RolapStar) it.next();
-                buf.append(star.getFactTable().getAlias());
-                buf.append(Util.nl);
-                for (Iterator ait = star.getAggStars(); ait.hasNext();) {
-                    AggStar aggStar = (AggStar) ait.next();
-                    buf.append("    ");
-                    buf.append(aggStar.getFactTable().getName());
-                    buf.append(Util.nl);
-                }
-            }
-            getLogger().info(buf.toString());
-
-        } else
-*/
         if (getLogger().isDebugEnabled()) {
             // print everything, Star, subTables, AggStar and subTables
             // could be a lot
@@ -299,108 +261,6 @@ public class AggTableManager {
                     msgRecorder.getErrorCount());
             }
         }
-    }
-
-    private boolean runTrigger() {
-        if (RolapSchema.cacheContains(schema)) {
-            return true;
-        } else {
-            // must remove triggers
-            deregisterTriggers(MondrianProperties.instance());
-
-            return false;
-        }
-    }
-
-    /**
-     * Registers triggers for the following properties:
-     * <ul>
-     *      <li>{@link MondrianProperties#ChooseAggregateByVolume}
-     *      <li>{@link MondrianProperties#AggregateRules}
-     *      <li>{@link MondrianProperties#AggregateRuleTag}
-     *      <li>{@link MondrianProperties#ReadAggregates}
-     * </ul>
-     */
-    private void registerTriggers() {
-        final MondrianProperties properties = MondrianProperties.instance();
-        triggers = new Trigger[] {
-            // When the ordering AggStars property is changed, we must
-            // reorder them, so we create a trigger.
-            // There is no need to provide equals/hashCode methods for this
-            // Trigger since it is never explicitly removed.
-            new Trigger() {
-                public boolean isPersistent() {
-                    return false;
-                }
-                public int phase() {
-                    return Trigger.SECONDARY_PHASE;
-                }
-                public void execute(Property property, String value) {
-                    if (AggTableManager.this.runTrigger()) {
-                        reOrderAggStarList();
-                    }
-                }
-            },
-
-            // Register to know when the Default resource/url has changed
-            // so that the default aggregate table recognition rules can
-            // be re-loaded.
-            // There is no need to provide equals/hashCode methods for this
-            // Trigger since it is never explicitly removed.
-            new Trigger() {
-                public boolean isPersistent() {
-                    return false;
-                }
-                public int phase() {
-                    return Trigger.SECONDARY_PHASE;
-                }
-                public void execute(Property property, String value) {
-                    if (AggTableManager.this.runTrigger()) {
-                        reLoadRolapStarAggregates();
-                    }
-                }
-            },
-
-            // If the system started not using aggregates, i.e., the aggregate
-            // tables were not loaded, but then the property
-            // was changed to use aggregates, we must then load the aggregates
-            // if they were never loaded.
-            new Trigger() {
-                public boolean isPersistent() {
-                    return false;
-                }
-                public int phase() {
-                    return Trigger.SECONDARY_PHASE;
-                }
-                public void execute(Property property, String value) {
-                    if (AggTableManager.this.runTrigger()) {
-                        reLoadRolapStarAggregates();
-                    }
-                }
-            }
-        };
-
-        // Note that for each AggTableManager theses triggers are
-        // added to the properties object. Each trigger has just
-        // been created and "knows" its AggTableManager instance.
-        // The triggers' hashCode and equals methods (those provided
-        // by the Object class) are used when removing the trigger.
-        properties.ChooseAggregateByVolume.addTrigger(triggers[0]);
-        properties.AggregateRules.addTrigger(triggers[1]);
-        properties.AggregateRuleTag.addTrigger(triggers[1]);
-        properties.ReadAggregates.addTrigger(triggers[2]);
-    }
-
-    private void deregisterTriggers(final MondrianProperties properties) {
-        // Remove this AggTableManager's instance's triggers.
-        final Trigger[] triggers = this.triggers;
-        if (triggers == null) {
-            return;
-        }
-        properties.ChooseAggregateByVolume.removeTrigger(triggers[0]);
-        properties.AggregateRules.removeTrigger(triggers[1]);
-        properties.AggregateRuleTag.removeTrigger(triggers[1]);
-        properties.ReadAggregates.removeTrigger(triggers[2]);
     }
 
     private Collection<RolapStar> getStars() {

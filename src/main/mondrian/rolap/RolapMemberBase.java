@@ -129,15 +129,6 @@ public class RolapMemberBase
         this.key = null;
     }
 
-    RolapMemberBase(
-        RolapMember parentMember,
-        RolapLevel level,
-        Comparable value)
-    {
-        this(parentMember, level, value, null, MemberType.REGULAR);
-        assert !(level instanceof RolapCubeLevel);
-    }
-
     protected Logger getLogger() {
         return LOGGER;
     }
@@ -624,7 +615,11 @@ public class RolapMemberBase
     }
 
     public int getDepth() {
-        return getLevel().getDepth();
+        if (parentMember != null) {
+            return getParentMember().getDepth() + 1;
+        } else {
+            return getLevel().getDepth();
+        }
     }
 
     public String getPropertyFormattedValue(String propertyName) {

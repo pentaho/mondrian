@@ -40,7 +40,7 @@ public class IndexedValuesTest extends FoodMartTestCase {
             + "{[Measures].[Org Salary]}\n"
             + "{[Measures].[Count]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[Sheri Nowmer]}\n"
+            + "{[Employee].[Employees].[Sheri Nowmer]}\n"
             + "Row #0: $39,431.67\n"
             + "Row #0: 7,392\n";
 
@@ -61,7 +61,7 @@ public class IndexedValuesTest extends FoodMartTestCase {
         assertQueryReturns(
             "SELECT {[Measures].[Org Salary], [Measures].[Count]} "
             + "ON COLUMNS, "
-            + "{[Employees].&[1]} "
+            + "{[Employee].[Employees].&[1]} "
             + "ON ROWS FROM [HR]",
             desiredResult);
 
@@ -70,7 +70,7 @@ public class IndexedValuesTest extends FoodMartTestCase {
         assertQueryReturns(
             "SELECT {[Measures].[Org Salary], [Measures].[Count]} "
             + "ON COLUMNS, "
-            + "{[Employees].&[4]} "
+            + "{[Employee].[Employees].&[4]} "
             + "ON ROWS FROM [HR]",
             "Axis #0:\n"
             + "{}\n"
@@ -78,21 +78,21 @@ public class IndexedValuesTest extends FoodMartTestCase {
             + "{[Measures].[Org Salary]}\n"
             + "{[Measures].[Count]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[Sheri Nowmer].[Michael Spence]}\n"
+            + "{[Employee].[Employees].[Sheri Nowmer].[Michael Spence]}\n"
             + "Row #0: \n"
             + "Row #0: \n");
 
         // "level.&key" syntax
         assertQueryReturns(
             "SELECT [Measures] ON COLUMNS, "
-            + "{[Product].[Product Name].&[9]} "
+            + "{[Product].[Products].[Product Name].&[9]} "
             + "ON ROWS FROM [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[Drink].[Beverages].[Pure Juice Beverages].[Juice].[Washington].[Washington Cranberry Juice]}\n"
+            + "{[Product].[Products].[Drink].[Beverages].[Pure Juice Beverages].[Juice].[Washington].[Washington Cranberry Juice]}\n"
             + "Row #0: 130\n");
     }
 }
