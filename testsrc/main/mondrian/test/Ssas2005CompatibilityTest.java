@@ -361,21 +361,21 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Currency].[All Currencys]}\n"
-            + "{[Currency].[Bulk Mail]}\n"
-            + "{[Currency].[Cash Register Handout]}\n"
-            + "{[Currency].[Daily Paper]}\n"
-            + "{[Currency].[Daily Paper, Radio]}\n"
-            + "{[Currency].[Daily Paper, Radio, TV]}\n"
-            + "{[Currency].[In-Store Coupon]}\n"
-            + "{[Currency].[No Media]}\n"
-            + "{[Currency].[Product Attachment]}\n"
-            + "{[Currency].[Radio]}\n"
-            + "{[Currency].[Street Handout]}\n"
-            + "{[Currency].[Sunday Paper]}\n"
-            + "{[Currency].[Sunday Paper, Radio]}\n"
-            + "{[Currency].[Sunday Paper, Radio, TV]}\n"
-            + "{[Currency].[TV]}\n"
+            + "{[Currency].[Currency].[All Currencys]}\n"
+            + "{[Currency].[Currency].[Bulk Mail]}\n"
+            + "{[Currency].[Currency].[Cash Register Handout]}\n"
+            + "{[Currency].[Currency].[Daily Paper]}\n"
+            + "{[Currency].[Currency].[Daily Paper, Radio]}\n"
+            + "{[Currency].[Currency].[Daily Paper, Radio, TV]}\n"
+            + "{[Currency].[Currency].[In-Store Coupon]}\n"
+            + "{[Currency].[Currency].[No Media]}\n"
+            + "{[Currency].[Currency].[Product Attachment]}\n"
+            + "{[Currency].[Currency].[Radio]}\n"
+            + "{[Currency].[Currency].[Street Handout]}\n"
+            + "{[Currency].[Currency].[Sunday Paper]}\n"
+            + "{[Currency].[Currency].[Sunday Paper, Radio]}\n"
+            + "{[Currency].[Currency].[Sunday Paper, Radio, TV]}\n"
+            + "{[Currency].[Currency].[TV]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: 4,320\n"
             + "Row #0: 6,697\n"
@@ -578,9 +578,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Currency].[All Currencys]}\n"
-            + "{[Currency].[Bulk Mail]}\n"
-            + "{[Currency].[Cash Register Handout]}\n"
+            + "{[Currency].[Currency].[All Currencys]}\n"
+            + "{[Currency].[Currency].[Bulk Mail]}\n"
+            + "{[Currency].[Currency].[Cash Register Handout]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: 4,320\n"
             + "Row #0: 6,697\n");
@@ -888,12 +888,12 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{[Time].[Time].[1997]}\n"
             + "Axis #1:\n"
-            + "{[Store Type 2].[Deluxe Supermarket]}\n"
-            + "{[Store Type 2].[Gourmet Supermarket]}\n"
-            + "{[Store Type 2].[HeadQuarters]}\n"
-            + "{[Store Type 2].[Mid-Size Grocery]}\n"
-            + "{[Store Type 2].[Small Grocery]}\n"
-            + "{[Store Type 2].[Supermarket]}\n"
+            + "{[Store Type 2].[Store Type 2].[Deluxe Supermarket]}\n"
+            + "{[Store Type 2].[Store Type 2].[Gourmet Supermarket]}\n"
+            + "{[Store Type 2].[Store Type 2].[HeadQuarters]}\n"
+            + "{[Store Type 2].[Store Type 2].[Mid-Size Grocery]}\n"
+            + "{[Store Type 2].[Store Type 2].[Small Grocery]}\n"
+            + "{[Store Type 2].[Store Type 2].[Supermarket]}\n"
             + "Row #0: 76,837\n"
             + "Row #0: 21,333\n"
             + "Row #0: \n"
@@ -1155,31 +1155,46 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     }
 
     public void testCompoundKeyStringBad() {
+        switch (getTestContext().getDialect().getDatabaseProduct()) {
+        case MYSQL:
+            break;
+        default:
+            // Columns in error string are quoted differently on other
+            // databases.
+            return;
+        }
         // too few values in key
         assertQueryThrows(
             "select [Measures].[Unit Sales] on 0,\n"
             + "[Product].[Products].[Brand Name].&[43]&Walrus&Foo on 1\n"
             + "from [Warehouse and Sales]",
             "Wrong number of values in member key; &[43]&Walrus&Foo has 3 "
-            + "values, whereas level's key has 5 columns [product.brand_name, "
-            + "product_class.product_subcategory, "
-            + "product_class.product_category, "
-            + "product_class.product_department, "
-            + "product_class.product_family].");
+            + "values, whereas level's key has 5 columns ["
+            + "`product`.`brand_name`, "
+            + "`product_class`.`product_subcategory`, "
+            + "`product_class`.`product_category`, "
+            + "`product_class`.`product_department`, "
+            + "`product_class`.`product_family`].");
 
         // too few values in key
         assertQueryThrows(
             "select [Measures].[Unit Sales] on 0,\n"
             + "[Time].[Time2].[Quarter].&Q3 on 1\n"
             + "from [Warehouse and Sales]",
-            "Wrong number of values in member key; &Q3 has 1 values, whereas level's key has 2 columns [time_by_day.quarter, time_by_day.the_year].");
+            "Wrong number of values in member key; &Q3 has 1 values, whereas "
+            + "level's key has 2 columns ["
+            + "`time_by_day`.`quarter`, "
+            + "`time_by_day`.`the_year`].");
 
         // too many values in key
         assertQueryThrows(
             "select [Measures].[Unit Sales] on 0,\n"
             + "[Time].[Time2].[Quarter].&Q3&[1997]&ABC on 1\n"
             + "from [Warehouse and Sales]",
-            "Wrong number of values in member key; &Q3&[1997]&ABC has 3 values, whereas level's key has 2 columns [time_by_day.quarter, time_by_day.the_year].");
+            "Wrong number of values in member key; &Q3&[1997]&ABC has 3 "
+            + "values, whereas level's key has 2 columns ["
+            + "`time_by_day`.`quarter`, "
+            + "`time_by_day`.`the_year`].");
     }
 
     public void testCompoundKeyString() {
@@ -1548,7 +1563,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             .get("SameName").getHierarchies().get("SameName").getLevels()
             .get("SameName").getMembers().get(0);
         assertEquals(
-            "[SameName].[SameName].[SameName]",
+            "[SameName].[SameName].[SameName].[SameName]",
             member.getUniqueName());
 
         testContext.assertQueryThrows(
@@ -1562,7 +1577,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[SameName].[SameName].[SameName]}\n"
+            + "{[SameName].[SameName].[SameName].[SameName]}\n"
             + "Row #0: \n");
     }
 
@@ -1588,16 +1603,16 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "    Left([Customer Last Name].[Last Name].CurrentMember.Name, "
             + "1) = \"M\"),\n"
             + "  10)",
-            "[Customer Last Name].[Mabe]\n"
-            + "[Customer Last Name].[Macaluso]\n"
-            + "[Customer Last Name].[MacBride]\n"
-            + "[Customer Last Name].[Maccietto]\n"
-            + "[Customer Last Name].[MacDougal]\n"
-            + "[Customer Last Name].[Macha]\n"
-            + "[Customer Last Name].[Macias]\n"
-            + "[Customer Last Name].[Mack]\n"
-            + "[Customer Last Name].[Mackin]\n"
-            + "[Customer Last Name].[Maddalena]");
+            "[Customer Last Name].[Customer Last Name].[Mabe]\n"
+            + "[Customer Last Name].[Customer Last Name].[Macaluso]\n"
+            + "[Customer Last Name].[Customer Last Name].[MacBride]\n"
+            + "[Customer Last Name].[Customer Last Name].[Maccietto]\n"
+            + "[Customer Last Name].[Customer Last Name].[MacDougal]\n"
+            + "[Customer Last Name].[Customer Last Name].[Macha]\n"
+            + "[Customer Last Name].[Customer Last Name].[Macias]\n"
+            + "[Customer Last Name].[Customer Last Name].[Mack]\n"
+            + "[Customer Last Name].[Customer Last Name].[Mackin]\n"
+            + "[Customer Last Name].[Customer Last Name].[Maddalena]");
 
         testContext.assertAxisReturns(
             "order(\n"
@@ -1607,16 +1622,16 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "      Left([Customer Last Name].[Last Name].CurrentMember.Name, 1) = \"M\"),\n"
             + "  10),\n"
             + " [Customer Last Name].[Last Name].CurrentMember.Name)",
-            "[Customer Last Name].[Mabe]\n"
-            + "[Customer Last Name].[Macaluso]\n"
-            + "[Customer Last Name].[MacBride]\n"
-            + "[Customer Last Name].[Maccietto]\n"
-            + "[Customer Last Name].[MacDougal]\n"
-            + "[Customer Last Name].[Macha]\n"
-            + "[Customer Last Name].[Macias]\n"
-            + "[Customer Last Name].[Mack]\n"
-            + "[Customer Last Name].[Mackin]\n"
-            + "[Customer Last Name].[Maddalena]");
+            "[Customer Last Name].[Customer Last Name].[Mabe]\n"
+            + "[Customer Last Name].[Customer Last Name].[Macaluso]\n"
+            + "[Customer Last Name].[Customer Last Name].[MacBride]\n"
+            + "[Customer Last Name].[Customer Last Name].[Maccietto]\n"
+            + "[Customer Last Name].[Customer Last Name].[MacDougal]\n"
+            + "[Customer Last Name].[Customer Last Name].[Macha]\n"
+            + "[Customer Last Name].[Customer Last Name].[Macias]\n"
+            + "[Customer Last Name].[Customer Last Name].[Mack]\n"
+            + "[Customer Last Name].[Customer Last Name].[Mackin]\n"
+            + "[Customer Last Name].[Customer Last Name].[Maddalena]");
     }
 
     /**
@@ -1655,7 +1670,9 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         assertQueryReturns(
             "with member [Measures].[Foo] as 1\n"
             + "select from [Warehouse and Sales] where [Foo]",
-            "xx");
+            "Axis #0:\n"
+            + "{[Measures].[Foo]}\n"
+            + "1");
     }
 }
 

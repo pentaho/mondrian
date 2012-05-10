@@ -6241,9 +6241,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "{[Product].[Products].[Non-Consumable].[Household]}\n"
             + "{[Product].[Products].[Non-Consumable].[Periodicals]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
-            + "{[Gender].[All Gender]}\n"
+            + "{[Gender].[Gender].[F]}\n"
+            + "{[Gender].[Gender].[M]}\n"
+            + "{[Gender].[Gender].[All Gender]}\n"
             + "Row #0: 3,439\n"
             + "Row #0: 6,776\n"
             + "Row #0: 1,987\n"
@@ -6345,8 +6345,8 @@ public class BasicQueryTest extends FoodMartTestCase {
             null,
             ArrayMap.of(
                 "Sales",
-                "<ForeignKeyLink dimension='Customer_2' foreignKeyColumn='customer_id'/>")
-);
+                "<ForeignKeyLink dimension='Customer_2' "
+                + "foreignKeyColumn='customer_id'/>"));
 
         Result result = testContext.executeQuery(
             "WITH SET [#DataSet#] AS "

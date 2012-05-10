@@ -219,7 +219,7 @@ public class ScenarioTest extends FoodMartTestCase {
             + "from [Sales]\n"
             + "where [Scenario].[Scenario].[" + id + "]",
             "Axis #0:\n"
-            + "{[Scenario].[" + id + "]}\n"
+            + "{[Scenario].[Scenario].[" + id + "]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
@@ -235,7 +235,7 @@ public class ScenarioTest extends FoodMartTestCase {
             + "from [Sales]"
             + "where [Scenario].[" + id + "]",
             "Axis #0:\n"
-            + "{[Scenario].[" + id + "]}\n"
+            + "{[Scenario].[Scenario].[" + id + "]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
@@ -394,7 +394,7 @@ public class ScenarioTest extends FoodMartTestCase {
         final Scenario scenario = connection.createScenario();
         connection.setScenario(scenario);
         final String id = scenario.getId();
-        final String scenarioUniqueName = "[Scenario].[" + id + "]";
+        final String scenarioUniqueName = "[Scenario].[Scenario].[" + id + "]";
         final PreparedOlapStatement pstmt = connection.prepareOlapStatement(
             "select NON EMPTY [Gender].Members ON COLUMNS,\n"
             + "NON EMPTY Order([Product].[All Products].[Drink].Children,\n"

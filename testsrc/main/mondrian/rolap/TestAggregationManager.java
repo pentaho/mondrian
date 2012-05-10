@@ -992,7 +992,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "from [Sales] "
             + "where [Store Type].[Store Type].[Small Grocery]",
             "Axis #0:\n"
-            + "{[Store Type].[Small Grocery]}\n"
+            + "{[Store Type].[Store Type].[Small Grocery]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n");

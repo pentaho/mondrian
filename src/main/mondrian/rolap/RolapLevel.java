@@ -257,7 +257,8 @@ public class RolapLevel extends LevelBase {
                     + " columns "
                     + new AbstractList<String>() {
                         public String get(int index) {
-                            return keyExps.get(index).toSql();
+                            return keyExps.get(keyExps.size() - 1 - index)
+                                .toSql();
                         }
 
                         public int size() {

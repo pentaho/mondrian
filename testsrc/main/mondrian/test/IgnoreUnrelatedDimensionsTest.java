@@ -190,7 +190,7 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "{[Measures].[Unit Sales VM]}\n"
             + "{[Measures].[Store Cost]}\n"
             + "Axis #2:\n"
-            + "{[Product].[G]}\n"
+            + "{[Product].[Product].[G]}\n"
             + "Row #0: 266,773\n"
             + "Row #0: 225,627.23\n");
     }
@@ -353,8 +353,8 @@ public class IgnoreUnrelatedDimensionsTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Total Sales]}\n"
             + "Axis #2:\n"
-            + "{[Product].[AggSP1_1]}\n"
-            + "{[Product].[AggSP1_2]}\n"
+            + "{[Product].[Product].[AggSP1_1]}\n"
+            + "{[Product].[Product].[AggSP1_2]}\n"
             + "Row #0: 762,009.02\n"
             + "Row #1: 762,009.02\n");
         prop.IgnoreMeasureForNonJoiningDimension.set(origIgnoreMeasure);

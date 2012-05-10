@@ -2,15 +2,15 @@
 <Root>
     <TestCase name="testFilter">
         <Resource name="before">
-            <![CDATA[Union(Member([Retail].[OR]), Member([Retail].[Zacatecas].[Hidalgo]), Member([Retail].[CA].[Alameda].[HQ]), Range([Retail].[WA].[Bremerton] inclusive to [Retail].[Yucatan].[Merida] inclusive), Range([Retail].[DF] inclusive to [Retail].[Jalisco] inclusive))]]>
+            <![CDATA[Union(Member([Retail].[Retail].[OR]), Member([Retail].[Retail].[Zacatecas].[Hidalgo]), Member([Retail].[Retail].[CA].[Alameda].[HQ]), Range([Retail].[Retail].[WA].[Bremerton] inclusive to [Retail].[Retail].[Yucatan].[Merida] inclusive), Range([Retail].[Retail].[DF] inclusive to [Retail].[Retail].[Jalisco] inclusive))]]>
         </Resource>
         <Resource name="after">
-            <![CDATA[Union(Member([Retail].[OR]), Range([Retail].[DF] inclusive to [Retail].[Jalisco] inclusive))]]>
+            <![CDATA[Union(Member([Retail].[Retail].[OR]), Range([Retail].[Retail].[DF] inclusive to [Retail].[Retail].[Jalisco] inclusive))]]>
         </Resource>
     </TestCase>
     <TestCase name="testSetPropertyCommandOnLeafMember">
         <Resource name="props before">
-            <![CDATA[[Store].[USA].[CA].[San Francisco].[Store 14] {
+            <![CDATA[[Store].[Store].[USA].[CA].[San Francisco].[Store 14] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Strehlo],
   [Store Sqft]=[22478],
@@ -28,12 +28,12 @@
 Axis #1:
 {[Measures].[Unit Sales]}
 Axis #2:
-{[Store].[USA].[CA].[San Francisco].[Store 14]}
+{[Store].[Store].[USA].[CA].[San Francisco].[Store 14]}
 Row #0: 2,117
 ]]>
         </Resource>
         <Resource name="props after">
-            <![CDATA[[Store].[USA].[CA].[San Francisco].[Store 14] {
+            <![CDATA[[Store].[Store].[USA].[CA].[San Francisco].[Store 14] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Higgins],
   [Store Sqft]=[6000],
@@ -48,279 +48,279 @@ Row #0: 2,117
     </TestCase>
     <TestCase name="testSetPropertyCommandOnNonLeafMember">
         <Resource name="props before">
-            <![CDATA[[Retail].[All Retails] {}
+            <![CDATA[[Retail].[Retail].[All Retails] {}
 
-[Retail].[BC] {
+[Retail].[Retail].[BC] {
   [Country]=[Canada]}
 
-[Retail].[BC].[Vancouver] {
+[Retail].[Retail].[BC].[Vancouver] {
   [Population]=[55555]}
 
-[Retail].[BC].[Vancouver].[Store 19] {
+[Retail].[Retail].[BC].[Vancouver].[Store 19] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Ruth],
   [Store Sqft]=[23112],
   [Has coffee bar]=[true],
   [Street address]=[6644 Sudance Drive]}
 
-[Retail].[BC].[Victoria] {
+[Retail].[Retail].[BC].[Victoria] {
   [Population]=[55555]}
 
-[Retail].[BC].[Victoria].[Store 20] {
+[Retail].[Retail].[BC].[Victoria].[Store 20] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Cobb],
   [Store Sqft]=[34452],
   [Has coffee bar]=[true],
   [Street address]=[3706 Marvelle Ln]}
 
-[Retail].[CA] {
+[Retail].[Retail].[CA] {
   [Country]=[USA]}
 
-[Retail].[CA].[Alameda] {
+[Retail].[Retail].[CA].[Alameda] {
   [Population]=[55555]}
 
-[Retail].[CA].[Alameda].[HQ] {
+[Retail].[Retail].[CA].[Alameda].[HQ] {
   [Store Type]=[HeadQuarters],
   [Store Manager]=[null],
   [Store Sqft]=[null],
   [Has coffee bar]=[false],
   [Street address]=[1 Alameda Way]}
 
-[Retail].[CA].[Beverly Hills] {
+[Retail].[Retail].[CA].[Beverly Hills] {
   [Population]=[55555]}
 
-[Retail].[CA].[Beverly Hills].[Store 6] {
+[Retail].[Retail].[CA].[Beverly Hills].[Store 6] {
   [Store Type]=[Gourmet Supermarket],
   [Store Manager]=[Maris],
   [Store Sqft]=[23688],
   [Has coffee bar]=[true],
   [Street address]=[5495 Mitchell Canyon Road]}
 
-[Retail].[CA].[Los Angeles] {
+[Retail].[Retail].[CA].[Los Angeles] {
   [Population]=[55555]}
 
-[Retail].[CA].[Los Angeles].[Store 7] {
+[Retail].[Retail].[CA].[Los Angeles].[Store 7] {
   [Store Type]=[Supermarket],
   [Store Manager]=[White],
   [Store Sqft]=[23598],
   [Has coffee bar]=[false],
   [Street address]=[1077 Wharf Drive]}
 
-[Retail].[CA].[San Diego] {
+[Retail].[Retail].[CA].[San Diego] {
   [Population]=[55555]}
 
-[Retail].[CA].[San Diego].[Store 24] {
+[Retail].[Retail].[CA].[San Diego].[Store 24] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Byrd],
   [Store Sqft]=[null],
   [Has coffee bar]=[true],
   [Street address]=[2342 Waltham St.]}
 
-[Retail].[CA].[San Francisco] {
+[Retail].[Retail].[CA].[San Francisco] {
   [Population]=[55555]}
 
-[Retail].[CA].[San Francisco].[Store 14] {
+[Retail].[Retail].[CA].[San Francisco].[Store 14] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Strehlo],
   [Store Sqft]=[22478],
   [Has coffee bar]=[true],
   [Street address]=[4365 Indigo Ct]}
 
-[Retail].[DF] {
+[Retail].[Retail].[DF] {
   [Country]=[Mexico]}
 
-[Retail].[DF].[Mexico City] {
+[Retail].[Retail].[DF].[Mexico City] {
   [Population]=[55555]}
 
-[Retail].[DF].[Mexico City].[Store 9] {
+[Retail].[Retail].[DF].[Mexico City].[Store 9] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Stuber],
   [Store Sqft]=[36509],
   [Has coffee bar]=[false],
   [Street address]=[1872 El Pintado Road]}
 
-[Retail].[DF].[San Andres] {
+[Retail].[Retail].[DF].[San Andres] {
   [Population]=[55555]}
 
-[Retail].[DF].[San Andres].[Store 21] {
+[Retail].[Retail].[DF].[San Andres].[Store 21] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Jones],
   [Store Sqft]=[null],
   [Has coffee bar]=[true],
   [Street address]=[4093 Steven Circle]}
 
-[Retail].[Guerrero] {
+[Retail].[Retail].[Guerrero] {
   [Country]=[Mexico]}
 
-[Retail].[Guerrero].[Acapulco] {
+[Retail].[Retail].[Guerrero].[Acapulco] {
   [Population]=[55555]}
 
-[Retail].[Guerrero].[Acapulco].[Store 1] {
+[Retail].[Retail].[Guerrero].[Acapulco].[Store 1] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Jones],
   [Store Sqft]=[23593],
   [Has coffee bar]=[false],
   [Street address]=[2853 Bailey Rd]}
 
-[Retail].[Jalisco] {
+[Retail].[Retail].[Jalisco] {
   [Country]=[Mexico]}
 
-[Retail].[Jalisco].[Guadalajara] {
+[Retail].[Retail].[Jalisco].[Guadalajara] {
   [Population]=[55555]}
 
-[Retail].[Jalisco].[Guadalajara].[Store 5] {
+[Retail].[Retail].[Jalisco].[Guadalajara].[Store 5] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Green],
   [Store Sqft]=[24597],
   [Has coffee bar]=[true],
   [Street address]=[1250 Coggins Drive]}
 
-[Retail].[OR] {
+[Retail].[Retail].[OR] {
   [Country]=[USA]}
 
-[Retail].[OR].[Portland] {
+[Retail].[Retail].[OR].[Portland] {
   [Population]=[55555]}
 
-[Retail].[OR].[Portland].[Store 11] {
+[Retail].[Retail].[OR].[Portland].[Store 11] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Erickson],
   [Store Sqft]=[20319],
   [Has coffee bar]=[false],
   [Street address]=[5371 Holland Circle]}
 
-[Retail].[OR].[Salem] {
+[Retail].[Retail].[OR].[Salem] {
   [Population]=[55555]}
 
-[Retail].[OR].[Salem].[Store 13] {
+[Retail].[Retail].[OR].[Salem].[Store 13] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Inmon],
   [Store Sqft]=[27694],
   [Has coffee bar]=[true],
   [Street address]=[5179 Valley Ave]}
 
-[Retail].[Veracruz] {
+[Retail].[Retail].[Veracruz] {
   [Country]=[Mexico]}
 
-[Retail].[Veracruz].[Orizaba] {
+[Retail].[Retail].[Veracruz].[Orizaba] {
   [Population]=[55555]}
 
-[Retail].[Veracruz].[Orizaba].[Store 10] {
+[Retail].[Retail].[Veracruz].[Orizaba].[Store 10] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Merz],
   [Store Sqft]=[34791],
   [Has coffee bar]=[false],
   [Street address]=[7894 Rotherham Dr]}
 
-[Retail].[WA] {
+[Retail].[Retail].[WA] {
   [Country]=[USA]}
 
-[Retail].[WA].[Bellingham] {
+[Retail].[Retail].[WA].[Bellingham] {
   [Population]=[55555]}
 
-[Retail].[WA].[Bellingham].[Store 2] {
+[Retail].[Retail].[WA].[Bellingham].[Store 2] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Smith],
   [Store Sqft]=[28206],
   [Has coffee bar]=[true],
   [Street address]=[5203 Catanzaro Way]}
 
-[Retail].[WA].[Bremerton] {
+[Retail].[Retail].[WA].[Bremerton] {
   [Population]=[55555]}
 
-[Retail].[WA].[Bremerton].[Store 3] {
+[Retail].[Retail].[WA].[Bremerton].[Store 3] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Davis],
   [Store Sqft]=[39696],
   [Has coffee bar]=[false],
   [Street address]=[1501 Ramsey Circle]}
 
-[Retail].[WA].[Seattle] {
+[Retail].[Retail].[WA].[Seattle] {
   [Population]=[55555]}
 
-[Retail].[WA].[Seattle].[Store 15] {
+[Retail].[Retail].[WA].[Seattle].[Store 15] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Ollom],
   [Store Sqft]=[21215],
   [Has coffee bar]=[true],
   [Street address]=[5006 Highland Drive]}
 
-[Retail].[WA].[Spokane] {
+[Retail].[Retail].[WA].[Spokane] {
   [Population]=[55555]}
 
-[Retail].[WA].[Spokane].[Store 16] {
+[Retail].[Retail].[WA].[Spokane].[Store 16] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Mantle],
   [Store Sqft]=[30268],
   [Has coffee bar]=[false],
   [Street address]=[5922 La Salle Ct]}
 
-[Retail].[WA].[Tacoma] {
+[Retail].[Retail].[WA].[Tacoma] {
   [Population]=[55555]}
 
-[Retail].[WA].[Tacoma].[Store 17] {
+[Retail].[Retail].[WA].[Tacoma].[Store 17] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Mays],
   [Store Sqft]=[33858],
   [Has coffee bar]=[true],
   [Street address]=[490 Risdon Road]}
 
-[Retail].[WA].[Walla Walla] {
+[Retail].[Retail].[WA].[Walla Walla] {
   [Population]=[55555]}
 
-[Retail].[WA].[Walla Walla].[Store 22] {
+[Retail].[Retail].[WA].[Walla Walla].[Store 22] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Byrg],
   [Store Sqft]=[null],
   [Has coffee bar]=[false],
   [Street address]=[9606 Julpum Loop]}
 
-[Retail].[WA].[Yakima] {
+[Retail].[Retail].[WA].[Yakima] {
   [Population]=[55555]}
 
-[Retail].[WA].[Yakima].[Store 23] {
+[Retail].[Retail].[WA].[Yakima].[Store 23] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Johnson],
   [Store Sqft]=[null],
   [Has coffee bar]=[false],
   [Street address]=[3920 Noah Court]}
 
-[Retail].[Yucatan] {
+[Retail].[Retail].[Yucatan] {
   [Country]=[Mexico]}
 
-[Retail].[Yucatan].[Merida] {
+[Retail].[Retail].[Yucatan].[Merida] {
   [Population]=[55555]}
 
-[Retail].[Yucatan].[Merida].[Store 8] {
+[Retail].[Retail].[Yucatan].[Merida].[Store 8] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Williams],
   [Store Sqft]=[30797],
   [Has coffee bar]=[true],
   [Street address]=[3173 Buena Vista Ave]}
 
-[Retail].[Zacatecas] {
+[Retail].[Retail].[Zacatecas] {
   [Country]=[Mexico]}
 
-[Retail].[Zacatecas].[Camacho] {
+[Retail].[Retail].[Zacatecas].[Camacho] {
   [Population]=[55555]}
 
-[Retail].[Zacatecas].[Camacho].[Store 4] {
+[Retail].[Retail].[Zacatecas].[Camacho].[Store 4] {
   [Store Type]=[Gourmet Supermarket],
   [Store Manager]=[Johnson],
   [Store Sqft]=[23759],
   [Has coffee bar]=[true],
   [Street address]=[433 St George Dr]}
 
-[Retail].[Zacatecas].[Hidalgo] {
+[Retail].[Retail].[Zacatecas].[Hidalgo] {
   [Population]=[55555]}
 
-[Retail].[Zacatecas].[Hidalgo].[Store 12] {
+[Retail].[Retail].[Zacatecas].[Hidalgo].[Store 12] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Kalman],
   [Store Sqft]=[30584],
   [Has coffee bar]=[true],
   [Street address]=[1120 Westchester Pl]}
 
-[Retail].[Zacatecas].[Hidalgo].[Store 18] {
+[Retail].[Retail].[Zacatecas].[Hidalgo].[Store 18] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Brown],
   [Store Sqft]=[38382],
@@ -335,66 +335,66 @@ Row #0: 2,117
 Axis #1:
 {[Measures].[Unit Sales]}
 Axis #2:
-{[Retail].[All Retails]}
-{[Retail].[BC]}
-{[Retail].[BC].[Vancouver]}
-{[Retail].[BC].[Vancouver].[Store 19]}
-{[Retail].[BC].[Victoria]}
-{[Retail].[BC].[Victoria].[Store 20]}
-{[Retail].[CA]}
-{[Retail].[CA].[Alameda]}
-{[Retail].[CA].[Alameda].[HQ]}
-{[Retail].[CA].[Beverly Hills]}
-{[Retail].[CA].[Beverly Hills].[Store 6]}
-{[Retail].[CA].[Los Angeles]}
-{[Retail].[CA].[Los Angeles].[Store 7]}
-{[Retail].[CA].[San Diego]}
-{[Retail].[CA].[San Diego].[Store 24]}
-{[Retail].[CA].[San Francisco]}
-{[Retail].[CA].[San Francisco].[Store 14]}
-{[Retail].[DF]}
-{[Retail].[DF].[Mexico City]}
-{[Retail].[DF].[Mexico City].[Store 9]}
-{[Retail].[DF].[San Andres]}
-{[Retail].[DF].[San Andres].[Store 21]}
-{[Retail].[Guerrero]}
-{[Retail].[Guerrero].[Acapulco]}
-{[Retail].[Guerrero].[Acapulco].[Store 1]}
-{[Retail].[Jalisco]}
-{[Retail].[Jalisco].[Guadalajara]}
-{[Retail].[Jalisco].[Guadalajara].[Store 5]}
-{[Retail].[OR]}
-{[Retail].[OR].[Portland]}
-{[Retail].[OR].[Portland].[Store 11]}
-{[Retail].[OR].[Salem]}
-{[Retail].[OR].[Salem].[Store 13]}
-{[Retail].[Veracruz]}
-{[Retail].[Veracruz].[Orizaba]}
-{[Retail].[Veracruz].[Orizaba].[Store 10]}
-{[Retail].[WA]}
-{[Retail].[WA].[Bellingham]}
-{[Retail].[WA].[Bellingham].[Store 2]}
-{[Retail].[WA].[Bremerton]}
-{[Retail].[WA].[Bremerton].[Store 3]}
-{[Retail].[WA].[Seattle]}
-{[Retail].[WA].[Seattle].[Store 15]}
-{[Retail].[WA].[Spokane]}
-{[Retail].[WA].[Spokane].[Store 16]}
-{[Retail].[WA].[Tacoma]}
-{[Retail].[WA].[Tacoma].[Store 17]}
-{[Retail].[WA].[Walla Walla]}
-{[Retail].[WA].[Walla Walla].[Store 22]}
-{[Retail].[WA].[Yakima]}
-{[Retail].[WA].[Yakima].[Store 23]}
-{[Retail].[Yucatan]}
-{[Retail].[Yucatan].[Merida]}
-{[Retail].[Yucatan].[Merida].[Store 8]}
-{[Retail].[Zacatecas]}
-{[Retail].[Zacatecas].[Camacho]}
-{[Retail].[Zacatecas].[Camacho].[Store 4]}
-{[Retail].[Zacatecas].[Hidalgo]}
-{[Retail].[Zacatecas].[Hidalgo].[Store 12]}
-{[Retail].[Zacatecas].[Hidalgo].[Store 18]}
+{[Retail].[Retail].[All Retails]}
+{[Retail].[Retail].[BC]}
+{[Retail].[Retail].[BC].[Vancouver]}
+{[Retail].[Retail].[BC].[Vancouver].[Store 19]}
+{[Retail].[Retail].[BC].[Victoria]}
+{[Retail].[Retail].[BC].[Victoria].[Store 20]}
+{[Retail].[Retail].[CA]}
+{[Retail].[Retail].[CA].[Alameda]}
+{[Retail].[Retail].[CA].[Alameda].[HQ]}
+{[Retail].[Retail].[CA].[Beverly Hills]}
+{[Retail].[Retail].[CA].[Beverly Hills].[Store 6]}
+{[Retail].[Retail].[CA].[Los Angeles]}
+{[Retail].[Retail].[CA].[Los Angeles].[Store 7]}
+{[Retail].[Retail].[CA].[San Diego]}
+{[Retail].[Retail].[CA].[San Diego].[Store 24]}
+{[Retail].[Retail].[CA].[San Francisco]}
+{[Retail].[Retail].[CA].[San Francisco].[Store 14]}
+{[Retail].[Retail].[DF]}
+{[Retail].[Retail].[DF].[Mexico City]}
+{[Retail].[Retail].[DF].[Mexico City].[Store 9]}
+{[Retail].[Retail].[DF].[San Andres]}
+{[Retail].[Retail].[DF].[San Andres].[Store 21]}
+{[Retail].[Retail].[Guerrero]}
+{[Retail].[Retail].[Guerrero].[Acapulco]}
+{[Retail].[Retail].[Guerrero].[Acapulco].[Store 1]}
+{[Retail].[Retail].[Jalisco]}
+{[Retail].[Retail].[Jalisco].[Guadalajara]}
+{[Retail].[Retail].[Jalisco].[Guadalajara].[Store 5]}
+{[Retail].[Retail].[OR]}
+{[Retail].[Retail].[OR].[Portland]}
+{[Retail].[Retail].[OR].[Portland].[Store 11]}
+{[Retail].[Retail].[OR].[Salem]}
+{[Retail].[Retail].[OR].[Salem].[Store 13]}
+{[Retail].[Retail].[Veracruz]}
+{[Retail].[Retail].[Veracruz].[Orizaba]}
+{[Retail].[Retail].[Veracruz].[Orizaba].[Store 10]}
+{[Retail].[Retail].[WA]}
+{[Retail].[Retail].[WA].[Bellingham]}
+{[Retail].[Retail].[WA].[Bellingham].[Store 2]}
+{[Retail].[Retail].[WA].[Bremerton]}
+{[Retail].[Retail].[WA].[Bremerton].[Store 3]}
+{[Retail].[Retail].[WA].[Seattle]}
+{[Retail].[Retail].[WA].[Seattle].[Store 15]}
+{[Retail].[Retail].[WA].[Spokane]}
+{[Retail].[Retail].[WA].[Spokane].[Store 16]}
+{[Retail].[Retail].[WA].[Tacoma]}
+{[Retail].[Retail].[WA].[Tacoma].[Store 17]}
+{[Retail].[Retail].[WA].[Walla Walla]}
+{[Retail].[Retail].[WA].[Walla Walla].[Store 22]}
+{[Retail].[Retail].[WA].[Yakima]}
+{[Retail].[Retail].[WA].[Yakima].[Store 23]}
+{[Retail].[Retail].[Yucatan]}
+{[Retail].[Retail].[Yucatan].[Merida]}
+{[Retail].[Retail].[Yucatan].[Merida].[Store 8]}
+{[Retail].[Retail].[Zacatecas]}
+{[Retail].[Retail].[Zacatecas].[Camacho]}
+{[Retail].[Retail].[Zacatecas].[Camacho].[Store 4]}
+{[Retail].[Retail].[Zacatecas].[Hidalgo]}
+{[Retail].[Retail].[Zacatecas].[Hidalgo].[Store 12]}
+{[Retail].[Retail].[Zacatecas].[Hidalgo].[Store 18]}
 Row #0: 266,773
 Row #1: 
 Row #2: 
@@ -458,279 +458,279 @@ Row #59:
 ]]>
         </Resource>
         <Resource name="props after">
-            <![CDATA[[Retail].[All Retails] {}
+            <![CDATA[[Retail].[Retail].[All Retails] {}
 
-[Retail].[BC] {
+[Retail].[Retail].[BC] {
   [Country]=[Canada]}
 
-[Retail].[BC].[Vancouver] {
+[Retail].[Retail].[BC].[Vancouver] {
   [Population]=[55555]}
 
-[Retail].[BC].[Vancouver].[Store 19] {
+[Retail].[Retail].[BC].[Vancouver].[Store 19] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Ruth],
   [Store Sqft]=[23112],
   [Has coffee bar]=[true],
   [Street address]=[6644 Sudance Drive]}
 
-[Retail].[BC].[Victoria] {
+[Retail].[Retail].[BC].[Victoria] {
   [Population]=[55555]}
 
-[Retail].[BC].[Victoria].[Store 20] {
+[Retail].[Retail].[BC].[Victoria].[Store 20] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Cobb],
   [Store Sqft]=[34452],
   [Has coffee bar]=[true],
   [Street address]=[3706 Marvelle Ln]}
 
-[Retail].[CA] {
+[Retail].[Retail].[CA] {
   [Country]=[USA]}
 
-[Retail].[CA].[Alameda] {
+[Retail].[Retail].[CA].[Alameda] {
   [Population]=[55555]}
 
-[Retail].[CA].[Alameda].[HQ] {
+[Retail].[Retail].[CA].[Alameda].[HQ] {
   [Store Type]=[HeadQuarters],
   [Store Manager]=[null],
   [Store Sqft]=[123],
   [Has coffee bar]=[true],
   [Street address]=[1 Alameda Way]}
 
-[Retail].[CA].[Beverly Hills] {
+[Retail].[Retail].[CA].[Beverly Hills] {
   [Population]=[55555]}
 
-[Retail].[CA].[Beverly Hills].[Store 6] {
+[Retail].[Retail].[CA].[Beverly Hills].[Store 6] {
   [Store Type]=[Gourmet Supermarket],
   [Store Manager]=[Maris],
   [Store Sqft]=[23688],
   [Has coffee bar]=[true],
   [Street address]=[5495 Mitchell Canyon Road]}
 
-[Retail].[CA].[Los Angeles] {
+[Retail].[Retail].[CA].[Los Angeles] {
   [Population]=[55555]}
 
-[Retail].[CA].[Los Angeles].[Store 7] {
+[Retail].[Retail].[CA].[Los Angeles].[Store 7] {
   [Store Type]=[Supermarket],
   [Store Manager]=[White],
   [Store Sqft]=[23598],
   [Has coffee bar]=[false],
   [Street address]=[1077 Wharf Drive]}
 
-[Retail].[CA].[San Diego] {
+[Retail].[Retail].[CA].[San Diego] {
   [Population]=[55555]}
 
-[Retail].[CA].[San Diego].[Store 24] {
+[Retail].[Retail].[CA].[San Diego].[Store 24] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Byrd],
   [Store Sqft]=[null],
   [Has coffee bar]=[true],
   [Street address]=[2342 Waltham St.]}
 
-[Retail].[CA].[San Francisco] {
+[Retail].[Retail].[CA].[San Francisco] {
   [Population]=[55555]}
 
-[Retail].[CA].[San Francisco].[Store 14] {
+[Retail].[Retail].[CA].[San Francisco].[Store 14] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Strehlo],
   [Store Sqft]=[22478],
   [Has coffee bar]=[true],
   [Street address]=[4365 Indigo Ct]}
 
-[Retail].[DF] {
+[Retail].[Retail].[DF] {
   [Country]=[Mexico]}
 
-[Retail].[DF].[Mexico City] {
+[Retail].[Retail].[DF].[Mexico City] {
   [Population]=[55555]}
 
-[Retail].[DF].[Mexico City].[Store 9] {
+[Retail].[Retail].[DF].[Mexico City].[Store 9] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Stuber],
   [Store Sqft]=[123],
   [Has coffee bar]=[true],
   [Street address]=[1872 El Pintado Road]}
 
-[Retail].[DF].[San Andres] {
+[Retail].[Retail].[DF].[San Andres] {
   [Population]=[55555]}
 
-[Retail].[DF].[San Andres].[Store 21] {
+[Retail].[Retail].[DF].[San Andres].[Store 21] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Jones],
   [Store Sqft]=[123],
   [Has coffee bar]=[true],
   [Street address]=[4093 Steven Circle]}
 
-[Retail].[Guerrero] {
+[Retail].[Retail].[Guerrero] {
   [Country]=[Mexico]}
 
-[Retail].[Guerrero].[Acapulco] {
+[Retail].[Retail].[Guerrero].[Acapulco] {
   [Population]=[55555]}
 
-[Retail].[Guerrero].[Acapulco].[Store 1] {
+[Retail].[Retail].[Guerrero].[Acapulco].[Store 1] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Jones],
   [Store Sqft]=[123],
   [Has coffee bar]=[true],
   [Street address]=[2853 Bailey Rd]}
 
-[Retail].[Jalisco] {
+[Retail].[Retail].[Jalisco] {
   [Country]=[Mexico]}
 
-[Retail].[Jalisco].[Guadalajara] {
+[Retail].[Retail].[Jalisco].[Guadalajara] {
   [Population]=[55555]}
 
-[Retail].[Jalisco].[Guadalajara].[Store 5] {
+[Retail].[Retail].[Jalisco].[Guadalajara].[Store 5] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Green],
   [Store Sqft]=[123],
   [Has coffee bar]=[true],
   [Street address]=[1250 Coggins Drive]}
 
-[Retail].[OR] {
+[Retail].[Retail].[OR] {
   [Country]=[USA]}
 
-[Retail].[OR].[Portland] {
+[Retail].[Retail].[OR].[Portland] {
   [Population]=[55555]}
 
-[Retail].[OR].[Portland].[Store 11] {
+[Retail].[Retail].[OR].[Portland].[Store 11] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Erickson],
   [Store Sqft]=[20319],
   [Has coffee bar]=[false],
   [Street address]=[5371 Holland Circle]}
 
-[Retail].[OR].[Salem] {
+[Retail].[Retail].[OR].[Salem] {
   [Population]=[55555]}
 
-[Retail].[OR].[Salem].[Store 13] {
+[Retail].[Retail].[OR].[Salem].[Store 13] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Inmon],
   [Store Sqft]=[27694],
   [Has coffee bar]=[true],
   [Street address]=[5179 Valley Ave]}
 
-[Retail].[Veracruz] {
+[Retail].[Retail].[Veracruz] {
   [Country]=[Mexico]}
 
-[Retail].[Veracruz].[Orizaba] {
+[Retail].[Retail].[Veracruz].[Orizaba] {
   [Population]=[55555]}
 
-[Retail].[Veracruz].[Orizaba].[Store 10] {
+[Retail].[Retail].[Veracruz].[Orizaba].[Store 10] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Merz],
   [Store Sqft]=[34791],
   [Has coffee bar]=[false],
   [Street address]=[7894 Rotherham Dr]}
 
-[Retail].[WA] {
+[Retail].[Retail].[WA] {
   [Country]=[USA]}
 
-[Retail].[WA].[Bellingham] {
+[Retail].[Retail].[WA].[Bellingham] {
   [Population]=[55555]}
 
-[Retail].[WA].[Bellingham].[Store 2] {
+[Retail].[Retail].[WA].[Bellingham].[Store 2] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Smith],
   [Store Sqft]=[28206],
   [Has coffee bar]=[true],
   [Street address]=[5203 Catanzaro Way]}
 
-[Retail].[WA].[Bremerton] {
+[Retail].[Retail].[WA].[Bremerton] {
   [Population]=[55555]}
 
-[Retail].[WA].[Bremerton].[Store 3] {
+[Retail].[Retail].[WA].[Bremerton].[Store 3] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Davis],
   [Store Sqft]=[39696],
   [Has coffee bar]=[false],
   [Street address]=[1501 Ramsey Circle]}
 
-[Retail].[WA].[Seattle] {
+[Retail].[Retail].[WA].[Seattle] {
   [Population]=[55555]}
 
-[Retail].[WA].[Seattle].[Store 15] {
+[Retail].[Retail].[WA].[Seattle].[Store 15] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Ollom],
   [Store Sqft]=[21215],
   [Has coffee bar]=[true],
   [Street address]=[5006 Highland Drive]}
 
-[Retail].[WA].[Spokane] {
+[Retail].[Retail].[WA].[Spokane] {
   [Population]=[55555]}
 
-[Retail].[WA].[Spokane].[Store 16] {
+[Retail].[Retail].[WA].[Spokane].[Store 16] {
   [Store Type]=[Supermarket],
   [Store Manager]=[Mantle],
   [Store Sqft]=[30268],
   [Has coffee bar]=[false],
   [Street address]=[5922 La Salle Ct]}
 
-[Retail].[WA].[Tacoma] {
+[Retail].[Retail].[WA].[Tacoma] {
   [Population]=[55555]}
 
-[Retail].[WA].[Tacoma].[Store 17] {
+[Retail].[Retail].[WA].[Tacoma].[Store 17] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Mays],
   [Store Sqft]=[33858],
   [Has coffee bar]=[true],
   [Street address]=[490 Risdon Road]}
 
-[Retail].[WA].[Walla Walla] {
+[Retail].[Retail].[WA].[Walla Walla] {
   [Population]=[55555]}
 
-[Retail].[WA].[Walla Walla].[Store 22] {
+[Retail].[Retail].[WA].[Walla Walla].[Store 22] {
   [Store Type]=[Small Grocery],
   [Store Manager]=[Byrg],
   [Store Sqft]=[null],
   [Has coffee bar]=[false],
   [Street address]=[9606 Julpum Loop]}
 
-[Retail].[WA].[Yakima] {
+[Retail].[Retail].[WA].[Yakima] {
   [Population]=[55555]}
 
-[Retail].[WA].[Yakima].[Store 23] {
+[Retail].[Retail].[WA].[Yakima].[Store 23] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Johnson],
   [Store Sqft]=[null],
   [Has coffee bar]=[false],
   [Street address]=[3920 Noah Court]}
 
-[Retail].[Yucatan] {
+[Retail].[Retail].[Yucatan] {
   [Country]=[Mexico]}
 
-[Retail].[Yucatan].[Merida] {
+[Retail].[Retail].[Yucatan].[Merida] {
   [Population]=[55555]}
 
-[Retail].[Yucatan].[Merida].[Store 8] {
+[Retail].[Retail].[Yucatan].[Merida].[Store 8] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Williams],
   [Store Sqft]=[30797],
   [Has coffee bar]=[true],
   [Street address]=[3173 Buena Vista Ave]}
 
-[Retail].[Zacatecas] {
+[Retail].[Retail].[Zacatecas] {
   [Country]=[Mexico]}
 
-[Retail].[Zacatecas].[Camacho] {
+[Retail].[Retail].[Zacatecas].[Camacho] {
   [Population]=[55555]}
 
-[Retail].[Zacatecas].[Camacho].[Store 4] {
+[Retail].[Retail].[Zacatecas].[Camacho].[Store 4] {
   [Store Type]=[Gourmet Supermarket],
   [Store Manager]=[Johnson],
   [Store Sqft]=[23759],
   [Has coffee bar]=[true],
   [Street address]=[433 St George Dr]}
 
-[Retail].[Zacatecas].[Hidalgo] {
+[Retail].[Retail].[Zacatecas].[Hidalgo] {
   [Population]=[55555]}
 
-[Retail].[Zacatecas].[Hidalgo].[Store 12] {
+[Retail].[Retail].[Zacatecas].[Hidalgo].[Store 12] {
   [Store Type]=[Deluxe Supermarket],
   [Store Manager]=[Kalman],
   [Store Sqft]=[30584],
   [Has coffee bar]=[true],
   [Street address]=[1120 Westchester Pl]}
 
-[Retail].[Zacatecas].[Hidalgo].[Store 18] {
+[Retail].[Retail].[Zacatecas].[Hidalgo].[Store 18] {
   [Store Type]=[Mid-Size Grocery],
   [Store Manager]=[Brown],
   [Store Sqft]=[38382],

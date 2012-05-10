@@ -15,6 +15,7 @@ import mondrian.xmla.XmlaHandler;
 import org.olap4j.*;
 import org.olap4j.Cell;
 import org.olap4j.Position;
+import org.olap4j.impl.ArrayMap;
 import org.olap4j.mdx.IdentifierNode;
 import org.olap4j.metadata.*;
 import org.olap4j.metadata.Cube;
@@ -378,6 +379,71 @@ public class Olap4jTest extends FoodMartTestCase {
         }
         assertEquals(1, n);
         assertEquals(1, n2);
+    }
+
+    /**
+     * Test case for bug <a href="http://jira.pentaho.com/browse/MONDRIAN-1124">
+     * MONDRIAN-1124, "Unique name of hierarchy should always have 2 parts, even
+     * if dimension &amp; hierarchy have same name"</a>.
+     *
+     * @throws java.sql.SQLException on error
+     */
+    public void testUniqueName() throws SQLException {
+        // Things are straightforward if dimension, hierarchy, level have
+        // distinct names. This worked even before MONDRIAN-1124 was fixed.
+        if (false) {
+        CellSet x =
+            getTestContext().getOlap4jConnection().createStatement()
+                .executeOlapQuery(
+                    "select [Store].[Stores] on 0\n"
+                    + "from [Sales]");
+        Member member =
+            x.getAxes().get(0).getPositions().get(0).getMembers().get(0);
+        assertEquals("[Store]", member.getDimension().getUniqueName());
+        assertEquals("[Store].[Stores]", member.getHierarchy().getUniqueName());
+        assertEquals(
+            "[Store].[Stores].[(All)]", member.getLevel().getUniqueName());
+        assertEquals("[Store].[Stores].[All Stores]", member.getUniqueName());
+        }
+
+        Member member;
+        CellSet y =
+            getTestContext()
+                .createSubstitutingCube(
+                    "Sales",
+                    "<Dimension name='Store Type' key='Store Id' table='store'>\n"
+                    + "  <Attributes>\n"
+                    + "    <Attribute name='Store Id' keyColumn='store_id'/>\n"
+                    + "    <Attribute name='Store Type' table='store' keyColumn='store_type'/>\n"
+                    + "  </Attributes>\n"
+                    + "  <Hierarchies>\n"
+                    + "    <Hierarchy name='Store Type'>\n"
+                    + "      <Level attribute='Store Type'/>\n"
+                    + "    </Hierarchy>\n"
+                    + "  </Hierarchies>\n"
+                    + "</Dimension>\n",
+                    null,
+                    null,
+                    null,
+                    ArrayMap.of(
+                        "Sales",
+                        "<ForeignKeyLink dimension='Store Type' "
+                        + "foreignKeyColumn='store_id'/>"))
+                .getOlap4jConnection().createStatement()
+                .executeOlapQuery(
+                    "select [Store Type].[Store Type] on 0\n"
+                    + "from [Sales]");
+        member =
+            y.getAxes().get(0).getPositions().get(0).getMembers().get(0);
+        assertEquals("[Store Type]", member.getDimension().getUniqueName());
+        assertEquals(
+            "[Store Type].[Store Type]", member.getHierarchy().getUniqueName());
+        assertEquals(
+            "[Store Type].[Store Type].[(All)]",
+            member.getLevel().getUniqueName());
+        assertEquals(
+            "[Store Type].[Store Type].[All Store Types]",
+            member.getUniqueName());
     }
 }
 

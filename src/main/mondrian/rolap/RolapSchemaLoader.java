@@ -2297,16 +2297,11 @@ public class RolapSchemaLoader {
             String hierarchyName = first(
                 xmlHierarchy.name,
                 xmlDimension.name);
-            final String uniqueName =
-                xmlDimension.getHierarchies().size() == 1
-                && hierarchyName.equals(xmlDimension.name)
-                    ? dimension.getUniqueName()
-                    : Util.makeFqName(dimension, hierarchyName);
             RolapHierarchy hierarchy =
                 new RolapHierarchy(
                     dimension,
                     hierarchyName,
-                    uniqueName,
+                    Util.makeFqName(dimension, hierarchyName),
                     toBoolean(xmlHierarchy.visible, true),
                     xmlHierarchy.caption,
                     xmlHierarchy.description,

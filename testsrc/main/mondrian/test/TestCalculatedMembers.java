@@ -597,8 +597,8 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "Axis #1:\n"
             + "{[Measures].[With a [bracket]] inside it]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
+            + "{[Gender].[Gender].[F]}\n"
+            + "{[Gender].[Gender].[M]}\n"
             + "Row #0: $1,315,580.00\n"
             + "Row #1: $1,352,150.00\n");
     }
@@ -816,8 +816,8 @@ public class TestCalculatedMembers extends BatchTestCase {
             + "{[Measures].[Dq in apos]}\n"
             + "{[Measures].[Colored Profit]}\n"
             + "Axis #2:\n"
-            + "{[Gender].[F]}\n"
-            + "{[Gender].[M]}\n"
+            + "{[Gender].[Gender].[F]}\n"
+            + "{[Gender].[Gender].[M]}\n"
             + "Row #0: an 'apos' in dq\n"
             + "Row #0: a \"dq\" in dq\n"
             + "Row #0: an 'apos' in apos\n"
