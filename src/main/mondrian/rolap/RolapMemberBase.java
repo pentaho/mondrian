@@ -615,7 +615,11 @@ public class RolapMemberBase
     }
 
     public int getDepth() {
-        return getLevel().getDepth();
+        if (parentMember != null) {
+            return getParentMember().getDepth() + 1;
+        } else {
+            return getLevel().getDepth();
+        }
     }
 
     public String getPropertyFormattedValue(String propertyName) {

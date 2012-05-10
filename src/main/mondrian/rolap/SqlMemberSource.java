@@ -1331,7 +1331,7 @@ class SqlMemberSource
      */
     private static class RolapParentChildMember extends RolapMemberBase {
         private final RolapMember dataMember;
-        private int depth = 0;
+        private final int depth;
 
         public RolapParentChildMember(
             RolapMember parentMember,
