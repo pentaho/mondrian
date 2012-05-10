@@ -200,12 +200,23 @@ public class SqlTupleReader implements TupleReader {
                         Object value = accessors.get(keyOrdinal).get();
                         keyValues[j] = SqlMemberSource.toComparable(value);
                     }
-                    Object captionValue;
+                    final Object captionValue;
                     if (layout.captionOrdinal >= 0) {
                         captionValue =
                             accessors.get(layout.captionOrdinal).get();
                     } else {
                         captionValue = null;
+                    }
+                    final String nameValue;
+                    if (layout.nameOrdinal >= 0) {
+                        final Object nameObject =
+                            accessors.get(layout.nameOrdinal).get();
+                        nameValue =
+                            nameObject == null
+                                ? null
+                                : String.valueOf(nameObject);
+                    } else {
+                        nameValue = null;
                     }
                     final Object key =
                         keyValues.length == 1
@@ -228,7 +239,8 @@ public class SqlTupleReader implements TupleReader {
                                 RolapMember.Key.create(keyValues);
                             member = memberBuilder.makeMember(
                                 parentMember, childLevel, keyClone,
-                                captionValue, parentChild, stmt, layout);
+                                captionValue, nameValue,
+                                parentChild, stmt, layout);
                         }
                     }
 

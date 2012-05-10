@@ -11,6 +11,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.Member.MemberType;
 import mondrian.olap.fun.VisualTotalsFunDef;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -185,7 +186,9 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                 rolapParent = cubeParent.getRolapMember();
             }
             RolapMember member =
-                new RolapMemberBase(rolapParent, rolapLevel, name);
+                new RolapMemberBase(
+                    rolapParent, rolapLevel, name,
+                    name, MemberType.REGULAR);
             return wrapMember(cubeParent, member, cubeLevel);
         } else if (level.getDimension().isMeasures()) {
             RolapCalculatedMeasure member =
@@ -1035,6 +1038,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             RolapLevel childLevel,
             Comparable key,
             Object captionValue,
+            String nameValue,
             boolean parentChild,
             SqlStatement stmt,
             SqlTupleReader.LevelColumnLayout layout)
@@ -1055,6 +1059,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     childCubeLevel.getRolapLevel(),
                     key,
                     captionValue,
+                    nameValue,
                     parentChild,
                     stmt,
                     layout);

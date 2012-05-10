@@ -34,7 +34,6 @@ import java.util.*;
  * @since 19 December, 2007
  */
 public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
-    private final MondrianProperties props = MondrianProperties.instance();
 
     private SchemaReader salesCubeSchemaReader = null;
     private SchemaReader schemaReader = null;
@@ -52,7 +51,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public TestContext getTestContext() {
-        return TestContext.instance().create(
+        return TestContext.instance().legacy().create(
             null,
             null,
             "<VirtualCube name=\"Warehouse and Sales2\" defaultMeasure=\"Store Sales\">\n"
@@ -278,7 +277,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
     public void testDistinctCountOnTuplesWithSomeNonJoiningDimensions() {
         propSaver.set(
-            props.IgnoreMeasureForNonJoiningDimension, false);
+            MondrianProperties.instance()
+                .IgnoreMeasureForNonJoiningDimension, false);
         String mdx =
             "WITH MEMBER WAREHOUSE.X as 'Aggregate({WAREHOUSE.[STATE PROVINCE].MEMBERS}*"
             + "{[Gender].Members})'"
@@ -295,7 +295,8 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "Row #0: \n";
         assertQueryReturns(mdx, expectedResult);
         propSaver.set(
-            props.IgnoreMeasureForNonJoiningDimension, true);
+            MondrianProperties.instance()
+                .IgnoreMeasureForNonJoiningDimension, true);
         assertQueryReturns(mdx, expectedResult);
     }
 
@@ -407,8 +408,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregationOverLargeListGeneratesError() {
-        int origMaxConstraint = props.MaxConstraints.get();
-        props.MaxConstraints.set(7);
+        propSaver.set(MondrianProperties.instance().MaxConstraints, 7);
 
         String result;
         final Dialect dialect = getTestContext().getDialect();
@@ -448,8 +448,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "{[MEASURES].[CUSTOMER COUNT]} ON COLUMNS\n"
             + "FROM [WAREHOUSE AND SALES2]",
             result);
-
-        props.MaxConstraints.set(origMaxConstraint);
     }
 
     public void testMultiLevelMembersNullParents() {
@@ -637,7 +635,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         // Mondrian does not use GROUPING SETS for distinct-count measures.
         // So, this test should not use GROUPING SETS, even if they are enabled.
         // See change 12310, bug MONDRIAN-470 (aka SF.net 2207515).
-        Util.discard(props.EnableGroupingSets);
 
         String oraTeraSql =
             "select \"store\".\"store_state\" as \"c0\","
@@ -681,9 +678,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testCanNotBatchForDifferentCompoundPredicate() {
-        boolean originalGroupingSetsPropertyValue =
-            props.EnableGroupingSets.get();
-        props.EnableGroupingSets.set(true);
+        propSaver.set(MondrianProperties.instance().EnableGroupingSets, true);
         String mdxQueryWithFewMembers =
             "WITH "
             + "MEMBER [Store].[Stores].[COG_OQP_USR_Aggregate(Store)] AS "
@@ -751,7 +746,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
         assertQuerySql(mdxQueryWithFewMembers, patterns);
-        props.EnableGroupingSets.set(originalGroupingSetsPropertyValue);
     }
 
 
@@ -760,9 +754,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
      * with mixed measures.
      */
     public void testDistinctCountInNonGroupingSetsQuery() {
-        boolean originalGroupingSetsPropertyValue =
-            props.EnableGroupingSets.get();
-        props.EnableGroupingSets.set(true);
+        propSaver.set(MondrianProperties.instance().EnableGroupingSets, true);
         String mdxQueryWithFewMembers =
             "WITH "
             + "MEMBER [Store].[Stores].[COG_OQP_USR_Aggregate(Store)] AS "
@@ -834,13 +826,10 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
 
         assertQueryReturns(mdxQueryWithFewMembers, desiredResult);
         assertQuerySql(mdxQueryWithFewMembers, patterns);
-        props.EnableGroupingSets.set(originalGroupingSetsPropertyValue);
     }
 
     public void testAggregationOfMembersAndDefaultMemberWithoutGroupingSets() {
-        boolean originalGroupingSetsPropertyValue =
-            props.EnableGroupingSets.get();
-        props.EnableGroupingSets.set(false);
+        propSaver.set(MondrianProperties.instance().EnableGroupingSets, false);
         String mdxQueryWithMembers =
             "WITH "
             + "MEMBER [Gender].[COG_OQP_USR_Aggregate(Gender)] AS "
@@ -896,7 +885,6 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
         assertQuerySql(mdxQueryWithMembers, patterns);
         assertQueryReturns(mdxQueryWithDefaultMember, desiredResult);
         assertQuerySql(mdxQueryWithDefaultMember, patterns);
-        props.EnableGroupingSets.set(originalGroupingSetsPropertyValue);
     }
 
     public void testOptimizeChildren() {
@@ -1270,55 +1258,45 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
     }
 
     public void testAggregatesAtTheSameLevelForNormalAndDistinctCountMeasure() {
-        boolean useGroupingSets = props.EnableGroupingSets.get();
-        props.EnableGroupingSets.set(true);
-        try {
-            assertQueryReturns(
-                "WITH "
-                + "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F] })' "
-                + "MEMBER GENDER.AGG2 AS 'AGGREGATE({ GENDER.[M] })' "
-                + "SELECT "
-                + "{ MEASURES.[CUSTOMER COUNT], MEASURES.[UNIT SALES] } ON 0, "
-                + "{ GENDER.AGG, GENDER.AGG2 } ON 1 \n"
-                + "FROM SALES",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Customer Count]}\n"
-                + "{[Measures].[Unit Sales]}\n"
-                + "Axis #2:\n"
-                + "{[Customer].[Gender].[AGG]}\n"
-                + "{[Customer].[Gender].[AGG2]}\n"
-                + "Row #0: 2,755\n"
-                + "Row #0: 131,558\n"
-                + "Row #1: 2,826\n"
-                + "Row #1: 135,215\n");
-        } finally {
-            props.EnableGroupingSets.set(useGroupingSets);
-        }
+        propSaver.set(MondrianProperties.instance().EnableGroupingSets, true);
+        assertQueryReturns(
+            "WITH "
+            + "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F] })' "
+            + "MEMBER GENDER.AGG2 AS 'AGGREGATE({ GENDER.[M] })' "
+            + "SELECT "
+            + "{ MEASURES.[CUSTOMER COUNT], MEASURES.[UNIT SALES] } ON 0, "
+            + "{ GENDER.AGG, GENDER.AGG2 } ON 1 \n"
+            + "FROM SALES",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customer].[Gender].[AGG]}\n"
+            + "{[Customer].[Gender].[AGG2]}\n"
+            + "Row #0: 2,755\n"
+            + "Row #0: 131,558\n"
+            + "Row #1: 2,826\n"
+            + "Row #1: 135,215\n");
     }
 
     public void testDistinctCountForAggregatesAtTheSameLevel() {
-        boolean useGroupingSets = props.EnableGroupingSets.get();
-        props.EnableGroupingSets.set(true);
-        try {
-            assertQueryReturns(
-                "WITH "
-                + "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F], GENDER.[M] })' "
-                + "SELECT "
-                + "{MEASURES.[CUSTOMER COUNT]} ON 0, "
-                + "{GENDER.AGG } ON 1 "
-                + "FROM SALES",
-                "Axis #0:\n"
-                + "{}\n"
-                + "Axis #1:\n"
-                + "{[Measures].[Customer Count]}\n"
-                + "Axis #2:\n"
-                + "{[Customer].[Gender].[AGG]}\n"
-                + "Row #0: 5,581\n");
-        } finally {
-            props.EnableGroupingSets.set(useGroupingSets);
-        }
+        propSaver.set(MondrianProperties.instance().EnableGroupingSets, true);
+        assertQueryReturns(
+            "WITH "
+            + "MEMBER GENDER.AGG AS 'AGGREGATE({ GENDER.[F], GENDER.[M] })' "
+            + "SELECT "
+            + "{MEASURES.[CUSTOMER COUNT]} ON 0, "
+            + "{GENDER.AGG } ON 1 "
+            + "FROM SALES",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Customer Count]}\n"
+            + "Axis #2:\n"
+            + "{[Customer].[Gender].[AGG]}\n"
+            + "Row #0: 5,581\n");
     }
 
     /**

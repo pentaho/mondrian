@@ -129,15 +129,6 @@ public class RolapMemberBase
         this.key = null;
     }
 
-    RolapMemberBase(
-        RolapMember parentMember,
-        RolapLevel level,
-        Comparable value)
-    {
-        this(parentMember, level, value, null, MemberType.REGULAR);
-        assert !(level instanceof RolapCubeLevel);
-    }
-
     protected Logger getLogger() {
         return LOGGER;
     }

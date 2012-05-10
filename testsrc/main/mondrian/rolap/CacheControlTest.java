@@ -911,7 +911,7 @@ public class CacheControlTest extends FoodMartTestCase {
         } catch (RuntimeException e) {
             assertContains(
                 "Cannot union cell regions of different dimensionalities. "
-                + "(Dimensionalities are '[[Time]]', '[[Product]]'.)",
+                + "(Dimensionalities are '[[Time].[Time]]', '[[Product].[Products]]'.)",
                 e.getMessage());
         }
 
@@ -1067,7 +1067,7 @@ public class CacheControlTest extends FoodMartTestCase {
             + "Member([Customer].[Gender].[F]))",
             regionTimeXProductXGender.toString());
         assertEquals(
-            "[[Time], [Product], [Customer]]",
+            "[[Time].[Time], [Product].[Products], [Customer].[Gender]]",
             regionTimeXProductXGender.getDimensionality().toString());
 
         // Three-way crossjoin, should be same as previous
@@ -1084,7 +1084,7 @@ public class CacheControlTest extends FoodMartTestCase {
             + "Member([Customer].[Gender].[F]))",
             regionTimeXProductXGender2.toString());
         assertEquals(
-            "[[Time], [Product], [Customer]]",
+            "[[Time].[Time], [Product].[Products], [Customer].[Gender]]",
             regionTimeXProductXGender2.getDimensionality().toString());
 
         // Compose a non crossjoin with a crossjoin

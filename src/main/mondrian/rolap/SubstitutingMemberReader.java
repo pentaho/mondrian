@@ -255,6 +255,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             RolapLevel childLevel,
             Comparable key,
             Object captionValue,
+            String nameValue,
             boolean parentChild,
             SqlStatement stmt,
             SqlTupleReader.LevelColumnLayout layout)
@@ -265,6 +266,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
                     desubstitute(parentMember),
                     childLevel, key,
                     captionValue,
+                    nameValue,
                     parentChild,
                     stmt,
                     layout));

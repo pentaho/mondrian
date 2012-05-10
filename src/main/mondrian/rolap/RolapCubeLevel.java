@@ -451,7 +451,9 @@ public class RolapCubeLevel extends RolapLevel {
                     new RolapMemberBase(
                         wrappedAllMember,
                         closedPeerLevel,
-                        member.getKeyCompact());
+                        member.getKeyCompact(),
+                        member.getName(),
+                        member.getMemberType());
                 member =
                     new RolapCubeMember(
                         allMember,

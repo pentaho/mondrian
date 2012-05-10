@@ -85,11 +85,22 @@ public class Target extends TargetBase {
                     keyValues[j] = SqlMemberSource.toComparable(value);
                 }
                 List<Comparable> keyList = Arrays.asList(keyValues);
-                Object captionValue;
+                final Object captionValue;
                 if (layout.captionOrdinal >= 0) {
                     captionValue = accessors.get(layout.captionOrdinal).get();
                 } else {
                     captionValue = null;
+                }
+                final String nameValue;
+                if (layout.nameOrdinal >= 0) {
+                    final Object nameObject =
+                        accessors.get(layout.nameOrdinal).get();
+                    nameValue =
+                        nameObject == null
+                            ? null
+                            : String.valueOf(nameObject);
+                } else {
+                    nameValue = null;
                 }
                 RolapMember parentMember = member;
                 Object key = keyValues.length == 1 ? keyValues[0] : keyList;
@@ -109,7 +120,7 @@ public class Target extends TargetBase {
                             RolapMember.Key.create(keyValues);
                         member = memberBuilder.makeMember(
                             parentMember, childLevel, keyClone, captionValue,
-                            parentChild, stmt, layout);
+                            nameValue, parentChild, stmt, layout);
                     }
                 }
             }

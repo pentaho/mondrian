@@ -2927,7 +2927,9 @@ public class RolapSchema implements Schema {
                     dialect.getStatisticsProviders();
                 final Execution execution =
                     new Execution(internalStatement, 0);
-                for (StatisticsProvider statisticsProvider : statisticsProviders) {
+                for (StatisticsProvider statisticsProvider
+                    : statisticsProviders)
+                {
                     rowCount = statisticsProvider.getTableCardinality(
                         dialect,
                         dataSource,
@@ -2940,8 +2942,8 @@ public class RolapSchema implements Schema {
                     }
                 }
 
-                // Note: If all providers fail, we put -1 into the cache, to ensure
-                // that we won't try again.
+                // Note: If all providers fail, we put -1 into the cache,
+                // to ensure that we won't try again.
                 tableMap.put(key, rowCount);
             }
             return rowCount;
@@ -2959,7 +2961,9 @@ public class RolapSchema implements Schema {
                     new Execution(
                         internalStatement,
                         0);
-                for (StatisticsProvider statisticsProvider : statisticsProviders) {
+                for (StatisticsProvider statisticsProvider
+                    : statisticsProviders)
+                {
                     rowCount = statisticsProvider.getQueryCardinality(
                         dialect, dataSource, sql, execution);
                     if (rowCount >= 0) {
@@ -2967,8 +2971,8 @@ public class RolapSchema implements Schema {
                     }
                 }
 
-                // Note: If all providers fail, we put -1 into the cache, to ensure
-                // that we won't try again.
+                // Note: If all providers fail, we put -1 into the cache,
+                // to ensure that we won't try again.
                 queryMap.put(sql, rowCount);
             }
             return rowCount;
@@ -3009,7 +3013,8 @@ public class RolapSchema implements Schema {
             String table,
             String column)
         {
-            final List<String> key = Arrays.asList(catalog, schema, table, column);
+            final List<String> key =
+                Arrays.asList(catalog, schema, table, column);
             int rowCount = -1;
             if (columnMap.containsKey(key)) {
                 rowCount = columnMap.get(key);
@@ -3020,7 +3025,9 @@ public class RolapSchema implements Schema {
                     new Execution(
                         internalStatement,
                         0);
-                for (StatisticsProvider statisticsProvider : statisticsProviders) {
+                for (StatisticsProvider statisticsProvider
+                    : statisticsProviders)
+                {
                     rowCount = statisticsProvider.getColumnCardinality(
                         dialect,
                         dataSource,
@@ -3034,8 +3041,8 @@ public class RolapSchema implements Schema {
                     }
                 }
 
-                // Note: If all providers fail, we put -1 into the cache, to ensure
-                // that we won't try again.
+                // Note: If all providers fail, we put -1 into the cache,
+                //to ensure that we won't try again.
                 columnMap.put(key, rowCount);
             }
             return rowCount;

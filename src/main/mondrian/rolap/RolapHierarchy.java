@@ -366,7 +366,8 @@ public class RolapHierarchy extends HierarchyBase {
     {
         if (formula == null) {
             return new RolapMemberBase(
-                (RolapMember) parent, (RolapLevel) level, name);
+                (RolapMember) parent, (RolapLevel) level, name,
+                name, mondrian.olap.Member.MemberType.REGULAR);
         } else if (level.getDimension().isMeasures()) {
             return new RolapCalculatedMeasure(
                 (RolapMember) parent, (RolapLevel) level, name, formula);

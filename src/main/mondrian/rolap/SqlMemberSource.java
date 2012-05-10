@@ -12,6 +12,7 @@ package mondrian.rolap;
 
 import mondrian.calc.TupleList;
 import mondrian.olap.*;
+import mondrian.olap.Member.MemberType;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
@@ -366,8 +367,29 @@ class SqlMemberSource
                     if (member == null) {
                         final Comparable keyClone =
                             RolapMember.Key.create(keyValues);
+                        final Object captionValue;
+                        if (levelLayout.captionOrdinal >= 0) {
+                            captionValue =
+                                accessors.get(
+                                    levelLayout.captionOrdinal).get();
+                        } else {
+                            captionValue = null;
+                        }
+                        final String nameValue;
+                        if (levelLayout.nameOrdinal >= 0) {
+                            final Object nameObject =
+                                accessors.get(levelLayout.nameOrdinal).get();
+                            nameValue =
+                                nameObject == null
+                                    ? null
+                                    : String.valueOf(nameObject);
+                        } else {
+                            nameValue = null;
+                        }
                         RolapMemberBase memberBase =
-                            new RolapMemberBase(parent, level, keyClone);
+                            new RolapMemberBase(
+                                parent, level, keyClone,
+                                nameValue, MemberType.REGULAR);
                         memberBase.setOrdinal(lastOrdinal++);
                         member = memberBase;
                         list.add(member);
@@ -979,11 +1001,22 @@ class SqlMemberSource
                     Object value = accessors.get(layout.keyOrdinals[i]).get();
                     keyValues[i] = toComparable(value);
                 }
-                Object captionValue;
+                final Object captionValue;
                 if (layout.captionOrdinal >= 0) {
                     captionValue = accessors.get(layout.captionOrdinal).get();
                 } else {
                     captionValue = null;
+                }
+                final String nameValue;
+                if (layout.nameOrdinal >= 0) {
+                    final Object nameObject =
+                        accessors.get(layout.nameOrdinal).get();
+                    nameValue =
+                        nameObject == null
+                            ? null
+                            : String.valueOf(nameObject);
+                } else {
+                    nameValue = null;
                 }
                 Object key = keyValues.length == 1 ? keyValues[0] : keyList;
                 RolapMember member =
@@ -994,7 +1027,7 @@ class SqlMemberSource
                     member =
                         makeMember(
                             parentMember2, childLevel, keyClone, captionValue,
-                            parentChild, stmt, layout);
+                            nameValue, parentChild, stmt, layout);
                 }
                 if (Util.deprecated(false, false)
                     /* value == RolapUtil.sqlNullValue */)
@@ -1017,6 +1050,7 @@ class SqlMemberSource
         RolapLevel childLevel,
         Comparable key,
         Object captionValue,
+        String nameValue,
         boolean parentChild,
         SqlStatement stmt,
         SqlTupleReader.LevelColumnLayout layout)
@@ -1030,7 +1064,8 @@ class SqlMemberSource
         }
         RolapMemberBase member =
             new RolapMemberBase(
-                parentMember, rolapChildLevel, key);
+                parentMember, rolapChildLevel, key,
+                nameValue, MemberType.REGULAR);
         assert parentMember == null
             || parentMember.getLevel().getDepth() == childLevel.getDepth() - 1
             || childLevel.isParentChild();
@@ -1304,7 +1339,9 @@ class SqlMemberSource
             Comparable value,
             RolapMember dataMember)
         {
-            super(parentMember, childLevel, value);
+            super(
+                parentMember, childLevel, value,
+                dataMember.getName(), dataMember.getMemberType());
             this.dataMember = dataMember;
             this.depth = (parentMember != null)
                 ? parentMember.getDepth() + 1
@@ -1354,6 +1391,10 @@ class SqlMemberSource
             // return it from <Level>.Members (which doesn't usually contain
             // calculated members).
             return false;
+        }
+
+        public boolean isEvaluated() {
+            return true;
         }
 
         public Exp getExpression() {

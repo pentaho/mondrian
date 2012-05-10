@@ -413,7 +413,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             assertTrue(
                 columnName,
                 columnName.equals(
-                    "Education Level2 - Education Level but with a very long "
+                    "Education Level2 - Education Level but with a very long name that will be too long"
                     + "name tha"));
             int n = 0;
             while (resultSet.next()) {
