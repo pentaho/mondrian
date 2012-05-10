@@ -1094,10 +1094,15 @@ class SqlMemberSource
                 setOrderKey(member, orderKey);
             }
         }
-        if (layout.nameOrdinal != layout.keyOrdinals[0]) {
+        if (layout.nameOrdinal
+            != layout.keyOrdinals[layout.keyOrdinals.length - 1])
+        {
+            Object name = accessors.get(layout.nameOrdinal).get();
             member.setProperty(
                 Property.NAME.name,
-                String.valueOf(accessors.get(layout.nameOrdinal).get()));
+                name == null
+                    ? RolapUtil.sqlNullValue.toString()
+                    : name.toString());
         }
         int j = 0;
         for (RolapProperty property

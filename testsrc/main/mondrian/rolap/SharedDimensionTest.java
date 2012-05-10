@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -31,8 +31,8 @@ public class SharedDimensionTest extends FoodMartTestCase {
         + "  </Hierarchy>\n"
         + "</Dimension>";
 
-    // Base Cube A: use product_id as foreign key for Employee diemnsion
-    // because there exist rows satidfying the join condition
+    // Base Cube A: use product_id as foreign key for Employee dimension
+    // because there exist rows satisfying the join condition
     // "employee.employee_id = inventory_fact_1997.product_id"
     public static final String cubeA =
         "<Cube name=\"Employee Store Analysis A\">\n"
@@ -43,8 +43,8 @@ public class SharedDimensionTest extends FoodMartTestCase {
         + "  <Measure name=\"Employee Store Cost\" aggregator=\"sum\" formatString=\"$#,##0\" column=\"warehouse_cost\" />\n"
         + "</Cube>";
 
-    // Base Cube B: use time_id as foreign key for Employee diemnsion
-    // because there exist rows satidfying the join condition
+    // Base Cube B: use time_id as foreign key for Employee dimension
+    // because there exist rows satisfying the join condition
     // "employee.employee_id = inventory_fact_1997.time_id"
     public static final String cubeB =
         "<Cube name=\"Employee Store Analysis B\">\n"
@@ -69,11 +69,11 @@ public class SharedDimensionTest extends FoodMartTestCase {
         + "  set [*BASE_MEMBERS_Measures] as '{[Measures].[Employee Store Sales], [Measures].[Employee Store Cost]}'\n"
         + "  set [*BASE_MEMBERS_Employee] as '[Employee].[Role].Members'\n"
         + "  set [*NATIVE_MEMBERS_Employee] as 'Generate([*NATIVE_CJ_SET], {[Employee].CurrentMember})'\n"
-        + "  set [*BASE_MEMBERS_Store Type] as '[Store Type].[Store Type].Members'\n"
-        + "  set [*NATIVE_MEMBERS_Store Type] as 'Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember})'\n"
+        + "  set [*BASE_MEMBERS_Store Type] as '[Store Type].[Store Type].[Store Type].Members'\n"
+        + "  set [*NATIVE_MEMBERS_Store Type] as 'Generate([*NATIVE_CJ_SET], {[Store Type].[Store Type].CurrentMember})'\n"
         + "select\n"
         + "  [*BASE_MEMBERS_Measures] ON COLUMNS,\n"
-        + "  NON EMPTY Generate([*NATIVE_CJ_SET], {([Employee].CurrentMember, [Store Type].CurrentMember)}) ON ROWS\n"
+        + "  NON EMPTY Generate([*NATIVE_CJ_SET], {([Employee].CurrentMember, [Store Type].[Store Type].CurrentMember)}) ON ROWS\n"
         + "from\n"
         + "  [Employee Store Analysis A]";
 
@@ -97,21 +97,21 @@ public class SharedDimensionTest extends FoodMartTestCase {
         + "  set [*BASE_MEMBERS_Measures] as '{[Measures].[Employee Store Sales], [Measures].[Employee Store Cost]}'\n"
         + "  set [*BASE_MEMBERS_Employee] as '[Employee].[Role].Members'\n"
         + "  set [*NATIVE_MEMBERS_Employee] as 'Generate([*NATIVE_CJ_SET], {[Employee].CurrentMember})'\n"
-        + "  set [*BASE_MEMBERS_Store Type] as '[Store Type].[Store Type].Members'\n"
-        + "  set [*NATIVE_MEMBERS_Store Type] as 'Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember})'\n"
+        + "  set [*BASE_MEMBERS_Store Type] as '[Store].[Store Type].[Store Type].Members'\n"
+        + "  set [*NATIVE_MEMBERS_Store Type] as 'Generate([*NATIVE_CJ_SET], {[Store].[Store Type].CurrentMember})'\n"
         + "select\n"
         + "  [*BASE_MEMBERS_Measures] ON COLUMNS,\n"
-        + "  NON EMPTY Generate([*NATIVE_CJ_SET], {([Employee].CurrentMember, [Store Type].CurrentMember)}) ON ROWS\n"
+        + "  NON EMPTY Generate([*NATIVE_CJ_SET], {([Employee].CurrentMember, [Store].[Store Type].CurrentMember)}) ON ROWS\n"
         + "from\n"
         + "  [Employee Store Analysis]";
 
     public static final String queryStoreCube =
         "with set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Store Type], [*BASE_MEMBERS_Store])'\n"
         + "set [*BASE_MEMBERS_Measures] as '{[Measures].[Store Sqft]}'\n"
-        + "set [*BASE_MEMBERS_Store Type] as '[Store Type].[Store Type].Members'\n"
+        + "set [*BASE_MEMBERS_Store Type] as '[Store].[Store Type].[Store Type].Members'\n"
         + "set [*BASE_MEMBERS_Store] as '[Store].[Store State].Members'\n"
         + "select [*BASE_MEMBERS_Measures] ON COLUMNS,\n"
-        + "Non Empty Generate([*NATIVE_CJ_SET], {[Store Type].CurrentMember}) on rows from [Store]";
+        + "Non Empty Generate([*NATIVE_CJ_SET], {[Store].[Store Type].CurrentMember}) on rows from [Store]";
 
     public static final String queryNECJMemberList =
         "select {[Measures].[Employee Store Sales]} on columns,\n"
@@ -204,18 +204,18 @@ public class SharedDimensionTest extends FoodMartTestCase {
         + "{[Measures].[Employee Store Sales]}\n"
         + "{[Measures].[Employee Store Cost]}\n"
         + "Axis #2:\n"
-        + "{[Employee].[Middle Management], [Store].[Store Type].[Deluxe Supermarket]}\n"
-        + "{[Employee].[Middle Management], [Store].[Store Type].[Supermarket]}\n"
-        + "{[Employee].[Senior Management], [Store].[Store Type].[Deluxe Supermarket]}\n"
-        + "{[Employee].[Senior Management], [Store].[Store Type].[Gourmet Supermarket]}\n"
-        + "{[Employee].[Senior Management], [Store].[Store Type].[Mid-Size Grocery]}\n"
-        + "{[Employee].[Senior Management], [Store].[Store Type].[Small Grocery]}\n"
-        + "{[Employee].[Senior Management], [Store].[Store Type].[Supermarket]}\n"
-        + "{[Employee].[Store Management], [Store].[Store Type].[Deluxe Supermarket]}\n"
-        + "{[Employee].[Store Management], [Store].[Store Type].[Gourmet Supermarket]}\n"
-        + "{[Employee].[Store Management], [Store].[Store Type].[Mid-Size Grocery]}\n"
-        + "{[Employee].[Store Management], [Store].[Store Type].[Small Grocery]}\n"
-        + "{[Employee].[Store Management], [Store].[Store Type].[Supermarket]}\n"
+        + "{[Employee].[Employee].[Middle Management], [Store].[Store Type].[Deluxe Supermarket]}\n"
+        + "{[Employee].[Employee].[Middle Management], [Store].[Store Type].[Supermarket]}\n"
+        + "{[Employee].[Employee].[Senior Management], [Store].[Store Type].[Deluxe Supermarket]}\n"
+        + "{[Employee].[Employee].[Senior Management], [Store].[Store Type].[Gourmet Supermarket]}\n"
+        + "{[Employee].[Employee].[Senior Management], [Store].[Store Type].[Mid-Size Grocery]}\n"
+        + "{[Employee].[Employee].[Senior Management], [Store].[Store Type].[Small Grocery]}\n"
+        + "{[Employee].[Employee].[Senior Management], [Store].[Store Type].[Supermarket]}\n"
+        + "{[Employee].[Employee].[Store Management], [Store].[Store Type].[Deluxe Supermarket]}\n"
+        + "{[Employee].[Employee].[Store Management], [Store].[Store Type].[Gourmet Supermarket]}\n"
+        + "{[Employee].[Employee].[Store Management], [Store].[Store Type].[Mid-Size Grocery]}\n"
+        + "{[Employee].[Employee].[Store Management], [Store].[Store Type].[Small Grocery]}\n"
+        + "{[Employee].[Employee].[Store Management], [Store].[Store Type].[Supermarket]}\n"
         + "Row #0: $200\n"
         + "Row #0: \n"
         + "Row #1: $161\n"
@@ -330,7 +330,7 @@ public class SharedDimensionTest extends FoodMartTestCase {
         // Query from the virtual cube.
 
         TestContext testContext =
-            TestContext.instance().create(
+            TestContext.instance().legacy().create(
                 sharedDimension,
                 cubeA + "\n" + cubeB,
                 virtualCube,
@@ -376,7 +376,7 @@ public class SharedDimensionTest extends FoodMartTestCase {
     }
 
     private TestContext getTestContextForSharedDimCubeACubeB() {
-        return TestContext.instance().create(
+        return TestContext.instance().legacy().create(
             sharedDimension,
             cubeA + "\n" + cubeB,
             null,
