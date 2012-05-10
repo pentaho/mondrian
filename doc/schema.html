@@ -117,7 +117,7 @@
 ########################### -->
 <h3>2. Schema files<a name="Schema_files">&nbsp;</a></h3>
 <p>Mondrian schemas are represented in an XML file. An example schema, containing almost all of the
-constructs we discuss here, is supplied as <code>demo/FoodMart.xml</code> in the mondrian distribution.
+constructs we discuss here, is supplied as <code>demo/FoodMart.xml</code> in the Mondrian distribution.
 The dataset to populate this schema is <a href="install.html#2_Set_up_test_data">also in the distribution</a>.</p>
 <p>Currently, the only way to create a schema is to edit a schema XML file in a text editor. The XML
 syntax is not too complicated, so this is not as difficult as it sounds, particularly if you use the FoodMart
@@ -202,7 +202,7 @@ schema as a guiding example.</p>
     </code>
 </blockquote>
 
-<p><b>NOTE</b>: The order of XML elements is important. For example,
+<p><b>NOTE</b>: The order of XML elements is important. For example, the
 <code><a href="#XML_UserDefinedFunction">&lt;UserDefinedFunction&gt;</a></code>
 element has to occur inside the <code><a href="#XML_Schema">&lt;Schema&gt;</a></code>
 element after all collections of <code><a href="#XML_Cube">&lt;Cube&gt;</a></code>,
@@ -231,7 +231,7 @@ official Mondrian schema.</p>
 annotate (generally it is the first child element, but check the schema
 definition for details), then include a number of 
 <code><a href="#XML_Annotation">&lt;Annotation&gt;</a></code> elements. 
-<code><a href="#XML_Annotation">&lt;Annotation&gt;</a></code> Annotation 
+<code><a href="#XML_Annotation">&lt;Annotation&gt;</a></code>
 elements' names must be unique within their element. If you are adding 
 annotations to support a particular tool that you maintain, choose annotation 
 names carefully, to ensure that they do not clash with annotations used by other 
@@ -297,7 +297,7 @@ tools.</p>
 </blockquote>
 
 <p>This schema contains a single cube, called "Sales". The Sales cube has two dimensions,
-"Time", and "Gender", and two measures, "Unit Sales" and "Store Sales".</p>
+"Time", and "Gender", and four measures, "Unit Sales", "Store Sales", "Store Cost", and "Profit".</p>
 
 <p>We can write an MDX query on this schema:</p>
 
@@ -399,7 +399,7 @@ construct to build more complicated SQL statements. The
 
 <p>The optional <code>datatype</code> attribute specifies how cell values are represented in Mondrian's
 cache, and how they are returned via XML for Analysis. The <code>datatype</code> attribute can have
-values "<code>String</code>", "<code>Integer</code>", &quot;<code>Numeric</code>", &quot;<code>Boolean</code>&quot;,
+values "<code>String</code>", "<code>Integer</code>", "<code>Numeric</code>", &quot;<code>Boolean</code>&quot;,
 &quot;<code>Date</code>&quot;, &quot;<code>Time</code>&quot;, and &quot;<code>Timestamp</code>&quot;.
 The default is "<code>Numeric</code>", except for "<code>count</code>" and
 "<code>distinct-count</code>" measures, which are "<code>Integer</code>".</p>
@@ -438,7 +438,7 @@ an example of this.</p>
  	</code>
 </blockquote>
 
-<p>In this case, sales are only included in the summation if they correspond to a promotion sales.
+<p>In this case, sales are only included in the summation if they correspond to a promotion sale.
 Arbitrary SQL expressions can be used, including subqueries. However, the underlying database
 must be able to support that SQL expression in the context of an aggregate. Variations in syntax
 between different databases is handled by specifying the dialect in the SQL tag.</p>
@@ -457,7 +457,7 @@ between different databases is handled by specifying the dialect in the SQL tag.
 	'USA' are all members of the store hierarchy.</li>
   	<li>A <dfn>hierarchy</dfn> is a set of members organized into a structure for convenient analysis.
 	For example, the store hierarchy consists of the store name, city, state, and nation. The
-	hierarchy allows you form intermediate sub-totals: the sub-total for a state is the sum of the
+	hierarchy allows you to form intermediate sub-totals: the sub-total for a state is the sum of the
 	sub-totals of all of the cities in that state, each of which is the sum of the sub-totals of
 	the stores in that city.</li>
 	<li>A <dfn>level</dfn> is a collection of members which have the
@@ -503,7 +503,7 @@ joining from the fact table "sales_fact_1997.customer_id" to the dimension table
 <p>A dimension is joined to a cube by means of a pair of columns, one in the fact table, the other in the dimension table.
 The <code>&lt;Dimension&gt;</code> element has a <code>foreignKey</code> attribute,
 which is the name of a column in the fact table; the <code>&lt;Hierarchy&gt;</code> element has
-<code>primaryKey</code> attribute.</p>
+a <code>primaryKey</code> attribute.</p>
 
 <p>If the hierarchy has more than one table, you can disambiguate using the <code>primaryKeyTable</code>
 attribute. </p>
@@ -706,17 +706,17 @@ indicated by the level's <code>levelType</code> attribute, whose allowable value
 ########################################## -->
 <h1>3.3.4 Order and display of levels<a name="Level_Order_and_Display">&nbsp;</a></h1>
 
-<p>Notice that in the time hierarchy example above the <code>ordinalColumn</code> and
+<p>Notice in the time hierarchy example above the <code>ordinalColumn</code> and
 <code>nameColumn</code> attributes on the <code>&lt;Level&gt;</code> element. These
-effect how levels are displayed in a result. The <code>ordinalColumn</code> attribute specifies a
-column in the Hierarchy table that provides the order of the members in a given Level, while the
+affect how levels are displayed in a result. The <code>ordinalColumn</code> attribute specifies a
+column in the Hierarchy table that provides the order of the members in a given level, while the
 <code>nameColumn</code> specifies a column that will be displayed.</p>
 
-<p>For example, in the Month Level above, the <code>datehierarchy</code> table has month (1 .. 12)
+<p>For example, in the Month level above, the <code>datehierarchy</code> table has month (1 .. 12)
 and month_name (January, February, ...) columns. The column value that will be used internally within MDX is the
 month column, so valid member specifications will be of the form:
 <code>[Time].[2005].[Q1].[<b><i>1</i></b>]</code>. Members of the <code>[Month]</code>
-level will displayed in the order January, February, etc.</p>
+level will be displayed in the order January, February, etc.</p>
 
 <p>In a parent-child hierarchy, members are always sorted in hierarchical
 order. The <code>ordinalColumn</code> attribute controls the order that
@@ -731,7 +731,7 @@ java.lang.Comparable</a>
 which yield the desired ordering when their
 <code>Comparable.compareTo</code> method is called.</p>
 
-<p>Levels contain a <code>type</code> attribute, which can have values &quot;<code>String</code>", "<code>Integer</code>", &quot;<code>Numeric</code>", &quot;<code>Boolean</code>&quot;,
+<p>Levels contain a <code>type</code> attribute, which can have values "<code>String</code>", "<code>Integer</code>", "<code>Numeric</code>", &quot;<code>Boolean</code>&quot;,
 &quot;<code>Date</code>&quot;, &quot;<code>Time</code>&quot;, and &quot;<code>Timestamp</code>&quot;.
 The default value is <code>&quot;Numeric&quot;</code> because key columns generally have a numeric type. If it is a
 different type, Mondrian needs to know this so it can generate SQL statements
@@ -770,7 +770,7 @@ quotes:</p>
 <p>Notice that the first hierarchy doesn't have a name. By default, a hierarchy has the
 same name as its dimension, so the first hierarchy is called "Time".</p>
 
-<p>These hierarchies don't have much in common ? they don't even have the same table! ? except
+<p>These hierarchies don't have much in common -- they don't even have the same table! -- except
 that they are joined from the same column in the fact table, <code>"time_id"</code>.
 The main reason to put two hierarchies in the same dimension is because it makes more sense to
 the end-user: end-users know that it makes no sense to have the "Time" hierarchy on one axis
@@ -985,15 +985,15 @@ and a <a href="#Member_formatter">member formatter</a>.</p>
 <h1>3.3.10 Default Measure Attribute<a name="Default_Measure_Attribute">&nbsp;</a></h1>
 
 <p>The <a href="#XML_Cube">&lt;Cube&gt;</a> and <a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a>
-elements allows specifying the optional attribute "defaultMeasure".</p>
+elements allow specifying the optional attribute "defaultMeasure".</p>
 
 <p>Specifying <code>defaultMeasure</code> in <a href="#XML_Cube">&lt;Cube&gt;</a> element allows users
-to explicitly specify any base measure as default Measure.</p>
+to explicitly specify any base measure as a default Measure.</p>
 
 <p>Specifying <code>defaultMeasure</code> in <a href="#XML_VirtualCube">&lt;VirtualCube&gt;</a>
 element allows users to explicitly specify any VirtualCube Measure as a default Measure.</p>
 
-<p>Note that if default measure is not specified it takes the first measure defined in the cube as the default measure. In the case of virtual cube,
+<p>Note that if a default measure is not specified it takes the first measure defined in the cube as the default measure. In the case of virtual cube,
  it would pick up the first base measure of the first cube defined within it as the default.</p>
 
 <p>Specifying the <code>defaultMeasure</code> explicitly would be useful in cases where you would want a calculated member to be picked up as the default measure.
@@ -1010,7 +1010,7 @@ element allows users to explicitly specify any VirtualCube Measure as a default 
     <div style="padding-left:20px">&lt;/<a href="#XML_Cube">Cube</a>&gt;</div>
     <div style="padding-left:20px">&lt;<a href="#XML_VirtualCube">VirtualCube</a> name=&quot;Warehouse and Sales&quot; defaultMeasure=&quot;Profit&quot;&gt;</div>
         <div style="padding-left:40px">...</div>
-        <div style="padding-left:40px"><a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Profit]&quot;/&gt;</div>
+        <div style="padding-left:40px">&lt;<a href="#XML_VirtualCubeMeasure">VirtualCubeMeasure</a> cubeName=&quot;Sales&quot; name=&quot;[Measures].[Profit]&quot;/&gt;</div>
     <div style="padding-left:20px">&lt;/<a href="#XML_VirtualCube">VirtualCube</a>&gt;</div>
 </code>
 </blockquote>
@@ -1026,19 +1026,19 @@ are typically the result of business rules associated with the systems producing
 the data, and often cannot be inferred just by looking at the data itself.</p>
 
 <p>Functional dependencies are declared to Mondrian using the
-<a href="#dependsOnLevelValue">&lt;dependsOnLevelValue&gt</a> attribute of the
+<code>dependsOnLevelValue</code> attribute of the
 <a href="#XML_Property">&lt;Property&gt</a> element and the
-<a href="#uniqueKeyLevelName">&lt;uniqueKeyLevelName&gt</a> attribute of the
+<code>uniqueKeyLevelName</code> attribute of the
 <a href="#XML_Hierarchy">&lt;Hierarchy&gt</a> element.</p>
 
-<p>The <a href="#dependsOnLevelValue">&lt;dependsOnLevelValue&gt</a> attribute of a
+<p>The <code>dependsOnLevelValue</code> attribute of a
 <a href="#Member_properties">member property</a> is used to indicate
 that the value of the member property is functionally dependent on the value
 of the <a href="#XML_Level">&lt;Level&gt</a> in which the member property is
 defined.  In other words, for a given value of the level, the value of the
 property is invariant.</p>
 
-<p>The <a href="#uniqueKeyLevelName">&lt;uniqueKeyLevelName&gt</a> attribute of a
+<p>The <code>uniqueKeyLevelName</code> attribute of a
 <a href="#XML_Hierarchy">&lt;Hierarchy&gt</a> is used to indicate that the given
 level (if any) taken together with all higher levels in the hierarchy acts as a
 unique alternate key, ensuring that for any unique combination of those level values,
@@ -1075,8 +1075,8 @@ dependent on the associated level values.</p>
 
 <p>Additionally, we know that the Vehicle Identification Number uniquely identifies
 each car, and that each car only has one license.  Thus, we know that the
-combination of Make, Model, Manufacturing Plant, and Vehicle Ientification
-Number uniquely identify each vehicle; the license number is redundant.</p>
+combination of Make, Model, Manufacturing Plant, and Vehicle Identification
+Number uniquely identifies each vehicle; the license number is redundant.</p>
 
 <p>These attributes enable optimization of the GROUP BY clause in the SQL statements Mondrian generates.  Absent any
 functional dependency information, a typical query on the Automotive dimension
@@ -1118,7 +1118,7 @@ would look something like:</p>
 we know that the query is selecting at a depth that includes the "unique key" level,
 and that all properties in the query are also functionally dependent on their levels.
 In such cases the GROUP BY clause is redundant and may be eliminated completely,
-reducing SQL query performance significantly on some databases:</p>
+increasing SQL query performance significantly on some databases:</p>
 
 <blockquote style="text-indent: -20px">
     <code>
@@ -1184,7 +1184,7 @@ While the expectation is that the 4.0 schema processor will maintain backward
 compatibility with schemas developed for Mondrian 3.1, these are transitional
 attributes introduced to allow support in the interim, and 4.0 will not be
 backward compatible with them. Therefore, any schema using these attributes will
-need to be migrated to the new syntax as part of upgrading to Mondrian 4.0</p>
+need to be migrated to the new syntax as part of upgrading to Mondrian 4.0.</p>
 
 <!--
 ####################################################
@@ -1226,7 +1226,7 @@ follows:</p>
 <p>As with the functional dependency optimizations, support for table hints
 is in a transitional stage, and are likely to change in Mondrian 4.0.  Any
 schema using them may need to be migrated to the new schema syntax as part of
-upgrading to Mondrian 4.0</p>
+upgrading to Mondrian 4.0.</p>
 
 <!--
 #######################################
@@ -1246,7 +1246,7 @@ and is defined using the <code>&lt;<a href="#XML_Join">Join</a>&gt;</code> opera
 <code>
     <div style="padding-left:20px;">&lt;<a href="#XML_Cube">Cube</a> name=&quot;Sales&quot;&gt;</div>
         <div style="padding-left:40px;">...</div>
-        <div style="padding-left:40px;"><a href="#XML_Dimension">Dimension</a> name=&quot;Product&quot; foreignKey=&quot;product_id&quot;&gt;</div>
+        <div style="padding-left:40px;">&lt;<a href="#XML_Dimension">Dimension</a> name=&quot;Product&quot; foreignKey=&quot;product_id&quot;&gt;</div>
 			<div style="padding-left:60px;">&lt;<a href="#XML_Hierarchy">Hierarchy</a> hasAll=&quot;true&quot; primaryKey=&quot;product_id&quot; primaryKeyTable=&quot;product&quot;&gt;</div>
                 <div style="padding-left:80px;">&lt;<a href="#XML_Join">Join</a> leftKey=&quot;product_class_key&quot; rightAlias=&quot;product_class&quot; rightKey=&quot;product_class_id&quot;&gt;</div>
 				    <div style="padding-left:100px;">&lt;<a href="#XML_Table">Table</a> name=&quot;product&quot;/&gt;</div>
@@ -1271,7 +1271,7 @@ a <code>&lt;Join&gt;</code> element nested within a <code>&lt;Join&gt;
 </code> element because <code>&lt;Join&gt;</code> takes two operands; the operands
 can be tables, joins, or even queries.</p>
 
-<p>The arrangement of the tables seems complex, the simple rule of thumb is to order the tables
+<p>The arrangement of the tables seems complex; the simple rule of thumb is to order the tables
 by the number of rows they contain. The <code>"product"</code> table has the most
 rows, so it joins to the fact table and appears first; <code>"product_class"</code>
 has fewer rows, and <code>"product_type"</code>, at the tip of the snowflake, has
@@ -1288,7 +1288,7 @@ column unambiguously comes from the <code>"product"</code> table.</p>
 ############################### -->
 <h1>4.1 Shared dimensions<a name="Shared_dimensions">&nbsp;</a></h1>
 
-<p>When generating the SQL for a join, mondrian needs to know which column to join to. If you are
+<p>When generating the SQL for a join, Mondrian needs to know which column to join to. If you are
 joining to a join, then you need to tell it which of the tables in the join that column belongs
 to (usually it will be the first table in the join).</p>
 
@@ -1401,7 +1401,7 @@ Holds CubeUsage elements.</p>
 <p>The <code>&lt;<a href="#XML_CubeUsage">CubeUsage</a>&gt;</code>
 element is optional. It specifies the base cube that is imported into the
 virtual cube. Currently it is possible to define a VirtualCubeMeasure and
-similar imports from base cube without defining CubeUsage for the cube.
+similar imports from a base cube without defining CubeUsage for the cube.
 The <code>cubeName</code> attribute specifies the base cube being imported.
 The <code>ignoreUnrelatedDimensions</code> attribute specifies that the measures
 from this base cube will have non joining dimension members pushed to the
@@ -1413,7 +1413,7 @@ the similarly named feature in SSAS 2005.
 mentions "When IgnoreUnrelatedDimensions is true, unrelated dimensions are forced
 to their top level; when the value is false, dimensions are not forced to their
 top level. This property is similar to the Multidimensional Expressions
-(MDX) ValidMeasure function". Current mondrian implementation of
+(MDX) ValidMeasure function". Current Mondrian implementation of
 <code>ignoreUnrelatedDimensions</code> depends on use of ValidMeasure. E.g. If we
 want to apply this behaviour to "Unit Sales" measure in the "Warehouse and Sales"
 virtual cube then we need to define a CubeUsage entry for "Sales" cube as shown
@@ -1890,9 +1890,9 @@ The DATATYPE property of a calculated member can have values "<code>String</code
     </code>
 </blockquote>
 
-<p>You can make a calculated member or a measure invisible. If you specify <code>visible="false"
-</code> (the default is "true") in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt; or &lt;
-<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element, user-interfaces such as
+<p>You can make a calculated member or a measure invisible. If you specify <code>visible="false"</code>
+(the default is "true") in the <code>&lt;<a href="#XML_Measure">Measure</a>&gt;</code> or
+<code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code> element, user-interfaces such as
 JPivot will notice this property and hide the member. This is useful if you want to perform
 calculations in a number of steps, and hide intermediate steps from end-users. For example,
 here only "Margin per Sqft" is visible, and its factors "Store Cost", "Margin" and "Store Sqft"
@@ -1934,8 +1934,8 @@ WHERE [Time].[Year].[1997]</code>
 </blockquote>
 
 <p>The <code>WITH SET</code> clause is very similar to the <code>WITH MEMBER</code> clause,
-and as you might expect, it has a construct in schema analogous to <code>&lt;
-<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code>. The
+and as you might expect, it has a construct in schema analogous to
+<code>&lt;<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</code>. The
 <code>&lt;<a href="#XML_NamedSet">NamedSet</a>&gt;</code> element allows you to define a
 named set in your schema as part of a cube definition. It is implicitly available for
 any query against that cube:</p>
@@ -1985,7 +1985,7 @@ WHERE [Time].[Year].[1997]</code>
       </tr>
   </table>
 
-<p>A named set defined against a cube is not inherited by a virtual cubes defined against
+<p>A named set defined against a cube is not inherited by a virtual cube defined against
 that cube. (But you can define a named set against a virtual cube.)</p>
 
 <p>You can also define a named set as global to a schema:</p>
