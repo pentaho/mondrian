@@ -85,19 +85,19 @@ a[name], a[name]:hover, a[name]:active, a[name]:link {
 }
 /* end ff fix/nn */
 a {
-	font: normal .80em Tahoma, Helvetica, sans-serif;
+	font: normal Tahoma, Helvetica, sans-serif;
 	color: #949e3e;
 	text-decoration: none;
 }
 
 a:link, a:visited {
-	font: normal .80em Tahoma, Helvetica, sans-serif;
+	font: normal Tahoma, Helvetica, sans-serif;
 	color: #949e3e;
 	text-decoration: none;
 }
 
 a:hover, a:active {
-	font: normal .80em Tahoma, Helvetica, sans-serif;
+	font: normal Tahoma, Helvetica, sans-serif;
 	color: #ef8033;
 	text-decoration: none;
 }
