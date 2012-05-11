@@ -46,7 +46,7 @@ eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,lo
 
 <p>A Mondrian OLAP System consists of four layers; working from the eyes of the end-user to the bowels of the data center, these are as follows: the presentation layer, the dimensional layer, the star layer, and the storage layer. (See <a href="#Figure_1:_Mondrian_architecture">figure 1</a>.)</p>
 
-<p>The presentation layer determines what the end-user sees on his or her monitor, and how he or she can interact to ask new questions. There are many ways to present multidimensional datasets, including pivot tables (an interactive version of the table shown above), pie, line and bar charts, and advanced visualization tools such as clickable maps and dynamic graphics. These might be written in Swing or JSP, charts rendered in JPEG or GIF format, or transmitted to a remote application via XML. What all of these forms of presentation have in common is the multidimensional 'grammar' of dimensions, measures and cells in which the presentation layer asks the question is asked, and OLAP server returns the answer.</p>
+<p>The presentation layer determines what the end-user sees on his or her monitor, and how he or she can interact to ask new questions. There are many ways to present multidimensional datasets, including pivot tables (an interactive version of the table shown above), pie, line and bar charts, and advanced visualization tools such as clickable maps and dynamic graphics. These might be written in Swing or JSP, charts rendered in JPEG or GIF format, or transmitted to a remote application via XML. What all of these forms of presentation have in common is the multidimensional 'grammar' of dimensions, measures and cells in which the presentation layer asks the question, and the OLAP server returns the answer.</p>
 
 <p>The second layer is the dimensional layer. The dimensional layer parses, validates and executes MDX queries. A query is evaluted in multiple phases. The axes are computed first, then the values of the cells within the axes. For efficiency, the dimensional layer sends cell-requests to the aggregation layer in batches. A query transformer allows the application to manipulate existing queries, rather than building an MDX statement from scratch for each request. And metadata describes the the dimensional model, and how it maps onto the relational model.</p>
 
@@ -156,7 +156,7 @@ eval("page" + id + " = window.open(URL, '" + id + "', 'toolbar=0,scrollbars=0,lo
 
 <p>Mondrian provides an API for client applications to execute queries.</p>
 
-<p>Since there is no widely universally accepted API for executing OLAP queries, Mondrian's primary API proprietary; however, anyone who has used JDBC should find it familiar. The main difference is the query language: Mondrian uses a language called MDX ('<b>M</b>ulti-<b>D</b>imensional e<b>X</b>pressions') to specify queries, where JDBC would use SQL. MDX is described in more detail <a href="#MDX">below</a>.</p>
+<p>Since there is no widely universally accepted API for executing OLAP queries, Mondrian's primary API is proprietary; however, anyone who has used JDBC should find it familiar. The main difference is the query language: Mondrian uses a language called MDX ('<b>M</b>ulti-<b>D</b>imensional e<b>X</b>pressions') to specify queries, where JDBC would use SQL. MDX is described in more detail <a href="#MDX">below</a>.</p>
 
 <p>The following Java fragment connects to Mondrian, executes a query, and prints the results:</p>
 
