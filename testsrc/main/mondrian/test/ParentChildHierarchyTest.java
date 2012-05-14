@@ -49,15 +49,15 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             "HR",
             "  <Dimension name=\"EmployeesClosure\" foreignKey=\"employee_id\">\n"
             + "      <Hierarchy hasAll=\"true\" allMemberName=\"All Employees\"\n"
-            + "          primaryKey=\"employee_id\" primaryKeyTable=\"employee_closure\">\n"
-            + "        <Join leftKey=\"supervisor_id\" rightKey=\"employee_id\">\n"
-            + "          <Table name=\"employee_closure\"/>\n"
-            + "          <Table name=\"employee\" alias=\"employee2\" />\n"
+            + "          primaryKey=\"employee_id\" primaryKeyTable=\"empcl2\">\n"
+            + "        <Join leftAlias=\"empcl2\" leftKey=\"supervisor_id\" rightAlias=\"emp2\" rightKey=\"employee_id\">\n"
+            + "          <Table name=\"employee_closure\" alias=\"empcl2\"/>\n"
+            + "          <Table name=\"employee\" alias=\"emp2\" />\n"
             + "        </Join>\n"
             + "        <Level name=\"Closure\"  type=\"Numeric\" uniqueMembers=\"true\"\n"
-            + "            table=\"employee_closure\" column=\"supervisor_id\"/>\n"
+            + "            table=\"empcl2\" column=\"supervisor_id\"/>\n"
             + "        <Level name=\"Employee\" type=\"Numeric\" uniqueMembers=\"true\"\n"
-            + "            table=\"employee_closure\" column=\"employee_id\"/>\n"
+            + "            table=\"empcl2\" column=\"employee_id\"/>\n"
             + "      </Hierarchy>\n"
             + "  </Dimension>");
     }
@@ -190,7 +190,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         getEmpSnowFlakeClosureTestContext().assertQueryReturns(
             "select {[Measures].[Count], [Measures].[Org Salary], \n"
             + "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n"
-            + "{[EmployeeSnowFlake]} on rows\n"
+            + "{[EmployeeSnowFlake].[EmployeeSnowFlake]} on rows\n"
             + "from [HR]",
             "Axis #0:\n"
             + "{}\n"
@@ -200,7 +200,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Measures].[Number of Employees]}\n"
             + "{[Measures].[Avg Salary]}\n"
             + "Axis #2:\n"
-            + "{[EmployeeSnowFlake].[All Employees]}\n"
+            + "{[EmployeeSnowFlake].[EmployeeSnowFlake].[All Employees]}\n"
             + "Row #0: 7,392\n"
             + "Row #0: $39,431.67\n"
             + "Row #0: 616\n"
@@ -481,7 +481,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "FROM HR\n"
             + "WHERE ([Pay Type].[Hourly])",
             "Axis #0:\n"
-            + "{[Pay Type].[Hourly]}\n"
+            + "{[Employee].[Pay Type].[Hourly]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Employee Salary]}\n"
             + "{[Measures].[Number of Employees]}\n"
@@ -1030,23 +1030,24 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
 
     public void testLevelMembers() {
         final TestContext testContext =
-            getTestContext().legacy().withCube("HR");
+            getTestContext().withCube("HR");
         // <Dimension>.MEMBERS
-        testContext.assertExprReturns("[Employees].Members.Count", "1,156");
+        testContext.assertExprReturns(
+            "[Employee].[Employees].Members.Count", "1,156");
         // <Level>.MEMBERS
         testContext.assertExprReturns(
-            "[Employees].[Employee Id].Members.Count", "1,155");
+            "[Employee].[Employees].[Employee Id].Members.Count", "1,155");
         // <Member>.CHILDREN
         testContext.assertExprReturns(
-            "[Employees].[Sheri Nowmer].Children.Count", "7");
+            "[Employee].[Employees].[Sheri Nowmer].Children.Count", "7");
 
         // Make sure that members of the [Employee] hierarachy don't
         // as calculated (even though they are calculated, internally)
         // but that real calculated members are counted as calculated.
         testContext.assertQueryReturns(
-            "with member [Employees].[Foo] as ' Sum([Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].Children) '\n"
-            + "member [Measures].[Count1] AS [Employees].MEMBERS.Count\n"
-            + "member [Measures].[Count2] AS [Employees].ALLMEMBERS.COUNT\n"
+            "with member [Employees].[Foo] as ' Sum([Employee].[Employees].[All Employees].[Sheri Nowmer].[Donna Arnold].Children) '\n"
+            + "member [Measures].[Count1] AS [Employee].[Employees].MEMBERS.Count\n"
+            + "member [Measures].[Count2] AS [Employee].[Employees].ALLMEMBERS.COUNT\n"
             + "select {[Measures].[Count1], [Measures].[Count2]} ON COLUMNS\n"
             + "from [HR]",
             "Axis #0:\n"
@@ -1234,10 +1235,10 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
                         schemaReader.getLevelMembers(level, true);
                     assertEquals(1155, memberList.size());
                     assertEquals(
-                        "[Employees].[Sheri Nowmer]",
+                        "[Employee].[Employees].[Sheri Nowmer]",
                         memberList.get(0).getUniqueName());
                     assertEquals(
-                        "[Employees].[Sheri Nowmer].[Derrick Whelply]",
+                        "[Employee].[Employees].[Sheri Nowmer].[Derrick Whelply]",
                         memberList.get(1).getUniqueName());
                 }
             }
