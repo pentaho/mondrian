@@ -825,6 +825,43 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Row #9: 79\n");
     }
 
+
+    public void testTopCountAllSlicers() {
+        assertQueryReturns(
+            "select NON EMPTY {[Measures].[Unit Sales]} ON COLUMNS, \n"
+            + "  TopCount([Customers].[USA].[WA].[Spokane].Children, 10, [Measures].[Unit Sales]) ON ROWS \n"
+            + "from [Sales] \n"
+            + "where {[Time].[1997].[Q1].[2] : [Time].[1997].[Q1].[3]}*{[Product].[All Products]}",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1].[2], [Product].[All Products]}\n"
+            + "{[Time].[1997].[Q1].[3], [Product].[All Products]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Grace McLaughlin]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[George Todero]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Matt Bellah]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Mary Francis Benigar]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Lucy Flowers]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[David Hassard]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Dauna Barton]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Dora Sims]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Joann Mramor]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Mike Madrid]}\n"
+            + "Row #0: 131\n"
+            + "Row #1: 129\n"
+            + "Row #2: 113\n"
+            + "Row #3: 103\n"
+            + "Row #4: 95\n"
+            + "Row #5: 94\n"
+            + "Row #6: 92\n"
+            + "Row #7: 85\n"
+            + "Row #8: 79\n"
+            + "Row #9: 79\n");
+    }
+
+
+
     /**
      * Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-900">
      * Bug MONDRIAN-900,
