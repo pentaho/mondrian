@@ -2753,6 +2753,7 @@ public class RolapSchemaUpgrader {
             return xmlHierarchy;
         }
 
+        RolapSchema.PhysRelation soleRelation = null;
         if (links != null) {
             for (Link link : links) {
                 registerRelation(
@@ -2765,9 +2766,12 @@ public class RolapSchemaUpgrader {
                     false,
                     relations);
             }
+            if (relations.size() == 1) {
+                soleRelation = relations.values().iterator().next();
+            }
         } else {
             // Shared dimension. Not linked to any fact tables.
-            registerRelation(
+            soleRelation = registerRelation(
                 null,
                 xmlLegacyRelation,
                 null,
@@ -2776,11 +2780,6 @@ public class RolapSchemaUpgrader {
                 xmlLegacyHierarchy.primaryKeyTable,
                 false,
                 relations);
-        }
-
-        RolapSchema.PhysRelation soleRelation = null;
-        if (relations.size() == 1) {
-            soleRelation = relations.values().iterator().next();
         }
 
         for (int i = 0; i < xmlLegacyHierarchy.levels.length; i++) {
@@ -3053,7 +3052,7 @@ public class RolapSchemaUpgrader {
 
         xmlAttribute.levelType = xmlLegacyLevel.levelType;
         xmlAttribute.hasHierarchy = false;
-        Util.discard(xmlLegacyLevel.nullParentValue);
+
         final String levelUniqueName = null;
 
         // key
@@ -3136,6 +3135,7 @@ public class RolapSchemaUpgrader {
                 MondrianDef.Key.class,
                 xmlParentAttribute.children);
             xmlAttribute.parent = xmlParentAttribute.name;
+            xmlParentAttribute.nullValue = xmlLegacyLevel.nullParentValue;
             xmlAttribute.hasHierarchy = false;
         }
 
@@ -3182,7 +3182,6 @@ public class RolapSchemaUpgrader {
             final RolapSchema.PhysRelation physClosureTable =
                 toPhysRelation2(
                     xmlLegacyLevel.closure.table);
-
             // Create a key for the closure table. This is a slight fib,
             // since this does columns not uniquely identify rows in the
             // table. But it is consistent with how we use keys in dimension
@@ -3193,13 +3192,15 @@ public class RolapSchemaUpgrader {
                     Collections.singletonList(
                         physClosureTable.getColumn(
                             xmlLegacyLevel.closure.childColumn, true)));
-            for (Link link : links) {
-                physSchemaConverter.physSchema.addLink(
-                    key,
-                    link.fact,
-                    Collections.singletonList(
-                        link.fact.getColumn(link.foreignKey, true)),
-                    false);
+            if (links != null) {
+                for (Link link : links) {
+                    physSchemaConverter.physSchema.addLink(
+                        key,
+                        link.fact,
+                        Collections.singletonList(
+                            link.fact.getColumn(link.foreignKey, true)),
+                        false);
+                }
             }
         }
 
