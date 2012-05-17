@@ -35,7 +35,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
     /**
      * Whether member naming rules are implemented.
      */
-    private static final boolean MEMBER_NAMING_IMPL = false;
+    private static final boolean MEMBER_NAMING_IMPL = Bug.BugMondrian951Fixed;
 
     /**
      * Whether attribute hierarchies are implemented.
@@ -433,7 +433,12 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             "Hierarchy for calculated member '[Time].[First Half 97]' not found");
     }
 
-    // TODO:
+    /**
+     * Tests accessing members of a dimension with one hierarchy.
+     *
+     * <p>Relates to bug mondrian-960, because Measures only has one
+     * hierarchy.</p>
+     */
     public void testUnqualifiedHierarchy() {
         // [hierarchy].members for a dimension with one hierarchy
         // (and some attributes)
@@ -455,10 +460,6 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
         runQ(
             "select {[Store].Members} on 0\n"
             + "from [Warehouse and Sales]");
-
-        // Relates to bug mondrian-960, because Measures only has one
-        // hierarchy.
-        Util.discard(Bug.BugMondrian960Fixed);
 
         // TODO: run this in SSAS
         // [Measures] is both a dimension and a hierarchy;

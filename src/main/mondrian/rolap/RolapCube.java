@@ -16,11 +16,9 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunDefBase;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.server.Statement;
-import mondrian.util.Bug;
 
 import org.apache.log4j.Logger;
 
@@ -655,14 +653,6 @@ public class RolapCube extends CubeBase {
                     formula.getMdxMember().getUniqueName();
                 if (formulaUniqueName.equals(uniqueName)
                     && getRole().canAccess(formula.getMdxMember()))
-                {
-                    return formula.getMdxMember();
-                }
-                if (!Bug.BugMondrian960Fixed
-                    && Util.equalName(
-                        Query.getUniqueNameWithoutDimension(
-                            formula.getMdxMember()),
-                        uniqueName))
                 {
                     return formula.getMdxMember();
                 }

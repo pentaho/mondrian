@@ -1321,7 +1321,7 @@
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
-                        <HIERARCHY_ORDINAL>6</HIERARCHY_ORDINAL>
+                        <HIERARCHY_ORDINAL>9</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
@@ -1344,7 +1344,7 @@
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
-                        <HIERARCHY_ORDINAL>7</HIERARCHY_ORDINAL>
+                        <HIERARCHY_ORDINAL>10</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
@@ -1367,7 +1367,7 @@
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
-                        <HIERARCHY_ORDINAL>8</HIERARCHY_ORDINAL>
+                        <HIERARCHY_ORDINAL>11</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
@@ -1390,7 +1390,7 @@
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
-                        <HIERARCHY_ORDINAL>9</HIERARCHY_ORDINAL>
+                        <HIERARCHY_ORDINAL>12</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
@@ -1413,7 +1413,7 @@
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
-                        <HIERARCHY_ORDINAL>10</HIERARCHY_ORDINAL>
+                        <HIERARCHY_ORDINAL>13</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
@@ -1458,7 +1458,7 @@
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
-                        <HIERARCHY_ORDINAL>13</HIERARCHY_ORDINAL>
+                        <HIERARCHY_ORDINAL>6</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
@@ -1481,7 +1481,7 @@
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
-                        <HIERARCHY_ORDINAL>4</HIERARCHY_ORDINAL>
+                        <HIERARCHY_ORDINAL>7</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
@@ -1504,7 +1504,7 @@
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
-                        <HIERARCHY_ORDINAL>5</HIERARCHY_ORDINAL>
+                        <HIERARCHY_ORDINAL>8</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
@@ -1595,7 +1595,7 @@
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
-                        <HIERARCHY_ORDINAL>11</HIERARCHY_ORDINAL>
+                        <HIERARCHY_ORDINAL>4</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
@@ -1618,7 +1618,7 @@
                         <DIMENSION_UNIQUE_SETTINGS>0</DIMENSION_UNIQUE_SETTINGS>
                         <DIMENSION_IS_VISIBLE>true</DIMENSION_IS_VISIBLE>
                         <HIERARCHY_IS_VISIBLE>true</HIERARCHY_IS_VISIBLE>
-                        <HIERARCHY_ORDINAL>12</HIERARCHY_ORDINAL>
+                        <HIERARCHY_ORDINAL>5</HIERARCHY_ORDINAL>
                         <DIMENSION_IS_SHARED>true</DIMENSION_IS_SHARED>
                         <PARENT_CHILD>false</PARENT_CHILD>
                     </row>
@@ -1797,7 +1797,7 @@
                         <MEASURE_AGGREGATOR>0</MEASURE_AGGREGATOR>
                         <DATA_TYPE>3</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Customer Count Member</DESCRIPTION>
                     </row>
                     <row>
@@ -1846,7 +1846,7 @@
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Promotion Sales Member</DESCRIPTION>
                     </row>
                     <row>
@@ -1859,7 +1859,7 @@
                         <MEASURE_AGGREGATOR>2</MEASURE_AGGREGATOR>
                         <DATA_TYPE>3</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Sales Count Member</DESCRIPTION>
                     </row>
                     <row>
@@ -1872,7 +1872,7 @@
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Store Cost Member</DESCRIPTION>
                     </row>
                     <row>
@@ -1885,7 +1885,7 @@
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Store Sales Member</DESCRIPTION>
                     </row>
                     <row>
@@ -1898,7 +1898,7 @@
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Unit Sales Member</DESCRIPTION>
                     </row>
                 </root>
@@ -1993,7 +1993,7 @@
                         <MEASURE_AGGREGATOR>0</MEASURE_AGGREGATOR>
                         <DATA_TYPE>3</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Customer Count Member</DESCRIPTION>
                     </row>
                     <row>
@@ -2030,7 +2030,7 @@
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Promotion Sales Member</DESCRIPTION>
                     </row>
                     <row>
@@ -2043,7 +2043,7 @@
                         <MEASURE_AGGREGATOR>2</MEASURE_AGGREGATOR>
                         <DATA_TYPE>3</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Sales Count Member</DESCRIPTION>
                     </row>
                     <row>
@@ -2056,7 +2056,7 @@
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Store Cost Member</DESCRIPTION>
                     </row>
                     <row>
@@ -2069,7 +2069,7 @@
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Store Sales Member</DESCRIPTION>
                     </row>
                     <row>
@@ -2082,7 +2082,7 @@
                         <MEASURE_AGGREGATOR>1</MEASURE_AGGREGATOR>
                         <DATA_TYPE>5</DATA_TYPE>
                         <MEASURE_IS_VISIBLE>true</MEASURE_IS_VISIBLE>
-                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name]</LEVELS_LIST>
+                        <LEVELS_LIST>[Store].[Stores].[Store Name],[Store].[Store Size in SQFT].[Store Sqft],[Store].[Store Type].[Store Type],[Time].[Time].[Month],[Time].[Weekly].[Day],[Product].[Products].[Product Name],[Promotion].[Media Type].[Media Type],[Promotion].[Promotions].[Promotion Name],[Customer].[Customers].[Name],[Customer].[Education Level].[Education Level],[Customer].[Gender].[Gender],[Customer].[Marital Status].[Marital Status],[Customer].[Yearly Income].[Yearly Income]</LEVELS_LIST>
                         <DESCRIPTION>Sales Cube - Unit Sales Member</DESCRIPTION>
                     </row>
                 </root>

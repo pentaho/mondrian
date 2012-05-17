@@ -380,6 +380,10 @@
 
             <Dimension source='Store'/>
 
+            <Dimension source='Time'/>
+
+            <Dimension source='Product'/>
+
             <Dimension name='Promotion' table='promotion' key='Promotion Id'>
                 <Attributes>
                     <Attribute name='Promotion Id' keyColumn='promotion_id'/>
@@ -446,9 +450,6 @@
                     </Hierarchy>
                 </Hierarchies>
             </Dimension>
-
-            <Dimension source='Time'/>
-            <Dimension source='Product'/>
         </Dimensions>
 
         <MeasureGroups>

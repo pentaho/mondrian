@@ -1453,9 +1453,6 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testSolveOrderNonMeasure2() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "WITH\n"
             + "   MEMBER [Store].[Stores].[StoreCalc] as '0', SOLVE_ORDER=0\n"
@@ -1468,9 +1465,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Product].[ProdCalc]}\n"
+            + "{[Product].[Products].[ProdCalc]}\n"
             + "Axis #2:\n"
-            + "{[Store].[StoreCalc]}\n"
+            + "{[Store].[Stores].[StoreCalc]}\n"
             + "Row #0: 1\n");
     }
 
@@ -1484,9 +1481,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * comes before Customers in the FoodMart.xml schema.
      */
     public void testSolveOrderAmbiguous1() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "WITH\n"
             + "   MEMBER [Promotions].[Calc] AS '1'\n"
@@ -1499,7 +1493,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Promotions].[Calc]}\n"
+            + "{[Promotion].[Promotions].[Calc]}\n"
             + "Axis #2:\n"
             + "{[Customer].[Customers].[Calc]}\n"
             + "Row #0: 1\n");
@@ -1510,9 +1504,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * Promotions in the FoodMart.xml schema.
      */
     public void testSolveOrderAmbiguous2() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "WITH\n"
             + "   MEMBER [Promotions].[Calc] AS '1'\n"
@@ -1525,7 +1516,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Promotions].[Calc]}\n"
+            + "{[Promotion].[Promotions].[Calc]}\n"
             + "Axis #2:\n"
             + "{[Product].[Products].[Calc]}\n"
             + "Row #0: 2\n");
@@ -1574,9 +1565,6 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testMultipleCalculatedMembersWhichAreNotMeasures() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "WITH\n"
             + "  MEMBER [Store].[Stores].[x] AS '1'\n"
@@ -1600,9 +1588,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * previous one would work ok.
      */
     public void testMultipleCalculatedMembersWhichAreNotMeasures2() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "WITH\n"
             + "  MEMBER [Product].[Products].[x] AS '1'\n"
@@ -1622,9 +1607,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * name as [Product].[Products].[x]. (See MONDRIAN-77.)
      */
     public void testMultipleCalculatedMembersWhichAreNotMeasures3() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "WITH\n"
             + "  MEMBER [Product].[Products].[x] AS '1'\n"
@@ -4871,9 +4853,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * [Product].[All Products] is referenced from the expression.
      */
     public void testDependsOn() {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         assertQueryReturns(
             "with member [Customers].[my] as \n"
             + "  'Aggregate(Filter([Customers].[City].Members, (([Measures].[Unit Sales] / ([Measures].[Unit Sales], [Product].[All Products])) > 0.1)))' \n"
@@ -4901,9 +4880,6 @@ public class BasicQueryTest extends FoodMartTestCase {
      * @throws Exception on error
      */
     public void testFilterWithCrossJoin() throws Exception {
-        if (!Bug.BugPartiallyQualifiedCalcMemberFixed) {
-            return;
-        }
         String queryWithFilter =
             "WITH SET [#DataSet#] AS 'Filter(Crossjoin({[Store].[All Stores]}, {[Customers].[All Customers]}), "
             + "[Measures].[Unit Sales] > 5)' "

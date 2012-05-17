@@ -19,7 +19,6 @@ import mondrian.rolap.*;
 import mondrian.server.*;
 import mondrian.spi.ProfileHandler;
 import mondrian.util.ArrayStack;
-import mondrian.util.Bug;
 
 import org.apache.commons.collections.collection.CompositeCollection;
 
@@ -954,10 +953,6 @@ public class Query extends QueryPart {
             if (Util.equalName(member.getUniqueName(), memberUniqueName)
                 || Util.equalName(
                     getUniqueNameWithoutAll(member),
-                    memberUniqueName)
-                || !Bug.BugMondrian960Fixed
-                && Util.equalName(
-                    getUniqueNameWithoutDimension(member),
                     memberUniqueName))
             {
                 return member;
@@ -975,26 +970,6 @@ public class Query extends QueryPart {
                 member.getName());
         } else {
             return Util.makeFqName(member.getHierarchy(), member.getName());
-        }
-    }
-
-    // this method is a hack - remove when mondrian-960 fixed
-    public static String getUniqueNameWithoutDimension(Member member) {
-        assert !Bug.BugMondrian960Fixed;
-        // build unique string
-        Member parentMember = member.getParentMember();
-        if ((parentMember != null) && !parentMember.isAll()) {
-            return Util.makeFqName(
-                getUniqueNameWithoutAll(parentMember),
-                member.getName());
-        } else {
-            final Hierarchy hierarchy = member.getHierarchy();
-            if (hierarchy.getDimension().getName().equals(
-                    hierarchy.getDimension().getName()))
-            {
-                return Util.makeFqName(member.getDimension(), member.getName());
-            }
-            return Util.makeFqName(hierarchy, member.getName());
         }
     }
 
@@ -1548,15 +1523,6 @@ public class Query extends QueryPart {
                         nameParts.subList(
                             0,
                             nameParts.size() - 1));
-                if (!Bug.BugMondrian960Fixed
-                    && member.getHierarchy().getName().equals(
-                        member.getDimension().getName())
-                    && Util.equalName(
-                        member.getDimension().getUniqueName(),
-                        imploded))
-                {
-                    return true;
-                }
                 return Util.equalName(
                     member.getHierarchy().getUniqueName(),
                     imploded);
