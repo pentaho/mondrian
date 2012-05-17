@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho and others
+// Copyright (C) 2007-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -195,7 +195,7 @@ final class GroupingSetsList {
     }
 
     public RolapStar getStar() {
-        return getDefaultGroupingSet().segment0.getStar();
+        return getDefaultGroupingSet().segment0.aggMeasure.getStar();
     }
 
     public List<GroupingSet> getGroupingSets() {

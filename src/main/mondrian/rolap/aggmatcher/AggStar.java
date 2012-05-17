@@ -240,10 +240,6 @@ public class AggStar extends RolapStar {
         this.levelColumnsToJoin = new HashMap<Integer, AggStar.Table.Column>();
     }
 
-    public RolapStar.Table getFactTable() {
-        return super.getFactTable();
-    }
-
     /**
      * Returns the fact table.
      *
@@ -254,13 +250,8 @@ public class AggStar extends RolapStar {
         return (FactTable) aggTable;
     }
 
-    /**
-     * Returns a measure of the IO cost of querying this table. It can be
-     * either the row count or the row count times the size of a row.
-     * If the property {@link MondrianProperties#ChooseAggregateByVolume}
-     * is true, then volume is returned, otherwise row count.
-     */
-    public int getSize() {
+    @Override
+    public int getCost() {
         return MondrianProperties.instance().ChooseAggregateByVolume.get()
             ? getAggFactTable().getVolume()
             : getAggFactTable().getNumberOfRows();

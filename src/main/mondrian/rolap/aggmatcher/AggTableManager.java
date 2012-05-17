@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -76,9 +76,14 @@ public class AggTableManager {
      * This method should only be called once.
      */
     public void initialize() {
-        if (MondrianProperties.instance().ReadAggregates.get()) {
-            reLoadRolapStarAggregates();
-            reOrderAggStarList();
+        if (Util.deprecated(false, false)
+            && MondrianProperties.instance().ReadAggregates.get())
+        {
+            try {
+                loadRolapStarAggregates();
+            } catch (SQLException ex) {
+                throw mres.AggLoadingError.ex(ex);
+            }
         }
         printResults();
     }
@@ -98,7 +103,9 @@ public class AggTableManager {
     }
 
     private void reLoadRolapStarAggregates() {
-        if (MondrianProperties.instance().ReadAggregates.get()) {
+        if (Util.deprecated(false, false)
+            && MondrianProperties.instance().ReadAggregates.get())
+        {
             try {
                 clearJdbcSchema();
                 loadRolapStarAggregates();
@@ -137,6 +144,7 @@ public class AggTableManager {
      * @throws SQLException on error
      */
     private void loadRolapStarAggregates() throws SQLException {
+        Util.deprecated("never called", true);
         ListRecorder msgRecorder = new ListRecorder();
         try {
             DefaultRules rules = DefaultRules.getInstance();
@@ -234,7 +242,7 @@ public class AggTableManager {
                                 dbTable,
                                 msgRecorder,
                                 approxRowCount);
-                        if (aggStar.getSize() > 0) {
+                        if (aggStar.getCost() > 0) {
                             star.addAggStar(aggStar);
                         } else {
                             getLogger().warn(
@@ -306,6 +314,7 @@ public class AggTableManager {
         final MessageRecorder msgRecorder)
         throws SQLException
     {
+        Util.deprecated("never called", true);
         msgRecorder.pushContextName("AggTableManager.bindToStar");
         try {
             // load columns

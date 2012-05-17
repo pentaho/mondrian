@@ -36,10 +36,14 @@ public class RolapMeasureGroup {
     private final String name;
     public final boolean ignoreUnrelatedDimensions;
     private final RolapStar star;
+    final boolean aggregate;
     final List<RolapStoredMeasure> measureList =
         new ArrayList<RolapStoredMeasure>();
+    final List<RolapMeasureRef> measureRefList;
     private final Map<RolapDimension, RolapSchema.PhysPath> dimensionMap =
         new HashMap<RolapDimension, RolapSchema.PhysPath>();
+    final Map<RolapMeasure, RolapMeasure> measureReferences =
+        new HashMap<RolapMeasure, RolapMeasure>();
 
     /**
      * As dimensionMap, but keys are dimensions, not cube-dimensions.
@@ -65,6 +69,12 @@ public class RolapMeasureGroup {
                     RolapStar.Column>();
 
     /**
+     * Columns in this measure group that hold columns from other dimensions.
+     */
+    final List<Pair<RolapStar.Column, RolapSchema.PhysColumn>> copyColumnList =
+        new ArrayList<Pair<RolapStar.Column, RolapSchema.PhysColumn>>();
+
+    /**
      * Creates a RolapMeasureGroup.
      *
      * @param cube Cube
@@ -72,17 +82,27 @@ public class RolapMeasureGroup {
      * @param ignoreUnrelatedDimensions If true, dimensions that are not related
      *     to measures in this measure group will be pushed to top level member
      * @param star Star
+     * @param aggregate Whether this measure group represents an aggregate table
+     *                  (or a hybrid fact/aggregate), as opposed to a fact table
      */
     public RolapMeasureGroup(
         RolapCube cube,
         String name,
         boolean ignoreUnrelatedDimensions,
-        RolapStar star)
+        RolapStar star,
+        boolean aggregate)
     {
         this.name = name;
         this.cube = cube;
         this.ignoreUnrelatedDimensions = ignoreUnrelatedDimensions;
         this.star = star;
+        this.aggregate = aggregate;
+        if (aggregate) {
+            measureRefList = new ArrayList<RolapMeasureRef>();
+        } else {
+            // read-only empty list, to protect against accidents
+            measureRefList = Collections.emptyList();
+        }
         assert cube != null;
         assert name != null;
         assert star != null;
@@ -310,6 +330,22 @@ public class RolapMeasureGroup {
                 e);
         }
         return pathBuilder.done();
+    }
+
+    /**
+     * Reference to a measure defined in another measure group.
+     */
+    static class RolapMeasureRef {
+        final RolapBaseCubeMeasure measure;
+        final RolapSchema.PhysColumn aggColumn;
+
+        public RolapMeasureRef(
+            RolapBaseCubeMeasure measure,
+            RolapSchema.PhysColumn aggColumn)
+        {
+            this.measure = measure;
+            this.aggColumn = aggColumn;
+        }
     }
 }
 

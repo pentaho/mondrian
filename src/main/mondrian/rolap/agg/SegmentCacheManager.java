@@ -1422,7 +1422,7 @@ public class SegmentCacheManager {
             final RolapStar.Measure measure = request.getMeasure();
             final RolapStar star = measure.getStar();
             final RolapSchema schema = star.getSchema();
-            final AggregationKey key = new AggregationKey(request);
+            final AggregationKey key = AggregationKey.create(request);
             final List<SegmentHeader> headers =
                 indexRegistry.getIndex(star)
                     .locate(

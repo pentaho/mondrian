@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -62,6 +62,13 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     private boolean isValid(boolean fail) {
         assert segments.size() > 0;
         for (Segment segment : segments) {
+            if (!Arrays.equals(segment0.predicates, segment.predicates)) {
+                assert !fail;
+                return false;
+            }
+            if (true) {
+                continue;
+            }
             int n = segment.predicates.length;
             if (n != segment0.predicates.length) {
                 assert !fail;
@@ -85,7 +92,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     }
 
     public RolapStar.Measure getMeasure(final int i) {
-        return segments.get(i).measure;
+        return segments.get(i).aggMeasure;
     }
 
     public String getMeasureAlias(final int i) {
@@ -93,7 +100,7 @@ class SegmentArrayQuerySpec extends AbstractQuerySpec {
     }
 
     public RolapStar.Column[] getColumns() {
-        return segment0.getColumns();
+        return segment0.aggColumns;
     }
 
     /**

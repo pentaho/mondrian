@@ -96,6 +96,7 @@ public class AggregationManager extends RolapAggregationManager {
      *     place a list of the segments it has loaded, when it completes
      */
     public static void loadAggregation(
+        StarConverter starConverter,
         SegmentCacheManager cacheMgr,
         int cellRequestCount,
         List<RolapStar.Measure> measures,
@@ -114,7 +115,7 @@ public class AggregationManager extends RolapAggregationManager {
         predicates = aggregation.optimizePredicates(columns, predicates);
         aggregation.load(
             cacheMgr, cellRequestCount, columns, measures, predicates,
-            groupingSetsCollector, segmentFutures);
+            starConverter, groupingSetsCollector, segmentFutures);
     }
 
     /**
@@ -237,6 +238,9 @@ public class AggregationManager extends RolapAggregationManager {
              && !hasCompoundPredicates)
         {
             final boolean[] rollup = {false};
+
+            // Find an aggregate table. (There aren't any registered anymore, so
+            // this will never find anything.)
             AggStar aggStar = findAgg(star, levelBitKey, measureBitKey, rollup);
 
             if (aggStar != null) {
@@ -473,6 +477,23 @@ public class AggregationManager extends RolapAggregationManager {
         extends HashSet<Segment>
         implements RolapAggregationManager.PinSet
     {
+    }
+
+    public interface StarConverter {
+        RolapStar convertStar(RolapStar star);
+
+        BitKey convertBitKey(BitKey bitKey);
+
+        RolapStar.Column[] convertColumnArray(RolapStar.Column[] columns);
+
+        RolapStar.Measure convertMeasure(
+            RolapStar.Measure measure);
+
+        StarColumnPredicate[] convertPredicateArray(
+            StarColumnPredicate[] predicates);
+
+        List<StarPredicate> convertPredicateList(
+            List<StarPredicate> predicateList);
     }
 }
 

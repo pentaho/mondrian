@@ -2976,7 +2976,7 @@ public class XmlaHandler {
         void getSchemaFunctionList(
             List<FunctionDefinition> funDefs,
             Schema schema,
-            Util.Functor1<Boolean, String> functionFilter);
+            Util.Predicate1<String> functionFilter);
 
         int getHierarchyCardinality(Hierarchy hierarchy) throws OlapException;
 
@@ -3106,7 +3106,7 @@ public class XmlaHandler {
         public void getSchemaFunctionList(
             List<FunctionDefinition> funDefs,
             Schema schema,
-            Util.Functor1<Boolean, String> functionFilter)
+            Util.Predicate1<String> functionFilter)
         {
             // no function definitions
         }

@@ -1342,11 +1342,8 @@ Util.deprecated("obsolete basecube parameter", false);
         }
 
         // find the aggstar using the masks
-        final AggregationManager aggMgr =
-            cube.getSchema().getInternalConnection().getServer()
-                .getAggregationManager();
-        return aggMgr.findAgg(
-            star, levelBitKey, measureBitKey, new boolean[] {false});
+        return AggregationManager.findAgg(
+            star, levelBitKey, measureBitKey, new boolean[]{false});
     }
 
     int getMaxRows() {

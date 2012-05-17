@@ -170,12 +170,12 @@ public class Util extends XOMUtil {
         boolean b = false;
         if (!PreJdk16) {
             try {
-                final Functor0<Boolean> functor =
+                final Function0<Boolean> function =
                     compatible.compileScript(
-                        Functor0.class,
+                        Function0.class,
                         "function apply() { return true; }",
                         "JavaScript");
-                b = functor.apply();
+                b = function.apply();
             } catch (MondrianException e) {
                 Util.discard(e);
             }
@@ -2034,9 +2034,9 @@ public class Util extends XOMUtil {
      */
     public static <T> Iterable<T> filter(
         final Iterable<T> iterable,
-        final Functor1<Boolean, T>... conds)
+        final Predicate1<T>... conds)
     {
-        final Functor1<Boolean, T>[] conds2 = optimizeConditions(conds);
+        final Predicate1<T>[] conds2 = optimizeConditions(conds);
         if (conds2.length == 0) {
             return iterable;
         }
@@ -2051,8 +2051,8 @@ public class Util extends XOMUtil {
                         outer:
                         while (iterator.hasNext()) {
                             next = iterator.next();
-                            for (Functor1<Boolean, T> cond : conds2) {
-                                if (!cond.apply(next)) {
+                            for (Predicate1<T> cond : conds2) {
+                                if (!cond.test(next)) {
                                     continue outer;
                                 }
                             }
@@ -2079,22 +2079,22 @@ public class Util extends XOMUtil {
         };
     }
 
-    private static <T> Functor1<Boolean, T>[] optimizeConditions(
-        Functor1<Boolean, T>[] conds)
+    private static <T> Predicate1<T>[] optimizeConditions(
+        Predicate1<T>[] conds)
     {
-        final List<Functor1<Boolean, T>> functor1List =
-            new ArrayList<Functor1<Boolean, T>>(Arrays.asList(conds));
-        for (Iterator<Functor1<Boolean, T>> funcIter =
-            functor1List.iterator(); funcIter.hasNext();)
+        final List<Predicate1<T>> predicateList =
+            new ArrayList<Predicate1<T>>(Arrays.asList(conds));
+        for (Iterator<Predicate1<T>> funcIter = predicateList.iterator();
+            funcIter.hasNext();)
         {
-            Functor1<Boolean, T> booleanTFunctor1 = funcIter.next();
-            if (booleanTFunctor1 == trueFunctor()) {
+            Predicate1<T> predicate = funcIter.next();
+            if (predicate == truePredicate1()) {
                 funcIter.remove();
             }
         }
-        if (functor1List.size() < conds.length) {
+        if (predicateList.size() < conds.length) {
             //noinspection unchecked
-            return functor1List.toArray(new Functor1[functor1List.size()]);
+            return predicateList.toArray(new Predicate1[predicateList.size()]);
         } else {
             return conds;
         }
@@ -2116,8 +2116,8 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Sorts a collection of objects using a {@link java.util.Comparator} and returns a
-     * list.
+     * Sorts a collection of objects using a {@link java.util.Comparator} and
+     * returns a list.
      *
      * @param collection Collection
      * @param comparator Comparator
@@ -4474,16 +4474,34 @@ public class Util extends XOMUtil {
         }
     }
 
-    public static interface Functor0<RT> {
+    /**
+     * Function that takes zero arguments and returns {@code RT}.
+     *
+     * @param <RT> Return type
+     */
+    public static interface Function0<RT> {
         RT apply();
     }
 
-    public static interface Functor1<RT, PT> {
+    /**
+     * Function that takes one argument ({@code PT}) and returns {@code RT}.
+     *
+     * @param <RT> Return type
+     * @param <PT> Parameter type
+     */
+    public static interface Function1<PT, RT> {
         RT apply(PT param);
     }
 
+    /**
+     * Predicate that takes one argument ({@code PT}).
+     * Can be used as a {@code Functor1&lt;PT&gt;} or as an Apache-collections
+     * Predicate.
+     *
+     * @param <PT> Parameter type
+     */
     public static abstract class Predicate1<PT>
-        implements Predicate, Functor1<Boolean, PT>
+        implements Predicate, Function1<PT, Boolean>
     {
         public Boolean apply(PT param) {
             return test(param);
@@ -4497,26 +4515,32 @@ public class Util extends XOMUtil {
         public abstract boolean test(PT pt);
     }
 
-    public static <T> Functor1<T, T> identityFunctor() {
+    public static <T> Function1<T, T> identityFunctor() {
         //noinspection unchecked
-        return (Functor1) IDENTITY_FUNCTOR;
+        return (Function1) IDENTITY_FUNCTION;
     }
 
-    private static final Functor1 IDENTITY_FUNCTOR =
-        new Functor1<Object, Object>() {
+    private static final Function1 IDENTITY_FUNCTION =
+        new Function1<Object, Object>() {
             public Object apply(Object param) {
                 return param;
             }
         };
 
-    public static <PT> Functor1<Boolean, PT> trueFunctor() {
+    /**
+     * Returns a predicate that takes 1 argument and always returns true.
+     *
+     * @param <PT> Parameter type
+     * @return Predicate that always returns true
+     */
+    public static <PT> Predicate1<PT> truePredicate1() {
         //noinspection unchecked
-        return (Functor1) TRUE_FUNCTOR;
+        return (Predicate1) TRUE_PREDICATE1;
     }
 
-    private static final Functor1 TRUE_FUNCTOR =
-        new Functor1<Boolean, Object>() {
-            public Boolean apply(Object param) {
+    private static final Predicate1 TRUE_PREDICATE1 =
+        new Predicate1<Object>() {
+            public boolean test(Object o) {
                 return true;
             }
         };

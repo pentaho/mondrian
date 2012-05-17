@@ -804,10 +804,7 @@ class SqlMemberSource
         measureBitKey.set(ordinal);
 
         // find the aggstar using the masks
-        final AggregationManager aggMgr =
-            cube.getSchema().getInternalConnection().getServer()
-                .getAggregationManager();
-        return aggMgr.findAgg(
+        return AggregationManager.findAgg(
             star, levelBitKey, measureBitKey, new boolean[]{false});
     }
 

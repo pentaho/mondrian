@@ -112,7 +112,7 @@ public class Tuple3<T0, T1, T2>
     /**
      * Returns an iterable over the first slice of an iterable.
      *
-     * @param iterable Iterable over pairs
+     * @param iterable Iterable over 3-tuples
      * @param <T0> First type
      * @param <T1> Second type
      * @param <T2> Third type
@@ -143,15 +143,81 @@ public class Tuple3<T0, T1, T2>
     }
 
     /**
-     * Creates an iterable that iterates in parallel over a three iterables.
+     * Returns an iterable over the second slice of an iterable.
+     *
+     * @param iterable Iterable over 3-tuples
+     * @param <T0> First type
+     * @param <T1> Second type
+     * @param <T2> Third type
+     * @return Iterable over the second elements
+     */
+    public static <T0, T1, T2> Iterable<T1> slice1(
+        final Iterable<Tuple3<T0, T1, T2>> iterable)
+    {
+        return new Iterable<T1>() {
+            public Iterator<T1> iterator() {
+                final Iterator<Tuple3<T0, T1, T2>> iterator =
+                    iterable.iterator();
+                return new Iterator<T1>() {
+                    public boolean hasNext() {
+                        return iterator.hasNext();
+                    }
+
+                    public T1 next() {
+                        return iterator.next().v1;
+                    }
+
+                    public void remove() {
+                        iterator.remove();
+                    }
+                };
+            }
+        };
+    }
+
+    /**
+     * Returns an iterable over the third slice of an iterable.
+     *
+     * @param iterable Iterable over 3-tuples
+     * @param <T0> First type
+     * @param <T1> Second type
+     * @param <T2> Third type
+     * @return Iterable over the third elements
+     */
+    public static <T0, T1, T2> Iterable<T2> slice2(
+        final Iterable<Tuple3<T0, T1, T2>> iterable)
+    {
+        return new Iterable<T2>() {
+            public Iterator<T2> iterator() {
+                final Iterator<Tuple3<T0, T1, T2>> iterator =
+                    iterable.iterator();
+                return new Iterator<T2>() {
+                    public boolean hasNext() {
+                        return iterator.hasNext();
+                    }
+
+                    public T2 next() {
+                        return iterator.next().v2;
+                    }
+
+                    public void remove() {
+                        iterator.remove();
+                    }
+                };
+            }
+        };
+    }
+
+    /**
+     * Creates an iterable that iterates in parallel over three iterables.
      *
      * @param i0 First iterable
      * @param i1 Second iterable
-     * @param i1 Third iterable
+     * @param i2 Third iterable
      * @param <T0> Element type of first iterable
-     * @param <T1> Element type if second iterable
-     * @param <T1> Element type if second iterable
-     * @return Iterable in over both iterables in parallel
+     * @param <T1> Element type of second iterable
+     * @param <T2> Element type of third iterable
+     * @return Iterable over all iterables in parallel
      */
     public static <T0, T1, T2> Iterable<Tuple3<T0, T1, T2>> iterate(
         final Iterable<T0> i0,
@@ -162,14 +228,6 @@ public class Tuple3<T0, T1, T2>
         {
             public Iterator<Tuple3<T0, T1, T2>> iterator()
             {
-                assert !(i0 instanceof Collection
-                         && i1 instanceof Collection
-                         && i2 instanceof Collection
-                         && ((Collection) i0).size()
-                            != ((Collection) i1).size()
-                         && ((Collection) i0).size()
-                            != ((Collection) i2).size())
-                    : "size mismatch: i0=" + i0 + ", i1=" + i1 + ", i2=" + i2;
                 final Iterator<T0> iterator0 = i0.iterator();
                 final Iterator<T1> iterator1 = i1.iterator();
                 final Iterator<T2> iterator2 = i2.iterator();
@@ -178,12 +236,9 @@ public class Tuple3<T0, T1, T2>
                 {
                     public boolean hasNext()
                     {
-                        final boolean hasNext0 = iterator0.hasNext();
-                        final boolean hasNext1 = iterator1.hasNext();
-                        final boolean hasNext2 = iterator2.hasNext();
-                        assert hasNext0 == hasNext1;
-                        assert hasNext0 == hasNext2;
-                        return hasNext0 && hasNext1 && hasNext2;
+                        return iterator0.hasNext()
+                               && iterator1.hasNext()
+                               && iterator2.hasNext();
                     }
 
                     public Tuple3<T0, T1, T2> next()

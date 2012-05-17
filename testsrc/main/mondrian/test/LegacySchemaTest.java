@@ -419,6 +419,9 @@ public class LegacySchemaTest extends FoodMartTestCase {
             + "Row #0: 6,577.33\n"
             + "Row #0: 36.50\n");
     }
+
+    // TODO: Test that mondrian gives a warning if a legacy schema contains
+    // AggPattern (or any other aggregate elements that cannot be converted)
 }
 
 // End LegacySchemaTest.java

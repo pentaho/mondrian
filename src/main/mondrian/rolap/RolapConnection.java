@@ -248,16 +248,7 @@ public class RolapConnection extends ConnectionBase {
                         "Error while creating SQL connection: " + buf);
                 }
             } finally {
-                try {
-                    if (statement != null) {
-                        statement.close();
-                    }
-                    if (conn != null) {
-                        conn.close();
-                    }
-                } catch (SQLException e) {
-                    // ignore
-                }
+                Util.close(null, statement, conn);
             }
         }
 

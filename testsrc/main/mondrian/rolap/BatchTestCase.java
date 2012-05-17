@@ -212,6 +212,7 @@ public class BatchTestCase extends FoodMartTestCase {
         CellRequest[] requests,
         SqlPattern[] patterns)
     {
+        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
         assertRequestSql(requests, patterns, false);
     }
 

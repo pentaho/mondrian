@@ -16,8 +16,7 @@ import mondrian.olap.*;
 import mondrian.rolap.agg.*;
 import mondrian.server.*;
 import mondrian.spi.Dialect;
-import mondrian.test.SqlPattern;
-import mondrian.test.TestContext;
+import mondrian.test.*;
 
 import org.olap4j.impl.Olap4jUtil;
 
@@ -245,18 +244,24 @@ public class TestAggregationManager extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 ACCESS_MYSQL,
-                "select `store`.`store_state` as `c0`,"
-                + " `customer`.`gender` as `c1`,"
-                + " sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0`,"
-                + " sum(`agg_l_05_sales_fact_1997`.`store_sales`) as `m1` "
-                + "from `store` as `store`,"
-                + " `agg_l_05_sales_fact_1997` as `agg_l_05_sales_fact_1997`,"
-                + " `customer` as `customer` "
-                + "where `agg_l_05_sales_fact_1997`.`store_id` = `store`.`store_id` "
-                + "and `store`.`store_state` in ('CA', 'OR') "
-                + "and `agg_l_05_sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-                + "group by `store`.`store_state`, "
-                + "`customer`.`gender`",
+                "select\n"
+                + "    `store`.`store_state` as `c0`,\n"
+                + "    `customer`.`gender` as `c1`,\n"
+                + "    sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0`,\n"
+                + "    sum(`agg_l_05_sales_fact_1997`.`store_sales`) as `m1`\n"
+                + "from\n"
+                + "    `store` as `store`,\n"
+                + "    `agg_l_05_sales_fact_1997` as `agg_l_05_sales_fact_1997`,\n"
+                + "    `customer` as `customer`\n"
+                + "where\n"
+                + "    `agg_l_05_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+                + "and\n"
+                + "    `store`.`store_state` in ('CA', 'OR')\n"
+                + "and\n"
+                + "    `agg_l_05_sales_fact_1997`.`customer_id` = `customer`.`customer_id`\n"
+                + "group by\n"
+                + "    `store`.`store_state`,\n"
+                + "    `customer`.`gender`",
                 29)
         };
 
@@ -372,15 +377,21 @@ public class TestAggregationManager extends BatchTestCase {
             && MondrianProperties.instance().ReadAggregates.get())
         {
             accessMysqlSql =
-                "select `store`.`store_state` as `c0`,"
-                + " `agg_c_14_sales_fact_1997`.`the_year` as `c1`,"
-                + " sum(`agg_c_14_sales_fact_1997`.`unit_sales`) as `m0` "
-                + "from `store` as `store`,"
-                + " `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997` "
-                + "where `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`"
-                + " and `store`.`store_state` in ('CA', 'OR')"
-                + " and `agg_c_14_sales_fact_1997`.`the_year` = 1997 "
-                + "group by `store`.`store_state`,"
+                "select\n"
+                + "    `store`.`store_state` as `c0`,\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year` as `c1`,\n"
+                + "    sum(`agg_c_14_sales_fact_1997`.`unit_sales`) as `m0`\n"
+                + "from\n"
+                + "    `store` as `store`,\n"
+                + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`\n"
+                + "where\n"
+                + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+                + "and\n"
+                + "    `store`.`store_state` in ('CA', 'OR')\n"
+                + "and\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
+                + "group by\n"
+                + "    `store`.`store_state`,\n"
                 + " `agg_c_14_sales_fact_1997`.`the_year`";
 
             derbySql =
@@ -516,21 +527,26 @@ public class TestAggregationManager extends BatchTestCase {
             "Supermarket");
 
         String accessMysqlSql =
-            "select `store`.`store_type` as `c0`,"
-            + " sum(`store`.`store_sqft`) as `m0` "
-            + "from `store` as `store` "
-            + "where `store`.`store_type` = 'Supermarket' "
-            + "group by `store`.`store_type`";
+            "select\n"
+            + "    `store`.`store_type` as `c0`,\n"
+            + "    sum(`store`.`store_sqft`) as `m0`\n"
+            + "from\n"
+            + "    `store` as `store`\n"
+            + "where\n"
+            + "    `store`.`store_type` = 'Supermarket'\n"
+            + "group by\n"
+            + "    `store`.`store_type`";
 
         String derbySql =
-            "select "
-            + "\"store\".\"store_type\" as \"c0\", "
-            + "sum(\"store\".\"store_sqft\") as \"m0\" "
-            + "from "
-            + "\"store\" as \"store\" "
-            + "where "
-            + "\"store\".\"store_type\" = 'Supermarket' "
-            + "group by \"store\".\"store_type\"";
+            "select\n"
+            + "    \"store\".\"store_type\" as \"c0\",\n"
+            + "    sum(\"store\".\"store_sqft\") as \"m0\"\n"
+            + "from\n"
+            + "    \"store\" as \"store\"\n"
+            + "where\n"
+            + "    \"store\".\"store_type\" = 'Supermarket'\n"
+            + "group by\n"
+            + "    \"store\".\"store_type\"";
 
         SqlPattern[] patterns = {
             new SqlPattern(
@@ -569,17 +585,22 @@ public class TestAggregationManager extends BatchTestCase {
             + "group by `d0`, `d1`";
 
         String mysqlSql =
-            "select"
-            + " `time_by_day`.`the_year` as `c0`,"
-            + " `time_by_day`.`quarter` as `c1`,"
-            + " count(distinct `sales_fact_1997`.`customer_id`) as `m0` "
-            + "from `time_by_day` as `time_by_day`,"
-            + " `sales_fact_1997` as `sales_fact_1997` "
-            + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`"
-            + " and `time_by_day`.`the_year` = 1997"
-            + " and `time_by_day`.`quarter` = 'Q1' "
-            + "group by `time_by_day`.`the_year`,"
-            + " `time_by_day`.`quarter`";
+            "select\n"
+            + "    `time_by_day`.`the_year` as `c0`,\n"
+            + "    `time_by_day`.`quarter` as `c1`,\n"
+            + "    count(distinct `sales_fact_1997`.`customer_id`) as `m0`\n"
+            + "from\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    `time_by_day`.`the_year` = 1997\n"
+            + "and\n"
+            + "    `time_by_day`.`quarter` = 'Q1'\n"
+            + "group by\n"
+            + "    `time_by_day`.`the_year`,\n"
+            + "    `time_by_day`.`quarter`";
 
         String derbySql =
             "select "
@@ -648,24 +669,32 @@ public class TestAggregationManager extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL,
-                "select"
-                + " `time_by_day`.`the_year` as `c0`,"
-                + " `time_by_day`.`quarter` as `c1`,"
-                + " `product_class`.`product_family` as `c2`,"
-                + " count(distinct `sales_fact_1997`.`customer_id`) as `m0` "
-                + "from `time_by_day` as `time_by_day`,"
-                + " `sales_fact_1997` as `sales_fact_1997`,"
-                + " `product_class` as `product_class`,"
-                + " `product` as `product` "
-                + "where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`"
-                + " and `time_by_day`.`the_year` = 1997"
-                + " and `time_by_day`.`quarter` = `Q1`"
-                + " and `sales_fact_1997`.`product_id` = `product`.`product_id`"
-                + " and `product`.`product_class_id` = `product_class`.`product_class_id`"
-                + " and `product_class`.`product_family` = `Food` "
-                + "group by `time_by_day`.`the_year`,"
-                + " `time_by_day`.`quarter`,"
-                + " `product_class`.`product_family`",
+                "select\n"
+                + "    `time_by_day`.`the_year` as `c0`,\n"
+                + "    `time_by_day`.`quarter` as `c1`,\n"
+                + "    `product_class`.`product_family` as `c2`,\n"
+                + "    count(distinct `sales_fact_1997`.`customer_id`) as `m0`\n"
+                + "from\n"
+                + "    `time_by_day` as `time_by_day`,\n"
+                + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+                + "    `product_class` as `product_class`,\n"
+                + "    `product` as `product`\n"
+                + "where\n"
+                + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+                + "and\n"
+                + "    `time_by_day`.`the_year` = 1997\n"
+                + "and\n"
+                + "    `time_by_day`.`quarter` = `Q1`\n"
+                + "and\n"
+                + "    `sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+                + "and\n"
+                + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+                + "and\n"
+                + "    `product_class`.`product_family` = `Food`\n"
+                + "group by\n"
+                + "    `time_by_day`.`the_year`,\n"
+                + "    `time_by_day`.`quarter`,\n"
+                + "    `product_class`.`product_family`",
                 23),
             new SqlPattern(
                 Dialect.DatabaseProduct.ACCESS,
@@ -1878,42 +1907,57 @@ public class TestAggregationManager extends BatchTestCase {
     public void testAggNameApproxRowCount() {
         propSaver.set(MondrianProperties.instance().UseAggregates, true);
         propSaver.set(MondrianProperties.instance().ReadAggregates, true);
+
+        final String measureGroup =
+            "<MeasureGroup table='agg_pl_01_sales_fact_1997' approxRowCount='86000' type='aggregate'>\n"
+            + "    <Measures>\n"
+            + "        <MeasureRef name='Fact Count' aggColumn='fact_count'/>\n"
+            + "        <MeasureRef name='Unit Sales' aggColumn='unit_sales_sum'/>\n"
+            + "        <MeasureRef name='Store Cost' aggColumn='store_cost_sum'/>\n"
+            + "        <MeasureRef name='Store Sales' aggColumn='store_sales_sum'/>\n"
+            + "    </Measures>\n"
+            + "    <DimensionLinks>\n"
+            + "        <ForeignKeyLink dimension='Product' foreignKeyColumn='product_id'/>\n"
+            + "        <ForeignKeyLink dimension='Customer' foreignKeyColumn='customer_id'/>\n"
+            + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>\n"
+            + "        <NoLink dimension='Promotion'/>\n"
+            + "        <NoLink dimension='Store'/>\n"
+            + "    </DimensionLinks>\n"
+            + "</MeasureGroup>\n";
+
         final TestContext context =
             getTestContext().withSubstitution(
-                new Util.Functor1<String, String>() {
+                new Util.Function1<String, String>() {
                     public String apply(String schema) {
                         int i = schema.indexOf("</MeasureGroup>");
                         assert i >= 0;
                         i += "</MeasureGroup>".length();
-                        return schema.substring(0, i)
-                            + "\n"
-                            + "<MeasureGroup table='agg_pl_01_sales_fact_1997' approxRowCount='86000' type='aggregate'>\n"
-                            + "    <Measures>\n"
-                            + "        <MeasureRef name='Fact Count' aggColumn='FACT_COUNT'/>\n"
-                            + "        <MeasureRef name='Unit Sales' aggColumn='UNIT_SALES_SUM'/>\n"
-                            + "        <MeasureRef name='Store Cost' aggColumn='STORE_COST_SUM'/>\n"
-                            + "        <MeasureRef name='Store Sales' aggColumn='STORE_SALES_SUM'/>\n"
-                            + "    </Measures>\n"
-                            + "    <DimensionLinks>\n"
-                            + "        <ForeignKeyLink dimension='Product' foreignKeyColumn='product_id'/>\n"
-                            + "        <ForeignKeyLink dimension='Customer' foreignKeyColumn='customer_id'/>\n"
-                            + "        <ForeignKeyLink dimension='Time' foreignKeyColumn='time_id'/>\n"
-                            + "    </DimensionLinks>\n"
-                            + "</MeasureGroup>\n"
-                            + schema.substring(i);
+                        return schema.substring(0, i) + "\n" + measureGroup
+                               + schema.substring(i);
                     }
                 }
             );
         final String mdxQuery =
             "select {[Measures].[Unit Sales]} on columns, "
             + "non empty CrossJoin({[Time.Weekly].[1997].[1].[15]},CrossJoin({[Customers].[USA].[CA].[Lincoln Acres].[William Smith]}, {[Product].[Drink].[Beverages].[Carbonated Beverages].[Soda].[Washington].[Washington Diet Cola]})) on rows "
-            + "from [Sales_Foo] ";
+            + "from [Sales]";
         final String sqlOracle =
             "select count(*) as \"c0\" from \"agg_pl_01_sales_fact_1997\" \"agg_pl_01_sales_fact_1997\"";
         final String sqlMysql =
             "select count(*) as `c0` from `agg_pl_01_sales_fact_1997` as `agg_pl_01_sales_fact_1997`";
         // If the approxRowCount is used, there should not be
         // a query like : select count(*) from agg_pl_01_sales_fact_1997
+        context.assertQueryReturns(
+            "select [Measures].[Unit Sales] on 0,\n"
+            + " [Time].[1997].[Q1] * [Customers].[USA].[CA] on 1\n"
+            + "from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[Time].[1997].[Q1], [Customer].[Customers].[USA].[CA]}\n"
+            + "Row #0: 16,890\n");
         assertQuerySqlOrNot(
             context,
             mdxQuery,
@@ -1978,7 +2022,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "      formatString=\"Standard\"/>\n"
             + "</Cube>\n";
         final TestContext context =
-            TestContext.instance().create(
+            getTestContext().legacy().create(
                 null, cube, null, null, null, null);
         final String mdx =
             "select {[Product].[Product Family].Members} on rows, {[Measures].[Unit Sales]} on columns from [Foo]";
@@ -2069,7 +2113,24 @@ public class TestAggregationManager extends BatchTestCase {
         final String sqlOracle =
             "select \"product_class\".\"product_family\" as \"c0\", \"store\".\"store_id\" as \"c1\", sum(\"agg_l_05_sales_fact_1997\".\"unit_sales\") as \"m0\" from \"product_class\" \"product_class\", \"product\" \"product\", \"agg_l_05_sales_fact_1997\" \"agg_l_05_sales_fact_1997\", \"store\" \"store\" where \"agg_l_05_sales_fact_1997\".\"product_id\" = \"product\".\"product_id\" and \"product\".\"product_class_id\" = \"product_class\".\"product_class_id\" and \"agg_l_05_sales_fact_1997\".\"store_id\" = \"store\".\"store_id\" group by \"product_class\".\"product_family\", \"store\".\"store_id\"";
         final String sqlMysql =
-            "select `product_class`.`product_family` as `c0`, `store`.`store_id` as `c1`, sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0` from `product_class` as `product_class`, `product` as `product`, `agg_l_05_sales_fact_1997` as `agg_l_05_sales_fact_1997`, `store` as `store` where `agg_l_05_sales_fact_1997`.`product_id` = `product`.`product_id` and `product`.`product_class_id` = `product_class`.`product_class_id` and `agg_l_05_sales_fact_1997`.`store_id` = `store`.`store_id` group by `product_class`.`product_family`, `store`.`store_id`";
+            "select\n"
+            + "    `product_class`.`product_family` as `c0`,\n"
+            + "    `store`.`store_id` as `c1`,\n"
+            + "     sum(`agg_l_05_sales_fact_1997`.`unit_sales`) as `m0`\n"
+            + "from\n"
+            + "    `product_class` as `product_class`,\n"
+            + "    `product` as `product`,\n"
+            + "    `agg_l_05_sales_fact_1997` as `agg_l_05_sales_fact_1997`,\n"
+            + "    `store` as `store`\n"
+            + "where\n"
+            + "    `agg_l_05_sales_fact_1997`.`product_id` = `product`.`product_id`\n"
+            + "and\n"
+            + "    `product`.`product_class_id` = `product_class`.`product_class_id`\n"
+            + "and\n"
+            + "    `agg_l_05_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+            + "group by\n"
+            + "    `product_class`.`product_family`,\n"
+            + "    `store`.`store_id`";
         assertQuerySqlOrNot(
             context,
             mdx,

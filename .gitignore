@@ -9,11 +9,16 @@ dist
 *.log.*
 *~
 VERSION.txt
+functions.html
+*.properties
+scratch.txt
+
 classes/
 demo/FoodMartCreateData.sql
 demo/access/MondrianFoodMart.mdb
 demo/derby/foodmart/
 doc/properties.html
+doc/api
 intellij/mondrian.ipr
 intellij/mondrian.iml
 intellij/mondrian.iws
@@ -47,5 +52,4 @@ src/main/mondrian/rolap/aggmatcher/DefaultDef.java
 src/main/mondrian/rolap/aggmatcher/aggregates.dtd
 src/main/mondrian/xmla/DataSourcesConfig.java
 src/main/mondrian/xmla/datasourcesconfig.dtd
-mondrian.properties
-log4j.properties
+

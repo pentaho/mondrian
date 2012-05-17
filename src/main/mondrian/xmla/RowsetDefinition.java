@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -1749,7 +1749,7 @@ public enum RowsetDefinition {
     }
 
     static class DiscoverPropertiesRowset extends Rowset {
-        private final Util.Functor1<Boolean, PropertyDefinition> propNameCond;
+        private final Util.Predicate1<PropertyDefinition> propNameCond;
 
         DiscoverPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(DISCOVER_PROPERTIES, request, handler);
@@ -1817,7 +1817,7 @@ public enum RowsetDefinition {
             for (PropertyDefinition propertyDefinition
                 : PropertyDefinition.class.getEnumConstants())
             {
-                if (!propNameCond.apply(propertyDefinition)) {
+                if (!propNameCond.test(propertyDefinition)) {
                     continue;
                 }
                 Row row = new Row();
@@ -2111,7 +2111,7 @@ public enum RowsetDefinition {
     }
 
     static class DbschemaCatalogsRowset extends Rowset {
-        private final Util.Functor1<Boolean, Catalog> catalogNameCond;
+        private final Util.Predicate1<Catalog> catalogNameCond;
 
         DbschemaCatalogsRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_CATALOGS, request, handler);
@@ -2198,9 +2198,9 @@ public enum RowsetDefinition {
     }
 
     static class DbschemaColumnsRowset extends Rowset {
-        private final Util.Functor1<Boolean, Catalog> tableCatalogCond;
-        private final Util.Functor1<Boolean, Cube> tableNameCond;
-        private final Util.Functor1<Boolean, String> columnNameCond;
+        private final Util.Predicate1<Catalog> tableCatalogCond;
+        private final Util.Predicate1<Cube> tableNameCond;
+        private final Util.Predicate1<String> columnNameCond;
 
         DbschemaColumnsRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_COLUMNS, request, handler);
@@ -2374,7 +2374,7 @@ public enum RowsetDefinition {
 
                         String memberName = member.getName();
                         final String columnName = "Measures:" + memberName;
-                        if (!columnNameCond.apply(columnName)) {
+                        if (!columnNameCond.test(columnName)) {
                             continue;
                         }
 
@@ -2591,7 +2591,7 @@ TODO: see above
     }
 
     static class DbschemaProviderTypesRowset extends Rowset {
-        private final Util.Functor1<Boolean, Integer> dataTypeCond;
+        private final Util.Predicate1<Integer> dataTypeCond;
 
         DbschemaProviderTypesRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_PROVIDER_TYPES, request, handler);
@@ -2741,7 +2741,7 @@ TODO: see above
 
             // i4
             Integer dt = XmlaConstants.DBType.I4.xmlaOrdinal();
-            if (dataTypeCond.apply(dt)) {
+            if (dataTypeCond.test(dt)) {
                 row = new Row();
                 row.set(TypeName.name, XmlaConstants.DBType.I4.userName);
                 row.set(DataType.name, dt);
@@ -2758,7 +2758,7 @@ TODO: see above
 
             // R8
             dt = XmlaConstants.DBType.R8.xmlaOrdinal();
-            if (dataTypeCond.apply(dt)) {
+            if (dataTypeCond.test(dt)) {
                 row = new Row();
                 row.set(TypeName.name, XmlaConstants.DBType.R8.userName);
                 row.set(DataType.name, dt);
@@ -2775,7 +2775,7 @@ TODO: see above
 
             // CY
             dt = XmlaConstants.DBType.CY.xmlaOrdinal();
-            if (dataTypeCond.apply(dt)) {
+            if (dataTypeCond.test(dt)) {
                 row = new Row();
                 row.set(TypeName.name, XmlaConstants.DBType.CY.userName);
                 row.set(DataType.name, dt);
@@ -2792,7 +2792,7 @@ TODO: see above
 
             // BOOL
             dt = XmlaConstants.DBType.BOOL.xmlaOrdinal();
-            if (dataTypeCond.apply(dt)) {
+            if (dataTypeCond.test(dt)) {
                 row = new Row();
                 row.set(TypeName.name, XmlaConstants.DBType.BOOL.userName);
                 row.set(DataType.name, dt);
@@ -2809,7 +2809,7 @@ TODO: see above
 
             // I8
             dt = XmlaConstants.DBType.I8.xmlaOrdinal();
-            if (dataTypeCond.apply(dt)) {
+            if (dataTypeCond.test(dt)) {
                 row = new Row();
                 row.set(TypeName.name, XmlaConstants.DBType.I8.userName);
                 row.set(DataType.name, dt);
@@ -2826,7 +2826,7 @@ TODO: see above
 
             // WSTR
             dt = XmlaConstants.DBType.WSTR.xmlaOrdinal();
-            if (dataTypeCond.apply(dt)) {
+            if (dataTypeCond.test(dt)) {
                 row = new Row();
                 row.set(TypeName.name, XmlaConstants.DBType.WSTR.userName);
                 row.set(DataType.name, dt);
@@ -2858,7 +2858,7 @@ TODO: see above
     }
 
     static class DbschemaSchemataRowset extends Rowset {
-        private final Util.Functor1<Boolean, Catalog> catalogNameCond;
+        private final Util.Predicate1<Catalog> catalogNameCond;
 
         DbschemaSchemataRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_SCHEMATA, request, handler);
@@ -2925,9 +2925,9 @@ TODO: see above
     }
 
     static class DbschemaTablesRowset extends Rowset {
-        private final Util.Functor1<Boolean, Catalog> tableCatalogCond;
-        private final Util.Functor1<Boolean, Cube> tableNameCond;
-        private final Util.Functor1<Boolean, String> tableTypeCond;
+        private final Util.Predicate1<Catalog> tableCatalogCond;
+        private final Util.Predicate1<Cube> tableNameCond;
+        private final Util.Predicate1<String> tableTypeCond;
 
         DbschemaTablesRowset(XmlaRequest request, XmlaHandler handler) {
             super(DBSCHEMA_TABLES, request, handler);
@@ -3047,7 +3047,7 @@ TODO: see above
                             + cube.getName() + " Cube";
                     }
 
-                    if (tableTypeCond.apply("TABLE")) {
+                    if (tableTypeCond.test("TABLE")) {
                         row = new Row();
                         row.set(TableCatalog.name, catalog.getName());
                         row.set(TableName.name, cube.getName());
@@ -3060,7 +3060,7 @@ TODO: see above
                     }
 
 
-                    if (tableTypeCond.apply("SYSTEM TABLE")) {
+                    if (tableTypeCond.test("SYSTEM TABLE")) {
                         for (Dimension dimension : cube.getDimensions()) {
                             if (dimension.getDimensionType()
                                 == Dimension.Type.MEASURE)
@@ -3388,9 +3388,9 @@ TODO: see above
     }
 
     public static class MdschemaCubesRowset extends Rowset {
-        private final Util.Functor1<Boolean, Catalog> catalogNameCond;
-        private final Util.Functor1<Boolean, Schema> schemaNameCond;
-        private final Util.Functor1<Boolean, Cube> cubeNameCond;
+        private final Util.Predicate1<Catalog> catalogNameCond;
+        private final Util.Predicate1<Schema> schemaNameCond;
+        private final Util.Predicate1<Cube> cubeNameCond;
 
         MdschemaCubesRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_CUBES, request, handler);
@@ -3664,11 +3664,11 @@ TODO: see above
     }
 
     static class MdschemaDimensionsRowset extends Rowset {
-        private final Util.Functor1<Boolean, Catalog> catalogNameCond;
-        private final Util.Functor1<Boolean, Schema> schemaNameCond;
-        private final Util.Functor1<Boolean, Cube> cubeNameCond;
-        private final Util.Functor1<Boolean, Dimension> dimensionUnameCond;
-        private final Util.Functor1<Boolean, Dimension> dimensionNameCond;
+        private final Util.Predicate1<Catalog> catalogNameCond;
+        private final Util.Predicate1<Schema> schemaNameCond;
+        private final Util.Predicate1<Cube> cubeNameCond;
+        private final Util.Predicate1<Dimension> dimensionUnameCond;
+        private final Util.Predicate1<Dimension> dimensionNameCond;
 
         MdschemaDimensionsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_DIMENSIONS, request, handler);
@@ -4057,7 +4057,7 @@ TODO: see above
             }
         }
 
-        private final Util.Functor1<Boolean, String> functionNameCond;
+        private final Util.Predicate1<String> functionNameCond;
 
         MdschemaFunctionsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_FUNCTIONS, request, handler);
@@ -4181,12 +4181,12 @@ TODO: see above
     }
 
     static class MdschemaHierarchiesRowset extends Rowset {
-        private final Util.Functor1<Boolean, Catalog> catalogCond;
-        private final Util.Functor1<Boolean, Schema> schemaNameCond;
-        private final Util.Functor1<Boolean, Cube> cubeNameCond;
-        private final Util.Functor1<Boolean, Dimension> dimensionUnameCond;
-        private final Util.Functor1<Boolean, Hierarchy> hierarchyUnameCond;
-        private final Util.Functor1<Boolean, Hierarchy> hierarchyNameCond;
+        private final Util.Predicate1<Catalog> catalogCond;
+        private final Util.Predicate1<Schema> schemaNameCond;
+        private final Util.Predicate1<Cube> cubeNameCond;
+        private final Util.Predicate1<Dimension> dimensionUnameCond;
+        private final Util.Predicate1<Hierarchy> hierarchyUnameCond;
+        private final Util.Predicate1<Hierarchy> hierarchyNameCond;
 
         MdschemaHierarchiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_HIERARCHIES, request, handler);
@@ -4435,7 +4435,7 @@ TODO: see above
             for (Dimension dimension : cube.getDimensions()) {
                 // Must increment ordinal for all dimensions but
                 // only output some of them.
-                boolean genOutput = dimensionUnameCond.apply(dimension);
+                boolean genOutput = dimensionUnameCond.test(dimension);
                 if (genOutput) {
                     populateDimension(
                         connection, catalog, cube, dimension, ordinal, rows);
@@ -4577,13 +4577,13 @@ TODO: see above
     }
 
     static class MdschemaLevelsRowset extends Rowset {
-        private final Util.Functor1<Boolean, Catalog> catalogCond;
-        private final Util.Functor1<Boolean, Schema> schemaNameCond;
-        private final Util.Functor1<Boolean, Cube> cubeNameCond;
-        private final Util.Functor1<Boolean, Dimension> dimensionUnameCond;
-        private final Util.Functor1<Boolean, Hierarchy> hierarchyUnameCond;
-        private final Util.Functor1<Boolean, Level> levelUnameCond;
-        private final Util.Functor1<Boolean, Level> levelNameCond;
+        private final Util.Predicate1<Catalog> catalogCond;
+        private final Util.Predicate1<Schema> schemaNameCond;
+        private final Util.Predicate1<Cube> cubeNameCond;
+        private final Util.Predicate1<Dimension> dimensionUnameCond;
+        private final Util.Predicate1<Hierarchy> hierarchyUnameCond;
+        private final Util.Predicate1<Level> levelUnameCond;
+        private final Util.Predicate1<Level> levelNameCond;
 
         MdschemaLevelsRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_LEVELS, request, handler);
@@ -4925,11 +4925,11 @@ TODO: see above
         public static final int MDMEASURE_AGGR_STD = 7;
         public static final int MDMEASURE_AGGR_CALCULATED = 127;
 
-        private final Util.Functor1<Boolean, Catalog> catalogCond;
-        private final Util.Functor1<Boolean, Schema> schemaNameCond;
-        private final Util.Functor1<Boolean, Cube> cubeNameCond;
-        private final Util.Functor1<Boolean, Measure> measureUnameCond;
-        private final Util.Functor1<Boolean, Measure> measureNameCond;
+        private final Util.Predicate1<Catalog> catalogCond;
+        private final Util.Predicate1<Schema> schemaNameCond;
+        private final Util.Predicate1<Cube> cubeNameCond;
+        private final Util.Predicate1<Measure> measureUnameCond;
+        private final Util.Predicate1<Measure> measureNameCond;
 
         MdschemaMeasuresRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_MEASURES, request, handler);
@@ -5201,14 +5201,14 @@ TODO: see above
     }
 
     static class MdschemaMembersRowset extends Rowset {
-        private final Util.Functor1<Boolean, Catalog> catalogCond;
-        private final Util.Functor1<Boolean, Schema> schemaNameCond;
-        private final Util.Functor1<Boolean, Cube> cubeNameCond;
-        private final Util.Functor1<Boolean, Dimension> dimensionUnameCond;
-        private final Util.Functor1<Boolean, Hierarchy> hierarchyUnameCond;
-        private final Util.Functor1<Boolean, Member> memberNameCond;
-        private final Util.Functor1<Boolean, Member> memberUnameCond;
-        private final Util.Functor1<Boolean, Member> memberTypeCond;
+        private final Util.Predicate1<Catalog> catalogCond;
+        private final Util.Predicate1<Schema> schemaNameCond;
+        private final Util.Predicate1<Cube> cubeNameCond;
+        private final Util.Predicate1<Dimension> dimensionUnameCond;
+        private final Util.Predicate1<Hierarchy> hierarchyUnameCond;
+        private final Util.Predicate1<Member> memberNameCond;
+        private final Util.Predicate1<Member> memberUnameCond;
+        private final Util.Predicate1<Member> memberTypeCond;
 
         MdschemaMembersRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_MEMBERS, request, handler);
@@ -5674,10 +5674,10 @@ TODO: see above
             List<Row> rows)
             throws SQLException
         {
-            if (!memberNameCond.apply(member)) {
+            if (!memberNameCond.test(member)) {
                 return;
             }
-            if (!memberTypeCond.apply(member)) {
+            if (!memberTypeCond.test(member)) {
                 return;
             }
 
@@ -5751,10 +5751,10 @@ TODO: see above
     }
 
     static class MdschemaSetsRowset extends Rowset {
-        private final Util.Functor1<Boolean, Catalog> catalogCond;
-        private final Util.Functor1<Boolean, Schema> schemaNameCond;
-        private final Util.Functor1<Boolean, Cube> cubeNameCond;
-        private final Util.Functor1<Boolean, NamedSet> setUnameCond;
+        private final Util.Predicate1<Catalog> catalogCond;
+        private final Util.Predicate1<Schema> schemaNameCond;
+        private final Util.Predicate1<Cube> cubeNameCond;
+        private final Util.Predicate1<NamedSet> setUnameCond;
         private static final String GLOBAL_SCOPE = "1";
 
         MdschemaSetsRowset(XmlaRequest request, XmlaHandler handler) {
@@ -5867,12 +5867,12 @@ TODO: see above
     }
 
     static class MdschemaPropertiesRowset extends Rowset {
-        private final Util.Functor1<Boolean, Catalog> catalogCond;
-        private final Util.Functor1<Boolean, Schema> schemaNameCond;
-        private final Util.Functor1<Boolean, Cube> cubeNameCond;
-        private final Util.Functor1<Boolean, Dimension> dimensionUnameCond;
-        private final Util.Functor1<Boolean, Hierarchy> hierarchyUnameCond;
-        private final Util.Functor1<Boolean, Property> propertyNameCond;
+        private final Util.Predicate1<Catalog> catalogCond;
+        private final Util.Predicate1<Schema> schemaNameCond;
+        private final Util.Predicate1<Cube> cubeNameCond;
+        private final Util.Predicate1<Dimension> dimensionUnameCond;
+        private final Util.Predicate1<Hierarchy> hierarchyUnameCond;
+        private final Util.Predicate1<Property> propertyNameCond;
 
         MdschemaPropertiesRowset(XmlaRequest request, XmlaHandler handler) {
             super(MDSCHEMA_PROPERTIES, request, handler);
@@ -6214,47 +6214,47 @@ TODO: see above
         }
     }
 
-    public static final Util.Functor1<String, Catalog> CATALOG_NAME_GETTER =
-        new Util.Functor1<String, Catalog>() {
+    public static final Util.Function1<Catalog, String> CATALOG_NAME_GETTER =
+        new Util.Function1<Catalog, String>() {
             public String apply(Catalog catalog) {
                 return catalog.getName();
             }
         };
 
-    public static final Util.Functor1<String, Schema> SCHEMA_NAME_GETTER =
-        new Util.Functor1<String, Schema>() {
+    public static final Util.Function1<Schema, String> SCHEMA_NAME_GETTER =
+        new Util.Function1<Schema, String>() {
             public String apply(Schema schema) {
                 return schema.getName();
             }
         };
 
-    public static final Util.Functor1<String, MetadataElement>
+    public static final Util.Function1<MetadataElement, String>
         ELEMENT_NAME_GETTER =
-        new Util.Functor1<String, MetadataElement>() {
+        new Util.Function1<MetadataElement, String>() {
             public String apply(MetadataElement element) {
                 return element.getName();
             }
         };
 
-    public static final Util.Functor1<String, MetadataElement>
+    public static final Util.Function1<MetadataElement, String>
         ELEMENT_UNAME_GETTER =
-        new Util.Functor1<String, MetadataElement>() {
+        new Util.Function1<MetadataElement, String>() {
             public String apply(MetadataElement element) {
                 return element.getUniqueName();
             }
         };
 
-    public static final Util.Functor1<Member.Type, Member>
+    public static final Util.Function1<Member, Member.Type>
         MEMBER_TYPE_GETTER =
-        new Util.Functor1<Member.Type, Member>() {
+        new Util.Function1<Member, Member.Type>() {
             public Member.Type apply(Member member) {
                 return member.getMemberType();
             }
         };
 
-    public static final Util.Functor1<String, PropertyDefinition>
+    public static final Util.Function1<PropertyDefinition, String>
         PROPDEF_NAME_GETTER =
-        new Util.Functor1<String, PropertyDefinition>() {
+        new Util.Function1<PropertyDefinition, String>() {
             public String apply(PropertyDefinition property) {
                 return property.name();
             }
@@ -6296,12 +6296,12 @@ TODO: see above
 
     static Iterable<Cube> filteredCubes(
         final Schema schema,
-        Util.Functor1<Boolean, Cube> cubeNameCond)
+        Util.Predicate1<Cube> cubeNameCond)
         throws OlapException
     {
         final Iterable<Cube> iterable =
             filter(sortedCubes(schema), cubeNameCond);
-        if (!cubeNameCond.apply(new SharedDimensionHolderCube(schema))) {
+        if (!cubeNameCond.test(new SharedDimensionHolderCube(schema))) {
             return iterable;
         }
         return Composite.of(
@@ -6350,7 +6350,7 @@ TODO: see above
      */
     private static Iterable<Catalog> catIter(
         final OlapConnection connection,
-        final Util.Functor1<Boolean, Catalog>... conds)
+        final Util.Predicate1<Catalog>... conds)
     {
         return new Iterable<Catalog>() {
             public Iterator<Catalog> iterator() {

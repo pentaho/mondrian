@@ -360,7 +360,7 @@ public class RolapSchemaLoader {
                 type = new MemberType(null, null, null, null);
             }
             final String description = xmlParameter.description;
-            final boolean modifiable = xmlParameter.modifiable;
+            final boolean modifiable = toBoolean(xmlParameter.modifiable, true);
             String defaultValue = xmlParameter.defaultValue;
             RolapSchemaParameter param =
                 new RolapSchemaParameter(
@@ -371,7 +371,7 @@ public class RolapSchemaLoader {
 
         // Create cubes.
         for (MondrianDef.Cube xmlCube : xmlCubes) {
-            if (xmlCube.enabled == null || xmlCube.enabled) {
+            if (toBoolean(xmlCube.enabled, true)) {
                 RolapCube cube =
                     new RolapCube(
                         this,
@@ -1183,15 +1183,22 @@ public class RolapSchemaLoader {
                 null);
         }
 
-        List<RolapMember> measureList = new ArrayList<RolapMember>();
+        final List<RolapMember> measureList = new ArrayList<RolapMember>();
+        final List<RolapMember> aggFactCountMeasureList =
+            new ArrayList<RolapMember>();
         final Set<String> measureGroupNames = new HashSet<String>();
+        final List<Util.Function0<RolapMeasureGroup.RolapMeasureRef>>
+            unresolvedMeasures =
+            new ArrayList<Util.Function0<RolapMeasureGroup.RolapMeasureRef>>();
         for (MondrianDef.MeasureGroup xmlMeasureGroup : xmlMeasureGroups) {
-            if (first(xmlMeasureGroup.type, "base").equals("aggregate")) {
-                continue;
-            }
-            if (!measureGroupNames.add(xmlMeasureGroup.name)) {
+            // Type (fact vs. aggregate) is not used currently.
+            Util.discard(xmlMeasureGroup.type);
+
+            // The name of the measure group defaults to the table alias.
+            final String name = xmlMeasureGroup.getNameAttribute();
+            if (!measureGroupNames.add(name)) {
                 handler.warning(
-                    "Duplicate measure group '" + xmlMeasureGroup.name
+                    "Duplicate measure group '" + name
                     + "' in cube '" + cube.getName() + "'",
                     xmlMeasureGroup,
                     "name");
@@ -1212,10 +1219,10 @@ public class RolapSchemaLoader {
             final RolapMeasureGroup measureGroup =
                 new RolapMeasureGroup(
                     cube,
-                    xmlMeasureGroup.name,
-                    xmlMeasureGroup.ignoreUnrelatedDimensions != null
-                    && xmlMeasureGroup.ignoreUnrelatedDimensions,
-                    star);
+                    name,
+                    toBoolean(xmlMeasureGroup.ignoreUnrelatedDimensions, false),
+                    star,
+                    xmlMeasureGroup.isAggregate());
             validator.putXml(measureGroup, xmlMeasureGroup);
             cube.addMeasureGroup(measureGroup);
 
@@ -1223,7 +1230,29 @@ public class RolapSchemaLoader {
                 : xmlMeasureGroup.getMeasures())
             {
                 if (xmlMeasureOrRef instanceof MondrianDef.MeasureRef) {
-                    throw new AssertionError("TODO: msg");
+                    if (xmlMeasureGroup.isAggregate()) {
+                        final MondrianDef.MeasureRef xmlMeasureRef =
+                            (MondrianDef.MeasureRef) xmlMeasureOrRef;
+                        unresolvedMeasures.add(
+                            new Util.Function0<
+                                RolapMeasureGroup.RolapMeasureRef>()
+                            {
+                                public RolapMeasureGroup.RolapMeasureRef apply()
+                                {
+                                    return createMeasureRef(
+                                        measureList,
+                                        xmlMeasureRef,
+                                        measureGroup);
+                                }
+                            }
+                        );
+                    } else {
+                        handler.warning(
+                            "MeasureRef must not occur in a fact MeasureGroup",
+                            xmlMeasureOrRef,
+                            null);
+                    }
+                    continue;
                 }
                 MondrianDef.Measure xmlMeasure =
                     (MondrianDef.Measure) xmlMeasureOrRef;
@@ -1247,13 +1276,12 @@ public class RolapSchemaLoader {
                     // Only set if different from default (so that if two cubes
                     // share the same fact table, either can turn off caching
                     // and both are affected).
-                    if (!xmlCube.cache) {
+                    if (!toBoolean(xmlCube.cache, true)) {
                         star.setCacheAggregations(false);
                     }
                 }
 
                 measureList.add(measure);
-                measureGroup.measureList.add(measure);
             }
 
             // Ensure that the measure group has an atomic cell count measure
@@ -1272,6 +1300,7 @@ public class RolapSchemaLoader {
                 measureGroup.factCountMeasure =
                     createMeasure(measureGroup, xmlMeasure, relation);
                 measureList.add(measureGroup.factCountMeasure);
+                aggFactCountMeasureList.add(measureGroup.factCountMeasure);
             }
 
             final Set<RolapCubeDimension> unlinkedDimensions =
@@ -1308,7 +1337,7 @@ public class RolapSchemaLoader {
                         "More than one link for dimension '"
                         + xmlDimensionLink.dimension
                         + "' in measure group '"
-                        + xmlMeasureGroup.name
+                        + name
                         + "'",
                         xmlDimensionLink,
                         "dimension");
@@ -1333,6 +1362,13 @@ public class RolapSchemaLoader {
                 {
                     // TODO: implement
                 } else if (xmlDimensionLink
+                    instanceof MondrianDef.CopyLink)
+                {
+                    addCopyLink(
+                        measureGroup,
+                        dimension,
+                        (MondrianDef.CopyLink) xmlDimensionLink);
+                } else if (xmlDimensionLink
                     instanceof MondrianDef.NoLink)
                 {
                     // safe to ignore dimension
@@ -1343,6 +1379,13 @@ public class RolapSchemaLoader {
             }
 
             for (RolapCubeDimension dimension : unlinkedDimensions) {
+                // Ignore the system "Scenario" dimension.
+                // TODO: We could safely ignore all other "hanger" dimensions.
+                if (ScenarioImpl.isScenario(
+                        dimension.getHierarchyList().get(0)))
+                {
+                    continue;
+                }
                 missingLinkAction.handle(
                     handler,
                     "No link for dimension '" + dimension.getName()
@@ -1352,7 +1395,17 @@ public class RolapSchemaLoader {
             }
         }
 
-        cube.init(measureList, measureList.get(0));
+        // Now we've seen all measures, process MeasureRefs.
+        for (Util.Function0 unresolvedMeasure : unresolvedMeasures) {
+            unresolvedMeasure.apply();
+        }
+
+        // The cube contains all measures except the [Fact Count] measures we
+        // created for measure groups.
+        final List<RolapMember> cubeMeasureList =
+            new ArrayList<RolapMember>(measureList);
+        cubeMeasureList.removeAll(aggFactCountMeasureList);
+        cube.init(cubeMeasureList, cubeMeasureList.get(0));
 
 //        // Check that every stored measure belongs to its measure group.
 //        List<RolapCubeHierarchy.RolapCubeStoredMeasure> storedMeasures =
@@ -1414,6 +1467,20 @@ public class RolapSchemaLoader {
                 table.makeMeasure(measure1);
             }
 
+            // Create a RolapStar.Measure for each measure-reference. It has
+            // the same definition (agg function) as the referenced measure (in
+            // the fact table), but it uses the column in the aggregate table.
+            for (RolapMeasureGroup.RolapMeasureRef measureRef
+                : measureGroup.measureRefList)
+            {
+                assert measureGroup.getFactRelation()
+                       == measureRef.aggColumn.relation;
+
+                RolapStar star = measureGroup.getStar();
+                RolapStar.Table table = star.getFactTable();
+                table.makeMeasure(measureRef.measure, measureRef.aggColumn);
+            }
+
             for (RolapCubeDimension dimension : cube.dimensionList) {
                 if (measureGroup.existsLink(dimension)) {
                     registerDimension(
@@ -1451,11 +1518,116 @@ public class RolapSchemaLoader {
             }
         }
 
-        checkOrdinals(cube.getName(), measureList);
+        checkOrdinals(cube.getName(), cubeMeasureList);
         if (Util.deprecated(false, false)) {
             cube.setAggGroup(
                 ExplicitRules.Group.make(
                     cube, (Mondrian3Def.Cube) (Object) xmlCube));
+        }
+
+        cube.init2();
+    }
+
+    /**
+     * Creates a reference to a measure from a measure group.
+     *
+     * <p>Usually a measure is defined at the finest granularity fact table.
+     * But you can create it in the "aggregate table" and reference from the
+     * "fact table", if you really want to.</p>
+     *
+     * <p>This function is called after all measure groups have been created.
+     * This allows for forward references.</p>
+     *
+     * @param measureList List of measures in this cube (across all measure
+     *                    groups, but not including calc measures)
+     * @param xmlMeasureRef XML MeasureRef element
+     * @param measureGroup Measure group
+     * @return Created measure reference
+     */
+    private RolapMeasureGroup.RolapMeasureRef createMeasureRef(
+        List<RolapMember> measureList,
+        MondrianDef.MeasureRef xmlMeasureRef,
+        RolapMeasureGroup measureGroup)
+    {
+        final RolapMember measure =
+            findMeasure(measureList, xmlMeasureRef.name);
+        if (measure == null) {
+            handler.error(
+                "Measure '" + xmlMeasureRef.name + "' not found",
+                xmlMeasureRef,
+                "name");
+            return null;
+        }
+        if (!(measure instanceof RolapBaseCubeMeasure)) {
+            handler.error(
+                "Measure '" + xmlMeasureRef.name + "' is not a stored measure",
+                xmlMeasureRef,
+                "name");
+            return null;
+        }
+        final RolapBaseCubeMeasure baseMeasure = (RolapBaseCubeMeasure) measure;
+        final RolapSchema.PhysColumn physColumn =
+            getPhysColumn(
+                measureGroup.getFactRelation(),
+                xmlMeasureRef.aggColumn,
+                xmlMeasureRef,
+                "aggColumn");
+        if (physColumn == null) {
+            return null;
+        }
+
+        final RolapMeasureGroup.RolapMeasureRef measureRef =
+            new RolapMeasureGroup.RolapMeasureRef(
+                baseMeasure,
+                physColumn);
+        measureGroup.measureRefList.add(measureRef);
+        return measureRef;
+    }
+
+    private void addCopyLink(
+        RolapMeasureGroup measureGroup,
+        RolapCubeDimension dimension,
+        MondrianDef.CopyLink xmlCopyLink)
+    {
+        final RolapSchema.PhysPath path =
+            new RolapSchema.PhysPathBuilder(measureGroup.getFactRelation())
+                .done();
+        dimensionPaths.put(
+            Pair.of(measureGroup, dimension),
+            path);
+        final RolapSchema.PhysRelation fact = measureGroup.getFactRelation();
+        for (MondrianDef.Column xmlColumn : xmlCopyLink.columnRefs) {
+            final RolapSchema.PhysColumn aggColumn =
+                getPhysColumn(
+                    fact,
+                    xmlColumn.aggColumn,
+                    xmlColumn,
+                    "aggColumn");
+            if (aggColumn == null) {
+                // Column not found. Error already posted. Ignore this link to
+                // make progress.
+                continue;
+            }
+            final RolapSchema.PhysColumn column =
+                getPhysColumn(
+                    last(fact, xmlColumn.table, xmlColumn, "table"),
+                    xmlColumn.name,
+                    xmlColumn,
+                    "name");
+            if (column == null) {
+                // Column not found. Error already posted. Ignore this link to
+                // make progress.
+                continue;
+            }
+            RolapStar.Column starAggColumn =
+                registerExpr(
+                    measureGroup,
+                    dimension,
+                    path,
+                    aggColumn,
+                    null,
+                    null);
+            measureGroup.copyColumnList.add(Pair.of(starAggColumn, column));
         }
     }
 
@@ -1464,6 +1636,9 @@ public class RolapSchemaLoader {
     {
         for (RolapMember member : memberList) {
             if (Util.equalName(member.getName(), name)) {
+                return member;
+            }
+            if (member.getUniqueName().equals(name)) {
                 return member;
             }
         }
@@ -1534,13 +1709,13 @@ public class RolapSchemaLoader {
      * Registers an expression as a column.
      *
      * @param measureGroup Measure group
-     * @param dimension
+     * @param dimension Dimension
      * @param path Path from measure group's fact table to root of dimension
      * @param expr Expression to register
      * @param name Name of level (for descriptive purposes)
      * @param property Property of level (for descriptive purposes, may be null)
      */
-    private static void registerExpr(
+    private static RolapStar.Column registerExpr(
         RolapMeasureGroup measureGroup,
         RolapCubeDimension dimension,
         RolapSchema.PhysPath path,
@@ -1550,7 +1725,7 @@ public class RolapSchemaLoader {
     {
         assert path != null;
         if (expr == null) {
-            return;
+            return null;
         }
 
         final RolapSchema.PhysSchemaGraph graph =
@@ -1582,6 +1757,7 @@ public class RolapSchemaLoader {
         measureGroup.starColumnMap.put(
             Pair.of(dimension, expr),
             starColumn);
+        return starColumn;
     }
 
     /**
@@ -2015,7 +2191,7 @@ public class RolapSchemaLoader {
      * Returns the unique relation that a list of columns belong to.
      *
      * <p>Returns null if and the list is empty or if the columns' relations are
-     * inconsitent.
+     * inconsistent.
      *
      * @param columnList List of columns
      * @return Null if list is empty or columns' relations are inconsitent
@@ -2292,7 +2468,7 @@ public class RolapSchemaLoader {
         // information only available right here.
         dimension.key =
             new Lazy<RolapSchema.PhysKey>(
-                new Util.Functor0<RolapSchema.PhysKey>() {
+                new Util.Function0<RolapSchema.PhysKey>() {
                     public RolapSchema.PhysKey apply() {
                         return lookupKey(
                             xmlDimension, true, dimension.keyAttribute);
@@ -2893,7 +3069,8 @@ public class RolapSchemaLoader {
     }
 
     /**
-     * Gets a column. It is a user error if the column does not exist.
+     * Gets a column. If the column does not exist, posts an error (it is a
+     * user error) and returns null.
      *
      * @param relation Relation
      * @param columnName Name of column
@@ -2904,7 +3081,7 @@ public class RolapSchemaLoader {
     RolapSchema.PhysColumn getPhysColumn(
         RolapSchema.PhysRelation relation,
         String columnName,
-        MondrianDef.Column xmlColumn,
+        ElementDef xmlColumn,
         String attributeName)
     {
         if (relation == null) {

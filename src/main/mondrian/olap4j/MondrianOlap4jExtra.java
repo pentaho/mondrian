@@ -82,7 +82,7 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
     public void getSchemaFunctionList(
         List<FunctionDefinition> funDefs,
         Schema schema,
-        Util.Functor1<Boolean, String> functionFilter)
+        Util.Predicate1<String> functionFilter)
     {
         final FunTable funTable =
             ((MondrianOlap4jSchema) schema).schema.getFunTable();
@@ -94,8 +94,8 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
             case Parentheses:
                 continue;
             }
-            final Boolean passes = functionFilter.apply(fi.getName());
-            if (passes == null || !passes) {
+            final boolean passes = functionFilter.test(fi.getName());
+            if (!passes) {
                 continue;
             }
 

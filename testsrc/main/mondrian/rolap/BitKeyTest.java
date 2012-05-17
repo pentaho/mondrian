@@ -579,8 +579,8 @@ public class BitKeyTest extends TestCase {
                     BitKey bitKey0 = makeAndSet(size0, positions0);
                     BitKey bitKey1 = makeAndSet(size1, positions1);
                     int c = bitKey0.compareTo(bitKey1);
-                    final String s0 = bitKey0.toString();
-                    final String s1 = bitKey1.toString();
+                    final String s0 = bitKey0.toBinaryString();
+                    final String s1 = bitKey1.toBinaryString();
                     String ps0 = s0.substring("0x".length());
                     String ps1 = s1.substring("0x".length());
                     while (ps0.length() < ps1.length()) {
@@ -669,7 +669,7 @@ public class BitKeyTest extends TestCase {
         BitKey bitKey = BitKey.Factory.makeBitKey(bitSet);
         assertEquals(
             "0x0000000000000000000000000000000000000000000000000000100000101100",
-            bitKey.toString());
+            bitKey.toBinaryString());
 
         final BitSet emptyBitSet = new BitSet(77);
         bitKey = BitKey.Factory.makeBitKey(emptyBitSet);

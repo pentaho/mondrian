@@ -30,6 +30,7 @@ import java.util.*;
 import javax.sql.DataSource;
 
 import static mondrian.olap.Util.first;
+import static mondrian.olap.Util.identityFunctor;
 
 /**
  * Converts a mondrian-3.x schema to a mondrian-4 schema.
@@ -42,6 +43,9 @@ public class RolapSchemaUpgrader {
     private final RolapSchema schema;
     private final Map<String, CubeInfo> cubeInfoMap =
         new HashMap<String, CubeInfo>();
+
+    public static final Logger LOGGER =
+        Logger.getLogger(RolapSchemaUpgrader.class);
 
     /**
      * Creates a RolapSchemaUpgrader; private because you should use
@@ -179,6 +183,7 @@ public class RolapSchemaUpgrader {
                 new MondrianDef.Dimensions()).list();
         final Map<String, MondrianDef.Dimension> xmlDimensionMap =
             new HashMap<String, MondrianDef.Dimension>();
+        List<LevelInfo> levelList = new ArrayList<LevelInfo>();
         for (Mondrian3Def.CubeDimension xmlLegacyDimension
             : xmlLegacyCube.dimensions)
         {
@@ -191,7 +196,8 @@ public class RolapSchemaUpgrader {
                     xmlFact,
                     xmlLegacyDimension,
                     schema,
-                    xmlLegacySchema));
+                    xmlLegacySchema,
+                    levelList));
         }
 
         final MondrianDef.MeasureGroup xmlMeasureGroup =
@@ -235,6 +241,27 @@ public class RolapSchemaUpgrader {
             xmlCube.name,
             new CubeInfo(
                 xmlCube.name, fact, xmlFact, xmlLegacyCube));
+
+        if (xmlLegacyCube.fact instanceof Mondrian3Def.Table) {
+            Mondrian3Def.Table xmlLegacyFactTable =
+                (Mondrian3Def.Table) xmlLegacyCube.fact;
+            for (Mondrian3Def.AggTable xmlLegacyAggTable
+                : xmlLegacyFactTable.aggTables)
+            {
+                if (xmlLegacyAggTable instanceof Mondrian3Def.AggName) {
+                    convertAggName(
+                        xmlMeasureGroup,
+                        (Mondrian3Def.AggName) xmlLegacyAggTable,
+                        levelList,
+                        xmlCube.children.holder(
+                            new MondrianDef.MeasureGroups()).list());
+                } else {
+                    LOGGER.warn(
+                        "Cannot convert " + xmlLegacyAggTable.getName());
+                }
+            }
+        }
+
         return xmlCube;
     }
 
@@ -309,6 +336,196 @@ public class RolapSchemaUpgrader {
             }
             xmlDimensionLinks.add(xmlDimensionLink);
         }
+    }
+
+    /*
+    For example,
+
+        <AggName name="agg_c_special_sales_fact_1997">
+            <AggFactCount column="FACT_COUNT"/>
+            <AggIgnoreColumn column="foo"/>
+            <AggIgnoreColumn column="bar"/>
+            <AggForeignKey factColumn="product_id" aggColumn="PRODUCT_ID" />
+            <AggForeignKey factColumn="customer_id" aggColumn="CUSTOMER_ID" />
+            <AggForeignKey factColumn="promotion_id" aggColumn="PROMOTION_ID" />
+            <AggForeignKey factColumn="store_id" aggColumn="STORE_ID" />
+            <AggMeasure name="[Measures].[Unit Sales]" column="UNIT_SALES_SUM" />
+            <AggMeasure name="[Measures].[Store Cost]" column="STORE_COST_SUM" />
+            <AggMeasure name="[Measures].[Store Sales]" column="STORE_SALES_SUM" />
+            <AggLevel name="[Time].[Year]" column="TIME_YEAR" />
+            <AggLevel name="[Time].[Quarter]" column="TIME_QUARTER" />
+            <AggLevel name="[Time].[Month]" column="TIME_MONTH" />
+        </AggName>
+
+    becomes
+
+        <MeasureGroup table='agg_c_special_sales_fact_1997' type='aggregate'>
+            <Measures>
+                <Measure name='Unit Sales 2' column='unit_sales_sum' aggregator='sum' formatString='Standard'/>
+                <MeasureRef name='Fact Count' aggColumn='fact_count'/>
+                <MeasureRef name='Unit Sales' aggColumn='unit_sales_sum'/>
+                <MeasureRef name='Store Cost' aggColumn='store_cost_sum'/>
+                <MeasureRef name='Store Sales' aggColumn='store_sales_sum'/>
+            </Measures>
+            <DimensionLinks>
+                <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>
+                <ForeignKeyLink dimension='Product' foreignKeyColumn='product_id'/>
+                <ForeignKeyLink dimension='Promotion' foreignKeyColumn='promotion_id'/>
+                <ForeignKeyLink dimension='Customer' foreignKeyColumn='customer_id'/>
+                <CopyLink dimension='Time' attribute='Month'>
+                    <Column aggColumn='time_year' table='time_by_day' name='the_year'/>
+                    <Column aggColumn='time_quarter' table='time_by_day' name='quarter'/>
+                    <Column aggColumn='time_month' table='time_by_day' name='month_of_year'/>
+                </CopyLink>
+            </DimensionLinks>
+        </MeasureGroup>
+
+     */
+    private MondrianDef.MeasureGroup convertAggName(
+        MondrianDef.MeasureGroup xmlFactMeasureGroup,
+        Mondrian3Def.AggName xmlLegacyAggName,
+        List<LevelInfo> levelList,
+        NamedList<MondrianDef.MeasureGroup> xmlMeasureGroupList)
+    {
+        final MondrianDef.MeasureGroup xmlMeasureGroup =
+            new MondrianDef.MeasureGroup();
+        xmlMeasureGroup.table = xmlLegacyAggName.name;
+        xmlMeasureGroup.type = "aggregate";
+        xmlMeasureGroup.approxRowCount = xmlLegacyAggName.approxRowCount;
+        Util.discard(xmlLegacyAggName.ignoreColumns);
+
+        // Make sure table is listed in physical schema.
+        final RolapSchema.PhysTable relation =
+            (RolapSchema.PhysTable)
+                lookupOrCreateTable(xmlLegacyAggName.name);
+        relation.populateColumns(loader, null, null);
+
+        Util.Function1<String, String> sanitizer;
+        if (xmlLegacyAggName.ignorecase) {
+            sanitizer =
+                new Util.Function1<String, String>() {
+                    public String apply(String param) {
+                        for (String s : relation.columnsByName.keySet()) {
+                            if (s.equalsIgnoreCase(param)) {
+                                return s;
+                            }
+                        }
+                        return param;
+                    }
+                };
+        } else {
+            sanitizer = identityFunctor();
+        }
+        final MondrianDef.Measures xmlMeasures =
+            xmlMeasureGroup.children.holder(new MondrianDef.Measures());
+        final MondrianDef.DimensionLinks xmlDimensionLinks =
+            xmlMeasureGroup.children.holder(new MondrianDef.DimensionLinks());
+
+        // For each dimension-link that uses "factColumn" in the fact table,
+        // create a dimension-link in the agg table's measure group.
+        for (Mondrian3Def.AggForeignKey xmlLegacyForeignKey
+            : xmlLegacyAggName.foreignKeys)
+        {
+            for (MondrianDef.DimensionLink xmlLink
+                : xmlFactMeasureGroup.getDimensionLinks())
+            {
+                if (xmlLink instanceof MondrianDef.ForeignKeyLink) {
+                    MondrianDef.ForeignKeyLink xmlFKLink =
+                        (MondrianDef.ForeignKeyLink) xmlLink;
+                    if (matchesForeignKey(
+                            xmlFKLink, xmlLegacyForeignKey.factColumn))
+                    {
+                        final MondrianDef.ForeignKeyLink xmlAggFKLink =
+                            new MondrianDef.ForeignKeyLink();
+                        xmlAggFKLink.foreignKeyColumn =
+                            sanitizer.apply(xmlLegacyForeignKey.aggColumn);
+                        xmlAggFKLink.dimension = xmlFKLink.dimension;
+                        xmlDimensionLinks.list().add(xmlAggFKLink);
+                    }
+                }
+            }
+        }
+
+        Map<String, MondrianDef.CopyLink> copyLinks =
+            new HashMap<String, MondrianDef.CopyLink>();
+        for (Mondrian3Def.AggLevel xmlLegacyLevel : xmlLegacyAggName.levels) {
+            final LevelInfo level =
+                lookupLevelInfo(levelList, xmlLegacyLevel.name);
+            if (level == null) {
+                LOGGER.warn(
+                    "Level '" + xmlLegacyLevel.name
+                    + "' not found; skipping this AggLevel");
+                continue;
+            }
+            MondrianDef.CopyLink copyLink = copyLinks.get(level.dimension);
+            if (copyLink == null) {
+                copyLink = new MondrianDef.CopyLink();
+                copyLinks.put(level.dimension, copyLink);
+            }
+            final MondrianDef.Column column = new MondrianDef.Column();
+            column.aggColumn = sanitizer.apply(xmlLegacyLevel.column);
+            column.name = sanitizer.apply(level.column);
+            column.table = level.table;
+            copyLink.columnRefs = new MondrianDef.Column[] {column};
+            copyLink.dimension = level.dimension;
+            Util.discard(xmlLegacyLevel.collapsed); // TODO:
+        }
+        if (xmlLegacyAggName.factcount != null) {
+            final MondrianDef.MeasureRef xmlCountMeasureRef =
+                new MondrianDef.MeasureRef();
+            xmlCountMeasureRef.aggColumn =
+                sanitizer.apply(xmlLegacyAggName.factcount.column);
+            xmlCountMeasureRef.name = "Fact Count";
+            xmlMeasures.list().add(xmlCountMeasureRef);
+        }
+        for (Mondrian3Def.AggMeasure xmlLegacyMeasure
+            : xmlLegacyAggName.measures)
+        {
+            final MondrianDef.MeasureRef xmlMeasureRef =
+                new MondrianDef.MeasureRef();
+            xmlMeasureRef.aggColumn = sanitizer.apply(xmlLegacyMeasure.column);
+            xmlMeasureRef.name = xmlLegacyMeasure.name;
+            xmlMeasures.list().add(xmlMeasureRef);
+        }
+
+        xmlMeasureGroupList.add(xmlMeasureGroup);
+        return xmlMeasureGroup;
+    }
+
+    private boolean matchesForeignKey(
+        MondrianDef.ForeignKeyLink xmlForeignKeyLink,
+        String factColumn)
+    {
+        if (xmlForeignKeyLink.foreignKeyColumn != null
+            && xmlForeignKeyLink.foreignKeyColumn.equals(factColumn))
+        {
+            return true;
+        }
+        if (xmlForeignKeyLink.foreignKey != null
+            && xmlForeignKeyLink.foreignKey.array.length == 1
+            && xmlForeignKeyLink.foreignKey.array[0].name.equals(factColumn))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private RolapSchema.PhysRelation lookupOrCreateTable(String table) {
+        final RolapSchema.PhysSchema physSchema =
+            physSchemaConverter.physSchema;
+        RolapSchema.PhysRelation physRelation =
+            physSchema.tablesByName.get(table);
+        if (physRelation == null) {
+            physRelation =
+                new RolapSchema.PhysTable(
+                    physSchema,
+                    null,
+                    table,
+                    table,
+                    Collections.<String, String>emptyMap());
+            physSchema.tablesByName.put(table, physRelation);
+        }
+        return physRelation;
     }
 
     /**
@@ -634,7 +851,8 @@ public class RolapSchemaUpgrader {
         Mondrian3Def.RelationOrJoin xmlFact,
         Mondrian3Def.CubeDimension xmlLegacyCubeDimension,
         RolapSchema schema,
-        Mondrian3Def.Schema xmlLegacySchema)
+        Mondrian3Def.Schema xmlLegacySchema,
+        List<LevelInfo> levelList)
     {
         Mondrian3Def.Dimension xmlLegacyDimension;
         if (xmlLegacyCubeDimension instanceof Mondrian3Def.Dimension) {
@@ -760,7 +978,8 @@ public class RolapSchemaUpgrader {
                 xmlDimensionMap,
                 xmlFact,
                 xmlLegacyDimension,
-                dimensionName);
+                dimensionName,
+                levelList);
         convertAnnotations(
             xmlDimension.children,
             xmlLegacyCubeDimension.annotations);
@@ -1227,6 +1446,26 @@ public class RolapSchemaUpgrader {
     {
         for (T element : elements) {
             if (element.getName().equals(name)) {
+                return element;
+            }
+        }
+        return null;
+    }
+
+    public static LevelInfo lookupLevelInfo(
+        List<LevelInfo> elements,
+        String name)
+    {
+        StringBuilder buf = new StringBuilder();
+        for (LevelInfo element : elements) {
+            if (element.level.equals(name)) {
+                return element;
+            }
+            buf.setLength(0);
+            Util.quoteForMdx(buf, element.dimension);
+            Util.quoteForMdx(buf, element.hierarchy);
+            Util.quoteForMdx(buf, element.level);
+            if (buf.toString().equals(name)) {
                 return element;
             }
         }
@@ -2147,13 +2386,15 @@ public class RolapSchemaUpgrader {
             MondrianServer.forConnection(schema.getInternalConnection())
                 .getVersion().getVersionString();
         xmlSchema.missingLink = "ignore";
+        final List<LevelInfo> levelList = new ArrayList<LevelInfo>(); // unused
         for (Mondrian3Def.Dimension xmlLegacyDimension
             : xmlLegacySchema.dimensions)
         {
             xmlSchema.children.add(
                 convertSharedDimension(
                     xmlLegacySchema,
-                    xmlLegacyDimension));
+                    xmlLegacyDimension,
+                    levelList));
         }
         for (Mondrian3Def.Cube xmlLegacyCube : xmlLegacySchema.cubes) {
             xmlSchema.children.add(
@@ -2269,6 +2510,7 @@ public class RolapSchemaUpgrader {
                 final Mondrian3Def.CubeDimension xmlLegacyCubeDimension =
                     lookupDimension(
                         cubeInfo.xmlLegacyCube, xmlVirtualCubeDimension.name);
+                List<LevelInfo> levelList = new ArrayList<LevelInfo>();
                 if (xmlLegacyCubeDimension == null) {
                     if (xmlVirtualCubeDimension.cubeName == null) {
                         // Ignore non-joining base cubes.
@@ -2290,7 +2532,8 @@ public class RolapSchemaUpgrader {
                         cubeInfo.xmlFact,
                         xmlLegacyCubeDimension,
                         schema,
-                        xmlLegacySchema);
+                        xmlLegacySchema,
+                        levelList);
                 cubeInfo.dimensionKeys.put(
                     xmlDimension.name, xmlLegacyCubeDimension.foreignKey);
             }
@@ -2512,13 +2755,16 @@ public class RolapSchemaUpgrader {
 
     private MondrianDef.Dimension convertSharedDimension(
         Mondrian3Def.Schema xmlLegacySchema,
-        Mondrian3Def.Dimension xmlLegacyDimension)
+        Mondrian3Def.Dimension xmlLegacyDimension,
+        List<LevelInfo> levelList)
     {
         return convertDimension(
             null,
             new HashMap<String, MondrianDef.Dimension>(),
             null,
-            xmlLegacyDimension, xmlLegacyDimension.name);
+            xmlLegacyDimension,
+            xmlLegacyDimension.name,
+            levelList);
     }
 
     /**
@@ -2645,7 +2891,8 @@ public class RolapSchemaUpgrader {
         Map<String, MondrianDef.Dimension> xmlDimensionMap,
         Mondrian3Def.RelationOrJoin xmlLegacyFact,
         Mondrian3Def.Dimension xmlLegacyDimension,
-        String dimensionName)
+        String dimensionName,
+        List<LevelInfo> levelList)
     {
         assert dimensionName != null;
         final MondrianDef.Dimension xmlDimension =
@@ -2672,7 +2919,8 @@ public class RolapSchemaUpgrader {
                     xmlLegacyFact,
                     xmlLegacyDimension.hierarchies[i],
                     xmlDimension,
-                    xmlKeyAttributes));
+                    xmlKeyAttributes,
+                    levelList));
         }
         final MondrianDef.Attribute xmlKeyAttribute = xmlKeyAttributes[0];
         if (xmlKeyAttribute != null) {
@@ -2697,7 +2945,8 @@ public class RolapSchemaUpgrader {
         Mondrian3Def.RelationOrJoin xmlLegacyFact,
         Mondrian3Def.Hierarchy xmlLegacyHierarchy,
         MondrianDef.Dimension xmlDimension,
-        MondrianDef.Attribute[] xmlKeyAttributes)
+        MondrianDef.Attribute[] xmlKeyAttributes,
+        List<LevelInfo> levelList)
     {
         final MondrianDef.Hierarchy xmlHierarchy =
             new MondrianDef.Hierarchy();
@@ -2785,13 +3034,15 @@ public class RolapSchemaUpgrader {
         for (int i = 0; i < xmlLegacyHierarchy.levels.length; i++) {
             xmlHierarchy.children.add(
                 convertLevel(
+                    xmlDimension,
+                    xmlHierarchy,
                     xmlLegacyHierarchy,
                     i,
                     xmlLegacyHierarchy.levels[i],
                     relations,
                     soleRelation,
                     links,
-                    xmlDimension.children));
+                    levelList));
         }
 
         badKey:
@@ -2998,6 +3249,8 @@ public class RolapSchemaUpgrader {
     /**
      * Converts an XML level to new format.
      *
+     *
+     *
      * @param xmlLegacyHierarchy XML hierarchy in original format
      * @param ordinal Level ordinal
      * @param xmlLegacyLevel XML level in original format
@@ -3007,16 +3260,18 @@ public class RolapSchemaUpgrader {
      * @return Converted level
      */
     private MondrianDef.Level convertLevel(
+        MondrianDef.Dimension xmlDimension,
+        MondrianDef.Hierarchy xmlHierarchy,
         Mondrian3Def.Hierarchy xmlLegacyHierarchy,
         int ordinal,
         Mondrian3Def.Level xmlLegacyLevel,
         Map<String, RolapSchema.PhysRelation> relations,
         RolapSchema.PhysRelation relation,
         List<Link> links,
-        MondrianDef.Children<MondrianDef.DimensionElement> dimensionChildren)
+        List<LevelInfo> levelList)
     {
         NamedList<MondrianDef.Attribute> attributeList =
-            dimensionChildren.holder(
+            xmlDimension.children.holder(
                 new MondrianDef.Attributes()).list();
 
         final MondrianDef.Attribute xmlAttribute = new MondrianDef.Attribute();
@@ -3056,15 +3311,24 @@ public class RolapSchemaUpgrader {
         final String levelUniqueName = null;
 
         // key
-        convertColumnOrExpr(
-            relation,
-            xmlLegacyLevel.keyExp,
-            xmlLegacyLevel.column,
-            relations,
-            levelUniqueName,
-            MondrianDef.Key.class,
-            xmlAttribute.children);
+        final MondrianDef.Column keyColumn =
+            convertColumnOrExpr(
+                relation,
+                xmlLegacyLevel.keyExp,
+                xmlLegacyLevel.column,
+                relations,
+                levelUniqueName,
+                MondrianDef.Key.class,
+                xmlAttribute.children);
         xmlAttribute.keyColumn = null;
+
+        levelList.add(
+            new LevelInfo(
+                xmlDimension.name,
+                xmlHierarchy.name,
+                xmlLevel.name,
+                keyColumn.table,
+                keyColumn.name));
 
         if (!xmlLegacyLevel.uniqueMembers
             && ordinal > 0)
@@ -3117,7 +3381,6 @@ public class RolapSchemaUpgrader {
         xmlAttribute.orderByColumn = null;
 
         // parent becomes a new attribute
-
         if (xmlLegacyLevel.parentColumn != null
             || xmlLegacyLevel.parentExp != null)
         {
@@ -3260,7 +3523,7 @@ public class RolapSchemaUpgrader {
     }
 
     <T extends MondrianDef.Columns & MondrianDef.AttributeElement>
-    void convertColumnOrExpr(
+    MondrianDef.Column convertColumnOrExpr(
         RolapSchema.PhysRelation relation,
         Mondrian3Def.ExpressionView legacyExpression,
         final String columnName,
@@ -3276,18 +3539,18 @@ public class RolapSchemaUpgrader {
                 columnName,
                 relations,
                 levelUniqueName);
-        if (x == null) {
-            return;
+        if (x != null) {
+            try {
+                T xmlColumns = keyClass.newInstance();
+                xmlColumns.array = new MondrianDef.Column[] {x};
+                attributeChildren.add(xmlColumns);
+            } catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
-        try {
-            T xmlColumns = keyClass.newInstance();
-            xmlColumns.array = new MondrianDef.Column[] {x};
-            attributeChildren.add(xmlColumns);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        return x;
     }
 
     private MondrianDef.Column convertColumnOrExpr(
@@ -4399,6 +4662,28 @@ public class RolapSchemaUpgrader {
             this.fact = fact;
             this.xmlFact = xmlFact;
             this.xmlLegacyCube = xmlLegacyCube;
+        }
+    }
+
+    static class LevelInfo {
+        final String dimension;
+        final String hierarchy;
+        final String level;
+        final String table;
+        final String column;
+
+        public LevelInfo(
+            String dimension,
+            String hierarchy,
+            String level,
+            String table,
+            String column)
+        {
+            this.dimension = dimension;
+            this.hierarchy = hierarchy;
+            this.level = level;
+            this.table = table;
+            this.column = column;
         }
     }
 }

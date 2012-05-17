@@ -11,6 +11,7 @@ package mondrian.spi;
 
 import java.util.List;
 import java.util.Map;
+import javax.sql.DataSource;
 
 /**
  * Description of an SQL dialect.
@@ -791,6 +792,19 @@ public interface Dialect {
         Datatype datatype,
         int precision,
         int scale);
+
+    /**
+     * Returns an estimate of the number of rows in a table.
+     *
+     * @param dataSource Data source
+     * @param schema Schema name
+     * @param name Table name
+     * @return Estimated number of rows in table, or -1 if there is no estimate
+     */
+    int getTableCardinality(
+        DataSource dataSource,
+        String schema,
+        String name);
 
     /**
      * Returns a list of statistics providers for this dialect.

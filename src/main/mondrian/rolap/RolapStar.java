@@ -96,6 +96,18 @@ public class RolapStar {
     }
 
     /**
+     * Returns a measure of the IO cost of querying this table. It can be
+     * either the row count or the row count times the size of a row.
+     * If the property {@link MondrianProperties#ChooseAggregateByVolume}
+     * is true, then volume is returned, otherwise row count.
+     */
+    public int getCost() {
+        return MondrianProperties.instance().ChooseAggregateByVolume.get()
+            ? factTable.relation.getVolume()
+            : factTable.relation.getRowCount();
+    }
+
+    /**
      * Retrieves the value of the cell identified by a cell request, if it
      * can be found in the local cache of the current statement (thread).
      *
@@ -123,7 +135,7 @@ public class RolapStar {
     {
         // REVIEW: Is it possible to optimize this so not every cell lookup
         // causes an AggregationKey to be created?
-        AggregationKey aggregationKey = new AggregationKey(request);
+        AggregationKey aggregationKey = AggregationKey.create(request);
 
         final Bar bar = localBars.get();
         for (SegmentWithData segment : Util.GcIterator.over(bar.segmentRefs)) {
@@ -172,6 +184,21 @@ public class RolapStar {
     public void register(SegmentWithData segment) {
         localBars.get().segmentRefs.add(
             new SoftReference<SegmentWithData>(segment));
+    }
+
+    /**
+     * Returns whether the rows in this star's table are unique.
+     *
+     * <p>Typically, an aggregate table has unique rows but a fact table does
+     * not. But there can be exceptions to both of these.</p>
+     *
+     * <p>If Mondrian knows rows are unique, sometimes it can avoid generating a
+     * GROUP BY.</p>
+     *
+     * @return Whether rows are unique
+     */
+    public boolean areRowsUnique() {
+        return !getFactTable().getRelation().getKeyList().isEmpty();
     }
 
     /**
@@ -260,11 +287,11 @@ public class RolapStar {
      */
     public void addAggStar(AggStar aggStar) {
         // Add it before the first AggStar which is larger, if there is one.
-        int size = aggStar.getSize();
+        int size = aggStar.getCost();
         ListIterator<AggStar> lit = aggStars.listIterator();
         while (lit.hasNext()) {
             AggStar as = lit.next();
-            if (as.getSize() >= size) {
+            if (as.getCost() >= size) {
                 lit.previous();
                 lit.add(aggStar);
                 return;
@@ -779,10 +806,10 @@ public class RolapStar {
             query.addSelect(expression.toSql(), null);
             final String sql = query.toString();
             Connection jdbcConnection = null;
+            PreparedStatement pstmt = null;
             try {
                 jdbcConnection = table.star.dataSource.getConnection();
-                final PreparedStatement pstmt =
-                    jdbcConnection.prepareStatement(sql);
+                pstmt = jdbcConnection.prepareStatement(sql);
                 final ResultSetMetaData resultSetMetaData =
                     pstmt.getMetaData();
                 assert resultSetMetaData.getColumnCount() == 1;
@@ -800,22 +827,13 @@ public class RolapStar {
                 } else {
                     typeString = type + "(" + precision + ", " + scale + ")";
                 }
-                pstmt.close();
-                jdbcConnection.close();
-                jdbcConnection = null;
                 return typeString;
             } catch (SQLException e) {
                 throw Util.newError(
                     e,
                     "Error while deriving type of column " + toString());
             } finally {
-                if (jdbcConnection != null) {
-                    try {
-                        jdbcConnection.close();
-                    } catch (SQLException e) {
-                        // ignore
-                    }
-                }
+                Util.close(null, pstmt, jdbcConnection);
             }
         }
 
@@ -1135,14 +1153,21 @@ public class RolapStar {
         }
 
         void makeMeasure(RolapBaseCubeMeasure measure) {
+            final Measure starMeasure = makeMeasure(measure, measure.getExpr());
+            measure.setStarMeasure(starMeasure); // reverse mapping
+        }
+
+        Measure makeMeasure(
+            RolapBaseCubeMeasure measure,
+            RolapSchema.PhysExpr expr)
+        {
             Dialect.Datatype datatype =
                 measure.getAggregator().deriveDatatype(
-                    measure.getExpr() == null
+                    expr == null
                         ? Collections.<Dialect.Datatype>emptyList()
-                        : Collections.singletonList(
-                            measure.getExpr().getDatatype()));
+                        : Collections.singletonList(expr.getDatatype()));
             if (datatype == null
-                && measure.getExpr() != null)
+                && expr != null)
             {
                 // Sometimes we don't know the type of the expression (e.g. if
                 // it is a SQL expression) but we do know the type of the
@@ -1155,11 +1180,11 @@ public class RolapStar {
                     measure.getCube().getName(),
                     measure.getAggregator(),
                     this,
-                    measure.getExpr(),
+                    expr,
                     datatype);
 
             addColumn(starMeasure);
-            measure.setStarMeasure(starMeasure); // reverse mapping
+            return starMeasure;
         }
 
         /**

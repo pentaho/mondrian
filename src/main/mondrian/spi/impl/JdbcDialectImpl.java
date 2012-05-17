@@ -20,6 +20,7 @@ import org.apache.commons.logging.LogFactory;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
+import javax.sql.DataSource;
 
 /**
  * Implementation of {@link Dialect} based on a JDBC connection and metadata.
@@ -1104,6 +1105,81 @@ public class JdbcDialectImpl implements Dialect {
             return "VARCHAR(" + precision + ")";
         default:
             return datatype.name();
+        }
+    }
+
+    public int getTableCardinality(
+        DataSource dataSource,
+        String schema,
+        String name)
+    {
+        int cardinality =
+            getTableCardinalityUsingJdbc(
+                dataSource,
+                null,
+                schema,
+                name);
+        if (cardinality < 0) {
+            cardinality =
+                getTableCardinalityUsingSql(
+                    dataSource,
+                    null,
+                    schema,
+                    name);
+        }
+        return cardinality;
+    }
+
+    protected int getTableCardinalityUsingJdbc(
+        DataSource dataSource, String catalog, String schema, String table)
+    {
+        Connection connection = null;
+        ResultSet resultSet = null;
+        try {
+            connection = dataSource.getConnection();
+            resultSet =
+                connection
+                    .getMetaData()
+                    .getIndexInfo(catalog, schema, table, false, true);
+            while (resultSet.next()) {
+                int type = resultSet.getInt(7); // "TYPE" column
+                switch (type) {
+                case DatabaseMetaData.tableIndexStatistic:
+                    return resultSet.getInt(11); // "CARDINALITY" column
+                }
+            }
+            return -1; // information not available, apparently
+        } catch (SQLException e) {
+            throw Util.newInternal(
+                e,
+                "while computing cardinality of table [" + table + "]");
+        } finally {
+            Util.close(resultSet, null, connection);
+        }
+    }
+
+    protected int getTableCardinalityUsingSql(
+        DataSource dataSource, String catalog, String schema, String table)
+    {
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            StringBuilder buf = new StringBuilder("select count(*) from ");
+            quoteIdentifier(buf, catalog, schema, table);
+            connection = dataSource.getConnection();
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(buf.toString());
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+            return -1; // huh?
+        } catch (SQLException e) {
+            throw Util.newInternal(
+                e,
+                "while computing cardinality of table [" + table + "]");
+        } finally {
+            Util.close(resultSet, statement, connection);
         }
     }
 }

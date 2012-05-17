@@ -216,11 +216,12 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             new ArrayList<BatchLoader.Batch>();
         batchList.add(genderBatch);
         batchList.add(maritalStatusBatch);
-        List<BatchLoader.CompositeBatch> groupedBatches =
+        List<BatchLoader.Loadable> groupedBatches =
             BatchLoader.groupBatches(batchList);
         assertEquals(batchList.size(), groupedBatches.size());
-        assertEquals(genderBatch, groupedBatches.get(0).detailedBatch);
-        assertEquals(maritalStatusBatch, groupedBatches.get(1).detailedBatch);
+        assertEquals(genderBatch, groupedBatches.get(0).getDetailedBatch());
+        assertEquals(
+            maritalStatusBatch, groupedBatches.get(1).getDetailedBatch());
     }
 
     public void testGroupBatchesForNonGroupableBatchesWithConstraints() {
@@ -243,11 +244,12 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             new ArrayList<BatchLoader.Batch>();
         batchList.add(genderBatch);
         batchList.add(maritalStatusBatch);
-        List<BatchLoader.CompositeBatch> groupedBatches =
+        List<BatchLoader.Loadable> groupedBatches =
             BatchLoader.groupBatches(batchList);
         assertEquals(batchList.size(), groupedBatches.size());
-        assertEquals(genderBatch, groupedBatches.get(0).detailedBatch);
-        assertEquals(maritalStatusBatch, groupedBatches.get(1).detailedBatch);
+        assertEquals(genderBatch, groupedBatches.get(0).getDetailedBatch());
+        assertEquals(
+            maritalStatusBatch, groupedBatches.get(1).getDetailedBatch());
     }
 
     public void testGroupBatchesForGroupableBatches() {
@@ -274,12 +276,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             new ArrayList<BatchLoader.Batch>();
         batchList.add(genderBatch);
         batchList.add(superBatch);
-        List<BatchLoader.CompositeBatch> groupedBatches =
+        List<BatchLoader.Loadable> groupedBatches =
             BatchLoader.groupBatches(batchList);
         assertEquals(1, groupedBatches.size());
-        assertEquals(superBatch, groupedBatches.get(0).detailedBatch);
-        assertTrue(
-            groupedBatches.get(0).summaryBatches.contains(genderBatch));
+        assertEquals(superBatch, groupedBatches.get(0).getDetailedBatch());
+        final BatchLoader.CompositeBatch batch0 =
+            (BatchLoader.CompositeBatch) groupedBatches.get(0);
+        assertTrue(batch0.summaryBatches.contains(genderBatch));
     }
 
     public void testGroupBatchesForGroupableBatchesAndNonGroupableBatches() {
@@ -337,14 +340,18 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         batchList.add(group1Detailed);
         batchList.add(group2Agg1);
         batchList.add(group2Detailed);
-        List<BatchLoader.CompositeBatch> groupedBatches =
+        List<BatchLoader.Loadable> groupedBatches =
             BatchLoader.groupBatches(batchList);
         assertEquals(2, groupedBatches.size());
-        assertEquals(group1Detailed, groupedBatches.get(0).detailedBatch);
-        assertTrue(groupedBatches.get(0).summaryBatches.contains(group1Agg1));
-        assertTrue(groupedBatches.get(0).summaryBatches.contains(group1Agg2));
-        assertEquals(group2Detailed, groupedBatches.get(1).detailedBatch);
-        assertTrue(groupedBatches.get(1).summaryBatches.contains(group2Agg1));
+        final BatchLoader.CompositeBatch batch0 =
+            (BatchLoader.CompositeBatch) groupedBatches.get(0);
+        assertEquals(group1Detailed, batch0.getDetailedBatch());
+        assertTrue(batch0.summaryBatches.contains(group1Agg1));
+        assertTrue(batch0.summaryBatches.contains(group1Agg2));
+        final BatchLoader.CompositeBatch batch1 =
+            (BatchLoader.CompositeBatch) groupedBatches.get(1);
+        assertEquals(group2Detailed, batch1.detailedBatch);
+        assertTrue(batch1.summaryBatches.contains(group2Agg1));
     }
 
     public void testGroupBatchesForTwoSetOfGroupableBatches() {
@@ -462,8 +469,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         batchList.add(batch1RollupOnStoreTypeAndProductDepartment);
         batchList.add(batch2Detailed);
         batchList.add(batch1Detailed);
-        List<BatchLoader.CompositeBatch> groupedBatches =
-            fbcr.groupBatches(batchList);
+        List<BatchLoader.Loadable> groupedBatches =
+            BatchLoader.groupBatches(batchList);
         final int groupedBatchCount = groupedBatches.size();
 
         // Until MONDRIAN-1001 is fixed, behavior is flaky due to interaction
@@ -494,7 +501,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
         Map<AggregationKey, BatchLoader.CompositeBatch> batchGroups =
             new HashMap<
                 AggregationKey, BatchLoader.CompositeBatch>();
-        fbcr.addToCompositeBatch(batchGroups, batch1, batch2);
+        BatchLoader.addToCompositeBatch(batchGroups, batch1, batch2);
         assertEquals(1, batchGroups.size());
         BatchLoader.CompositeBatch compositeBatch =
             batchGroups.get(batch1.batchKey);
@@ -568,7 +575,7 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             aggBatchToAddToDetailedBatch.batchKey,
             existingCompositeBatch);
 
-        fbcr.addToCompositeBatch(
+        BatchLoader.addToCompositeBatch(
             batchGroups, detailedBatch,
             aggBatchToAddToDetailedBatch);
 

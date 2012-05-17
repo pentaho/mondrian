@@ -102,6 +102,8 @@ public class SegmentWithData extends Segment {
             star,
             constrainedColumnsBitKey,
             columns,
+            columns,
+            measure,
             measure,
             predicates,
             excludedRegions,

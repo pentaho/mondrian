@@ -16,6 +16,7 @@ import mondrian.mdx.*;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunDefBase;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.rolap.cache.SoftSmartCache;
 import mondrian.server.Statement;
@@ -86,6 +87,9 @@ public class RolapCube extends CubeBase {
         new ArrayList<RolapMeasureGroup>();
 
     private BitKey closureColumnBitKey;
+
+    // set in init
+    public RolapGalaxy galaxy;
 
     /**
      * Creates a <code>RolapCube</code> from a regular cube.
@@ -250,6 +254,15 @@ public class RolapCube extends CubeBase {
         } else {
             closureColumnBitKey = null;
         }
+    }
+
+    /**
+     * Post-initialization, doing things which cannot be done until
+     * {@link RolapMeasureGroup}s and their {@link RolapStar}s are initialized.
+     */
+    void init2()
+    {
+        this.galaxy = new RolapGalaxy(this);
     }
 
     public RolapSchema getSchema() {

@@ -3455,9 +3455,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * @see mondrian.test.BasicQueryTest#testBug1630754()
      */
     public void testDimensionLinkMissing() {
-        TestContext testContext = TestContext.instance().createSubstitutingCube(
-            "Sales",
-            "  <Dimension name='Store_2' source='Store'/>");
+        TestContext testContext =
+            TestContext.instance()
+                .withFlag(TestContext.Flag.AUTO_MISSING_LINK, false)
+                .createSubstitutingCube(
+                    "Sales",
+                    "  <Dimension name='Store_2' source='Store'/>");
 
         // No link for 'Customer_2'.
         final List<Exception> exceptionList = testContext.getSchemaWarnings();
@@ -3500,17 +3503,19 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     public void testDimensionLinkIgnoreMissingLinks() {
         final TestContext testContext =
-            TestContext.instance().createSubstitutingCube(
-                "Sales",
-                "<Dimension name='Store2' source='Store'/>")
+            TestContext.instance()
+                .withFlag(TestContext.Flag.AUTO_MISSING_LINK, false)
+                .createSubstitutingCube(
+                    "Sales",
+                    "<Dimension name='Store2' source='Store'/>")
                 .withSubstitution(
-                    new Util.Functor1<String, String>() {
+                    new Util.Function1<String, String>() {
                         public String apply(String schema) {
                             final String find = "<Schema ";
                             int i = schema.indexOf(find) + find.length();
                             return schema.substring(0, i)
-                               + "missingLink='ignore' "
-                               + schema.substring(i);
+                                   + "missingLink='ignore' "
+                                   + schema.substring(i);
                         }
                     });
         testContext.assertSimpleQuery();
@@ -6454,8 +6459,12 @@ Test that get error if a dimension has more than one hierarchy with same name.
     // TODO: test that names of MeasureGroups in cube are enforced unique; even
     // if one of them is missing and therefore defaults to name of table
 
+    // TODO: test that it's OK if a MeasureGroup contains no measures
+
     // TODO: test that mondrian gives error if MeasureRef occurs in a
     // MeasureGroup whose type is not aggregate.
+
+    // TODO: measure defined using MeasureRef. Search "implement MeasureRef".
 
     // TODO: test MeasureRef@aggColumn references non-existent measure.
 
@@ -6465,10 +6474,18 @@ Test that get error if a dimension has more than one hierarchy with same name.
     // TODO: test that mondrian gives error if Column@aggColumn is not specified
     // in a column in a CopyLink.
 
+    // TODO: test CopyLink with invalid column
+
     // TODO: test for warning AggTableZeroSize "Zero size Aggregate table ..."
 
     // TODO: check that get an error if and only if ForeignKeyLink.attribute
     // is null and dimension has no key attribute
+
+    // TODO: automatically load agg tables (don't require them to be in
+    // PhysSchema). Remove agg tables from top of NewFoodMart.xml.
+
+    // TODO: Try to create a MeasureRef to a calculated measure. Should fail
+    // (for now).
 }
 
 // End SchemaTest.java

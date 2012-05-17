@@ -159,6 +159,8 @@ public class SegmentBuilder {
             star,
             constrainedColumnsBitKey,
             constrainedColumns,
+            constrainedColumns,
+            measure,
             measure,
             predicateList.toArray(
                 new StarColumnPredicate[predicateList.size()]),

@@ -169,7 +169,7 @@ public class SegmentLoader {
         List<StarPredicate> compoundPredicateList)
     {
         // Simple assertion. Is this Execution instance still valid,
-        // or should we get outa here.
+        // or should we get outta here.
         Locus.peek().execution.checkCancelOrTimeout();
 
         SqlStatement stmt = null;

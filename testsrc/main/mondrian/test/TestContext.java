@@ -420,10 +420,22 @@ public class TestContext {
         Map<String, String> dimensionLinks)
     {
         String s = rawSchema;
+        int h;
 
         final boolean v4 = s.contains("<PhysicalSchema");
+        if (v4
+            && dimensionDefs != null
+            && getFlag(Flag.AUTO_MISSING_LINK) != Boolean.FALSE)
+        {
+            // If we're adding one or more dimensions, we don't want to have to
+            // add a link to every measure group.
+            h = s.indexOf("<Schema ");
+            h = s.indexOf(">", h);
+            s = s.substring(0, h) + " missingLink='ignore'" + s.substring(h);
+        }
+
         // Search for the <Cube> or <VirtualCube> element.
-        int h = s.indexOf("<Cube name=\"" + cubeName + "\"");
+        h = s.indexOf("<Cube name=\"" + cubeName + "\"");
         int end;
         if (h < 0) {
             h = s.indexOf("<Cube name='" + cubeName + "'");
@@ -1426,12 +1438,12 @@ public class TestContext {
      */
     public static TestSuite copySuite(
         TestSuite suite,
-        Util.Functor1<Boolean, Test> testPattern)
+        Util.Predicate1<Test> testPattern)
     {
         TestSuite newSuite = new TestSuite(suite.getName());
         //noinspection unchecked
         for (Test test : Collections.list((Enumeration<Test>) suite.tests())) {
-            if (!testPattern.apply(test)) {
+            if (!testPattern.test(test)) {
                 continue;
             }
             if (test instanceof TestCase) {
@@ -1500,6 +1512,39 @@ public class TestContext {
         default:
             throw Util.unexpected(dataSet);
         }
+    }
+
+    /**
+     * Sets a flag in this test context. Flags are intended to affect test
+     * behavior, not Mondrian's behavior.
+     *
+     * @see #getFlag
+     *
+     * @param flag Flag
+     * @param value Value of flag
+     * @return This test context
+     */
+    public TestContext withFlag(Flag flag, Object value) {
+        final Flag defineFlag = flag;
+        final Object defineValue = value;
+        return new DelegatingTestContext(this) {
+            public Object getFlag(Flag flag) {
+                if (flag == defineFlag) {
+                    return defineValue;
+                }
+                return super.getFlag(flag);
+            }
+        };
+    }
+
+    /**
+     * Retrieves the value of a test flag.
+     *
+     * @param flag Flag
+     * @return Value of flag, or null if not defined
+     */
+    public Object getFlag(Flag flag) {
+        return null;
     }
 
     private TestContext withPropertiesReplace(
@@ -1686,8 +1731,8 @@ public class TestContext {
         String actualSql,
         int expectedRows)
     {
-        final Util.Functor1<String, String> filter =
-            new Util.Functor1<String, String>()
+        final Util.Function1<String, String> filter =
+            new Util.Function1<String, String>()
             {
                 public String apply(String param) {
                     return transformQuotes(
@@ -2046,7 +2091,7 @@ public class TestContext {
      * @return TestContext which contains the substituted schema
      */
     public final TestContext withSubstitution(
-        final Util.Functor1<String, String> substitution)
+        final Util.Function1<String, String> substitution)
     {
         return new DelegatingTestContext(this) {
             public Util.PropertyList getConnectionProperties() {
@@ -2056,7 +2101,7 @@ public class TestContext {
                     propertyList.get(
                         RolapConnectionProperties.CatalogContent.name());
                 if (catalogContent == null) {
-                    catalogContent = super.getRawSchema();
+                    catalogContent = context.getRawSchema();
                 }
                 String catalogContent2 = substitution.apply(catalogContent);
                 Util.PropertyList propertyList2 = propertyList.clone();
@@ -2724,6 +2769,13 @@ public class TestContext {
         public void remove() {
             throw new UnsupportedOperationException();
         }
+    }
+
+    /**
+     * Definition of property that affects the behavior of this TestContext.
+     */
+    enum Flag {
+        AUTO_MISSING_LINK
     }
 }
 

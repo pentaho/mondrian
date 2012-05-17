@@ -1074,13 +1074,7 @@ public class RolapSchema implements Schema {
                     "View is invalid: " + e.getMessage(), xmlNode, null, e);
                 return null;
             } finally {
-                if (connection != null) {
-                    try {
-                        connection.close();
-                    } catch (SQLException e) {
-                        // ignore
-                    }
-                }
+                Util.close(null, null, connection);
             }
         }
     }
@@ -1389,7 +1383,7 @@ public class RolapSchema implements Schema {
         /**
          * Returns the number of rows in the table.
          */
-        int getNumberOfRows();
+        int getRowCount();
 
         void addColumn(PhysColumn column);
     }
@@ -1440,14 +1434,14 @@ public class RolapSchema implements Schema {
         }
 
         public int getVolume() {
-            return getTotalColumnSize() * getNumberOfRows();
+            return getTotalColumnSize() * getRowCount();
         }
 
         protected int getTotalColumnSize() {
             return totalColumnByteCount;
         }
 
-        public int getNumberOfRows() {
+        public int getRowCount() {
             return rowCount;
         }
 
@@ -1814,7 +1808,13 @@ public class RolapSchema implements Schema {
                 throw Util.newError(
                     "Error while loading columns of table '" + name + "'");
             }
-            rowCount = jdbcTable.getNumberOfRows();
+
+            rowCount =
+                physSchema.statistic.getRelationCardinality(
+                    this,
+                    alias,
+                    -1);
+
             for (JdbcSchema.Table.Column jdbcColumn : jdbcTable.getColumns()) {
                 PhysColumn column =
                     columnsByName.get(
@@ -1833,7 +1833,7 @@ public class RolapSchema implements Schema {
             return true;
         }
 
-        public int getNumberOfRows() {
+        public int getRowCount() {
             return rowCount;
         }
 
@@ -2011,7 +2011,7 @@ public class RolapSchema implements Schema {
          * Calls a callback for each embedded PhysColumn.
          */
         public abstract void foreachColumn(
-            Util.Functor1<Void, PhysColumn> callback);
+            Util.Function1<PhysColumn, Void> callback);
 
         /**
          * Returns the data type of this expression, or null if not known.
@@ -2052,7 +2052,7 @@ public class RolapSchema implements Schema {
             assert measureGroup != null;
             assert cubeDimension != null;
             foreachColumn(
-                new Util.Functor1<Void, PhysColumn>() {
+                new Util.Function1<PhysColumn, Void>() {
                     public Void apply(PhysColumn column) {
                         final RolapStar.Column starColumn =
                             measureGroup.getRolapStarColumn(
@@ -2082,7 +2082,7 @@ public class RolapSchema implements Schema {
             // nothing to do
         }
 
-        public void foreachColumn(Util.Functor1<Void, PhysColumn> callback) {
+        public void foreachColumn(Util.Function1<PhysColumn, Void> callback) {
             // nothing
         }
 
@@ -2136,7 +2136,7 @@ public class RolapSchema implements Schema {
             return internalType;
         }
 
-        public void foreachColumn(Util.Functor1<Void, PhysColumn> callback) {
+        public void foreachColumn(Util.Function1<PhysColumn, Void> callback) {
             callback.apply(this);
         }
 
@@ -2272,7 +2272,7 @@ public class RolapSchema implements Schema {
         }
 
         @Override
-        public void foreachColumn(Util.Functor1<Void, PhysColumn> callback) {
+        public void foreachColumn(Util.Function1<PhysColumn, Void> callback) {
             for (PhysExpr physExpr : list) {
                 physExpr.foreachColumn(callback);
             }
@@ -2316,7 +2316,7 @@ public class RolapSchema implements Schema {
             return buf.toString();
         }
 
-        public void foreachColumn(Util.Functor1<Void, PhysColumn> callback) {
+        public void foreachColumn(Util.Function1<PhysColumn, Void> callback) {
             for (Object o : list) {
                 if (o instanceof PhysExpr) {
                     ((PhysExpr) o).foreachColumn(callback);
@@ -2408,20 +2408,26 @@ public class RolapSchema implements Schema {
      * A path is a sequence of {@link PhysHop hops}.
      *
      * <p>It connects a pair of {@link PhysRelation relations} with a sequence
-     * of link traversals. In general, a path between relations R1 and Rn
-     * consists of the hops
+     * of link traversals. In general, a path between relations R<sub>1</sub>
+     * and R<sub>n</sub> consists of the following hops:</p>
      *
-     *    { Hop(R1, null),
-     *      Hop(R2, Link(R1, R2)),
-     *      Hop(R3, Link(R2, R3)),
+     * <pre>
+     *    { Hop(R<sub>1</sub>, null),
+     *      Hop(R<sub>2</sub>, Link(R<sub>1</sub>, R<sub>2</sub>)),
+     *      Hop(R<sub>3</sub>, Link(R<sub>2</sub>, R<sub>3</sub>)),
      *      ...
-     *      Hop(Rn, Link(Rn-1, Rn)) }
+     *      Hop(R<sub>n</sub>, Link(R<sub>n-1</sub>, R<sub>n</sub>)) }
+     * </pre>
+     *
+     * <p>Paths are immutable. The best way to create them is to uSe a
+     * {@link PhysPathBuilder}.</p>
      *
      * <p>REVIEW: Is it worth making paths canonical? That is, if two paths
-     * within a schema are equal, then they will always be the same object.
+     * within a schema are equal, then they will always be the same object.</p>
      */
     public static class PhysPath {
         final List<PhysHop> hopList;
+
         public static final PhysPath EMPTY =
             new PhysPath(Collections.<PhysHop>emptyList());
 
@@ -2459,6 +2465,7 @@ public class RolapSchema implements Schema {
                 }
             };
         }
+
         /**
          * Adds the relations in this path to the FROM clause of a query.
          *
@@ -2769,7 +2776,7 @@ public class RolapSchema implements Schema {
 
         public void addToFrom(PhysExpr expr) {
             expr.foreachColumn(
-                new Util.Functor1<Void, PhysColumn>() {
+                new Util.Function1<PhysColumn, Void>() {
                     public Void apply(PhysColumn column) {
                         addRelation(column.relation);
                         return null;
@@ -2906,7 +2913,7 @@ public class RolapSchema implements Schema {
                     null, table.schema, table.name);
             } else {
                 final SqlQuery sqlQuery = new SqlQuery(dialect);
-                sqlQuery.addSelect("*", null);
+                sqlQuery.addSelect("1", null);
                 sqlQuery.addFrom(relation, null, true);
                 return getQueryCardinality(sqlQuery.toString());
             }

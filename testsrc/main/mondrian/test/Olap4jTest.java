@@ -391,7 +391,6 @@ public class Olap4jTest extends FoodMartTestCase {
     public void testUniqueName() throws SQLException {
         // Things are straightforward if dimension, hierarchy, level have
         // distinct names. This worked even before MONDRIAN-1124 was fixed.
-        if (false) {
         CellSet x =
             getTestContext().getOlap4jConnection().createStatement()
                 .executeOlapQuery(
@@ -404,9 +403,7 @@ public class Olap4jTest extends FoodMartTestCase {
         assertEquals(
             "[Store].[Stores].[(All)]", member.getLevel().getUniqueName());
         assertEquals("[Store].[Stores].[All Stores]", member.getUniqueName());
-        }
 
-        Member member;
         CellSet y =
             getTestContext()
                 .createSubstitutingCube(

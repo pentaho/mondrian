@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 30 August, 2001
@@ -44,6 +44,13 @@ public interface BitKey
      * The BitKey with no bits set.
      */
     BitKey EMPTY = Factory.makeBitKey(0);
+
+    /**
+     * Converts this BitKey to a string such as "0x000000110".
+     *
+     * @return Representation of this bit key as a string of binary values
+     */
+    String toBinaryString();
 
     /**
      * Sets the bit at the specified index to the specified value.
@@ -237,6 +244,25 @@ public interface BitKey
         protected static final int ChunkBitCount = 6;
         protected static final int Mask = 63;
         protected static final long WORD_MASK = 0xffffffffffffffffL;
+
+        public String toString() {
+            int i = nextSetBit(0);
+            if (i < 0) {
+                return "{}";
+            }
+            final StringBuilder buf = new StringBuilder();
+            buf.append('{');
+            for (;;) {
+                buf.append(i);
+                i = nextSetBit(i + 1);
+                if (i < 0) {
+                    return buf.append('}').toString();
+                }
+                buf.append(',').append(' ');
+            }
+        }
+
+        public abstract String toBinaryString();
 
         /**
          * Creates a chunk containing a single bit.
@@ -776,7 +802,7 @@ public interface BitKey
             }
         }
 
-        public String toString() {
+        public String toBinaryString() {
             StringBuilder buf = new StringBuilder(64);
             buf.append("0x");
             for (int i = 63; i >= 0; i--) {
@@ -1170,7 +1196,7 @@ public interface BitKey
             return (int)((h >> 32) ^ h);
         }
 
-        public String toString() {
+        public String toBinaryString() {
             StringBuilder buf = new StringBuilder(64);
             buf.append("0x");
             for (int i = 127; i >= 0; i--) {
@@ -1689,7 +1715,7 @@ public interface BitKey
             return (int)((h >> 32) ^ h);
         }
 
-        public String toString() {
+        public String toBinaryString() {
             StringBuilder buf = new StringBuilder(64);
             buf.append("0x");
             int start = bits.length * 64 - 1;

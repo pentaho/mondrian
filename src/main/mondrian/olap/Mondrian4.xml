@@ -105,7 +105,7 @@ In other words, (physColumn, physPath) uniquely identifies a RolapStar.Column.
  dtdName="mondrian.dtd"
  className="MondrianDef"
  packageName="mondrian.olap"
- importName="mondrian.rolap.sql.SqlQuery; import mondrian.util.Pair; import java.util.*; import org.olap4j.metadata.NamedList; import org.eigenbase.xom.NodeDef"
+ importName="mondrian.rolap.sql.SqlQuery; import mondrian.util.Pair; import java.util.*; import org.olap4j.metadata.NamedList; import org.eigenbase.xom.ElementDef; import org.eigenbase.xom.NodeDef"
  root="Schema"
  defaultKeepDef="true"
  version="1.0">
@@ -385,7 +385,7 @@ Revision is $Id$
             return new NamedListImpl<T>(list(ts));
         }
 
-        public static abstract class Children<T extends org.eigenbase.xom.NodeDef> {
+        public static abstract class Children<T extends NodeDef> {
             private final Class[] classes;
 
             Children(Class<T> iface, Class<? extends T>... classes) {
@@ -1790,7 +1790,7 @@ Revision is $Id$
              */
             public void setCData(String cdata) {
                 this.children =
-                    new org.eigenbase.xom.NodeDef[] {
+                    new NodeDef[] {
                         new org.eigenbase.xom.TextDef(cdata)};
             }
 
@@ -2375,41 +2375,6 @@ Revision is $Id$
             public String getColumn() {
                 return column;
             }
-        </Code>
-    </Element>
-
-    <Element type="Aggregates" class="Holder,MeasureGroupElement">
-        <Doc>
-            Holder element for {@link MondrianDef.AggTable} elements.
-        </Doc>
-        <Array name="array" type="AggTable">
-            <Doc>
-                Aggregate tables.
-            </Doc>
-        </Array>
-        <Code>
-            <![CDATA[
-            private static final Aggregates EMPTY;
-            static {
-                EMPTY = new Aggregates();
-                EMPTY.array = new AggTable[0];
-            }
-            public Aggregates copy() {
-                Aggregates c = new Aggregates();
-                c.array = array.clone();
-                return c;
-            }
-            public List<AggTable> list() {
-                return new MutableArrayList<AggTable>() {
-                    protected AggTable[] getArray() {
-                        return array == null ? EMPTY.array : array;
-                    }
-                    protected void setArray(AggTable[] ts) {
-                        array = ts;
-                    }
-                };
-            }
-            ]]>
         </Code>
     </Element>
 
@@ -3081,7 +3046,11 @@ Revision is $Id$
         </Attribute>
         <Attribute name="type" type="String" default="fact">
             <Doc>
-                Whether this measure group is defining a fact or aggregate table.
+                Whether this measure group is defining a fact or aggregate
+                table. Valid values are 'fact' (the default) and 'aggregate'.
+
+                <p>Aggregate measure groups can contain 'MeasureRef' and
+                    'CopyLink' elements.</p>
             </Doc>
             <Value>fact</Value>
             <Value>aggregate</Value>
@@ -3110,19 +3079,32 @@ Revision is $Id$
         <Array name="childArray" type="MeasureGroupElement">
             <Doc>
                 Child elements of this MeasureGroup. These are Measures and
-                DimensionLinks (once), Aggregates (at most once), in any order.
+                DimensionLinks (once), in any order.
             </Doc>
         </Array>
         <Code>
             <![CDATA[
-            public String getNameAttribute() { return name; }
+            /**
+             * Returns whether this measure group represents an aggregate table
+             * (or hybrid fact-aggregate), as opposed to a fact table.
+             */
+            public boolean isAggregate() {
+                assert type == null
+                    || type.equals("aggregate")
+                    || type.equals("fact");
+                return "aggregate".equals(type);
+            }
+
+            public String getNameAttribute() {
+                return first(name, table);
+            }
+
             private static final MeasureGroupElement[] EMPTY = {};
             public final Children<MeasureGroupElement> children =
                 new Children<MeasureGroupElement>(
                     MeasureGroupElement.class,
                     Measures.class,
-                    DimensionLinks.class,
-                    Aggregates.class)
+                    DimensionLinks.class)
                 {
                     MeasureGroupElement[] getArray() {
                         return childArray == null ? EMPTY : childArray;
@@ -3136,9 +3118,6 @@ Revision is $Id$
             }
             public NamedList<MeasureOrRef> getMeasures() {
                 return children.only(Measures.EMPTY).list();
-            }
-            public List<AggTable> getAggregates() {
-                return children.only(Aggregates.EMPTY).list();
             }
             ]]>
         </Code>

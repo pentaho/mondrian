@@ -10,8 +10,7 @@
 */
 package mondrian.rolap.aggmatcher;
 
-import mondrian.olap.Hierarchy;
-import mondrian.olap.Level;
+import mondrian.olap.*;
 import mondrian.recorder.MessageRecorder;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
@@ -237,9 +236,9 @@ class DefaultRecognizer extends Recognizer {
                         Pair<RolapLevel, Column> o1,
                         Pair<RolapLevel, Column> o2)
                     {
-                        return
-                            Integer.valueOf(o1.left.getDepth()).compareTo(
-                                Integer.valueOf(o2.left.getDepth()));
+                        return Util.compare(
+                            o1.left.getDepth(),
+                            o2.left.getDepth());
                     }
                 });
             // Validate by iterating.

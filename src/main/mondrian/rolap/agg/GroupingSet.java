@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.agg;
@@ -23,6 +23,7 @@ import java.util.List;
  * @since 05-Jun-2007
  */
 public class GroupingSet {
+    private final Segment baseSegment;
     private final List<Segment> segments;
     final Segment segment0;
     private final BitKey levelBitKey;
@@ -34,6 +35,9 @@ public class GroupingSet {
     /**
      * Creates a GroupingSet.
      *
+     * @param baseSegment Segment that this grouping set will be registered as
+     *                    in the cell segment cache (even if it is populated
+     *                    from a different agg table)
      * @param segments Constituent segments
      * @param levelBitKey Levels
      * @param measureBitKey Measures
@@ -41,12 +45,14 @@ public class GroupingSet {
      * @param columns Columns
      */
     public GroupingSet(
+        Segment baseSegment,
         List<Segment> segments,
         BitKey levelBitKey,
         BitKey measureBitKey,
         StarColumnPredicate[] predicates,
         RolapStar.Column[] columns)
     {
+        this.baseSegment = baseSegment;
         this.segments = segments;
         this.segment0 = segments.get(0);
         this.levelBitKey = levelBitKey;

@@ -17,7 +17,7 @@ import mondrian.olap.Util;
  * @author jhyde
  */
 public class Lazy<T> {
-    private final Util.Functor0<T> factory;
+    private final Util.Function0<T> factory;
     private boolean done;
     private T value;
 
@@ -26,7 +26,7 @@ public class Lazy<T> {
      *
      * @param factory Value factory
      */
-    public Lazy(Util.Functor0<T> factory) {
+    public Lazy(Util.Function0<T> factory) {
         assert factory != null;
         this.factory = factory;
     }
