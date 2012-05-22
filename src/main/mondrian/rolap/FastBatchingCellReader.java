@@ -156,7 +156,12 @@ public class FastBatchingCellReader implements CellReader {
         assert !request.isUnsatisfiable();
         ++missCount;
         cellRequests.add(request);
-        if (cellRequests.size() % 5000 == 0) {
+        int limit =
+            MondrianProperties.instance().CellBatchSize.get();
+        if (limit <= 0) {
+            limit = 5000; // TODO Make this logic into a pluggable algorithm.
+        }
+        if (cellRequests.size() % limit == 0) {
             // Signal that it's time to ask the cache manager if it has cells
             // we need in the cache. Not really an exception.
             throw CellRequestQuantumExceededException.INSTANCE;

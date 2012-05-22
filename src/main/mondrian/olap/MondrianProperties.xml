@@ -37,6 +37,16 @@ on the class path.
         <Type>String</Type>
         <Default>sun.jdbc.odbc.JdbcOdbcDriver,org.hsqldb.jdbcDriver,oracle.jdbc.OracleDriver,com.mysql.jdbc.Driver</Default>
     </PropertyDefinition>
+	<PropertyDefinition>
+        <Name>CellBatchSize</Name>
+        <Path>mondrian.rolap.cellBatchSize</Path>
+        <Description>
+Integer property that, if set to a value greater than zero, sets a hard limit on the
+number of cells that are batched together when building segments.
+</Description>
+        <Type>int</Type>
+        <Default>-1</Default>
+    </PropertyDefinition>
     <PropertyDefinition>
         <Name>ResultLimit</Name>
         <Path>mondrian.result.limit</Path>
