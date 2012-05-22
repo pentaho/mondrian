@@ -1100,7 +1100,7 @@ public class CacheControlTest extends FoodMartTestCase {
             + ".[Beer and Wine].[Beer]))",
             regionGenderXTimeXProduct.toString());
         assertEquals(
-            "[[Customer], [Time], [Product]]",
+            "[[Customer].[Gender], [Time].[Time], [Product].[Products]]",
             regionGenderXTimeXProduct.getDimensionality().toString());
     }
 

@@ -422,8 +422,8 @@ public class CompatibilityTest extends FoodMartTestCase {
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
-            + "{[Alternative Promotion].[#null]}\n"
-            + "{[Alternative Promotion].[Promo1]}\n"
+            + "{[Alternative Promotion].[Alternative Promotion].[#null]}\n"
+            + "{[Alternative Promotion].[Alternative Promotion].[Promo1]}\n"
             + "Row #0: 195,448\n"
             + "Row #0: \n");
     }

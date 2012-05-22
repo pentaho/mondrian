@@ -1082,6 +1082,7 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             null,
             org.olap4j.metadata.Level.Type.ALL,
+            null,
             ALL_LEVEL_CARDINALITY);
 
     private static final RolapSharedAttribute NULL_ATTRIBUTE =
@@ -1097,6 +1098,7 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             null,
             org.olap4j.metadata.Level.Type.NULL,
+            null,
             NULL_LEVEL_CARDINALITY);
 
     private static final RolapSharedAttribute MEASURES_ATTRIBUTE =
@@ -1112,6 +1114,7 @@ public class RolapHierarchy extends HierarchyBase {
             null,
             null,
             org.olap4j.metadata.Level.Type.REGULAR,
+            null,
             Integer.MIN_VALUE);
 }
 

@@ -84,6 +84,8 @@ public interface RolapAttribute extends OlapElement {
      * values are {@code null} and the string {@code "0"}.
      */
     String getNullValue();
+
+    RolapClosure getClosure();
 }
 
 // End RolapAttribute.java

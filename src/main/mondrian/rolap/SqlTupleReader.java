@@ -170,8 +170,7 @@ public class SqlTupleReader implements TupleReader {
                                 // value for uniformity in hashmaps.
                                 break pc;
                             } else if (value.toString().equals(
-                                    childLevel.attribute.getParentAttribute()
-                                        .getNullValue()))
+                                    childLevel.attribute.getNullValue()))
                             {
                                 // member is at top of hierarchy; its parent is
                                 // the 'all' member

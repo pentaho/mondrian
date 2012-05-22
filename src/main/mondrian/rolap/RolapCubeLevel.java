@@ -69,7 +69,7 @@ public class RolapCubeLevel extends RolapLevel {
             this.levelReader = new AllLevelReaderImpl();
         } else if (getLevelType() == org.olap4j.metadata.Level.Type.NULL) {
             this.levelReader = new NullLevelReader();
-        } else if (closure) {
+        } else if (rolapLevel.hasClosedPeer()) {
             RolapDimension dimension =
                 rolapLevel.getClosedPeer().getHierarchy().getDimension();
 
@@ -456,6 +456,7 @@ public class RolapCubeLevel extends RolapLevel {
                         member.getMemberType());
                 member =
                     new RolapCubeMember(
+// REVIEW pass the actual parent member instead of the 'all member'?
                         allMember,
                         wrappedMember, closedPeerCubeLevel);
 

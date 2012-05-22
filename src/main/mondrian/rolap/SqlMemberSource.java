@@ -674,14 +674,17 @@ class SqlMemberSource
             }
         }
 
-        return projectProperties(layoutBuilder, sqlQuery, queryBuilder, level);
+        return projectProperties(
+            layoutBuilder, sqlQuery, queryBuilder, level,
+            level.attribute.getProperties());
     }
 
     private String projectProperties(
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder,
         SqlQuery sqlQuery,
         RolapSchema.SqlQueryBuilder queryBuilder,
-        RolapLevel level)
+        RolapLevel level,
+        List<RolapProperty> properties)
     {
         final SqlTupleReader.LevelLayoutBuilder levelLayout =
             layoutBuilder.createLayoutFor(level);
@@ -709,7 +712,7 @@ class SqlMemberSource
                     level.attribute.getCaptionExp(), Sgo.SELECT_GROUP);
         }
 
-        for (RolapProperty property : level.attribute.getExplicitProperties()) {
+        for (RolapProperty property : properties) {
             // TODO: properties that are composite, or have key != name exp
             final RolapSchema.PhysColumn exp = property.attribute.getNameExp();
             queryBuilder.addToFrom(exp);
@@ -982,7 +985,17 @@ class SqlMemberSource
             final SqlTupleReader.ColumnLayout fullLayout =
                 layoutBuilder.toLayout();
             final SqlTupleReader.LevelColumnLayout layout =
-                fullLayout.levelLayoutMap.get(childLevel);
+                parentChild
+                && !parentMember.isAll()
+                && childLevel.attribute
+                    .getParentAttribute() != null
+                && childLevel.attribute.getClosure() != null
+                    ? fullLayout.levelLayoutMap.get(
+                        childLevel.attribute.getClosure().closedPeerLevel)
+                    : fullLayout.levelLayoutMap.get(
+                        childLevel);
+            assert layout != null
+                    : "Error!!";
             while (resultSet.next()) {
                 ++stmt.rowCount;
                 if (limit > 0 && limit < stmt.rowCount) {
@@ -1077,10 +1090,10 @@ class SqlMemberSource
             // children.
             member =
                 childLevel.hasClosedPeer()
-                ? new RolapParentChildMember(
-                    parentMember, childLevel, key, member)
-                : new RolapParentChildMemberNoClosure(
-                    parentMember, childLevel, key, member);
+                    ? new RolapParentChildMember(
+                        parentMember, childLevel, key, member)
+                    : new RolapParentChildMemberNoClosure(
+                        parentMember, childLevel, key, member);
         }
         final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
         if (layout.orderByOrdinals.length > 0) {
@@ -1216,7 +1229,7 @@ class SqlMemberSource
             condition.append(parentId);
         }
         final String nullParentValue =
-            level.attribute.getParentAttribute().getNullValue();
+            level.attribute.getNullValue();
         if (nullParentValue == null
             || nullParentValue.equalsIgnoreCase("NULL"))
         {
@@ -1233,10 +1246,9 @@ class SqlMemberSource
             }
         }
         sqlQuery.addWhere(condition.toString());
-        final SqlTupleReader.LevelLayoutBuilder levelLayout =
-            layoutBuilder.createLayoutFor(level);
         return projectProperties(
-            layoutBuilder, sqlQuery, queryBuilder, level);
+            layoutBuilder, sqlQuery, queryBuilder, level,
+            level.attribute.getProperties());
     }
 
     /**
@@ -1265,6 +1277,14 @@ class SqlMemberSource
             new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
         RolapLevel level = member.getLevel();
 
+        final RolapClosure closure = level.attribute.getClosure();
+        if (level.isParentChild() && closure != null) {
+            level =
+                Util.first(
+                    (RolapLevel) closure.closedPeerLevel,
+                    level);
+        }
+
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
 
         for (Tuple3<RolapSchema.PhysColumn, RolapSchema.PhysColumn, Object> pair
@@ -1283,7 +1303,16 @@ class SqlMemberSource
             sqlQuery.addWhere(parentId, " = ", buf.toString());
         }
 
-        return projectProperties(layoutBuilder, sqlQuery, queryBuilder, level);
+        // Add the distance column in the predicate, if it is available.
+        if (closure != null
+            && closure.distanceColumn != null)
+        {
+            sqlQuery.addWhere(closure.distanceColumn.toSql(), " = ", "1");
+        }
+
+        return projectProperties(
+            layoutBuilder, sqlQuery, queryBuilder, level,
+            member.getLevel().attribute.getProperties());
     }
 
     // implement MemberReader

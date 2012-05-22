@@ -57,6 +57,8 @@ public abstract class RolapAttributeImpl
 
     final MemberFormatter memberFormatter;
 
+    private final RolapClosure closure;
+
     /**
      * Creates an attribute.
      *
@@ -92,11 +94,13 @@ public abstract class RolapAttributeImpl
         MemberFormatter memberFormatter,
         String nullValue,
         Level.Type levelType,
+        RolapClosure closure,
         int approxRowCount)
     {
         this.visible = visible;
         this.caption = caption;
         this.description = description;
+        this.closure = closure;
         assert levelType != null;
         assert name != null;
         switch (levelType)  {
@@ -216,6 +220,10 @@ public abstract class RolapAttributeImpl
 
     public int getApproxRowCount() {
         return approxRowCount;
+    }
+
+    public RolapClosure getClosure() {
+        return closure;
     }
 }
 

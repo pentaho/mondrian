@@ -180,15 +180,12 @@ public class RolapLevel extends LevelBase {
                         + "property with the same name but different type");
                 }
             }
+            if (level.isParentChild()) {
+                closedPeerLevel =
+                    (RolapLevel) level.attribute.getClosure().closedPeerLevel;
+            }
         }
         this.inheritedProperties = list.toArray(new RolapProperty[list.size()]);
-
-        if (closure) {
-            final RolapDimension dimension =
-                ((RolapHierarchy) hierarchy).createClosedPeerDimension(this);
-            closedPeerLevel =
-                dimension.getHierarchyList().get(0).getLevelList().get(1);
-        }
     }
 
     public final boolean isAll() {

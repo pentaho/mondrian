@@ -123,8 +123,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     new RolapCubeLevel(
                         rolapHierarchy.getAllMember().getLevel(),
                         this);
-                allLevel.initLevel(
-                    schemaLoader, false);
+                allLevel.initLevel(schemaLoader, false);
             }
 
             this.currentAllMember =

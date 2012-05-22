@@ -22,6 +22,7 @@ import mondrian.olap.Property;
 import mondrian.olap.fun.UdfResolver;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.RolapLevel.HideMemberCondition;
 import mondrian.rolap.aggmatcher.ExplicitRules;
 import mondrian.server.Locus;
 import mondrian.spi.CellFormatter;
@@ -32,6 +33,7 @@ import mondrian.spi.impl.Scripts;
 import mondrian.util.*;
 
 import org.apache.commons.vfs.FileSystemException;
+import org.apache.derby.iapi.types.DataType;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
@@ -46,6 +48,7 @@ import java.lang.reflect.Constructor;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 import javax.sql.DataSource;
 
 import static mondrian.olap.Util.first;
@@ -2560,6 +2563,9 @@ public class RolapSchemaLoader {
                         null,
                         Collections.<String, Annotation>emptyMap());
                 dimension.addHierarchy(hierarchy);
+                dimension.attributeMap.put(
+                    attribute.getName(),
+                    attribute);
                 hierarchy.initHierarchy(
                     this,
                     null, // REVIEW: add Attribute@hierarchyAllLevelName?
@@ -2754,7 +2760,7 @@ public class RolapSchemaLoader {
     void initHierarchy(RolapCubeHierarchy hierarchy) {
         hierarchy.init1(this, null);
         for (RolapCubeLevel level : hierarchy.getLevelList()) {
-            initLevel(level);
+            level.initLevel(this, level.hasClosedPeer());
         }
         final MondrianDef.Hierarchy xmlHierarchy =
             (MondrianDef.Hierarchy) validator.getXml(
@@ -2763,24 +2769,32 @@ public class RolapSchemaLoader {
             this, xmlHierarchy == null ? null : xmlHierarchy.defaultMember);
     }
 
-    private void initLevel(RolapLevel level)
+    RolapAttribute createAttribute(
+        MondrianDef.Attribute xmlAttribute,
+        RolapSchema.PhysRelation sourceRelation,
+        final RolapDimension dimension)
     {
-        level.initLevel(this, false);
+        return
+            this.createAttribute(
+                xmlAttribute, null, sourceRelation, dimension);
     }
 
     RolapAttribute createAttribute(
         MondrianDef.Attribute xmlAttribute,
-        RolapSchema.PhysRelation inheritedRelation,
+        RolapSchema.PhysRelation closureRelation,
+        RolapSchema.PhysRelation sourceRelation,
         final RolapDimension dimension)
     {
         final RolapSchema.PhysRelation relation =
             last(
-                inheritedRelation, xmlAttribute.table, xmlAttribute, "table");
+                sourceRelation, xmlAttribute.table, xmlAttribute, "table");
         final List<RolapSchema.PhysColumn> keyList =
             createColumnList(
                 xmlAttribute,
                 "keyColumn",
-                relation,
+                closureRelation != null
+                    ? closureRelation
+                    : relation,
                 xmlAttribute.keyColumn,
                 xmlAttribute.getKey());
         if (keyList.size() == 0) {
@@ -2794,7 +2808,9 @@ public class RolapSchemaLoader {
             createColumn(
                 xmlAttribute,
                 "nameColumn",
-                relation,
+                closureRelation != null
+                    ? sourceRelation
+                    : relation,
                 xmlAttribute.nameColumn,
                 xmlAttribute.getName_());
         if (nameExpr == null) {
@@ -2813,7 +2829,9 @@ public class RolapSchemaLoader {
             createColumn(
                 xmlAttribute,
                 "captionColumn",
-                relation,
+                closureRelation != null
+                    ? sourceRelation
+                    : relation,
                 xmlAttribute.captionColumn,
                 xmlAttribute.getCaption());
         if (captionExpr == null) {
@@ -2823,27 +2841,220 @@ public class RolapSchemaLoader {
             createColumnList(
                 xmlAttribute,
                 "orderByColumn",
-                relation,
+                closureRelation != null
+                    ? sourceRelation
+                    : relation,
                 xmlAttribute.orderByColumn,
                 xmlAttribute.getOrderBy());
 
-        // Cannot deal with parent attribute yet; it might not have been
-        // created. We will do a second pass, after we have created all
-        // attributes in this dimension.
-
-        final MondrianDef.Closure closure = xmlAttribute.getClosure();
-        if (closure != null) {
-            // TODO:
-            Util.discard(closure.childColumn);
-            Util.discard(closure.parentColumn);
-            Util.discard(closure.table);
-        }
-
         final int approxRowCount =
-            loadApproxRowCount(xmlAttribute.approxRowCount);
-        final org.olap4j.metadata.Level.Type levelType =
-            stringToLevelType(
-                xmlAttribute.levelType);
+                loadApproxRowCount(xmlAttribute.approxRowCount);
+            final org.olap4j.metadata.Level.Type levelType =
+                stringToLevelType(
+                    xmlAttribute.levelType);
+
+        final MondrianDef.Closure xmlClosure = xmlAttribute.getClosure();
+        final RolapClosure closure;
+        if (xmlClosure != null) {
+            MondrianDef.Attribute xmlParentAttribute =
+                (MondrianDef.Attribute) validator.map.get(
+                    dimension.attributeMap
+                        .get(xmlAttribute.parent));
+
+            final RolapDimension closureDim =
+                new RolapDimension(
+                    schema,
+                    dimension.getName()
+                    + "$" + xmlParentAttribute.name
+                    + "$Closure",
+                    false,
+                    null,
+                    dimension.getCaption(),
+                    dimension.getDimensionType(),
+                    dimension.getAnnotationMap());
+
+            final MondrianDef.Dimension xmlClosureDimension =
+                    new MondrianDef.Dimension();
+            xmlClosureDimension.caption = dimension.getCaption();
+            xmlClosureDimension.key = "Item";
+            xmlClosureDimension.name =
+                dimension.getName()
+                + "$" + xmlParentAttribute.name
+                + "$Closure";
+            xmlClosureDimension.type =
+                dimension.getDimensionType().name();
+            xmlClosureDimension.visible = false;
+            validator.putXml(dimension, xmlClosureDimension);
+
+            closureRelation =
+                last(
+                    relation, xmlClosure.table,
+                    xmlClosure, "table");
+
+            final MondrianDef.Attribute xmlClosureAttribute1 =
+                    new MondrianDef.Attribute();
+            xmlClosureAttribute1.name = "Closure";
+            xmlClosureAttribute1.approxRowCount = xmlParentAttribute.approxRowCount;
+            xmlClosureAttribute1.caption = xmlParentAttribute.caption;
+            xmlClosureAttribute1.nameColumn = xmlParentAttribute.nameColumn;
+            xmlClosureAttribute1.captionColumn = xmlParentAttribute.captionColumn;
+            xmlClosureAttribute1.orderByColumn = xmlParentAttribute.orderByColumn;
+            xmlClosureAttribute1.hasHierarchy = false;
+            xmlClosureAttribute1.visible = false;
+            xmlClosureAttribute1.levelType = xmlParentAttribute.levelType;
+            xmlClosureAttribute1.table = xmlClosure.table;
+            xmlClosureAttribute1.keyColumn = xmlClosure.parentColumn;
+            xmlClosureAttribute1.children.add(xmlParentAttribute.getName_());
+            xmlClosureAttribute1.children.add(xmlParentAttribute.getCaption());
+            xmlClosureAttribute1.children.add(xmlParentAttribute.getOrderBy());
+            xmlClosureAttribute1.children.add(xmlParentAttribute.getMemberFormatter());
+
+            final MondrianDef.Attribute xmlClosureAttribute2 =
+                    new MondrianDef.Attribute();
+            xmlClosureAttribute2.name = "Item";
+            xmlClosureAttribute2.approxRowCount = xmlAttribute.approxRowCount;
+            xmlClosureAttribute2.caption = xmlAttribute.caption;
+            xmlClosureAttribute2.nameColumn = xmlAttribute.nameColumn;
+            xmlClosureAttribute2.captionColumn = xmlAttribute.captionColumn;
+            xmlClosureAttribute2.orderByColumn = xmlAttribute.orderByColumn;
+            xmlClosureAttribute2.hasHierarchy = false;
+            xmlClosureAttribute2.visible = false;
+            xmlClosureAttribute2.levelType = xmlAttribute.levelType;
+            xmlClosureAttribute2.table = xmlClosure.table;
+            xmlClosureAttribute2.keyColumn = xmlClosure.childColumn;
+            xmlClosureAttribute2.children.add(xmlAttribute.getName_());
+            xmlClosureAttribute2.children.add(xmlAttribute.getCaption());
+            xmlClosureAttribute2.children.add(xmlAttribute.getOrderBy());
+            xmlClosureAttribute2.children.add(xmlAttribute.getMemberFormatter());
+
+            // Copy attributes of parent and child.
+            if (xmlParentAttribute.getAnnotations().size() > 0) {
+                try {
+                    MondrianDef.Annotations anns =
+                        new MondrianDef.Annotations();
+                    for (MondrianDef.Annotation ann
+                        : xmlParentAttribute.getAnnotations())
+                    {
+                        anns.addChild(ann);
+                    }
+                    xmlClosureAttribute1.children.add(anns);
+                } catch (XOMException e) {
+                    throw new MondrianException(e);
+                }
+            }
+            if (xmlAttribute.getAnnotations().size() > 0) {
+                try {
+                    MondrianDef.Annotations anns =
+                        new MondrianDef.Annotations();
+                    for (MondrianDef.Annotation ann
+                        : xmlAttribute.getAnnotations())
+                    {
+                        anns.addChild(ann);
+                    }
+                    xmlClosureAttribute2.children.add(anns);
+                } catch (XOMException e) {
+                    throw new MondrianException(e);
+                }
+            }
+
+            // Copy properties for parent & child.
+            for (MondrianDef.Property prop
+                : xmlParentAttribute.getProperties())
+            {
+                xmlClosureAttribute1.children.add(prop);
+            }
+            for (MondrianDef.Property prop
+                : xmlAttribute.getProperties())
+            {
+                xmlClosureAttribute2.children.add(prop);
+            }
+
+            // Now create the attributes recursively.
+            final RolapAttribute closureAttribute1 =
+                createAttribute(
+                    xmlClosureAttribute1,
+                    closureRelation,
+                    relation,
+                    closureDim);
+            final RolapAttribute closureAttribute2 =
+                createAttribute(
+                    xmlClosureAttribute2,
+                    closureRelation,
+                    relation,
+                    closureDim);
+
+            // Set a reference form child to parent.
+            ((RolapAttributeImpl)closureAttribute2).parentAttribute =
+                closureAttribute1;
+
+            // register the attributes in the dimension.
+            closureDim.attributeMap.put(
+                closureAttribute1.getName(), closureAttribute1);
+            closureDim.attributeMap.put(
+                    closureAttribute2.getName(), closureAttribute2);
+
+            // Create a hierarchy where the closure will live.
+            RolapHierarchy closureHierarchy =
+                new RolapHierarchy(
+                    closureDim,
+                    null,
+                    closureDim.getUniqueName(),
+                    closureDim.isVisible(),
+                    closureDim.getCaption(),
+                    closureDim.getDescription(),
+                    true,
+                    null, // Not so sure about this.
+                    Collections.<String, Annotation>emptyMap());
+
+            // Create two levels, for parent & child each.
+            final MondrianDef.Level xmlClosureLevel1 =
+                    new MondrianDef.Level();
+            xmlClosureLevel1.attribute = closureAttribute1.getName();
+            xmlClosureLevel1.name = closureAttribute1.getName();
+            xmlClosureLevel1.visible = false;
+            xmlClosureLevel1.hideMemberIf =
+                HideMemberCondition.Never.name(); // FIXME
+            final RolapLevel closureLevel1 =
+                createLevel(closureHierarchy, 1, xmlClosureLevel1);
+
+            final MondrianDef.Level xmlClosureLevel2 =
+                    new MondrianDef.Level();
+            xmlClosureLevel2.attribute = closureAttribute2.getName();
+            xmlClosureLevel2.name = closureAttribute2.getName();
+            xmlClosureLevel2.visible = false;
+            xmlClosureLevel2.hideMemberIf =
+                HideMemberCondition.Never.name(); // FIXME
+            final RolapLevel closureLevel2 =
+                createLevel(closureHierarchy, 2, xmlClosureLevel2);
+
+            // Add those levels to the hierarchy.
+            closureHierarchy.levelList.add(closureLevel1);
+            closureHierarchy.levelList.add(closureLevel2);
+
+            // we have to pass a column object representing the
+            // 'distance' column.
+            final RolapSchema.PhysColumn distanceExpr;
+            if (xmlClosure.distanceColumn == null) {
+                distanceExpr = null;
+                getHandler().warning(
+                    "Distance column omitted in closure element. Mondrian will assume that "
+                    + "the closure table contains only tuples of parent-childs who are direct descendants (same as distance = 1).",
+                    xmlClosure,
+                    "distanceColumn");
+            } else {
+                distanceExpr =
+                    new RolapSchema.PhysRealColumn(
+                        closureRelation,
+                        xmlClosure.distanceColumn,
+                        null,
+                        null,
+                        Integer.MIN_VALUE);
+            }
+            closure =
+                new RolapClosure(closureLevel2, distanceExpr);
+        } else {
+            closure = null;
+        }
 
         /*
          * Here we figure out a proper caption for
@@ -2880,8 +3091,9 @@ public class RolapSchemaLoader {
                 captionExpr,
                 orderByList,
                 makeMemberFormatter(xmlAttribute),
-                xmlAttribute.nullValue,
+                xmlAttribute.nullParentValue,
                 levelType,
+                closure,
                 approxRowCount)
             {
                 public RolapDimension getDimension() {

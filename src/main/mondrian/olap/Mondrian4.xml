@@ -892,7 +892,7 @@ Revision is $Id$
                 member in a parent-child hierarchy.
             </Doc>
         </Attribute>
-        <Attribute name="nullValue" required="false">
+        <Attribute name="nullParentValue" required="false">
             <Doc>
                 Value which identifies null members of this Attribute.
                 Used when defining a parent-child attribute.
@@ -1223,6 +1223,7 @@ Revision is $Id$
         </Doc>
         <Attribute name="parentColumn" required="true"/>
         <Attribute name="childColumn" required="true"/>
+        <Attribute name="distanceColumn" required="false" default="distance"/>
         <Attribute name="table" required="true"/>
     </Element>
 

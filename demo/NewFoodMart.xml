@@ -24,6 +24,16 @@
                 <Column name='employee_id'/>
             </Key>
         </Table>
+        <Table name='employee_closure'>
+            <Key>
+                <Column name='employee_id'/>
+            </Key>
+        </Table>
+        <Link source='employee' target='employee_closure'>
+            <ForeignKey>
+                <Column name='employee_id'/>
+            </ForeignKey>
+        </Link>
         <Table name='position'>
             <Key>
                 <Column name='position_id'/>
@@ -786,8 +796,8 @@
         <Dimensions>
             <Dimension name='Employee' key='Employee Id'>
                 <Attributes>
-                    <Attribute name='Employee Id' table='employee' keyColumn='employee_id' nameColumn='full_name' parent='Manager Id'/>
-                    <Attribute name='Manager Id' table='employee' keyColumn='supervisor_id' nullValue='0'>
+                    <Attribute name='Manager Id' table='employee' keyColumn='supervisor_id'/>
+                    <Attribute name='Employee Id' table='employee' keyColumn='employee_id' nameColumn='full_name' parent='Manager Id' nullParentValue='0'>
                         <Closure table='employee_closure' parentColumn='supervisor_id' childColumn='employee_id'/>
                     </Attribute>
                     <Attribute name='Store Id' table='employee' keyColumn='store_id'/>

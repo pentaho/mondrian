@@ -1246,10 +1246,17 @@ public class RolapSchema implements Schema {
                 case 1:
                     return pathList.get(0);
                 default:
-                    throw new PhysSchemaException(
-                        "Needed to find exactly one path from " + prevRelation
-                        + " to " + nextRelation + ", but found "
-                        + pathList.size() + " (" + pathList + ")");
+                    // When more than one path is possible,
+                    // we use the one with the least amount of joins.
+                    List<Pair<PhysLink, Boolean>> smallest = null;
+                    for (List<Pair<PhysLink, Boolean>> path : pathList) {
+                        if (smallest == null
+                            || smallest.size() > path.size())
+                        {
+                            smallest = path;
+                        }
+                    }
+                    return smallest;
                 }
             }
             throw new PhysSchemaException(

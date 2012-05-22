@@ -346,7 +346,7 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         assertQueryReturns(
             "select {[Measures].[Count], [Measures].[Org Salary], \n"
             + "[Measures].[Number Of Employees], [Measures].[Avg Salary]} on columns,\n"
-            + "{[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]} on rows\n"
+            + "{[Employee].[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki]} on rows\n"
             + "from [HR]",
             "Axis #0:\n"
             + "{}\n"

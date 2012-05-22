@@ -27,6 +27,7 @@ import org.eigenbase.xom.XOMException;
 import org.olap4j.metadata.NamedList;
 
 import java.util.*;
+
 import javax.sql.DataSource;
 
 import static mondrian.olap.Util.first;
@@ -3298,7 +3299,6 @@ public class RolapSchemaUpgrader {
         xmlLevel.attribute = xmlAttribute.name;
         xmlLevel.visible = xmlLegacyLevel.visible;
         xmlAttribute.table = relation == null ? null : relation.getAlias();
-        Util.discard(xmlLegacyLevel.closure); // TODO:
         xmlLevel.hideMemberIf = xmlLegacyLevel.hideMemberIf;
 
         convertAnnotations(
@@ -3386,7 +3386,7 @@ public class RolapSchemaUpgrader {
         {
             MondrianDef.Attribute xmlParentAttribute =
                 new MondrianDef.Attribute();
-            attributeList.add(xmlParentAttribute);
+            attributeList.add(attributeList.size() - 1, xmlParentAttribute);
             xmlParentAttribute.name = xmlAttribute.name + "$Parent";
             xmlParentAttribute.levelType = "Regular";
             convertColumnOrExpr(
@@ -3398,8 +3398,50 @@ public class RolapSchemaUpgrader {
                 MondrianDef.Key.class,
                 xmlParentAttribute.children);
             xmlAttribute.parent = xmlParentAttribute.name;
-            xmlParentAttribute.nullValue = xmlLegacyLevel.nullParentValue;
+            xmlAttribute.nullParentValue = xmlLegacyLevel.nullParentValue;
             xmlAttribute.hasHierarchy = false;
+
+            // Register closure table in physical schema, and link to fact
+            // table.
+            if (xmlLegacyLevel.closure != null) {
+                final RolapSchema.PhysRelation physClosureTable =
+                    toPhysRelation2(
+                        xmlLegacyLevel.closure.table);
+                // Create a key for the closure table. This is a slight fib,
+                // since this does columns not uniquely identify rows in the
+                // table. But it is consistent with how we use keys in dimension
+                // tables: the key is what we join to from the fact table.
+                RolapSchema.PhysKey key =
+                    physClosureTable.addKey(
+                        "primary",
+                        Collections.singletonList(
+                            physClosureTable.getColumn(
+                                xmlLegacyLevel.closure.childColumn, true)));
+                if (links != null) {
+                    for (Link link : links) {
+                        physSchemaConverter.physSchema.addLink(
+                            key,
+                            link.fact,
+                            Collections.singletonList(
+                                link.fact.getColumn(link.foreignKey, true)),
+                            false);
+                    }
+                }
+
+                // Convert the Closure element.
+                MondrianDef.Closure closure =
+                    new MondrianDef.Closure();
+                closure.childColumn = xmlLegacyLevel.closure.childColumn;
+                closure.parentColumn = xmlLegacyLevel.closure.parentColumn;
+                closure.distanceColumn = "distance";
+                closure.table = xmlLegacyLevel.closure.table.getAlias();
+
+                physSchemaConverter
+                    .legacyMap.put(closure, xmlLegacyLevel.closure);
+
+                // Now add the closure to the attribute.
+                xmlAttribute.children.add(closure);
+            }
         }
 
         for (int i = 0; i < xmlLegacyLevel.properties.length; i++) {
@@ -3438,34 +3480,6 @@ public class RolapSchemaUpgrader {
             xmlLegacyLevel.uniqueMembers == null
                 ? (ordinal == 0)
                 : xmlLegacyLevel.uniqueMembers;
-
-        // Register closure table in physical schema, and link to fact
-        // table.
-        if (xmlLegacyLevel.closure != null) {
-            final RolapSchema.PhysRelation physClosureTable =
-                toPhysRelation2(
-                    xmlLegacyLevel.closure.table);
-            // Create a key for the closure table. This is a slight fib,
-            // since this does columns not uniquely identify rows in the
-            // table. But it is consistent with how we use keys in dimension
-            // tables: the key is what we join to from the fact table.
-            RolapSchema.PhysKey key =
-                physClosureTable.addKey(
-                    "primary",
-                    Collections.singletonList(
-                        physClosureTable.getColumn(
-                            xmlLegacyLevel.closure.childColumn, true)));
-            if (links != null) {
-                for (Link link : links) {
-                    physSchemaConverter.physSchema.addLink(
-                        key,
-                        link.fact,
-                        Collections.singletonList(
-                            link.fact.getColumn(link.foreignKey, true)),
-                        false);
-                }
-            }
-        }
 
         physSchemaConverter.legacyMap.put(xmlLevel, xmlLegacyLevel);
         return xmlLevel;

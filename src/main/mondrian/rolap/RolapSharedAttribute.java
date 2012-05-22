@@ -41,11 +41,13 @@ public class RolapSharedAttribute extends RolapAttributeImpl {
         MemberFormatter memberFormatter,
         String nullValue,
         Level.Type levelType,
+        RolapClosure closure,
         int approxRowCount)
     {
         super(
             name, visible, caption, description, keyList, nameExp, captionExp,
-            orderByList, memberFormatter, nullValue, levelType, approxRowCount);
+            orderByList, memberFormatter, nullValue, levelType,
+            closure, approxRowCount);
     }
 
     /**
@@ -166,6 +168,10 @@ public class RolapSharedAttribute extends RolapAttributeImpl {
 
         public String getNullValue() {
             return delegate.getNullValue();
+        }
+
+        public RolapClosure getClosure() {
+            return delegate.getClosure();
         }
     }
 
