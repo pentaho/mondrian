@@ -486,14 +486,18 @@ public class AggregationManager extends RolapAggregationManager {
 
         RolapStar.Column[] convertColumnArray(RolapStar.Column[] columns);
 
-        RolapStar.Measure convertMeasure(
-            RolapStar.Measure measure);
+        RolapStar.Measure convertMeasure(RolapStar.Measure measure);
 
         StarColumnPredicate[] convertPredicateArray(
             StarColumnPredicate[] predicates);
 
         List<StarPredicate> convertPredicateList(
             List<StarPredicate> predicateList);
+
+        Set<StarColumnPredicate>[] convertPredicateSets(
+            Set<StarColumnPredicate>[] valueSets);
+
+        RolapStar.Column convertColumn(RolapStar.Column column);
     }
 }
 

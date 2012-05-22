@@ -33,7 +33,6 @@ import mondrian.spi.impl.Scripts;
 import mondrian.util.*;
 
 import org.apache.commons.vfs.FileSystemException;
-import org.apache.derby.iapi.types.DataType;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
@@ -1481,7 +1480,8 @@ public class RolapSchemaLoader {
 
                 RolapStar star = measureGroup.getStar();
                 RolapStar.Table table = star.getFactTable();
-                table.makeMeasure(measureRef.measure, measureRef.aggColumn);
+                table.makeMeasure(
+                    measureRef.measure, measureRef.aggColumn, true);
             }
 
             for (RolapCubeDimension dimension : cube.dimensionList) {
@@ -2037,94 +2037,6 @@ public class RolapSchemaLoader {
                 xmlForeignKeyLink.foreignKey,
                 null);
         }
-
-        /*
-        // Construct the list of key columns.
-        List<RolapSchema.PhysColumn> keyColumnList =
-            new ArrayList<RolapSchema.PhysColumn>();
-        Set<RolapSchema.PhysRelation> relations =
-            new HashSet<RolapSchema.PhysRelation>();
-        for (MondrianDef.Column xmlColumn
-            : xmlForeignKeyLink.key.columns)
-        {
-            if (xmlColumn.table == null) {
-                schema.error(
-                    "Table must be specified",
-                    schema.locate(xmlColumn, "table"),
-                    null);
-                continue;
-            }
-            final RolapSchema.PhysRelation relation =
-                fact.getSchema().tablesByName.get(xmlColumn.table);
-            if (relation == null) {
-                schema.error(
-                    "Unknown table '" + xmlColumn.table + "'",
-                    schema.locate(xmlColumn, "table"),
-                    null);
-                continue;
-            }
-            relations.add(relation);
-            final RolapSchema.PhysColumn column =
-                relation.getColumn(xmlColumn.name, false);
-            if (column == null) {
-                schema.error(
-                    "Unknown column '" + xmlColumn.name + "'",
-                    schema.locate(xmlColumn, "name"),
-                    null);
-                continue;
-            }
-            keyColumnList.add(column);
-        }
-        if (relations.size() != 1) {
-            schema.error(
-                "foreign key columns come from different relations",
-                schema.locate(xmlForeignKeyLink.foreignKey, null),
-                null);
-        }
-        RolapSchema.PhysKey key =
-            relations.iterator().next().lookupKey(
-                keyColumnList, true);
-        assert key != null;
-
-        // Construct the list of foreign key columns.
-        List<RolapSchema.PhysColumn> foreignKeyColumnList =
-            new ArrayList<RolapSchema.PhysColumn>();
-        for (MondrianDef.Column xmlColumn
-            : xmlForeignKeyLink.foreignKey.columns)
-        {
-            if (xmlColumn.table != null
-                && !xmlColumn.table.equals(
-                measureGroup.getFactRelation().getAlias()))
-            {
-                schema.error(
-                    "Foreign key columns linking a dimension to a fact table"
-                    + " must be in the fact table, but was '"
-                    + xmlColumn.table + "'",
-                    schema.locate(xmlColumn, "table"),
-                    null);
-                continue;
-            }
-            final RolapSchema.PhysColumn column =
-                measureGroup.getFactRelation().getColumn(xmlColumn.name, false);
-            if (column == null) {
-                schema.error(
-                    "Unknown column '" + xmlColumn.name + "'",
-                    schema.locate(xmlColumn, "name"),
-                    null);
-                continue;
-            }
-            foreignKeyColumnList.add(column);
-        }
-
-        // Check cardinality.
-        if (keyColumnList.size() != foreignKeyColumnList.size()) {
-            schema.error(
-                "Column count mismatch",
-                schema.locate(xmlForeignKeyLink, null),
-                null);
-            return;
-        }
-        */
 
         final RolapSchema.PhysPathBuilder pathBuilderOrig =
             new RolapSchema.PhysPathBuilder(fact)
@@ -2894,11 +2806,14 @@ public class RolapSchemaLoader {
             final MondrianDef.Attribute xmlClosureAttribute1 =
                     new MondrianDef.Attribute();
             xmlClosureAttribute1.name = "Closure";
-            xmlClosureAttribute1.approxRowCount = xmlParentAttribute.approxRowCount;
+            xmlClosureAttribute1.approxRowCount =
+                xmlParentAttribute.approxRowCount;
             xmlClosureAttribute1.caption = xmlParentAttribute.caption;
             xmlClosureAttribute1.nameColumn = xmlParentAttribute.nameColumn;
-            xmlClosureAttribute1.captionColumn = xmlParentAttribute.captionColumn;
-            xmlClosureAttribute1.orderByColumn = xmlParentAttribute.orderByColumn;
+            xmlClosureAttribute1.captionColumn =
+                xmlParentAttribute.captionColumn;
+            xmlClosureAttribute1.orderByColumn =
+                xmlParentAttribute.orderByColumn;
             xmlClosureAttribute1.hasHierarchy = false;
             xmlClosureAttribute1.visible = false;
             xmlClosureAttribute1.levelType = xmlParentAttribute.levelType;
@@ -2907,7 +2822,8 @@ public class RolapSchemaLoader {
             xmlClosureAttribute1.children.add(xmlParentAttribute.getName_());
             xmlClosureAttribute1.children.add(xmlParentAttribute.getCaption());
             xmlClosureAttribute1.children.add(xmlParentAttribute.getOrderBy());
-            xmlClosureAttribute1.children.add(xmlParentAttribute.getMemberFormatter());
+            xmlClosureAttribute1.children.add(
+                xmlParentAttribute.getMemberFormatter());
 
             final MondrianDef.Attribute xmlClosureAttribute2 =
                     new MondrianDef.Attribute();
@@ -2925,7 +2841,8 @@ public class RolapSchemaLoader {
             xmlClosureAttribute2.children.add(xmlAttribute.getName_());
             xmlClosureAttribute2.children.add(xmlAttribute.getCaption());
             xmlClosureAttribute2.children.add(xmlAttribute.getOrderBy());
-            xmlClosureAttribute2.children.add(xmlAttribute.getMemberFormatter());
+            xmlClosureAttribute2.children.add(
+                xmlAttribute.getMemberFormatter());
 
             // Copy attributes of parent and child.
             if (xmlParentAttribute.getAnnotations().size() > 0) {
@@ -2991,7 +2908,7 @@ public class RolapSchemaLoader {
             closureDim.attributeMap.put(
                 closureAttribute1.getName(), closureAttribute1);
             closureDim.attributeMap.put(
-                    closureAttribute2.getName(), closureAttribute2);
+                closureAttribute2.getName(), closureAttribute2);
 
             // Create a hierarchy where the closure will live.
             RolapHierarchy closureHierarchy =
@@ -3056,11 +2973,8 @@ public class RolapSchemaLoader {
             closure = null;
         }
 
-        /*
-         * Here we figure out a proper caption for
-         * the attribute. That is, if none was
-         * supplied in the schema.
-         */
+        // Here we figure out a proper caption for the attribute. That is, if
+        // none was supplied in the schema.
         final String caption;
         if (xmlAttribute.caption == null) {
             StringBuilder sb =

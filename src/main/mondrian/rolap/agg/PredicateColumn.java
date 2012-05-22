@@ -38,6 +38,8 @@ public class PredicateColumn {
     {
         this.router = router;
         this.physColumn = physColumn;
+        assert physColumn != null;
+        assert router != null;
     }
 
     public static final Comparator<PredicateColumn> COMPARATOR =

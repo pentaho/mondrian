@@ -12,7 +12,6 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
-import mondrian.rolap.agg.SegmentBuilder.StarSegmentConverter;
 import mondrian.rolap.aggmatcher.AggGen;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.cache.SegmentCacheIndex;
@@ -309,13 +308,12 @@ public class FastBatchingCellReader implements CellReader {
 
                 final SegmentWithData segmentWithData =
                     response.convert(header, body);
-                /*
-                 * Make sure that the cache manager knows about this new
-                 * segment. First thing we do is to add it to the index.
-                 * Then we insert the segment body into the SlotFuture.
-                 * This has to be done on the SegmentCacheManager's
-                 * Actor thread to ensure thread safety.
-                 */
+
+                // Make sure that the cache manager knows about this new
+                // segment. First thing we do is to add it to the index.  Then
+                // we insert the segment body into the SlotFuture.  This has to
+                // be done on the SegmentCacheManager's Actor thread to ensure
+                // thread safety.
                 final Locus locus = Locus.peek();
                 cacheMgr.execute(
                     new SegmentCacheManager.Command<Void>() {
@@ -1631,18 +1629,32 @@ class BatchLoader {
                 new ArrayList<RolapStar.Column>();
             final BitKey newBitKey =
                 BitKey.Factory.makeBitKey(newStar.getColumnCount());
+            final Map<RolapSchema.PhysColumn, RolapSchema.PhysColumn> map =
+                new HashMap<RolapSchema.PhysColumn, RolapSchema.PhysColumn>();
             for (RolapStar.Column column : columns) {
                 final RolapStar.Column newColumn =
                     galaxy.getEquivalentColumn(column, newStar);
+                map.put(
+                    (RolapSchema.PhysColumn) column.getExpression(),
+                    (RolapSchema.PhysColumn) newColumn.getExpression());
                 newColumnList.add(newColumn);
                 newBitKey.set(newColumn.getBitPosition());
             }
+            final AggregationManager.StarConverter starConverter =
+                new StarConverterImpl(
+                    galaxy, newStar, star, Collections.EMPTY_MAP);
+
+            final AggregationManager.StarConverter reverseConverter =
+                new StarConverterImpl(
+                    galaxy, star, newStar, map);
+            final RolapStar.Column[] newColumns =
+                newColumnList.toArray(
+                    new RolapStar.Column[newColumnList.size()]);
             final Batch newBatch =
                 new Batch(
-                    new StarConverterImpl(galaxy, newStar, star),
-                    newColumnList.toArray(
-                        new RolapStar.Column[newColumnList.size()]),
-                    valueSets,
+                    starConverter,
+                    newColumns,
+                    reverseConverter.convertPredicateSets(valueSets),
                     new AggregationKey(
                         newBitKey,
                         newStar,
@@ -1673,15 +1685,19 @@ class BatchLoader {
             private final RolapGalaxy galaxy;
             private final RolapStar fromStar;
             private final RolapStar toStar;
+            private final Map<RolapSchema.PhysColumn, RolapSchema.PhysColumn>
+                map;
 
             public StarConverterImpl(
                 RolapGalaxy galaxy,
                 RolapStar fromStar,
-                RolapStar toStar)
+                RolapStar toStar,
+                Map<RolapSchema.PhysColumn, RolapSchema.PhysColumn> map)
             {
                 this.galaxy = galaxy;
                 this.fromStar = fromStar;
                 this.toStar = toStar;
+                this.map = map;
             }
 
             public RolapStar convertStar(RolapStar star) {
@@ -1704,14 +1720,17 @@ class BatchLoader {
                 final RolapStar.Column[] toColumns = columns.clone();
                 for (int i = 0; i < columns.length; i++) {
                     toColumns[i] =
-                        galaxy.getEquivalentColumn(columns[i], toStar);
+                        convertColumn(columns[i]);
                 }
                 return toColumns;
             }
 
+            public RolapStar.Column convertColumn(RolapStar.Column column) {
+                return galaxy.getEquivalentColumn(column, toStar);
+            }
+
             public RolapStar.Measure convertMeasure(RolapStar.Measure measure) {
-                return (RolapStar.Measure)
-                    galaxy.getEquivalentColumn(measure, toStar);
+                return (RolapStar.Measure) convertColumn(measure);
             }
 
             public StarColumnPredicate[] convertPredicateArray(
@@ -1735,6 +1754,30 @@ class BatchLoader {
                         return predicateList.size();
                     }
                 };
+            }
+
+            public Set<StarColumnPredicate>[] convertPredicateSets(
+                Set<StarColumnPredicate>[] valueSets)
+            {
+                final Set<StarColumnPredicate>[] sets =
+                    new Set[valueSets.length];
+                for (int i = 0; i < sets.length; i++) {
+                    sets[i] =
+                        convertPredicateSet(valueSets[i]);
+                }
+                return sets;
+            }
+
+            private Set<StarColumnPredicate> convertPredicateSet(
+                Set<StarColumnPredicate> set)
+            {
+                final Set<StarColumnPredicate> convertedSet =
+                    new HashSet<StarColumnPredicate>();
+                for (StarColumnPredicate predicate : set) {
+                    convertedSet.add(
+                        convertPredicate(predicate));
+                }
+                return convertedSet;
             }
 
             public List<StarColumnPredicate> convertStarColumnPredicateList(
@@ -1779,13 +1822,22 @@ class BatchLoader {
             {
                 return new ListColumnPredicate(
                     convert(predicate.getColumn()),
-                    convertStarColumnPredicateList(predicate.getPredicates()));
+                    convertStarColumnPredicateList(
+                        predicate.getPredicates()));
             }
 
             private PredicateColumn convert(PredicateColumn predicateColumn) {
                 return new PredicateColumn(
                     RolapSchema.BadRouter.INSTANCE,
-                    predicateColumn.physColumn);
+                    convertPhysColumn(predicateColumn.physColumn));
+            }
+
+            private RolapSchema.PhysColumn convertPhysColumn(
+                RolapSchema.PhysColumn physColumn)
+            {
+                final RolapSchema.PhysColumn convertedColumn =
+                    map.get(physColumn);
+                return convertedColumn == null ? physColumn : convertedColumn;
             }
 
             private StarPredicate convertPredicate(StarPredicate predicate) {

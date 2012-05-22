@@ -501,6 +501,7 @@
                     </CopyLink>
                 </DimensionLinks>
             </MeasureGroup>
+            -->
             <MeasureGroup table='agg_l_05_sales_fact_1997' type='aggregate'>
                 <Measures>
                     <MeasureRef name='Fact Count' aggColumn='fact_count'/>
@@ -516,7 +517,6 @@
                     <NoLink dimension='Time'/>
                 </DimensionLinks>
             </MeasureGroup>
-            -->
             <MeasureGroup table='agg_c_14_sales_fact_1997' type='aggregate'>
                 <Measures>
                     <MeasureRef name='Fact Count' aggColumn='fact_count'/>
@@ -536,7 +536,6 @@
                     </CopyLink>
                 </DimensionLinks>
             </MeasureGroup>
-            <!--
             <MeasureGroup table='agg_g_ms_pcat_sales_fact_1997' type='aggregate'>
                 <Measures>
                     <MeasureRef name='Fact Count' aggColumn='fact_count'/>
@@ -558,13 +557,12 @@
                         <Column aggColumn='marital_status' table='customer' name='marital_status'/>
                     </CopyLink>
                     <CopyLink dimension='Time' attribute='Month'>
-                        <Column aggColumn='time_year' table='time_by_day' name='the_year'/>
-                        <Column aggColumn='time_quarter' table='time_by_day' name='quarter'/>
-                        <Column aggColumn='time_month' table='time_by_day' name='month_of_year'/>
+                        <Column aggColumn='the_year' table='time_by_day' name='the_year'/>
+                        <Column aggColumn='quarter' table='time_by_day' name='quarter'/>
+                        <Column aggColumn='month_of_year' table='time_by_day' name='month_of_year'/>
                     </CopyLink>
                 </DimensionLinks>
             </MeasureGroup>
-            -->
         </MeasureGroups>
 
         <CalculatedMembers>

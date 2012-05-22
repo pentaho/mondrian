@@ -9,6 +9,7 @@
 */
 package mondrian.rolap.cache;
 
+import mondrian.olap.Util;
 import mondrian.rolap.BitKey;
 import mondrian.rolap.RolapUtil;
 import mondrian.rolap.agg.*;
@@ -734,6 +735,13 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
                 final SegmentColumn column1 =
                     header.getConstrainedColumn(
                         column.columnExpression);
+                if (column1 == null) {
+                    // This has been known to occur when segments are populated
+                    // from aggregate tables.
+                    throw Util.newInternal(
+                        "Could not find column for " + column.columnExpression
+                        + " in segment header " + header);
+                }
                 if (column1.getValues() == null) {
                     // Wildcard. Mark all values as present.
                     for (Entry<Comparable, BitSet> entry : valueMap.entrySet())

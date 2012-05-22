@@ -1153,13 +1153,15 @@ public class RolapStar {
         }
 
         void makeMeasure(RolapBaseCubeMeasure measure) {
-            final Measure starMeasure = makeMeasure(measure, measure.getExpr());
+            final Measure starMeasure =
+                makeMeasure(measure, measure.getExpr(), false);
             measure.setStarMeasure(starMeasure); // reverse mapping
         }
 
         Measure makeMeasure(
             RolapBaseCubeMeasure measure,
-            RolapSchema.PhysExpr expr)
+            RolapSchema.PhysExpr expr,
+            boolean rollup)
         {
             Dialect.Datatype datatype =
                 measure.getAggregator().deriveDatatype(
@@ -1178,7 +1180,9 @@ public class RolapStar {
                 new RolapStar.Measure(
                     measure.getName(),
                     measure.getCube().getName(),
-                    measure.getAggregator(),
+                    rollup
+                        ? measure.getAggregator().getRollup()
+                        : measure.getAggregator(),
                     this,
                     expr,
                     datatype);

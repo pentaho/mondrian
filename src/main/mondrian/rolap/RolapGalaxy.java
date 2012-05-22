@@ -11,6 +11,9 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.util.Pair;
+
+import org.apache.log4j.Logger;
 
 import java.util.*;
 
@@ -32,9 +35,6 @@ public class RolapGalaxy {
     private final Map<RolapStar, StarInfo> starMap =
         new HashMap<RolapStar, StarInfo>();
 
-    private final Map<RolapMeasureGroup, MeasureGroupInfo> measureGroupMap =
-        new HashMap<RolapMeasureGroup, MeasureGroupInfo>();
-
     private final StarInfo[] sortedStarInfos;
 
     // TODO: also add path to the key
@@ -50,15 +50,16 @@ public class RolapGalaxy {
      */
     private final BitKey prototypeBitKey;
 
+    private static final Logger LOGGER = Logger.getLogger(RolapStar.class);
+
     RolapGalaxy(RolapCube cube) {
         this.cube = cube;
 
         // Build map of columns and measures.
 
-        final Set<RolapStar> stars = new LinkedHashSet<RolapStar>();
+        final Map<RolapStar, List<RolapMeasureGroup>> stars =
+            new LinkedHashMap<RolapStar, List<RolapMeasureGroup>>();
         for (RolapMeasureGroup measureGroup : cube.getMeasureGroups()) {
-            measureGroupMap.put(
-                measureGroup, new MeasureGroupInfo(measureGroup));
             for (RolapMeasureGroup.RolapMeasureRef measureRef
                 : measureGroup.measureRefList)
             {
@@ -66,11 +67,15 @@ public class RolapGalaxy {
                     measureRef.aggColumn,
                     measureRef.measure.getStarMeasure());
             }
-            stars.add(measureGroup.getStar());
+            putMulti(stars, measureGroup.getStar(), measureGroup);
         }
 
-        for (RolapStar star : stars) {
-            starMap.put(star, new StarInfo(this, star));
+        for (Map.Entry<RolapStar, List<RolapMeasureGroup>> entry
+            : stars.entrySet())
+        {
+            final RolapStar star = entry.getKey();
+            final List<RolapMeasureGroup> measureGroups = entry.getValue();
+            starMap.put(star, new StarInfo(this, star, measureGroups));
         }
         sortedStarInfos =
             starMap.values().toArray(
@@ -83,9 +88,32 @@ public class RolapGalaxy {
                 }
             });
 
+        // Create "alias" columns due to CopyLinks.
+        for (;;) {
+            int n = 0;
+            for (StarInfo starInfo : starMap.values()) {
+                n += starInfo.copyColumns(starMap.values());
+            }
+            if (n == 0) {
+                break;
+            }
+        }
+
+        // Populate each StarInfo's bit keys.
         prototypeBitKey = BitKey.Factory.makeBitKey(columnMap.size());
         for (StarInfo starInfo : starMap.values()) {
             starInfo.init(prototypeBitKey);
+        }
+    }
+
+    private static <K, V> void putMulti(Map<K, List<V>> map, K k, V v) {
+        List<V> list = map.put(k, Collections.singletonList(v));
+        if (list != null) {
+            if (list.size() == 1) {
+                list = new ArrayList<V>(list);
+            }
+            list.add(v);
+            map.put(k, list);
         }
     }
 
@@ -113,6 +141,13 @@ public class RolapGalaxy {
         final BitKey measureBitKey,
         boolean[] rollup)
     {
+        if (!MondrianProperties.instance().ReadAggregates.get()
+            || !MondrianProperties.instance().UseAggregates.get())
+        {
+            // Can't do anything here.
+            return null;
+        }
+
         final StarInfo starInfo = starMap.get(star);
 
         // For each of the measures, find equivalent measures.
@@ -155,7 +190,7 @@ public class RolapGalaxy {
         final Object key;
         if (column instanceof RolapStar.Measure) {
             RolapStar.Measure measure = (RolapStar.Measure) column;
-//            System.out.println("testing " + column);
+            LOGGER.debug("testing " + column);
             final RolapStar.Measure baseMeasure =
                 starMeasureRefs.get(measure.getExpression());
             if (baseMeasure != null) {
@@ -175,7 +210,7 @@ public class RolapGalaxy {
             integer = columnMap.size();
             columnMap.put(key, integer);
             assert integer == columnMap.size() - 1;
-//            System.out.println("adding " + column + " as " + integer);
+            LOGGER.debug("adding " + column + " as " + integer);
         }
         return integer;
     }
@@ -253,17 +288,21 @@ public class RolapGalaxy {
             new HashMap<Integer, RolapStar.Column>();
 
         private final RolapStar star;
+        private final List<RolapMeasureGroup> measureGroups;
         private final int cost;
         private BitKey measuresGlobalBitKey;
         private BitKey levelsGlobalBitKey;
 
         StarInfo(
             RolapGalaxy galaxy,
-            RolapStar star)
+            RolapStar star,
+            List<RolapMeasureGroup> measureGroups)
         {
             this.star = star;
+            this.measureGroups = measureGroups;
             this.cost = star.getCost();
 
+            LOGGER.debug("galaxy " + galaxy + ": initializing star " + star);
             final List<RolapStar.Table> tables =
                 new ArrayList<RolapStar.Table>();
             collectTables(star.getFactTable(), tables);
@@ -290,6 +329,44 @@ public class RolapGalaxy {
             }
         }
 
+        int copyColumns(Collection<StarInfo> starInfos) {
+            int n = 0;
+            for (RolapMeasureGroup measureGroup : measureGroups) {
+                for (Pair<RolapStar.Column, RolapSchema.PhysColumn> pair
+                    : measureGroup.copyColumnList)
+                {
+                    final RolapSchema.PhysColumn physColumn = pair.getValue();
+                    final RolapStar.Column starColumn = pair.getKey();
+                    for (StarInfo starInfo : starInfos) {
+                        if (starInfo == this) {
+                            continue;
+                        }
+                        for (Map.Entry<Integer, RolapStar.Column> entry
+                            : starInfo.localColumns.entrySet())
+                        {
+                            RolapStar.Column column = entry.getValue();
+                            final Integer globalOrdinal = entry.getKey();
+                            if (!(column instanceof RolapStar.Measure)
+                                && column.getExpression().equals(physColumn)
+                                && !localColumns.containsKey(globalOrdinal))
+                            {
+                                LOGGER.debug(
+                                    "copy: globalOrdinal=" + globalOrdinal
+                                    + ", starColumn=" + starColumn
+                                    + ", physColumn=" + physColumn
+                                    + ", column=" + column);
+                                localColumns.put(globalOrdinal, starColumn);
+                                globalOrdinals.put(
+                                    starColumn.getBitPosition(), globalOrdinal);
+                                ++n;
+                            }
+                        }
+                    }
+                }
+            }
+            return n;
+        }
+
         private void collectTables(
             RolapStar.Table table,
             List<RolapStar.Table> tables)
@@ -298,15 +375,6 @@ public class RolapGalaxy {
             for (RolapStar.Table childTable : table.getChildren()) {
                 collectTables(childTable, tables);
             }
-        }
-    }
-
-    // ??used?
-    private static class MeasureGroupInfo {
-        private final RolapMeasureGroup measureGroup;
-
-        MeasureGroupInfo(RolapMeasureGroup measureGroup) {
-            this.measureGroup = measureGroup;
         }
     }
 }

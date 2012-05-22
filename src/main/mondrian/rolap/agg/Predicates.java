@@ -10,6 +10,7 @@
 */
 package mondrian.rolap.agg;
 
+import mondrian.olap.Util;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
 
@@ -97,6 +98,7 @@ public abstract class Predicates
         RolapStar star,
         List<RolapSchema.PhysColumn> columnList)
     {
+        Util.deprecated("not used", true);
         List<RolapStar.Column> list = new ArrayList<RolapStar.Column>();
         for (RolapSchema.PhysColumn column : columnList) {
             list.add(star.getColumn(column, true));
@@ -108,6 +110,7 @@ public abstract class Predicates
         RolapStar star,
         List<PredicateColumn> columnList)
     {
+        Util.deprecated("not used", true);
         List<RolapStar.Column> list = new ArrayList<RolapStar.Column>();
         for (PredicateColumn column : columnList) {
             list.add(star.getColumn(column.physColumn, true));

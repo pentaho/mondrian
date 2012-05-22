@@ -44,7 +44,7 @@ public abstract class RolapAggregator
                 default:
                     return false;
                 }
-            };
+            }
             public Object aggregate(List<Object> rawData) {
                 assert rawData.size() > 0;
                 if (rawData.get(0) instanceof Integer) {
@@ -74,7 +74,7 @@ public abstract class RolapAggregator
 
     public static final RolapAggregator Count =
         new RolapAggregator("count", index++, false) {
-            public Aggregator getRollup() {
+            public RolapAggregator getRollup() {
                 return Sum;
             }
 
@@ -98,6 +98,7 @@ public abstract class RolapAggregator
             {
                 return FunUtil.min(evaluator, members, exp);
             }
+
             public boolean supportsFastAggregates(Dialect.Datatype dataType) {
                 switch (dataType) {
                 case Integer:
@@ -106,7 +107,8 @@ public abstract class RolapAggregator
                 default:
                     return false;
                 }
-            };
+            }
+
             public Object aggregate(List<Object> rawData) {
                 assert rawData.size() > 0;
                 if (rawData.get(0) instanceof Integer) {
@@ -141,6 +143,7 @@ public abstract class RolapAggregator
             {
                 return FunUtil.max(evaluator, members, exp);
             }
+
             public boolean supportsFastAggregates(Dialect.Datatype dataType) {
                 switch (dataType) {
                 case Integer:
@@ -149,7 +152,8 @@ public abstract class RolapAggregator
                 default:
                     return false;
                 }
-            };
+            }
+
             public Object aggregate(List<Object> rawData) {
                 assert rawData.size() > 0;
                 if (rawData.get(0) instanceof Integer) {
@@ -179,7 +183,7 @@ public abstract class RolapAggregator
 
     public static final RolapAggregator Avg =
         new RolapAggregator("avg", index++, false) {
-            public Aggregator getRollup() {
+            public RolapAggregator getRollup() {
                 return new RolapAggregator("avg", index, false) {
                     public Object aggregate(
                         Evaluator evaluator,
@@ -190,6 +194,7 @@ public abstract class RolapAggregator
                     }
                 };
             }
+
             public Object aggregate(
                 Evaluator evaluator, TupleList members, Calc exp)
             {
@@ -199,7 +204,7 @@ public abstract class RolapAggregator
 
     public static final RolapAggregator DistinctCount =
         new RolapAggregator("distinct-count", index++, true) {
-            public Aggregator getRollup() {
+            public RolapAggregator getRollup() {
                 // Distinct counts cannot always be rolled up, when they can,
                 // it's using Sum.
                 return Sum;
@@ -316,6 +321,7 @@ public abstract class RolapAggregator
         public AvgFromAvg(String factCountExpr) {
             super("AvgFromAvg", factCountExpr);
         }
+
         public String getExpression(String operand) {
             StringBuilder buf = new StringBuilder(64);
             buf.append("sum(");
@@ -343,6 +349,7 @@ public abstract class RolapAggregator
         public SumFromAvg(String factCountExpr) {
             super("SumFromAvg", factCountExpr);
         }
+
         public String getExpression(String operand) {
             StringBuilder buf = new StringBuilder(64);
             buf.append("sum(");
@@ -397,7 +404,7 @@ public abstract class RolapAggregator
      * Returns the aggregator used to roll up. By default, aggregators roll up
      * themselves.
      */
-    public Aggregator getRollup() {
+    public RolapAggregator getRollup() {
         return this;
     }
 

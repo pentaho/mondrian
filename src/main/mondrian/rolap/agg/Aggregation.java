@@ -498,6 +498,7 @@ public class Aggregation {
             SegmentAxis[] segmentAxes,
             SegmentDataset data)
         {
+            Util.deprecated("not used", true);
             this.flushPredicate = flushPredicate;
             this.arity = flushPredicate.getColumnList().size();
             this.axes = new SegmentAxis[arity];

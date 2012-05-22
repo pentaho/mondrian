@@ -173,11 +173,15 @@ public class TestAggregationManager extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 ACCESS_MYSQL,
-                "select `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0`,"
-                + " sum(`agg_g_ms_pcat_sales_fact_1997`.`unit_sales`) as `m0` "
-                + "from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` "
-                + "where `agg_g_ms_pcat_sales_fact_1997`.`gender` = 'F' "
-                + "group by `agg_g_ms_pcat_sales_fact_1997`.`gender`",
+                "select\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0`,\n"
+                + "    sum(`agg_g_ms_pcat_sales_fact_1997`.`unit_sales`) as `m0`\n"
+                + "from\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997`\n"
+                + "where\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender` = 'F'\n"
+                + "group by\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender`",
                 26)
         };
 
@@ -369,10 +373,8 @@ public class TestAggregationManager extends BatchTestCase {
         SqlPattern[] patterns;
         String accessMysqlSql, derbySql;
 
-        /*
-         * Note: the following aggregate loading sqls contain no
-         * references to the parent level column "store_country".
-         */
+        // Note: the following aggregate loading SQL statements contain no
+        // references to the parent level column "store_country".
         if (MondrianProperties.instance().UseAggregates.get()
             && MondrianProperties.instance().ReadAggregates.get())
         {
@@ -392,7 +394,7 @@ public class TestAggregationManager extends BatchTestCase {
                 + "    `agg_c_14_sales_fact_1997`.`the_year` = 1997\n"
                 + "group by\n"
                 + "    `store`.`store_state`,\n"
-                + " `agg_c_14_sales_fact_1997`.`the_year`";
+                + "    `agg_c_14_sales_fact_1997`.`the_year`";
 
             derbySql =
                 "select "
@@ -416,16 +418,25 @@ public class TestAggregationManager extends BatchTestCase {
             };
         } else {
             accessMysqlSql =
-                "select `store`.`store_state` as `c0`,"
-                + " `time_by_day`.`the_year` as `c1`,"
-                + " sum(`sales_fact_1997`.`unit_sales`) as `m0` from `store` as `store`,"
-                + " `sales_fact_1997` as `sales_fact_1997`,"
-                + " `time_by_day` as `time_by_day` "
-                + "where `sales_fact_1997`.`store_id` = `store`.`store_id`"
-                + " and `store`.`store_state` in ('CA', 'OR')"
-                + " and `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`"
-                + " and `time_by_day`.`the_year` = 1997 "
-                + "group by `store`.`store_state`, `time_by_day`.`the_year`";
+                "select\n"
+                + "    `store`.`store_state` as `c0`,\n"
+                + "    `time_by_day`.`the_year` as `c1`,\n"
+                + "    sum(`sales_fact_1997`.`unit_sales`) as `m0`\n"
+                + "from\n"
+                + "    `store` as `store`,\n"
+                + "    `sales_fact_1997` as `sales_fact_1997`,\n"
+                + "    `time_by_day` as `time_by_day`\n"
+                + "where\n"
+                + "    `sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+                + "and\n"
+                + "    `store`.`store_state` in ('CA', 'OR')\n"
+                + "and\n"
+                + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+                + "and\n"
+                + "    `time_by_day`.`the_year` = 1997\n"
+                + "group by\n"
+                + "    `store`.`store_state`,\n"
+                + "    `time_by_day`.`the_year`";
 
             derbySql =
                 "select \"store\".\"store_state\" as \"c0\", \"time_by_day\".\"the_year\" as \"c1\", "
@@ -783,26 +794,35 @@ public class TestAggregationManager extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 ACCESS_MYSQL,
-                "select `agg_g_ms_pcat_sales_fact_1997`.`the_year` as `c0`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`quarter` as `c1`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` as `c2`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_family` as `c3`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c4`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_category` as `c5`,"
-                + " sum(`agg_g_ms_pcat_sales_fact_1997`.`customer_count`) as `m0` "
-                + "from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` "
-                + "where `agg_g_ms_pcat_sales_fact_1997`.`the_year` = 1997"
-                + " and `agg_g_ms_pcat_sales_fact_1997`.`quarter` = 'Q1'"
-                + " and `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` = 1"
-                + " and `agg_g_ms_pcat_sales_fact_1997`.`product_family` = 'Food'"
-                + " and `agg_g_ms_pcat_sales_fact_1997`.`product_department` = 'Deli'"
-                + " and `agg_g_ms_pcat_sales_fact_1997`.`product_category` = 'Meat' "
-                + "group by `agg_g_ms_pcat_sales_fact_1997`.`the_year`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`quarter`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`month_of_year`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_family`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_category`",
+                "select\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`the_year` as `c0`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`quarter` as `c1`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` as `c2`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_family` as `c3`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c4`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_category` as `c5`,\n"
+                + "    sum(`agg_g_ms_pcat_sales_fact_1997`.`customer_count`) as `m0`\n"
+                + "from\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997`\n"
+                + "where\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`the_year` = 1997\n"
+                + "and\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`quarter` = 'Q1'\n"
+                + "and\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` = 1\n"
+                + "and\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_family` = 'Food'\n"
+                + "and\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_department` = 'Deli'\n"
+                + "and\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_category` = 'Meat'\n"
+                + "group by\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`the_year`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`quarter`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`month_of_year`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_family`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_department`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_category`",
                 58)
         };
 
@@ -831,42 +851,52 @@ public class TestAggregationManager extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 ACCESS_MYSQL,
-                "select `agg_g_ms_pcat_sales_fact_1997`.`the_year` as `c0`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`quarter` as `c1`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` as `c2`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_family` as `c3`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c4`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_category` as `c5`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c6`,"
-                + " sum(`agg_g_ms_pcat_sales_fact_1997`.`customer_count`) as `m0` "
-                + "from `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` "
-                + "where `agg_g_ms_pcat_sales_fact_1997`.`the_year` = 1997"
-                + " and `agg_g_ms_pcat_sales_fact_1997`.`quarter` = 'Q1'"
-                + " and `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` = 1"
-                + " and `agg_g_ms_pcat_sales_fact_1997`.`product_family` = 'Food'"
-                + " and `agg_g_ms_pcat_sales_fact_1997`.`product_department` = 'Deli'"
-                + " and `agg_g_ms_pcat_sales_fact_1997`.`product_category` = 'Meat'"
-                + " and `agg_g_ms_pcat_sales_fact_1997`.`gender` = 'F' "
-                + "group by `agg_g_ms_pcat_sales_fact_1997`.`the_year`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`quarter`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`month_of_year`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_family`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_department`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`product_category`,"
-                + " `agg_g_ms_pcat_sales_fact_1997`.`gender`",
+                "select\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`the_year` as `c0`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`quarter` as `c1`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` as `c2`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_family` as `c3`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_department` as `c4`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_category` as `c5`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c6`,\n"
+                + "    sum(`agg_g_ms_pcat_sales_fact_1997`.`customer_count`) as `m0`\n"
+                + "from\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997`\n"
+                + "where\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`the_year` = 1997\n"
+                + "and\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`quarter` = 'Q1'\n"
+                + "and\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`month_of_year` = 1\n"
+                + "and\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_family` = 'Food'\n"
+                + "and\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_department` = 'Deli'\n"
+                + "and\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_category` = 'Meat'\n"
+                + "and\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender` = 'F'\n"
+                + "group by\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`the_year`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`quarter`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`month_of_year`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_family`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_department`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`product_category`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender`",
                 58)
         };
 
         assertRequestSql(new CellRequest[]{request}, patterns);
     }
 
-    /*
-     * Test that cells with the same compound member constraints are
+    /**
+     * Tests that cells with the same compound member constraints are
      * loaded in one Sql statement.
      *
-     * Cells [Food] and [Drink] have the same constraint:
+     * <p>Cells [Food] and [Drink] have the same constraint:
      *
-     *  {[1997].[Q1].[1], [1997].[Q3].[7]}
+     * <pre>{[1997].[Q1].[1], [1997].[Q3].[7]}</pre>
      */
     public void testCountDistinctBatchLoading() {
         List<String[]> compoundMembers = new ArrayList<String[]>();
@@ -952,13 +982,20 @@ public class TestAggregationManager extends BatchTestCase {
                 26),
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL,
-                "select `store`.`store_country` as `c0` "
-                + "from `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,"
-                + " `store` as `store` "
-                + "where `agg_c_14_sales_fact_1997`.`the_year` = 1998 "
-                + "and `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id` "
-                + "group by `store`.`store_country` "
-                + "order by ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC",
+                "select\n"
+                + "   `store`.`store_country` as `c0`\n"
+                + "from\n"
+                + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
+                + "    `store` as `store`\n"
+                + "where\n"
+                + "    `agg_c_14_sales_fact_1997`.`the_year` = 1998\n"
+                + "and\n"
+                + "   `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+                + "group by\n"
+                + "    `store`.`store_country`\n"
+                + "order by\n"
+                + "    ISNULL(`store`.`store_country`) ASC,\n"
+                + "    `store`.`store_country` ASC",
                 26)};
 
         assertQuerySql(
@@ -1193,8 +1230,8 @@ public class TestAggregationManager extends BatchTestCase {
             testContext, query2, patterns2, false, false, false);
     }
 
-    /*
-     * Test that using compound member constrant disables using AggregateTable
+    /**
+     * Tests that using compound member constrant disables using AggregateTable.
      */
     public void testCountDistinctWithConstraintAggMiss() {
         if (!(MondrianProperties.instance().UseAggregates.get()

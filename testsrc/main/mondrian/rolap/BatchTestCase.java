@@ -354,6 +354,7 @@ public class BatchTestCase extends FoodMartTestCase {
         String mdxQuery,
         SqlPattern[] patterns)
     {
+        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
         assertQuerySqlOrNot(
             getTestContext(), mdxQuery, patterns, false, false, true);
     }
@@ -371,6 +372,7 @@ public class BatchTestCase extends FoodMartTestCase {
         String mdxQuery,
         SqlPattern[] patterns)
     {
+        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
         assertQuerySqlOrNot(
             testContext, mdxQuery, patterns, false, false, true);
     }
