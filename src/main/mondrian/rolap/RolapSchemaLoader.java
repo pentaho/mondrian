@@ -32,7 +32,6 @@ import mondrian.spi.PropertyFormatter;
 import mondrian.spi.impl.Scripts;
 import mondrian.util.*;
 
-import org.apache.commons.vfs.FileSystemException;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
@@ -239,8 +238,6 @@ public class RolapSchemaLoader {
                 dataSource,
                 xmlSchema);
         } catch (XOMException e) {
-            throw Util.newError(e, "while parsing catalog " + catalogUrl);
-        } catch (FileSystemException e) {
             throw Util.newError(e, "while parsing catalog " + catalogUrl);
         } catch (IOException e) {
             throw Util.newError(e, "while parsing catalog " + catalogUrl);

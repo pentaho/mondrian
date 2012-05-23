@@ -1402,4 +1402,29 @@ log4j.configuration=file:log4j.properties</code></blockquote>
         <Core>false</Core>
         <Type>String</Type>
     </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>VfsClass</Name>
+        <Path>mondrian.spi.virtualFileHandlerClass</Path>
+        <Category>Factories</Category>
+        <Description>
+            <p>Name of the class that allows Mondrian to read from files or
+                URLs. The class must implement the
+                "mondrian.spi.VirtualFileHandler" interface.
+                Implementations include
+                "mondrian.spi.impl.ApacheVfsVirtualFileHandler"
+                (uses Apache VFS version 1),
+                "mondrian.spi.impl.ApacheVfs2VirtualFileHandler"
+                (uses Apache VFS version 2),
+                "mondrian.spi.impl.JavaNetVirtualFileHandler"
+                (uses "java.net.URL.openStream").</p>
+
+            <p>If not specified, Mondrian tries to instantiate
+                ApacheVfs2VirtualFileHandler,
+                then ApacheVfsVirtualFileHandler,
+                and lastly JavaNetVirtualFileHandler as a fallback. The
+                effect is that the server will use Apache VFS2 if it is
+                available on the classpath.</p>
+        </Description>
+        <Type>String</Type>
+    </PropertyDefinition>
 </PropertyDefinitions>

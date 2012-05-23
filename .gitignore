@@ -19,6 +19,7 @@ demo/access/MondrianFoodMart.mdb
 demo/derby/foodmart/
 doc/properties.html
 doc/api
+doc/api/index.html
 intellij/mondrian.ipr
 intellij/mondrian.iml
 intellij/mondrian.iws

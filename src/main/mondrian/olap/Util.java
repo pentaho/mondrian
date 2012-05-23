@@ -16,12 +16,10 @@ import mondrian.olap.fun.Resolver;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
-import mondrian.spi.UserDefinedFunction;
+import mondrian.spi.*;
 import mondrian.util.*;
 
 import org.apache.commons.collections.Predicate;
-import org.apache.commons.vfs.*;
-import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.XOMUtil;
@@ -141,6 +139,9 @@ public class Util extends XOMUtil {
 
     public static final ComparableEmptyList COMPARABLE_EMPTY_LIST =
         new ComparableEmptyList();
+
+    public static final Lazy<VirtualFileHandler> VIRTUAL_FILE_HANDLER =
+        new Lazy<VirtualFileHandler>(VirtualFileHandler.FACTORY);
 
     static {
         String className;
@@ -3474,80 +3475,14 @@ public class Util extends XOMUtil {
     /**
      * Gets content via Apache VFS. File must exist and have content
      *
-     * @param url String
-     * @return Apache VFS FileContent for further processing
-     * @throws FileSystemException on error
+     * @param url URL String
+     * @return Contents of file as an input stream
+     * @throws java.io.IOException on error
      */
     public static InputStream readVirtualFile(String url)
-        throws FileSystemException
+        throws IOException
     {
-        // Treat catalogUrl as an Apache VFS (Virtual File System) URL.
-        // VFS handles all of the usual protocols (http:, file:)
-        // and then some.
-        FileSystemManager fsManager = VFS.getManager();
-        if (fsManager == null) {
-            throw newError("Cannot get virtual file system manager");
-        }
-
-        // Workaround VFS bug.
-        if (url.startsWith("file://localhost")) {
-            url = url.substring("file://localhost".length());
-        }
-        if (url.startsWith("file:")) {
-            url = url.substring("file:".length());
-        }
-
-        //work around for VFS bug not closing http sockets
-        // (Mondrian-585)
-        if (url.startsWith("http")) {
-            try {
-                return new URL(url).openStream();
-            } catch (IOException e) {
-                throw newError(
-                    "Could not read URL: " + url);
-            }
-        }
-
-        File userDir = new File("").getAbsoluteFile();
-        FileObject file = fsManager.resolveFile(userDir, url);
-        FileContent fileContent = null;
-        try {
-            // Because of VFS caching, make sure we refresh to get the latest
-            // file content. This refresh may possibly solve the following
-            // workaround for defect MONDRIAN-508, but cannot be tested, so we
-            // will leave the work around for now.
-            file.refresh();
-
-            // Workaround to defect MONDRIAN-508. For HttpFileObjects, verifies
-            // the URL of the file retrieved matches the URL passed in.  A VFS
-            // cache bug can cause it to treat URLs with different parameters
-            // as the same file (e.g. http://blah.com?param=A,
-            // http://blah.com?param=B)
-            if (file instanceof HttpFileObject
-                && !file.getName().getURI().equals(url))
-            {
-                fsManager.getFilesCache().removeFile(
-                    file.getFileSystem(),  file.getName());
-
-                file = fsManager.resolveFile(userDir, url);
-            }
-
-            if (!file.isReadable()) {
-                throw newError(
-                    "Virtual file is not readable: " + url);
-            }
-
-            fileContent = file.getContent();
-        } finally {
-            file.close();
-        }
-
-        if (fileContent == null) {
-            throw newError(
-                "Cannot get virtual file content: " + url);
-        }
-
-        return fileContent.getInputStream();
+        return VIRTUAL_FILE_HANDLER.get().readVirtualFile(url);
     }
 
     public static String readVirtualFileAsString(

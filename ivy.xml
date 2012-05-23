@@ -47,6 +47,7 @@
         <dependency org="commons-pool" name="commons-pool" rev="1.2"/>
         <!-- version in commons-vfs.jar is 1.1-SNAPSHOT -->
         <dependency org="commons-vfs" name="commons-vfs" rev="1.0"/>
+        <dependency org="org.apache.commons" name="commons-vfs2" rev="2.0"/>
         <dependency org="javacup" name="javacup" rev="10k"/>
         <dependency org="net.java.dev.javacc" name="javacc" rev="5.0"/>
         <dependency org="dom4j" name="dom4j" rev="1.6.1"/>

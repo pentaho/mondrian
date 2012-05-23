@@ -161,6 +161,7 @@ demo/access/MondrianFoodMart.mdb"/>
     <pathelement location="${lib.dir}/commons-math.jar"/>
     <pathelement location="${lib.dir}/commons-pool.jar"/>
     <pathelement location="${lib.dir}/commons-vfs.jar"/>
+    <pathelement location="${lib.dir}/commons-vfs2.jar"/>
     <pathelement location="${lib.dir}/eigenbase-properties.jar"/>
     <pathelement location="${lib.dir}/eigenbase-resgen.jar"/>
     <pathelement location="${lib.dir}/eigenbase-xom.jar"/>

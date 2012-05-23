@@ -44,6 +44,7 @@
       <file url="file://$PROJECT_DIR$/../../olap4j/src/org/olap4j/driver/xmla/FactoryJdbc3Impl.java" />
       <file url="file://$PROJECT_DIR$/../src/main/mondrian/olap4j/FactoryJdbc3Impl.java" />
       <file url="file://$PROJECT_DIR$/../src/main/mondrian/olap4j/FactoryJdbc4Impl.java" />
+      <file url="file://$PROJECT_DIR$/../src/main/mondrian/util/UtilCompatibleJdk16.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
@@ -350,6 +351,7 @@
         <root url="jar://$PROJECT_DIR$/../lib/jlfgr.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/servlet-api.jar!/" />
         <root url="jar://$PROJECT_DIR$/../lib/commons-io.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/commons-vfs2.jar!/" />
       </CLASSES>
       <JAVADOC>
         <root url="jar://$PROJECT_DIR$/../lib/commons-math-javadoc.jar!/" />
