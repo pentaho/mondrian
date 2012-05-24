@@ -27,9 +27,7 @@ import org.olap4j.metadata.Property;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Tests mondrian's olap4j API.
@@ -441,6 +439,78 @@ public class Olap4jTest extends FoodMartTestCase {
         assertEquals(
             "[Store Type].[Store Type].[All Store Types]",
             member.getUniqueName());
+    }
+
+    public void testCellSetGetCellPositionArray() throws SQLException {
+        // Create a cell set with 1 column and 2 rows.
+        // Only coordinates (0, 0) and (0, 1) are valid.
+        CellSet x =
+            getTestContext().getOlap4jConnection().createStatement()
+                .executeOlapQuery(
+                    "select {[Customer].[Gender].[M]} on 0,\n"
+                    + " {[Customer].[Marital Status].[M],\n"
+                    + "  [Customer].[Marital Status].[S]} on 1\n"
+                    + "from [Sales]");
+        Cell cell;
+
+        // column=0, row=1 via getCell(List<Integer>)
+        cell = x.getCell(Arrays.asList(0, 1));
+        final String xxx = "68,755";
+        assertEquals(xxx, cell.getFormattedValue());
+
+        // column=1, row=0 out of range
+        try {
+            cell = x.getCell(Arrays.asList(1, 0));
+            fail("expected exception, got " + cell);
+        } catch (IndexOutOfBoundsException e) {
+            assertEquals(
+                "Cell coordinates (1, 0) fall outside CellSet bounds (1, 2)",
+                e.getMessage());
+        }
+
+        // ordinal=1 via getCell(int)
+        cell = x.getCell(1);
+        assertEquals(xxx, cell.getFormattedValue());
+
+        // column=0, row=1 via getCell(Position...)
+        final Position col0 = x.getAxes().get(0).getPositions().get(0);
+        final Position row1 = x.getAxes().get(1).getPositions().get(1);
+        final Position row0 = x.getAxes().get(1).getPositions().get(0);
+        cell = x.getCell(col0, row1);
+        assertEquals(xxx, cell.getFormattedValue());
+
+        // row=1, column=0 via getCell(Position...).
+        // This is OK, even though positions are not in axis order.
+        // Result same as previous.
+        cell = x.getCell(row1, col0);
+        assertEquals(xxx, cell.getFormattedValue());
+
+        try {
+            cell = x.getCell(col0);
+            fail("expected exception, got " + cell);
+        } catch (IllegalArgumentException e) {
+            assertEquals(
+                "Coordinates have different dimension (1) than axes (2)",
+                e.getMessage());
+        }
+
+        try {
+            cell = x.getCell(col0, row1, col0);
+            fail("expected exception, got " + cell);
+        } catch (IllegalArgumentException e) {
+            assertEquals(
+                "Coordinates have different dimension (3) than axes (2)",
+                e.getMessage());
+        }
+
+        try {
+            cell = x.getCell(row0, row1);
+            fail("expected exception, got " + cell);
+        } catch (IllegalArgumentException e) {
+            assertEquals(
+                "Coordinates contain axis 1 more than once",
+                e.getMessage());
+        }
     }
 }
 
