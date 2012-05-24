@@ -456,7 +456,8 @@ public class RolapCubeLevel extends RolapLevel {
                         member.getMemberType());
                 member =
                     new RolapCubeMember(
-// REVIEW pass the actual parent member instead of the 'all member'?
+                        // REVIEW pass the actual parent member instead of the
+                        // 'all member'?
                         allMember,
                         wrappedMember, closedPeerCubeLevel);
 

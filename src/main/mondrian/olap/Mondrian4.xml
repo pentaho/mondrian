@@ -1215,16 +1215,50 @@ Revision is $Id$
 
     <Element type="Closure" class="AttributeElement">
         <Doc>
-            Specifies the transitive closure of a parent-child hierarchy.
+            <p>Specifies the transitive closure of a parent-child hierarchy.
             Optional, but recommended for better performance.
             The closure is provided as a set of (parent, child) pairs:
             since it is the transitive closure these are actually (ancestor,
-            descendant) pairs.
+            descendant) pairs.</p>
+            <p>Each row of the table must be a tuple of the parent-child
+            hierarchy.</p>
         </Doc>
-        <Attribute name="parentColumn" required="true"/>
-        <Attribute name="childColumn" required="true"/>
-        <Attribute name="distanceColumn" required="false" default="distance"/>
-        <Attribute name="table" required="true"/>
+        <Attribute name="parentColumn" required="true">
+            <Doc>
+                <p>The column of the closure table which contains the key
+                of the parent member of the parent-child tuple.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="childColumn" required="true">
+            <Doc>
+                <p>The column of the closure table which contains the key
+                of the child member of the parent-child tuple.</p>
+            </Doc>
+        </Attribute>
+        <Attribute name="distanceColumn" required="false" default="distance">
+            <Doc>
+                <p>The column of the closure table which contains the number,
+                in relative descendance count, of generations covered by the
+                parent-child tuple.</p>
+                <p>For example, In the relation
+                A &lt; B &lt; C where A is the root and C is a grandchildren, the
+                closure table should contain:</p>
+                <code>
+PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
+&#160;&#160;0&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;A&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;1<br/>
+&#160;&#160;A&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;B&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;1<br/>
+&#160;&#160;A&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;C&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;2<br/>
+&#160;&#160;B&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;C&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;1<br/>
+</code>
+            </Doc>
+        </Attribute>
+        <Attribute name="table" required="true">
+            <Doc>
+	            <p>The name of the table to use as a closure table. The table
+	            must be defined as part of the <code>PhysicalSchema</code>
+	            section of the schema.</p>
+            </Doc>
+        </Attribute>
     </Element>
 
     <Element type="Property" class="NamedElement,AttributeElement">

@@ -254,6 +254,7 @@ public class Main extends TestSuite {
             addTest(suite, CustomizedParserTest.class);
             addTest(suite, SolveOrderScopeIsolationTest.class);
             addTest(suite, ParentChildHierarchyTest.class);
+            addTest(suite, ClosureSqlTest.class);
             if (Bug.BugMondrian1129Fixed) {
                 addTest(suite, Olap4jTckTest.class, "suite");
             }

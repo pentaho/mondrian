@@ -390,6 +390,15 @@ public class RolapSchemaUpgrader {
     {
         final MondrianDef.MeasureGroup xmlMeasureGroup =
             new MondrianDef.MeasureGroup();
+        String nameTest = xmlLegacyAggName.name;
+        while (true) {
+            if (xmlMeasureGroupList.get(nameTest) != null) {
+                nameTest += "_";
+            } else {
+                xmlMeasureGroup.name = nameTest;
+                break;
+            }
+        }
         xmlMeasureGroup.table = xmlLegacyAggName.name;
         xmlMeasureGroup.type = "aggregate";
         xmlMeasureGroup.approxRowCount = xmlLegacyAggName.approxRowCount;
