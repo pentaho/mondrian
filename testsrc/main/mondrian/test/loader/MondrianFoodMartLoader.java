@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test.loader;
@@ -410,9 +410,9 @@ public class MondrianFoodMartLoader {
         }
 
         try {
-            final Condition<String> tableFilter;
+            final Util.Predicate1<String> tableFilter;
             if (include != null || exclude != null) {
-                tableFilter = new Condition<String>() {
+                tableFilter = new Util.Predicate1<String>() {
                     public boolean test(String tableName) {
                         if (include != null) {
                             if (!include.matcher(tableName).matches()) {
@@ -433,11 +433,7 @@ public class MondrianFoodMartLoader {
                     }
                 };
             } else {
-                tableFilter = new Condition<String>() {
-                    public boolean test(String s) {
-                        return true;
-                    }
-                };
+                tableFilter = Util.truePredicate1();
             }
 
             if (generateUniqueConstraints) {
@@ -514,7 +510,7 @@ public class MondrianFoodMartLoader {
      * @param batchSize How often to write/commit to the database
      */
     private void loadDataFromFile(
-        Condition<String> tableFilter,
+        Util.Predicate1<String> tableFilter,
         long pauseMillis,
         int batchSize)
         throws Exception
@@ -841,7 +837,7 @@ public class MondrianFoodMartLoader {
      * @throws Exception
      */
     private void loadDataFromJdbcInput(
-        Condition<String> tableFilter,
+        Util.Predicate1<String> tableFilter,
         long pauseMillis,
         int batchSize)
         throws Exception
@@ -851,13 +847,10 @@ public class MondrianFoodMartLoader {
             fileOutput = new FileWriter(file);
         }
 
-        /*
-         * For each input table,
-         *  read specified columns for all rows in the input connection
-         *
-         * For each row, insert a row
-         */
-
+        // For each input table,
+        // read specified columns for all rows in the input connection.
+        //
+        // For each row, insert a row.
         for (Map.Entry<String, Column[]> tableEntry
             : tableMetadataToLoad.entrySet())
         {
@@ -1298,7 +1291,7 @@ public class MondrianFoodMartLoader {
     private void createIndexes(
         boolean baseTables,
         boolean summaryTables,
-        Condition<String> tableFilter)
+        Util.Predicate1<String> tableFilter)
         throws Exception
     {
         if (outputDirectory != null) {
@@ -2100,7 +2093,7 @@ public class MondrianFoodMartLoader {
         String[] columnNames,
         boolean baseTables,
         boolean aggregateTables,
-        Condition<String> tableFilter)
+        Util.Predicate1<String> tableFilter)
     {
         if (!tableFilter.test(tableName)) {
             return;
@@ -2213,7 +2206,9 @@ public class MondrianFoodMartLoader {
      *
      * @param tableFilter Condition whether to load a particular table
      */
-    private void createTables(Condition<String> tableFilter) throws Exception {
+    private void createTables(Util.Predicate1<String> tableFilter)
+        throws Exception
+    {
         if (outputDirectory != null) {
             file = new File(outputDirectory, "createTables.sql");
             fileOutput = new FileWriter(file);
@@ -2678,7 +2673,7 @@ public class MondrianFoodMartLoader {
      */
     private void createTable(
         String name,
-        Condition<String> tableFilter,
+        Util.Predicate1<String> tableFilter,
         Column... columns)
     {
         createTable(name, tableFilter, true, false, columns);
@@ -2695,7 +2690,7 @@ public class MondrianFoodMartLoader {
      */
     private void createTable(
         String name,
-        Condition<String> tableFilter,
+        Util.Predicate1<String> tableFilter,
         boolean loadData,
         boolean aggregate,
         Column... columns)
@@ -2912,10 +2907,8 @@ public class MondrianFoodMartLoader {
             return "NULL";
         }
 
-        /*
-         * Output for an INTEGER column, handling Doubles and Integers
-         * in the result set
-         */
+        // Output for an INTEGER column, handling Doubles and Integers
+        // in the result set.
         if (columnType.startsWith(Type.Integer.name)) {
             if (obj.getClass() == Double.class) {
                 try {
@@ -2939,10 +2932,8 @@ public class MondrianFoodMartLoader {
                 }
             }
 
-        /*
-         * Output for an SMALLINT column, handling Integers
-         * in the result set
-         */
+            // Output for an SMALLINT column, handling Integers
+            // in the result set
         } else if (columnType.startsWith(Type.Smallint.name)) {
             if (obj instanceof Boolean) {
                 return (Boolean) obj ? "1" : "0";
@@ -2957,10 +2948,8 @@ public class MondrianFoodMartLoader {
                     throw cce;
                 }
             }
-        /*
-         * Output for an BIGINT column, handling Doubles and Longs
-         * in the result set
-         */
+            // Output for an BIGINT column, handling Doubles and Longs
+            // in the result set
         } else if (columnType.startsWith("BIGINT")) {
             if (obj.getClass() == Double.class) {
                 try {
@@ -2984,15 +2973,11 @@ public class MondrianFoodMartLoader {
                 }
             }
 
-        /*
-         * Output for a String, managing embedded quotes
-         */
+            // Output for a String, managing embedded quotes
         } else if (columnType.startsWith("VARCHAR")) {
             return embedQuotes((String) obj);
 
-        /*
-         * Output for a TIMESTAMP
-         */
+            // Output for a TIMESTAMP
         } else {
             if (columnType.startsWith("TIMESTAMP")) {
                 Timestamp ts = (Timestamp) obj;
@@ -3010,9 +2995,7 @@ public class MondrianFoodMartLoader {
                 }
                 //return "'" + ts + "'" ;
 
-            /*
-             * Output for a DATE
-             */
+                // Output for a DATE
             } else if (columnType.startsWith("DATE")) {
                 Date dt = (Date) obj;
                 switch (dialect.getDatabaseProduct()) {
@@ -3024,16 +3007,12 @@ public class MondrianFoodMartLoader {
                     return "'" + dateFormatter.format(dt) + "'";
                 }
 
-            /*
-             * Output for a FLOAT
-             */
+                // Output for a FLOAT
             } else if (columnType.startsWith(Type.Real.name)) {
                 Float result = (Float) obj;
                 return result.toString();
 
-            /*
-             * Output for a DECIMAL(length, places)
-             */
+                // Output for a DECIMAL(length, places)
             } else if (columnType.startsWith("DECIMAL")) {
                 final Matcher matcher =
                     decimalDataTypeRegex.matcher(columnType);
@@ -3069,17 +3048,14 @@ public class MondrianFoodMartLoader {
                     }
                 }
 
-            /*
-             * Output for a BOOLEAN (Postgres) or BIT (other DBMSs)
-             */
+                // Output for a BOOLEAN (Postgres) or BIT (other DBMSs)
             } else if (columnType.startsWith("BOOLEAN")
                        || columnType.startsWith("BIT"))
             {
                 Boolean result = (Boolean) obj;
                 return result.toString();
-            /*
-             * Output for a BOOLEAN - TINYINT(1) (MySQL)
-             */
+
+                // Output for a BOOLEAN - TINYINT(1) (MySQL)
             } else if (columnType.startsWith("TINYINT(1)")) {
                 return (Boolean) obj ? "1" : "0";
             }
@@ -3100,9 +3076,7 @@ public class MondrianFoodMartLoader {
             return "NULL";
         }
 
-        /*
-         * Output for a TIMESTAMP
-         */
+        // Output for a TIMESTAMP
         final Dialect.DatabaseProduct product = dialect.getDatabaseProduct();
         if (columnType.startsWith("TIMESTAMP")) {
             switch (product) {
@@ -3112,9 +3086,7 @@ public class MondrianFoodMartLoader {
                 return "TIMESTAMP " + columnValue;
             }
 
-        /*
-         * Output for a DATE
-         */
+            // Output for a DATE
         } else if (columnType.startsWith("DATE")) {
             switch (product) {
             case ORACLE:
@@ -3123,9 +3095,7 @@ public class MondrianFoodMartLoader {
                 return "DATE " + columnValue;
             }
 
-        /*
-         * Output for a BOOLEAN (Postgres) or BIT (other DBMSs)
-         */
+            // Output for a BOOLEAN (Postgres) or BIT (other DBMSs)
         } else if (column.type == Type.Boolean) {
             String trimmedValue = columnValue.trim();
             switch (product) {
@@ -3350,20 +3320,6 @@ public class MondrianFoodMartLoader {
             }
             throw new AssertionError("unexpected type: " + name);
         }
-    }
-
-    /**
-     * Functor that evaluates a condition.
-     *
-     * @param <T> Argument type
-     */
-    private interface Condition<T> {
-        /**
-         * Evaluates the condition.
-         * @param t Argument
-         * @return Whether condition holds
-         */
-        boolean test(T t);
     }
 }
 

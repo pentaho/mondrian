@@ -41,9 +41,7 @@ import org.apache.log4j.Logger;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Enumeration;
 import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Main test suite for Mondrian.
@@ -55,9 +53,8 @@ import java.util.regex.Pattern;
  */
 public class Main extends TestSuite {
     private static final Logger logger = Logger.getLogger(Main.class);
-    /*
-     * Scratch area to store information on the emerging test suite.
-     */
+
+    /** Scratch area to store information on the emerging test suite. */
     private static Map<TestSuite, String> testSuiteInfo =
         new HashMap<TestSuite, String>();
 
@@ -102,9 +99,7 @@ public class Main extends TestSuite {
         final MondrianProperties properties = MondrianProperties.instance();
         Test test = suite();
         if (args.length == 1 && args[0].equals("-l")) {
-            /*
-             * Only lists the tests to run if invoking ant test-nobuild next.
-             */
+            // Only lists the tests to run if invoking ant test-nobuild next.
             return;
         }
 
@@ -140,7 +135,7 @@ public class Main extends TestSuite {
      */
     public static Test suite() throws Exception {
         MondrianProperties properties = MondrianProperties.instance();
-        String testName = properties.TestName.get();
+        final String testName = properties.TestName.get();
         String testClass = properties.TestClass.get();
 
         System.out.println("testName: " + testName);
@@ -353,8 +348,8 @@ public class Main extends TestSuite {
         if (testName != null && !testName.equals("")) {
             // Filter the suite,  so that only tests whose names match
             // "testName" (in its entirety) will be run.
-            Pattern testPattern = Pattern.compile(testName);
-            suite = copySuite(suite,  testPattern);
+            suite = TestContext.copySuite(
+                suite, TestContext.patternPredicate(testName));
         }
 
         String testInfo = testSuiteInfo.get(suite);
@@ -383,42 +378,6 @@ public class Main extends TestSuite {
             && properties.Iterations.get() == 1;
     }
 
-    /**
-     * Makes a copy of a suite, filtering certain tests.
-     *
-     * @param suite Test suite
-     * @param testPattern Regular expression of name of tests to include
-     * @return copy of test suite
-     * @throws Exception on error
-     */
-    private static TestSuite copySuite(TestSuite suite, Pattern testPattern)
-        throws Exception
-    {
-        TestSuite newSuite = new TestSuite(suite.getName());
-        Enumeration<?> tests = suite.tests();
-        while (tests.hasMoreElements()) {
-            Test test = (Test) tests.nextElement();
-            if (test instanceof TestCase) {
-                TestCase testCase = (TestCase) test;
-                final String testName = testCase.getName();
-                if (testPattern == null
-                    || testPattern.matcher(testName).matches())
-                {
-                    addTest(newSuite, test, suite.getName() + testName);
-                }
-            } else if (test instanceof TestSuite) {
-                TestSuite subSuite = copySuite((TestSuite) test, testPattern);
-                if (subSuite.countTestCases() > 0) {
-                   addTest(newSuite, subSuite, subSuite.getName());
-                }
-            } else {
-                // some other kind of test
-                addTest(newSuite, test, " ");
-            }
-        }
-        return newSuite;
-    }
-
     private static void addTest(
         TestSuite suite,
         Class<? extends TestCase> testClass) throws Exception
@@ -444,8 +403,22 @@ public class Main extends TestSuite {
 
     private static void addTest(
         TestSuite suite,
+        Class<? extends TestCase> testClass,
+        Util.Predicate1<Test> predicate)
+    {
+        final TestSuite tempSuite = new TestSuite();
+        tempSuite.addTestSuite(testClass);
+
+        int startTestCount = suite.countTestCases();
+        TestContext.copyTests(suite, tempSuite, predicate);
+        int endTestCount = suite.countTestCases();
+        printTestInfo(suite, testClass.getName(), startTestCount, endTestCount);
+    }
+
+    private static void addTest(
+        TestSuite suite,
         Test tests,
-        String testClassName) throws Exception
+        String testClassName)
     {
         int startTestCount = suite.countTestCases();
         suite.addTest(tests);

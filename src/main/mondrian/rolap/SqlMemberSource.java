@@ -666,11 +666,8 @@ class SqlMemberSource
                         false);
                 int bitPos = starColumn.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
-                RolapStar.Condition condition =
-                    new RolapStar.Condition(
-                        column,
-                        aggColumn.getExpression());
-                sqlQuery.addWhere(condition.toString(sqlQuery));
+                sqlQuery.addWhere(
+                    aggColumn.getExpression().toSql() + " = " + column.toSql());
             }
         }
 

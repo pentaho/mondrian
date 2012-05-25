@@ -123,6 +123,42 @@ public class TestContext {
     }
 
     /**
+     * Creates a predicate that accepts tests whose name matches the given
+     * regular expression.
+     *
+     * @param regexp Test case regular expression
+     * @return Predicate that accepts tests with the given name
+     */
+    public static Util.Predicate1<Test> patternPredicate(final String regexp) {
+        final Pattern pattern = Pattern.compile(regexp);
+        return new Util.Predicate1<Test>() {
+            public boolean test(Test test) {
+                if (!(test instanceof TestCase)) {
+                    return true;
+                }
+                final TestCase testCase = (TestCase) test;
+                final String testCaseName = testCase.getName();
+                return pattern.matcher(testCaseName).matches();
+            }
+        };
+    }
+
+    /**
+     * Creates a predicate that accepts tests with the given name.
+     *
+     * @param name Test case name
+     * @return Predicate that accepts tests with the given name
+     */
+    public static Util.Predicate1<Test> namePredicate(final String name) {
+        return new Util.Predicate1<Test>() {
+            public boolean test(Test test) {
+                return !(test instanceof TestCase)
+                    || ((TestCase) test).getName().equals(name);
+            }
+        };
+    }
+
+    /**
      * Returns the connect string by which the unit tests can talk to the
      * FoodMart database.
      *
@@ -1441,24 +1477,39 @@ public class TestContext {
         Util.Predicate1<Test> testPattern)
     {
         TestSuite newSuite = new TestSuite(suite.getName());
+        copyTests(newSuite, suite, testPattern);
+        return newSuite;
+    }
+
+    /**
+     * Copies tests that match a given predicate into a target sourceSuite.
+     *
+     * @param targetSuite Target test suite
+     * @param suite Source test suite
+     * @param predicate Predicate that determines whether to copy a test
+     */
+    static void copyTests(
+        TestSuite targetSuite,
+        TestSuite suite,
+        Util.Predicate1<Test> predicate)
+    {
         //noinspection unchecked
         for (Test test : Collections.list((Enumeration<Test>) suite.tests())) {
-            if (!testPattern.test(test)) {
+            if (!predicate.test(test)) {
                 continue;
             }
             if (test instanceof TestCase) {
-                newSuite.addTest(test);
+                targetSuite.addTest(test);
             } else if (test instanceof TestSuite) {
-                TestSuite subSuite = copySuite((TestSuite) test, testPattern);
+                TestSuite subSuite = copySuite((TestSuite) test, predicate);
                 if (subSuite.countTestCases() > 0) {
-                    newSuite.addTest(subSuite);
+                    targetSuite.addTest(subSuite);
                 }
             } else {
                 // some other kind of test
-                newSuite.addTest(test);
+                targetSuite.addTest(test);
             }
         }
-        return newSuite;
     }
 
     public void close() {

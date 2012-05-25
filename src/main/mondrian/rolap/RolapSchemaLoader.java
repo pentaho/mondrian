@@ -1744,11 +1744,7 @@ public class RolapSchemaLoader {
         RolapStar.Table starTable = star.getFactTable();
         for (RolapSchema.PhysHop hop : pathBuilder.done().hopList) {
             if (hop.link != null) {
-                starTable =
-                    starTable.findChild(
-                        hop.relation,
-                        new RolapStar.Condition(hop.link),
-                        true);
+                starTable = starTable.findChild(hop, true);
             }
         }
         final RolapStar.Column starColumn =
@@ -2082,11 +2078,7 @@ public class RolapSchemaLoader {
                 RolapStar.Table starTable = star.getFactTable();
                 for (RolapSchema.PhysHop hop : pathBuilder.done().hopList) {
                     if (hop.link != null) {
-                        starTable =
-                            starTable.findChild(
-                                hop.relation,
-                                new RolapStar.Condition(hop.link),
-                                true);
+                        starTable = starTable.findChild(hop, true);
                     }
                 }
                 final RolapStar.Column starColumn =

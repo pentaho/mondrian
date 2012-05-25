@@ -339,49 +339,54 @@ public class RolapSchemaUpgrader {
         }
     }
 
-    /*
-    For example,
-
-        <AggName name="agg_c_special_sales_fact_1997">
-            <AggFactCount column="FACT_COUNT"/>
-            <AggIgnoreColumn column="foo"/>
-            <AggIgnoreColumn column="bar"/>
-            <AggForeignKey factColumn="product_id" aggColumn="PRODUCT_ID" />
-            <AggForeignKey factColumn="customer_id" aggColumn="CUSTOMER_ID" />
-            <AggForeignKey factColumn="promotion_id" aggColumn="PROMOTION_ID" />
-            <AggForeignKey factColumn="store_id" aggColumn="STORE_ID" />
-            <AggMeasure name="[Measures].[Unit Sales]" column="UNIT_SALES_SUM" />
-            <AggMeasure name="[Measures].[Store Cost]" column="STORE_COST_SUM" />
-            <AggMeasure name="[Measures].[Store Sales]" column="STORE_SALES_SUM" />
-            <AggLevel name="[Time].[Year]" column="TIME_YEAR" />
-            <AggLevel name="[Time].[Quarter]" column="TIME_QUARTER" />
-            <AggLevel name="[Time].[Month]" column="TIME_MONTH" />
-        </AggName>
-
-    becomes
-
-        <MeasureGroup table='agg_c_special_sales_fact_1997' type='aggregate'>
-            <Measures>
-                <Measure name='Unit Sales 2' column='unit_sales_sum' aggregator='sum' formatString='Standard'/>
-                <MeasureRef name='Fact Count' aggColumn='fact_count'/>
-                <MeasureRef name='Unit Sales' aggColumn='unit_sales_sum'/>
-                <MeasureRef name='Store Cost' aggColumn='store_cost_sum'/>
-                <MeasureRef name='Store Sales' aggColumn='store_sales_sum'/>
-            </Measures>
-            <DimensionLinks>
-                <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>
-                <ForeignKeyLink dimension='Product' foreignKeyColumn='product_id'/>
-                <ForeignKeyLink dimension='Promotion' foreignKeyColumn='promotion_id'/>
-                <ForeignKeyLink dimension='Customer' foreignKeyColumn='customer_id'/>
-                <CopyLink dimension='Time' attribute='Month'>
-                    <Column aggColumn='time_year' table='time_by_day' name='the_year'/>
-                    <Column aggColumn='time_quarter' table='time_by_day' name='quarter'/>
-                    <Column aggColumn='time_month' table='time_by_day' name='month_of_year'/>
-                </CopyLink>
-            </DimensionLinks>
-        </MeasureGroup>
-
-     */
+    // For example,
+    //
+    // <AggName name="agg_c_special_sales_fact_1997">
+    //     <AggFactCount column="FACT_COUNT"/>
+    //     <AggIgnoreColumn column="foo"/>
+    //     <AggIgnoreColumn column="bar"/>
+    //     <AggForeignKey factColumn="product_id" aggColumn="PRODUCT_ID" />
+    //     <AggForeignKey factColumn="customer_id" aggColumn="CUSTOMER_ID" />
+    //     <AggForeignKey factColumn="promotion_id" aggColumn="PROMOTION_ID" />
+    //     <AggForeignKey factColumn="store_id" aggColumn="STORE_ID" />
+    //     <AggMeasure name="[Measures].[Unit Sales]" column="UNIT_SALES_SUM" />
+    //     <AggMeasure name="[Measures].[Store Cost]" column="STORE_COST_SUM" />
+    //     <AggMeasure name="[Measures].[Store Sales]"
+    //                 column="STORE_SALES_SUM" />
+    //     <AggLevel name="[Time].[Year]" column="TIME_YEAR" />
+    //     <AggLevel name="[Time].[Quarter]" column="TIME_QUARTER" />
+    //     <AggLevel name="[Time].[Month]" column="TIME_MONTH" />
+    // </AggName>
+    //
+    // becomes
+    //
+    // <MeasureGroup table='agg_c_special_sales_fact_1997' type='aggregate'>
+    //     <Measures>
+    //         <Measure name='Unit Sales 2' column='unit_sales_sum'
+    //                  aggregator='sum' formatString='Standard'/>
+    //         <MeasureRef name='Fact Count' aggColumn='fact_count'/>
+    //         <MeasureRef name='Unit Sales' aggColumn='unit_sales_sum'/>
+    //         <MeasureRef name='Store Cost' aggColumn='store_cost_sum'/>
+    //         <MeasureRef name='Store Sales' aggColumn='store_sales_sum'/>
+    //     </Measures>
+    //     <DimensionLinks>
+    //         <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>
+    //         <ForeignKeyLink dimension='Product'
+    //                         foreignKeyColumn='product_id'/>
+    //         <ForeignKeyLink dimension='Promotion'
+    //                         foreignKeyColumn='promotion_id'/>
+    //         <ForeignKeyLink dimension='Customer'
+    //                         foreignKeyColumn='customer_id'/>
+    //         <CopyLink dimension='Time' attribute='Month'>
+    //             <Column aggColumn='time_year' table='time_by_day'
+    //                     name='the_year'/>
+    //             <Column aggColumn='time_quarter' table='time_by_day'
+    //                     name='quarter'/>
+    //             <Column aggColumn='time_month' table='time_by_day'
+    //                     name='month_of_year'/>
+    //         </CopyLink>
+    //     </DimensionLinks>
+    // </MeasureGroup>
     private MondrianDef.MeasureGroup convertAggName(
         MondrianDef.MeasureGroup xmlFactMeasureGroup,
         Mondrian3Def.AggName xmlLegacyAggName,
@@ -436,24 +441,11 @@ public class RolapSchemaUpgrader {
         for (Mondrian3Def.AggForeignKey xmlLegacyForeignKey
             : xmlLegacyAggName.foreignKeys)
         {
-            for (MondrianDef.DimensionLink xmlLink
-                : xmlFactMeasureGroup.getDimensionLinks())
-            {
-                if (xmlLink instanceof MondrianDef.ForeignKeyLink) {
-                    MondrianDef.ForeignKeyLink xmlFKLink =
-                        (MondrianDef.ForeignKeyLink) xmlLink;
-                    if (matchesForeignKey(
-                            xmlFKLink, xmlLegacyForeignKey.factColumn))
-                    {
-                        final MondrianDef.ForeignKeyLink xmlAggFKLink =
-                            new MondrianDef.ForeignKeyLink();
-                        xmlAggFKLink.foreignKeyColumn =
-                            sanitizer.apply(xmlLegacyForeignKey.aggColumn);
-                        xmlAggFKLink.dimension = xmlFKLink.dimension;
-                        xmlDimensionLinks.list().add(xmlAggFKLink);
-                    }
-                }
-            }
+            convertAggForeignKey(
+                xmlFactMeasureGroup,
+                xmlDimensionLinks,
+                xmlLegacyForeignKey.factColumn,
+                sanitizer.apply(xmlLegacyForeignKey.aggColumn));
         }
 
         Map<String, MondrianDef.CopyLink> copyLinks =
@@ -470,15 +462,18 @@ public class RolapSchemaUpgrader {
             MondrianDef.CopyLink copyLink = copyLinks.get(level.dimension);
             if (copyLink == null) {
                 copyLink = new MondrianDef.CopyLink();
+                copyLink.dimension = level.dimension;
                 copyLinks.put(level.dimension, copyLink);
+                copyLink.columnRefs = new MondrianDef.Column[0];
             }
             final MondrianDef.Column column = new MondrianDef.Column();
             column.aggColumn = sanitizer.apply(xmlLegacyLevel.column);
             column.name = sanitizer.apply(level.column);
             column.table = level.table;
-            copyLink.columnRefs = new MondrianDef.Column[] {column};
-            copyLink.dimension = level.dimension;
-            Util.discard(xmlLegacyLevel.collapsed); // TODO:
+            copyLink.columnRefs = Util.append(copyLink.columnRefs, column);
+            if (!RolapSchemaLoader.toBoolean(xmlLegacyLevel.collapsed, true)) {
+                    // TODO:
+            }
         }
         if (xmlLegacyAggName.factcount != null) {
             final MondrianDef.MeasureRef xmlCountMeasureRef =
@@ -500,6 +495,31 @@ public class RolapSchemaUpgrader {
 
         xmlMeasureGroupList.add(xmlMeasureGroup);
         return xmlMeasureGroup;
+    }
+
+    private void convertAggForeignKey(
+        MondrianDef.MeasureGroup xmlFactMeasureGroup,
+        MondrianDef.DimensionLinks xmlDimensionLinks,
+        String factColumn,
+        String aggColumn)
+    {
+        for (MondrianDef.DimensionLink xmlLink
+            : xmlFactMeasureGroup.getDimensionLinks())
+        {
+            if (xmlLink instanceof MondrianDef.ForeignKeyLink) {
+                MondrianDef.ForeignKeyLink xmlFKLink =
+                    (MondrianDef.ForeignKeyLink) xmlLink;
+                if (matchesForeignKey(
+                        xmlFKLink, factColumn))
+                {
+                    final MondrianDef.ForeignKeyLink xmlAggFKLink =
+                        new MondrianDef.ForeignKeyLink();
+                    xmlAggFKLink.foreignKeyColumn = aggColumn;
+                    xmlAggFKLink.dimension = xmlFKLink.dimension;
+                    xmlDimensionLinks.list().add(xmlAggFKLink);
+                }
+            }
+        }
     }
 
     private boolean matchesForeignKey(
@@ -537,295 +557,6 @@ public class RolapSchemaUpgrader {
         }
         return physRelation;
     }
-
-    /**
-     * Creates a <code>RolapCube</code> from a virtual cube.
-     *
-     * param schema Schema cube belongs to
-     * param xmlSchema XML Schema element
-     * param syntheticPhysSchema Synthetic physical schema, if (and only if)
-     *   the user's schema has no PhysicalSchema element
-     * param xmlVirtualCube XML element defining virtual cube
-     */
-    /*
-    void convertCubeMeasures(
-        RolapSchema schema,
-        MondrianDef.Schema xmlSchema,
-        final RolapSchema.PhysSchema syntheticPhysSchema,
-        Mondrian3Def.VirtualCube xmlVirtualCube)
-    {
-        this(
-            schema,
-            xmlSchema, xmlVirtualCube.name,
-            xmlVirtualCube.caption,
-            xmlVirtualCube.description, xmlVirtualCube.dimensions,
-            RolapSchemaLoader.createAnnotationMap(xmlVirtualCube.annotations));
-
-        // Since MondrianDef.Measure and MondrianDef.VirtualCubeMeasure cannot
-        // be treated as the same, measure creation cannot be done in a common
-        // constructor.
-        RolapLevel measuresLevel = this.measuresHierarchy.newMeasuresLevel();
-
-        // Recreate CalculatedMembers, as the original members point to
-        // incorrect dimensional ordinals for the virtual cube.
-        List<RolapVirtualCubeMeasure> origMeasureList =
-            new ArrayList<RolapVirtualCubeMeasure>();
-        List<MondrianDef.CalculatedMember> origCalcMeasureList =
-            new ArrayList<MondrianDef.CalculatedMember>();
-        CubeComparator cubeComparator = new CubeComparator();
-        Map<RolapCube, List<MondrianDef.CalculatedMember>>
-            calculatedMembersMap =
-            new TreeMap<RolapCube, List<MondrianDef.CalculatedMember>>(
-                cubeComparator);
-        Member defaultMeasure = null;
-
-        this.cubeUsages = new RolapCubeUsages(xmlVirtualCube.cubeUsage);
-
-        // Must init the dimensions before dealing with calculated members.
-        RolapSchemaLoader.initCube(
-            this, physSchemaConverter, xmlVirtualCube.dimensions);
-
-        // For each base cube, create a measure group. Populate with measures
-        // and link dimensions.
-        final Map<String, RolapMeasureGroup> measureGroupsByName =
-            new HashMap<String, RolapMeasureGroup>();
-        for (String cubeName : buildInfoMap(xmlVirtualCube)) {
-            final RolapCube baseCube = schema.lookupCube(cubeName);
-            assert baseCube.measureGroupList.size() == 1;
-            final RolapMeasureGroup baseMeasureGroup =
-                baseCube.measureGroupList.get(0);
-            final RolapMeasureGroup measureGroup =
-                new RolapMeasureGroup(
-                    this, cubeName,
-                    xmlMeasureGroup.ignoreUnrelatedDimensions != null
-                    && xmlMeasureGroup.ignoreUnrelatedDimensions,
-                    baseMeasureGroup.getStar());
-            measureGroupsByName.put(cubeName, measureGroup);
-            measureGroupList.add(measureGroup);
-            for (MondrianDef.VirtualCubeDimension xmlVirtualCubeDimension
-                : xmlVirtualCube.dimensions)
-            {
-                if (xmlVirtualCubeDimension.cubeName != null
-                    && !xmlVirtualCubeDimension.cubeName.equals(
-                        cubeName))
-                {
-                    continue;
-                }
-                RolapDimension dimension =
-                    baseCube.lookupDimension(
-                        new Id.Segment(
-                            xmlVirtualCubeDimension.name,
-                            Id.Quoting.UNQUOTED));
-                assert dimension != null;
-                RolapDimension baseDimension;
-                if (dimension instanceof RolapCubeDimension) {
-                    baseDimension =
-                        ((RolapCubeDimension) dimension).rolapDimension;
-                } else {
-                    Util.deprecated("does this ever happen", true);
-                    baseDimension = dimension;
-                }
-                RolapSchema.PhysPath hop =
-                    baseMeasureGroup.dimensionMap2.get(baseDimension);
-                measureGroup.addLink(dimension, hop);
-            }
-        }
-
-        // Create measures, looking up measures in existing cubes.
-        for (MondrianDef.VirtualCubeMeasure xmlMeasure
-            : xmlVirtualCube.measures)
-        {
-            RolapCube cube = schema.lookupCube(xmlMeasure.cubeName);
-            if (cube == null) {
-                throw Util.newError(
-                    "Cube '" + xmlMeasure.cubeName + "' not found");
-            }
-            List<Member> cubeMeasures = cube.getMeasures();
-            boolean found = false;
-            for (Member cubeMeasure : cubeMeasures) {
-                if (cubeMeasure.getUniqueName().equals(xmlMeasure.name)) {
-                    if (cubeMeasure.getName().equalsIgnoreCase(
-                            xmlVirtualCube.defaultMeasure))
-                    {
-                        defaultMeasure = cubeMeasure;
-                    }
-                    found = true;
-                    if (cubeMeasure instanceof RolapCalculatedMember) {
-                        // We have a calulated member!  Keep track of which
-                        // base cube each calculated member is associated
-                        // with, so we can resolve the calculated member
-                        // relative to its base cube.  We're using a treeMap
-                        // to store the mapping to ensure a deterministic
-                        // order for the members.
-                        MondrianDef.CalculatedMember calcMember =
-                            schema.lookupXmlCalculatedMember(
-                                xmlMeasure.name, xmlMeasure.cubeName);
-                        if (calcMember == null) {
-                            throw Util.newInternal(
-                                "Could not find XML Calculated Member '"
-                                + xmlMeasure.name + "' in XML cube '"
-                                + xmlMeasure.cubeName + "'");
-                        }
-                        List<MondrianDef.CalculatedMember> memberList =
-                            calculatedMembersMap.get(cube);
-                        if (memberList == null) {
-                            memberList =
-                                new ArrayList<MondrianDef.CalculatedMember>();
-                        }
-                        memberList.add(calcMember);
-                        origCalcMeasureList.add(calcMember);
-                        calculatedMembersMap.put(cube, memberList);
-                    } else {
-                        // This is the a standard measure. (Don't know
-                        // whether it will confuse things that this
-                        // measure still points to its 'real' cube.)
-                        final RolapMeasureGroup measureGroup =
-                            measureGroupsByName.get(xmlMeasure.cubeName);
-                        assert measureGroup != null;
-                        RolapVirtualCubeMeasure virtualCubeMeasure =
-                            new RolapVirtualCubeMeasure(
-                                measureGroup,
-                                null,
-                                measuresLevel,
-                                (RolapStoredMeasure) cubeMeasure,
-                                RolapSchemaLoader.createAnnotationMap(
-                                    xmlMeasure.annotations));
-
-                        // Set member's visibility, default true.
-                        Boolean visible = xmlMeasure.visible;
-                        if (visible == null) {
-                            visible = Boolean.TRUE;
-                        }
-                        virtualCubeMeasure.setProperty(
-                            Property.VISIBLE.name,
-                            visible);
-                        // Inherit caption from the "real" measure
-                        virtualCubeMeasure.setProperty(
-                            Property.CAPTION.name,
-                            cubeMeasure.getCaption());
-                        origMeasureList.add(virtualCubeMeasure);
-                    }
-                    break;
-                }
-            }
-            if (!found) {
-                throw Util.newInternal(
-                    "could not find measure '" + xmlMeasure.name
-                    + "' in cube '" + xmlMeasure.cubeName + "'");
-            }
-        }
-
-        // Loop through the base cubes containing calculated members
-        // referenced by this virtual cube.  Resolve those members relative
-        // to their base cubes first, then resolve them relative to this
-        // cube so the correct dimension ordinals are used
-        List<RolapVirtualCubeMeasure> modifiedMeasureList =
-            new ArrayList<RolapVirtualCubeMeasure>(origMeasureList);
-        for (Object o : calculatedMembersMap.keySet()) {
-            RolapCube baseCube = (RolapCube) o;
-            List<MondrianDef.CalculatedMember> xmlCalculatedMemberList =
-                calculatedMembersMap.get(baseCube);
-            Query queryExp =
-                resolveCalcMembers(
-                    xmlCalculatedMemberList,
-                    Collections.<MondrianDef.NamedSet>emptyList(),
-                    baseCube,
-                    false);
-            MeasureFinder measureFinder =
-                new MeasureFinder(this, baseCube, measuresLevel);
-            queryExp.accept(measureFinder);
-            modifiedMeasureList.addAll(measureFinder.getMeasuresFound());
-        }
-
-        // Add the original calculated members from the base cubes to our
-        // list of calculated members
-        List<MondrianDef.CalculatedMember> xmlCalculatedMemberList =
-            new ArrayList<MondrianDef.CalculatedMember>();
-        for (Object o : calculatedMembersMap.keySet()) {
-            RolapCube baseCube = (RolapCube) o;
-            xmlCalculatedMemberList.addAll(
-                calculatedMembersMap.get(baseCube));
-        }
-        xmlCalculatedMemberList.addAll(
-            Arrays.asList(xmlVirtualCube.calculatedMembers));
-
-
-        // Resolve all calculated members relative to this virtual cube,
-        // whose measureHierarchy member reader now contains all base
-        // measures referenced in those calculated members
-        setMeasuresHierarchyMemberReader(
-            new CacheMemberReader(
-                new MeasureMemberSource(
-                    this.measuresHierarchy,
-                    Util.<RolapMember>cast(modifiedMeasureList))));
-
-        createCalcMembersAndNamedSets(
-            xmlCalculatedMemberList,
-            Arrays.asList(xmlVirtualCube.namedSets),
-            new ArrayList<RolapMember>(),
-            new ArrayList<Formula>(),
-            this,
-            false);
-
-        // reset the measureHierarchy member reader back to the list of
-        // measures that are only defined on this virtual cube
-        setMeasuresHierarchyMemberReader(
-            new CacheMemberReader(
-                new MeasureMemberSource(
-                    this.measuresHierarchy,
-                    Util.<RolapMember>cast(origMeasureList))));
-
-        this.measuresHierarchy.setDefaultMember(defaultMeasure);
-
-        List<MondrianDef.CalculatedMember> xmlVirtualCubeCalculatedMemberList =
-                Arrays.asList(xmlVirtualCube.calculatedMembers);
-        if (!vcHasAllCalcMembers(
-                origCalcMeasureList,
-                xmlVirtualCubeCalculatedMemberList))
-        {
-            // Remove from the calculated members array
-            // those members that weren't originally defined
-            // on this virtual cube.
-            List<Formula> calculatedMemberListCopy =
-                new ArrayList<Formula>(calculatedMemberList);
-            calculatedMemberList.clear();
-            for (Formula calculatedMember : calculatedMemberListCopy) {
-                if (findOriginalMembers(
-                        calculatedMember,
-                        origCalcMeasureList,
-                        calculatedMemberList))
-                {
-                    continue;
-                }
-                findOriginalMembers(
-                    calculatedMember,
-                    xmlVirtualCubeCalculatedMemberList,
-                    calculatedMemberList);
-            }
-        }
-
-        for (Formula calcMember : calculatedMemberList) {
-            if (calcMember.getName().equalsIgnoreCase(
-                    xmlVirtualCube.defaultMeasure))
-            {
-                this.measuresHierarchy.setDefaultMember(
-                    calcMember.getMdxMember());
-                break;
-            }
-        }
-
-        // Note: virtual cubes do not get aggregate
-    }
-
-    private boolean vcHasAllCalcMembers(
-        List<MondrianDef.CalculatedMember> origCalcMeasureList,
-        List<MondrianDef.CalculatedMember> xmlVirtualCubeCalculatedMemberList)
-    {
-        return calculatedMemberList.size()
-            == (origCalcMeasureList.size()
-            + xmlVirtualCubeCalculatedMemberList.size());
-    }
-    */
 
     private boolean findOriginalMembers(
         Formula formula,
@@ -1326,6 +1057,7 @@ public class RolapSchemaUpgrader {
                         new RolapStar.Condition(
                             column,
                             hierarchyUsage.getJoinExp());
+                    RolapSchema.PhysHop hop = null;
 
                     // (rchen) potential bug?:
                     // FACT table joins with tables in a hierarchy in the
@@ -1353,7 +1085,7 @@ public class RolapSchemaUpgrader {
                     //   "fact"."foreignKey" = "product_class"."product_id"
 
                     table = addJoin(
-                        table, physSchemaConverter, relation, joinCondition);
+                        table, physSchemaConverter, relation, hop);
                 }
 
                 // The parent Column is used so that non-shared dimensions
@@ -1849,7 +1581,7 @@ public class RolapSchemaUpgrader {
         RolapStar.Table table,
         RolapSchemaLoader.PhysSchemaBuilder physSchemaBuilder,
         Mondrian3Def.RelationOrJoin relationOrJoin,
-        RolapStar.Condition joinCondition)
+        RolapSchema.PhysHop joinCondition)
     {
         Util.deprecated("move this to PhysSchmaBuilder?", false);
         if (relationOrJoin instanceof Mondrian3Def.Relation) {
@@ -1858,7 +1590,7 @@ public class RolapSchemaUpgrader {
             final RolapSchema.PhysRelation physRelation =
                 toPhysRelation(relation);
             RolapStar.Table starTable =
-                table.findChild(physRelation, joinCondition, true);
+                table.findChild(joinCondition, true);
             assert starTable != null;
             return starTable;
         } else if (relationOrJoin instanceof Mondrian3Def.Join) {
@@ -1901,7 +1633,7 @@ public class RolapSchemaUpgrader {
                         "missing rightKeyAlias in " + relationOrJoin);
                 }
             }
-            joinCondition =
+            RolapStar.Condition joinCondition2 =
                 new RolapStar.Condition(
                     physSchemaBuilder.getPhysRelation(leftAlias, true)
                         .getColumn(
@@ -4573,85 +4305,6 @@ public class RolapSchemaUpgrader {
             Mondrian3Def.DimensionUsage cubeDim)
         {
             Util.deprecated("fix or remove", false);
-            /*
-            // Three ways that a hierarchy can be joined to the fact table.
-            if (cubeDim != null && cubeDim.level != null) {
-                // 1. Specify an explicit 'level' attribute in a
-                // <DimensionUsage>.
-                RolapLevel joinLevel = (RolapLevel)
-                        Util.lookupHierarchyLevel(hierarchy, cubeDim.level);
-                if (joinLevel == null) {
-                    throw MondrianResource.instance()
-                        .DimensionUsageHasUnknownLevel.ex(
-                            hierarchy.getUniqueName(),
-                            cube.getName(),
-                            cubeDim.level);
-                }
-                final MondrianDef.Relation joinRelation =
-                    findJoinTable(
-                        hierarchy,
-                        joinLevel.getKeyExp().getTableAlias());
-                this.joinTable =
-                    cube.physSchemaConverter.toPhysRelation(joinRelation);
-                this.joinExp =
-                    cube.physSchemaConverter.toPhysExpr(
-                        this.joinTable, joinLevel.getKeyExp());
-            } else if (hierarchy.getXmlHierarchy() != null
-                && hierarchy.getXmlHierarchy().primaryKey != null)
-            {
-                // 2. Specify a "primaryKey" attribute of in <Hierarchy>. You
-                //    must also specify the "primaryKeyTable" attribute if the
-                //    hierarchy is a join (hence has more than one table).
-                final MondrianDef.Relation joinRelation =
-                    findJoinTable(
-                        hierarchy,
-                        hierarchy.getXmlHierarchy().primaryKeyTable);
-                this.joinExp =
-                    new MondrianDef.Column(
-                        this.joinTable.getAlias(),
-                this.joinTable =
-                    cube.physSchemaConverter.toPhysRelation(joinRelation);
-                this.joinExp =
-                    cube.physSchemaConverter.toPhysExpr(
-                        joinTable,
-                        new MondrianDef.Column(
-                            joinTable.getAlias(),
-                            hierarchy.getXmlHierarchy().primaryKey));
-            } else {
-                // 3. If neither of the above, the join is assumed to be to key
-                //    of the last level.
-                final Level[] levels = hierarchy.getLevels();
-                RolapLevel joinLevel = (RolapLevel) levels[levels.length - 1];
-                final MondrianDef.Relation joinRelation =
-                    findJoinTable(
-                        hierarchy,
-                        joinLevel.getKeyExp().getTableAlias());
-                this.joinTable =
-                    cube.physSchemaConverter.toPhysRelation(joinRelation);
-                this.joinExp =
-                    cube.physSchemaConverter.toPhysExpr(
-                        joinTable,
-                        joinLevel.getKeyExp());
-            }
-
-            // Unless this hierarchy is drawing from the fact table, we need
-            // a join expresion and a foreign key.
-            final boolean inFactTable = this.joinTable.equals(cube.getFact());
-            if (!inFactTable) {
-                if (this.joinExp == null) {
-                    throw MondrianResource.instance()
-                        .MustSpecifyPrimaryKeyForHierarchy.ex(
-                        hierarchy.getUniqueName(),
-                        cube.getName());
-                }
-                if (foreignKey == null) {
-                    throw MondrianResource.instance()
-                        .MustSpecifyForeignKeyForHierarchy.ex(
-                        hierarchy.getUniqueName(),
-                        cube.getName());
-                }
-            }
-            */
         }
     }
 

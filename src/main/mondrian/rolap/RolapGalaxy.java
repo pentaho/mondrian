@@ -50,6 +50,8 @@ public class RolapGalaxy {
      */
     private final BitKey prototypeBitKey;
 
+    private final BitKey nonAdditiveMeasuresBitKey;
+
     private static final Logger LOGGER = Logger.getLogger(RolapStar.class);
 
     RolapGalaxy(RolapCube cube) {
@@ -99,10 +101,16 @@ public class RolapGalaxy {
             }
         }
 
+        // Add columns reachable from copied columns.
+        for (StarInfo starInfo : starMap.values()) {
+            starInfo.addReachableColumns();
+        }
+
         // Populate each StarInfo's bit keys.
         prototypeBitKey = BitKey.Factory.makeBitKey(columnMap.size());
+        nonAdditiveMeasuresBitKey = prototypeBitKey.emptyCopy();
         for (StarInfo starInfo : starMap.values()) {
-            starInfo.init(prototypeBitKey);
+            starInfo.init(prototypeBitKey, nonAdditiveMeasuresBitKey);
         }
     }
 
@@ -182,6 +190,28 @@ public class RolapGalaxy {
             !betterStarInfo.star.areRowsUnique()
             || !betterStarInfo.measuresGlobalBitKey.equals(
                 measuresGlobalBitKey);
+
+        if (rollup[0]
+            && measuresGlobalBitKey.intersects(nonAdditiveMeasuresBitKey))
+        {
+            for (int i : measuresGlobalBitKey.and(nonAdditiveMeasuresBitKey)) {
+                BitKey combinedLevelBitKey = null;
+                RolapStar.Measure measure =
+                    (RolapStar.Measure) betterStarInfo.localColumns.get(i);
+                final RolapStar.Measure baseStarMeasure =
+                    starMeasureRefs.get(measure.getExpression());
+
+                BitKey rollableLevelBitKey = null;
+                if (combinedLevelBitKey == null) {
+                        combinedLevelBitKey = rollableLevelBitKey;
+                    } else {
+                        // TODO use '&=' to remove unnecessary copy
+                        combinedLevelBitKey =
+                            combinedLevelBitKey.and(rollableLevelBitKey);
+                    }
+            }
+            return null;
+        }
 
         return betterStarInfo.star;
     }
@@ -315,7 +345,7 @@ public class RolapGalaxy {
             }
         }
 
-        void init(BitKey prototypeBitKey) {
+        void init(BitKey prototypeBitKey, BitKey nonAdditiveMeasuresBitKey) {
             measuresGlobalBitKey = prototypeBitKey.emptyCopy();
             levelsGlobalBitKey = prototypeBitKey.emptyCopy();
             for (Map.Entry<Integer, RolapStar.Column> entry
@@ -323,9 +353,16 @@ public class RolapGalaxy {
             {
                 final RolapStar.Column column = entry.getValue();
                 final int globalOrdinal = entry.getKey();
-                (column instanceof RolapStar.Measure
-                    ? measuresGlobalBitKey
-                    : levelsGlobalBitKey).set(globalOrdinal);
+                if (column instanceof RolapStar.Measure) {
+                    measuresGlobalBitKey.set(globalOrdinal);
+                    final RolapStar.Measure measure =
+                        (RolapStar.Measure) column;
+                    if (measure.getAggregator().isDistinct()) {
+                        nonAdditiveMeasuresBitKey.set(globalOrdinal);
+                    }
+                } else {
+                    levelsGlobalBitKey.set(globalOrdinal);
+                }
             }
         }
 
@@ -335,8 +372,8 @@ public class RolapGalaxy {
                 for (Pair<RolapStar.Column, RolapSchema.PhysColumn> pair
                     : measureGroup.copyColumnList)
                 {
-                    final RolapSchema.PhysColumn physColumn = pair.getValue();
-                    final RolapStar.Column starColumn = pair.getKey();
+                    final RolapSchema.PhysColumn physColumn = pair.right;
+                    final RolapStar.Column starColumn = pair.left;
                     for (StarInfo starInfo : starInfos) {
                         if (starInfo == this) {
                             continue;
@@ -365,6 +402,29 @@ public class RolapGalaxy {
                 }
             }
             return n;
+        }
+
+        public void addReachableColumns() {
+            for (;;) {
+                final Set<RolapSchema.PhysColumn> physColumns =
+                    new LinkedHashSet<RolapSchema.PhysColumn>();
+                final Set<RolapSchema.PhysRelation> physTables =
+                    new LinkedHashSet<RolapSchema.PhysRelation>();
+                for (RolapMeasureGroup measureGroup : measureGroups) {
+                    for (Pair<RolapStar.Column, RolapSchema.PhysColumn> pair
+                        : measureGroup.copyColumnList)
+                    {
+                        physColumns.add(pair.right);
+                        physTables.add(pair.right.relation);
+                    }
+                }
+                // TODO:
+                Util.discard(physColumns);
+                Util.discard(physTables);
+                if (true) {
+                    return;
+                }
+            }
         }
 
         private void collectTables(

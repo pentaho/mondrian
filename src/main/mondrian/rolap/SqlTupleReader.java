@@ -1129,11 +1129,10 @@ Util.deprecated("obsolete basecube parameter", false);
                 int bitPos = starColumn.getBitPosition();
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 assert attribute.getKeyList().size() == 1 : "TODO:";
-                RolapStar.Condition condition =
-                    new RolapStar.Condition(
-                        attribute.getKeyList().get(0),
-                        aggColumn.getExpression());
-                sqlQuery.addWhere(condition.toString(sqlQuery));
+                sqlQuery.addWhere(
+                    aggColumn.getExpression().toSql()
+                    + " = "
+                    + attribute.getKeyList().get(0).toSql());
             }
 
             // If this is a select on a virtual cube, the query will be
