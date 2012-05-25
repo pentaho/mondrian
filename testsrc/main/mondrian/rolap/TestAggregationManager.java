@@ -830,7 +830,8 @@ public class TestAggregationManager extends BatchTestCase {
     }
 
     /**
-     * As above, but we rollup [Marital Status] but not [Gender].
+     * As {@link #testCountDistinctRollupAlongDim}, but we rollup
+     * [Marital Status] but not [Gender].
      */
     public void testCountDistinctRollup2() {
         if (!(MondrianProperties.instance().UseAggregates.get()
@@ -1182,7 +1183,7 @@ public class TestAggregationManager extends BatchTestCase {
             "select count(*) from (select distinct \"store_country\" as \"c0\" from \"store_ragged\" as \"store_ragged\") as \"init\"";
 
         String cardinalitySqlMySql2 =
-            "select count(*) from (select distinct `store_country` as `c0` from `store_ragged` as `store_ragged`) as `init`";
+            "select count(*) from (select distinct `store_ragged`.`store_country` as `c0` from `store_ragged` as `store_ragged`) as `init`";
 
         SqlPattern[] patterns1 =
             new SqlPattern[] {
@@ -1466,6 +1467,7 @@ public class TestAggregationManager extends BatchTestCase {
                 null)
         };
 
+        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
         assertQuerySqlOrNot(
             getTestContext(), query, patterns, false, false, false);
 
@@ -2143,7 +2145,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "      formatString=\"Standard\"/>\n"
             + "</Cube>\n";
         final TestContext context =
-            TestContext.instance().create(
+            TestContext.instance().legacy().create(
                 null, cube, null, null, null, null);
         final String mdx =
             "select {Crossjoin([Product].[Product Family].Members, [Store].[Store Id].Members)} on rows, {[Measures].[Unit Sales]} on columns from [Foo]";
@@ -2168,6 +2170,7 @@ public class TestAggregationManager extends BatchTestCase {
             + "group by\n"
             + "    `product_class`.`product_family`,\n"
             + "    `store`.`store_id`";
+        propSaver.set(MondrianProperties.instance().GenerateFormattedSql, true);
         assertQuerySqlOrNot(
             context,
             mdx,

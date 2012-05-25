@@ -682,17 +682,6 @@ public class RolapSchema implements Schema {
                 Constructor<?> constructor = clazz.getConstructor();
                 changeListener =
                     (DataSourceChangeListener) constructor.newInstance();
-
-/*
-                final Class<DataSourceChangeListener> clazz =
-                    (Class<DataSourceChangeListener>)
-                        Class.forName(dataSourceChangeListenerStr);
-                final Constructor<DataSourceChangeListener> ctor =
-                    clazz.getConstructor();
-                changeListener = ctor.newInstance();
-*/
-                changeListener =
-                    (DataSourceChangeListener) constructor.newInstance();
             } catch (Exception e) {
                 throw Util.newError(
                     e,
@@ -2398,6 +2387,17 @@ public class RolapSchema implements Schema {
             this.forward = forward;
         }
 
+        public boolean equals(Object obj) {
+            return obj instanceof PhysHop
+                && relation.equals(((PhysHop) obj).relation)
+                && Util.equals(link, ((PhysHop) obj).link)
+                && forward == ((PhysHop) obj).forward;
+        }
+
+        public int hashCode() {
+            return Util.hashV(0, relation, link, forward);
+        }
+
         public final PhysRelation fromRelation() {
             return forward
                 ? link.sourceKey.relation
@@ -2533,7 +2533,12 @@ public class RolapSchema implements Schema {
             PhysRelation relation,
             boolean forward)
         {
-            hopList.add(new PhysHop(relation, link, forward));
+            return add(new PhysHop(relation, link, forward));
+        }
+
+        public PhysPathBuilder add(PhysHop hop)
+        {
+            hopList.add(hop);
             return this;
         }
 
@@ -3001,7 +3006,7 @@ public class RolapSchema implements Schema {
                 return approxCardinality;
             }
             if (relation instanceof RolapSchema.PhysTable
-                && expression instanceof RolapSchema.PhysColumn)
+                && expression instanceof RolapSchema.PhysRealColumn)
             {
                 final RolapSchema.PhysTable table =
                     (RolapSchema.PhysTable) relation;

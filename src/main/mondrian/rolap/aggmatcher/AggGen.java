@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.aggmatcher;
@@ -828,7 +828,7 @@ public class AggGen {
                 continue;
             }
             pw.print(prefix);
-            pw.print(cond.toString(sqlQuery));
+            pw.print(cond.toSql());
 
             if (rt.getParentTable() != null) {
                 while (rt.getParentTable().getParentTable() != null) {
@@ -838,7 +838,7 @@ public class AggGen {
                     pw.println(" and");
 
                     pw.print(prefix);
-                    pw.print(cond.toString(sqlQuery));
+                    pw.print(cond.toSql());
                 }
             }
         }

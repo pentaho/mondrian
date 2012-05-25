@@ -89,7 +89,9 @@ public class RolapStar {
         this.cacheAggregations = true;
         this.schema = schema;
         this.dataSource = dataSource;
-        this.factTable = new RolapStar.Table(this, fact, null, null);
+        final RolapSchema.PhysPath path =
+            new RolapSchema.PhysPathBuilder(fact).done();
+        this.factTable = new RolapStar.Table(this, fact, null, path);
 
         this.sqlQueryDialect = schema.getDialect();
         this.changeListener = schema.getDataSourceChangeListener();
@@ -521,6 +523,7 @@ public class RolapStar {
         Table table,
         RolapSchema.PhysRealColumn joinColumn)
     {
+        Util.deprecated("used only by AggMatcher", true);
         if (joinColumn == null) {
             columnList.addAll(table.columnList);
         }
@@ -946,14 +949,14 @@ public class RolapStar {
         private final List<Column> columnList;
         private final Table parent;
         private List<Table> children;
-        private final Condition joinCondition;
         private final String alias;
+        private final RolapSchema.PhysPath path; // path from fact table
 
         private Table(
             RolapStar star,
             RolapSchema.PhysRelation relation,
             Table parent,
-            Condition joinCondition)
+            RolapSchema.PhysPath path)
         {
             assert star != null;
             assert relation != null;
@@ -961,10 +964,9 @@ public class RolapStar {
             this.relation = relation;
             this.alias = chooseAlias();
             this.parent = parent;
-            this.joinCondition = joinCondition;
+            this.path = path;
             this.columnList = new ArrayList<Column>();
             this.children = Collections.emptyList();
-            assert (parent == null) == (joinCondition == null);
         }
 
         /**
@@ -972,7 +974,8 @@ public class RolapStar {
          * {@link #getParentTable() parent}; or null if this is the fact table.
          */
         public Condition getJoinCondition() {
-            return joinCondition;
+            Util.deprecated("obsolete", true);
+            return null;
         }
 
         /**
@@ -1195,28 +1198,27 @@ public class RolapStar {
          * Returns a child relation which maps onto a given relation, or null
          * if there is none.
          *
-         * @param relation Relation to join to
-         * @param joinCondition Join condition
+         * @param hop Hop between one relation and another
          * @param add Whether to add a child if not found
          *
          * @return Child, or null if not found and add is false
          */
         public Table findChild(
-            RolapSchema.PhysRelation relation,
-            Condition joinCondition,
+            RolapSchema.PhysHop hop,
             boolean add)
         {
             for (Table child : getChildren()) {
-                if (child.relation.equals(relation)) {
-                    if (child.joinCondition.equals(joinCondition)) {
+                if (child.relation.equals(hop.relation)) {
+                    if (Util.last(child.path.hopList).equals(hop)) {
                         return child;
                     }
                 }
             }
             if (add) {
+                RolapSchema.PhysPath path2 =
+                    new RolapSchema.PhysPathBuilder(path).add(hop).done();
                 Table child =
-                    new RolapStar.Table(
-                        star, relation, this, joinCondition);
+                    new RolapStar.Table(star, hop.relation, this, path2);
                 if (this.children.isEmpty()) {
                     this.children = new ArrayList<Table>();
                 }
@@ -1282,13 +1284,12 @@ public class RolapStar {
         {
             Util.deprecated("use PhysPath.addToFrom", false);
             query.addFrom(relation, alias, failIfExists);
-            Util.assertTrue((parent == null) == (joinCondition == null));
             if (joinToParent) {
                 if (parent != null) {
                     parent.addToFrom(query, failIfExists, joinToParent);
                 }
-                if (joinCondition != null) {
-                    query.addWhere(joinCondition.toString(query));
+                if (getLastHop() != null) {
+                    query.addWhere(getLastHop().link.toSql());
                 }
             }
         }
@@ -1315,18 +1316,7 @@ public class RolapStar {
         public RolapStar.Table findTableWithLeftJoinCondition(
             final String columnName)
         {
-            for (Table child : getChildren()) {
-                Condition condition = child.joinCondition;
-                if (condition != null) {
-                    if (condition.left instanceof RolapSchema.PhysRealColumn) {
-                        RolapSchema.PhysRealColumn mcolumn =
-                            (RolapSchema.PhysRealColumn) condition.left;
-                        if (mcolumn.name.equals(columnName)) {
-                            return child;
-                        }
-                    }
-                }
-            }
+            Util.deprecated("obsolete", true);
             return null;
         }
 
@@ -1338,18 +1328,7 @@ public class RolapStar {
         public RolapStar.Table findTableWithLeftCondition(
             final RolapSchema.PhysExpr left)
         {
-            for (Table child : getChildren()) {
-                Condition condition = child.joinCondition;
-                if (condition != null) {
-                    if (condition.left instanceof RolapSchema.PhysRealColumn) {
-                        RolapSchema.PhysRealColumn mcolumn =
-                            (RolapSchema.PhysRealColumn) condition.left;
-                        if (mcolumn.equals(left)) {
-                            return child;
-                        }
-                    }
-                }
-            }
+            Util.deprecated("obsolete", true);
             return null;
         }
 
@@ -1406,12 +1385,19 @@ public class RolapStar {
                 pw.println();
             }
 
-            if (this.joinCondition != null) {
-                this.joinCondition.print(pw, subprefix);
+            if (getLastHop() != null) {
+                pw.print(subprefix);
+                pw.print(getLastHop());
             }
             for (Table child : getChildren()) {
                 child.print(pw, subprefix);
             }
+        }
+
+        private RolapSchema.PhysHop getLastHop() {
+            return path.hopList.size() == 1
+                ? null
+                : path.hopList.get(path.hopList.size() - 1);
         }
 
         /**
@@ -1435,6 +1421,7 @@ public class RolapStar {
             assert left != null;
             assert right != null;
 
+            Util.deprecated("obsolete class Condition", true);
             if (!(left instanceof RolapSchema.PhysRealColumn)) {
                 // TODO: Will this ever print?? if not then left should be
                 // of type MondrianDef.Column.
@@ -1446,17 +1433,6 @@ public class RolapStar {
             this.right = right;
         }
 
-        Condition(
-            RolapSchema.PhysLink link)
-        {
-            this(
-                link.sourceKey.columnList.get(0),
-                link.columnList.get(0));
-            assert link.sourceKey.columnList.size() == 1
-                : "TODO: implement compound keys by obsoleting Condition and"
-                  + "using PhysLink";
-        }
-
         public RolapSchema.PhysExpr getLeft() {
             return left;
         }
@@ -1465,8 +1441,7 @@ public class RolapStar {
             return right;
         }
 
-        public String toString(SqlQuery query) {
-            Util.deprecated("obsolete query param", false);
+        public String toSql() {
             return right.toSql() + " = " + left.toSql();
         }
 

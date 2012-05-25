@@ -524,7 +524,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "where\n"
             + "    `inventory_fact_1997`.`warehouse_id` = `warehouse`.`warehouse_id`\n"
             + "and\n"
-            + "    ((`warehouse`.`wa_address2` is null and (`warehouse`.`wa_address1`, `warehouse`.`warehouse_name`) in (('5617 Saclan Terrace', 'Arnold and Sons'), ('3377 Coachman Place', 'Jones International'))))";
+            + "    ((`warehouse`.`wa_address2` is null and (`warehouse`.`warehouse_name`, `warehouse`.`wa_address1`) in (('Arnold and Sons', '5617 Saclan Terrace'), ('Jones International', '3377 Coachman Place'))))";
 
         TestContext testContext =
             TestContext.instance().legacy().create(
