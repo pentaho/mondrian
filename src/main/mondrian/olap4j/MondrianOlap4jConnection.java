@@ -14,7 +14,6 @@ import mondrian.olap.*;
 import mondrian.olap.Member;
 import mondrian.olap.fun.MondrianEvaluationException;
 import mondrian.rolap.*;
-import mondrian.util.LockBox;
 import mondrian.xmla.XmlaHandler;
 
 import org.olap4j.Axis;
