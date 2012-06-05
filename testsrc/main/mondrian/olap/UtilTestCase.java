@@ -1452,6 +1452,62 @@ public class UtilTestCase extends TestCase {
     }
 
     /**
+     * Unit test for {@link mondrian.olap.Util#newIdentityHashSet()}.
+     */
+    @SuppressWarnings("UnnecessaryBoxing")
+    public void _testIdentityHashSet() {
+        final Set<Integer> set = Util.newIdentityHashSet();
+        assertTrue(set.isEmpty());
+        assertEquals(0, set.size());
+
+        final Integer oneA = new Integer(1);
+        assertTrue(set.add(oneA));
+        assertEquals(1, set.size());
+
+        Integer twoA = new Integer(2);
+        assertTrue(set.add(twoA));
+        assertEquals(2, set.size());
+
+        assertFalse(set.add(oneA));
+        assertEquals(2, set.size());
+
+        final Integer oneB = new Integer(1);
+        assertTrue(set.add(oneB));
+        assertEquals(3, set.size());
+
+        assertTrue(set.contains(oneA));
+        assertTrue(set.contains(oneA));
+        final Integer oneC = new Integer(1);
+        assertFalse(set.contains(oneC));
+        assertTrue(set.contains(twoA));
+
+        final List<Integer> list = new ArrayList<Integer>(set);
+        Collections.sort(list);
+        assertEquals("[1, 1, 2]", list.toString());
+
+        // add via iterator
+        list.clear();
+        for (Integer integer : set) {
+            list.add(integer);
+        }
+        Collections.sort(list);
+        assertEquals("[1, 1, 2]", list.toString());
+
+        set.clear();
+        assertTrue(set.isEmpty());
+
+        set.addAll(list);
+        assertFalse(set.isEmpty());
+        assertEquals(3, set.size());
+
+        assertTrue(set.remove(oneA));
+        assertFalse(set.remove(oneC));
+        assertTrue(set.remove(oneB));
+        assertTrue(set.remove(twoA));
+        assertTrue(set.isEmpty());
+    }
+
+    /**
      * Unit test for {@link Tuple3}.
      */
     public void testTuple3() {
@@ -1692,4 +1748,3 @@ public class UtilTestCase extends TestCase {
 }
 
 // End UtilTestCase.java
-

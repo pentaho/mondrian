@@ -52,6 +52,18 @@ public class RolapGalaxy {
 
     private final BitKey nonAdditiveMeasuresBitKey;
 
+    /**
+     * For each non-additive measure, the global ordinals of columns to which
+     * the measure can safely be rolled up.
+     *
+     * <p>The bit-key is defined as the columns that are functionally dependent
+     * on the argument of the measure. For example, if the measure is
+     * {@code count(distinct customer_id)} then {@code customer.gender} would be
+     * one of the columns.</p>
+     */
+    private Map<RolapStar.Measure, BitKey> nonAdditiveMeasureSafeToRollup =
+        new HashMap<RolapStar.Measure, BitKey>();
+
     private static final Logger LOGGER = Logger.getLogger(RolapStar.class);
 
     RolapGalaxy(RolapCube cube) {
@@ -106,14 +118,33 @@ public class RolapGalaxy {
             starInfo.addReachableColumns();
         }
 
-        // Populate each StarInfo's bit keys.
-        prototypeBitKey = BitKey.Factory.makeBitKey(columnMap.size());
+        // Initialize each StarInfo's bit keys.
+        final int columnCount = columnMap.size();
+        prototypeBitKey = BitKey.Factory.makeBitKey(columnCount);
         nonAdditiveMeasuresBitKey = prototypeBitKey.emptyCopy();
         for (StarInfo starInfo : starMap.values()) {
-            starInfo.init(prototypeBitKey, nonAdditiveMeasuresBitKey);
+            starInfo.init(this);
         }
+
+        for (StarInfo starInfo : starMap.values()) {
+            starInfo.init2(this);
+        }
+
+        assert columnCount == columnMap.size();
+        assert prototypeBitKey.isEmpty();
     }
 
+    /**
+     * Adds a (key, value) pair to a multi-map represented as a map of lists.
+     * A "put" may add a new key, or it may add a new value to the list of an
+     * existing key.
+     *
+     * @param map Map
+     * @param k Key
+     * @param v Value
+     * @param <K> Key type
+     * @param <V> Value type
+     */
     private static <K, V> void putMulti(Map<K, List<V>> map, K k, V v) {
         List<V> list = map.put(k, Collections.singletonList(v));
         if (list != null) {
@@ -123,6 +154,14 @@ public class RolapGalaxy {
             list.add(v);
             map.put(k, list);
         }
+    }
+
+    static <K, V> Map<K, V> mapOf(Iterable<? extends Map.Entry<K, V>> entries) {
+        final Map<K, V> map = new HashMap<K, V>();
+        for (Map.Entry<K, V> entry : entries) {
+            map.put(entry.getKey(), entry.getValue());
+        }
+        return map;
     }
 
     /**
@@ -139,7 +178,7 @@ public class RolapGalaxy {
      * @param star Star
      * @param levelBitKey Set of levels
      * @param measureBitKey Set of measures
-     * @param rollup Out parameter, is set to true if the aggregate is not
+     * @param rollupOut Out parameter, is set to true if the aggregate is not
      *   an exact match
      * @return An aggregate, or null if none is suitable.
      */
@@ -147,7 +186,7 @@ public class RolapGalaxy {
         RolapStar star,
         final BitKey levelBitKey,
         final BitKey measureBitKey,
-        boolean[] rollup)
+        boolean[] rollupOut)
     {
         if (!MondrianProperties.instance().ReadAggregates.get()
             || !MondrianProperties.instance().UseAggregates.get())
@@ -186,31 +225,43 @@ public class RolapGalaxy {
             return null;
         }
 
-        rollup[0] =
+        boolean rollup =
+            rollupOut[0] =
             !betterStarInfo.star.areRowsUnique()
-            || !betterStarInfo.measuresGlobalBitKey.equals(
-                measuresGlobalBitKey);
+            || !betterStarInfo.levelsGlobalBitKey.equals(levelsGlobalBitKey);
 
-        if (rollup[0]
+        if (rollup
             && measuresGlobalBitKey.intersects(nonAdditiveMeasuresBitKey))
         {
+            BitKey safeRollupBitKey = null;
             for (int i : measuresGlobalBitKey.and(nonAdditiveMeasuresBitKey)) {
-                BitKey combinedLevelBitKey = null;
                 RolapStar.Measure measure =
                     (RolapStar.Measure) betterStarInfo.localColumns.get(i);
                 final RolapStar.Measure baseStarMeasure =
                     starMeasureRefs.get(measure.getExpression());
 
-                BitKey rollableLevelBitKey = null;
-                if (combinedLevelBitKey == null) {
-                        combinedLevelBitKey = rollableLevelBitKey;
-                    } else {
-                        // TODO use '&=' to remove unnecessary copy
-                        combinedLevelBitKey =
-                            combinedLevelBitKey.and(rollableLevelBitKey);
-                    }
+                final BitKey measureSafeRollupBitKey =
+                    nonAdditiveMeasureSafeToRollup.get(baseStarMeasure);
+                if (safeRollupBitKey == null) {
+                    safeRollupBitKey = measureSafeRollupBitKey;
+                } else {
+                    safeRollupBitKey =
+                        safeRollupBitKey.and(measureSafeRollupBitKey);
+                }
             }
-            return null;
+
+            assert safeRollupBitKey != null;
+
+            // Columns that we are aggregating away.
+            BitKey rollupBitKey =
+                betterStarInfo.levelsGlobalBitKey
+                    .andNot(levelsGlobalBitKey);
+
+            // If some of the columns that we're aggregating away are not safe
+            // to aggregate away, this aggregate is not usable.
+            if (!safeRollupBitKey.isSuperSetOf(rollupBitKey)) {
+                return null;
+            }
         }
 
         return betterStarInfo.star;
@@ -227,6 +278,7 @@ public class RolapGalaxy {
                 measure = baseMeasure;
             }
             key = Arrays.asList(
+                measure.getTable(),
                 measure.getAggregator(),
                 measure.getExpression());
         } else {
@@ -291,6 +343,23 @@ public class RolapGalaxy {
         return getEquivalentColumn(fromBit, fromStar, toStar).getBitPosition();
     }
 
+    static List<RolapStar.Table> starTables(RolapStar star) {
+        final List<RolapStar.Table> tables =
+            new ArrayList<RolapStar.Table>();
+        collectTables(star.getFactTable(), tables);
+        return tables;
+    }
+
+    static void collectTables(
+        RolapStar.Table table,
+        List<RolapStar.Table> tables)
+    {
+        tables.add(table);
+        for (RolapStar.Table childTable : table.getChildren()) {
+            collectTables(childTable, tables);
+        }
+    }
+
     private static class StarInfo {
         /**
          * Mapping from local ordinals (bit positions within a given star)
@@ -332,22 +401,36 @@ public class RolapGalaxy {
             this.measureGroups = measureGroups;
             this.cost = star.getCost();
 
+            final Set<RolapStar.Column> set = Util.newIdentityHashSet();
+            for (RolapMeasureGroup group : measureGroups) {
+                for (RolapStar.Column c : Pair.leftIter(group.copyColumnList)) {
+                    set.add(c);
+                }
+            }
+
             LOGGER.debug("galaxy " + galaxy + ": initializing star " + star);
-            final List<RolapStar.Table> tables =
-                new ArrayList<RolapStar.Table>();
-            collectTables(star.getFactTable(), tables);
-            for (RolapStar.Table table : tables) {
+            for (RolapStar.Table table : starTables(star)) {
                 for (RolapStar.Column column : table.getColumns()) {
-                    int globalOrdinal = galaxy.globalOrdinal(column, true);
+                    // Don't assign CopyLink columns a global ordinal at this
+                    // point. We can assign an ordinal when we resolve them.
+                    final boolean add = !set.contains(column);
+
+                    int globalOrdinal = galaxy.globalOrdinal(column, add);
+                    if (globalOrdinal < 0) {
+                        continue;
+                    }
                     globalOrdinals.put(column.getBitPosition(), globalOrdinal);
                     localColumns.put(globalOrdinal, column);
                 }
             }
         }
 
-        void init(BitKey prototypeBitKey, BitKey nonAdditiveMeasuresBitKey) {
-            measuresGlobalBitKey = prototypeBitKey.emptyCopy();
-            levelsGlobalBitKey = prototypeBitKey.emptyCopy();
+        void init(RolapGalaxy galaxy) {
+            measuresGlobalBitKey = galaxy.prototypeBitKey.emptyCopy();
+            levelsGlobalBitKey = galaxy.prototypeBitKey.emptyCopy();
+        }
+
+        void init2(RolapGalaxy galaxy) {
             for (Map.Entry<Integer, RolapStar.Column> entry
                 : localColumns.entrySet())
             {
@@ -358,11 +441,49 @@ public class RolapGalaxy {
                     final RolapStar.Measure measure =
                         (RolapStar.Measure) column;
                     if (measure.getAggregator().isDistinct()) {
-                        nonAdditiveMeasuresBitKey.set(globalOrdinal);
+                        galaxy.nonAdditiveMeasuresBitKey.set(globalOrdinal);
+
+                        // Compute what columns are reachable from the arg of
+                        // that measure. They will determine what rollups are
+                        // valid.
+                        galaxy.nonAdditiveMeasureSafeToRollup.put(
+                            measure, dependentGlobalBitKey(galaxy, measure));
                     }
                 } else {
                     levelsGlobalBitKey.set(globalOrdinal);
                 }
+            }
+        }
+
+        /**
+         * Returns a bit-key of the global ordinals of star columns that are
+         * functionally dependent on the argument of a measure.
+         *
+         * @param galaxy Galaxy
+         * @param measure Measure
+         * @return Bit-key of functionally dependent columns
+         */
+        private BitKey dependentGlobalBitKey(
+            RolapGalaxy galaxy,
+            RolapStar.Measure measure)
+        {
+            BitKey bitKey = galaxy.prototypeBitKey.emptyCopy();
+            List<RolapSchema.PhysExpr> key =
+                Collections.singletonList(measure.getExpression());
+            for (RolapStar.Table table : star.getFactTable().getChildren()) {
+                if (table.getPath().getLinks().get(0).columnList.equals(key)) {
+                    setTransitive(table, bitKey);
+                }
+            }
+            return bitKey;
+        }
+
+        private void setTransitive(RolapStar.Table table, BitKey bitKey) {
+            for (RolapStar.Column column : table.getColumns()) {
+                bitKey.set(globalOrdinals.get(column.getBitPosition()));
+            }
+            for (RolapStar.Table childTable : table.getChildren()) {
+                setTransitive(childTable, bitKey);
             }
         }
 
@@ -424,16 +545,6 @@ public class RolapGalaxy {
                 if (true) {
                     return;
                 }
-            }
-        }
-
-        private void collectTables(
-            RolapStar.Table table,
-            List<RolapStar.Table> tables)
-        {
-            tables.add(table);
-            for (RolapStar.Table childTable : table.getChildren()) {
-                collectTables(childTable, tables);
             }
         }
     }

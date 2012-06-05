@@ -1358,7 +1358,7 @@ public class TestAggregationManager extends BatchTestCase {
         + "</Cube>";
 
         TestContext testContext =
-            TestContext.instance().create(
+            TestContext.instance().legacy().create(
                 null,
                 cube,
                 null,
@@ -1448,22 +1448,21 @@ public class TestAggregationManager extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 ACCESS_MYSQL,
-                "select "
-                + "`agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0`, "
-                + "`agg_g_ms_pcat_sales_fact_1997`.`marital_status` as `c1` "
-                + "from "
-                + "`agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997` "
-                + "where "
-                + "(`agg_g_ms_pcat_sales_fact_1997`.`gender` = 'M') "
-                + "and (`agg_g_ms_pcat_sales_fact_1997`.`marital_status` = 'M') "
-                + "group by "
-                + "`agg_g_ms_pcat_sales_fact_1997`.`gender`, "
-                + "`agg_g_ms_pcat_sales_fact_1997`.`marital_status` "
-                + "order by "
-                + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, "
-                + "`agg_g_ms_pcat_sales_fact_1997`.`gender` ASC, "
-                + "ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`marital_status`) ASC, "
-                + "`agg_g_ms_pcat_sales_fact_1997`.`marital_status` ASC",
+                "select\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`marital_status` as `c1`\n"
+                + "from\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997`\n"
+                + "where\n"
+                + "    (`agg_g_ms_pcat_sales_fact_1997`.`gender` = 'M')\n"
+                + "and\n"
+                + "    (`agg_g_ms_pcat_sales_fact_1997`.`marital_status` = 'M')\n"
+                + "group by\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender`,\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`marital_status`\n"
+                + "order by\n"
+                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC,\n"
+                + "    ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`marital_status`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`marital_status` ASC",
                 null)
         };
 
@@ -1548,13 +1547,14 @@ public class TestAggregationManager extends BatchTestCase {
         SqlPattern[] patterns = {
             new SqlPattern(
                 ACCESS_MYSQL,
-                "select "
-                + "`agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0` "
-                + "from `agg_g_ms_pcat_sales_fact_1997` "
-                + "as `agg_g_ms_pcat_sales_fact_1997` "
-                + "group by "
-                + "`agg_g_ms_pcat_sales_fact_1997`.`gender`"
-                + " order by ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
+                "select\n"
+                + "`agg_g_ms_pcat_sales_fact_1997`.`gender` as `c0`\n"
+                + "from\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997` as `agg_g_ms_pcat_sales_fact_1997`\n"
+                + "group by\n"
+                + "    `agg_g_ms_pcat_sales_fact_1997`.`gender`"
+                + " order by\n"
+                + " ISNULL(`agg_g_ms_pcat_sales_fact_1997`.`gender`) ASC, `agg_g_ms_pcat_sales_fact_1997`.`gender` ASC",
                 null)
         };
 

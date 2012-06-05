@@ -32,7 +32,6 @@ import mondrian.spi.PropertyFormatter;
 import mondrian.spi.impl.Scripts;
 import mondrian.util.*;
 
-import org.apache.commons.vfs.FileSystemException;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
@@ -1178,7 +1177,8 @@ public class RolapSchemaLoader {
             xmlCube.getMeasureGroups();
         if (xmlMeasureGroups.size() == 0) {
             handler.warning(
-                "Cube definition must contain MeasureGroups element, and at least one MeasureGroup",
+                "Cube definition must contain a MeasureGroups element, and at "
+                + "least one MeasureGroup",
                 xmlCube,
                 null);
         }
@@ -1191,9 +1191,6 @@ public class RolapSchemaLoader {
             unresolvedMeasures =
             new ArrayList<Util.Function0<RolapMeasureGroup.RolapMeasureRef>>();
         for (MondrianDef.MeasureGroup xmlMeasureGroup : xmlMeasureGroups) {
-            // Type (fact vs. aggregate) is not used currently.
-            Util.discard(xmlMeasureGroup.type);
-
             // The name of the measure group defaults to the table alias.
             final String name = xmlMeasureGroup.getNameAttribute();
             if (!measureGroupNames.add(name)) {
@@ -1404,7 +1401,7 @@ public class RolapSchemaLoader {
         // created for measure groups.
         final List<RolapMember> cubeMeasureList =
             new ArrayList<RolapMember>(measureList);
-        cubeMeasureList.removeAll(aggFactCountMeasureList);
+        removeAllByIdentity(cubeMeasureList, aggFactCountMeasureList);
         cube.init(cubeMeasureList, cubeMeasureList.get(0));
 
 //        // Check that every stored measure belongs to its measure group.
@@ -1527,6 +1524,22 @@ public class RolapSchemaLoader {
         }
 
         cube.init2();
+    }
+
+    private <T> void removeAllByIdentity(List<T> list, Collection<T> remove) {
+        for (Iterator<T> iterator = list.iterator(); iterator.hasNext(); ) {
+            T next = iterator.next();
+            boolean b = false;
+            for (T o : remove) {
+                if (next == o) {
+                    b = true;
+                    break;
+                }
+            }
+            if (b) {
+                iterator.remove();
+            }
+        }
     }
 
     /**

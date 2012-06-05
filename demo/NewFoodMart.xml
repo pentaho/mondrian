@@ -480,10 +480,8 @@
                     <ForeignKeyLink dimension='Customer' foreignKeyColumn='customer_id'/>
                 </DimensionLinks>
             </MeasureGroup>
-            <!--
             <MeasureGroup table='agg_c_special_sales_fact_1997' type='aggregate'>
                 <Measures>
-                    <Measure name='Unit Sales 2' column='unit_sales_sum' aggregator='sum' formatString='Standard'/>
                     <MeasureRef name='Fact Count' aggColumn='fact_count'/>
                     <MeasureRef name='Unit Sales' aggColumn='unit_sales_sum'/>
                     <MeasureRef name='Store Cost' aggColumn='store_cost_sum'/>
@@ -501,7 +499,6 @@
                     </CopyLink>
                 </DimensionLinks>
             </MeasureGroup>
-            -->
             <MeasureGroup table='agg_l_05_sales_fact_1997' type='aggregate'>
                 <Measures>
                     <MeasureRef name='Fact Count' aggColumn='fact_count'/>
@@ -721,6 +718,7 @@
                     <Measure name='Sales Count' column='product_id' aggregator='count' formatString='#,###'/>
                     <Measure name='Customer Count' column='customer_id' aggregator='distinct-count' formatString='#,###'/>
                     <Measure name='Promotion Sales' column='promotion_sales' aggregator='sum' formatString='#,###.00' datatype='Numeric'/>
+                    <Measure name='Fact Count' aggregator='count'/>
                 </Measures>
                 <DimensionLinks>
                     <ForeignKeyLink dimension='Store' foreignKeyColumn='store_id'/>

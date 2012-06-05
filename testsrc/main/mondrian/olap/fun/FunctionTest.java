@@ -142,7 +142,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "from [sales]");
     }
 
-    /*
+    /**
      * Tests that ParallelPeriod with Aggregate function works
      */
     public void testParallelPeriodWithSlicer() {
@@ -1478,7 +1478,7 @@ public class FunctionTest extends FoodMartTestCase {
 
         // <Level>.allmembers applied to measures dimension
         // Note -- cube-level calculated members ARE present
-        getTestContext().withCube("[Warehouse and Sales]").assertAxisReturns(
+        getTestContext().withCube("Warehouse and Sales").assertAxisReturns(
             "{[Measures].[MeasuresLevel].allmembers}",
             "[Measures].[Unit Sales]\n"
             + "[Measures].[Store Cost]\n"
@@ -1486,6 +1486,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Measures].[Sales Count]\n"
             + "[Measures].[Customer Count]\n"
             + "[Measures].[Promotion Sales]\n"
+            + "[Measures].[Fact Count]\n"
             + "[Measures].[Store Invoice]\n"
             + "[Measures].[Supply Time]\n"
             + "[Measures].[Warehouse Cost]\n"
@@ -1493,7 +1494,6 @@ public class FunctionTest extends FoodMartTestCase {
             + "[Measures].[Units Shipped]\n"
             + "[Measures].[Units Ordered]\n"
             + "[Measures].[Warehouse Profit]\n"
-            + "[Measures].[Fact Count]\n"
             + "[Measures].[Profit]\n"
             + "[Measures].[Profit last Period]\n"
             + "[Measures].[Profit Growth]\n"
@@ -7179,10 +7179,8 @@ public class FunctionTest extends FoodMartTestCase {
             + "                <Column name='month_of_year'/>\n"
             + "            </Name>\n"
             + "            <OrderBy>\n"
-            /*
-            + "                <Column name='the_year'/>\n"
-            + "                <Column name='quarter'/>\n"
-            */
+            // + "                <Column name='the_year'/>\n"
+            // + "                <Column name='quarter'/>\n"
             + "                <Column name='the_month'/>\n"
             + "            </OrderBy>\n"
             + "        </Attribute>\n"
@@ -10085,31 +10083,27 @@ public class FunctionTest extends FoodMartTestCase {
             -126.65,
             0.50);
 
-/*
--1#IND missing data
-*/
-/*
-1#INF division by zero
-*/
-/*
-The following table shows query return values from using different
-FORMAT_STRING's in an expression involving 'division by zero' (tested on
-Intel platforms):
-
-+===========================+=====================+
-| Format Strings            | Query Return Values |
-+===========================+=====================+
-| FORMAT_STRING="           | 1.#INF              |
-+===========================+=====================+
-| FORMAT_STRING='Standard'  | 1.#J                |
-+===========================+=====================+
-| FORMAT_STRING='Fixed'     | 1.#J                |
-+===========================+=====================+
-| FORMAT_STRING='Percent'   | 1#I.NF%             |
-+===========================+=====================+
-| FORMAT_STRING='Scientific'| 1.JE+00             |
-+===========================+=====================+
-*/
+// -1#IND missing data
+//
+// 1#INF division by zero
+//
+// The following table shows query return values from using different
+// FORMAT_STRING's in an expression involving 'division by zero' (tested on
+// Intel platforms):
+//
+// +===========================+=====================+
+// | Format Strings            | Query Return Values |
+// +===========================+=====================+
+// | FORMAT_STRING="           | 1.#INF              |
+// +===========================+=====================+
+// | FORMAT_STRING='Standard'  | 1.#J                |
+// +===========================+=====================+
+// | FORMAT_STRING='Fixed'     | 1.#J                |
+// +===========================+=====================+
+// | FORMAT_STRING='Percent'   | 1#I.NF%             |
+// +===========================+=====================+
+// | FORMAT_STRING='Scientific'| 1.JE+00             |
+// +===========================+=====================+
 
         // Mondrian can not return "missing data" value -1.#IND
         // empty set

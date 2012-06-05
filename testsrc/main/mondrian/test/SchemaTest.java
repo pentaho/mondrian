@@ -6796,6 +6796,16 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     // TODO: Try to create a MeasureRef to a calculated measure. Should fail
     // (for now).
+
+    // TODO: You should be able to create a <MeasureRef name='Fact Count'/>
+    // in an aggregate MeasureGroup regardless of whether you created a
+    // measure called "Fact Count" in the base measure group. (Design problem:
+    // how to reliably deduce whether the measure group is a fact or an
+    // aggregate, and if an aggregate, which is the base. Otherwise we will
+    // tend to create a measure called "Fact Count" in aggregate measure groups
+    // too, and the names will clash. Do we want that? In NewFoodMart.xml, we
+    // solved the problem temporarily by creating an explicit "Fact Count"
+    // measure in the base MeasureGroup.)
 }
 
 // End SchemaTest.java

@@ -1406,6 +1406,10 @@ public class RolapStar {
         public boolean containsColumn(String columnName) {
             return relation.getColumn(columnName, false) != null;
         }
+
+        public RolapSchema.PhysPath getPath() {
+            return path;
+        }
     }
 
     public static class Condition {
