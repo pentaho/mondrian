@@ -361,6 +361,25 @@ public class BatchTestCase extends FoodMartTestCase {
 
     /**
      * Checks that a given MDX query results in a particular SQL statement
+     * being generated, for a single database dialect.
+     *
+     * @param mdx MDX query
+     * @param databaseProduct Database product to run for (usually MySQL)
+     * @param sql Expected SQL statement
+     */
+    protected void assertQuerySql(
+        String mdx,
+        Dialect.DatabaseProduct databaseProduct,
+        String sql)
+    {
+        SqlPattern[] patterns = {
+            new SqlPattern(databaseProduct, sql, sql)
+        };
+        assertQuerySql(mdx, patterns);
+    }
+
+    /**
+     * Checks that a given MDX query results in a particular SQL statement
      * being generated.
      *
      * @param testContext non-default test context if required

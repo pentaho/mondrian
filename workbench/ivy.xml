@@ -14,7 +14,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
 
-    <info organisation="pentaho" module="mondrian-workbench" revision="3.2-SNAPSHOT">
+    <info organisation="pentaho" module="mondrian-workbench" revision="4.0.0-SNAPSHOT">
         <license name="EPL" url="http://www.eclipse.org/legal/epl-v10.html"/>
         <ivyauthor name="Julian Hyde" />
         <repository name="pentaho-rep" url="http://repo.pentaho.org"/>
@@ -38,13 +38,18 @@
 	    <dependency org="org.codehaus.groovy" name="groovy-all" rev="1.5.6" transitive="false"/>
         <dependency org="pentaho-kettle" name="kettle-core" rev="${dependency.kettle.revision}"  changing="true"/>
         <dependency org="pentaho-kettle" name="kettle-db" rev="${dependency.kettle.revision}"  changing="true"/>
-        <dependency org="pentaho-kettle" name="kettle-engine" rev="${dependency.kettle.revision}"  changing="true"/>
-        <dependency org="pentaho-kettle" name="kettle-dbdialog" rev="${dependency.kettle.revision}" changing="true" />
+        <dependency org="pentaho-kettle" name="kettle-dbdialog" rev="${dependency.kettle.revision}" changing="true">
+          <artifact name="kettle-dbdialog" ext="jar"/>
+          <exclude org="mysql" module="mysql-connector-java"/>
+          <exclude org="hsqldb" module="hsqldb"/>
+        </dependency>
 
         <dependency org="xerces" name="xercesImpl" rev="2.9.1"/>
 
         <!--  internal runtime dependencies -->
-        <dependency org="pentaho" name="pentaho-application-launcher" rev="${dependency.pentaho-launcher.revision}" />
+        <dependency org="pentaho" name="pentaho-application-launcher" rev="${dependency.pentaho-launcher.revision}">
+          <artifact name="pentaho-application-launcher" ext="jar" type="jar"/>
+        </dependency>
         
         <!--Exclusions-->
         <exclude org="jaxme" module="jaxme-api"/>

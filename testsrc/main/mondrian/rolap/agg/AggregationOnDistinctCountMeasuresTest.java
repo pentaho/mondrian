@@ -1022,11 +1022,7 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             + "group by\n"
             + "    `time_by_day`.`the_year`";
 
-        SqlPattern[] patterns = {
-            new SqlPattern(Dialect.DatabaseProduct.MYSQL, mysqlSql, mysqlSql)
-        };
-
-        assertQuerySql(query, patterns);
+        assertQuerySql(query, Dialect.DatabaseProduct.MYSQL, mysqlSql);
     }
 
     public void testOptimizeListWithTuplesOfLength3() {
