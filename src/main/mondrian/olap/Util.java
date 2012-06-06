@@ -3850,6 +3850,55 @@ public class Util extends XOMUtil {
         role.makeImmutable();
         return role;
     }
+    /**
+     * Returns a role for the given roleNameList.
+     * In case of multiple roles they will merged using a union Role.
+     * @param schema A schema containing the role(s)
+     * @param roleNameList A comma separated list of roles
+     * @return A role matching the list
+     */
+    public static Role getRole(RolapSchema schema, String roleNameList) {
+    	MondrianServer server = schema.getInternalConnection().getServer();
+    	Role role = null;
+        if (roleNameList != null) {
+            List<String> roleNames = Util.parseCommaList(roleNameList);
+            List<Role> roleList = new ArrayList<Role>();
+            for (String roleName : roleNames) {
+                final LockBox.Entry entry =
+                    server.getLockBox().get(roleName);
+                Role role1;
+                if (entry != null) {
+                    try {
+                        role1 = (Role) entry.getValue();
+                    } catch (ClassCastException e) {
+                        role1 = null;
+                    }
+                } else {
+                    role1 = schema.lookupRole(roleName);
+                }
+                if (role1 == null) {
+                    throw Util.newError(
+                        "Role '" + roleName + "' not found");
+                }
+                roleList.add(role1);
+            }
+            switch (roleList.size()) {
+            case 0:
+                // If they specify 'Role=;', the list of names will be
+                // empty, and the effect will be as if they did specify
+                // Role at all.
+                role = null;
+                break;
+            case 1:
+                role = roleList.get(0);
+                break;
+            default:
+                role = RoleImpl.union(roleList);
+                break;
+            }
+        }
+        return role;
+    }
 
     /**
      * Tries to find the cube from which a dimension is taken.

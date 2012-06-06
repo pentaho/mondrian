@@ -647,36 +647,11 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     public void setRoleName(String roleNameList) throws OlapException {
         final Role role;
         final RolapConnection connection1 = getMondrianConnection();
-        if (roleNameList == null) {
+        role = Util.getRole(connection1.getSchema(), roleNameList);
+        if (role == null) {
         	role = Util.createRootRole(connection1.getSchema());
         	assert role != null;
-        } else {
-        	List<String> roleNames = Util.parseCommaList(roleNameList);
-        	List<Role> roleList = new ArrayList<Role>();
-        	for (String roleName : roleNames) {
-        		Role role1 = connection1.getSchema().lookupRole(roleName);
-        		if (role1 == null) {
-        			throw Util.newError(
-        					"Role '" + roleName + "' not found");
-        		}
-        		roleList.add(role1);
-        	}
-        	switch (roleList.size()) {
-        	case 0:
-        		// If they specify 'Role=;', the list of names will be
-        		// empty, and the effect will be as if they did specify
-        		// Role at all.
-        		role = null;
-        		break;
-        	case 1:
-        		role = roleList.get(0);
-        		break;
-        	default:
-        		role = RoleImpl.union(roleList);
-        		break;
-        	}
         }
-
         // Remember the name of the role, because mondrian roles don't know
         // their own name.
         this.roleName = roleNameList;
