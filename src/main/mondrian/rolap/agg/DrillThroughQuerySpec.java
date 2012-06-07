@@ -76,7 +76,10 @@ class DrillThroughQuerySpec extends AbstractQuerySpec {
     {
         String columnName = column.getName();
         if (columnName != null) {
-            // nothing
+            if (columnName.startsWith("$")) {
+                // internal property name. truncate the $.
+                columnName = columnName.replace("$", "");
+            }
         } else if (column.getExpression()
             instanceof RolapSchema.PhysRealColumn)
         {

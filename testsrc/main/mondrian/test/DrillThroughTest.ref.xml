@@ -192,7 +192,7 @@ order by
             <![CDATA[select
     `store`.`store_id` as `Id (Key)`,
     `time_by_day`.`the_year` as `Year (Key)`,
-    `store_ragged`.`store_id` as `Id (Key)`,
+    `store_ragged`.`store_id` as `Id (Key)_0`,
     `sales_fact_1997`.`unit_sales` as `Unit Sales`
 from
     `store` as `store`,
@@ -281,9 +281,15 @@ order by
     </TestCase>
     <TestCase name="testDrillThroughMultiPositionCompoundSlicer">
         <Resource name="sql-compound-in">
-            <![CDATA[
-select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and (((time_by_day.the_year, time_by_day.quarter) in ((1997, 'Q1'), (1997, 'Q2'))))
-                    ]]>
+            <![CDATA[select
+    `sales_fact_1997`.`unit_sales` as `Unit Sales`
+from
+    `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))]]>
         </Resource>
         <Resource name="sql">
             <![CDATA[
@@ -303,14 +309,27 @@ or (time_by_day.quarter = 'Q2' and time_by_day.the_year = 1997))
 order by customer.gender ASC, customer.marital_status ASC]]>
         </Resource>
         <Resource name="sql2-compound-in">
-            <![CDATA[
-select customer.gender as Gender, customer.marital_status as Marital Status, sales_fact_1997.unit_sales as Unit Sales
-from customer as customer, sales_fact_1997 as sales_fact_1997, time_by_day as time_by_day
-where sales_fact_1997.customer_id = customer.customer_id
-and customer.gender = 'F' and customer.marital_status = 'M'
-and sales_fact_1997.time_id = time_by_day.time_id
-and (((time_by_day.the_year, time_by_day.quarter) in ((1997, 'Q1'), (1997, 'Q2'))))
-order by customer.gender ASC, customer.marital_status ASC]]>
+            <![CDATA[select
+    `customer`.`marital_status` as `Name$Marital Status (Key)`,
+    `customer`.`gender` as `Name$Gender (Key)`,
+    `sales_fact_1997`.`unit_sales` as `Unit Sales`
+from
+    `customer` as `customer`,
+    `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`
+where
+    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`
+and
+    `customer`.`marital_status` = 'M'
+and
+    `customer`.`gender` = 'F'
+and
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))
+order by
+    `customer`.`marital_status` ASC,
+    `customer`.`gender` ASC]]>
         </Resource>
         <Resource name="sql3">
             <![CDATA[
@@ -323,28 +342,40 @@ or (customer.gender = 'M' and time_by_day.quarter = 'Q2' and time_by_day.the_yea
             ]]>
         </Resource>
         <Resource name="sql3-compound-in">
-            <![CDATA[
-select sales_fact_1997.unit_sales as Unit Sales
-from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997, customer as customer
-where sales_fact_1997.time_id = time_by_day.time_id
-and sales_fact_1997.customer_id = customer.customer_id
-and (((time_by_day.the_year, time_by_day.quarter, customer.gender) in ((1997, 'Q1', 'F'), (1997, 'Q2', 'M'))))
-            ]]>
+            <![CDATA[select
+    `sales_fact_1997`.`unit_sales` as `Unit Sales`
+from
+    `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`,
+    `customer` as `customer`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    `sales_fact_1997`.`customer_id` = `customer`.`customer_id`
+and
+    ((`customer`.`gender` = 'F' and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`customer`.`gender` = 'M' and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))]]>
         </Resource>
         <Resource name="sql4">
-            <![CDATA[
-select sales_fact_1997.unit_sales as Unit Sales from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997 where sales_fact_1997.time_id = time_by_day.time_id and ((time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997) or (time_by_day.month_of_year = 1 and time_by_day.quarter = 'Q1' and time_by_day.the_year = 1997))]]>
+            <![CDATA[select
+    `sales_fact_1997`.`unit_sales` as `Unit Sales`
+from
+    `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`month_of_year` = 1 and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997))]]>
         </Resource>
         <Resource name="sql5">
-            <![CDATA[
-select sales_fact_1997.unit_sales as Unit Sales
-from time_by_day as time_by_day, sales_fact_1997 as sales_fact_1997
-where sales_fact_1997.time_id = time_by_day.time_id
-and ((time_by_day.month_of_year = 1
-and time_by_day.quarter = 'Q1'
-and time_by_day.the_year = 1997)
-or (time_by_day.quarter = 'Q2'
-and time_by_day.the_year = 1997)) ]]>
+            <![CDATA[select
+    `sales_fact_1997`.`unit_sales` as `Unit Sales`
+from
+    `sales_fact_1997` as `sales_fact_1997`,
+    `time_by_day` as `time_by_day`
+where
+    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`
+and
+    ((`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`month_of_year` = 1 and `time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q1' and `time_by_day`.`the_year` = 1997) or (`time_by_day`.`the_year` = 1997 and `time_by_day`.`quarter` = 'Q2' and `time_by_day`.`the_year` = 1997))]]>
         </Resource>
     </TestCase>
 </Root>

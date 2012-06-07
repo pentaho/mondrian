@@ -413,58 +413,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             assertTrue(
                 columnName,
                 columnName.equals(
-                    "Education Level2 - Education Level but with a very long name that will be too long"
-                    + "name tha"));
-            int n = 0;
-            while (resultSet.next()) {
-                ++n;
-            }
-            assertEquals(2, n);
-        } finally {
-            if (connection != null) {
-                connection.close();
-            }
-        }
-    }
-
-    public void testAttributeCaption() throws Exception {
-        TestContext testContext = getTestContext().createSubstitutingCube(
-            "Sales",
-            "  <Dimension name=\"Education Level2\" foreignKey=\"customer_id\">\n"
-            + "    <Hierarchy hasAll=\"true\" primaryKey=\"customer_id\">\n"
-            + "      <Table name=\"customer\"/>\n"
-            + "      <Level name=\"Education Level\" caption=\"Bacon\" column=\"education\" uniqueMembers=\"true\"/>\n"
-            + "    </Hierarchy>\n" + "  </Dimension>",
-            null);
-
-        Result result = testContext.executeQuery(
-            "SELECT {[Measures].[Unit Sales]} on columns,\n"
-            + "{[Education Level2].Children} on rows\n"
-            + "FROM [Sales]\n"
-            + "WHERE ([Time].[1997].[Q1].[1], [Product].[Non-Consumable].[Carousel].[Specialty].[Sunglasses].[ADJ].[ADJ Rosy Sunglasses]) ");
-
-        final Cell cell00 = result.getCell(new int[]{0, 0});
-        String sql = getDrillThroughSql(cell00, false, false);
-
-        // Check that SQL is valid.
-        java.sql.Connection connection = null;
-        try {
-            DataSource dataSource = getConnection().getDataSource();
-            connection = dataSource.getConnection();
-            final Statement statement = connection.createStatement();
-            final ResultSet resultSet = statement.executeQuery(sql);
-            final int columnCount = resultSet.getMetaData().getColumnCount();
-            final Dialect dialect = testContext.getDialect();
-            if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.DERBY) {
-                // derby counts ORDER BY columns as columns. insane!
-                assertEquals(11, columnCount);
-            } else {
-                assertEquals(6, columnCount);
-            }
-            final String columnName = resultSet.getMetaData().getColumnLabel(5);
-            assertTrue(
-                columnName,
-                columnName.equals("Bacon (Key)"));
+                    "Education Level but with a very long name that will be too long "));
             int n = 0;
             while (resultSet.next()) {
                 ++n;
@@ -702,7 +651,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         // Note that gender and marital status get their own predicates,
         // independent of the time portion of the slicer.
         getTestContext().assertSqlEquals(
-            getDiffRepos(), "sql2", sql2 + compound, 10430);
+            getDiffRepos(), "sql2" + compound, sql2, 10430);
 
         // A query with an even more complex multi-position compound slicer
         // (gender must be in the slicer predicate along with time)
@@ -719,7 +668,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         // Note that gender and marital status get their own predicates,
         // independent of the time portion of the slicer.
         getTestContext().assertSqlEquals(
-            getDiffRepos(), "sql3", sql3 + compound, 20971);
+            getDiffRepos(), "sql3" + compound, sql3, 20971);
 
         // A query with a simple multi-position compound slicer with
         // different levels (overlapping)
@@ -731,7 +680,7 @@ public class DrillThroughTest extends FoodMartTestCase {
                 + "WHERE {[Time].[1997].[Q1], [Time].[1997].[Q1].[1]}");
         cell = result.getCell(new int[]{0, 0});
         assertTrue(cell.canDrillThrough());
-        String sql4 = getDrillThroughSql(cell, false, false);
+        String sql4 = getDrillThroughSql(cell, false, true);
 
         // With overlapping slicer members, the first slicer predicate is
         // redundant, but does not affect the query's results
