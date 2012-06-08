@@ -152,10 +152,13 @@ public class SqlConstraintUtils {
                         }
 
                         if (slicerMembers.size() > 0) {
+                            int levelIndex = slicerMembers.get(0)
+                                    .getHierarchy()
+                                    .getLevels().length;
                             RolapLevel levelForWhere =
                                     (RolapLevel) slicerMembers.get(0)
                                     .getHierarchy()
-                                    .getLevels()[0];
+                                    .getLevels()[levelIndex - 1];
                             final String where =
                                     generateMultiValueInExpr(
                                         sqlQuery, baseCube,
