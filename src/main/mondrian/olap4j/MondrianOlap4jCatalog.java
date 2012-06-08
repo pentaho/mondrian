@@ -50,7 +50,7 @@ class MondrianOlap4jCatalog
         // Make sure to register the schemas.
         for (Map.Entry<String, RolapSchema> entry : schemaMap.entrySet()) {
             String schemaName = entry.getKey();
-            final mondrian.olap.Schema schema = entry.getValue();
+            final RolapSchema schema = entry.getValue();
             if (schemaName == null) {
                 schemaName = schema.getName();
             }
@@ -67,7 +67,7 @@ class MondrianOlap4jCatalog
             new NamedListImpl<MondrianOlap4jSchema>();
         for (Map.Entry<String, RolapSchema> entry : schemaMap.entrySet()) {
             String schemaName = entry.getKey();
-            final mondrian.olap.Schema schema = entry.getValue();
+            final RolapSchema schema = entry.getValue();
             final MondrianOlap4jConnection oConn =
                 ((MondrianOlap4jConnection)olap4jDatabase
                     .getOlapConnection());
@@ -89,6 +89,22 @@ class MondrianOlap4jCatalog
 
     public String getName() {
         return name;
+    }
+
+    public String getUniqueName() {
+        return name;
+    }
+
+    public String getCaption() {
+        return name;
+    }
+
+    public String getDescription() {
+        return "";
+    }
+
+    public boolean isVisible() {
+        return true;
     }
 
     public OlapDatabaseMetaData getMetaData() {

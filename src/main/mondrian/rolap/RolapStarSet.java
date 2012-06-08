@@ -11,6 +11,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.Util;
+import mondrian.rolap.aggmatcher.AggStar;
 
 import java.util.Collections;
 import java.util.List;
@@ -36,18 +37,25 @@ public class RolapStarSet {
     final RolapCube cube;
     private final RolapStar star;
     private final RolapMeasureGroup measureGroup;
+    private final RolapStar aggStar;
 
-    RolapStarSet() {
+    RolapStarSet(RolapStar aggStar) {
         this.cube = null;
         this.star = null;
         this.measureGroup = null;
+        this.aggStar = aggStar;
     }
 
-    public RolapStarSet(RolapStar star, RolapMeasureGroup measureGroup) {
+    public RolapStarSet(
+        RolapStar star,
+        RolapMeasureGroup measureGroup,
+        RolapStar aggStar)
+    {
         // star may be null - see NonEmptyTest.testMondrianBug138
         this.star = star;
         this.cube = null;
         this.measureGroup = measureGroup;
+        this.aggStar = aggStar;
     }
 
     /**
@@ -113,6 +121,10 @@ public class RolapStarSet {
 
     public RolapMeasureGroup getMeasureGroup() {
         return measureGroup;
+    }
+
+    public AggStar getAggStar() {
+        return (AggStar) aggStar; // FIXME
     }
 }
 

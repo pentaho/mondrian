@@ -176,11 +176,11 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
             new MondrianOlap4jDatabase(
                 this,
                 olap4jCatalogs,
-                String.valueOf(dbpropsMap.get("DataSourceName")),
-                String.valueOf(dbpropsMap.get("DataSourceDescription")),
-                String.valueOf(dbpropsMap.get("ProviderName")),
-                String.valueOf(dbpropsMap.get("URL")),
-                String.valueOf(dbpropsMap.get("DataSourceInfo")),
+                toString(dbpropsMap.get("DataSourceName")),
+                toString(dbpropsMap.get("DataSourceDescription")),
+                toString(dbpropsMap.get("ProviderName")),
+                toString(dbpropsMap.get("URL")),
+                toString(dbpropsMap.get("DataSourceInfo")),
                 pTypes,
                 aModes);
         this.olap4jDatabases.add(database);
@@ -201,6 +201,10 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         }
 
         this.olap4jSchema = toOlap4j(mondrianConnection.getSchema());
+    }
+
+    static String toString(Object o) {
+        return o == null ? null : o.toString();
     }
 
     static boolean acceptsURL(String url) {

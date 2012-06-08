@@ -54,7 +54,7 @@ import javax.sql.DataSource;
  *
  * <li>When reading members from a single level, then the constraint is not
  * required to join the fact table in
- * {@link TupleConstraint#addLevelConstraint(mondrian.rolap.sql.SqlQuery, RolapStarSet, mondrian.rolap.aggmatcher.AggStar, RolapLevel)}
+ * {@link TupleConstraint#addLevelConstraint(mondrian.rolap.sql.SqlQuery, RolapStarSet, RolapLevel)}
  * although it may do so to restrict
  * the result. Also it is permitted to cache the parent/children from all
  * members in MemberCache, so
@@ -65,7 +65,7 @@ import javax.sql.DataSource;
  * then we can not store the parent/child pairs in the MemberCache and
  * {@link TupleConstraint#getMemberChildrenConstraint(RolapMember)}
  * must return null. Also
- * {@link TupleConstraint#addConstraint(mondrian.rolap.sql.SqlQuery, RolapStarSet, mondrian.rolap.aggmatcher.AggStar)}
+ * {@link TupleConstraint#addConstraint(mondrian.rolap.sql.SqlQuery, RolapStarSet)}
  * is required to join the fact table for the levels table.</li>
  * </ul>
  *
@@ -833,13 +833,13 @@ Util.deprecated("obsolete basecube parameter", false);
 
         Evaluator evaluator = getEvaluator(constraint);
         final RolapStarSet starSet;
-        final AggStar aggStar;
         if (measureGroup != null) {
-            starSet = new RolapStarSet(measureGroup.getStar(), measureGroup);
-            aggStar = chooseAggStar(constraint, starSet, evaluator);
+            final AggStar aggStar =
+                chooseAggStar(constraint, measureGroup, evaluator);
+            starSet =
+                new RolapStarSet(measureGroup.getStar(), measureGroup, aggStar);
         } else {
-            starSet = new RolapStarSet();
-            aggStar = null;
+            starSet = new RolapStarSet(null);
         }
 
         // Find targets whose members are not enumerated.
@@ -905,14 +905,13 @@ Util.deprecated("obsolete basecube parameter", false);
                     target.getLevel(),
                     starSet,
                     selectOrdinal,
-                    selectCount,
-                    aggStar);
+                    selectCount);
                 target.setColumnLayout(
                     queryBuilder.layoutBuilder.toLayout());
             }
         }
 
-        constraint.addConstraint(sqlQuery, starSet, aggStar);
+        constraint.addConstraint(sqlQuery, starSet);
 
         return sqlQuery.toSqlAndTypes();
     }
@@ -974,18 +973,16 @@ Util.deprecated("obsolete basecube parameter", false);
      *
      * @param queryBuilder the query object being constructed
      * @param level level to be added to the sql query
-     * @param starSet
+     * @param starSet Star set
      * @param selectOrdinal Ordinal of this SELECT statement in UNION
      * @param selectCount Number of SELECT statements in UNION
-     * @param aggStar aggregate star if available
      */
     protected void addLevelMemberSql(
         RolapSchema.SqlQueryBuilder queryBuilder,
         RolapLevel level,
         final RolapStarSet starSet,
         int selectOrdinal,
-        int selectCount,
-        AggStar aggStar)
+        int selectCount)
     {
         final SqlQuery sqlQuery = queryBuilder.sqlQuery;
         final ColumnLayoutBuilder layoutBuilder = queryBuilder.layoutBuilder;
@@ -1025,9 +1022,9 @@ Util.deprecated("obsolete basecube parameter", false);
 
             // Determine if the aggregate table contains the collapsed level
             boolean levelCollapsed =
-                (aggStar != null)
+                (starSet.getAggStar() != null)
                 && SqlMemberSource.isLevelCollapsed(
-                    aggStar, (RolapCubeLevel) level, measureGroup);
+                    starSet.getAggStar(), (RolapCubeLevel) level, measureGroup);
             if (levelCollapsed) {
                 // an earlier check was made in chooseAggStar() to verify
                 // that this is a single column level
@@ -1036,7 +1033,8 @@ Util.deprecated("obsolete basecube parameter", false);
                     currCubeLevel.getBaseStarKeyColumn(
                         measureGroup);
                 int bitPos = starColumn.getBitPosition();
-                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                AggStar.Table.Column aggColumn =
+                    starSet.getAggStar().lookupColumn(bitPos);
                 String q = aggColumn.generateExprString(sqlQuery);
                 String alias =
                     sqlQuery.addSelectGroupBy(
@@ -1111,7 +1109,7 @@ Util.deprecated("obsolete basecube parameter", false);
             }
 
             constraint.addLevelConstraint(
-                sqlQuery, starSet, aggStar, currLevel);
+                sqlQuery, starSet, currLevel);
 
             if (levelCollapsed) {
                 // add join between key and aggstar
@@ -1127,7 +1125,8 @@ Util.deprecated("obsolete basecube parameter", false);
                     currCubeLevel.getBaseStarKeyColumn(
                         measureGroup);
                 int bitPos = starColumn.getBitPosition();
-                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                AggStar.Table.Column aggColumn =
+                    starSet.getAggStar().lookupColumn(bitPos);
                 assert attribute.getKeyList().size() == 1 : "TODO:";
                 sqlQuery.addWhere(
                     aggColumn.getExpression().toSql()
@@ -1238,13 +1237,14 @@ Util.deprecated("obsolete basecube parameter", false);
      * which can be used to support the member constraint.
      *
      * @param constraint Constraint
-     * @param starSet Star set
+     * @param measureGroup1 Measure group
      * @param evaluator the current evaluator to obtain the cube and members to
-     *        be queried  @return AggStar for aggregate table
+     *        be queried
+     * @return AggStar for aggregate table
      */
     AggStar chooseAggStar(
         TupleConstraint constraint,
-        RolapStarSet starSet,
+        RolapMeasureGroup measureGroup1,
         Evaluator evaluator)
     {
         if (!MondrianProperties.instance().UseAggregates.get()) {
@@ -1252,13 +1252,6 @@ Util.deprecated("obsolete basecube parameter", false);
         }
 
         if (evaluator == null) {
-            return null;
-        }
-
-        // Current cannot support aggregate tables for virtual cubes
-        RolapCube cube = starSet.cube;
-        if (cube != null && cube.isVirtual()) {
-            Util.deprecated("does this ever happen?", true);
             return null;
         }
 
@@ -1328,7 +1321,7 @@ Util.deprecated("obsolete basecube parameter", false);
                             : cubeLevel.attribute.getKeyList())
                         {
                             RolapStar.Column column =
-                                starSet.getMeasureGroup().getRolapStarColumn(
+                                measureGroup1.getRolapStarColumn(
                                     cubeLevel.cubeDimension,
                                     physColumn,
                                     true);

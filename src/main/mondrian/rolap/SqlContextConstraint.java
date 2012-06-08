@@ -13,7 +13,6 @@ package mondrian.rolap;
 import mondrian.mdx.MemberExpr;
 import mondrian.mdx.ResolvedFunCall;
 import mondrian.olap.*;
-import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 
 import java.util.*;
@@ -227,8 +226,8 @@ public class SqlContextConstraint
      * @param strict defines the behaviour if the evaluator context
      * contains calculated members. If true, an exception is thrown,
      * otherwise calculated members are silently ignored. The
-     * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapStarSet,mondrian.rolap.aggmatcher.AggStar, mondrian.rolap.RolapMember)} and
-     * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, mondrian.rolap.RolapStarSet,mondrian.rolap.aggmatcher.AggStar,java.util.List)} will
+     * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, RolapStarSet, RolapMember)} and
+     * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, RolapStarSet, java.util.List} will
      * {@link Util#deprecated ... what text was removed here?}
      */
     SqlContextConstraint(
@@ -268,7 +267,6 @@ public class SqlContextConstraint
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         RolapMember parent)
     {
         if (parent.isCalculated()) {
@@ -277,7 +275,7 @@ public class SqlContextConstraint
         final int savepoint = evaluator.savepoint();
         evaluator.setContext(parent);
         SqlConstraintUtils.addContextConstraint(
-            sqlQuery, starSet, aggStar, evaluator, strict);
+            sqlQuery, starSet, evaluator, strict);
         evaluator.restore(savepoint);
     }
 
@@ -288,14 +286,13 @@ public class SqlContextConstraint
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         List<RolapMember> parents)
     {
         SqlConstraintUtils.addContextConstraint(
-            sqlQuery, starSet, aggStar, evaluator, strict);
+            sqlQuery, starSet, evaluator, strict);
         boolean exclude = false;
         SqlConstraintUtils.addMemberConstraint(
-            sqlQuery, starSet, aggStar, parents, true, false, exclude);
+            sqlQuery, starSet, parents, true, false, exclude);
     }
 
     /**
@@ -304,11 +301,10 @@ public class SqlContextConstraint
      */
     public void addConstraint(
         SqlQuery sqlQuery,
-        RolapStarSet starSet,
-        AggStar aggStar)
+        RolapStarSet starSet)
     {
         SqlConstraintUtils.addContextConstraint(
-            sqlQuery, starSet, aggStar, evaluator, strict);
+            sqlQuery, starSet, evaluator, strict);
     }
 
     public boolean isJoinRequired() {
@@ -322,7 +318,7 @@ public class SqlContextConstraint
         return false;
     }
 
-    public RolapStarSet createStarSet() {
+    public RolapStarSet createStarSet(RolapStar aggStar) {
         final Member measure = this.evaluator.getMembers()[0];
         final RolapStar star;
         final RolapMeasureGroup measureGroup;
@@ -334,20 +330,19 @@ public class SqlContextConstraint
             star = null;
             measureGroup = null;
         }
-        return new RolapStarSet(star, measureGroup);
+        return new RolapStarSet(star, measureGroup, aggStar);
     }
 
     public void addLevelConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         RolapLevel level)
     {
         if (!isJoinRequired()) {
             return;
         }
         SqlConstraintUtils.joinLevelTableToFactTable(
-            sqlQuery, starSet, aggStar, evaluator, (RolapCubeLevel) level);
+            sqlQuery, starSet, evaluator, (RolapCubeLevel) level);
     }
 
     public MemberChildrenConstraint getMemberChildrenConstraint(

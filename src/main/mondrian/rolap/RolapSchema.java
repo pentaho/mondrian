@@ -40,14 +40,14 @@ import javax.sql.DataSource;
 
 /**
  * A <code>RolapSchema</code> is a collection of {@link RolapCube}s and
- * shared {@link RolapDimension}s. It is shared betweeen {@link
+ * shared {@link RolapDimension}s. It is shared between {@link
  * RolapConnection}s. It caches {@link MemberReader}s, etc.
  *
  * @see RolapConnection
  * @author jhyde
  * @since 26 July, 2001
  */
-public class RolapSchema implements Schema {
+public class RolapSchema extends OlapElementBase implements Schema {
     static final Logger LOGGER = Logger.getLogger(RolapSchema.class);
 
     final String name;
@@ -115,8 +115,6 @@ public class RolapSchema implements Schema {
      */
     private FunTable funTable;
 
-    private MondrianDef.Schema xmlSchema;
-
     final List<RolapSchemaParameter > parameterList =
         new ArrayList<RolapSchemaParameter >();
 
@@ -143,6 +141,8 @@ public class RolapSchema implements Schema {
      */
     private final String id;
 
+    private final String description;
+
     /**
      * Creates a schema.
      *
@@ -155,6 +155,8 @@ public class RolapSchema implements Schema {
      * @param md5Bytes MD5 hash
      * @param useContentChecksum Whether to use content checksum
      * @param name Name
+     * @param caption Caption
+     * @param description Description
      * @param annotationMap Annotation map
      */
     RolapSchema(
@@ -164,9 +166,13 @@ public class RolapSchema implements Schema {
         final ByteString md5Bytes,
         boolean useContentChecksum,
         String name,
+        String caption,
+        String description,
         Map<String, Annotation> annotationMap)
     {
         this.id = Util.generateUuidString();
+        this.caption = caption;
+        this.description = description;
         this.key = key;
         this.md5Bytes = md5Bytes;
         this.useContentChecksum = useContentChecksum;
@@ -199,6 +205,32 @@ public class RolapSchema implements Schema {
         } else {
             warningList = null;
         }
+    }
+
+    public String getUniqueName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public OlapElement lookupChild(
+        SchemaReader schemaReader, Id.Segment s, MatchType matchType)
+    {
+        throw new UnsupportedOperationException();
+    }
+
+    public String getQualifiedName() {
+        return name;
+    }
+
+    public Hierarchy getHierarchy() {
+        throw new UnsupportedOperationException();
+    }
+
+    public Dimension getDimension() {
+        throw new UnsupportedOperationException();
     }
 
     protected void finalCleanUp() {
@@ -250,10 +282,6 @@ public class RolapSchema implements Schema {
 
     public Role getDefaultRole() {
         return defaultRole;
-    }
-
-    public MondrianDef.Schema getXMLSchema() {
-        return xmlSchema;
     }
 
     public String getName() {

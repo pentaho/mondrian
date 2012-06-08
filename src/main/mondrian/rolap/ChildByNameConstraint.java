@@ -11,7 +11,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.Id;
-import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
 
 import java.util.Arrays;
@@ -53,14 +52,13 @@ class ChildByNameConstraint extends DefaultMemberChildrenConstraint {
     public void addLevelConstraint(
         SqlQuery query,
         RolapStarSet starSet,
-        AggStar aggStar,
         RolapLevel level)
     {
-        super.addLevelConstraint(query, starSet, aggStar, level);
+        super.addLevelConstraint(query, starSet, level);
         query.addWhere(
             SqlConstraintUtils.constrainLevel(
-                level, query, starSet.getMeasureGroup(), aggStar, childName,
-                true));
+                level, query, starSet.getMeasureGroup(), starSet.getAggStar(),
+                childName, true));
     }
 
     public String toString() {

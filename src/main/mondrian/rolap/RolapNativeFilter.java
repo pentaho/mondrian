@@ -6,13 +6,12 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 
 import java.util.*;
@@ -67,16 +66,16 @@ public class RolapNativeFilter extends RolapNativeSet {
 
         public void addConstraint(
             SqlQuery sqlQuery,
-            RolapStarSet starSet,
-            AggStar aggStar)
+            RolapStarSet starSet)
         {
             // Use aggregate table to generate filter condition
             RolapNativeSql sql =
                 new RolapNativeSql(
-                    sqlQuery, aggStar, getEvaluator(), args[0].getLevel());
+                    sqlQuery, starSet.getAggStar(), getEvaluator(),
+                    args[0].getLevel());
             String filterSql =  sql.generateFilterCondition(filterExpr);
             sqlQuery.addHaving(filterSql);
-            super.addConstraint(sqlQuery, starSet, aggStar);
+            super.addConstraint(sqlQuery, starSet);
         }
 
         public Object getCacheKey() {
