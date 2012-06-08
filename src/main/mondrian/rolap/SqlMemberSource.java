@@ -599,18 +599,21 @@ class SqlMemberSource
         // If this is a non-empty constraint, it is more efficient to join to
         // an aggregate table than to the fact table. See whether a suitable
         // aggregate table exists.
-        AggStar aggStar = chooseAggStar(constraint, member);
+        RolapStar aggStar = chooseAggStar(constraint, member);
+        final AggStar aggStar1 = (AggStar) aggStar; // FIXME
 
         // Create the condition, which is either the parent member or
         // the full context (non empty).
-        final RolapStarSet starSet = constraint.createStarSet();
-        constraint.addMemberConstraint(sqlQuery, starSet, aggStar, member);
+        final RolapStarSet starSet = constraint.createStarSet(aggStar);
+        constraint.addMemberConstraint(sqlQuery, starSet, member);
 
         RolapLevel level = member.getLevel().getChildLevel();
         boolean levelCollapsed =
             (aggStar != null)
             && isLevelCollapsed(
-                aggStar, (RolapCubeLevel) level, starSet.getMeasureGroup());
+                aggStar1,
+                (RolapCubeLevel) level,
+                starSet.getMeasureGroup());
         layoutBuilder.createLayoutFor(level);
 
         // If constraint is 'anchored' to a fact table, add join conditions to
@@ -649,8 +652,7 @@ class SqlMemberSource
 
         // in non empty mode the level table must be joined to the fact
         // table
-        constraint.addLevelConstraint(
-            sqlQuery, starSet, aggStar, level);
+        constraint.addLevelConstraint(sqlQuery, starSet, level);
 
         if (levelCollapsed) {
             // if this is a collapsed level, add a join between key and aggstar;
@@ -665,7 +667,7 @@ class SqlMemberSource
                         column,
                         false);
                 int bitPos = starColumn.getBitPosition();
-                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                AggStar.Table.Column aggColumn = aggStar1.lookupColumn(bitPos);
                 sqlQuery.addWhere(
                     aggColumn.getExpression().toSql() + " = " + column.toSql());
             }
@@ -770,8 +772,7 @@ class SqlMemberSource
         // we need to do more than this!  we need the rolap star ordinal, not
         // the rolap cube
 
-        int bitPosition =
-            ((RolapStar.Measure) measure.getStarMeasure()).getBitPosition();
+        int bitPosition = measure.getStarMeasure().getBitPosition();
         int ordinal = measure.getOrdinal();
 
         // childLevel will always end up being a RolapCubeLevel, but the API

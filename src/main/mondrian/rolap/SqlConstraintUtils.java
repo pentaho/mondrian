@@ -39,16 +39,14 @@ public class SqlConstraintUtils {
      * a WHERE condition and a join to the fact table.
      *
      * @param sqlQuery the query to modify
-     * @param starSet
-     * @param aggStar Aggregate table, or null if query is against fact table
+     * @param starSet Star set
      * @param restrictMemberTypes defines the behavior if the current context
-     *   contains calculated members. If true, thows an exception.
+     *   contains calculated members. If true, throws an exception.
      * @param evaluator Evaluator
      */
     public static void addContextConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         Evaluator evaluator,
         boolean restrictMemberTypes)
     {
@@ -88,9 +86,10 @@ public class SqlConstraintUtils {
             RolapStar.Column column = columns[i];
 
             String expr;
-            if (aggStar != null) {
+            if (starSet.getAggStar() != null) {
                 int bitPos = column.getBitPosition();
-                AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
+                AggStar.Table.Column aggColumn =
+                    starSet.getAggStar().lookupColumn(bitPos);
                 AggStar.Table table = aggColumn.getTable();
                 table.addToFrom(sqlQuery, false, true);
 
@@ -261,18 +260,17 @@ public class SqlConstraintUtils {
      * table.
      *
      * @param sqlQuery sql query under construction
-     * @param starSet
-     * @param aggStar
+     * @param starSet Star set
      * @param e evaluator corresponding to query
      * @param level level to be added to query
      */
     public static void joinLevelTableToFactTable(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         Evaluator e,
         RolapCubeLevel level)
     {
+        AggStar aggStar = starSet.getAggStar();
         /*
         TODO: fix this code later. In the attribute-oriented world, we would
         go about joining to fact table differently.
@@ -299,23 +297,20 @@ public class SqlConstraintUtils {
      * Creates a "WHERE parent = value" constraint.
      *
      * @param sqlQuery the query to modify
-     * @param starSet
-     * @param aggStar Definition of the aggregate table, or null
+     * @param starSet Star set
      * @param parent the list of parent members
      * @param restrictMemberTypes defines the behavior if <code>parent</code>
      */
     public static void addMemberConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         RolapMember parent,
         boolean restrictMemberTypes)
     {
         List<RolapMember> list = Collections.singletonList(parent);
         boolean exclude = false;
         addMemberConstraint(
-            sqlQuery, starSet, aggStar, list, restrictMemberTypes, false,
-            exclude);
+            sqlQuery, starSet, list, restrictMemberTypes, false, exclude);
     }
 
     /**
@@ -332,19 +327,16 @@ public class SqlConstraintUtils {
      *
      * @param sqlQuery the query to modify
      * @param starSet Star set
-     * @param aggStar (not used)
      * @param members the list of members for this constraint
      * @param restrictMemberTypes defines the behavior if <code>parents</code>
      *   contains calculated members.
      *   If true, and one of the members is calculated, an exception is thrown.
      * @param crossJoin true if constraint is being generated as part of
      * @param exclude whether to exclude the members in the SQL predicate.
-     *  e.g. not in { member list}.
      */
     public static void addMemberConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         List<RolapMember> members,
         boolean restrictMemberTypes,
         boolean crossJoin,
@@ -401,7 +393,7 @@ public class SqlConstraintUtils {
                 constrainMultiLevelMembers(
                     queryBuilder,
                     starSet.getMeasureGroup(),
-                    aggStar,
+                    starSet.getAggStar(),
                     members,
                     firstUniqueParentLevel,
                     restrictMemberTypes,
@@ -411,7 +403,7 @@ public class SqlConstraintUtils {
                 condition,
                 queryBuilder,
                 starSet.getMeasureGroup(),
-                aggStar,
+                starSet.getAggStar(),
                 members,
                 firstUniqueParentLevel,
                 restrictMemberTypes,
@@ -814,8 +806,8 @@ public class SqlConstraintUtils {
      * @param aggStar aggregate star if available
      * @param columnValue value constraining the level
      * @param caseSensitive if true, need to handle case sensitivity of the
-     * member value
-     *    @return generated string corresponding to the expression
+     *                      member value
+     * @return generated string corresponding to the expression
      */
     public static String constrainLevel(
         RolapLevel level,

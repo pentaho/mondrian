@@ -5,13 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2009 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
 
 import mondrian.rolap.*;
-import mondrian.rolap.aggmatcher.AggStar;
 
 import java.util.List;
 
@@ -29,8 +28,7 @@ public interface CrossJoinArg {
 
     void addConstraint(
         SqlQuery sqlQuery,
-        RolapStarSet starSet,
-        AggStar aggStar);
+        RolapStarSet starSet);
 
     boolean isPreferInterpreter(boolean joinArg);
 }

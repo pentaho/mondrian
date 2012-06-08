@@ -12,6 +12,7 @@ package mondrian.olap4j;
 import mondrian.olap.OlapElement;
 
 import org.olap4j.OlapWrapper;
+import org.olap4j.metadata.MetadataElement;
 
 import java.sql.SQLException;
 
@@ -21,7 +22,7 @@ import java.sql.SQLException;
  * @author jhyde
  */
 abstract class MondrianOlap4jMetadataElement
-    implements OlapWrapper
+    implements OlapWrapper, MetadataElement
 {
     /**
      * Helper for {@link #unwrap(Class)} and {@link #isWrapperFor(Class)}.

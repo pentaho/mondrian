@@ -5,13 +5,12 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2006-2009 Pentaho and others
+// Copyright (C) 2006-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap.sql;
 
 import mondrian.rolap.*;
-import mondrian.rolap.aggmatcher.AggStar;
 
 import java.util.List;
 
@@ -30,14 +29,12 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * of <code>parent</code> will be returned in the result set.
      *
      * @param sqlQuery the query to modify
-     * @param starSet
-     * @param aggStar Aggregate star, if we are reading from an aggregate table,
+     * @param starSet Star set
      * @param parent the parent member that restricts the returned children
      */
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         RolapMember parent);
 
     /**
@@ -46,15 +43,12 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * will be returned in the result set.
      *
      * @param sqlQuery Query to modify
-     * @param starSet
-     * @param aggStar Aggregate table, or null if query is against fact table
+     * @param starSet Star set
      * @param parents List of parent members that restrict the returned
-     *        children
      */
     public void addMemberConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         List<RolapMember> parents);
 
     /**
@@ -63,17 +57,15 @@ public interface MemberChildrenConstraint extends SqlConstraint {
      * it may join the levels table to the fact table.
      *
      * @param query the query to modify
-     * @param starSet
-     * @param aggStar Aggregate table, or null if query is against fact table
+     * @param starSet Star set
      * @param level the level that contains the children
      */
     public void addLevelConstraint(
         SqlQuery query,
         RolapStarSet starSet,
-        AggStar aggStar,
         RolapLevel level);
 
-    RolapStarSet createStarSet();
+    RolapStarSet createStarSet(RolapStar aggStar);
 }
 
 // End MemberChildrenConstraint.java

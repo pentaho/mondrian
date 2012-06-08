@@ -12,7 +12,6 @@ package mondrian.rolap.sql;
 
 import mondrian.olap.Evaluator;
 import mondrian.rolap.*;
-import mondrian.rolap.aggmatcher.AggStar;
 
 import java.util.List;
 
@@ -32,13 +31,11 @@ public interface TupleConstraint extends SqlConstraint {
      * Modifies a Level.Members query.
      *
      * @param sqlQuery the query to modify
-     * @param starSet
-     * @param aggStar aggregate star to use
+     * @param starSet Star set
      */
     public void addConstraint(
         SqlQuery sqlQuery,
-        RolapStarSet starSet,
-        AggStar aggStar);
+        RolapStarSet starSet);
 
     /**
      * Will be called multiple times for every "group by" level in
@@ -48,14 +45,12 @@ public interface TupleConstraint extends SqlConstraint {
      * it may join the levels table to the fact table.
      *
      * @param sqlQuery the query to modify
-     * @param starSet
-     * @param aggStar Aggregate table, or null if query is against fact table
+     * @param starSet Star set
      * @param level the level which is accessed in the Level.Members query
      */
     public void addLevelConstraint(
         SqlQuery sqlQuery,
         RolapStarSet starSet,
-        AggStar aggStar,
         RolapLevel level);
 
     /**

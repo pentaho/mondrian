@@ -87,8 +87,21 @@ class MondrianOlap4jDatabase
         return Olap4jUtil.cast(catalogs);
     }
 
-    public String getDescription() throws OlapException {
-        return this.description;
+    public String getUniqueName() {
+        return name;
+    }
+
+    public String getCaption() {
+        // No caption field available.
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public boolean isVisible() {
+        return true;
     }
 
     public String getName() {

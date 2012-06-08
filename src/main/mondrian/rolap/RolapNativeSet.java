@@ -6,7 +6,7 @@
 //
 // Copyright (C) 2004-2005 TONBELLER AG
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -16,7 +16,6 @@ import mondrian.calc.TupleList;
 import mondrian.calc.impl.DelegatingTupleList;
 import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
-import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.cache.*;
 import mondrian.rolap.sql.*;
 
@@ -99,10 +98,9 @@ public abstract class RolapNativeSet extends RolapNative {
 
         public void addConstraint(
             SqlQuery sqlQuery,
-            RolapStarSet starSet,
-            AggStar aggStar)
+            RolapStarSet starSet)
         {
-            super.addConstraint(sqlQuery, starSet, aggStar);
+            super.addConstraint(sqlQuery, starSet);
             for (CrossJoinArg arg : args) {
                 // if the cross join argument has calculated members in its
                 // enumerated set, ignore the constraint since we won't
@@ -116,7 +114,7 @@ public abstract class RolapNativeSet extends RolapNative {
                     if (level == null
                         || levelIsOnBaseCube(starSet.getMeasureGroup(), level))
                     {
-                        arg.addConstraint(sqlQuery, starSet, aggStar);
+                        arg.addConstraint(sqlQuery, starSet);
                     }
                 }
             }

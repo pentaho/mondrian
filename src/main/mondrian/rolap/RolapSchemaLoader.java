@@ -273,6 +273,8 @@ public class RolapSchemaLoader {
                 md5Bytes,
                 useContentChecksum,
                 xmlSchema.name,
+                xmlSchema.caption,
+                xmlSchema.description,
                 annotationMap);
 
         validator.putXml(schema, xmlSchema);
@@ -1527,7 +1529,7 @@ public class RolapSchemaLoader {
     }
 
     private <T> void removeAllByIdentity(List<T> list, Collection<T> remove) {
-        for (Iterator<T> iterator = list.iterator(); iterator.hasNext(); ) {
+        for (Iterator<T> iterator = list.iterator(); iterator.hasNext();) {
             T next = iterator.next();
             boolean b = false;
             for (T o : remove) {

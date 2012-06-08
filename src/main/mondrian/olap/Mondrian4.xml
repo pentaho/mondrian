@@ -207,9 +207,16 @@ Revision is $Id$
         <Attribute name="name" required="true">
             <Doc>Name of this schema.</Doc>
         </Attribute>
+        <Attribute name="caption" required="false">
+            <Doc>
+                A string being displayed instead of the Schema's name.
+                Can be localized from Properties file using #{propertyname}.
+            </Doc>
+        </Attribute>
         <Attribute name="description" required="false">
             <Doc>
-                Description of this schema.
+                Description of this Schema.
+                Can be localized from Properties file using #{propertyname}.
             </Doc>
         </Attribute>
         <Attribute name="measuresCaption" required="false">
