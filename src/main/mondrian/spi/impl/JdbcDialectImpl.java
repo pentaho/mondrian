@@ -20,6 +20,7 @@ import org.apache.commons.logging.LogFactory;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
+import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
 /**
@@ -87,6 +88,8 @@ public class JdbcDialectImpl implements Dialect {
      */
     private final List<StatisticsProvider> statisticsProviders;
 
+    private final Pattern unquotedIdentifierRegexp;
+
     private static final int[] RESULT_SET_TYPE_VALUES = {
         ResultSet.TYPE_FORWARD_ONLY,
         ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -100,7 +103,7 @@ public class JdbcDialectImpl implements Dialect {
      * The size required to add quotes around a string - this ought to be
      * large enough to prevent a reallocation.
      */
-    private static final int SINGLE_QUOTE_SIZE = 10;
+    public static final int SINGLE_QUOTE_SIZE = 10;
     /**
      * Two strings are quoted and the character '.' is placed between them.
      */
@@ -134,6 +137,10 @@ public class JdbcDialectImpl implements Dialect {
         this.permitsSelectNotInGroupBy =
             deduceSupportsSelectNotInGroupBy(connection);
         this.statisticsProviders = computeStatisticsProviders();
+        this.unquotedIdentifierRegexp =
+                        Pattern.compile(
+                            "[A-Za-z0-9_"
+                            + metaData.getExtraNameCharacters() + "]");
     }
 
     public DatabaseProduct getDatabaseProduct() {
@@ -276,84 +283,32 @@ public class JdbcDialectImpl implements Dialect {
     }
 
     public String quoteIdentifier(final String val) {
-        int size = val.length() + SINGLE_QUOTE_SIZE;
-        StringBuilder buf = new StringBuilder(size);
-
-        quoteIdentifier(val, buf);
-
-        return buf.toString();
+        return quoteIdentifierImpl(
+            getQuoteIdentifierString(),
+            needToQuoteFunction(this),
+            val);
     }
 
-    public void quoteIdentifier(final String val, final StringBuilder buf) {
-        String q = getQuoteIdentifierString();
-        if (q == null) {
-            // quoting is not supported
-            buf.append(val);
-            return;
-        }
-        // if the value is already quoted, do nothing
-        //  if not, then check for a dot qualified expression
-        //  like "owner.table".
-        //  In that case, prefix the single parts separately.
-        if (val.startsWith(q) && val.endsWith(q)) {
-            // already quoted - nothing to do
-            buf.append(val);
-            return;
-        }
-
-        int k = val.indexOf('.');
-        if (k > 0) {
-            // qualified
-            String val1 = Util.replace(val.substring(0, k), q, q + q);
-            String val2 = Util.replace(val.substring(k + 1), q, q + q);
-            buf.append(q);
-            buf.append(val1);
-            buf.append(q);
-            buf.append(".");
-            buf.append(q);
-            buf.append(val2);
-            buf.append(q);
-
-        } else {
-            // not Qualified
-            String val2 = Util.replace(val, q, q + q);
-            buf.append(q);
-            buf.append(val2);
-            buf.append(q);
-        }
+    public void quoteIdentifier(String val, StringBuilder buf) {
+        quoteIdentifierImpl(
+            getQuoteIdentifierString(), needToQuoteFunction(this), buf, val);
     }
 
     public String quoteIdentifier(final String qual, final String name) {
-        // We know if the qalifier is null, then only the name is going
-        // to be quoted.
-        int size = name.length()
-            + ((qual == null)
-                ? SINGLE_QUOTE_SIZE
-                : (qual.length() + DOUBLE_QUOTE_SIZE));
-        StringBuilder buf = new StringBuilder(size);
-
-        quoteIdentifier(buf, qual, name);
-
-        return buf.toString();
+        return quoteIdentifierImpl(
+            getQuoteIdentifierString(),
+            needToQuoteFunction(this),
+            qual,
+            name);
     }
 
     public void quoteIdentifier(
-        final StringBuilder buf,
-        final String... names)
+        StringBuilder buf,
+        String... names)
     {
-        int nonNullNameCount = 0;
-        for (String name : names) {
-            if (name == null) {
-                continue;
-            }
-            if (nonNullNameCount > 0) {
-                buf.append('.');
-            }
-            assert name.length() > 0
-                : "name should probably be null, not empty";
-            quoteIdentifier(name, buf);
-            ++nonNullNameCount;
-        }
+        quoteIdentifierImpl(
+            getQuoteIdentifierString(), needToQuoteFunction(this), buf,
+            names);
     }
 
     public String getQuoteIdentifierString() {
@@ -532,10 +487,6 @@ public class JdbcDialectImpl implements Dialect {
         }
 
         if (valueList.isEmpty()) {
-            List<String> values = new ArrayList<String>();
-            for (String columnType : columnTypes) {
-                values.add(null);
-            }
             if (fromClause == null) {
                 fromClause = "where 1 = 0";
             } else if (fromClause.contains(" where ")) {
@@ -546,8 +497,7 @@ public class JdbcDialectImpl implements Dialect {
             return generateInlineGeneric(
                 columnNames,
                 columnTypes,
-                Collections.singletonList(
-                    values.toArray(new String[values.size()])),
+                Collections.singletonList(new String[columnTypes.size()]),
                 fromClause,
                 cast);
         }
@@ -906,6 +856,15 @@ public class JdbcDialectImpl implements Dialect {
         return null;
     }
 
+    public boolean alwaysQuoteIdentifiers() {
+        return true;
+    }
+
+    public boolean needToQuote(String identifier) {
+        return alwaysQuoteIdentifiers()
+            || unquotedIdentifierRegexp.matcher(identifier).matches();
+    }
+
     public List<StatisticsProvider> getStatisticsProviders() {
         return statisticsProviders;
     }
@@ -1108,78 +1067,162 @@ public class JdbcDialectImpl implements Dialect {
         }
     }
 
-    public int getTableCardinality(
-        DataSource dataSource,
-        String schema,
+    static Util.Predicate1<String> needToQuoteFunction(
+        final Dialect dialect)
+    {
+        return new Util.Predicate1<String>() {
+            public boolean test(String s) {
+                return dialect.needToQuote(s);
+            }
+        };
+    }
+
+    /** Implementation of {@link Dialect#quoteIdentifier(String)}. */
+    static String quoteIdentifierImpl(
+        String q,
+        Util.Predicate1<String> shouldQuote,
+        final String val)
+    {
+        return quoteIdentifierImpl(
+            q, shouldQuote, new StringBuilder(val.length() + SINGLE_QUOTE_SIZE),
+            val).toString();
+    }
+
+    /** Implementation of {@link Dialect#quoteIdentifier(String, String)}. */
+    static String quoteIdentifierImpl(
+        String q,
+        Util.Predicate1<String> shouldQuote,
+        String qual,
         String name)
     {
-        int cardinality =
-            getTableCardinalityUsingJdbc(
-                dataSource,
-                null,
-                schema,
+        // We know if the qualifier is null, then only the name is going
+        // to be quoted.
+        int size = name.length()
+            + ((qual == null)
+            ? SINGLE_QUOTE_SIZE
+            : (qual.length() + DOUBLE_QUOTE_SIZE));
+        return quoteIdentifierImpl(
+            q, shouldQuote, new StringBuilder(size),
+            new String[]{qual, name})
+            .toString();
+    }
+
+    /** Implementation of {@link Dialect#quoteIdentifier(StringBuilder, String...)}. */
+    static StringBuilder quoteIdentifierImpl(
+        String q,
+        Util.Predicate1<String> shouldQuote,
+        StringBuilder buf,
+        String[] names)
+    {
+        int nonNullNameCount = 0;
+        for (String name : names) {
+            if (name == null) {
+                continue;
+            }
+            if (nonNullNameCount > 0) {
+                buf.append('.');
+            }
+            assert name.length() > 0
+                : "name should probably be null, not empty";
+            quoteIdentifierImpl(q, shouldQuote, buf, name);
+            ++nonNullNameCount;
+        }
+        return buf;
+    }
+
+    /** Implementation of {@link Dialect#quoteIdentifier(String, StringBuilder)}. */
+    static StringBuilder quoteIdentifierImpl(
+        String q,
+        Util.Predicate1<String> shouldQuote,
+        StringBuilder buf,
+        String val)
+    {
+        if (shouldQuote.test(val)) {
+            // identifier is not one that needs to be quoted
+            return buf.append(val);
+        }
+        if (q == null) {
+            // quoting is not supported
+            return buf.append(val);
+        }
+        // if the value is already quoted, do nothing
+        //  if not, then check for a dot qualified expression
+        //  like "owner.table".
+        //  In that case, prefix the single parts separately.
+        if (val.startsWith(q) && val.endsWith(q)) {
+            // already quoted - nothing to do
+            return buf.append(val);
+        }
+
+        int k = val.indexOf('.');
+        if (k > 0) {
+            // qualified
+            String val1 = Util.replace(val.substring(0, k), q, q + q);
+            String val2 = Util.replace(val.substring(k + 1), q, q + q);
+            buf.append(q);
+            buf.append(val1);
+            buf.append(q);
+            buf.append(".");
+            buf.append(q);
+            buf.append(val2);
+            buf.append(q);
+
+        } else {
+            // not Qualified
+            String val2 = Util.replace(val, q, q + q);
+            buf.append(q);
+            buf.append(val2);
+            buf.append(q);
+        }
+        return buf;
+    }
+
+    /**
+     * Dialect that does not quote identifiers but otherwise behaves as its
+     * underlying dialect.
+     */
+    public static class NonQuotingDialect extends DelegatingDialect {
+        public NonQuotingDialect(Dialect dialect) {
+            super(dialect);
+        }
+
+        public boolean alwaysQuoteIdentifiers() {
+            return false;
+        }
+
+        @Override
+        public String quoteIdentifier(String val) {
+            return quoteIdentifierImpl(
+                getQuoteIdentifierString(),
+                needToQuoteFunction(this),
+                val);
+        }
+
+        @Override
+        public void quoteIdentifier(String val, StringBuilder buf) {
+            quoteIdentifierImpl(
+                getQuoteIdentifierString(),
+                needToQuoteFunction(this),
+                buf,
+                val);
+        }
+
+        @Override
+        public String quoteIdentifier(final String qual, final String name) {
+            return quoteIdentifierImpl(
+                getQuoteIdentifierString(),
+                needToQuoteFunction(this),
+                qual,
                 name);
-        if (cardinality < 0) {
-            cardinality =
-                getTableCardinalityUsingSql(
-                    dataSource,
-                    null,
-                    schema,
-                    name);
         }
-        return cardinality;
-    }
 
-    protected int getTableCardinalityUsingJdbc(
-        DataSource dataSource, String catalog, String schema, String table)
-    {
-        Connection connection = null;
-        ResultSet resultSet = null;
-        try {
-            connection = dataSource.getConnection();
-            resultSet =
-                connection
-                    .getMetaData()
-                    .getIndexInfo(catalog, schema, table, false, true);
-            while (resultSet.next()) {
-                int type = resultSet.getInt(7); // "TYPE" column
-                switch (type) {
-                case DatabaseMetaData.tableIndexStatistic:
-                    return resultSet.getInt(11); // "CARDINALITY" column
-                }
-            }
-            return -1; // information not available, apparently
-        } catch (SQLException e) {
-            throw Util.newInternal(
-                e,
-                "while computing cardinality of table [" + table + "]");
-        } finally {
-            Util.close(resultSet, null, connection);
-        }
-    }
-
-    protected int getTableCardinalityUsingSql(
-        DataSource dataSource, String catalog, String schema, String table)
-    {
-        Connection connection = null;
-        Statement statement = null;
-        ResultSet resultSet = null;
-        try {
-            StringBuilder buf = new StringBuilder("select count(*) from ");
-            quoteIdentifier(buf, catalog, schema, table);
-            connection = dataSource.getConnection();
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery(buf.toString());
-            if (resultSet.next()) {
-                return resultSet.getInt(1);
-            }
-            return -1; // huh?
-        } catch (SQLException e) {
-            throw Util.newInternal(
-                e,
-                "while computing cardinality of table [" + table + "]");
-        } finally {
-            Util.close(resultSet, statement, connection);
+        @Override
+        public void quoteIdentifier(StringBuilder buf, String... names) {
+            quoteIdentifierImpl(
+                getQuoteIdentifierString(),
+                needToQuoteFunction(this),
+                buf,
+                names);
         }
     }
 }

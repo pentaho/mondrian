@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 TONBELLER AG
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -18,6 +18,7 @@ import mondrian.olap.fun.FunUtil;
 import mondrian.rolap.sql.TupleConstraint;
 import mondrian.server.Locus;
 import mondrian.server.monitor.SqlStatementEvent;
+import mondrian.spi.Dialect;
 import mondrian.util.Pair;
 import mondrian.util.TraversalList;
 
@@ -53,6 +54,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
     }
 
     protected void prepareTuples(
+        final Dialect dialect,
         final DataSource dataSource,
         final TupleList partialResult,
         final List<List<RolapMember>> newPartialResult)
@@ -71,7 +73,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                     }
                 }
                 final Pair<String, List<SqlStatement.Type>> pair =
-                    makeLevelMembersSql(dataSource);
+                    makeLevelMembersSql(dialect);
                 String sql = pair.left;
                 List<SqlStatement.Type> types = pair.right;
                 stmt = RolapUtil.executeQuery(
@@ -127,22 +129,24 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
     }
 
     public TupleList readMembers(
+        Dialect dialect,
         final DataSource dataSource,
         final TupleList partialResult,
         final List<List<RolapMember>> newPartialResult)
     {
-        prepareTuples(dataSource, partialResult, newPartialResult);
+        prepareTuples(dialect, dataSource, partialResult, newPartialResult);
         assert targets.size() == 1;
         return new UnaryTupleList(
             Util.<Member>cast(targets.get(0).close()));
     }
 
     public TupleList readTuples(
-        final DataSource jdbcConnection,
+        Dialect dialect,
+        DataSource dataSource,
         final TupleList partialResult,
         final List<List<RolapMember>> newPartialResult)
     {
-        prepareTuples(jdbcConnection, partialResult, newPartialResult);
+        prepareTuples(dialect, dataSource, partialResult, newPartialResult);
 
         // List of tuples
         final int n = targets.size();

@@ -11,7 +11,6 @@ package mondrian.spi;
 
 import java.util.List;
 import java.util.Map;
-import javax.sql.DataSource;
 
 /**
  * Description of an SQL dialect.
@@ -794,19 +793,6 @@ public interface Dialect {
         int scale);
 
     /**
-     * Returns an estimate of the number of rows in a table.
-     *
-     * @param dataSource Data source
-     * @param schema Schema name
-     * @param name Table name
-     * @return Estimated number of rows in table, or -1 if there is no estimate
-     */
-    int getTableCardinality(
-        DataSource dataSource,
-        String schema,
-        String name);
-
-    /**
      * Returns a list of statistics providers for this dialect.
      *
      * <p>The default implementation looks for the value of the property
@@ -820,6 +806,16 @@ public interface Dialect {
      * of them returns a non-negative value.</p>
      */
     List<StatisticsProvider> getStatisticsProviders();
+
+    /**
+     * Returns whether identifiers are always quoted.
+     */
+    boolean alwaysQuoteIdentifiers();
+
+    /**
+     * Returns whether an identifier needs to be quoted.
+     */
+    boolean needToQuote(String identifier);
 
     /**
      * Enumeration of common database types.

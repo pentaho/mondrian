@@ -136,9 +136,7 @@ class SqlMemberSource
 
     private int getMemberCount(RolapLevel level, DataSource dataSource) {
         boolean[] mustCount = new boolean[1];
-        String sql =
-            makeAttributeMemberCountSql(
-                level.attribute, dataSource, mustCount);
+        String sql = makeAttributeMemberCountSql(level.attribute, mustCount);
         final SqlStatement stmt =
             RolapUtil.executeQuery(
                 dataSource,
@@ -206,13 +204,12 @@ class SqlMemberSource
      */
     private String makeAttributeMemberCountSql(
         RolapAttribute attribute,
-        DataSource dataSource,
         boolean[] mustCount)
     {
         mustCount[0] = false;
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
-                dataSource,
+                getDialect(),
                 "while generating query to count members in attribute "
                 + attribute);
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder =
@@ -264,8 +261,7 @@ class SqlMemberSource
                         sb.append(", ");
                     }
                     sb.append(
-                        sqlQuery.getDialect()
-                            .generateCountExpression(colDef));
+                        sqlQuery.getDialect().generateCountExpression(colDef));
                 }
                 sqlQuery.addSelect(
                     "count(DISTINCT " + sb.toString() + ")", null);
@@ -280,7 +276,7 @@ class SqlMemberSource
             }
             SqlQuery outerQuery =
                 SqlQuery.newQuery(
-                    dataSource,
+                    getDialect(),
                     "while generating query to count members in attribute "
                     + attribute);
             outerQuery.addSelect("count(*)", null);
@@ -302,7 +298,7 @@ class SqlMemberSource
             new SqlTupleReader.ColumnLayoutBuilder(
                 Collections.singletonList(
                     Util.last(hierarchy.levelList).attribute.getKeyList()));
-        String sql = makeKeysSql(dataSource, layoutBuilder);
+        String sql = makeKeysSql(layoutBuilder);
         List<SqlStatement.Type> types = layoutBuilder.types;
         SqlStatement stmt =
             RolapUtil.executeQuery(
@@ -430,6 +426,10 @@ class SqlMemberSource
         }
     }
 
+    private Dialect getDialect() {
+        return hierarchy.getDimension().getSchema().getDialect();
+    }
+
     static Comparable toComparable(Object value) {
         if (value == null) {
             return RolapUtil.sqlNullValue;
@@ -483,13 +483,11 @@ class SqlMemberSource
         }
     }
 
-    private String makeKeysSql(
-        DataSource dataSource,
-        SqlTupleReader.ColumnLayoutBuilder layoutBuilder)
+    private String makeKeysSql(SqlTupleReader.ColumnLayoutBuilder layoutBuilder)
     {
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
-                dataSource,
+                getDialect(),
                 "while generating query to retrieve members of " + hierarchy);
         final RolapSchema.SqlQueryBuilder queryBuilder =
             new RolapSchema.SqlQueryBuilder(sqlQuery, layoutBuilder);
@@ -543,7 +541,11 @@ class SqlMemberSource
                 : new SqlTupleReader(constraint);
         tupleReader.addLevelMembers(level, this, null);
         final TupleList tupleList =
-            tupleReader.readTuples(dataSource, null, null);
+            tupleReader.readTuples(
+                hierarchy.getDimension().getSchema().getDialect(),
+                dataSource,
+                null,
+                null);
 
         assert tupleList.getArity() == 1;
         return Util.cast(tupleList.slice(0));
@@ -581,7 +583,6 @@ class SqlMemberSource
      */
     String makeChildMemberSql(
         RolapMember member,
-        DataSource dataSource,
         final MemberChildrenConstraint constraint,
         SqlTupleReader.ColumnLayoutBuilder layoutBuilder)
     {
@@ -590,7 +591,7 @@ class SqlMemberSource
             false);
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
-                dataSource,
+                getDialect(),
                 "while generating query to retrieve children of member "
                 + member);
         final RolapSchema.SqlQueryBuilder queryBuilder =
@@ -960,7 +961,7 @@ class SqlMemberSource
                 sql = makeChildMemberSql_PCRoot(parentMember, layoutBuilder);
             } else {
                 sql = makeChildMemberSql(
-                    parentMember, dataSource, constraint, layoutBuilder);
+                    parentMember, constraint, layoutBuilder);
             }
         }
         final List<SqlStatement.Type> types = layoutBuilder.types;
@@ -1204,7 +1205,7 @@ class SqlMemberSource
     {
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
-                dataSource,
+                getDialect(),
                 "while generating query to retrieve children of parent/child "
                 + "hierarchy member " + member);
         final RolapSchema.SqlQueryBuilder queryBuilder =
@@ -1268,7 +1269,7 @@ class SqlMemberSource
     {
         SqlQuery sqlQuery =
             SqlQuery.newQuery(
-                dataSource,
+                getDialect(),
                 "while generating query to retrieve children of "
                 + "parent/child hierarchy member " + member);
         final RolapSchema.SqlQueryBuilder queryBuilder =

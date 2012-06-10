@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, Mar 21, 2002
@@ -599,9 +599,7 @@ public class SqlQuery {
         return dialect;
     }
 
-    public static SqlQuery newQuery(DataSource dataSource, String err) {
-        final Dialect dialect =
-            DialectManager.createDialect(dataSource, null);
+    public static SqlQuery newQuery(Dialect dialect, String err) {
         return new SqlQuery(dialect);
     }
 

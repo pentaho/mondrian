@@ -192,7 +192,8 @@ public class RolapNativeTopCount extends RolapNativeSet {
         // Need to generate top count order by to determine whether
         // or not it can be created. The top count
         // could change to use an aggregate table later in evaulation
-        SqlQuery sqlQuery = SqlQuery.newQuery(ds, "NativeTopCount");
+        SqlQuery sqlQuery =
+            SqlQuery.newQuery(evaluator.getDialect(), "NativeTopCount");
         RolapNativeSql sql =
             new RolapNativeSql(
                 sqlQuery, null, evaluator, null);

@@ -18,6 +18,7 @@ import mondrian.olap.*;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.cache.*;
 import mondrian.rolap.sql.*;
+import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
 
@@ -240,14 +241,15 @@ public abstract class RolapNativeSet extends RolapNative {
                 newPartialResult = new ArrayList<List<RolapMember>>();
             }
             DataSource dataSource = schemaReader.getDataSource();
+            final Dialect dialect = schemaReader.getSchema().getDialect();
             if (args.length == 1) {
                 result =
                     tr.readMembers(
-                        dataSource, partialResult, newPartialResult);
+                        dialect, dataSource, partialResult, newPartialResult);
             } else {
                 result =
                     tr.readTuples(
-                        dataSource, partialResult, newPartialResult);
+                        dialect, dataSource, partialResult, newPartialResult);
             }
 
             if (hasEnumTargets) {

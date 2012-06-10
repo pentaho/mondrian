@@ -107,6 +107,7 @@ public class RolapSchemaUpgrader {
                 xmlLegacySchema.name,
                 xmlLegacySchema.name, // no caption available
                 xmlLegacySchema.description,
+                true,
                 Collections.<String, Annotation>emptyMap());
         tempSchema.physicalSchema =
             new RolapSchema.PhysSchema(

@@ -93,7 +93,7 @@ public class RolapCubeDimension extends RolapDimension {
         return cube;
     }
 
-    public Schema getSchema() {
+    public RolapSchema getSchema() {
         return rolapDimension.getSchema();
     }
 
