@@ -275,6 +275,7 @@ public class RolapSchemaLoader {
                 xmlSchema.name,
                 xmlSchema.caption,
                 xmlSchema.description,
+                toBoolean(xmlSchema.quoteSql, true),
                 annotationMap);
 
         validator.putXml(schema, xmlSchema);

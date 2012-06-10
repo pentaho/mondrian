@@ -374,7 +374,7 @@ public class RolapEvaluator implements Evaluator {
     }
 
     public Dialect getDialect() {
-        return root.currentDialect;
+        return root.dialect;
     }
 
     public final RolapEvaluator push(Member[] members) {

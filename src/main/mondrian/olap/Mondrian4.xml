@@ -228,6 +228,25 @@ Revision is $Id$
         <Attribute name="defaultRole" required="false">
             <Doc>The name of the default role for connections to this schema</Doc>
         </Attribute>
+        <Attribute name="quoteSql" required="false" type="Boolean" default="true">
+            <Doc>Whether to quote identifiers (table and column names) when
+                generating SQL. The default is true.
+
+                <p>Identifiers that are not alphanumeric are always quoted.</p>
+
+                <p>If this property is false, identifiers are not quoted. Most
+                    databases' SQL parsers convert quoted identifiers to upper
+                    case. Thus
+                    <blockquote>SELECT ename FROM emp</blockquote>
+                    is equivalent to
+                    <blockquote>SELECT `ENAME` FROM `EMP`</blockquote>
+                    and
+                    <blockquote>SELECT ENAME FROM EMP</blockquote>. Therefore
+                    you should typically set <code>quoteSql</code> to
+                    <code>false</code> if and only if you used unquoted DDL
+                    to create your database.</p>
+            </Doc>
+        </Attribute>
         <Attribute name="missingLink" required="true" default="warning">
             <Doc>
                 Action if there is no link in a measure group for each

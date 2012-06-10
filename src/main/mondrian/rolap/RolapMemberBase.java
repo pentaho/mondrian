@@ -319,7 +319,6 @@ public class RolapMemberBase
     public Object getPropertyValue(String propertyName, boolean matchCase) {
         Property property = Property.lookup(propertyName, matchCase);
         if (property != null) {
-            Schema schema;
             Member parentMember;
             List<RolapMember> list;
             switch (property.ordinal) {
@@ -342,8 +341,7 @@ public class RolapMemberBase
                 break;
 
             case Property.SCHEMA_NAME_ORDINAL:
-                schema = getHierarchy().getDimension().getSchema();
-                return schema.getName();
+                return getHierarchy().getDimension().getSchema().getName();
 
             case Property.CUBE_NAME_ORDINAL:
                 // TODO: can't go from member to cube cube yet

@@ -21,7 +21,7 @@ import mondrian.rolap.sql.SqlQuery;
 import mondrian.server.*;
 import mondrian.server.Statement;
 import mondrian.spi.*;
-import mondrian.spi.impl.Scripts;
+import mondrian.spi.impl.*;
 import mondrian.util.*;
 
 import org.apache.log4j.Logger;
@@ -56,6 +56,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
      * Internal use only.
      */
     private RolapConnection internalConnection;
+
+    private final Dialect dialect;
 
     /**
      * Holds cubes in this schema.
@@ -157,6 +159,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
      * @param name Name
      * @param caption Caption
      * @param description Description
+     * @param quoteSql Whether dialect should not quote SQL identifiers
      * @param annotationMap Annotation map
      */
     RolapSchema(
@@ -168,6 +171,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
         String name,
         String caption,
         String description,
+        boolean quoteSql,
         Map<String, Annotation> annotationMap)
     {
         this.id = Util.generateUuidString();
@@ -183,9 +187,15 @@ public class RolapSchema extends OlapElementBase implements Schema {
         final MondrianServer internalServer = MondrianServer.forId(null);
         this.internalConnection =
             new RolapConnection(internalServer, connectInfo, this, dataSource);
+        assert internalConnection.dialect != null;
         internalServer.removeConnection(internalConnection);
         internalServer.removeStatement(
             internalConnection.getInternalStatement());
+        this.dialect =
+            quoteSql
+                ? internalConnection.dialect
+                : new JdbcDialectImpl.NonQuotingDialect(
+                    internalConnection.dialect);
 
         this.aggTableManager = new AggTableManager(this);
         this.dataSourceChangeListener =
@@ -309,6 +319,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
      * @return dialect
      */
     public Dialect getDialect() {
+        if (true) {
+            Util.deprecated("clean up", false);
+            return dialect;
+        }
         DataSource dataSource = getInternalConnection().getDataSource();
         return DialectManager.createDialect(dataSource, null);
     }

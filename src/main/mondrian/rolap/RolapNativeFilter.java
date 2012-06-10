@@ -15,7 +15,6 @@ import mondrian.olap.*;
 import mondrian.rolap.sql.*;
 
 import java.util.*;
-import javax.sql.DataSource;
 
 /**
  * Computes a Filter(set, condition) in SQL.
@@ -140,15 +139,12 @@ public class RolapNativeFilter extends RolapNativeSet {
             return null;
         }
 
-        // extract "order by" expression
-        SchemaReader schemaReader = evaluator.getSchemaReader();
-        DataSource ds = schemaReader.getDataSource();
-
         // generate the WHERE condition
         // Need to generate where condition here to determine whether
         // or not the filter condition can be created. The filter
         // condition could change to use an aggregate table later in evaluation
-        SqlQuery sqlQuery = SqlQuery.newQuery(ds, "NativeFilter");
+        final SqlQuery sqlQuery =
+            SqlQuery.newQuery(evaluator.getDialect(), "NativeFilter");
         RolapNativeSql sql =
             new RolapNativeSql(
                 sqlQuery, null, evaluator, cjArgs[0].getLevel());
@@ -188,7 +184,8 @@ public class RolapNativeFilter extends RolapNativeSet {
             new FilterConstraint(
                 combinedArgs, evaluator, measureGroupList, filterExpr);
         evaluator.restore(savepoint);
-        return new SetEvaluator(cjArgs, schemaReader, constraint);
+        return new SetEvaluator(
+            cjArgs, evaluator.getSchemaReader(), constraint);
     }
 }
 

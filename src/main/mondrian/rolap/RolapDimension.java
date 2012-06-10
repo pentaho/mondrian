@@ -107,7 +107,7 @@ class RolapDimension extends DimensionBase {
         return Util.cast(hierarchyList);
     }
 
-    public Schema getSchema() {
+    public RolapSchema getSchema() {
         return schema;
     }
 

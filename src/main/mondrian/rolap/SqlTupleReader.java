@@ -389,6 +389,7 @@ public class SqlTupleReader implements TupleReader {
     }
 
     private void prepareTuples(
+        Dialect dialect,
         DataSource dataSource,
         TupleList partialResult,
         List<List<RolapMember>> newPartialResult)
@@ -408,7 +409,7 @@ public class SqlTupleReader implements TupleReader {
                     }
                 }
                 final Pair<String, List<SqlStatement.Type>> pair =
-                    makeLevelMembersSql(dataSource);
+                    makeLevelMembersSql(dialect);
                 String sql = pair.left;
                 List<SqlStatement.Type> types = pair.right;
                 assert sql != null && !sql.equals("");
@@ -514,6 +515,7 @@ public class SqlTupleReader implements TupleReader {
     }
 
     public TupleList readMembers(
+        Dialect dialect,
         DataSource dataSource,
         TupleList partialResult,
         List<List<RolapMember>> newPartialResult)
@@ -522,7 +524,7 @@ public class SqlTupleReader implements TupleReader {
         while (true) {
             missedMemberCount = 0;
             int memberCountBefore = memberCount;
-        prepareTuples(dataSource, partialResult, newPartialResult);
+            prepareTuples(dialect, dataSource, partialResult, newPartialResult);
             memberCount = countMembers();
             if (missedMemberCount == 0) {
                 // We have successfully read all members. This is always the
@@ -557,11 +559,12 @@ public class SqlTupleReader implements TupleReader {
     }
 
     public TupleList readTuples(
-        DataSource jdbcConnection,
+        Dialect dialect,
+        DataSource dataSource,
         TupleList partialResult,
         List<List<RolapMember>> newPartialResult)
     {
-        prepareTuples(jdbcConnection, partialResult, newPartialResult);
+        prepareTuples(dialect, dataSource, partialResult, newPartialResult);
 
         // List of tuples
         final int n = targets.size();
@@ -695,9 +698,7 @@ public class SqlTupleReader implements TupleReader {
         partialResult.add(row);
     }
 
-    Pair<String, List<SqlStatement.Type>> makeLevelMembersSql(
-        DataSource dataSource)
-    {
+    Pair<String, List<SqlStatement.Type>> makeLevelMembersSql(Dialect dialect) {
         // In the case of a virtual cube, if we need to join to the fact
         // table, we do not necessarily have a single underlying fact table,
         // as the underlying base cubes in the virtual cube may all reference
@@ -727,7 +728,7 @@ public class SqlTupleReader implements TupleReader {
             List<RolapMeasureGroup> joiningMeasureGroupList =
                 getFullyJoiningMeasureGroups(measureGroupList);
             if (joiningMeasureGroupList.size() == 0) {
-                return sqlForEmptyTuple(dataSource, measureGroupList);
+                return sqlForEmptyTuple(dialect, measureGroupList);
             }
 
             // Save the original measure in the context
@@ -757,7 +758,7 @@ public class SqlTupleReader implements TupleReader {
                 }
                 Pair<String, List<SqlStatement.Type>> pair =
                     generateSelectForLevels(
-                        dataSource, null,
+                        dialect, null,
                         measureGroup, i, measureGroupList.size());
                 buf.append(pair.left);
                 types = pair.right;
@@ -769,10 +770,10 @@ public class SqlTupleReader implements TupleReader {
 
         case 1:
             return generateSelectForLevels(
-                dataSource, null, measureGroupList.get(0), 0, 1);
+                dialect, null, measureGroupList.get(0), 0, 1);
 
         case 0:
-            return generateSelectForLevels(dataSource, null, null, 0, 1);
+            return generateSelectForLevels(dialect, null, null, 0, 1);
         }
     }
 
@@ -796,10 +797,10 @@ public class SqlTupleReader implements TupleReader {
     }
 
     Pair<String, List<SqlStatement.Type>> sqlForEmptyTuple(
-        DataSource dataSource,
+        Dialect dialect,
         final List<RolapMeasureGroup> measureGroupList)
     {
-        final SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, null);
+        final SqlQuery sqlQuery = SqlQuery.newQuery(dialect, null);
         sqlQuery.addSelect("0", null);
         sqlQuery.addFrom(
             measureGroupList.get(0).getStar().getFactTable().getRelation(),
@@ -811,14 +812,14 @@ public class SqlTupleReader implements TupleReader {
     /**
      * Generates the SQL string corresponding to the levels referenced.
      *
-     * @param dataSource JDBC connection that the query will execute against
+     * @param dialect Database dialect
      * @param measureGroup Measure group whose fact table to join to, or null
      * @param selectOrdinal Ordinal of this SELECT statement in UNION
      * @param selectCount Number of SELECT statements in UNION
      * @return SQL statement string and types
      */
     Pair<String, List<SqlStatement.Type>> generateSelectForLevels(
-        DataSource dataSource,
+        Dialect dialect,
         RolapCube baseCube,
         RolapMeasureGroup measureGroup,
         int selectOrdinal,
@@ -828,7 +829,7 @@ public class SqlTupleReader implements TupleReader {
             "while generating query to retrieve members of level(s) " + targets;
 Util.deprecated("obsolete basecube parameter", false);
         // Allow query to use optimization hints from the table definition
-        SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, s);
+        SqlQuery sqlQuery = SqlQuery.newQuery(dialect, s);
         sqlQuery.setAllowHints(true);
 
         Evaluator evaluator = getEvaluator(constraint);
