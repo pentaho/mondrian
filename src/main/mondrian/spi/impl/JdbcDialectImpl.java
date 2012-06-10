@@ -21,7 +21,6 @@ import java.sql.*;
 import java.sql.Date;
 import java.util.*;
 import java.util.regex.Pattern;
-import javax.sql.DataSource;
 
 /**
  * Implementation of {@link Dialect} based on a JDBC connection and metadata.
@@ -138,9 +137,8 @@ public class JdbcDialectImpl implements Dialect {
             deduceSupportsSelectNotInGroupBy(connection);
         this.statisticsProviders = computeStatisticsProviders();
         this.unquotedIdentifierRegexp =
-                        Pattern.compile(
-                            "[A-Za-z0-9_"
-                            + metaData.getExtraNameCharacters() + "]");
+            Pattern.compile(
+                "[A-Za-z0-9_" + metaData.getExtraNameCharacters() + "]*");
     }
 
     public DatabaseProduct getDatabaseProduct() {
@@ -862,7 +860,7 @@ public class JdbcDialectImpl implements Dialect {
 
     public boolean needToQuote(String identifier) {
         return alwaysQuoteIdentifiers()
-            || unquotedIdentifierRegexp.matcher(identifier).matches();
+            || !unquotedIdentifierRegexp.matcher(identifier).matches();
     }
 
     public List<StatisticsProvider> getStatisticsProviders() {
@@ -1137,7 +1135,7 @@ public class JdbcDialectImpl implements Dialect {
         StringBuilder buf,
         String val)
     {
-        if (shouldQuote.test(val)) {
+        if (!shouldQuote.test(val)) {
             // identifier is not one that needs to be quoted
             return buf.append(val);
         }
