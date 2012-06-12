@@ -1101,7 +1101,6 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
         testContext.assertQueryReturns(
             "select "
             + "[Employees].[Employees].[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].Children"
-//            + "[Employees]./*[Employees].*/[All Employees].[Sheri Nowmer].[Rebecca Kanagaki].Children"
             + " ON COLUMNS, "
             + "{[Measures].[Org Salary]} ON ROWS from [CustomSalesAndHR]",
             "Axis #0:\n"

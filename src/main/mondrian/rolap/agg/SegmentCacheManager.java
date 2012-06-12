@@ -11,6 +11,7 @@ package mondrian.rolap.agg;
 
 import mondrian.olap.*;
 import mondrian.olap.CacheControl.CellRegion;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
 import mondrian.rolap.cache.*;
 import mondrian.server.Execution;
@@ -218,8 +219,19 @@ public class SegmentCacheManager {
      */
     public final ExecutorService cacheExecutor =
         Util.getExecutorService(
-            10, 0, 1, -1,
-            "mondrian.rolap.agg.SegmentCacheManager$cacheExecutor");
+            MondrianProperties.instance()
+                .SegmentCacheManagerNumberCacheThreads.get(),
+            0, 1,
+            "mondrian.rolap.agg.SegmentCacheManager$cacheExecutor",
+            new RejectedExecutionHandler() {
+                public void rejectedExecution(
+                    Runnable r,
+                    ThreadPoolExecutor executor)
+                {
+                    throw MondrianResource.instance()
+                        .SegmentCacheLimitReached.ex();
+                }
+            });
 
     /**
      * Executor with which to execute SQL requests.
@@ -229,8 +241,19 @@ public class SegmentCacheManager {
      */
     public final ExecutorService sqlExecutor =
         Util.getExecutorService(
-            10, 0, 1, 10,
-            "mondrian.rolap.agg.SegmentCacheManager$sqlExecutor");
+            MondrianProperties.instance()
+                .SegmentCacheManagerNumberSqlThreads.get(),
+            0, 1,
+            "mondrian.rolap.agg.SegmentCacheManager$sqlExecutor",
+            new RejectedExecutionHandler() {
+                public void rejectedExecution(
+                    Runnable r,
+                    ThreadPoolExecutor executor)
+                {
+                    throw MondrianResource.instance()
+                        .SqlQueryLimitReached.ex();
+                }
+            });
 
     // NOTE: This list is only mutable for testing purposes. Would rather it
     // were immutable.
@@ -576,7 +599,7 @@ public class SegmentCacheManager {
                     }
                 }
             );
-            Util.discard(future);
+            Util.safeGet(future, "SegmentCacheManager.segmentremoved");
         }
 
         public void visit(ExternalSegmentCreatedEvent event) {
@@ -691,7 +714,7 @@ public class SegmentCacheManager {
                     // Remove the segment from external caches. Use an
                     // executor, because it may take some time. We discard
                     // the future, because we don't care too much if it fails.
-                    Util.discard(cacheMgr.cacheExecutor.submit(
+                    final Future<?> task = cacheMgr.cacheExecutor.submit(
                         new Runnable() {
                             public void run() {
                                 try {
@@ -706,7 +729,8 @@ public class SegmentCacheManager {
                                         e);
                                 }
                             }
-                        }));
+                        });
+                    Util.safeGet(task, "SegmentCacheManager.flush");
                 }
                 return new FlushResult(
                     Collections.<Callable<Boolean>>emptyList());
@@ -1461,18 +1485,21 @@ public class SegmentCacheManager {
                          * to remove the data from all the caches.
                          */
                         indexRegistry.getIndex(star).remove(header);
-                        Util.discard(cacheExecutor.submit(
-                            new Runnable() {
-                                public void run() {
-                                    try {
-                                        compositeCache.remove(header);
-                                    } catch (Throwable e) {
-                                        LOGGER.warn(
-                                            "remove header failed: " + header,
-                                            e);
+                        Util.safeGet(
+                            cacheExecutor.submit(
+                                new Runnable() {
+                                    public void run() {
+                                        try {
+                                            compositeCache.remove(header);
+                                        } catch (Throwable e) {
+                                            LOGGER.warn(
+                                                "remove header failed: "
+                                                + header,
+                                                e);
+                                        }
                                     }
-                                }
-                            }));
+                                }),
+                            "SegmentCacheManager.peek");
                     }
                     converterMap.put(
                         SegmentCacheIndexImpl.makeConverterKey(header),

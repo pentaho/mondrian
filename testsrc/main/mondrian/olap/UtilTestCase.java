@@ -17,6 +17,9 @@ import junit.framework.TestCase;
 
 import java.sql.Driver;
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Tests for methods in {@link mondrian.olap.Util} and, sometimes, classes in
