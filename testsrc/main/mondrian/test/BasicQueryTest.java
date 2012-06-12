@@ -33,6 +33,7 @@ import java.io.StringWriter;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 /**
@@ -7108,6 +7109,49 @@ public class BasicQueryTest extends FoodMartTestCase {
         }
     }
 
+    public static class CountConcurrentUdf implements UserDefinedFunction {
+        private static AtomicInteger count = new AtomicInteger();
+        public String getName() {
+            return "CountConcurrentUdf";
+        }
+
+        public String getDescription() {
+            return "Counts the current number of threads using this thing.";
+        }
+
+        public Syntax getSyntax() {
+            return Syntax.Function;
+        }
+
+        public Type getReturnType(Type[] parameterTypes) {
+            return new NumericType();
+        }
+
+        public Type[] getParameterTypes() {
+            return new Type[] {};
+        }
+
+        public Object execute(Evaluator evaluator, Argument[] arguments) {
+            try {
+                count.incrementAndGet();
+                Thread.sleep(10000);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } finally {
+                count.decrementAndGet();
+            }
+            throw new Error("Leaving.");
+        }
+
+        static int getCount() {
+            return count.get();
+        }
+
+        public String[] getReservedWords() {
+            return null;
+        }
+    }
+
     /**
      * This unit test would cause connection leaks without a fix for bug
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-571">MONDRIAN-571,
@@ -7523,6 +7567,76 @@ public class BasicQueryTest extends FoodMartTestCase {
             5000);
         executeQuery(
             "select CrossJoin([Product].[Brand Name].Members, [Gender].[Gender].Members) on columns from [Sales]");
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1161">
+     * MONDRIAN-1161</a>. It verifies that two queries can run
+     * at the same time.
+     */
+    public void testConcurrentStatementRun_2() throws Exception {
+        // timeout is issued after 2 seconds so the test query needs to
+        // run for at least that long; it will because the query references
+        // a Udf that has a 1 ms sleep in it; and there are enough rows
+        // in the result that the Udf should execute > 2000 times
+        final TestContext tc = TestContext.instance().create(
+            null,
+            null,
+            null,
+            null,
+            "<UserDefinedFunction name='CountConcurrentUdf' className='"
+            + CountConcurrentUdf.class.getName()
+            + "'/>",
+            null);
+
+        final String query =
+            "WITH\n"
+            + "  MEMBER [Measures].[CountyThigny]\n"
+            + "    AS 'CountConcurrentUdf()'\n"
+            + "SELECT {[Measures].[CountyThigny]} ON COLUMNS,\n"
+            + "  {[Product].members} ON ROWS\n"
+            + "FROM [Sales]";
+
+        final ExecutorService es =
+            Executors.newCachedThreadPool(
+                new ThreadFactory() {
+                    public Thread newThread(Runnable r) {
+                        final Thread thread =
+                            Executors.defaultThreadFactory().newThread(r);
+                        thread.setName(
+                            "mondrian.test.BasicQueryTest.testConcurrentStatementRun_2");
+                        thread.setDaemon(true);
+                        return thread;
+                    }
+                });
+
+        // Submit a query twice.
+        Future<Result> task1 = es.submit(
+            new Callable<Result>() {
+                public Result call() throws Exception {
+                    return tc.executeQuery(query);
+                }
+            });
+        Future<Result> task2 = es.submit(
+            new Callable<Result>() {
+                public Result call() throws Exception {
+                    return tc.executeQuery(query);
+                }
+            });
+
+        // Let the backend run a bit
+        Thread.sleep(5000);
+
+        // There should be 2 queries running.
+        try {
+            assertEquals(2, CountConcurrentUdf.getCount());
+        } finally {
+            // cleanup and leave.
+            task1.cancel(true);
+            task2.cancel(true);
+            es.shutdownNow();
+        }
     }
 }
 

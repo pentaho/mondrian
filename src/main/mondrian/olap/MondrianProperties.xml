@@ -944,11 +944,33 @@ as expected. Defaults to 1000ms.</p>
         <Name>RolapConnectionShepherdNbThreads</Name>
         <Path>mondrian.rolap.maxQueryThreads</Path>
         <Description>
-<p>Maximum number of user threads per Mondrian server instance.
+<p>Maximum number of MDX query threads per Mondrian server instance.
 Defaults to 10.</p>
         </Description>
         <Type>int</Type>
         <Default>10</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>SegmentCacheManagerNumberSqlThreads</Name>
+        <Path>mondrian.rolap.maxSqlThreads</Path>
+        <Description>
+<p>Maximum number of threads per Mondrian server instance that
+are used to run SQL queries when populating segments.
+Defaults to 100.</p>
+        </Description>
+        <Type>int</Type>
+        <Default>100</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>SegmentCacheManagerNumberCacheThreads</Name>
+        <Path>mondrian.rolap.maxCacheThreads</Path>
+        <Description>
+<p>Maximum number of threads per Mondrian server instance that
+are used to run perform operations on the external caches.
+Defaults to 100.</p>
+        </Description>
+        <Type>int</Type>
+        <Default>100</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>IgnoreInvalidMembers</Name>
