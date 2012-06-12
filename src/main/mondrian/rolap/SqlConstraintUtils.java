@@ -865,14 +865,23 @@ public class SqlConstraintUtils {
             constraint = columnString + " is " + RolapUtil.sqlNullLiteral;
         } else {
             if (datatype.isNumeric()) {
-                // make sure it can be parsed
+                // A numeric data type deserves a numeric value.
                 try {
                     Double.valueOf(columnValue);
                 } catch (NumberFormatException e) {
-                    // fall back to
-                    //   numeric_column = 'string value'
-                    // even though it's extremely unlikely to match
-                    datatype = Dialect.Datatype.String;
+                    // Trying to equate a numeric column to a non-numeric value,
+                    // for example
+                    //
+                    //    WHERE int_column = 'Foo Bar'
+                    //
+                    // It's clearly impossible to match, so convert condition
+                    // to FALSE. We used to play games like
+                    //
+                    //   WHERE Upper(int_column) = Upper('Foo Bar')
+                    //
+                    // but Postgres in particular didn't like that. And who can
+                    // blame it.
+                    return RolapUtil.SQL_FALSE_LITERAL;
                 }
             }
             final StringBuilder buf = new StringBuilder();

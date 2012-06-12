@@ -37,7 +37,12 @@ public class JdbcStatisticsProvider implements StatisticsProvider {
             resultSet =
                 connection
                     .getMetaData()
-                    .getIndexInfo(catalog, schema, table, false, true);
+                    .getIndexInfo(
+                        dialect.rectifyCase(catalog),
+                        dialect.rectifyCase(schema),
+                        dialect.rectifyCase(table),
+                        false,
+                        true);
             int maxNonUnique = -1;
             while (resultSet.next()) {
                 final int type = resultSet.getInt(7); // "TYPE" column
@@ -90,7 +95,12 @@ public class JdbcStatisticsProvider implements StatisticsProvider {
             resultSet =
                 connection
                     .getMetaData()
-                    .getIndexInfo(catalog, schema, table, false, true);
+                    .getIndexInfo(
+                        dialect.rectifyCase(catalog),
+                        dialect.rectifyCase(schema),
+                        dialect.rectifyCase(table),
+                        false,
+                        true);
             while (resultSet.next()) {
                 int type = resultSet.getInt(7); // "TYPE" column
                 switch (type) {

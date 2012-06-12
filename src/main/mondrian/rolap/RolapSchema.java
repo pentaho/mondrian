@@ -191,11 +191,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
         internalServer.removeConnection(internalConnection);
         internalServer.removeStatement(
             internalConnection.getInternalStatement());
-        this.dialect =
-            quoteSql
-                ? internalConnection.dialect
-                : new JdbcDialectImpl.NonQuotingDialect(
-                    internalConnection.dialect);
+        this.dialect = internalConnection.dialect.withQuoting(quoteSql);
 
         this.aggTableManager = new AggTableManager(this);
         this.dataSourceChangeListener =

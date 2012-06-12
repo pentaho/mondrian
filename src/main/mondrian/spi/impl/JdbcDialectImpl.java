@@ -139,6 +139,22 @@ public class JdbcDialectImpl implements Dialect {
         this.unquotedIdentifierRegexp =
             Pattern.compile(
                 "[A-Za-z0-9_" + metaData.getExtraNameCharacters() + "]*");
+
+        // for future use
+        boolean supportsMixedCaseQuotedIdentifiers =
+            metaData.supportsMixedCaseQuotedIdentifiers();
+        boolean supportsMixedCaseUnquotedIdentifiers =
+            metaData.supportsMixedCaseIdentifiers();
+        Case quotedIdentifierCase =
+            metaData.storesUpperCaseQuotedIdentifiers() ? Case.UPPER
+                : metaData.storesLowerCaseQuotedIdentifiers() ? Case.LOWER
+                : metaData.storesMixedCaseQuotedIdentifiers() ? Case.MIXED
+                : Case.UNKNOWN;
+        Case unquotedIdentifierCase =
+            metaData.storesUpperCaseIdentifiers() ? Case.UPPER
+                : metaData.storesLowerCaseIdentifiers() ? Case.LOWER
+                : metaData.storesMixedCaseIdentifiers() ? Case.MIXED
+                : Case.UNKNOWN;
     }
 
     public DatabaseProduct getDatabaseProduct() {
@@ -485,19 +501,7 @@ public class JdbcDialectImpl implements Dialect {
         }
 
         if (valueList.isEmpty()) {
-            if (fromClause == null) {
-                fromClause = "where 1 = 0";
-            } else if (fromClause.contains(" where ")) {
-                fromClause += " and 1 = 0";
-            } else {
-                fromClause += " where 1 = 0";
-            }
-            return generateInlineGeneric(
-                columnNames,
-                columnTypes,
-                Collections.singletonList(new String[columnTypes.size()]),
-                fromClause,
-                cast);
+            return generateInlineEmpty(columnNames, columnTypes, fromClause, cast);
         }
         for (int i = 0; i < valueList.size(); i++) {
             if (i > 0) {
@@ -536,6 +540,27 @@ public class JdbcDialectImpl implements Dialect {
         return buf.toString();
     }
 
+    private String generateInlineEmpty(
+        List<String> columnNames,
+        List<String> columnTypes,
+        String fromClause,
+        boolean cast)
+    {
+        if (fromClause == null) {
+            fromClause = "where 1 = 0";
+        } else if (fromClause.contains(" where ")) {
+            fromClause += " and 1 = 0";
+        } else {
+            fromClause += " where 1 = 0";
+        }
+        return generateInlineGeneric(
+            columnNames,
+            columnTypes,
+            Collections.singletonList(new String[columnTypes.size()]),
+            fromClause,
+            cast);
+    }
+
     /**
      * Generates inline values list using ANSI 'VALUES' syntax.
      * For example,
@@ -567,6 +592,9 @@ public class JdbcDialectImpl implements Dialect {
         List<String[]> valueList,
         boolean cast)
     {
+        if (valueList.isEmpty()) {
+            return generateInlineEmpty(columnNames, columnTypes, null, cast);
+        }
         final StringBuilder buf = new StringBuilder();
         buf.append("SELECT * FROM (VALUES ");
         // Derby pads out strings to a common length, so we cast the
@@ -860,7 +888,19 @@ public class JdbcDialectImpl implements Dialect {
 
     public boolean needToQuote(String identifier) {
         return alwaysQuoteIdentifiers()
-            || !unquotedIdentifierRegexp.matcher(identifier).matches();
+            || !hasSpecialChars(identifier);
+    }
+
+    public Dialect withQuoting(boolean alwaysQuoteIdentifiers) {
+        return NonQuotingDialect.of(this, alwaysQuoteIdentifiers);
+    }
+
+    public boolean hasSpecialChars(String identifier) {
+        return unquotedIdentifierRegexp.matcher(identifier).matches();
+    }
+
+    public String rectifyCase(String identifier) {
+        return identifier;
     }
 
     public List<StatisticsProvider> getStatisticsProviders() {
@@ -1179,13 +1219,53 @@ public class JdbcDialectImpl implements Dialect {
      * Dialect that does not quote identifiers but otherwise behaves as its
      * underlying dialect.
      */
-    public static class NonQuotingDialect extends DelegatingDialect {
-        public NonQuotingDialect(Dialect dialect) {
+    private static final class NonQuotingDialect extends DelegatingDialect {
+        private final boolean alwaysQuoteIdentifiers;
+
+        private NonQuotingDialect(
+            Dialect dialect,
+            boolean alwaysQuoteIdentifiers)
+        {
             super(dialect);
+            this.alwaysQuoteIdentifiers = alwaysQuoteIdentifiers;
         }
 
+        static Dialect of(Dialect dialect, boolean alwaysQuoteIdentifiers) {
+            if (dialect.alwaysQuoteIdentifiers() == alwaysQuoteIdentifiers) {
+                return dialect;
+            }
+            if (dialect instanceof NonQuotingDialect) {
+                return ((NonQuotingDialect) dialect).dialect;
+            }
+            return new NonQuotingDialect(dialect, alwaysQuoteIdentifiers);
+        }
+
+        public Dialect withQuoting(boolean alwaysQuoteIdentifiers) {
+            return of(this, alwaysQuoteIdentifiers);
+        }
+
+        @Override
         public boolean alwaysQuoteIdentifiers() {
-            return false;
+            return alwaysQuoteIdentifiers;
+        }
+
+        @Override
+        public boolean needToQuote(String identifier) {
+            return alwaysQuoteIdentifiers()
+                || !hasSpecialChars(identifier);
+        }
+
+        @Override
+        public String rectifyCase(String identifier) {
+            if (alwaysQuoteIdentifiers()) {
+                return identifier;
+            } else if (identifier == null) {
+                return null;
+            } else if (needToQuote(identifier)) {
+                return identifier;
+            } else {
+                return identifier.toUpperCase();
+            }
         }
 
         @Override
@@ -1222,6 +1302,11 @@ public class JdbcDialectImpl implements Dialect {
                 buf,
                 names);
         }
+    }
+
+    // for future use
+    private enum Case {
+        LOWER, MIXED, UNKNOWN, UPPER
     }
 }
 

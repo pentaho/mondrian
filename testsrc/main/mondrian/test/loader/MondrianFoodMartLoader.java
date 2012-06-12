@@ -12,7 +12,6 @@ package mondrian.test.loader;
 
 import mondrian.olap.Util;
 import mondrian.resource.MondrianResource;
-import mondrian.rolap.RolapUtil;
 import mondrian.spi.Dialect;
 import mondrian.spi.DialectManager;
 
@@ -80,6 +79,7 @@ import java.util.zip.ZipFile;
  *    -jdbcDrivers="org.firebirdsql.jdbc.FBDriver"
  *    -inputFile="/mondrian/demo/FoodMartCreateData.sql"
  *    -outputJdbcURL="jdbc:firebirdsql:localhost/3050:/mondrian/foodmart.gdb"
+ *    -outputQuoted=true
  *    -inputJdbcUser=SYSDBA
  *    -inputJdbcPassword=masterkey
  * </code></blockquote>
@@ -96,6 +96,11 @@ public class MondrianFoodMartLoader {
     private static final Logger LOGGER =
         Logger.getLogger(MondrianFoodMartLoader.class);
     private static final String nl = Util.nl;
+
+    /**
+     * Names of classes of drivers we've loaded (or have tried to load).
+     */
+    private static final Set<String> LOADED_DRIVERS = new HashSet<String>();
 
     // Fields
 
@@ -146,6 +151,7 @@ public class MondrianFoodMartLoader {
     private Dialect dialect;
     private boolean infobrightLoad;
     private long lastUpdate = 0;
+    private boolean quoted = true;
 
     /**
      * Creates an instance of the loader and parses the command-line options.
@@ -200,6 +206,9 @@ public class MondrianFoodMartLoader {
                 exclude = Pattern.compile(arg.substring("-exclude=".length()));
             } else if (arg.startsWith("-jdbcDrivers=")) {
                 jdbcDrivers = arg.substring("-jdbcDrivers=".length());
+            } else if (arg.startsWith("-outputQuoted=")) {
+                quoted =
+                    Boolean.valueOf(arg.substring("-outputQuoted=".length()));
             } else if (arg.startsWith("-outputJdbcURL=")) {
                 jdbcURL = arg.substring("-outputJdbcURL=".length());
             } else if (arg.startsWith("-outputJdbcUser=")) {
@@ -347,11 +356,39 @@ public class MondrianFoodMartLoader {
     }
 
     /**
+     * Loads a set of JDBC drivers.
+     *
+     * <p>(Copied from RolapUtil, to reduce dependencies.)</p>
+     *
+     * @param jdbcDrivers A string consisting of the comma-separated names
+     *  of JDBC driver classes. For example
+     *  <code>"sun.jdbc.odbc.JdbcOdbcDriver,com.mysql.jdbc.Driver"</code>.
+     */
+    static synchronized void loadDrivers(String jdbcDrivers) {
+        StringTokenizer tok = new StringTokenizer(jdbcDrivers, ",");
+        while (tok.hasMoreTokens()) {
+            String jdbcDriver = tok.nextToken();
+            if (LOADED_DRIVERS.add(jdbcDriver)) {
+                try {
+                    Class.forName(jdbcDriver);
+                    LOGGER.info(
+                        "Mondrian: JDBC driver "
+                            + jdbcDriver + " loaded successfully");
+                } catch (ClassNotFoundException e) {
+                    LOGGER.warn(
+                        "Mondrian: Warning: JDBC driver "
+                            + jdbcDriver + " not found");
+                }
+            }
+        }
+    }
+
+    /**
      * Load output from the input, optionally creating tables,
      * populating tables and creating indexes
      */
     private void load() throws Exception {
-        RolapUtil.loadDrivers(jdbcDrivers);
+        loadDrivers(jdbcDrivers);
 
         if (userName == null) {
             connection = DriverManager.getConnection(jdbcURL);
@@ -377,11 +414,13 @@ public class MondrianFoodMartLoader {
             "Output connection is " + productName
             + ", version: " + version);
 
-        dialect = DialectManager.createDialect(null, connection);
+        this.dialect = DialectManager.createDialect(null, connection)
+            .withQuoting(quoted);
 
         LOGGER.info(
             "Mondrian Dialect is " + dialect
-            + ", detected database product: " + dialect.getDatabaseProduct());
+            + ", detected database product: " + dialect.getDatabaseProduct()
+            + ", identifier quoting: " + (quoted ? "ON" : "OFF"));
 
         if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.INFOBRIGHT
             && indexes)
@@ -602,7 +641,9 @@ public class MondrianFoodMartLoader {
                     quotedColumnNames =
                         columnNames.replaceAll(
                             quoteChar,
-                            dialect.getQuoteIdentifierString());
+                            quoted
+                                ? dialect.getQuoteIdentifierString()
+                                : "");
                     String[] splitColumnNames =
                         columnNames.replaceAll(quoteChar, "")
                             .replaceAll(" ", "").split(",");
@@ -894,7 +935,10 @@ public class MondrianFoodMartLoader {
             StringBuilder buf = new StringBuilder();
 
             String fromQuoteChar = null;
-            String toQuoteChar = dialect.getQuoteIdentifierString();
+            final String toQuoteChar =
+                quoted
+                    ? dialect.getQuoteIdentifierString()
+                    : "";
             while ((line = bufferedReader.readLine()) != null) {
                 ++lineNumber;
 

@@ -1080,6 +1080,28 @@ public class DialectTest extends TestCase {
             return false;
         }
     }
+
+    public void testRectifyCase() {
+        Dialect dialect = getDialect();
+        Dialect dialectSans = getDialect().withQuoting(false);
+        switch (dialect.getDatabaseProduct()) {
+        case ORACLE:
+        case MYSQL:
+        case POSTGRESQL:
+            assertEquals("EMP", dialectSans.rectifyCase("Emp"));
+            assertEquals("EMP", dialectSans.rectifyCase("emp"));
+            assertEquals("EMP", dialectSans.rectifyCase("EMP"));
+            assertEquals(
+                "Emp with Space", dialectSans.rectifyCase("Emp with Space"));
+            break;
+        }
+        Dialect dialectWith = getDialect().withQuoting(true);
+        assertEquals("Emp", dialectWith.rectifyCase("Emp"));
+        assertEquals("emp", dialectWith.rectifyCase("emp"));
+        assertEquals("EMP", dialectWith.rectifyCase("EMP"));
+        assertEquals(
+            "Emp with Space", dialectWith.rectifyCase("Emp with Space"));
+    }
 }
 
 // End DialectTest.java

@@ -814,8 +814,57 @@ public interface Dialect {
 
     /**
      * Returns whether an identifier needs to be quoted.
+     *
+     * <p>The default (and typical) implementation is</p>
+     *
+     * <blockquote>return {@link #alwaysQuoteIdentifiers}()
+     * || !{@link #hasSpecialChars}(identifier)</blockquote></blockquote>
      */
     boolean needToQuote(String identifier);
+
+    /**
+     * Returns a dialect identical to this dialect except that identifier
+     * quoting is enabled or disabled.
+     *
+     * @see #alwaysQuoteIdentifiers()
+     */
+    Dialect withQuoting(boolean alwaysQuoteIdentifiers);
+
+    /**
+     * Returns whether an identifier has characters other than the ones allowed
+     * in an unquoted identifier, per
+     * {@link java.sql.DatabaseMetaData#getExtraNameCharacters()}.
+     *
+     * <p>The dialect will always quote such identifiers (as long as the
+     * database supports quoting).</p>
+     *
+     * @param identifier Identifier
+     * @return true if so; false otherwise
+     */
+    boolean hasSpecialChars(String identifier);
+
+    /**
+     * Converts an identifier, as written unquoted, into the form it will
+     * appear in the catalog.
+     *
+     * <p>For example, in Oracle if you write</p>
+     *
+     * <blockquote><code>CREATE TABLE Emp (empno INT);</code></blockquote>
+     *
+     * <p>the catalog will contain a tables called "EMP" anda column called
+     * "EMPNO". Therefore
+     * <code>rectifyCase(&quot;Emp&quot;)</code> returns "EMP"
+     * and
+     * <code>rectifyCase(&quot;empno&quot;)</code> returns "EMPNO".</p>
+     *
+     * <p>For the convenience of the caller, <code>rectifyCase(null)</code>
+     * returns <code>null</code>.</p>
+     *
+     * @param identifier Identifier (or null)
+     * @return Identifier converted into the case in which it is stored in the
+     *     catalog
+     */
+    String rectifyCase(String identifier);
 
     /**
      * Enumeration of common database types.

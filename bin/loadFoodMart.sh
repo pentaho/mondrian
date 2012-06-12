@@ -5,7 +5,7 @@
 # http://www.eclipse.org/legal/epl-v10.html.
 # You must accept the terms of that agreement to use this software.
 #
-# Copyright (C) 2008-2011 Pentaho and others
+# Copyright (C) 2008-2012 Pentaho and others
 # All Rights Reserved.
 #
 # Sample scripts to load Mondrian's database for various databases.
@@ -15,10 +15,13 @@ Linux|Darwin) PS=: ;;
 *) PS=\; ;;
 esac
 
+outputQuoted=false
+
 export CP="lib/mondrian.jar"
 export CP="${CP}${PS}lib/olap4j.jar"
 export CP="${CP}${PS}lib/log4j.jar"
 export CP="${CP}${PS}lib/commons-logging.jar"
+export CP="${CP}${PS}lib/commons-collections.jar"
 export CP="${CP}${PS}lib/eigenbase-properties.jar"
 export CP="${CP}${PS}lib/eigenbase-xom.jar"
 export CP="${CP}${PS}lib/eigenbase-resgen.jar"
@@ -52,50 +55,55 @@ oracle() {
     # try 'ojdbc5.jar' on JDK1.5;
     # try 'ojdbc14.jar' on JDK1.4 or Oracle 10 and earlier.
     java -cp "${CP}${PS}${ORACLE_HOME}/jdbc/lib/ojdbc6.jar" \
-         mondrian.test.loader.MondrianFoodMartLoader \
-         -verbose -aggregates -tables -data -indexes \
-         -jdbcDrivers=oracle.jdbc.OracleDriver \
-         -inputFile=demo/FoodMartCreateData.sql \
-         -outputJdbcURL="jdbc:oracle:thin:foodmart/foodmart@//localhost:1521/XE"
+        mondrian.test.loader.MondrianFoodMartLoader \
+        -verbose -aggregates -tables -data -indexes \
+        -jdbcDrivers=oracle.jdbc.OracleDriver \
+        -inputFile=demo/FoodMartCreateData.sql \
+        -outputQuoted=${outputQuoted} \
+        -outputJdbcURL="jdbc:oracle:thin:foodmart/foodmart@//localhost:1521/XE"
 }
 
 # Load into Oracle, creating dimension tables first, then trickling data into
 # fact tables.
 oracleTrickle() {
     java -cp "${CP}${PS}${ORACLE_HOME}/jdbc/lib/ojdbc6.jar" \
-         mondrian.test.loader.MondrianFoodMartLoader \
-         -verbose -tables -indexes -data -exclude=sales_fact_1997 \
-         -jdbcDrivers=oracle.jdbc.OracleDriver \
-         -inputJdbcURL="jdbc:oracle:thin:foodmart/foodmart@//localhost:1521/XE" \
-         -outputJdbcURL="jdbc:oracle:thin:slurpmart/slurpmart@//localhost:1521/XE"
+        mondrian.test.loader.MondrianFoodMartLoader \
+        -verbose -tables -indexes -data -exclude=sales_fact_1997 \
+        -jdbcDrivers=oracle.jdbc.OracleDriver \
+        -inputJdbcURL="jdbc:oracle:thin:foodmart/foodmart@//localhost:1521/XE" \
+        -outputQuoted=${outputQuoted} \
+        -outputJdbcURL="jdbc:oracle:thin:slurpmart/slurpmart@//localhost:1521/XE"
 
     # Write 10 rows each second into the sales fact table.
     java -cp "${CP}${PS}${ORACLE_HOME}/jdbc/lib/ojdbc6.jar" \
-         mondrian.test.loader.MondrianFoodMartLoader \
-         -verbose -tables -indexes -data -pauseMillis=100 -include=sales_fact_1997 \
-         -jdbcDrivers=oracle.jdbc.OracleDriver \
-         -inputJdbcURL="jdbc:oracle:thin:foodmart/foodmart@//localhost:1521/XE" \
-         -outputJdbcBatchSize=100 \
-         -outputJdbcURL="jdbc:oracle:thin:slurpmart/slurpmart@//localhost:1521/XE"
+        mondrian.test.loader.MondrianFoodMartLoader \
+        -verbose -tables -indexes -data -pauseMillis=100 -include=sales_fact_1997 \
+        -jdbcDrivers=oracle.jdbc.OracleDriver \
+        -inputJdbcURL="jdbc:oracle:thin:foodmart/foodmart@//localhost:1521/XE" \
+        -outputQuoted=${outputQuoted} \
+        -outputJdbcBatchSize=100 \
+        -outputJdbcURL="jdbc:oracle:thin:slurpmart/slurpmart@//localhost:1521/XE"
 }
 
 mysql() {
     java -cp "${CP}${PS}/usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar" \
-         mondrian.test.loader.MondrianFoodMartLoader \
-         -verbose -aggregates -tables -data -indexes \
-         -jdbcDrivers=com.mysql.jdbc.Driver \
-         -inputFile=demo/FoodMartCreateData.sql \
-         -outputJdbcURL="jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart"
+        mondrian.test.loader.MondrianFoodMartLoader \
+        -verbose -aggregates -tables -data -indexes \
+        -jdbcDrivers=com.mysql.jdbc.Driver \
+        -inputFile=demo/FoodMartCreateData.sql \
+        -outputQuoted=${outputQuoted} \
+        -outputJdbcURL="jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart"
 }
 
 infobright() {
     # As mysql, but '-indexes' option removed because infobright doesn't support them.
     java -cp "${CP}${PS}/usr/local/mysql-connector-java-3.1.12/mysql-connector-java-3.1.12-bin.jar" \
-         mondrian.test.loader.MondrianFoodMartLoader \
-         -verbose -aggregates -tables -data \
-         -jdbcDrivers=com.mysql.jdbc.Driver \
-         -inputFile=demo/FoodMartCreateData.sql \
-         -outputJdbcURL="jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart&characterEncoding=UTF-8"
+        mondrian.test.loader.MondrianFoodMartLoader \
+        -verbose -aggregates -tables -data \
+        -jdbcDrivers=com.mysql.jdbc.Driver \
+        -inputFile=demo/FoodMartCreateData.sql \
+        -outputQuoted=${outputQuoted} \
+        -outputJdbcURL="jdbc:mysql://localhost/foodmart?user=foodmart&password=foodmart&characterEncoding=UTF-8"
 }
 
 # Load PostgreSQL.
@@ -110,13 +118,14 @@ infobright() {
 #   $ sudo -u postgres createdb -O foodmart foodmart
 postgresql() {
     java -verbose -cp "${CP}${PS}/usr/share/java/postgresql.jar" \
-         mondrian.test.loader.MondrianFoodMartLoader \
-         -verbose -tables -data -indexes \
-         -jdbcDrivers="org.postgresql.Driver" \
-         -inputFile=demo/FoodMartCreateData.sql \
-         -outputJdbcURL="jdbc:postgresql://localhost/foodmart" \
-         -outputJdbcUser=foodmart \
-         -outputJdbcPassword=foodmart
+        mondrian.test.loader.MondrianFoodMartLoader \
+        -verbose -tables -data -indexes \
+        -jdbcDrivers="org.postgresql.Driver" \
+        -inputFile=demo/FoodMartCreateData.sql \
+        -outputQuoted=${outputQuoted} \
+        -outputJdbcURL="jdbc:postgresql://localhost/foodmart" \
+        -outputJdbcUser=foodmart \
+        -outputJdbcPassword=foodmart
 }
 
 # Load farrago (a LucidDB variant)
@@ -126,6 +135,7 @@ farrago() {
         -verbose -aggregates -tables -data -indexes \
         -jdbcDrivers=net.sf.farrago.client.FarragoVjdbcClientDriver \
         -inputFile=demo/FoodMartCreateData.sql \
+        -outputQuoted=${outputQuoted} \
         -outputJdbcURL="jdbc:farrago:rmi://localhost"
 }
 
@@ -147,6 +157,7 @@ luciddb() {
         -verbose -aggregates -tables -data -indexes -analyze \
         -jdbcDrivers=org.luciddb.jdbc.LucidDbClientDriver \
         -inputFile=demo/FoodMartCreateData.sql \
+        -outputQuoted=${outputQuoted} \
         -outputJdbcURL="jdbc:luciddb:http://localhost;schema=FOODMART" \
         -outputJdbcUser="foodmart" \
         -outputJdbcPassword="foodmart"
@@ -162,6 +173,7 @@ teradata() {
         -verbose -tables -data -indexes \
         -jdbcDrivers=com.ncr.teradata.TeraDriver \
         -inputFile=demo/FoodMartCreateData.sql \
+        -outputQuoted=${outputQuoted} \
         -outputJdbcURL="jdbc:teradata://localhost/foodmart" \
         -outputJdbcUser="tduser" \
         -outputJdbcPassword="tduser"
@@ -175,6 +187,7 @@ hsqldb() {
         -verbose -tables -data -indexes \
         -jdbcDrivers=org.hsqldb.jdbcDriver \
         -inputFile=demo/FoodMartCreateData.sql \
+        -outputQuoted=${outputQuoted} \
         -outputJdbcBatchSize=1 \
         -outputJdbcURL="jdbc:hsqldb:file:demo/hsqldb/foodmart" \
         -outputJdbcUser="sa" \

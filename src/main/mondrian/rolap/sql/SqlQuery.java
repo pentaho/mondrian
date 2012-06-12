@@ -635,6 +635,15 @@ public class SqlQuery {
         return Pair.of(toString(), types);
     }
 
+    /**
+     * Returns whether it is impossible for the query to ever return any rows.
+     *
+     * @return true if so; false otherwise
+     */
+    public boolean isUnsatisfiable() {
+        return where.contains(RolapUtil.SQL_FALSE_LITERAL);
+    }
+
     private static class JoinOnClause {
         private final String condition;
         private final String left;

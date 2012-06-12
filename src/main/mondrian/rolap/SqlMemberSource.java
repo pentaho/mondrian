@@ -580,6 +580,8 @@ class SqlMemberSource
      * virtual cubes, it is only called on regular cubes.
      *
      * <p>See also {@link SqlTupleReader#makeLevelMembersSql}.
+     *
+     * @return Query, or null if query will never return any rows
      */
     String makeChildMemberSql(
         RolapMember member,
@@ -674,6 +676,9 @@ class SqlMemberSource
             }
         }
 
+        if (sqlQuery.isUnsatisfiable()) {
+            return null;
+        }
         return projectProperties(
             layoutBuilder, sqlQuery, queryBuilder, level,
             level.attribute.getProperties());
@@ -963,6 +968,9 @@ class SqlMemberSource
                 sql = makeChildMemberSql(
                     parentMember, constraint, layoutBuilder);
             }
+        }
+        if (sql == null) {
+            return;
         }
         final List<SqlStatement.Type> types = layoutBuilder.types;
         SqlStatement stmt =

@@ -1349,12 +1349,17 @@ public class Util extends XOMUtil {
         // If the first level is 'all', lookup member at second level. For
         // example, they could say '[USA]' instead of '[(All
         // Customers)].[USA]'.
-        return (rootMembers.size() > 0 && rootMembers.get(0).isAll())
-            ? reader.lookupMemberChildByName(
-                rootMembers.get(0),
-                memberName,
-                matchType)
-            : null;
+        if (rootMembers.size() <= 0 || !rootMembers.get(0).isAll()) {
+            return null;
+        }
+
+        // REVIEW: Since we look up root members frequently -- whenever we
+        // resolve an MDX name -- it would probably be better to retrieve
+        // all root members, not just the one by a particular name.
+        return reader.lookupMemberChildByName(
+            rootMembers.get(0),
+            memberName,
+            matchType);
     }
 
     /**

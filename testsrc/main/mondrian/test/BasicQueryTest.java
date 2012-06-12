@@ -2689,6 +2689,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * "Small negative numbers cause exceptions w 2-section format".
      */
     public void testFormatOfNil() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.formatTest as '0.000001',\n"
             + " FORMAT_STRING='#.##;(#.##)' \n"
@@ -3718,6 +3721,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * "Problem with the MID function getting last character in a string."</a>.
      */
     public void testMid() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with\n"
             + "member measures.x as Mid('yahoo',5, 1)\n"
@@ -5564,6 +5570,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testOverrideDimension() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member  [Gender].[test] as '\n"
             + "  aggregate(\n"
@@ -5841,6 +5850,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testFormatInheritance() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.foo as 'measures.bar' "
             + "member measures.bar as "
@@ -5853,6 +5865,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testFormatInheritanceWithIIF() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.foo as 'measures.bar' "
             + "member measures.bar as "
@@ -5869,6 +5884,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * neither [unit sales] nor [customer count] format is used.
      */
     public void testFormatInheritanceWorksWithFirstFormatItFinds() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.foo as 'measures.bar' "
             + "member measures.bar as "
@@ -5932,9 +5950,14 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     /**
-     * This tests a fix for bug #1603653
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-244">MONDRIAN-244,
+     * "Avg - cast problem in Mondrian 2.1.1"</a>.
      */
     public void testAvgCastProblem() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.bar as "
             + "'iif(measures.profit>3000,min([Education Level].[Education Level].Members),min([Education Level].[Education Level].Members))' "
@@ -5964,6 +5987,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * first does not have one.
      */
     public void testFormatInheritanceUseSecondIfFirstHasNoFormat() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.foo as 'measures.bar+measures.blah'"
             + " member measures.bar as '10'"
@@ -5979,6 +6005,9 @@ public class BasicQueryTest extends FoodMartTestCase {
      * format of the first member that has a valid format is used.
      */
     public void testFormatInheritanceUseFirstValid() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "with member measures.foo as '13+31*measures.[Unit Sales]/"
             + "iif(measures.profit>0,measures.profit,measures.[Customer Count])'"
@@ -6038,6 +6067,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testGetCaptionUsingMemberDotCaption() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "SELECT Filter(Stores.allmembers, "
             + "[stores].currentMember.caption = \"USA\") on 0 FROM SALES",
@@ -6049,6 +6081,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testGetCaptionUsingMemberDotPropertiesCaption() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         assertQueryReturns(
             "SELECT Filter(Stores.allmembers, "
             + "[stores].currentMember.properties(\"caption\") = \"USA\") "
@@ -6089,6 +6124,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testDefaultMeasureInCube() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         TestContext testContext = defaultMeasureContext("Supply Time");
         String queryWithoutFilter =
             "select stores.members on 0 from "
@@ -6480,10 +6518,10 @@ public class BasicQueryTest extends FoodMartTestCase {
         assertQueryReturns(
             "WITH\n"
             + "MEMBER [Gender].agg "
-            + "AS 'IIF(1=1, ([Gender].[All Gender],measures.[unit sales]),"
+            + "AS 'IIF(1=1, ([Gender].[All Gender],Measures.[unit sales]),"
             + "([Gender].[All Gender]))', SOLVE_ORDER = 4 "
             + "SELECT {[Measures].[unit sales]} ON 0, "
-            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6502,9 +6540,9 @@ public class BasicQueryTest extends FoodMartTestCase {
             "WITH\n"
             + "MEMBER [Gender].agg "
             + "AS 'IIF(1=1, ([Gender].[All Gender]),"
-            + "([Gender].[All Gender],measures.[unit sales]))', SOLVE_ORDER = 4 "
+            + "([Gender].[All Gender],Measures.[unit sales]))', SOLVE_ORDER = 4 "
             + "SELECT {[Measures].[unit sales]} ON 0, "
-            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6525,7 +6563,8 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "AS 'IIF(1=1, ([Gender].[All Gender]),"
             + "([Gender].[All Gender],[Time].[1997]))', SOLVE_ORDER = 4 "
             + "SELECT {[Measures].[unit sales]} ON 0, "
-            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 "
+            + "FROM [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6548,7 +6587,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "([Gender].[All Gender]))', "
             + "SOLVE_ORDER = 4 "
             + "SELECT {[Measures].[unit sales]} ON 0, "
-            + "{([Gender].agg)} on 1 FROM sales",
+            + "{([Gender].agg)} on 1 FROM [Sales]",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6563,10 +6602,10 @@ public class BasicQueryTest extends FoodMartTestCase {
             "WITH\n"
             + "MEMBER [Gender].agg "
             + "AS 'IIF(Measures.currentMember is [Measures].[Unit Sales], "
-            + "([Store].[All Stores],[Gender].[All Gender],measures.[unit sales]),"
+            + "([Store].[All Stores],[Gender].[All Gender],Measures.[unit sales]),"
             + "([Store].[All Stores],[Gender].[All Gender]))', SOLVE_ORDER = 4 "
-            + "SELECT {[Measures].[unit sales]} ON 0, "
-            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            + "SELECT {[Measures].[Unit Sales]} ON 0, "
+            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6585,10 +6624,10 @@ public class BasicQueryTest extends FoodMartTestCase {
             "WITH\n"
             + "MEMBER [Gender].agg "
             + "AS 'IIF(Measures.currentMember is [Measures].[Unit Sales], "
-            + "([Store].[All Stores],[Gender].[M],measures.[unit sales]),"
+            + "([Store].[All Stores],[Gender].[M],Measures.[unit sales]),"
             + "([Gender].[M],[Store].[All Stores]))', SOLVE_ORDER = 4 "
             + "SELECT {[Measures].[unit sales]} ON 0, "
-            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM sales",
+            + "{{[Gender].[Gender].MEMBERS},{([Gender].agg)}} on 1 FROM Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"
@@ -6603,6 +6642,9 @@ public class BasicQueryTest extends FoodMartTestCase {
     }
 
     public void testEmptyAggregationListDueToFilterDoesNotThrowException() {
+        if (props.CaseSensitive.get()) {
+            return;
+        }
         propSaver.set(props.IgnoreMeasureForNonJoiningDimension, true);
         assertQueryReturns(
             "WITH \n"
@@ -6903,7 +6945,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "  }"
             + "  on 0,"
             + "  [Measures].[units shipped] on 1"
-            + " from warehouse";
+            + " from Warehouse";
         assertQueryReturns(
             mdx,
             "Axis #0:\n"
@@ -6926,7 +6968,7 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "<Formula>([Customer].[Gender].LastChild)</Formula>"
             + "</CalculatedMember>");
         testContext.assertQueryReturns(
-            "select {[Gender].[M]} on 0 from sales",
+            "select {[Gender].[M]} on 0 from Sales",
             "Axis #0:\n"
             + "{}\n"
             + "Axis #1:\n"

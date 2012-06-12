@@ -244,6 +244,18 @@ public class DelegatingDialect implements Dialect {
     public boolean needToQuote(String identifier) {
         return dialect.needToQuote(identifier);
     }
+
+    public boolean hasSpecialChars(String identifier) {
+        return dialect.hasSpecialChars(identifier);
+    }
+
+    public String rectifyCase(String identifier) {
+        return dialect.rectifyCase(identifier);
+    }
+
+    public Dialect withQuoting(boolean alwaysQuoteIdentifiers) {
+        return dialect.withQuoting(alwaysQuoteIdentifiers);
+    }
 }
 
 // End DelegatingDialect.java
