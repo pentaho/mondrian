@@ -492,7 +492,11 @@ public class BatchTestCase extends FoodMartTestCase {
                 if (bomb == null) {
                     fail("expected query [" + sql + "] did not occur");
                 }
-                assertEquals(replaceQuotes(sql), replaceQuotes(bomb.sql));
+                assertEquals(
+                    replaceQuotes(
+                        sql.replaceAll("\r\n", "\n")),
+                    replaceQuotes(
+                        bomb.sql.replaceAll("\r\n", "\n")));
             }
         }
 
@@ -1015,13 +1019,15 @@ public class BatchTestCase extends FoodMartTestCase {
         private final String trigger;
 
         public TriggerHook(String trigger) {
-            this.trigger = trigger;
+            this.trigger = trigger.replaceAll("\r\n", "\n");
         }
 
         private boolean matchTrigger(String sql) {
             if (trigger == null) {
                 return true;
             }
+            // Cleanup the endlines.
+            sql = sql.replaceAll("\r\n", "\n");
             // different versions of mysql drivers use different quoting, so
             // ignore quotes
             String s = replaceQuotes(sql);

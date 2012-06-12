@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.resource.MondrianResource;
 import mondrian.server.Execution;
 import mondrian.util.Pair;
 
@@ -41,7 +42,17 @@ public class RolapResultShepherd {
         Util.getExecutorService(
             MondrianProperties.instance()
                 .RolapConnectionShepherdNbThreads.get(),
-            "mondrian.rolap.RolapResultShepherd$executor");
+            0, 1,
+            "mondrian.rolap.RolapResultShepherd$executor",
+            new RejectedExecutionHandler() {
+                public void rejectedExecution(
+                    Runnable r,
+                    ThreadPoolExecutor executor)
+                {
+                    throw MondrianResource.instance()
+                        .QueryLimitReached.ex();
+                }
+            });
 
     /**
      * List of tasks that should be monitored by the shepherd thread.
