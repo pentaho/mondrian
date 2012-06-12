@@ -211,23 +211,7 @@ public class Util extends XOMUtil {
     }
 
     /**
-     * Creates an {@link ExecutorService} object backed by a thread pool
-     * with a fixed number of threads..
-     * @param maxNbThreads Maximum number of concurrent
-     * threads.
-     * @param name The name of the threads.
-     * @return An executor service preconfigured.
-     */
-    public static ExecutorService getExecutorService(
-        final int maxNbThreads,
-        String name)
-    {
-        return getExecutorService(maxNbThreads, 0, 1, -1, name);
-    }
-
-    /**
-     * Creates an {@link ExecutorService} object backed by a thread pool
-     * with a fixed number of threads..
+     * Creates an {@link ExecutorService} object backed by a thread pool.
      * @param maximumPoolSize Maximum number of concurrent
      * threads.
      * @param corePoolSize Minimum number of concurrent
@@ -235,32 +219,26 @@ public class Util extends XOMUtil {
      * idle.
      * @param keepAliveTime Time, in seconds, for which to
      * keep alive unused threads.
-     * @param queueLength Maximum number of tasks that can be
-     * put in the queue of tasks to be executed. <code>-1</code>
-     * means no limit.
      * @param name The name of the threads.
+     * @param rejectionPolicy The rejection policy to enforce.
      * @return An executor service preconfigured.
      */
     public static ExecutorService getExecutorService(
         int maximumPoolSize,
         int corePoolSize,
         long keepAliveTime,
-        int queueLength,
-        final String name)
+        final String name,
+        RejectedExecutionHandler rejectionPolicy)
     {
         if (Util.PreJdk16) {
             // On JDK1.5, if you specify corePoolSize=0, nothing gets executed.
             // Bummer.
             corePoolSize = Math.max(corePoolSize, 1);
         }
-        return new ThreadPoolExecutor(
-            corePoolSize,
-            maximumPoolSize,
-            keepAliveTime,
-            TimeUnit.SECONDS,
-            queueLength < 0
-                ? new LinkedBlockingQueue<Runnable>()
-                : new ArrayBlockingQueue<Runnable>(queueLength),
+
+        // We must create a factory where the threads
+        // have the right name and are marked as daemon threads.
+        final ThreadFactory factory =
             new ThreadFactory() {
                 public Thread newThread(Runnable r) {
                     final Thread t =
@@ -269,7 +247,36 @@ public class Util extends XOMUtil {
                     t.setName(name);
                     return t;
                 }
-            });
+            };
+
+        // Ok, create the executor
+        final ThreadPoolExecutor executor =
+            new ThreadPoolExecutor(
+                corePoolSize,
+                maximumPoolSize > 0
+                    ? maximumPoolSize
+                    : Integer.MAX_VALUE,
+                keepAliveTime,
+                TimeUnit.SECONDS,
+                // we use a sync queue. any other type of queue
+                // will prevent the tasks from running concurrently
+                // because the executors API requires blocking queues.
+                // Important to pass true here. This makes the
+                // order of tasks deterministic.
+                // TODO Write a non-blocking queue which implements
+                // the blocking queue API so we can pass that to the
+                // executor.
+                new SynchronousQueue<Runnable>(true),
+                factory);
+
+        // Set the rejection policy if required.
+        if (rejectionPolicy != null) {
+            executor.setRejectedExecutionHandler(
+                rejectionPolicy);
+        }
+
+        // Done
+        return executor;
     }
 
     /**
