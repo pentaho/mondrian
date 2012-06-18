@@ -163,6 +163,7 @@ class UnionRoleImpl implements Role {
      */
     private class UnionHierarchyAccessImpl implements HierarchyAccess {
         private final List<HierarchyAccess> list;
+        private final Hierarchy hierarchy;
 
         /**
          * Creates a UnionHierarchyAccessImpl.
@@ -174,7 +175,7 @@ class UnionRoleImpl implements Role {
             Hierarchy hierarchy,
             List<HierarchyAccess> list)
         {
-            Util.discard(hierarchy);
+            this.hierarchy = hierarchy;
             this.list = list;
         }
 
@@ -192,8 +193,17 @@ class UnionRoleImpl implements Role {
         }
 
         public int getTopLevelDepth() {
+            if (!isTopLeveRestricted()) {
+                // We don't restrict the top level.
+                // Return 0 for root.
+                return 0;
+            }
             int access = Integer.MAX_VALUE;
             for (HierarchyAccess hierarchyAccess : list) {
+                if (hierarchyAccess.getTopLevelDepth() == 0) {
+                    // No restrictions. Skip.
+                    continue;
+                }
                 access =
                     Math.min(
                         access,
@@ -206,8 +216,18 @@ class UnionRoleImpl implements Role {
         }
 
         public int getBottomLevelDepth() {
+            if (!isBottomLeveRestricted()) {
+                // We don't restrict the bottom level.
+                return list.get(0).getBottomLevelDepth();
+            }
             int access = -1;
             for (HierarchyAccess hierarchyAccess : list) {
+                if (hierarchyAccess.getBottomLevelDepth()
+                    == hierarchy.getLevels().length)
+                {
+                    // No restrictions. Skip.
+                    continue;
+                }
                 access =
                     Math.max(
                         access,
@@ -244,6 +264,26 @@ class UnionRoleImpl implements Role {
                 }
             }
             return true;
+        }
+
+        private boolean isTopLeveRestricted() {
+            for (HierarchyAccess hierarchyAccess : list) {
+                if (hierarchyAccess.getTopLevelDepth() > 0) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean isBottomLeveRestricted() {
+            for (HierarchyAccess hierarchyAccess : list) {
+                if (hierarchyAccess.getBottomLevelDepth()
+                    == hierarchy.getLevels().length)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }
