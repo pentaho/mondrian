@@ -305,6 +305,11 @@ public class RolapSchemaLoader {
         final String metamodelVersion =
             def.getAttribute("metamodelVersion");
         if (metamodelVersion == null) {
+            for (DOMWrapper wrapper : def.getChildren()) {
+                if ("PhysicalSchema".equals(wrapper.getTagName())) {
+                    return false;
+                }
+            }
             return true;
         }
         final String[] versionParts = metamodelVersion.split("\\.");
@@ -495,7 +500,7 @@ public class RolapSchemaLoader {
         List<RolapSchema.UnresolvedColumn> unresolvedColumnList =
             new ArrayList<RolapSchema.UnresolvedColumn>();
         for (MondrianDef.Relation relation : Util.filter(
-            xmlPhysicalSchema.childArray, MondrianDef.Relation.class))
+            xmlPhysicalSchema.children, MondrianDef.Relation.class))
         {
             final String alias = relation.getAlias();
             final RolapSchema.PhysRelationImpl physTable;
@@ -549,7 +554,7 @@ public class RolapSchemaLoader {
         List<UnresolvedLink> unresolvedLinkList =
             new ArrayList<UnresolvedLink>();
         for (MondrianDef.Link link
-            : Util.filter(xmlPhysicalSchema.childArray, MondrianDef.Link.class))
+            : Util.filter(xmlPhysicalSchema.children, MondrianDef.Link.class))
         {
             List<RolapSchema.PhysColumn> columnList =
                 new ArrayList<RolapSchema.PhysColumn>();

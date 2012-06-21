@@ -52,6 +52,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
      * @param cubeDimension Dimension
      * @param rolapHierarchy Wrapped hierarchy
      * @param subName Name of hierarchy within dimension
+     * @param uniqueName Unique name of hierarchy
      * @param ordinal Ordinal of hierarchy within cube
      * @param caption Caption
      * @param description Description
@@ -61,6 +62,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         RolapCubeDimension cubeDimension,
         RolapHierarchy rolapHierarchy,
         String subName,
+        String uniqueName,
         int ordinal,
         final String caption,
         final String description)
@@ -68,7 +70,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
         super(
             cubeDimension,
             subName,
-            rolapHierarchy.getUniqueName(),
+            uniqueName,
             rolapHierarchy.isVisible(),
             caption,
             description,

@@ -411,7 +411,7 @@ Revision is $Id$
             return new NamedListImpl<T>(list(ts));
         }
 
-        public static abstract class Children<T extends NodeDef> {
+        public static abstract class Children<T extends NodeDef> implements Iterable<T> {
             private final Class[] classes;
 
             Children(Class<T> iface, Class<? extends T>... classes) {
@@ -426,6 +426,10 @@ Revision is $Id$
             abstract T[] getArray();
 
             abstract void setArray(T[] t);
+
+            public Iterator<T> iterator() {
+                return list(getArray()).iterator();
+            }
 
             <T2> List<T2> filter(Class<T2> clazz) {
                 return list(getArray(), clazz);
