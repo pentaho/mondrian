@@ -293,15 +293,14 @@ The default value is null, to cope with DBMSs that don't need this.
         <Type>String</Type>
     </PropertyDefinition>
     <PropertyDefinition>
-        <Name>RollupAnalyzerNumberThreads</Name>
-        <Path>mondrian.rolap.RollupAnalyzerNumberThreads</Path>
+        <Name>EnableInMemoryRollup</Name>
+        <Path>mondrian.rolap.EnableInMemoryRollup</Path>
         <Description>
-Property which defines how many threads are created in order to
-analyze possible segment rollup opportunities. This value defaults
-to 4, but it can be set to a higher value on big multi-core systems.
+Property which turns on or off the in-memory rollup
+of segment data. Defaults to <code>true</code>.
         </Description>
-        <Type>int</Type>
-        <Default>4</Default>
+        <Type>boolean</Type>
+        <Default>true</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>SegmentCache</Name>
