@@ -48,13 +48,16 @@ class CorrelationFunDef extends AbstractAggregateFunDef {
         {
             public double evaluateDouble(Evaluator evaluator) {
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                TupleList list = evaluateCurrentList(listCalc, evaluator);
-                final double correlation =
-                    correlation(
-                        evaluator, list, calc1, calc2);
-                evaluator.restore(savepoint);
-                return correlation;
+                try {
+                    evaluator.setNonEmpty(false);
+                    TupleList list = evaluateCurrentList(listCalc, evaluator);
+                    final double correlation =
+                        correlation(
+                            evaluator, list, calc1, calc2);
+                    return correlation;
+                } finally {
+                    evaluator.restore(savepoint);
+                }
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

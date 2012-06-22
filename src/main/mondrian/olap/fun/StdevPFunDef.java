@@ -54,13 +54,16 @@ class StdevPFunDef extends AbstractAggregateFunDef {
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                TupleList list = evaluateCurrentList(listCalc, evaluator);
-                final double stdev =
-                    (Double) stdev(
-                        evaluator, list, calc, true);
-                evaluator.restore(savepoint);
-                return stdev;
+                try {
+                    evaluator.setNonEmpty(false);
+                    TupleList list = evaluateCurrentList(listCalc, evaluator);
+                    final double stdev =
+                        (Double) stdev(
+                            evaluator, list, calc, true);
+                    return stdev;
+                } finally {
+                    evaluator.restore(savepoint);
+                }
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

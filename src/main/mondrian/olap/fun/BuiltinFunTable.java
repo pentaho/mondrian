@@ -631,12 +631,15 @@ public class BuiltinFunTable extends FunTableImpl {
                                 + aggregator + "'");
                         }
                         final int savepoint = evaluator.savepoint();
-                        final Object o = rollup.aggregate(
-                            evaluator,
-                            new UnaryTupleList(members),
-                            valueFunCall);
-                        evaluator.restore(savepoint);
-                        return o;
+                        try {
+                            final Object o = rollup.aggregate(
+                                evaluator,
+                                new UnaryTupleList(members),
+                                valueFunCall);
+                            return o;
+                        } finally {
+                            evaluator.restore(savepoint);
+                        }
                     }
                 };
             }
@@ -741,9 +744,12 @@ public class BuiltinFunTable extends FunTableImpl {
                         Member member = memberCalc.evaluateMember(evaluator);
                         final int savepoint = evaluator.savepoint();
                         evaluator.setContext(member);
-                        Object value = evaluator.evaluateCurrent();
-                        evaluator.restore(savepoint);
-                        return value;
+                        try {
+                            Object value = evaluator.evaluateCurrent();
+                            return value;
+                        } finally {
+                            evaluator.restore(savepoint);
+                        }
                     }
 
                     public boolean dependsOn(Hierarchy hierarchy) {

@@ -56,12 +56,15 @@ class MinMaxFunDef extends AbstractAggregateFunDef {
             public double evaluateDouble(Evaluator evaluator) {
                 TupleList memberList = evaluateCurrentList(listCalc, evaluator);
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                final Double d = (Double) (max
-                    ? max(evaluator, memberList, calc)
-                    : min(evaluator, memberList, calc));
-                evaluator.restore(savepoint);
-                return d;
+                try {
+                    evaluator.setNonEmpty(false);
+                    final Double d = (Double) (max
+                        ? max(evaluator, memberList, calc)
+                            : min(evaluator, memberList, calc));
+                    return d;
+                } finally {
+                    evaluator.restore(savepoint);
+                }
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

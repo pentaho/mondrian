@@ -47,11 +47,14 @@ class PercentileFunDef extends AbstractAggregateFunDef {
                 TupleList list = evaluateCurrentList(listCalc, evaluator);
                 double percent = percentCalc.evaluateDouble(evaluator) * 0.01;
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                final double percentile =
-                    percentile(evaluator, list, calc, percent);
-                evaluator.restore(savepoint);
-                return percentile;
+                try {
+                    evaluator.setNonEmpty(false);
+                    final double percentile =
+                        percentile(evaluator, list, calc, percent);
+                    return percentile;
+                } finally {
+                    evaluator.restore(savepoint);
+                }
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

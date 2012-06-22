@@ -226,9 +226,13 @@ public class RankFunDef extends FunDefBase {
 
             // member is not seen before, now compute the value of the tuple.
             final int savepoint = evaluator.savepoint();
-            evaluator.setContext(members);
-            Object value = sortCalc.evaluate(evaluator);
-            evaluator.restore(savepoint);
+            Object value;
+            try {
+                evaluator.setContext(members);
+                value = sortCalc.evaluate(evaluator);
+            } finally {
+                evaluator.restore(savepoint);
+            }
 
             if (value == RolapUtil.valueNotReadyException) {
                 // The value wasn't ready, so quit now... we'll be back.
@@ -297,8 +301,12 @@ public class RankFunDef extends FunDefBase {
             // member is not seen before, now compute the value of the tuple.
             final int savepoint = evaluator.savepoint();
             evaluator.setContext(member);
-            Object value = sortCalc.evaluate(evaluator);
-            evaluator.restore(savepoint);
+            Object value;
+            try {
+                value = sortCalc.evaluate(evaluator);
+            } finally {
+                evaluator.restore(savepoint);
+            }
 
             if (value == RolapUtil.valueNotReadyException) {
                 // The value wasn't ready, so quit now... we'll be back.
@@ -358,86 +366,90 @@ public class RankFunDef extends FunDefBase {
         public Object evaluate(Evaluator evaluator) {
             // Save the state of the evaluator.
             final int savepoint = evaluator.savepoint();
-            evaluator.setNonEmpty(false);
-
-            // Construct an array containing the value of the expression
-            // for each member.
-
-            TupleList list = listCalc.evaluateList(evaluator);
-            assert list != null;
-            if (list.isEmpty()) {
-                return list.getArity() == 1
-                    ? new MemberSortResult(
-                        new Object[0],
-                        Collections.<Member, Integer>emptyMap())
-                    : new TupleSortResult(
-                        new Object[0],
-                        Collections.<List<Member>, Integer>emptyMap());
-            }
             RuntimeException exception = null;
+            final Map<Member, Object> memberValueMap;
+            final Map<List<Member>, Object> tupleValueMap;
+            final int numValues;
             //noinspection unchecked
             final Map<Object, Integer> uniqueValueCounterMap =
                 new TreeMap<Object, Integer>(
                     FunUtil.DescendingValueComparator.instance);
+            TupleList list;
+            try {
+                evaluator.setNonEmpty(false);
 
-            final Map<Member, Object> memberValueMap;
-            final Map<List<Member>, Object> tupleValueMap;
-            final int numValues;
-            if (list.getArity() == 1) {
-                memberValueMap = new HashMap<Member, Object>();
-                tupleValueMap = null;
-                for (Member member : list.slice(0)) {
-                    evaluator.setContext(member);
-                    final Object keyValue = keyCalc.evaluate(evaluator);
-                    if (keyValue instanceof RuntimeException) {
-                        if (exception == null) {
-                            exception = (RuntimeException) keyValue;
-                        }
-                    } else if (Util.isNull(keyValue)) {
-                        // nothing to do
-                    } else {
-                        // Assume it's the first time seeing this keyValue.
-                        Integer valueCounter = uniqueValueCounterMap.put(
-                            keyValue, ONE);
-                        if (valueCounter != null) {
-                            // Update the counter on how many times this
-                            // keyValue has been seen.
-                            uniqueValueCounterMap.put(
-                                keyValue, valueCounter + 1);
-                        }
-                        memberValueMap.put(member, keyValue);
-                    }
+                // Construct an array containing the value of the expression
+                // for each member.
+
+                list = listCalc.evaluateList(evaluator);
+                assert list != null;
+                if (list.isEmpty()) {
+                    return list.getArity() == 1
+                        ? new MemberSortResult(
+                            new Object[0],
+                            Collections.<Member, Integer>emptyMap())
+                    : new TupleSortResult(
+                        new Object[0],
+                        Collections.<List<Member>, Integer>emptyMap());
                 }
-                numValues = memberValueMap.keySet().size();
-            } else {
-                tupleValueMap = new HashMap<List<Member>, Object>();
-                memberValueMap = null;
-                for (List<Member> tuple : list) {
-                    evaluator.setContext(tuple);
-                    final Object keyValue = keyCalc.evaluate(evaluator);
-                    if (keyValue instanceof RuntimeException) {
-                        if (exception == null) {
-                            exception = (RuntimeException) keyValue;
+
+                if (list.getArity() == 1) {
+                    memberValueMap = new HashMap<Member, Object>();
+                    tupleValueMap = null;
+                    for (Member member : list.slice(0)) {
+                        evaluator.setContext(member);
+                        final Object keyValue = keyCalc.evaluate(evaluator);
+                        if (keyValue instanceof RuntimeException) {
+                            if (exception == null) {
+                                exception = (RuntimeException) keyValue;
+                            }
+                        } else if (Util.isNull(keyValue)) {
+                            // nothing to do
+                        } else {
+                            // Assume it's the first time seeing this keyValue.
+                            Integer valueCounter =
+                                uniqueValueCounterMap.put(keyValue, ONE);
+                            if (valueCounter != null) {
+                                // Update the counter on how many times this
+                                // keyValue has been seen.
+                                uniqueValueCounterMap.put(
+                                    keyValue, valueCounter + 1);
+                            }
+                            memberValueMap.put(member, keyValue);
                         }
-                    } else if (Util.isNull(keyValue)) {
-                        // nothing to do
-                    } else {
-                        // Assume it's the first time seeing this keyValue.
-                        Integer valueCounter = uniqueValueCounterMap.put(
-                            keyValue, ONE);
-                        if (valueCounter != null) {
-                            // Update the counter on how many times this
-                            // keyValue has been seen.
-                            uniqueValueCounterMap.put(
-                                keyValue, valueCounter + 1);
-                        }
-                        tupleValueMap.put(tuple, keyValue);
                     }
+                    numValues = memberValueMap.keySet().size();
+                } else {
+                    tupleValueMap = new HashMap<List<Member>, Object>();
+                    memberValueMap = null;
+                    for (List<Member> tuple : list) {
+                        evaluator.setContext(tuple);
+                        final Object keyValue = keyCalc.evaluate(evaluator);
+                        if (keyValue instanceof RuntimeException) {
+                            if (exception == null) {
+                                exception = (RuntimeException) keyValue;
+                            }
+                        } else if (Util.isNull(keyValue)) {
+                            // nothing to do
+                        } else {
+                            // Assume it's the first time seeing this keyValue.
+                            Integer valueCounter = uniqueValueCounterMap.put(
+                                keyValue, ONE);
+                            if (valueCounter != null) {
+                                // Update the counter on how many times this
+                                // keyValue has been seen.
+                                uniqueValueCounterMap.put(
+                                    keyValue, valueCounter + 1);
+                            }
+                            tupleValueMap.put(tuple, keyValue);
+                        }
+                    }
+                    numValues = tupleValueMap.keySet().size();
                 }
-                numValues = tupleValueMap.keySet().size();
+            } finally {
+                evaluator.restore(savepoint);
             }
 
-            evaluator.restore(savepoint);
 
             // If there were exceptions, quit now... we'll be back.
             if (exception != null) {

@@ -48,30 +48,33 @@ class SubsetFunDef extends FunDefBase {
         {
             public TupleList evaluateList(Evaluator evaluator) {
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                final TupleList list = listCalc.evaluateList(evaluator);
-                final int start = startCalc.evaluateInteger(evaluator);
-                int end;
-                if (countCalc != null) {
-                    final int count = countCalc.evaluateInteger(evaluator);
-                    end = start + count;
-                } else {
-                    end = list.size();
+                try {
+                    evaluator.setNonEmpty(false);
+                    final TupleList list = listCalc.evaluateList(evaluator);
+                    final int start = startCalc.evaluateInteger(evaluator);
+                    int end;
+                    if (countCalc != null) {
+                        final int count = countCalc.evaluateInteger(evaluator);
+                        end = start + count;
+                    } else {
+                        end = list.size();
+                    }
+                    if (end > list.size()) {
+                        end = list.size();
+                    }
+                    if (start >= end || start < 0) {
+                        return TupleCollections.emptyList(list.getArity());
+                    }
+                    if (start == 0 && end == list.size()) {
+                        return list;
+                    }
+                    assert 0 <= start;
+                    assert start < end;
+                    assert end <= list.size();
+                    return list.subList(start, end);
+                } finally {
+                    evaluator.restore(savepoint);
                 }
-                if (end > list.size()) {
-                    end = list.size();
-                }
-                evaluator.restore(savepoint);
-                if (start >= end || start < 0) {
-                    return TupleCollections.emptyList(list.getArity());
-                }
-                if (start == 0 && end == list.size()) {
-                    return list;
-                }
-                assert 0 <= start;
-                assert start < end;
-                assert end <= list.size();
-                return list.subList(start, end);
             }
         };
     }

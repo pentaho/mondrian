@@ -60,10 +60,13 @@ public class TupleValueCalc extends GenericCalc {
         }
 
         final int savepoint = evaluator.savepoint();
-        evaluator.setContext(members);
-        Object result = evaluator.evaluateCurrent();
-        evaluator.restore(savepoint);
-        return result;
+        try {
+            evaluator.setContext(members);
+            Object result = evaluator.evaluateCurrent();
+            return result;
+        } finally {
+            evaluator.restore(savepoint);
+        }
     }
 
     public Calc[] getCalcs() {
