@@ -213,33 +213,37 @@ public class RolapNativeCrossJoin extends RolapNativeSet {
         // with the constraints from the inputs).
         final int savepoint = evaluator.savepoint();
 
-        Member[] evalMembers = evaluator.getMembers().clone();
-        for (RolapLevel level : levels) {
-            RolapHierarchy hierarchy = level.getHierarchy();
-            for (int i = 0; i < evalMembers.length; ++i) {
-                Dimension evalMemberDimension =
-                    evalMembers[i].getHierarchy().getDimension();
-                if (evalMemberDimension == hierarchy.getDimension()) {
-                    evalMembers[i] = hierarchy.getAllMember();
+        try {
+            Member[] evalMembers = evaluator.getMembers().clone();
+            for (RolapLevel level : levels) {
+                RolapHierarchy hierarchy = level.getHierarchy();
+                for (int i = 0; i < evalMembers.length; ++i) {
+                    Dimension evalMemberDimension =
+                            evalMembers[i].getHierarchy().getDimension();
+                    if (evalMemberDimension == hierarchy.getDimension()) {
+                        evalMembers[i] = hierarchy.getAllMember();
+                    }
                 }
             }
+            evaluator.setContext(evalMembers);
+
+            // Use the combined CrossJoinArg for the tuple constraint,
+            // which will be translated to the SQL WHERE clause.
+            CrossJoinArg[] cargs = combineArgs(allArgs);
+
+            // Now construct the TupleConstraint that contains both the CJ
+            // dimensions and the additional filter on them. It will make a
+            // copy of the evaluator.
+            TupleConstraint constraint =
+                buildConstraint(evaluator, fun, cargs);
+
+            // Use the just the CJ CrossJoiArg for the evaluator context,
+            // which will be translated to select list in sql.
+            final SchemaReader schemaReader = evaluator.getSchemaReader();
+            return new SetEvaluator(cjArgs, schemaReader, constraint);
+        } finally {
+            evaluator.restore(savepoint);
         }
-        evaluator.setContext(evalMembers);
-
-        // Use the combined CrossJoinArg for the tuple constraint, which will be
-        // translated to the SQL WHERE clause.
-        CrossJoinArg[] cargs = combineArgs(allArgs);
-
-        // Now construct the TupleConstraint that contains both the CJ
-        // dimensions and the additional filter on them. It will make a copy
-        // of the evaluator.
-        TupleConstraint constraint = buildConstraint(evaluator, fun, cargs);
-
-        // Use the just the CJ CrossJoiArg for the evaluator context, which will
-        // be translated to select list in sql.
-        final SchemaReader schemaReader = evaluator.getSchemaReader();
-        evaluator.restore(savepoint);
-        return new SetEvaluator(cjArgs, schemaReader, constraint);
     }
 
     CrossJoinArg[] combineArgs(

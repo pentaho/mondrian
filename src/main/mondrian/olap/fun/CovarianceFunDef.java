@@ -60,16 +60,19 @@ class CovarianceFunDef extends FunDefBase {
             public double evaluateDouble(Evaluator evaluator) {
                 TupleList memberList = listCalc.evaluateList(evaluator);
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                final double covariance =
-                    (Double) covariance(
-                        evaluator,
-                        memberList,
-                        calc1,
-                        calc2,
-                        biased);
-                evaluator.restore(savepoint);
-                return covariance;
+                try {
+                    evaluator.setNonEmpty(false);
+                    final double covariance =
+                        (Double) covariance(
+                            evaluator,
+                            memberList,
+                            calc1,
+                            calc2,
+                            biased);
+                    return covariance;
+                } finally {
+                    evaluator.restore(savepoint);
+                }
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

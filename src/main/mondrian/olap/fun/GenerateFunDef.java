@@ -104,31 +104,35 @@ class GenerateFunDef extends FunDefBase {
 
         public TupleList evaluateList(Evaluator evaluator) {
             final int savepoint = evaluator.savepoint();
-            evaluator.setNonEmpty(false);
-            final TupleIterable iterable1 =
-                iterCalc1.evaluateIterable(evaluator);
-            evaluator.restore(savepoint);
-            TupleList result = TupleCollections.createList(arityOut);
-            if (all) {
-                final TupleCursor cursor = iterable1.tupleCursor();
-                while (cursor.forward()) {
-                    cursor.setContext(evaluator);
-                    final TupleList result2 = listCalc2.evaluateList(evaluator);
-                    result.addAll(result2);
+            try {
+                evaluator.setNonEmpty(false);
+                final TupleIterable iterable1 =
+                        iterCalc1.evaluateIterable(evaluator);
+                evaluator.restore(savepoint);
+                TupleList result = TupleCollections.createList(arityOut);
+                if (all) {
+                    final TupleCursor cursor = iterable1.tupleCursor();
+                    while (cursor.forward()) {
+                        cursor.setContext(evaluator);
+                        final TupleList result2 =
+                            listCalc2.evaluateList(evaluator);
+                        result.addAll(result2);
+                    }
+                } else {
+                    final Set<List<Member>> emitted =
+                            new HashSet<List<Member>>();
+                    final TupleCursor cursor = iterable1.tupleCursor();
+                    while (cursor.forward()) {
+                        cursor.setContext(evaluator);
+                        final TupleList result2 =
+                                listCalc2.evaluateList(evaluator);
+                        addDistinctTuples(result, result2, emitted);
+                    }
                 }
-            } else {
-                final Set<List<Member>> emitted =
-                    new HashSet<List<Member>>();
-                final TupleCursor cursor = iterable1.tupleCursor();
-                while (cursor.forward()) {
-                    cursor.setContext(evaluator);
-                    final TupleList result2 =
-                        listCalc2.evaluateList(evaluator);
-                    addDistinctTuples(result, result2, emitted);
-                }
+                return result;
+            } finally {
+                evaluator.restore(savepoint);
             }
-            evaluator.restore(savepoint);
-            return result;
         }
 
         private static void addDistinctTuples(
@@ -167,24 +171,27 @@ class GenerateFunDef extends FunDefBase {
         }
 
         public String evaluateString(Evaluator evaluator) {
-            StringBuilder buf = new StringBuilder();
-            int k = 0;
-            final TupleIterable iter11 =
-                iterCalc.evaluateIterable(evaluator);
             final int savepoint = evaluator.savepoint();
-            final TupleCursor cursor = iter11.tupleCursor();
-            while (cursor.forward()) {
-                cursor.setContext(evaluator);
-                if (k++ > 0) {
-                    String sep = sepCalc.evaluateString(evaluator);
-                    buf.append(sep);
+            try {
+                StringBuilder buf = new StringBuilder();
+                int k = 0;
+                final TupleIterable iter11 =
+                    iterCalc.evaluateIterable(evaluator);
+                final TupleCursor cursor = iter11.tupleCursor();
+                while (cursor.forward()) {
+                    cursor.setContext(evaluator);
+                    if (k++ > 0) {
+                        String sep = sepCalc.evaluateString(evaluator);
+                        buf.append(sep);
+                    }
+                    final String result2 =
+                        stringCalc.evaluateString(evaluator);
+                    buf.append(result2);
                 }
-                final String result2 =
-                    stringCalc.evaluateString(evaluator);
-                buf.append(result2);
+                return buf.toString();
+            } finally {
+                evaluator.restore(savepoint);
             }
-            evaluator.restore(savepoint);
-            return buf.toString();
         }
 
         public boolean dependsOn(Hierarchy hierarchy) {

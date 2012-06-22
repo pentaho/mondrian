@@ -249,10 +249,13 @@ public class SqlContextConstraint
             throw Util.newInternal("cannot restrict SQL to calculated member");
         }
         final int savepoint = evaluator.savepoint();
-        evaluator.setContext(parent);
-        SqlConstraintUtils.addContextConstraint(
-            sqlQuery, aggStar, evaluator, strict);
-        evaluator.restore(savepoint);
+        try {
+            evaluator.setContext(parent);
+            SqlConstraintUtils.addContextConstraint(
+                sqlQuery, aggStar, evaluator, strict);
+        } finally {
+            evaluator.restore(savepoint);
+        }
 
         // comment out addMemberConstraint here since constraint
         // is already added by addContextConstraint

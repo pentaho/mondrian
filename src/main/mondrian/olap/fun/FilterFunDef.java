@@ -141,6 +141,7 @@ class FilterFunDef extends FunDefBase {
 
         protected TupleIterable makeIterable(Evaluator evaluator) {
             evaluator.getTiming().markStart(TIMING_NAME);
+            final int savepoint = evaluator.savepoint();
             try {
                 Calc[] calcs = getCalcs();
                 ListCalc lcalc = (ListCalc) calcs[0];
@@ -152,7 +153,6 @@ class FilterFunDef extends FunDefBase {
                 TupleList result =
                     TupleCollections.createList(
                         list.getArity(), list.size() / 2);
-                final int savepoint = evaluator.savepoint();
                 evaluator.setNonEmpty(false);
                 TupleCursor cursor = list.tupleCursor();
                 while (cursor.forward()) {
@@ -161,9 +161,9 @@ class FilterFunDef extends FunDefBase {
                         result.addCurrent(cursor);
                     }
                 }
-                evaluator.restore(savepoint);
                 return result;
             } finally {
+                evaluator.restore(savepoint);
                 evaluator.getTiming().markEnd(TIMING_NAME);
             }
         }
@@ -185,16 +185,19 @@ class FilterFunDef extends FunDefBase {
             // Not mutable, must create new list
             TupleList result = members.cloneList(members.size() / 2);
             final int savepoint = evaluator.savepoint();
-            evaluator.setNonEmpty(false);
-            TupleCursor cursor = members.tupleCursor();
-            while (cursor.forward()) {
-                cursor.setContext(evaluator);
-                if (bcalc.evaluateBoolean(evaluator)) {
-                    result.addCurrent(cursor);
+            try {
+                evaluator.setNonEmpty(false);
+                TupleCursor cursor = members.tupleCursor();
+                while (cursor.forward()) {
+                    cursor.setContext(evaluator);
+                    if (bcalc.evaluateBoolean(evaluator)) {
+                        result.addCurrent(cursor);
+                    }
                 }
+                return result;
+            } finally {
+                evaluator.restore(savepoint);
             }
-            evaluator.restore(savepoint);
-            return result;
         }
     }
 
@@ -315,16 +318,19 @@ class FilterFunDef extends FunDefBase {
             // for capacity planning, guess selectivity = .5
             TupleList result = members0.cloneList(members0.size() / 2);
             final int savepoint = evaluator.savepoint();
-            evaluator.setNonEmpty(false);
-            final TupleCursor cursor = members0.tupleCursor();
-            while (cursor.forward()) {
-                cursor.setContext(evaluator);
-                if (bcalc.evaluateBoolean(evaluator)) {
-                    result.addCurrent(cursor);
+            try {
+                evaluator.setNonEmpty(false);
+                final TupleCursor cursor = members0.tupleCursor();
+                while (cursor.forward()) {
+                    cursor.setContext(evaluator);
+                    if (bcalc.evaluateBoolean(evaluator)) {
+                        result.addCurrent(cursor);
+                    }
                 }
+                return result;
+            } finally {
+                evaluator.restore(savepoint);
             }
-            evaluator.restore(savepoint);
-            return result;
         }
     }
 
@@ -337,6 +343,7 @@ class FilterFunDef extends FunDefBase {
 
         protected TupleList makeList(Evaluator evaluator) {
             evaluator.getTiming().markStart(TIMING_NAME);
+            final int savepoint = evaluator.savepoint();
             try {
                 Calc[] calcs = getCalcs();
                 ListCalc lcalc = (ListCalc) calcs[0];
@@ -346,7 +353,6 @@ class FilterFunDef extends FunDefBase {
                 // Not mutable, must create new list;
                 // for capacity planning, guess selectivity = .5
                 TupleList result = members0.cloneList(members0.size() / 2);
-                final int savepoint = evaluator.savepoint();
                 evaluator.setNonEmpty(false);
                 final TupleCursor cursor = members0.tupleCursor();
                 while (cursor.forward()) {
@@ -355,9 +361,9 @@ class FilterFunDef extends FunDefBase {
                         result.addCurrent(cursor);
                     }
                 }
-                evaluator.restore(savepoint);
                 return result;
             } finally {
+                evaluator.restore(savepoint);
                 evaluator.getTiming().markEnd(TIMING_NAME);
             }
         }

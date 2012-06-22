@@ -83,23 +83,25 @@ public class MemberValueCalc extends GenericCalc {
 
     public Object evaluate(Evaluator evaluator) {
         final int savepoint = evaluator.savepoint();
-        final Member member = memberCalc.evaluateMember(evaluator);
-        if (member == null
-            || member.isNull())
-        {
-            return null;
-        }
-        evaluator.setContext(member);
-        if (nullCheck
-            && evaluator.needToReturnNullForUnrelatedDimension(
-                new Member[] {member}))
-        {
+        try {
+            final Member member = memberCalc.evaluateMember(evaluator);
+            if (member == null
+                || member.isNull())
+            {
+                return null;
+            }
+            evaluator.setContext(member);
+            if (nullCheck
+                && evaluator.needToReturnNullForUnrelatedDimension(
+                    new Member[] {member}))
+            {
+                return null;
+            }
+            final Object result = evaluator.evaluateCurrent();
+            return result;
+        } finally {
             evaluator.restore(savepoint);
-            return null;
         }
-        final Object result = evaluator.evaluateCurrent();
-        evaluator.restore(savepoint);
-        return result;
     }
 
     public Calc[] getCalcs() {

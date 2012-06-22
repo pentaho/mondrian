@@ -60,11 +60,14 @@ class HeadTailFunDef extends FunDefBase {
             {
                 public TupleList evaluateList(Evaluator evaluator) {
                     final int savepoint = evaluator.savepoint();
-                    evaluator.setNonEmpty(false);
-                    TupleList list = listCalc.evaluateList(evaluator);
-                    int count = integerCalc.evaluateInteger(evaluator);
-                    evaluator.restore(savepoint);
-                    return head(count, list);
+                    try {
+                        evaluator.setNonEmpty(false);
+                        TupleList list = listCalc.evaluateList(evaluator);
+                        int count = integerCalc.evaluateInteger(evaluator);
+                        return head(count, list);
+                    } finally {
+                        evaluator.restore(savepoint);
+                    }
                 }
             };
         } else {
@@ -73,11 +76,14 @@ class HeadTailFunDef extends FunDefBase {
             {
                 public TupleList evaluateList(Evaluator evaluator) {
                     final int savepoint = evaluator.savepoint();
-                    evaluator.setNonEmpty(false);
-                    TupleList list = listCalc.evaluateList(evaluator);
-                    int count = integerCalc.evaluateInteger(evaluator);
-                    evaluator.restore(savepoint);
-                    return tail(count, list);
+                    try {
+                        evaluator.setNonEmpty(false);
+                        TupleList list = listCalc.evaluateList(evaluator);
+                        int count = integerCalc.evaluateInteger(evaluator);
+                        return tail(count, list);
+                    } finally {
+                        evaluator.restore(savepoint);
+                    }
                 }
             };
         }

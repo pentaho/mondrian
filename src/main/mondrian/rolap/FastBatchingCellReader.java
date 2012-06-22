@@ -330,7 +330,6 @@ public class FastBatchingCellReader implements CellReader {
                                 SegmentCacheIndex index =
                                     cacheMgr.getIndexRegistry()
                                     .getIndex(segmentWithData.getStar());
-
                                 index.add(
                                     segmentWithData.getHeader(), true,
                                     response.converterMap.get(

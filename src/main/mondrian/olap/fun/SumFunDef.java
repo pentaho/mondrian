@@ -100,9 +100,11 @@ class SumFunDef extends AbstractAggregateFunDef {
                 TupleIterable iterable =
                     evaluateCurrentIterable(iterCalc, evaluator);
                 final int savepoint = evaluator.savepoint();
-                final double d = sumDouble(evaluator, iterable, calc);
-                evaluator.restore(savepoint);
-                return d;
+                try {
+                    return sumDouble(evaluator, iterable, calc);
+                } finally {
+                    evaluator.restore(savepoint);
+                }
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {
@@ -120,12 +122,14 @@ class SumFunDef extends AbstractAggregateFunDef {
             public double evaluateDouble(Evaluator evaluator) {
                 TupleList memberList = evaluateCurrentList(listCalc, evaluator);
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                final double sum =
-                    sumDouble(
-                        evaluator, memberList, calc);
-                evaluator.restore(savepoint);
-                return sum;
+                try {
+                    evaluator.setNonEmpty(false);
+                    return
+                        sumDouble(
+                            evaluator, memberList, calc);
+                } finally {
+                    evaluator.restore(savepoint);
+                }
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

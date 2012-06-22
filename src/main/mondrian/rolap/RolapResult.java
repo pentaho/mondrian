@@ -307,13 +307,17 @@ public class RolapResult extends ResultBase {
                 axisMembers.clearTotalCellCount();
 
                 final int savepoint = evaluator.savepoint();
-                for (int i = 0; i < axes.length; i++) {
-                    final QueryAxis axis = query.axes[i];
-                    final Calc calc = query.axisCalcs[i];
-                    loadMembers(
-                        nonAllMembers,
-                        evaluator,
-                        axis, calc, axisMembers);
+                try {
+                    for (int i = 0; i < axes.length; i++) {
+                        final QueryAxis axis = query.axes[i];
+                        final Calc calc = query.axisCalcs[i];
+                        loadMembers(
+                            nonAllMembers,
+                            evaluator,
+                            axis, calc, axisMembers);
+                        evaluator.restore(savepoint);
+                    }
+                } finally {
                     evaluator.restore(savepoint);
                 }
             }
@@ -631,16 +635,20 @@ public class RolapResult extends ResultBase {
         Calc calc,
         AxisMember axisMembers)
     {
-        if (cnt < 0) {
-            final int savepoint = evaluator.savepoint();
-            executeAxis(evaluator, axis, calc, false, axisMembers);
-            evaluator.restore(savepoint);
-        } else {
-            for (Member m : nonAllMembers.get(cnt)) {
-                evaluator.setContext(m);
-                evalLoad(
-                    nonAllMembers, cnt - 1, evaluator, axis, calc, axisMembers);
+        final int savepoint = evaluator.savepoint();
+        try {
+            if (cnt < 0) {
+                executeAxis(evaluator, axis, calc, false, axisMembers);
+            } else {
+                for (Member m : nonAllMembers.get(cnt)) {
+                    evaluator.setContext(m);
+                    evalLoad(
+                        nonAllMembers, cnt - 1, evaluator,
+                        axis, calc, axisMembers);
+                }
             }
+        } finally {
+            evaluator.restore(savepoint);
         }
     }
 
@@ -651,29 +659,37 @@ public class RolapResult extends ResultBase {
         QueryAxis queryAxis,
         Calc calc)
     {
+        final int savepoint = evaluator.savepoint();
         final int arity = calc == null ? 0 : calc.getType().getArity();
         if (cnt < 0) {
-            final int savepoint = evaluator.savepoint();
-            final TupleIterable axis =
-                executeAxis(evaluator, queryAxis, calc, true, null);
-            evaluator.restore(savepoint);
-            return axis;
+            try {
+                final TupleIterable axis =
+                    executeAxis(evaluator, queryAxis, calc, true, null);
+                return axis;
+            } finally {
+                evaluator.restore(savepoint);
+            }
             // No need to clear expression cache here as no new aggregates are
             // loaded(aggregatingReader reads from cache).
         } else {
-            TupleList axisResult = TupleCollections.emptyList(arity);
-            for (Member m : nonAllMembers.get(cnt)) {
-                evaluator.setContext(m);
-                TupleIterable axis =
-                    evalExecute(
-                        nonAllMembers, cnt - 1, evaluator, queryAxis, calc);
-                boolean ordered = false;
-                if (queryAxis != null) {
-                    ordered = queryAxis.isOrdered();
+            try {
+                TupleList axisResult = TupleCollections.emptyList(arity);
+                for (Member m : nonAllMembers.get(cnt)) {
+                    evaluator.setContext(m);
+                    TupleIterable axis =
+                        evalExecute(
+                            nonAllMembers, cnt - 1,
+                            evaluator, queryAxis, calc);
+                    boolean ordered = false;
+                    if (queryAxis != null) {
+                        ordered = queryAxis.isOrdered();
+                    }
+                    axisResult = mergeAxes(axisResult, axis, ordered);
                 }
-                axisResult = mergeAxes(axisResult, axis, ordered);
+                return axisResult;
+            } finally {
+                evaluator.restore(savepoint);
             }
-            return axisResult;
         }
     }
 
@@ -788,29 +804,32 @@ public class RolapResult extends ResultBase {
                 Collections.singletonList(Collections.<Member>emptyList()));
         }
         final int savepoint = evaluator.savepoint();
-        evaluator.setNonEmpty(queryAxis.isNonEmpty());
-        evaluator.setEvalAxes(true);
-        final TupleIterable iterable =
-            ((IterCalc) axisCalc).evaluateIterable(evaluator);
-        if (axisCalc.getClass().getName().indexOf("OrderFunDef") != -1) {
-            queryAxis.setOrdered(true);
-        }
-        if (iterable instanceof TupleList) {
-            TupleList list = (TupleList) iterable;
-            if (construct) {
-            } else if (axisMembers != null) {
-                axisMembers.mergeTupleList(list);
+        try {
+            evaluator.setNonEmpty(queryAxis.isNonEmpty());
+            evaluator.setEvalAxes(true);
+            final TupleIterable iterable =
+                ((IterCalc) axisCalc).evaluateIterable(evaluator);
+            if (axisCalc.getClass().getName().indexOf("OrderFunDef") != -1) {
+                queryAxis.setOrdered(true);
             }
-        } else {
-            // Iterable
-            TupleCursor cursor = iterable.tupleCursor();
-            if (construct) {
-            } else if (axisMembers != null) {
-                axisMembers.mergeTupleIter(cursor);
+            if (iterable instanceof TupleList) {
+                TupleList list = (TupleList) iterable;
+                if (construct) {
+                } else if (axisMembers != null) {
+                    axisMembers.mergeTupleList(list);
+                }
+            } else {
+                // Iterable
+                TupleCursor cursor = iterable.tupleCursor();
+                if (construct) {
+                } else if (axisMembers != null) {
+                    axisMembers.mergeTupleIter(cursor);
+                }
             }
+            return iterable;
+        } finally {
+            evaluator.restore(savepoint);
         }
-        evaluator.restore(savepoint);
-        return iterable;
     }
 
     private void executeBody(
@@ -821,9 +840,9 @@ public class RolapResult extends ResultBase {
         // Compute the cells several times. The first time, use a dummy
         // evaluator which collects requests.
         int count = 0;
+        final int savepoint = evaluator.savepoint();
         while (true) {
             evaluator.setCellReader(batchingReader);
-            final int savepoint = evaluator.savepoint();
             try {
                 executeStripe(query.axes.length - 1, evaluator, pos);
             } catch (CellRequestQuantumExceededException e) {
@@ -885,48 +904,52 @@ public class RolapResult extends ResultBase {
         int attempt = 0;
         final int savepoint = evaluator.savepoint();
         boolean dirty = batchingReader.isDirty();
-        while (true) {
-            evaluator.restore(savepoint);
+        try {
+            while (true) {
+                evaluator.restore(savepoint);
 
-            evaluator.setCellReader(batchingReader);
-            Object preliminaryValue = calc.evaluate(evaluator);
-            if (preliminaryValue instanceof TupleIterable
-                && !(preliminaryValue instanceof TupleList))
-            {
-                TupleIterable iterable = (TupleIterable) preliminaryValue;
-                final TupleCursor cursor = iterable.tupleCursor();
-                while (cursor.forward()) {
-                    // ignore
+                evaluator.setCellReader(batchingReader);
+                Object preliminaryValue = calc.evaluate(evaluator);
+                if (preliminaryValue instanceof TupleIterable
+                    && !(preliminaryValue instanceof TupleList))
+                {
+                    TupleIterable iterable = (TupleIterable) preliminaryValue;
+                    final TupleCursor cursor = iterable.tupleCursor();
+                    while (cursor.forward()) {
+                        // ignore
+                    }
+                }
+
+                if (!phase()) {
+                    break;
+                } else {
+                    // Clear invalid expression result so that the next
+                    // evaluation will pick up the newly loaded aggregates.
+                    evaluator.clearExpResultCache(false);
+                }
+
+                if (attempt++ > maxEvalDepth) {
+                    throw Util.newInternal(
+                        "Failed to load all aggregations after "
+                        + maxEvalDepth + "passes; there's probably a cycle");
                 }
             }
 
-            if (!phase()) {
-                break;
-            } else {
-                // Clear invalid expression result so that the next evaluation
-                // will pick up the newly loaded aggregates.
-                evaluator.clearExpResultCache(false);
+            // If there were pending reads when we entered, some of the other
+            // expressions may have been evaluated incorrectly. Set the
+            // reader's 'dirty' flag so that the caller knows that it must
+            // re-evaluate them.
+            if (dirty) {
+                batchingReader.setDirty(true);
             }
 
-            if (attempt++ > maxEvalDepth) {
-                throw Util.newInternal(
-                    "Failed to load all aggregations after "
-                    + maxEvalDepth + "passes; there's probably a cycle");
-            }
+            evaluator.restore(savepoint);
+            evaluator.setCellReader(aggregatingReader);
+            final Object o = calc.evaluate(evaluator);
+            return o;
+        } finally {
+            evaluator.restore(savepoint);
         }
-
-        // If there were pending reads when we entered, some of the other
-        // expressions may have been evaluated incorrectly. Set the reader's
-        // 'dirty' flag so that the caller knows that it must re-evaluate them.
-        if (dirty) {
-            batchingReader.setDirty(true);
-        }
-
-        evaluator.restore(savepoint);
-        evaluator.setCellReader(aggregatingReader);
-        final Object o = calc.evaluate(evaluator);
-        evaluator.restore(savepoint);
-        return o;
     }
 
     private void executeStripe(
