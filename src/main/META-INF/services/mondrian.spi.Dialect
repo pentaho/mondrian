@@ -4,6 +4,7 @@ mondrian.spi.impl.Db2OldAs400Dialect
 mondrian.spi.impl.DerbyDialect
 mondrian.spi.impl.FirebirdDialect
 mondrian.spi.impl.GreenplumDialect
+mondrian.spi.impl.HiveDialect
 mondrian.spi.impl.HsqldbDialect
 mondrian.spi.impl.InfobrightDialect
 mondrian.spi.impl.InformixDialect
