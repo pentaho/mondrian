@@ -228,7 +228,10 @@ public class RolapConnection extends ConnectionBase {
             Dialect dialect = null;
             try {
                 conn = this.dataSource.getConnection();
-                dialect = DialectManager.createDialect(this.dataSource, conn);
+                final String dialectClassName =
+                    connectInfo.get(RolapConnectionProperties.Dialect.name());
+                dialect = DialectManager.createDialect(
+                    this.dataSource, conn, dialectClassName);
                 if (dialect.getDatabaseProduct()
                     == Dialect.DatabaseProduct.DERBY)
                 {

@@ -81,10 +81,14 @@ class RolapSchemaPool {
         final DataSource dataSource,
         final Util.PropertyList connectInfo)
     {
+        final String dialectClassName =
+            connectInfo.get(RolapConnectionProperties.Dialect.name());
         String key =
             (dataSource == null)
-            ? makeKey(catalogUrl, connectionKey, jdbcUser, dataSourceStr)
-            : makeKey(catalogUrl, dataSource);
+            ? makeKey(
+                catalogUrl, dialectClassName, connectionKey, jdbcUser,
+                dataSourceStr)
+            : makeKey(catalogUrl, dialectClassName, dataSource);
 
         RolapSchema schema = null;
 
@@ -271,12 +275,14 @@ class RolapSchemaPool {
 
     synchronized void remove(
         final String catalogUrl,
+        final String dialectClassName,
         final String connectionKey,
         final String jdbcUser,
         final String dataSourceStr)
     {
         final String key = makeKey(
             catalogUrl,
+            dialectClassName,
             connectionKey,
             jdbcUser,
             dataSourceStr);
@@ -290,9 +296,10 @@ class RolapSchemaPool {
 
     synchronized void remove(
         final String catalogUrl,
+        final String dialectClassName,
         final DataSource dataSource)
     {
-        final String key = makeKey(catalogUrl, dataSource);
+        final String key = makeKey(catalogUrl, dialectClassName, dataSource);
         if (RolapSchema.LOGGER.isDebugEnabled()) {
             RolapSchema.LOGGER.debug(
                 "Pool.remove: schema \"" + catalogUrl
@@ -366,6 +373,7 @@ class RolapSchemaPool {
      */
     private static String makeKey(
         final String catalogUrl,
+        final String dialectClassName,
         final String connectionKey,
         final String jdbcUser,
         final String dataSourceStr)
@@ -373,6 +381,7 @@ class RolapSchemaPool {
         final StringBuilder buf = new StringBuilder(100);
 
         appendIfNotNull(buf, catalogUrl);
+        appendIfNotNull(buf, dialectClassName);
         appendIfNotNull(buf, connectionKey);
         appendIfNotNull(buf, jdbcUser);
         appendIfNotNull(buf, dataSourceStr);
@@ -385,11 +394,13 @@ class RolapSchemaPool {
      */
     private static String makeKey(
         final String catalogUrl,
+        final String dialectClassName,
         final DataSource dataSource)
     {
         final StringBuilder buf = new StringBuilder(100);
 
         appendIfNotNull(buf, catalogUrl);
+        appendIfNotNull(buf, dialectClassName);
         buf.append('.');
         buf.append("external#");
         buf.append(System.identityHashCode(dataSource));

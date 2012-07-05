@@ -44,9 +44,28 @@ import java.util.Map;
  * See {@link #allowsDialectSharing} and
  * {@link mondrian.spi.DialectFactory} for more details.</p>
  *
+ * <h3>Explicitly specifying a dialect</h3>
+ *
+ * <p>You can explicitly specify a dialect in Mondrian's olap4j connect string
+ * using the {@link mondrian.rolap.RolapConnectionProperties#Dialect Dialect}
+ * connect string property. Such a dialect must implement this Dialect SPI,
+ * and may or may not have an explicit dialect factory, as described above.
+ * The dialect does not need to be registered in the
+ * <code>META-INF/services/mondrian.spi.Dialect</code> configuration
+ * file (described below), but we recommend it.</p>
+ *
+ * <p>Explicit dialects are rarely needed. Usually Mondrian will automatically
+ * choose the right dialect for your database. The main case where you would
+ * specify a dialect explicitly is when you are developing a dialect for a new
+ * database, or creating an alternative version of an existing dialect.</p>
+ *
+ * <p>Explicitly specified dialects are not cached, nor are schemas that use
+ * explicitly specified dialects.</p>
+ *
  * <h3>Registering dialects</h3>
  *
- * <p>A dialect needs to be registered with the system in order to be used.
+ * <p>Unless you use the {@code Dialect} connect string property, a
+ * dialect needs to be registered with the system in order to be used.
  * Call {@link mondrian.spi.DialectManager#register(DialectFactory)}
  * to register a dialect factory, or
  * {@link mondrian.spi.DialectManager#register(Class)} to register a dialect
@@ -90,7 +109,7 @@ public interface Dialect {
     /**
      * Converts an expression to upper case.
      *
-     * <p>For example, for MySQL, {@code toUpper("foo.bar")} returns
+     * <p>For example, for MySQL, <code>toUpper("foo.bar")</code> returns
      * {@code "UPPER(foo.bar)"}.</p>
      *
      * @param expr SQL expression
@@ -103,7 +122,7 @@ public interface Dialect {
     /**
      * Generates a conditional statement in this dialect's syntax.
      *
-     * <p>For example, {@code caseWhenElse("b", "1", "0")} returns
+     * <p>For example, <code>caseWhenElse("b", "1", "0")</code> returns
      * {@code "case when b then 1 else 0 end"} on Oracle,
      * {@code "Iif(b, 1, 0)"} on Access.
      *

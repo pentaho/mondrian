@@ -267,6 +267,7 @@ public class CacheControlImpl implements CacheControl {
     {
         RolapSchemaPool.instance().remove(
             catalogUrl,
+            null,
             connectionKey,
             jdbcUser,
             dataSourceStr);
@@ -279,6 +280,7 @@ public class CacheControlImpl implements CacheControl {
     {
         RolapSchemaPool.instance().remove(
             catalogUrl,
+            null, // dialectClassName
             dataSource);
     }
 
