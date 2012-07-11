@@ -1075,7 +1075,7 @@ public class NamedSetTest extends FoodMartTestCase {
      * correct.
      */
     public void testNamedSetRangeInSlicer() {
-        final String expected =
+        String expected =
             "Axis #0:\n"
             + "{[Time].[1997].[Q1].[1]}\n"
             + "{[Time].[1997].[Q1].[2]}\n"
@@ -1111,13 +1111,34 @@ public class NamedSetTest extends FoodMartTestCase {
             + "FROM [Sales]\n"
             + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
             expected);
-            // As above, but convert TopCount expression to a named set. Named
+        // as above, but with DISTINCT
+        assertQueryReturns(
+            "SELECT\n"
+            + "TopCount(Distinct([Customers].[Name].Members), 5, [Measures].[Unit Sales]) * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
+            expected);
+        // As above, but convert TopCount expression to a named set. Named
         // sets are evaluated after the slicer but before any axes. I.e. not
         // in the context of any particular position on ROWS or COLUMNS, nor
         // inheriting the NON EMPTY constraint on the axis.
         assertQueryReturns(
             "WITH SET [Top Count] AS\n"
             + "  TopCount([Customers].[Name].Members, 5, [Measures].[Unit Sales])\n"
+            + "SELECT [Top Count] * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
+            expected);
+        // as above, but with DISTINCT
+        if (false)
+        assertQueryReturns(
+            "WITH SET [Top Count] AS\n"
+            + "{\n"
+            + "  TopCount(\n"
+            + "    Distinct([Customers].[Name].Members),\n"
+            + "    5,\n"
+            + "    [Measures].[Unit Sales])\n"
+            + "}\n"
             + "SELECT [Top Count] * [Measures].[Unit Sales] on 0\n"
             + "FROM [Sales]\n"
             + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
