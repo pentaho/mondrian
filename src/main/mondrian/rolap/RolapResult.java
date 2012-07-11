@@ -207,7 +207,7 @@ public class RolapResult extends ResultBase {
 
             // The AxisMember object is used to hold Members that are found
             // during Step 1 when the Axes are determined.
-            final AxisMember axisMembers = new AxisMember();
+            final AxisMemberList axisMembers = new AxisMemberList();
 
 
             // list of ALL Members that are not default Members
@@ -556,7 +556,7 @@ public class RolapResult extends ResultBase {
 
     protected boolean replaceNonAllMembers(
         List<List<Member>> nonAllMembers,
-        AxisMember axisMembers)
+        AxisMemberList axisMembers)
     {
         boolean changed = false;
         List<Member> mList = new ArrayList<Member>();
@@ -584,7 +584,7 @@ public class RolapResult extends ResultBase {
         RolapEvaluator evaluator,
         QueryAxis axis,
         Calc calc,
-        AxisMember axisMembers)
+        AxisMemberList axisMembers)
     {
         int attempt = 0;
         evaluator.setCellReader(batchingReader);
@@ -631,7 +631,7 @@ public class RolapResult extends ResultBase {
         Evaluator evaluator,
         QueryAxis axis,
         Calc calc,
-        AxisMember axisMembers)
+        AxisMemberList axisMembers)
     {
         if (cnt < 0) {
             final int savepoint = evaluator.savepoint();
@@ -773,7 +773,7 @@ public class RolapResult extends ResultBase {
         QueryAxis queryAxis,
         Calc axisCalc,
         boolean construct,
-        AxisMember axisMembers)
+        AxisMemberList axisMembers)
     {
         if (queryAxis == null) {
             // Create an axis containing one position with no members (not
@@ -1261,14 +1261,19 @@ public class RolapResult extends ResultBase {
     }
 
     /**
-     * Counts and collects Members found of the axes.
-     * This class does two things. First it collects all Members
+     * Collection of members found on an axis.
+     *
+     * <p>The behavior depends on the mode (i.e. the kind of axis).
+     * If it collects, it generally eliminates duplicates. It also has a mode
+     * where it only counts members, does not collect them.</p>
+     *
+     * <p>This class does two things. First it collects all Members
      * found during the Member-Determination phase.
-     * Secondly, it counts how many Members are on each axis and
+     * Second, it counts how many Members are on each axis and
      * forms the product, the totalCellCount which is checked against
-     * the ResultLimit property value.
+     * the ResultLimit property value.</p>
      */
-    private static class AxisMember implements Iterable<Member> {
+    private static class AxisMemberList implements Iterable<Member> {
         private final List<Member> members;
         private final int limit;
         private boolean isSlicer;
@@ -1276,7 +1281,7 @@ public class RolapResult extends ResultBase {
         private int axisCount;
         private boolean countOnly;
 
-        AxisMember() {
+        AxisMemberList() {
             this.countOnly = false;
             this.members = new ConcatenableList<Member>();
             this.totalCellCount = 1;

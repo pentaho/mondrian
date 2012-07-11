@@ -1073,6 +1073,82 @@ public class NamedSetTest extends FoodMartTestCase {
     }
 
     /**
+     * Test case for issue on developers list which involves a named set and a
+     * range in the WHERE clause. Current Mondrian behavior appears to be
+     * correct.
+     */
+    public void testNamedSetRangeInSlicer() {
+        String expected =
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1].[1]}\n"
+            + "{[Time].[1997].[Q1].[2]}\n"
+            + "{[Time].[1997].[Q1].[3]}\n"
+            + "{[Time].[1997].[Q2].[4]}\n"
+            + "{[Time].[1997].[Q2].[5]}\n"
+            + "{[Time].[1997].[Q2].[6]}\n"
+            + "{[Time].[1997].[Q3].[7]}\n"
+            + "{[Time].[1997].[Q3].[8]}\n"
+            + "{[Time].[1997].[Q3].[9]}\n"
+            + "{[Time].[1997].[Q4].[10]}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Mary Francis Benigar], [Measures].[Unit Sales]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[James Horvat], [Measures].[Unit Sales]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Matt Bellah], [Measures].[Unit Sales]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Ida Rodriguez], [Measures].[Unit Sales]}\n"
+            + "{[Customers].[USA].[WA].[Spokane].[Kristin Miller], [Measures].[Unit Sales]}\n"
+            + "Row #0: 422\n"
+            + "Row #0: 369\n"
+            + "Row #0: 363\n"
+            + "Row #0: 344\n"
+            + "Row #0: 323\n";
+        assertQueryReturns(
+            "SELECT\n"
+            + "NON EMPTY TopCount([Customers].[Name].Members, 5, [Measures].[Unit Sales]) * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
+            expected);
+        // as above, but remove NON EMPTY
+        assertQueryReturns(
+            "SELECT\n"
+            + "TopCount([Customers].[Name].Members, 5, [Measures].[Unit Sales]) * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
+            expected);
+        // as above, but with DISTINCT
+        assertQueryReturns(
+            "SELECT\n"
+            + "TopCount(Distinct([Customers].[Name].Members), 5, [Measures].[Unit Sales]) * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
+            expected);
+        // As above, but convert TopCount expression to a named set. Named
+        // sets are evaluated after the slicer but before any axes. I.e. not
+        // in the context of any particular position on ROWS or COLUMNS, nor
+        // inheriting the NON EMPTY constraint on the axis.
+        assertQueryReturns(
+            "WITH SET [Top Count] AS\n"
+            + "  TopCount([Customers].[Name].Members, 5, [Measures].[Unit Sales])\n"
+            + "SELECT [Top Count] * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
+            expected);
+        // as above, but with DISTINCT
+        if (false)
+        assertQueryReturns(
+            "WITH SET [Top Count] AS\n"
+            + "{\n"
+            + "  TopCount(\n"
+            + "    Distinct([Customers].[Name].Members),\n"
+            + "    5,\n"
+            + "    [Measures].[Unit Sales])\n"
+            + "}\n"
+            + "SELECT [Top Count] * [Measures].[Unit Sales] on 0\n"
+            + "FROM [Sales]\n"
+            + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
+            expected);
+    }
+
+    /**
      * Variant of {@link #testNamedSetRangeInSlicer()} that calls
      * {@link mondrian.test.CompoundSlicerTest#testBugMondrian899()} to
      * prime the cache and therefore fails even when run standalone.
