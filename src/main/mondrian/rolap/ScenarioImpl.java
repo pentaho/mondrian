@@ -226,11 +226,14 @@ public final class ScenarioImpl implements Scenario {
      */
     private static double evaluateAtomicCellCount(RolapEvaluator evaluator) {
         final int savepoint = evaluator.savepoint();
-        evaluator.setContext(
-            evaluator.getCube().getAtomicCellCountMeasure());
-        final Object o = evaluator.evaluateCurrent();
-        evaluator.restore(savepoint);
-        return ((Number) o).doubleValue();
+        try {
+            evaluator.setContext(
+                evaluator.getCube().getAtomicCellCountMeasure());
+            final Object o = evaluator.evaluateCurrent();
+            return ((Number) o).doubleValue();
+        } finally {
+            evaluator.restore(savepoint);
+        }
     }
 
     /**
@@ -482,81 +485,85 @@ public final class ScenarioImpl implements Scenario {
             final Member defaultMember =
                 scenario.member.getHierarchy().getDefaultMember();
             final int savepoint = evaluator.savepoint();
-            evaluator.setContext(defaultMember);
-            final Object o = evaluator.evaluateCurrent();
-            double d =
-                o instanceof Number
-                    ? ((Number) o).doubleValue()
-                    : 0d;
+            try {
+                evaluator.setContext(defaultMember);
+                final Object o = evaluator.evaluateCurrent();
+                double d =
+                    o instanceof Number
+                        ? ((Number) o).doubleValue()
+                        : 0d;
 
-            // Look for writeback cells which are equal to, ancestors of, or
-            // descendants of, the current cell. Modify the value accordingly.
-            //
-            // It is possible that the value is modified by several writebacks.
-            // If so, order is important.
-            int changeCount = 0;
-            for (ScenarioImpl.WritebackCell writebackCell
-                : scenario.writebackCells)
-            {
-                CellRelation relation =
-                    writebackCell.getRelationTo(evaluator.getMembers());
-                switch (relation) {
-                case ABOVE:
-                    // This cell is below the writeback cell. Value is
-                    // determined by allocation policy.
-                    double atomicCellCount =
+                // Look for writeback cells which are equal to, ancestors of,
+                // or descendants of, the current cell. Modify the value
+                // accordingly.
+                //
+                // It is possible that the value is modified by several
+                // writebacks. If so, order is important.
+                int changeCount = 0;
+                for (ScenarioImpl.WritebackCell writebackCell
+                    : scenario.writebackCells)
+                {
+                    CellRelation relation =
+                        writebackCell.getRelationTo(evaluator.getMembers());
+                    switch (relation) {
+                    case ABOVE:
+                        // This cell is below the writeback cell. Value is
+                        // determined by allocation policy.
+                        double atomicCellCount =
                         evaluateAtomicCellCount((RolapEvaluator) evaluator);
-                    if (atomicCellCount == 0d) {
-                        // Sometimes the value comes back zero if the cache is
-                        // not ready. Switch to 1, which at least does not give
-                        // divide-by-zero. We will be invoked again for the
-                        // correct answer when the cache has been populated.
-                        atomicCellCount = 1d;
-                    }
-                    switch (writebackCell.allocationPolicy) {
-                    case EQUAL_ALLOCATION:
-                        d = writebackCell.newValue
+                        if (atomicCellCount == 0d) {
+                            // Sometimes the value comes back zero if the cache
+                            // is not ready. Switch to 1, which at least does
+                            // not give divide-by-zero. We will be invoked again
+                            // for the correct answer when the cache has been
+                            // populated.
+                            atomicCellCount = 1d;
+                        }
+                        switch (writebackCell.allocationPolicy) {
+                        case EQUAL_ALLOCATION:
+                            d = writebackCell.newValue
                             * atomicCellCount
                             / writebackCell.atomicCellCount;
+                            break;
+                        case EQUAL_INCREMENT:
+                            d += writebackCell.getOffset()
+                            * atomicCellCount
+                            / writebackCell.atomicCellCount;
+                            break;
+                        default:
+                            throw Util.unexpected(
+                                writebackCell.allocationPolicy);
+                        }
+                        ++changeCount;
                         break;
-                    case EQUAL_INCREMENT:
-                        d += writebackCell.getOffset()
-                             * atomicCellCount
-                             / writebackCell.atomicCellCount;
+                    case EQUAL:
+                        // This cell is the writeback cell. Value is the value
+                        // written back.
+                        d = writebackCell.newValue;
+                        ++changeCount;
+                        break;
+                    case BELOW:
+                        // This cell is above the writeback cell. Value is the
+                        // current value plus the change in the writeback cell.
+                        d += writebackCell.getOffset();
+                        ++changeCount;
+                        break;
+                    case NONE:
+                        // Writeback cell is unrelated. It has no effect on
+                        // cell's value.
                         break;
                     default:
-                        throw Util.unexpected(writebackCell.allocationPolicy);
+                        throw Util.unexpected(relation);
                     }
-                    ++changeCount;
-                    break;
-                case EQUAL:
-                    // This cell is the writeback cell. Value is the value
-                    // written back.
-                    d = writebackCell.newValue;
-                    ++changeCount;
-                    break;
-                case BELOW:
-                    // This cell is above the writeback cell. Value is the
-                    // current value plus the change in the writeback cell.
-                    d += writebackCell.getOffset();
-                    ++changeCount;
-                    break;
-                case NONE:
-                    // Writeback cell is unrelated. It has no effect on cell's
-                    // value.
-                    break;
-                default:
-                    throw Util.unexpected(relation);
                 }
-            }
-
-            evaluator.restore(savepoint);
-
-            // Don't create a new object if value has not changed.
-            if (changeCount == 0) {
-                return o;
-            } else {
-                return d;
+                // Don't create a new object if value has not changed.
+                if (changeCount == 0) {
+                    return o;
+                } else {
+                    return d;
+                }
+            } finally {
+                evaluator.restore(savepoint);
             }
         }
     }

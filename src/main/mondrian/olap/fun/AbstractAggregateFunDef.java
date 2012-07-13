@@ -73,14 +73,22 @@ public class AbstractAggregateFunDef extends FunDefBase {
         Evaluator evaluator)
     {
         final int savepoint = evaluator.savepoint();
-        evaluator.setNonEmpty(false);
-        TupleList tuples = listCalc.evaluateList(evaluator);
-        evaluator.restore(savepoint);
-
+        TupleList tuples;
+        try {
+            evaluator.setNonEmpty(false);
+            tuples = listCalc.evaluateList(evaluator);
+        } finally {
+            evaluator.restore(savepoint);
+        }
         int currLen = tuples.size();
+        TupleList dims;
+        try {
+            dims = processUnrelatedDimensions(tuples, evaluator);
+        } finally {
+            evaluator.restore(savepoint);
+        }
         crossProd(evaluator, currLen);
-
-        return processUnrelatedDimensions(tuples, evaluator);
+        return dims;
     }
 
     protected TupleIterable evaluateCurrentIterable(
@@ -88,13 +96,15 @@ public class AbstractAggregateFunDef extends FunDefBase {
         Evaluator evaluator)
     {
         final int savepoint = evaluator.savepoint();
-        evaluator.setNonEmpty(false);
-        TupleIterable iterable = iterCalc.evaluateIterable(evaluator);
-
         int currLen = 0;
+        TupleIterable iterable;
+        try {
+            evaluator.setNonEmpty(false);
+            iterable = iterCalc.evaluateIterable(evaluator);
+        } finally {
+            evaluator.restore(savepoint);
+        }
         crossProd(evaluator, currLen);
-
-        evaluator.restore(savepoint);
         return iterable;
     }
 

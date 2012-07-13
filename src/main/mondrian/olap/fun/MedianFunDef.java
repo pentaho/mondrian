@@ -43,13 +43,16 @@ class MedianFunDef extends AbstractAggregateFunDef {
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, calc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                TupleList list = evaluateCurrentList(listCalc, evaluator);
-                final double percentile =
-                    percentile(
-                        evaluator, list, calc, 0.5);
-                evaluator.restore(savepoint);
-                return percentile;
+                try {
+                    evaluator.setNonEmpty(false);
+                    TupleList list = evaluateCurrentList(listCalc, evaluator);
+                    final double percentile =
+                        percentile(
+                            evaluator, list, calc, 0.5);
+                    return percentile;
+                } finally {
+                    evaluator.restore(savepoint);
+                }
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

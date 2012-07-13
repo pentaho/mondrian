@@ -59,39 +59,43 @@ public class NonEmptyCrossJoinFunDef extends CrossJoinFunDef {
                 //
                 // we want all beers, not just those sold in Mexico.
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(true);
-                for (Member member
-                    : ((RolapEvaluator) evaluator).getSlicerMembers())
-                {
-                    if (getType().getElementType().usesHierarchy(
-                            member.getHierarchy(), true))
+                try {
+                    evaluator.setNonEmpty(true);
+                    for (Member member
+                        : ((RolapEvaluator) evaluator).getSlicerMembers())
                     {
-                        evaluator.setContext(
-                            member.getHierarchy().getAllMember());
+                        if (getType().getElementType().usesHierarchy(
+                                member.getHierarchy(), true))
+                        {
+                            evaluator.setContext(
+                                member.getHierarchy().getAllMember());
+                        }
                     }
-                }
 
-                NativeEvaluator nativeEvaluator =
-                    schemaReader.getNativeSetEvaluator(
-                        call.getFunDef(), call.getArgs(), evaluator, this);
-                if (nativeEvaluator != null) {
+                    NativeEvaluator nativeEvaluator =
+                        schemaReader.getNativeSetEvaluator(
+                            call.getFunDef(), call.getArgs(), evaluator, this);
+                    if (nativeEvaluator != null) {
+                        evaluator.restore(savepoint);
+                        return
+                            (TupleList) nativeEvaluator.execute(
+                                ResultStyle.LIST);
+                    }
+
+                    final TupleList list1 = listCalc1.evaluateList(evaluator);
+                    if (list1.isEmpty()) {
+                        evaluator.restore(savepoint);
+                        return list1;
+                    }
+                    final TupleList list2 = listCalc2.evaluateList(evaluator);
+                    TupleList result = mutableCrossJoin(list1, list2);
+
+                    // remove any remaining empty crossings from the result
+                    result = nonEmptyList(evaluator, result, call);
+                    return result;
+                } finally {
                     evaluator.restore(savepoint);
-                    return
-                        (TupleList) nativeEvaluator.execute(ResultStyle.LIST);
                 }
-
-                final TupleList list1 = listCalc1.evaluateList(evaluator);
-                if (list1.isEmpty()) {
-                    evaluator.restore(savepoint);
-                    return list1;
-                }
-                final TupleList list2 = listCalc2.evaluateList(evaluator);
-                TupleList result = mutableCrossJoin(list1, list2);
-
-                // remove any remaining empty crossings from the result
-                result = nonEmptyList(evaluator, result, call);
-                evaluator.restore(savepoint);
-                return result;
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

@@ -1043,7 +1043,9 @@ public class AccessControlTest extends FoodMartTestCase {
         assertEquals(
             Role.RollupPolicy.PARTIAL,
             hierarchyAccess.getRollupPolicy());
-        assertEquals(0, hierarchyAccess.getTopLevelDepth());
+        // One of the roles is restricting the levels, so we
+        //expect only the levels from 2 to 4 to be available.
+        assertEquals(2, hierarchyAccess.getTopLevelDepth());
         assertEquals(4, hierarchyAccess.getBottomLevelDepth());
 
         // Member access:
@@ -1125,6 +1127,84 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #0: 3,583\n"
             + "Row #0: 124,366\n");
         checkQuery(testContext.withRole("Role1,Role2"), mdx);
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1168">MONDRIAN-1168</a>
+     * Union of roles would sometimes return levels which should be restricted
+     * by ACL.
+     */
+    public void testRoleUnionWithLevelRestrictions()  throws Exception {
+        final TestContext testContext =
+            TestContext.instance().create(
+                null, null, null, null, null,
+                "<Role name=\"Role1\">\n"
+                + "  <SchemaGrant access=\"all\">\n"
+                + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
+                + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\" rollupPolicy=\"Partial\" topLevel=\"[Customers].[State Province]\" bottomLevel=\"[Customers].[State Province]\">\n"
+                + "        <MemberGrant member=\"[Customers].[USA].[CA]\" access=\"all\"/>\n"
+                + "      </HierarchyGrant>\n"
+                + "    </CubeGrant>\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>\n"
+                + "<Role name=\"Role2\">\n"
+                + "  <SchemaGrant access=\"none\">\n"
+                + "  </SchemaGrant>\n"
+                + "</Role>\n").withRole("Role1,Role2");
+
+        testContext.assertQueryReturns(
+            "select {[Customers].[State Province].Members} on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Customers].[USA].[CA]}\n"
+            + "Row #0: 74,748\n");
+
+        testContext.assertQueryReturns(
+            "select {[Customers].[Country].Members} on columns from [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n");
+
+        SchemaReader reader =
+            testContext.getConnection().getSchemaReader().withLocus();
+        Cube cube = null;
+        for (Cube c : reader.getCubes()) {
+            if (c.getName().equals("Sales")) {
+                cube = c;
+            }
+        }
+        assertNotNull(cube);
+        reader =
+            cube.getSchemaReader(testContext.getConnection().getRole());
+        final List<Dimension> dimensions =
+            reader.getCubeDimensions(cube);
+        Dimension dimension = null;
+        for (Dimension dim : dimensions) {
+            if (dim.getName().equals("Customers")) {
+                dimension = dim;
+            }
+        }
+        assertNotNull(dimension);
+        Hierarchy hierarchy =
+            reader.getDimensionHierarchies(dimension).get(0);
+        assertNotNull(hierarchy);
+        final List<Level> levels =
+            reader.getHierarchyLevels(hierarchy);
+
+        // Do some tests
+        assertEquals(1, levels.size());
+        assertEquals(
+            2,
+            testContext.getConnection()
+                .getRole().getAccessDetails(hierarchy)
+                    .getBottomLevelDepth());
+        assertEquals(
+            2,
+            testContext.getConnection()
+                .getRole().getAccessDetails(hierarchy)
+                    .getTopLevelDepth());
     }
 
     /**

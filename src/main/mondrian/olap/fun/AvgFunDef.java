@@ -43,11 +43,14 @@ class AvgFunDef extends AbstractAggregateFunDef {
                 TupleList memberList = evaluateCurrentList(listCalc, evaluator);
                 final int savepoint = evaluator.savepoint();
                 evaluator.setNonEmpty(false);
-                final double avg =
-                    (Double) avg(
-                        evaluator, memberList, calc);
-                evaluator.restore(savepoint);
-                return avg;
+                try {
+                    final double avg =
+                        (Double) avg(
+                            evaluator, memberList, calc);
+                    return avg;
+                } finally {
+                    evaluator.restore(savepoint);
+                }
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

@@ -195,42 +195,46 @@ public class RolapNativeTopCount extends RolapNativeSet {
         }
         LOGGER.debug("using native topcount");
         final int savepoint = evaluator.savepoint();
-        overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
-        Member[] mm = evaluator.getMembers();
-        for (int mIndex = 0; mIndex < mm.length; mIndex++) {
-            if (mm[mIndex] instanceof RolapHierarchy.LimitedRollupMember) {
-                List<Level> hierarchyLevels =
+        try {
+            overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
+            Member[] mm = evaluator.getMembers();
+            for (int mIndex = 0; mIndex < mm.length; mIndex++) {
+                if (mm[mIndex] instanceof RolapHierarchy.LimitedRollupMember) {
+                    List<Level> hierarchyLevels =
                         schemaReader
-                        .getHierarchyLevels(mm[mIndex].getHierarchy());
-                for (Level affectedLevel : hierarchyLevels) {
-                    List<Member> availableMembers =
+                            .getHierarchyLevels(mm[mIndex].getHierarchy());
+                    for (Level affectedLevel : hierarchyLevels) {
+                        List<Member> availableMembers =
                             schemaReader.getLevelMembers(affectedLevel, false);
-                    evaluator.setContext(availableMembers);
+                        evaluator.setContext(availableMembers);
+                    }
                 }
             }
-        }
 
-        CrossJoinArg[] predicateArgs = null;
-        if (allArgs.size() == 2) {
-            predicateArgs = allArgs.get(1);
-        }
+            CrossJoinArg[] predicateArgs = null;
+            if (allArgs.size() == 2) {
+                predicateArgs = allArgs.get(1);
+            }
 
-        CrossJoinArg[] combinedArgs;
-        if (predicateArgs != null) {
-            // Combined the CJ and the additional predicate args to form the
-            // TupleConstraint.
-            combinedArgs =
-                Util.appendArrays(cjArgs, predicateArgs);
-        } else {
-            combinedArgs = cjArgs;
+            CrossJoinArg[] combinedArgs;
+            if (predicateArgs != null) {
+                // Combined the CJ and the additional predicate args
+                // to form the TupleConstraint.
+                combinedArgs =
+                        Util.appendArrays(cjArgs, predicateArgs);
+            } else {
+                combinedArgs = cjArgs;
+            }
+            TupleConstraint constraint =
+                new TopCountConstraint(
+                    count, combinedArgs, evaluator, orderByExpr, ascending);
+            SetEvaluator sev =
+                new SetEvaluator(cjArgs, schemaReader, constraint);
+            sev.setMaxRows(count);
+            return sev;
+        } finally {
+            evaluator.restore(savepoint);
         }
-        TupleConstraint constraint =
-            new TopCountConstraint(
-                count, combinedArgs, evaluator, orderByExpr, ascending);
-        evaluator.restore(savepoint);
-        SetEvaluator sev = new SetEvaluator(cjArgs, schemaReader, constraint);
-        sev.setMaxRows(count);
-        return sev;
     }
 }
 

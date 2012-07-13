@@ -59,13 +59,16 @@ public class NthQuartileFunDef extends AbstractAggregateFunDef {
         return new AbstractDoubleCalc(call, new Calc[] {listCalc, doubleCalc}) {
             public double evaluateDouble(Evaluator evaluator) {
                 final int savepoint = evaluator.savepoint();
-                evaluator.setNonEmpty(false);
-                TupleList members = evaluateCurrentList(listCalc, evaluator);
-                final double quartile =
-                    quartile(
-                        evaluator, members, doubleCalc, range);
-                evaluator.restore(savepoint);
-                return quartile;
+                try {
+                    evaluator.setNonEmpty(false);
+                    TupleList members =
+                        evaluateCurrentList(listCalc, evaluator);
+                    return
+                        quartile(
+                            evaluator, members, doubleCalc, range);
+                } finally {
+                    evaluator.restore(savepoint);
+                }
             }
 
             public boolean dependsOn(Hierarchy hierarchy) {

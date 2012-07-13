@@ -327,9 +327,11 @@ public class FastBatchingCellReader implements CellReader {
                                 segmentWithData.getHeader(), true,
                                 response.converterMap.get(
                                     SegmentCacheIndexImpl
-                                        .makeConverterKey(segmentWithData.getHeader())));
-                            ((SlotFuture<SegmentBody>)index.getFuture(segmentWithData.getHeader()))
-                                .put(body);
+                                        .makeConverterKey(
+                                            segmentWithData.getHeader())));
+                            ((SlotFuture<SegmentBody>)index.getFuture(
+                                segmentWithData.getHeader()))
+                                    .put(body);
                             return null;
                         }
                         public Locus getLocus() {
