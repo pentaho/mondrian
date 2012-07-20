@@ -1833,6 +1833,72 @@ xalan.jar"/>
     <retroweaver inputjar="${olap4j.in.jar.file}" outputjar="${olap4j.out.jar.file}" />
   </target>
 
+  <!--=======================================================================
+	          publish-workbench-jar
+	          
+	          Deploys the workbench jar to a maven repository
+      ====================================================================-->
+
+  <target name="publish-workbench-jar" depends="install-antcontrib, workbench-dist">
+    <antcall target="maven-publish-jar">
+      <param name="publish.groupId" value="${ivy.artifact.group}" />
+      <param name="publish.version" value="${project.revision}" />
+      <param name="publish.artifactId" value="workbench" />
+      <param name="publish.file" value="${workbench.jar.file}" />
+      <param name="publish.packaging" value="jar" />
+      <param name="publish.generatePom" value="false" />
+    </antcall>
+  </target>
+
+  <!--=======================================================================
+          maven-publish-artifact
+          
+          A generic function that deploys an artifact to a maven repository
+      ====================================================================-->
+  <target name="maven-publish-jar">
+    <sequential>
+      <fail message="No file found at: ${publish.file}">
+        <condition>
+          <not>
+            <available file="${publish.file}" />
+          </not>
+        </condition>
+      </fail>
+      <echo message="Publishing ${publish.file} to ${ivy.repository.publish}..." />
+      <if>
+        <isset property="isWindows" />
+        <then>
+          <exec executable="cmd" failonerror="true">
+            <arg value="/c" />
+            <arg value="mvn.bat" />
+            <arg value="deploy:deploy-file" />
+            <arg value="-DrepositoryId=${ivy.repository.id}" />
+            <arg value="-Durl=${ivy.repository.publish}" />
+            <arg value="-DgroupId=${publish.groupId}" />
+            <arg value="-DartifactId=${publish.artifactId}" />
+            <arg value="-Dversion=${publish.version}" />
+            <arg value="-Dfile=${publish.file}" />
+            <arg value="-Dpackaging=${publish.packaging}" />
+            <arg value="-DgeneratePom=${publish.generatePom}" />
+          </exec>
+        </then>
+        <else>
+          <exec executable="mvn" failonerror="true">
+            <arg value="deploy:deploy-file" />
+            <arg value="-DrepositoryId=${ivy.repository.id}" />
+            <arg value="-Durl=${ivy.repository.publish}" />
+            <arg value="-DgroupId=${publish.groupId}" />
+            <arg value="-DartifactId=${publish.artifactId}" />
+            <arg value="-Dversion=${publish.version}" />
+            <arg value="-Dfile=${publish.file}" />
+            <arg value="-Dpackaging=${publish.packaging}" />
+            <arg value="-DgeneratePom=${publish.generatePom}" />
+          </exec>
+        </else>
+      </if>
+    </sequential>
+  </target>
+
 </project>
 
 <!-- End build.xml -->
