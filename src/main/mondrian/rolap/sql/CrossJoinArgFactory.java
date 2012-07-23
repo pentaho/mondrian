@@ -13,6 +13,7 @@ package mondrian.rolap.sql;
 import mondrian.calc.*;
 import mondrian.mdx.*;
 import mondrian.olap.*;
+import mondrian.olap.Role.RollupPolicy;
 import mondrian.olap.fun.*;
 import mondrian.olap.type.HierarchyType;
 import mondrian.olap.type.Type;
@@ -471,13 +472,20 @@ public class CrossJoinArgFactory {
             return null;
         }
         // Children of a member in an access-controlled hierarchy cannot be
-        // converted to SQL. (We could be smarter; we don't currently notice
-        // when the member is in a part of the hierarchy that is not
-        // access-controlled.)
+        // converted to SQL when RollupPolicy=FULL. (We could be smarter; we
+        // don't currently notice when we don't look below the rolled up level
+        // therefore no access-control is needed.
         final Access access = role.getAccess(level.getHierarchy());
         switch (access) {
         case ALL:
             break;
+        case CUSTOM:
+            final RollupPolicy rollupPolicy =
+                role.getAccessDetails(level.getHierarchy()).getRollupPolicy();
+            if (rollupPolicy == RollupPolicy.FULL) {
+                return null;
+            }
+        break;
         default:
             return null;
         }
@@ -511,13 +519,20 @@ public class CrossJoinArgFactory {
             return null;
         }
         // Members of a level in an access-controlled hierarchy cannot be
-        // converted to SQL. (We could be smarter; we don't currently notice
-        // when the level is in a part of the hierarchy that is not
-        // access-controlled.)
+        // converted to SQL when RollupPolicy=FULL. (We could be smarter; we
+        // don't currently notice when we don't look below the rolled up level
+        // therefore no access-control is needed.
         final Access access = role.getAccess(level.getHierarchy());
         switch (access) {
         case ALL:
             break;
+        case CUSTOM:
+            final RollupPolicy rollupPolicy =
+                role.getAccessDetails(level.getHierarchy()).getRollupPolicy();
+            if (rollupPolicy == RollupPolicy.FULL) {
+                return null;
+            }
+        break;
         default:
             return null;
         }

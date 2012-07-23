@@ -13,12 +13,16 @@ package mondrian.rolap;
 
 import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
+import mondrian.olap.MondrianDef.RelationOrJoin;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 import mondrian.spi.Dialect;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 /**
@@ -112,6 +116,29 @@ public class RolapNativeTopCount extends RolapNativeSet {
                     ((RolapEvaluator)this.getEvaluator())
                     .getSlicerMembers());
             }
+            
+            // Add restrictions imposed by Role based access filtering
+            SchemaReader schemaReader = this.getEvaluator().getSchemaReader();
+            Member[] mm = this.getEvaluator().getMembers();
+            for (int mIndex = 0; mIndex < mm.length; mIndex++) {
+                if (mm[mIndex] instanceof RolapHierarchy.LimitedRollupMember
+                    || mm[mIndex] instanceof
+                       RestrictedMemberReader.MultiCardinalityDefaultMember)
+                {
+                    List<Level> hierarchyLevels = schemaReader
+                            .getHierarchyLevels(mm[mIndex].getHierarchy());
+                    for (Level affectedLevel : hierarchyLevels) {
+
+                        List<Member> availableMembers = schemaReader
+                                .getLevelMembers(affectedLevel, false);
+                        for (Member member : availableMembers) {
+                            if (!member.isAll()) {
+                                key.add(member);
+                            }
+                        }
+                    }
+                }
+            }
 
             return key;
         }
@@ -197,19 +224,6 @@ public class RolapNativeTopCount extends RolapNativeSet {
         final int savepoint = evaluator.savepoint();
         try {
             overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
-            Member[] mm = evaluator.getMembers();
-            for (int mIndex = 0; mIndex < mm.length; mIndex++) {
-                if (mm[mIndex] instanceof RolapHierarchy.LimitedRollupMember) {
-                    List<Level> hierarchyLevels =
-                        schemaReader
-                            .getHierarchyLevels(mm[mIndex].getHierarchy());
-                    for (Level affectedLevel : hierarchyLevels) {
-                        List<Member> availableMembers =
-                            schemaReader.getLevelMembers(affectedLevel, false);
-                        evaluator.setContext(availableMembers);
-                    }
-                }
-            }
 
             CrossJoinArg[] predicateArgs = null;
             if (allArgs.size() == 2) {
