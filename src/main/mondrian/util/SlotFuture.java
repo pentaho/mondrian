@@ -59,7 +59,7 @@ public class SlotFuture<V> implements Future<V> {
     public boolean isDone() {
         stateLock.readLock().lock();
         try {
-            return done;
+            return done || cancelled || throwable != null;
         } finally {
             stateLock.readLock().unlock();
         }

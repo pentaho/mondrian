@@ -267,7 +267,12 @@ public class FastBatchingCellReader implements CellReader {
                 segmentWithData.getStar().register(segmentWithData);
             }
 
-            // Perform each suggested rollup.
+            /*
+             * Perform each suggested rollup.
+             *
+             * TODO this could be improved.
+             * See http://jira.pentaho.com/browse/MONDRIAN-1195
+             */
 
             // Rollups that succeeded. Will tell cache mgr to put the headers
             // into the index and the header/bodies in cache.
@@ -323,15 +328,17 @@ public class FastBatchingCellReader implements CellReader {
                             SegmentCacheIndex index =
                                 cacheMgr.getIndexRegistry()
                                     .getIndex(segmentWithData.getStar());
-                            index.add(
+                            boolean added = index.add(
                                 segmentWithData.getHeader(), true,
                                 response.converterMap.get(
                                     SegmentCacheIndexImpl
                                         .makeConverterKey(
                                             segmentWithData.getHeader())));
-                            ((SlotFuture<SegmentBody>)index.getFuture(
-                                segmentWithData.getHeader()))
-                                    .put(body);
+                            if (added) {
+                                ((SlotFuture<SegmentBody>)index.getFuture(
+                                    segmentWithData.getHeader()))
+                                        .put(body);
+                            }
                             return null;
                         }
                         public Locus getLocus() {

@@ -497,7 +497,9 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
      * @see #testAggregationOverLargeListGeneratesError
      */
     public void testAggregateMaxConstraints() {
-        propSaver.set(MondrianProperties.instance().SsasCompatibleNaming, true);
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
         propSaver.set(MondrianProperties.instance().MaxConstraints, 5);
         TestContext.instance().assertQueryReturns(
             "SELECT\n"

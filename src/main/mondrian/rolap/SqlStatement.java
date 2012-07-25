@@ -220,6 +220,15 @@ public class SqlStatement {
             }
         } catch (Throwable e) {
             status = ", failed (" + e + ")";
+
+            try {
+                if (resultSet != null) {
+                    resultSet.close();
+                }
+            } catch (SQLException e2) {
+                // ignore
+            }
+
             try {
                 if (statement != null) {
                     statement.close();
@@ -227,6 +236,15 @@ public class SqlStatement {
             } catch (SQLException e2) {
                 // ignore
             }
+
+            try {
+                if (jdbcConnection != null) {
+                    jdbcConnection.close();
+                }
+            } catch (SQLException e2) {
+                // ignore
+            }
+
             if (haveSemaphore) {
                 haveSemaphore = false;
                 querySemaphore.leave();
@@ -267,12 +285,13 @@ public class SqlStatement {
         // statements. But let's be conservative and close everything
         // explicitly.
         Statement statement = null;
+        SQLException ex = null;
         if (resultSet != null) {
             try {
                 statement = resultSet.getStatement();
                 resultSet.close();
             } catch (SQLException e) {
-                throw Util.newError(locus.message + "; sql=[" + sql + "]");
+                ex = e;
             } finally {
                 resultSet = null;
             }
@@ -281,18 +300,29 @@ public class SqlStatement {
             try {
                 statement.close();
             } catch (SQLException e) {
-                throw Util.newError(locus.message + "; sql=[" + sql + "]");
+                if (ex != null) {
+                    ex = e;
+                }
             }
         }
         if (jdbcConnection != null) {
             try {
                 jdbcConnection.close();
             } catch (SQLException e) {
-                throw Util.newError(locus.message + "; sql=[" + sql + "]");
+                if (ex != null) {
+                    ex = e;
+                }
             } finally {
                 jdbcConnection = null;
             }
         }
+
+        if (ex != null) {
+            throw Util.newError(
+                ex,
+                locus.message + "; sql=[" + sql + "]");
+        }
+
         long endTime = System.currentTimeMillis();
         long totalMs = endTime - startTimeMillis;
         String status =
