@@ -254,8 +254,16 @@ public class CacheControlImpl implements CacheControl {
         // ignore message
     }
 
+    public boolean isTraceEnabled() {
+        return false;
+    }
+
     public void flushSchemaCache() {
         RolapSchemaPool.instance().clear();
+        // In some cases, the request might originate from a reference
+        // to the schema which isn't in the pool anymore. We must also call
+        // the cleanup procedure on the current connection.
+        connection.getSchema().finalCleanUp();
     }
 
     // todo: document

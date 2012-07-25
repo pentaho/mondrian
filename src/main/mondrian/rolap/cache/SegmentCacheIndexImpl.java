@@ -129,7 +129,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         return list;
     }
 
-    public void add(
+    public boolean add(
         SegmentHeader header,
         boolean loading,
         SegmentBuilder.SegmentConverter converter)
@@ -140,8 +140,10 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
         if (headerInfo != null) {
             if (loading && headerInfo.slot == null) {
                 headerInfo.slot = new SlotFuture<SegmentBody>();
+                // Returns true. same as creating.
+                return true;
             }
-            return;
+            return false;
         }
         headerMap.put(
             header,
@@ -177,6 +179,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             fuzzyFactMap.put(fuzzyFactKey, fuzzyFactInfo);
         }
         fuzzyFactInfo.headerList.add(header);
+        return true;
     }
 
     public void loadSucceeded(SegmentHeader header, SegmentBody body) {
@@ -187,7 +190,9 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             : "segment header " + header.getUniqueID() + " is missing";
         assert headerInfo.slot != null
             : "segment header " + header.getUniqueID() + " is not loading";
-        headerInfo.slot.put(body);
+        if (!headerInfo.slot.isDone()) {
+            headerInfo.slot.put(body);
+        }
         if (headerInfo.removeAfterLoad) {
             remove(header);
         }

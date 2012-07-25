@@ -472,6 +472,46 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
             result);
     }
 
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.org/browse/MONDRIAN-1122">MONDRIAN-1122,
+     * "Aggregation is not supported over a list with more than 1000
+     * predicates"</a>.
+     *
+     * @see #testAggregationOverLargeListGeneratesError
+     */
+    public void testAggregateMaxConstraints() {
+        propSaver.set(MondrianProperties.instance().MaxConstraints, 5);
+        TestContext.instance().assertQueryReturns(
+            "SELECT\n"
+            + "  Measures.[Unit Sales] on columns,\n"
+            + "  Product.[Product Family].Members on rows\n"
+            + "FROM Sales\n"
+            + "WHERE {\n"
+            + "  [Time].[All Weeklys].[1997].[1].[15],\n"
+            + "  [Time].[All Weeklys].[1997].[2].[1],\n"
+            + "  [Time].[All Weeklys].[1997].[3].[11],\n"
+            + "  [Time].[All Weeklys].[1997].[4].[13],\n"
+            + "  [Time].[All Weeklys].[1997].[5].[22],\n"
+            + "  [Time].[All Weeklys].[1997].[6].[1]}",
+            "Axis #0:\n"
+            + "{[Time].[Weekly].[1997].[1].[15]}\n"
+            + "{[Time].[Weekly].[1997].[2].[1]}\n"
+            + "{[Time].[Weekly].[1997].[3].[11]}\n"
+            + "{[Time].[Weekly].[1997].[4].[13]}\n"
+            + "{[Time].[Weekly].[1997].[5].[22]}\n"
+            + "{[Time].[Weekly].[1997].[6].[1]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Product].[Drink]}\n"
+            + "{[Product].[Food]}\n"
+            + "{[Product].[Non-Consumable]}\n"
+            + "Row #0: 458\n"
+            + "Row #1: 3,746\n"
+            + "Row #2: 937\n");
+    }
+
     public void testMultiLevelMembersNullParents() {
         if (!isDefaultNullMemberRepresentation()) {
             return;

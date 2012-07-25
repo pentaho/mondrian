@@ -702,6 +702,19 @@ public class SegmentCacheManager {
                         storedMeasure.getMeasureGroup().getStar()
                             .getFactTable().getAlias(),
                         flushRegion));
+                if (cacheControlImpl.isTraceEnabled()) {
+                    Collections.sort(
+                        headers,
+                        new Comparator<SegmentHeader>() {
+                            public int compare(
+                                SegmentHeader o1,
+                                SegmentHeader o2)
+                            {
+                                return o1.getUniqueID()
+                                    .compareTo(o2.getUniqueID());
+                            }
+                        });
+                }
             }
 
             // If flushRegion is empty, this means we must clear all
@@ -1480,9 +1493,8 @@ public class SegmentCacheManager {
                     {
                         /*
                          * We can't satisfy this request, and we must clear the
-                         * data from our cache. We clear it from the index
-                         * first, then queue up a job in the background
-                         * to remove the data from all the caches.
+                         * data from our cache. This must be in sync with the
+                         * actor thread to maintain consistency.
                          */
                         indexRegistry.getIndex(star).remove(header);
                         Util.safeGet(
@@ -1500,6 +1512,7 @@ public class SegmentCacheManager {
                                     }
                                 }),
                             "SegmentCacheManager.peek");
+                        continue;
                     }
                     converterMap.put(
                         SegmentCacheIndexImpl.makeConverterKey(header),

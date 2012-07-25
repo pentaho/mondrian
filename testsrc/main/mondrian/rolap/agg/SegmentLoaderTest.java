@@ -18,6 +18,7 @@ import mondrian.spi.Dialect;
 import mondrian.test.SqlPattern;
 import mondrian.util.DelegatingInvocationHandler;
 
+import java.io.PrintWriter;
 import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.util.*;
@@ -35,12 +36,14 @@ public class SegmentLoaderTest extends BatchTestCase {
     private Execution execution;
     private Locus locus;
     private SegmentCacheManager cacheMgr;
+    private Statement statement;
 
     protected void setUp() throws Exception {
         super.setUp();
-
-        final Statement statement =
-            ((RolapConnection) getConnection()).getInternalStatement();
+        cacheMgr =
+            ((RolapConnection) getConnection())
+                .getServer().getAggregationManager().cacheMgr;
+        statement = ((RolapConnection) getConnection()).getInternalStatement();
         execution = new Execution(statement, 1000);
         locus = new Locus(execution, null, null);
         cacheMgr = execution.getMondrianStatement().getMondrianConnection()
@@ -54,10 +57,16 @@ public class SegmentLoaderTest extends BatchTestCase {
         super.tearDown();
         Locus.pop(locus);
         try {
+            statement.cancel();
+        } catch (Exception e) {
+            // ignore.
+        }
+        try {
             execution.cancel();
         } catch (Exception e) {
             // ignore.
         }
+        statement = null;
         execution = null;
         locus = null;
         cacheMgr = null;
@@ -65,7 +74,9 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     public void testRollup() throws Exception {
         for (boolean rollup : new Boolean[] {true, false}) {
-            getConnection().getCacheControl(null).flushSchemaCache();
+            PrintWriter pw = new PrintWriter(System.out);
+            getConnection().getCacheControl(pw).flushSchemaCache();
+            pw.flush();
             propSaver.set(
                 MondrianProperties.instance().DisableCaching,
                 true);
@@ -78,7 +89,6 @@ public class SegmentLoaderTest extends BatchTestCase {
                 "select `time_by_day`.`the_year` as `c0`, sum(`sales_fact_1997`.`unit_sales`) as `m0` from `time_by_day` as `time_by_day`, `sales_fact_1997` as `sales_fact_1997` where `sales_fact_1997`.`time_id` = `time_by_day`.`time_id` group by `time_by_day`.`the_year`";
             executeQuery(
                 "select {[Store].[Store Country].Members} on rows, {[Time].[Time].[Year].Members} on columns from [Sales]");
-            getTestContext().flushSchemaCache();
             assertQuerySqlOrNot(
                 getTestContext(),
                 "select {[Time].[Time].[Year].Members} on columns from [Sales]",
@@ -123,6 +133,9 @@ public class SegmentLoaderTest extends BatchTestCase {
         final List<Future<Map<Segment, SegmentWithData>>> segmentFutures =
             new ArrayList<Future<Map<Segment, SegmentWithData>>>();
         loader.load(0, groupingSets, null, segmentFutures);
+        for (Future<?> future : segmentFutures) {
+            Util.safeGet(future, "");
+        }
         SegmentAxis[] axes = groupingSetsInfo.getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);
@@ -237,6 +250,9 @@ public class SegmentLoaderTest extends BatchTestCase {
         final List<Future<Map<Segment, SegmentWithData>>> segmentFutures =
             new ArrayList<Future<Map<Segment, SegmentWithData>>>();
         loader.load(0, groupingSets, null, segmentFutures);
+        for (Future<?> future : segmentFutures) {
+            Util.safeGet(future, "");
+        }
         SegmentAxis[] axes = groupingSetsInfo.getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);
@@ -307,6 +323,9 @@ public class SegmentLoaderTest extends BatchTestCase {
         final List<Future<Map<Segment, SegmentWithData>>> segmentFutures =
             new ArrayList<Future<Map<Segment, SegmentWithData>>>();
         loader.load(0, groupingSets, null, segmentFutures);
+        for (Future<?> future : segmentFutures) {
+            Util.safeGet(future, "");
+        }
         SegmentAxis[] axes = groupingSetsInfo.getAxes();
         verifyYearAxis(axes[0]);
         verifyProductFamilyAxis(axes[1]);
@@ -388,7 +407,6 @@ public class SegmentLoaderTest extends BatchTestCase {
     private GroupingSet getGroupingSetRollupOnGender() {
         return
             getGroupingSet(
-                execution,
                 new String[]{tableTime, tableProductClass, tableProductClass},
                 new String[]{
                     fieldYear, fieldProductFamily, fieldProductDepartment},
@@ -503,41 +521,56 @@ public class SegmentLoaderTest extends BatchTestCase {
     }
 
     private void verifyUnitSalesDetailedForSparse(SegmentWithData segment) {
-        List<CellKey> cellKeys = new ArrayList<CellKey>();
-        cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 2, 1, 0}));
-        cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 0, 2, 0}));
-        cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 1, 0, 0}));
-        cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 2, 1, 1}));
-        cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 1, 0, 1}));
-        cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 1, 3, 0}));
-        cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 0, 2, 1}));
-        cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 1, 3, 1}));
-        Double[] unitSalesValues = {
-            368.0, 1987.0, 867.0, 473.0, 945.0, 5990.0, 2199.0,
-            6047.0
-        };
+        Map<CellKey, Double> cells = new HashMap<CellKey, Double>();
+        cells.put(
+            CellKey.Generator.newCellKey(new int[]{0, 2, 1, 0}),
+            368.0);
+        cells.put(
+            CellKey.Generator.newCellKey(new int[]{0, 0, 2, 0}),
+            1987.0);
+        cells.put(
+            CellKey.Generator.newCellKey(new int[]{0, 1, 0, 0}),
+            867.0);
+        cells.put(
+            CellKey.Generator.newCellKey(new int[]{0, 2, 1, 1}),
+            473.0);
+        cells.put(
+            CellKey.Generator.newCellKey(new int[]{0, 1, 0, 1}),
+            945.0);
+        cells.put(
+            CellKey.Generator.newCellKey(new int[]{0, 1, 3, 0}),
+            5990.0);
+        cells.put(
+            CellKey.Generator.newCellKey(new int[]{0, 0, 2, 1}),
+            2199.0);
+        cells.put(
+            CellKey.Generator.newCellKey(new int[]{0, 1, 3, 1}),
+            6047.0);
 
-        int index = 0;
         for (Map.Entry<CellKey, Object> x : segment.getData()) {
-            assertEquals(cellKeys.get(index), x.getKey());
-            assertEquals(unitSalesValues[index], x.getValue());
-            index++;
+            assertTrue(cells.containsKey(x.getKey()));
+            assertEquals(cells.get(x.getKey()), x.getValue());
         }
     }
 
     private void verifyUnitSalesAggregateForSparse(SegmentWithData segment) {
-        List<CellKey> cellKeys = new ArrayList<CellKey>();
-        cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 2, 1}));
-        cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 1, 0}));
-        cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 1, 3}));
-        cellKeys.add(CellKey.Generator.newCellKey(new int[]{0, 0, 2}));
-        Double[] unitSalesValues = {841.0, 1812.0, 12037.0, 4186.0,};
+        Map<CellKey, Double> cells = new HashMap<CellKey, Double>();
+        cells.put(
+            CellKey.Generator.newCellKey(new int[]{0, 2, 1}),
+            841.0);
+        cells.put(
+            CellKey.Generator.newCellKey(new int[]{0, 1, 0}),
+            1812.0);
+        cells.put(
+            CellKey.Generator.newCellKey(new int[]{0, 1, 3}),
+            12037.0);
+        cells.put(
+            CellKey.Generator.newCellKey(new int[]{0, 0, 2}),
+            4186.0);
 
-        int index = 0;
         for (Map.Entry<CellKey, Object> x : segment.getData()) {
-            assertEquals(cellKeys.get(index), x.getKey());
-            assertEquals(unitSalesValues[index], x.getValue());
-            index++;
+            assertTrue(cells.containsKey(x.getKey()));
+            assertEquals(cells.get(x.getKey()), x.getValue());
         }
     }
 
@@ -621,7 +654,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     private GroupingSet getGroupingSetRollupOnGenderAndProductFamily() {
         return getGroupingSet(
-            execution, new String[]{tableTime, tableProductClass},
+            new String[]{tableTime, tableProductClass},
             new String[]{fieldYear, fieldProductDepartment},
             new String[][]{fieldValuesYear, fieldValueProductDepartment},
             cubeNameSales, measureUnitSales);
@@ -674,7 +707,6 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     private GroupingSet getGroupingSetRollupOnGenderAndProductDepartment() {
         return getGroupingSet(
-            execution,
             new String[]{tableProductClass, tableTime},
             new String[]{fieldProductFamily, fieldYear},
             new String[][]{fieldValuesProductFamily, fieldValuesYear},
@@ -686,7 +718,6 @@ public class SegmentLoaderTest extends BatchTestCase {
         getGroupingSetRollupOnProductFamilyAndProductDepartment()
     {
         return getGroupingSet(
-            execution,
             new String[]{tableCustomer, tableTime},
             new String[]{fieldGender, fieldYear},
             new String[][]{fieldValuesGender, fieldValuesYear},
@@ -698,7 +729,6 @@ public class SegmentLoaderTest extends BatchTestCase {
         getGroupingSetRollupOnGenderAndProductDepartmentAndYear()
     {
         return getGroupingSet(
-            execution,
             new String[]{tableProductClass},
             new String[]{fieldProductFamily},
             new String[][]{fieldValuesProductFamily},
@@ -708,7 +738,6 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     private GroupingSet getGroupingSetRollupOnProductDepartment() {
         return getGroupingSet(
-            execution,
             new String[]{tableCustomer, tableProductClass, tableTime},
             new String[]{fieldGender, fieldProductFamily, fieldYear},
             new String[][]{
@@ -814,7 +843,7 @@ public class SegmentLoaderTest extends BatchTestCase {
 
     private GroupingSet getDefaultGroupingSet() {
         return getGroupingSet(
-            execution, new String[]{tableCustomer, tableProductClass,
+            new String[]{tableCustomer, tableProductClass,
                 tableProductClass, tableTime},
             new String[]{fieldGender, fieldProductDepartment,
                 fieldProductFamily, fieldYear},

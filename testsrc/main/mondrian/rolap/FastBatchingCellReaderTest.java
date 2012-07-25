@@ -9,6 +9,7 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Connection;
 import mondrian.olap.MondrianProperties;
 import mondrian.olap.MondrianServer;
 import mondrian.rolap.agg.*;
@@ -35,12 +36,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     private Execution e;
     private AggregationManager aggMgr;
     private RolapCube salesCube;
+    private Connection connection;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        getTestContext().getConnection()
-            .getCacheControl(null).flushSchemaCache();
+        connection = getTestContext().getConnection();
+        connection.getCacheControl(null).flushSchemaCache();
         final Statement statement =
             ((RolapConnection) getTestContext().getConnection())
                 .getInternalStatement();
@@ -60,6 +62,8 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     protected void tearDown() throws Exception {
         Locus.pop(locus);
         // cleanup
+        connection.close();
+        connection = null;
         e = null;
         aggMgr = null;
         locus = null;
