@@ -223,30 +223,7 @@ public class SqlStatement {
             }
         } catch (Throwable e) {
             status = ", failed (" + e + ")";
-
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-            } catch (SQLException e2) {
-                // ignore
-            }
-
-            try {
-                if (statement != null) {
-                    statement.close();
-                }
-            } catch (SQLException e2) {
-                // ignore
-            }
-
-            try {
-                if (jdbcConnection != null) {
-                    jdbcConnection.close();
-                }
-            } catch (SQLException e2) {
-                // ignore
-            }
+            Util.close(resultSet, statement, jdbcConnection);
 
             if (haveSemaphore) {
                 haveSemaphore = false;
