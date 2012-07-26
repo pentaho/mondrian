@@ -17,11 +17,17 @@ import mondrian.spi.StatisticsProvider;
 import java.sql.*;
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
+
+import com.mysql.jdbc.log.Log;
+
 /**
  * Implementation of {@link mondrian.spi.StatisticsProvider} that uses JDBC
  * metadata calls to count rows and distinct values.
  */
 public class JdbcStatisticsProvider implements StatisticsProvider {
+    private static final Logger LOG =
+        Logger.getLogger(JdbcStatisticsProvider.class);
     public int getTableCardinality(
         Dialect dialect,
         DataSource dataSource,
@@ -57,8 +63,15 @@ public class JdbcStatisticsProvider implements StatisticsProvider {
             // columns will cover most of the table.
             return maxNonUnique;
         } catch (SQLException e) {
-            throw Util.newInternal(
-                e, "while computing cardinality of table [" + table + "]");
+            // We will have to try a count() operation or some other
+            // statistics provider in the chain.
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "JdbcStatisticsProvider failed to get the cardinality of the table "
+                        + table,
+                    e);
+            }
+            return -1;
         } finally {
             Util.close(resultSet, null, connection);
         }
@@ -100,8 +113,15 @@ public class JdbcStatisticsProvider implements StatisticsProvider {
             }
             return -1; // information not available, apparently
         } catch (SQLException e) {
-            throw Util.newInternal(
-                e, "while computing cardinality of table [" + table + "]");
+            // We will have to try a count() operation or some other
+            // statistics provider in the chain.
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "JdbcStatisticsProvider failed to get the cardinality of the table "
+                        + table,
+                    e);
+            }
+            return -1;
         } finally {
             Util.close(resultSet, null, connection);
         }
