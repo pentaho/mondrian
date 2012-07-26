@@ -19,8 +19,6 @@ import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
-import com.mysql.jdbc.log.Log;
-
 /**
  * Implementation of {@link mondrian.spi.StatisticsProvider} that uses JDBC
  * metadata calls to count rows and distinct values.
