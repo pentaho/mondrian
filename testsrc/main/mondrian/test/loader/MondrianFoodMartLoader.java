@@ -26,8 +26,6 @@ import java.util.*;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 /**
  * Utility to load the FoodMart dataset (and other data sets such as
@@ -54,9 +52,7 @@ import java.util.zip.ZipFile;
  * index statements, or directly to a JDBC connection with JDBC batches
  * (lots faster!)</p>
  *
- * <h3>Command line examples for specific databases</h3>
- *
- * <h4>MySQL</h4>
+ * <h3>Command line examples for MySQL</h3>
  *
  * <blockquote><code>
  * $ mysqladmin create foodmart<br/>
@@ -65,27 +61,6 @@ import java.util.zip.ZipFile;
  *     -aggregates -tables -data -indexes -jdbcDrivers=com.mysql.jdbc.Driver
  *     -inputJdbcURL=jdbc:odbc:MondrianFoodMart
  *     -outputJdbcURL=jdbc:mysql://localhost/foodmart
- * </code></blockquote>
- *
- * <h4>FirebirdSQL</h4>
- *
- * <blockquote><code>
- * $ /firebird/bin/isql -u SYSDBA -p masterkey<br/>
- * Use CONNECT or CREATE DATABASE to specify a database<br/>
- * SQL&gt; CREATE DATABASE '/mondrian/foodmart.gdb';<br/>
- * SQL&gt; QUIT;<br/>
- * $ java -cp "/mondrian/lib/mondrian.jar:/mondrian/lib/log4j.jar:
- * /mondrian/lib/eigenbase-xom.jar:/mondrian/lib/eigenbase-resgen.jar:
- * /mondrian/lib/eigenbase-properties.jar:/jdbc/fb/firebirdsql-full.jar"
- *    mondrian.test.loader.MondrianFoodMartLoader
- *    -dataset=FOODMART
- *    -tables -data -indexes
- *    -jdbcDrivers="org.firebirdsql.jdbc.FBDriver"
- *    -inputFile="/mondrian/demo/FoodMartCreateData.sql"
- *    -outputJdbcURL="jdbc:firebirdsql:localhost/3050:/mondrian/foodmart.gdb"
- *    -outputQuoted=true
- *    -inputJdbcUser=SYSDBA
- *    -inputJdbcPassword=masterkey
  * </code></blockquote>
  *
  * <p>See {@code bin/loadFoodMart.sh} for examples of command lines for other
@@ -127,6 +102,7 @@ public class MondrianFoodMartLoader {
     private String inputPassword;
     private String inputSchema = null;
     private String inputFile;
+    private String afterFile;
     private String outputDirectory;
     private boolean aggregates = false;
     private boolean tables = false;
@@ -196,12 +172,10 @@ public class MondrianFoodMartLoader {
             } else if (arg.equals("-data")) {
                 data = true;
             } else if (arg.startsWith("-dataset=")) {
-                String datasetName = arg.substring("-dataset=".length());
+                String datasetName = parseArg(arg, "-dataset=");
                 dataset = Dataset.valueOf(datasetName.toUpperCase());
             } else if (arg.startsWith("-pauseMillis=")) {
-                pauseMillis =
-                    Long.parseLong(
-                        arg.substring("-pauseMillis=".length()));
+                pauseMillis = Long.parseLong(parseArg(arg, "-pauseMillis="));
             } else if (arg.equals("-indexes")) {
                 indexes = true;
             } else if (arg.equals("-populationQueries")) {
@@ -209,44 +183,40 @@ public class MondrianFoodMartLoader {
             } else if (arg.equals("-analyze")) {
                 analyze = true;
             } else if (arg.startsWith("-include=")) {
-                include = Pattern.compile(arg.substring("-include=".length()));
+                include = Pattern.compile(parseArg(arg, "-include="));
             } else if (arg.startsWith("-exclude=")) {
-                exclude = Pattern.compile(arg.substring("-exclude=".length()));
+                exclude = Pattern.compile(parseArg(arg, "-exclude="));
             } else if (arg.startsWith("-jdbcDrivers=")) {
-                jdbcDrivers = arg.substring("-jdbcDrivers=".length());
+                jdbcDrivers = parseArg(arg, "-jdbcDrivers=");
             } else if (arg.startsWith("-outputQuoted=")) {
-                quoted =
-                    Boolean.valueOf(arg.substring("-outputQuoted=".length()));
+                quoted = Boolean.valueOf(parseArg(arg, "-outputQuoted="));
             } else if (arg.startsWith("-outputJdbcURL=")) {
-                jdbcURL = arg.substring("-outputJdbcURL=".length());
+                jdbcURL = parseArg(arg, "-outputJdbcURL=");
             } else if (arg.startsWith("-outputJdbcUser=")) {
-                userName = arg.substring("-outputJdbcUser=".length());
+                userName = parseArg(arg, "-outputJdbcUser=");
             } else if (arg.startsWith("-outputJdbcPassword=")) {
-                password = arg.substring("-outputJdbcPassword=".length());
+                password = parseArg(arg, "-outputJdbcPassword=");
             } else if (arg.startsWith("-outputJdbcSchema=")) {
-                schema = arg.substring("-outputJdbcSchema=".length());
-                if (schema.trim().length() == 0) {
-                    schema = null;
-                }
+                schema = parseArg(arg, "-outputJdbcSchema=");
             } else if (arg.startsWith("-inputJdbcURL=")) {
-                inputJdbcURL = arg.substring("-inputJdbcURL=".length());
+                String s = "-inputJdbcURL=";
+                inputJdbcURL = parseArg(arg, s);
             } else if (arg.startsWith("-inputJdbcUser=")) {
-                inputUserName = arg.substring("-inputJdbcUser=".length());
+                inputUserName = parseArg(arg, "-inputJdbcUser=");
             } else if (arg.startsWith("-inputJdbcPassword=")) {
-                inputPassword = arg.substring("-inputJdbcPassword=".length());
+                inputPassword = parseArg(arg, "-inputJdbcPassword=");
             } else if (arg.startsWith("-inputJdbcSchema=")) {
-                inputSchema = arg.substring("-inputJdbcSchema=".length());
-                if (inputSchema.trim().length() == 0) {
-                    inputSchema = null;
-                }
+                inputSchema = parseArg(arg, "-inputJdbcSchema=");
             } else if (arg.startsWith("-inputFile=")) {
-                inputFile = arg.substring("-inputFile=".length());
+                inputFile = parseArg(arg, "-inputFile=");
+            } else if (arg.startsWith("-afterFile=")) {
+                afterFile = parseArg(arg, "-afterFile=");
             } else if (arg.startsWith("-outputDirectory=")) {
-                outputDirectory = arg.substring("-outputDirectory=".length());
+                outputDirectory = parseArg(arg, "-outputDirectory=");
             } else if (arg.startsWith("-outputJdbcBatchSize=")) {
                 outputBatchSize =
                     Integer.parseInt(
-                        arg.substring("-outputJdbcBatchSize=".length()));
+                        parseArg(arg, "-outputJdbcBatchSize="));
             } else {
                 errorMessage.append("unknown arg: ").append(arg).append(nl);
             }
@@ -276,6 +246,14 @@ public class MondrianFoodMartLoader {
         }
     }
 
+    private String parseArg(String arg, String option) {
+        String suffix = arg.substring(option.length());
+        if (suffix.trim().length() == 0) {
+            return null;
+        }
+        return suffix;
+    }
+
     /**
      * Prints help.
      */
@@ -301,6 +279,7 @@ public class MondrianFoodMartLoader {
             + "   | "
             + "   [-inputfile=<file name>]"
             + "]"
+            + "[-afterfile=<file name>]"
             + "\n"
             + "  <jdbcURL>             JDBC connect string for DB.\n"
             + "  [user]                JDBC user name for DB.\n"
@@ -311,9 +290,9 @@ public class MondrianFoodMartLoader {
             + "  [file name]           File containing test data - INSERT statements in MySQL\n"
             + "                        format. If no input file name or input JDBC parameters\n"
             + "                        are given, assume insert statements come from\n"
-            + "                        demo/FoodMartCreateData.zip file\n"
-            + "  [outputDirectory]     Where FoodMartCreateTables.sql, FoodMartCreateData.sql\n"
-            + "                        and FoodMartCreateIndexes.sql will be created.\n"
+            + "                        the data.sql file inside mondrian-data-foodmart.jar\n"
+            + "  [outputDirectory]     Where createTables.sql, createData.sql\n"
+            + "                        and createIndexes.sql will be created.\n"
             + "  -outputJdbcBatchSize=<batch size>\n"
             + "                        Size of JDBC batch updates (default 50 records).\n"
             + "  -jdbcDrivers=<jdbcDrivers>\n"
@@ -562,8 +541,7 @@ public class MondrianFoodMartLoader {
         int batchSize)
         throws Exception
     {
-        InputStream is = openInputStream();
-
+        InputStream is = openInputStream("-inputFile", inputFile);
         if (is == null) {
             throw new Exception("No data file to process");
         }
@@ -986,7 +964,27 @@ public class MondrianFoodMartLoader {
      * data.
      */
     private void loadFromSqlInserts() throws Exception {
-        dataset.loadFromSqlInserts(this);
+        if (afterFile == null) {
+            return;
+        }
+        final InputStream is = openInputStream("-afterFile", afterFile);
+        if (is == null) {
+            throw new RuntimeException(
+                "Error while reading " + afterFile);
+        }
+        try {
+            dataset.loadFromSqlInserts(this, is);
+            is.close();
+        } catch (Exception e) {
+            throw new RuntimeException(
+                "Error while reading " + afterFile);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                // ignore
+            }
+        }
     }
 
     private void executeSqlCommandStream(InputStream is) throws Exception {
@@ -1085,7 +1083,7 @@ public class MondrianFoodMartLoader {
         if (pos < 0) {
             if (mandatory) {
                 throw new RuntimeException(
-                    "insert.sql error: No insert clause in " + sb.toString());
+                    "No insert clause in " + sb.toString());
             } else {
                 return sb;
             }
@@ -1361,41 +1359,34 @@ public class MondrianFoodMartLoader {
     }
 
     /**
-     * Open the file of INSERT statements to load the data. Default
-     * file name is ./demo/FoodMartCreateData.zip
+     * Open the file of INSERT statements to load the data.
+     *
+     * @param option Option
+     * @param fileName File name
      *
      * @return FileInputStream
      */
-    private InputStream openInputStream() throws Exception {
-        final String defaultZipFileName =
-            dataset.upperCamel() + "CreateData.zip";
-        final String defaultDataFileName =
-            dataset.upperCamel() + "CreateData.sql";
-        final File file;
-        if (inputFile != null) {
-            // If inputFile appears to be a URL (e.g.
-            // "jar:foo/bar.jar!/baz.sql") open it accordingly. But watch out
-            // for Windows files e.g. "c:/foo.txt".
-            if (inputFile.contains(":")
-                && inputFile.indexOf(":") != 1)
-            {
-                return new URL(inputFile).openStream();
-            }
-            file = new File(inputFile);
-        } else {
-            file = new File("demo", defaultZipFileName);
+    private InputStream openInputStream(String option, String fileName)
+        throws Exception
+    {
+        if (fileName == null) {
+            throw new RuntimeException(
+                "File must be specified. Use the '" + option + "' option.");
         }
+        // If inputFile appears to be a URL (e.g.
+        // "jar:foo/bar.jar!/baz.sql") open it accordingly. But watch out
+        // for Windows files e.g. "c:/foo.txt".
+        if (fileName.contains(":")
+            && fileName.indexOf(":") != 1)
+        {
+            return new URL(fileName).openStream();
+        }
+        final File file = new File(fileName);
         if (!file.exists()) {
             LOGGER.error("No input file: " + file);
             return null;
         }
-        if (file.getName().toLowerCase().endsWith(".zip")) {
-            ZipFile zippedData = new ZipFile(file);
-            ZipEntry entry = zippedData.getEntry(defaultDataFileName);
-            return zippedData.getInputStream(entry);
-        } else {
-            return new FileInputStream(file);
-        }
+        return new FileInputStream(file);
     }
 
     /**
@@ -3506,29 +3497,12 @@ public class MondrianFoodMartLoader {
             }
 
             @Override
-            public void loadFromSqlInserts(MondrianFoodMartLoader loader) {
-                InputStream is = getClass().getResourceAsStream("insert.sql");
-                try {
-                    if (is == null) {
-                        is = new FileInputStream(
-                            new File(
-                                "testsrc/main/mondrian/test/loader/"
-                                + "insert.sql"));
-                    }
-                    loader.executeSqlCommandStream(is);
-                    is.close();
-                } catch (Exception e) {
-                    throw new RuntimeException(
-                        "Error while reading insert.sql");
-                } finally {
-                    if (is != null) {
-                        try {
-                            is.close();
-                        } catch (IOException e) {
-                            // ignore
-                        }
-                    }
-                }
+            public void loadFromSqlInserts(
+                MondrianFoodMartLoader loader,
+                InputStream is)
+                throws Exception
+            {
+                loader.executeSqlCommandStream(is);
             }
         },
 
@@ -4275,7 +4249,10 @@ public class MondrianFoodMartLoader {
             {
             }
 
-            public void loadFromSqlInserts(MondrianFoodMartLoader loader) {
+            public void loadFromSqlInserts(
+                MondrianFoodMartLoader loader,
+                InputStream is)
+            {
             }
         },
 
@@ -4703,7 +4680,10 @@ public class MondrianFoodMartLoader {
                     new Column("DATE", Type.Timestamp, true));
             }
 
-            public void loadFromSqlInserts(MondrianFoodMartLoader loader) {
+            public void loadFromSqlInserts(
+                MondrianFoodMartLoader loader,
+                InputStream is)
+            {
             }
         };
 
@@ -4723,7 +4703,9 @@ public class MondrianFoodMartLoader {
             boolean summaryTables,
             Util.Predicate1<String> tableFilter);
 
-        public abstract void loadFromSqlInserts(MondrianFoodMartLoader loader);
+        public abstract void loadFromSqlInserts(
+            MondrianFoodMartLoader loader,
+            InputStream is) throws Exception;
 
         public String upperCamel() {
             return Character.toUpperCase(mixedName.charAt(0))

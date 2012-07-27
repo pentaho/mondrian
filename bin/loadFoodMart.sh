@@ -60,6 +60,7 @@ oracle() {
         -dataset=${dataset} \
         -jdbcDrivers=oracle.jdbc.OracleDriver \
         -inputFile="$inputFile" \
+        -afterFile="$afterFile" \
         -outputQuoted=${outputQuoted} \
         -outputJdbcURL="jdbc:oracle:thin:${datasetLower}/foodmart@//localhost:1521/XE"
 }
@@ -95,6 +96,7 @@ mysql() {
         -dataset=${dataset} \
         -jdbcDrivers=com.mysql.jdbc.Driver \
         -inputFile="$inputFile" \
+        -afterFile="$afterFile" \
         -outputQuoted=${outputQuoted} \
         -outputJdbcURL="jdbc:mysql://localhost/${datasetLower}?user=foodmart&password=foodmart"
 }
@@ -107,6 +109,7 @@ infobright() {
         -dataset=${dataset} \
         -jdbcDrivers=com.mysql.jdbc.Driver \
         -inputFile="$inputFile" \
+        -afterFile="$afterFile" \
         -outputQuoted=${outputQuoted} \
         -outputJdbcURL="jdbc:mysql://localhost/${datasetLower}?user=foodmart&password=foodmart&characterEncoding=UTF-8"
 }
@@ -128,6 +131,7 @@ postgresql() {
         -dataset=${dataset} \
         -jdbcDrivers="org.postgresql.Driver" \
         -inputFile="$inputFile" \
+        -afterFile="$afterFile" \
         -outputQuoted=${outputQuoted} \
         -outputJdbcURL="jdbc:postgresql://localhost/${datasetLower}" \
         -outputJdbcUser=foodmart \
@@ -142,8 +146,30 @@ farrago() {
         -dataset=${dataset} \
         -jdbcDrivers=net.sf.farrago.client.FarragoVjdbcClientDriver \
         -inputFile="$inputFile" \
+        -afterFile="$afterFile" \
         -outputQuoted=${outputQuoted} \
         -outputJdbcURL="jdbc:farrago:rmi://localhost"
+}
+
+# Load firebird
+#
+# $ /firebird/bin/isql -u SYSDBA -p masterkey
+# Use CONNECT or CREATE DATABASE to specify a database
+# SQL> CREATE DATABASE '/mondrian/foodmart.gdb';
+# SQL> QUIT;
+#
+firefird() {
+    java -cp "${CP}${PS}../farrago/classes" \
+        mondrian.test.loader.MondrianFoodMartLoader \
+        -verbose -aggregates -tables -data -indexes \
+        -dataset=${dataset} \
+        -jdbcDrivers="org.firebirdsql.jdbc.FBDriver" \
+        -inputFile="$inputFile" \
+        -afterFile="$afterFile" \
+        -outputQuoted=${outputQuoted} \
+        -outputJdbcUser=SYSDBA \
+        -outputJdbcPassword=masterkey \
+        -outputJdbcURL="jdbc:firebirdsql:localhost/3050:/mondrian/foodmart.gdb"
 }
 
 # Load LucidDB
@@ -165,6 +191,7 @@ luciddb() {
         -dataset=${dataset} \
         -jdbcDrivers=org.luciddb.jdbc.LucidDbClientDriver \
         -inputFile="$inputFile" \
+        -afterFile="$afterFile" \
         -outputQuoted=${outputQuoted} \
         -outputJdbcURL="jdbc:luciddb:http://localhost;schema=${dataset}" \
         -outputJdbcUser="foodmart" \
@@ -182,6 +209,7 @@ teradata() {
         -dataset=${dataset} \
         -jdbcDrivers=com.ncr.teradata.TeraDriver \
         -inputFile="$inputFile" \
+        -afterFile="$afterFile" \
         -outputQuoted=${outputQuoted} \
         -outputJdbcURL="jdbc:teradata://localhost/${datasetLower}" \
         -outputJdbcUser="tduser" \
@@ -197,6 +225,7 @@ hsqldb() {
         -dataset=${dataset} \
         -jdbcDrivers=org.hsqldb.jdbcDriver \
         -inputFile="$inputFile" \
+        -afterFile="$afterFile" \
         -outputQuoted=${outputQuoted} \
         -outputJdbcBatchSize=1 \
         -outputJdbcURL="jdbc:hsqldb:file:demo/hsqldb/${datasetLower}" \
@@ -230,15 +259,22 @@ done
 cd $(dirname $0)/..
 
 inputFile=
+afterFile=
 case "$dataset" in
 (FOODMART)
-    inputFile=demo/FoodMartCreateData.sql;;
+    inputFile=jar:file:lib/mondrian-data-foodmart.jar!/data.sql
+    afterFile=jar:file:lib/mondrian-data-foodmart.jar!/after.sql
+    ;;
 (ADVENTUREWORKS)
-    inputFile=jar:file:lib/mondrian-data-adventureworks.jar!/create.sql;;
+    inputFile=jar:file:lib/mondrian-data-adventureworks.jar!/data.sql
+    ;;
 (ADVENTUREWORKS_DW)
-    inputFile=jar:file:lib/mondrian-data-adventureworks-dw.jar!/create.sql;;
+    inputFile=jar:file:lib/mondrian-data-adventureworks-dw.jar!/data.sql
+    ;;
 (*)
-    echo "Unknown dataset '$dataset'"; exit 1;;
+    echo "Unknown dataset '$dataset'"
+    exit 1
+    ;;
 esac
 
 datasetLower=$(echo $dataset | tr A-Z a-z)
@@ -246,6 +282,7 @@ datasetLower=$(echo $dataset | tr A-Z a-z)
 case "$db" in
 ('') error "You must specify a database."; exit 1;;
 (farrago) farrago;;
+(firebird) firebird;;
 (hsqldb) hsqldb;;
 (infobright) infobright;;
 (luciddb) luciddb;;

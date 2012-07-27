@@ -148,9 +148,7 @@ ${lib.dir}/index.jsp,
 ${lib.dir}/*.dtd,
 VERSION.txt,
 ${doc.dir}/properties.html,
-mondrian.properties.template,
-demo/FoodMartCreateData.sql,
-demo/access/MondrianFoodMart.mdb"/>
+mondrian.properties.template"/>
 
   <path id="project.classpath">
     <pathelement location="${lib.dir}/servlet-api.jar"/>
@@ -481,10 +479,7 @@ compile,
 compile.tests,
 unzip-databases"/>
 
-    <target name="unzip-databases" depends="
-unzip-FoodMartCreateData,
-unzip-FoodMartAccessDB,
-unzip-FoodMartDerbyDB"/>
+    <target name="unzip-databases" depends="unzip-FoodMartDerbyDB"/>
 
   <target name="compile" depends="
 version,
@@ -1020,50 +1015,6 @@ buildOnJdk.sh" />
     </zip>
   </target>
 
-  <target name="check-FoodMartCreateData-uptodate">
-    <condition property="FoodMartCreateData.uptodate">
-      <or>
-        <not>
-          <available file="demo/FoodMartCreateData.zip"/>
-        </not>
-        <uptodate
-            srcfile="demo/FoodMartCreateData.zip"
-            targetfile="demo/FoodMartCreateData.sql"/>
-      </or>
-    </condition>
-  </target>
-
-  <target name="unzip-FoodMartCreateData"
-      depends="check-FoodMartCreateData-uptodate"
-      unless="FoodMartCreateData.uptodate">
-    <unzip src="demo/FoodMartCreateData.zip" dest="demo">
-      <patternset includes="FoodMartCreateData.sql"/>
-    </unzip>
-    <touch file="demo/FoodMartCreateData.sql"/>
-  </target>
-
-  <target name="check-FoodMartAccessDB-uptodate">
-    <condition property="FoodMartAccessDB.uptodate">
-      <or>
-        <not>
-          <available file="demo/access/MondrianFoodMart-Access.zip"/>
-        </not>
-        <uptodate
-            srcfile="demo/access/MondrianFoodMart-Access.zip"
-            targetfile="demo/access/MondrianFoodMart.mdb"/>
-      </or>
-    </condition>
-  </target>
-
-  <target name="unzip-FoodMartAccessDB"
-      depends="check-FoodMartAccessDB-uptodate"
-      unless="FoodMartAccessDB.uptodate">
-    <unzip src="demo/access/MondrianFoodMart-Access.zip" dest="demo/access">
-      <patternset includes="MondrianFoodMart.mdb"/>
-    </unzip>
-    <touch file="demo/access/MondrianFoodMart.mdb"/>
-  </target>
-
   <target name="check-FoodMartDerbyDB-uptodate">
     <condition property="FoodMartDerbyDB.uptodate">
       <or>
@@ -1095,17 +1046,6 @@ buildOnJdk.sh" />
            classpathref="project.test.classpath" property="driver.present.for.load-foodmart"/>
 
     <echo message="Driver present: ${driver.present.for.load-foodmart}"/>
-    <!--
-        Load from demo/FoodMartCreateData.zip directly - no need to unzip
-
-        Otherwise override, like
-                <arg value="-inputFile=demo/myData.sql"/>
-                <arg value="-inputFile=demo/myData.zip"/> - will access this without unzipping
-
-        You can override the JDBC batch size by setting the same
-        property in your mondrian.properties.  Current using the
-        default of 50 SQL statements per batch.
-    -->
 
     <property name="mondrian.foodmart.loaderBatchSize" value="50" />
     <property name="mondrian.foodmart.jdbcSchema" value="" />
@@ -1142,7 +1082,7 @@ buildOnJdk.sh" />
   </target>
 
   <target name="binzip"
-      depends="version,checkIsJdk15,war,srczip,javadoc,xml_schema,retroweave,unzip-FoodMartCreateData,unzip-FoodMartAccessDB">
+      depends="version,checkIsJdk15,war,srczip,javadoc,xml_schema,retroweave">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
@@ -1162,8 +1102,6 @@ ${lib.dir}/olap4j-jdk14.jar,
 ${lib.dir}/retroweaver-rt.jar,
 lib/*.dtd,
 demo/FoodMart.xml,
-demo/FoodMartCreateData.sql,
-demo/access/MondrianFoodMart.mdb,
 LICENSE.html,
 README.txt,
 VERSION.txt"
