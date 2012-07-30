@@ -950,11 +950,10 @@ public class RolapHierarchy extends HierarchyBase {
         @Override
         public RolapMember substitute(final RolapMember member) {
             if (member == null) {
-                return member;
+                return null;
             }
-            if (member instanceof MultiCardinalityDefaultMember
-                && hierarchyAccess.hasInaccessibleDescendants(
-                    member.getParentMember()))
+            if (member != null
+                && member instanceof MultiCardinalityDefaultMember)
             {
                 return new LimitedRollupMember(
                     ((MultiCardinalityDefaultMember) member).getParentMember(),
