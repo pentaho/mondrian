@@ -512,8 +512,8 @@ public class RoleImpl implements Role {
         private final Level topLevel;
         private final Access access;
         private final Level bottomLevel;
-        private final Map<String, Pair<Member, Access>> memberGrants =
-            new HashMap<String, Pair<Member, Access>>();
+        private final Map<String, MemberAccess> memberGrants =
+            new HashMap<String, MemberAccess>();
         private final RollupPolicy rollupPolicy;
         private final Role role;
 
@@ -571,10 +571,10 @@ public class RoleImpl implements Role {
             Util.assertTrue(member.getHierarchy() == hierarchy);
 
             // Remove any existing grants to descendants of "member"
-            for (Iterator<Pair<Member, Access>> memberIter =
+            for (Iterator<MemberAccess> memberIter =
                 memberGrants.values().iterator(); memberIter.hasNext();)
             {
-                Member m = memberIter.next().left;
+                Member m = memberIter.next().member;
                 if (m.isChildOrEqualTo(member)) {
                     memberIter.remove();
                 }
@@ -582,7 +582,7 @@ public class RoleImpl implements Role {
 
             memberGrants.put(
                 member.getUniqueName(),
-                new Pair<Member, Access>(member, access));
+                new MemberAccess(member, access));
 
             if (access == Access.NONE) {
                 // Since we're denying access, the immediate parent
@@ -591,10 +591,10 @@ public class RoleImpl implements Role {
                      m != null;
                      m = m.getParentMember())
                 {
-                    Pair<Member, Access> pair =
+                    MemberAccess mAccess =
                         memberGrants.get(m.getUniqueName());
                     final Access memberAccess =
-                        pair == null ? null : pair.right;
+                        mAccess == null ? null : mAccess.access;
                     // If no current access is allowed, upgrade to "custom"
                     if (memberAccess == Access.NONE
                         && checkLevelIsOkWithRestrictions(
@@ -603,7 +603,7 @@ public class RoleImpl implements Role {
                     {
                         memberGrants.put(
                             m.getUniqueName(),
-                            new Pair<Member, Access>(m, Access.CUSTOM));
+                            new MemberAccess(m, Access.CUSTOM));
                     }
                 }
             } else {
@@ -618,14 +618,14 @@ public class RoleImpl implements Role {
                             this,
                             m.getLevel()))
                     {
-                        Pair<Member, Access> pair =
+                        MemberAccess mAccess =
                             memberGrants.get(m.getUniqueName());
                         final Access parentAccess =
-                            toAccess(pair == null ? null : pair.right);
+                            toAccess(mAccess == null ? null : mAccess.access);
                         if (parentAccess == Access.NONE) {
                             memberGrants.put(
                                 m.getUniqueName(),
-                                new Pair<Member, Access>(m, Access.CUSTOM));
+                                new MemberAccess(m, Access.CUSTOM));
                         }
                     }
                 }
@@ -648,9 +648,9 @@ public class RoleImpl implements Role {
             if (this.access != Access.CUSTOM) {
                 return this.access;
             }
-            Pair<Member, Access> pair =
+            MemberAccess mAccess =
                 memberGrants.get(member.getUniqueName());
-            Access access = pair == null ? null : pair.right;
+            Access access = mAccess == null ? null : mAccess.access;
             // Check for an explicit deny.
             if (access == Access.NONE) {
                 return Access.NONE;
@@ -670,11 +670,11 @@ public class RoleImpl implements Role {
                 m != null;
                 m = m.getParentMember())
             {
-                Pair<Member, Access> parentPair =
+                MemberAccess pAccess =
                     memberGrants.get(m.getUniqueName());
-                final Access parentAccess = parentPair == null
+                final Access parentAccess = pAccess == null
                     ? null
-                    : parentPair.right;
+                    : pAccess.access;
                 if (parentAccess == null) {
                     // No explicit rules for this parent
                     continue;
@@ -720,25 +720,68 @@ public class RoleImpl implements Role {
             return rollupPolicy;
         }
 
+        /**
+         * Tells whether a given member has some of its children being
+         * restricted by the access controls of this role instance.
+         */
         public boolean hasInaccessibleDescendants(Member member) {
-            for (Entry<String, Pair<Member, Access>> entry
-                : memberGrants.entrySet())
+            for (MemberAccess access : memberGrants.values())
             {
-                switch (entry.getValue().right) {
+                switch (access.access) {
                 case NONE:
-                    Member grantedMember = entry.getValue().left;
-                    for (Member m = grantedMember;
-                         m != null; m = m.getParentMember())
-                    {
-                        if (m.equals(member)) {
-                            // We have proved that this granted member is a
-                            // descendant of 'member'.
-                            return true;
-                        }
+                case CUSTOM:
+                    if (access.isSubGrant(member)) {
+                        // At least one of the limited member is
+                        // part of the descendants of this member.
+                        return true;
                     }
                 }
             }
             // All descendants are accessible.
+            return false;
+        }
+    }
+
+    /**
+     * A MemberAccess contains information about a grant applied
+     * to a member for a given role. It is only an internal data
+     * structure and should not be exposed via the API.
+     */
+    private static class MemberAccess {
+        private final Member member;
+        private final Access access;
+        private final Map<String, Boolean> parentsCache =
+            new HashMap<String, Boolean>();
+        public MemberAccess(
+            Member member,
+            Access access)
+        {
+                this.member = member;
+                this.access = access;
+        }
+
+        /**
+         * Tells whether the member concerned by this grant object
+         * is a children of a given member. The result of the computation
+         * is cached for faster results, since this might get called
+         * very often.
+         */
+        private boolean isSubGrant(Member parentMember) {
+            if (parentsCache.containsKey(parentMember.getUniqueName())) {
+                return parentsCache.get(parentMember.getUniqueName());
+            }
+            for (Member m = member; m != null; m = m.getParentMember()) {
+                if (m.equals(parentMember)) {
+                    // We have proved that this granted member is a
+                    // descendant of 'member'. Cache it and return.
+                    parentsCache.put(
+                        parentMember.getUniqueName(), Boolean.TRUE);
+                    return true;
+                }
+            }
+            // Not a parent. Cache it and return.
+            parentsCache.put(
+                parentMember.getUniqueName(), Boolean.FALSE);
             return false;
         }
     }
