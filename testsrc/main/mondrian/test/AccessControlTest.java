@@ -408,11 +408,11 @@ public class AccessControlTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests for Mondrian BUG 20120718 - Native Rollups did not handle
+     * Tests for Mondrian BUG 1201 - Native Rollups did not handle
      * access-control with more than one member where granted access=all
      */
-    public void testBugMondrian20120718MultipleMembersInRoleAccessControl() {
-        String test20120718Roles =
+    public void testBugMondrian_1201_MultipleMembersInRoleAccessControl() {
+        String test_1201_Roles =
             "<Role name=\"Role1\">\n"
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
@@ -446,12 +446,12 @@ public class AccessControlTest extends FoodMartTestCase {
 
         final TestContext partialRollupTestContext =
             TestContext.instance().create(
-                null, null, null, null, null, test20120718Roles)
+                null, null, null, null, null, test_1201_Roles)
                 .withRole("Role1");
 
         final TestContext fullRollupTestContext =
             TestContext.instance().create(
-                null, null, null, null, null, test20120718Roles)
+                null, null, null, null, null, test_1201_Roles)
                 .withRole("Role2");
 
         // Must return only 2 [USA].[CA] stores
@@ -526,8 +526,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "Row #2: 10,319\n");
     }
 
-    public void testBugMondrian20120718CacheAwareOfRoleAccessControl() {
-        String test20120718Roles =
+    public void testBugMondrian_1201_CacheAwareOfRoleAccessControl() {
+        String test_1201_Roles =
             "<Role name=\"Role1\">\n"
             + "  <SchemaGrant access=\"none\">\n"
             + "    <CubeGrant cube=\"Sales\" access=\"all\">\n"
@@ -560,12 +560,12 @@ public class AccessControlTest extends FoodMartTestCase {
 
         final TestContext partialRollupTestContext1 =
             TestContext.instance().create(
-                null, null, null, null, null, test20120718Roles)
+                null, null, null, null, null, test_1201_Roles)
                 .withRole("Role1");
 
         final TestContext partialRollupTestContext2 =
             TestContext.instance().create(
-                null, null, null, null, null, test20120718Roles)
+                null, null, null, null, null, test_1201_Roles)
                 .withRole("Role2");
 
         // Put query into cache
