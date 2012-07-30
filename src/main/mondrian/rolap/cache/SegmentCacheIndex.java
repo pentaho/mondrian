@@ -107,8 +107,9 @@ public interface SegmentCacheIndex {
      * @param header Segment header
      * @param loading Whether segment is pending a load from SQL
      * @param converter Segment converter
+     * @return True or false, if a new element was inserted into the index.
      */
-    void add(
+    boolean add(
         SegmentHeader header,
         boolean loading,
         SegmentBuilder.SegmentConverter converter);

@@ -166,6 +166,10 @@ public class AggregationManager extends RolapAggregationManager {
                     pw.println(message);
                 }
             }
+
+            public boolean isTraceEnabled() {
+                return pw != null;
+            }
         };
     }
 

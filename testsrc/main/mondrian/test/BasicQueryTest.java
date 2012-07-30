@@ -7603,9 +7603,11 @@ public class BasicQueryTest extends FoodMartTestCase {
                             .getInternalConnection()
                             .getInternalStatement(),
                         0));
-            assertTrue(
-                "Row count estimate: " + rowCount + " (actual 10281)",
-                rowCount > 10000 && rowCount < 15000);
+            if (statisticsProvider instanceof SqlStatisticsProvider) {
+                assertTrue(
+                    "Row count estimate: " + rowCount + " (actual 10281)",
+                    rowCount > 10000 && rowCount < 15000);
+            }
 
             int valueCount =
                 statisticsProvider.getColumnCardinality(

@@ -372,6 +372,11 @@ public interface CacheControl {
     void trace(String message);
 
     /**
+     * Tells if tracing is enabled.
+     */
+    boolean isTraceEnabled();
+
+    /**
      * Flushes the cache which maps schema URLs to metadata.
      *
      * <p>This cache is referenced only when creating a new connection, so
