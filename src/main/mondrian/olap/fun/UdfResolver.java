@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2005-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -139,7 +139,7 @@ public class UdfResolver implements Resolver {
                 new UserDefinedFunction.Argument[args.length];
             for (int i = 0; i < args.length; i++) {
                 Exp arg = args[i];
-                final Calc calc = compiler.compileAs(
+                final Calc calc = calcs[i] = compiler.compileAs(
                     arg,
                     castType(arg.getType(), parameterCategories[i]),
                     ResultStyle.ANY_LIST);
