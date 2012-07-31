@@ -567,6 +567,9 @@ If you wish to build for this JDK, modify ${unix.script}.
       <exclude name="mondrian/rolap/PhysSchemaConverter.java"/>
       <exclude name="mondrian/rolap/HierarchyUsage.java"/>
       <exclude name="mondrian/rolap/RolapCubeUsages.java"/>
+      <!-- The Workbench needs to be built against Java 6
+           because of its dependency on Kettle. -->
+      <exclude name="mondrian/gui/**/*.java" if="jdk16.not.present"/>
     </javac>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>
