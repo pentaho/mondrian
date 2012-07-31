@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 //
 // jhyde, Feb 14, 2003
@@ -30,9 +30,11 @@ public class NamedSetTest extends FoodMartTestCase {
     public NamedSetTest() {
         super();
     }
+
     public NamedSetTest(String name) {
         super(name);
     }
+
     /**
      * Set defined in query according measures, hence context-dependent.
      */
@@ -1143,6 +1145,20 @@ public class NamedSetTest extends FoodMartTestCase {
             + "FROM [Sales]\n"
             + "WHERE [Time].[1997].[Q1].[1]:[Time].[1997].[Q4].[10]",
             expected);
+    }
+
+    /**
+     * Variant of {@link #testNamedSetRangeInSlicer()} that calls
+     * {@link mondrian.test.CompoundSlicerTest#testBugMondrian899()} to
+     * prime the cache and therefore fails even when run standalone.
+     *
+     * <p>Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-1203">
+     * MONDRIAN-1203, "Error 'Failed to load all aggregations after 10 passes'
+     * while evaluating composite slicer"</a>.</p>
+     */
+    public void testNamedSetRangeInSlicerPrimed() {
+        new CompoundSlicerTest().testBugMondrian899();
+        testNamedSetRangeInSlicer();
     }
 
     /**
