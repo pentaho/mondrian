@@ -29,6 +29,7 @@ public class NamedSetTest extends FoodMartTestCase {
     public NamedSetTest() {
         super();
     }
+
     public NamedSetTest(String name) {
         super(name);
     }
@@ -1069,6 +1070,20 @@ public class NamedSetTest extends FoodMartTestCase {
             + "Row #8: 68,755\n"
             + "Row #8: 8\n"
             + "Row #8: ([Customer].[Gender].[M], [Customer].[Marital Status].[S])\n");
+    }
+
+    /**
+     * Variant of {@link #testNamedSetRangeInSlicer()} that calls
+     * {@link mondrian.test.CompoundSlicerTest#testBugMondrian899()} to
+     * prime the cache and therefore fails even when run standalone.
+     *
+     * <p>Test case for <a href="http://jira.pentaho.com/browse/MONDRIAN-1203">
+     * MONDRIAN-1203, "Error 'Failed to load all aggregations after 10 passes'
+     * while evaluating composite slicer"</a>.</p>
+     */
+    public void testNamedSetRangeInSlicerPrimed() {
+        new CompoundSlicerTest().testBugMondrian899();
+        testNamedSetRangeInSlicer();
     }
 
     /**

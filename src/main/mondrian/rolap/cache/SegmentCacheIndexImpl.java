@@ -820,7 +820,7 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
             new CartesianProductList<Comparable>(valueLists);
         final List<SegmentHeader> usedSegments = new ArrayList<SegmentHeader>();
         final List<SegmentHeader> unusedSegments =
-            new ArrayList<SegmentHeader>(headers);
+            new ArrayList<SegmentHeader>(Pair.left(matchingHeaders));
         tupleLoop:
         for (List<Comparable> tuple : tuples) {
             // If the value combination is handled by one of the used segments,
