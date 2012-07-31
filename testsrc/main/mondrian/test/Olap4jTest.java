@@ -17,6 +17,8 @@ import org.olap4j.Cell;
 import org.olap4j.Position;
 import org.olap4j.impl.ArrayMap;
 import org.olap4j.mdx.IdentifierNode;
+import org.olap4j.mdx.SelectNode;
+import org.olap4j.mdx.parser.*;
 import org.olap4j.metadata.*;
 import org.olap4j.metadata.Cube;
 import org.olap4j.metadata.Hierarchy;
@@ -510,6 +512,35 @@ public class Olap4jTest extends FoodMartTestCase {
             assertEquals(
                 "Coordinates contain axis 1 more than once",
                 e.getMessage());
+        }
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1204">MONDRIAN-1204,
+     * "Olap4j's method toOlap4j throws NPE if we have a function"</a>.
+     */
+    public void testBugMondrian1204() throws SQLException {
+        final OlapConnection connection =
+            TestContext.instance().getOlap4jConnection();
+        final String mdx =
+            "SELECT\n"
+            + "NON EMPTY {Hierarchize({[Measures].[Customer Count]})} ON COLUMNS,\n"
+            + "CurrentDateMember([Time], \"\"\"[Time].[Year].[1997]\"\"\") ON ROWS\n"
+            + "FROM [Sales 2]";
+        try {
+            final MdxParserFactory parserFactory =
+                connection.getParserFactory();
+            MdxParser mdxParser =
+                parserFactory.createMdxParser(connection);
+            MdxValidator mdxValidator =
+                parserFactory.createMdxValidator(connection);
+
+            SelectNode select = mdxParser.parseSelect(mdx);
+            SelectNode validatedSelect = mdxValidator.validateSelect(select);
+            Util.discard(validatedSelect);
+        } finally {
+            Util.close(null, null, connection);
         }
     }
 }
