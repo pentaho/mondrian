@@ -9,9 +9,12 @@
 */
 package mondrian.olap4j;
 
+import mondrian.olap.MondrianException;
 import mondrian.olap.Util;
 import mondrian.rolap.RolapConnection;
+import mondrian.server.Locus;
 import mondrian.xmla.XmlaUtil;
+import mondrian.xmla.XmlaUtil.MetadataRowset;
 
 import org.olap4j.*;
 import org.olap4j.metadata.*;
@@ -81,11 +84,11 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
      * @throws org.olap4j.OlapException on error
      */
     private ResultSet getMetadata(
-        String methodName,
+        final String methodName,
         Object... patternValues)
         throws OlapException
     {
-        Map<String, Object> restrictionMap =
+        final Map<String, Object> restrictionMap =
             new HashMap<String, Object>();
         assert patternValues.length % 2 == 0;
         for (int i = 0; i < patternValues.length / 2; ++i) {
@@ -98,11 +101,36 @@ abstract class MondrianOlap4jDatabaseMetaData implements OlapDatabaseMetaData {
                 restrictionMap.put(key, value);
             }
         }
-        XmlaUtil.MetadataRowset rowset =
-            XmlaUtil.getMetadataRowset(
-                olap4jConnection,
-                methodName,
-                restrictionMap);
+        // This is dumb, but the Locus wrapper won't allow us
+        // to throw an OlapException. We have to wrap/unwrap it.
+        final class ExceptionWrapper extends RuntimeException {
+            private static final long serialVersionUID = 1L;
+            private final OlapException e;
+            public ExceptionWrapper(OlapException e) {
+                this.e = e;
+            }
+        }
+        final XmlaUtil.MetadataRowset rowset;
+        try {
+            rowset = Locus.execute(
+                olap4jConnection.getMondrianConnection(),
+                "MondrianOlap4jDatabaseMetaData.getMetadata",
+                new Locus.Action<XmlaUtil.MetadataRowset>() {
+                    public MetadataRowset execute() {
+                        try {
+                            return
+                                XmlaUtil.getMetadataRowset(
+                                    olap4jConnection,
+                                    methodName,
+                                    restrictionMap);
+                        } catch (OlapException e) {
+                            throw new ExceptionWrapper(e);
+                        }
+                    }
+                });
+        } catch (ExceptionWrapper e) {
+            throw e.e;
+        }
         return olap4jConnection.factory.newFixedResultSet(
             olap4jConnection, rowset.headerList, rowset.rowList);
     }

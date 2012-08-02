@@ -273,6 +273,7 @@ class SqlMemberSource
             for (RolapSchema.PhysColumn column : attribute.getKeyList()) {
                 queryBuilder.addToFrom(column);
                 sqlQuery.addSelect(column.toSql(), column.getInternalType());
+                sqlQuery.addFrom(column.relation, column.relation.getAlias(), false);
             }
             SqlQuery outerQuery =
                 SqlQuery.newQuery(
