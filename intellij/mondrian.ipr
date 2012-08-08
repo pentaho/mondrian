@@ -288,7 +288,7 @@
   <component name="ProjectResources">
     <default-html-doctype>http://www.w3.org/1999/xhtml</default-html-doctype>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.7" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK" />
   <component name="ResourceManagerContainer">
     <option name="myResourceBundles">
       <value>
@@ -316,7 +316,7 @@
     <custom-packaging allow="false" />
   </component>
   <component name="VcsDirectoryMappings">
-    <mapping directory="" vcs="" />
+    <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../mondrianpro" vcs="svn" />
     <mapping directory="$PROJECT_DIR$/../../olap4j" vcs="svn" />
@@ -434,13 +434,6 @@
         <root url="jar://$PROJECT_DIR$/../workbench/plugins/kettle-core.jar!/" />
         <root url="jar://$PROJECT_DIR$/../workbench/plugins/pentaho-xul-core.jar!/" />
         <root url="jar://$PROJECT_DIR$/../workbench/plugins/kettle-dbdialog.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
-    <library name="validation-api">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../lib/validation-api.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES />
