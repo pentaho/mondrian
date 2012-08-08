@@ -1379,6 +1379,12 @@ public class RolapHierarchy extends HierarchyBase {
 
         @Override
         public RolapMember substitute(final RolapMember member) {
+            // If the member is an instance of MultiCardDefMember,
+            // we don't have to check
+            // hierarchyAccess.hasInaccessibleDescendants because this type
+            // of member sits at the very top of the hierarchy and the rules
+            // are different. We create a LimitedRollupMember on the
+            // parent of the multi-cardinality default members.
             if (member != null
                 && member instanceof MultiCardinalityDefaultMember)
             {
