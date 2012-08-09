@@ -1608,7 +1608,14 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
             } else {
                 LOGGER.debug(
                     "Normal cardinality for " + hierarchy.getDimension());
-                return new SmartMemberReader(source);
+                if (MondrianProperties.instance().DisableCaching.get()) {
+                    // If the cell cache is disabled, we can't cache
+                    // the members or else we get undefined results,
+                    // depending on the functions used and all.
+                    return new NoCacheMemberReader(source);
+                } else {
+                    return new SmartMemberReader(source);
+                }
             }
         }
     }

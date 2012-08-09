@@ -1351,6 +1351,9 @@ public class SegmentCacheManager {
         }
 
         public boolean contains(SegmentHeader header) {
+            if (MondrianProperties.instance().DisableCaching.get()) {
+                return false;
+            }
             for (SegmentCacheWorker worker : workers) {
                 if (worker.contains(header)) {
                     return true;
@@ -1360,6 +1363,9 @@ public class SegmentCacheManager {
         }
 
         public List<SegmentHeader> getSegmentHeaders() {
+            if (MondrianProperties.instance().DisableCaching.get()) {
+                return Collections.emptyList();
+            }
             // Special case 0 and 1 workers, for which the 'union' operation
             // is trivial.
             switch (workers.size()) {
@@ -1382,6 +1388,9 @@ public class SegmentCacheManager {
         }
 
         public boolean put(SegmentHeader header, SegmentBody body) {
+            if (MondrianProperties.instance().DisableCaching.get()) {
+                return true;
+            }
             for (SegmentCacheWorker worker : workers) {
                 worker.put(header, body);
             }

@@ -10,7 +10,6 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
-import mondrian.olap.Id.Quoting;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.SegmentCacheManager;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -254,6 +253,14 @@ public class CacheControlImpl implements CacheControl {
 
     public void flushSchemaCache() {
         RolapSchema.Pool.instance().clear();
+        // In some cases, the request might originate from a reference
+        // to the schema which isn't in the pool anymore. We must also call
+        // the cleanup procedure on the current connection.
+        if (connection != null
+            && connection.getSchema() != null)
+        {
+            connection.getSchema().finalCleanUp();
+        }
     }
 
     // todo: document
