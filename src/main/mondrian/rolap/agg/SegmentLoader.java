@@ -265,7 +265,9 @@ public class SegmentLoader {
         // Also note that we push the segments to external cache after we have
         // called cacheMgr.loadSucceeded. That call will allow the current
         // query to proceed.
-        cacheMgr.compositeCache.put(header, body);
+        if (!MondrianProperties.instance().DisableCaching.get()) {
+            cacheMgr.compositeCache.put(header, body);
+        }
     }
 
     private boolean setFailOnStillLoadingSegments(

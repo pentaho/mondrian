@@ -791,8 +791,12 @@ public class RoleImpl implements Role {
                 }
             }
             // Not a parent. Cache it and return.
-            parentsCache.put(
-                parentMember.getUniqueName(), Boolean.FALSE);
+            if (MondrianProperties.instance()
+                .EnableRolapCubeMemberCache.get())
+            {
+                parentsCache.put(
+                    parentMember.getUniqueName(), Boolean.FALSE);
+            }
             return false;
         }
     }

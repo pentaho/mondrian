@@ -252,16 +252,18 @@ public abstract class RolapNativeSet extends RolapNative {
                         dialect, dataSource, partialResult, newPartialResult);
             }
 
-            if (hasEnumTargets) {
-                if (newPartialResult != null) {
-                    cache.put(
-                        key,
-                        new DelegatingTupleList(
-                            args.length,
-                            Util.<List<Member>>cast(newPartialResult)));
+            if (!MondrianProperties.instance().DisableCaching.get()) {
+                if (hasEnumTargets) {
+                    if (newPartialResult != null) {
+                        cache.put(
+                            key,
+                            new DelegatingTupleList(
+                                args.length,
+                                Util.<List<Member>>cast(newPartialResult)));
+                    }
+                } else {
+                    cache.put(key, result);
                 }
-            } else {
-                cache.put(key, result);
             }
             return result;
         }

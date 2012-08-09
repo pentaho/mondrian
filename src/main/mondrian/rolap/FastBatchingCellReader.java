@@ -121,7 +121,9 @@ public class FastBatchingCellReader implements CellReader {
         // synchronous request for the cell segment. If it is in the cache, it
         // will be worth the wait, because we can avoid the effort of batching
         // up requests that could have been satisfied by the same segment.
-        if (missCount == 0) {
+        if (!MondrianProperties.instance().DisableCaching.get()
+            && missCount == 0)
+        {
             SegmentWithData segmentWithData = cacheMgr.peek(request);
             if (segmentWithData != null) {
                 segmentWithData.getStar().register(segmentWithData);
@@ -244,19 +246,19 @@ public class FastBatchingCellReader implements CellReader {
             Map<SegmentHeader, SegmentBody> headerBodies =
                 new HashMap<SegmentHeader, SegmentBody>();
 
-            // Segments that could not be loaded. Will need to tell cache mgr to
-            // remove them from the index.
-            final Set<SegmentHeader> failedSegments =
-                new HashSet<SegmentHeader>();
-
             // Load each suggested segment from cache, and place it in
             // thread-local cache. Note that this step can't be done by the
             // cacheMgr -- it's our cache.
             for (SegmentHeader header : response.cacheSegments) {
                 final SegmentBody body = cacheMgr.compositeCache.get(header);
                 if (body == null) {
-                    cacheMgr.remove(cube.getStar(), header);
-                    failedSegments.add(header);
+                    // REVIEW: This is an async call. It will return before the
+                    // index is informed that this header is there,
+                    // so a LoadBatchCommand might still return
+                    // it on the next iteration.
+                    if (cube.getStar() != null) {
+                        cacheMgr.remove(cube.getStar(), header);
+                    }
                     ++failureCount;
                     continue;
                 }
@@ -410,9 +412,7 @@ public class FastBatchingCellReader implements CellReader {
                 break;
             }
 
-            if (cellRequests1.size() >= old.size()
-                && iteration > 10)
-            {
+            if (!(cellRequests1.size() < old.size())) {
                 throw Util.newError(
                     "Cache round-trip did not resolve any cell requests. "
                     + "Iteration #" + iteration
@@ -478,7 +478,9 @@ public class FastBatchingCellReader implements CellReader {
         }
         body = cacheMgr.compositeCache.get(header);
         if (body == null) {
-            cacheMgr.remove(cube.getStar(), header);
+            if (cube.getStar() != null) {
+                cacheMgr.remove(cube.getStar(), header);
+            }
             return null;
         }
         headerBodies.put(header, body);
@@ -555,6 +557,36 @@ class BatchLoader {
         // of found segments, and remove the cell request from the list.
         final AggregationKey key = AggregationKey.create(request);
 
+        final SegmentBuilder.SegmentConverterImpl converter =
+                new SegmentBuilder.SegmentConverterImpl(key, request);
+
+        boolean success =
+            loadFromCaches(request, key, converter);
+        // Skip the batch if we already have a rollup for it.
+        if (rollupBitmaps.contains(request.getConstrainedColumnsBitKey())) {
+            return;
+        }
+
+        // As a last resort, we load from SQL.
+        if (!success) {
+            loadFromSql(request, key, converter);
+        }
+    }
+
+    /**
+     * Loads a cell from caches. If the cell is successfully loaded,
+     * we return true.
+     */
+    private boolean loadFromCaches(
+        final CellRequest request,
+        final AggregationKey key,
+        final SegmentBuilder.SegmentConverterImpl converter)
+    {
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            // Caching is disabled. Return always false.
+            return false;
+        }
+
         // Is request matched by one of the headers we intend to load?
         final Map<String, Comparable> mappedCellValues =
             request.getMappedCellValues();
@@ -562,6 +594,7 @@ class BatchLoader {
             AggregationKey.getCompoundPredicateStringList(
                 key.getStar(),
                 key.getCompoundPredicateList());
+
         for (SegmentHeader header : cacheHeaders) {
             if (SegmentCacheIndexImpl.matches(
                     header,
@@ -571,7 +604,7 @@ class BatchLoader {
                 // It's likely that the header will be in the cache, so this
                 // request will be satisfied. If not, the header will be removed
                 // from the segment index, and we'll be back.
-                return;
+                return true;
             }
         }
         final RolapStar.Measure measure = request.getMeasure();
@@ -593,8 +626,7 @@ class BatchLoader {
         // Ask for the first segment to be loaded from cache. (If it's no longer
         // in cache, we'll be back, and presumably we'll try the second
         // segment.)
-        final SegmentBuilder.SegmentConverterImpl converter =
-            new SegmentBuilder.SegmentConverterImpl(key, request);
+
         if (!headersInCache.isEmpty()) {
             final SegmentHeader headerInCache = headersInCache.get(0);
             final Future<SegmentBody> future =
@@ -618,7 +650,7 @@ class BatchLoader {
             converterMap.put(
                 SegmentCacheIndexImpl.makeConverterKey(request, key),
                 converter);
-            return;
+            return true;
         }
 
         // Try to roll up if the measure's rollup aggregator supports
@@ -667,15 +699,17 @@ class BatchLoader {
                     new SegmentBuilder.StarSegmentConverter(
                         measure,
                         key.getCompoundPredicateList()));
-                return;
+                return true;
             }
         }
+        return false;
+    }
 
-        // Skip the batch if we already have a rollup for it.
-        if (rollupBitmaps.contains(request.getConstrainedColumnsBitKey())) {
-            return;
-        }
-
+    private void loadFromSql(
+        final CellRequest request,
+        final AggregationKey key,
+        final SegmentBuilder.SegmentConverterImpl converter)
+    {
         // Finally, add to a batch. It will turn in to a SQL request.
         Batch batch = batches.get(key);
         if (batch == null) {
