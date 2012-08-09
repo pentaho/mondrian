@@ -414,7 +414,9 @@ public class FastBatchingCellReader implements CellReader {
                 break;
             }
 
-            if (!(cellRequests1.size() < old.size())) {
+            if (cellRequests1.size() >= old.size()
+                && iteration > 10)
+            {
                 throw Util.newError(
                     "Cache round-trip did not resolve any cell requests. "
                     + "Iteration #" + iteration
