@@ -94,15 +94,15 @@ public class DrillThroughTest extends FoodMartTestCase {
         assertTrue(cell50.canDrillThrough());
         assertNotNull(getDrillThroughSql(cell50, false, false));
 
-        String sql = getDrillThroughSql(cell, false, true);
-        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 7978);
+        String sql = getDrillThroughSql(cell, true, true);
+        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 1718);
 
         // Can drill through a trivial calc member.
         final Cell calcCell = result.getCell(new int[]{1, 0});
         assertTrue(calcCell.canDrillThrough());
-        sql = getDrillThroughSql(calcCell, false, true);
+        sql = getDrillThroughSql(calcCell, true, true);
         assertNotNull(sql);
-        getTestContext().assertSqlEquals(getDiffRepos(), "sql2", sql, 7978);
+        getTestContext().assertSqlEquals(getDiffRepos(), "sql2", sql, 1718);
 
         assertEquals(calcCell.getDrillThroughCount(), 7978);
     }
@@ -178,9 +178,9 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "from Sales");
         final Cell cell = result.getCell(new int[]{0, 0});
         assertTrue(cell.canDrillThrough());
-        String sql = getDrillThroughSql(cell, false, true);
+        String sql = getDrillThroughSql(cell, true, true);
 
-        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 7978);
+        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 1718);
 
         // Cannot drill through a calc member.
         final Cell calcCell = result.getCell(new int[]{1, 1});
@@ -197,7 +197,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             + "from Sales");
         final Cell cell00 = result.getCell(new int[]{0, 0});
         String sql = getDrillThroughSql(cell00, true, true);
-        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 7978);
+        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 1718);
 
         // Drillthrough SQL is null for cell based on calc member
         sql = getDrillThroughSql(result.getCell(new int[]{1, 1}), true, false);
@@ -222,7 +222,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         Cell cell = result.getCell(new int[]{0, 4});
 
         String sql = getDrillThroughSql(cell, true, true);
-        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 141);
+        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 25);
     }
 
     /**
@@ -254,7 +254,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         // For backwards compatibility, generate drill-through SQL (ignoring
         // calculated members) even though we said we could not drill through.
         String sql = getDrillThroughSql(cell, true, true);
-        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 6815);
+        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 12);
     }
 
     /**
@@ -267,8 +267,8 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " {[Product].Children} on rows\n"
             + "from Sales");
         final Cell cell00 = result.getCell(new int[]{0, 0});
-        String sql = getDrillThroughSql(cell00, false, true);
-        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 7978);
+        String sql = getDrillThroughSql(cell00, true, true);
+        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 1718);
     }
 
     /**
@@ -323,9 +323,9 @@ public class DrillThroughTest extends FoodMartTestCase {
             + " from [Warehouse and Sales]" + " where [Time].[1997].[Q4].[12]");
 
         final Cell cell00 = result.getCell(new int[]{0, 0});
-        String sql = getDrillThroughSql(cell00, false, true);
+        String sql = getDrillThroughSql(cell00, true, true);
 
-        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 73);
+        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 13);
     }
 
     /**
@@ -361,7 +361,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         // an assertion error
         final Cell cell00 = result.getCell(new int[]{0, 7});
         String sql = getDrillThroughSql(cell00, true, true);
-        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 8095);
+        getTestContext().assertSqlEquals(getDiffRepos(), "sql", sql, 12);
     }
 
     /**
@@ -419,7 +419,7 @@ public class DrillThroughTest extends FoodMartTestCase {
             while (resultSet.next()) {
                 ++n;
             }
-            assertEquals(2, n);
+            assertEquals(1, n);
         } finally {
             if (connection != null) {
                 connection.close();
@@ -634,9 +634,9 @@ public class DrillThroughTest extends FoodMartTestCase {
                 + "WHERE {[Time].[1997].[Q1], [Time].[1997].[Q2]}");
         Cell cell = result.getCell(new int[]{0, 0});
         assertTrue(cell.canDrillThrough());
-        String sql = getDrillThroughSql(cell, false, true);
+        String sql = getDrillThroughSql(cell, true, true);
         getTestContext().assertSqlEquals(
-            getDiffRepos(), "sql" + compound, sql, 41956);
+            getDiffRepos(), "sql" + compound, sql, 1);
 
         // A query with a slightly more complex multi-position compound slicer
         result =
@@ -647,12 +647,12 @@ public class DrillThroughTest extends FoodMartTestCase {
                 + "                {[Time].[1997].[Q1], [Time].[1997].[Q2]})");
         cell = result.getCell(new int[]{0, 0});
         assertTrue(cell.canDrillThrough());
-        String sql2 = getDrillThroughSql(cell, false, true);
+        String sql2 = getDrillThroughSql(cell, true, true);
 
         // Note that gender and marital status get their own predicates,
         // independent of the time portion of the slicer.
         getTestContext().assertSqlEquals(
-            getDiffRepos(), "sql2" + compound, sql2, 10430);
+            getDiffRepos(), "sql2" + compound, sql2, 1);
 
         // A query with an even more complex multi-position compound slicer
         // (gender must be in the slicer predicate along with time)
@@ -669,7 +669,7 @@ public class DrillThroughTest extends FoodMartTestCase {
         // Note that gender and marital status get their own predicates,
         // independent of the time portion of the slicer.
         getTestContext().assertSqlEquals(
-            getDiffRepos(), "sql3" + compound, sql3, 20971);
+            getDiffRepos(), "sql3" + compound, sql3, 1);
 
         // A query with a simple multi-position compound slicer with
         // different levels (overlapping)
@@ -681,11 +681,11 @@ public class DrillThroughTest extends FoodMartTestCase {
                 + "WHERE {[Time].[1997].[Q1], [Time].[1997].[Q1].[1]}");
         cell = result.getCell(new int[]{0, 0});
         assertTrue(cell.canDrillThrough());
-        String sql4 = getDrillThroughSql(cell, false, true);
+        String sql4 = getDrillThroughSql(cell, true, true);
 
         // With overlapping slicer members, the first slicer predicate is
         // redundant, but does not affect the query's results
-        getTestContext().assertSqlEquals(getDiffRepos(), "sql4", sql4, 21588);
+        getTestContext().assertSqlEquals(getDiffRepos(), "sql4", sql4, 1);
 
         // A query with a simple multi-position compound slicer with
         // different levels (non-overlapping)
@@ -697,7 +697,7 @@ public class DrillThroughTest extends FoodMartTestCase {
                 + "WHERE {[Time].[1997].[Q1].[1], [Time].[1997].[Q2]}");
         cell = result.getCell(new int[]{0, 0});
         assertTrue(cell.canDrillThrough());
-        String sql5 = getDrillThroughSql(cell, false, true);
+        String sql5 = getDrillThroughSql(cell, true, true);
         getTestContext().assertSqlEquals(getDiffRepos(), "sql5", sql5, 27402);
     }
 

@@ -282,7 +282,15 @@
 
 <exception id="350650" name="DrillthroughDisabled">
     <text>Can''t perform drillthrough operations because ''{0}'' is set to false.</text>
-</exception>bacon
+</exception>
+
+<exception id="350660" name="DrillthroughUnknownMemberInReturnClause">
+    <text>Can''t perform drillthrough operation on unknown member ''{0}'' in RETURN clause.</text>
+</exception>
+
+<exception id="350670" name="DrillthroughInvalidMemberInReturnClause">
+    <text>The RETURN clause can only contain dimensions, hierarchies, levels and measures. The expression ''{0}'' is of type ''{1}''.</text>
+</exception>
 
 <!-- ====================================================================== -->
 <!-- Connectivity errors -->

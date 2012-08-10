@@ -309,17 +309,6 @@ public class RolapCubeLevel extends RolapLevel {
                 ++keyOrdinal;
             }
 
-            if (request.extendedContext
-                && cubeLevel.attribute.getNameExp() != null)
-            {
-                final RolapStar.Column nameColumn =
-                    measureGroup.getRolapStarColumn(
-                        cubeLevel.cubeDimension,
-                        cubeLevel.attribute.getNameExp(),
-                        true);
-                request.addConstrainedColumn(nameColumn, null);
-            }
-
             // Request is satisfiable.
             return false;
         }

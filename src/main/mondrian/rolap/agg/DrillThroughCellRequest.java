@@ -13,7 +13,9 @@ import mondrian.rolap.RolapStar;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Subclass of {@link CellRequest} that allows to specify
@@ -22,8 +24,8 @@ import java.util.List;
  */
 public class DrillThroughCellRequest extends CellRequest {
 
-    private final List<RolapStar.Column> drillThroughColumns =
-        new ArrayList<RolapStar.Column>();
+    private final Map<RolapStar.Column, String> drillThroughColumns =
+        new LinkedHashMap<RolapStar.Column, String>();
 
     private final List<RolapStar.Measure> drillThroughMeasures =
         new ArrayList<RolapStar.Measure>();
@@ -35,34 +37,36 @@ public class DrillThroughCellRequest extends CellRequest {
         super(measure, extendedContext, true);
     }
 
-    public void addDrillThroughColumn(RolapStar.Column column) {
-        this.drillThroughColumns.add(column);
+    public void addDrillThroughColumn(
+        RolapStar.Column column,
+        String alias)
+    {
+        if (!this.drillThroughColumns.containsKey(column)) {
+            this.drillThroughColumns.put(column, alias);
+        }
     }
 
     public boolean includeInSelect(RolapStar.Column column) {
-        if (drillThroughColumns.size() == 0
-            && drillThroughMeasures.size() == 0)
-        {
-            return true;
-        }
-        return drillThroughColumns.contains(column);
+        return drillThroughColumns.containsKey(column);
     }
 
-    public void addDrillThroughMeasure(RolapStar.Measure measure) {
+    public void addDrillThroughMeasure(
+        RolapStar.Measure measure,
+        String alias)
+    {
         this.drillThroughMeasures.add(measure);
     }
 
     public boolean includeInSelect(RolapStar.Measure measure) {
-        if (drillThroughColumns.size() == 0
-            && drillThroughMeasures.size() == 0)
-        {
-            return true;
-        }
         return drillThroughMeasures.contains(measure);
     }
 
     public List<RolapStar.Measure> getDrillThroughMeasures() {
         return Collections.unmodifiableList(drillThroughMeasures);
+    }
+
+    public String getColumnAlias(RolapStar.Column column) {
+        return drillThroughColumns.get(column);
     }
 }
 
