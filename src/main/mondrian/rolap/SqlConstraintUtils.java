@@ -13,6 +13,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.MondrianDef.RelationOrJoin;
+import mondrian.olap.Role.RollupPolicy;
 import mondrian.rolap.agg.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.SqlQuery;
@@ -152,10 +153,13 @@ public class SqlConstraintUtils {
                         }
 
                         if (slicerMembers.size() > 0) {
+                            int levelIndex = slicerMembers.get(0)
+                                    .getHierarchy()
+                                    .getLevels().length;
                             RolapLevel levelForWhere =
                                     (RolapLevel) slicerMembers.get(0)
                                     .getHierarchy()
-                                    .getLevels()[0];
+                                    .getLevels()[levelIndex - 1];
                             final String where =
                                     generateMultiValueInExpr(
                                         sqlQuery, baseCube,
@@ -188,6 +192,54 @@ public class SqlConstraintUtils {
                         buf.toString());
                 }
             }
+        }
+
+        // force Role based Access filtering
+        Map<RelationOrJoin, String> whereClausesForRoleConstraints =
+            new HashMap<RelationOrJoin, String>();
+        SchemaReader schemaReader = evaluator.getSchemaReader();
+        Member[] mm = evaluator.getMembers();
+        for (int mIndex = 0; mIndex < mm.length; mIndex++) {
+            if (mm[mIndex] instanceof RolapHierarchy.LimitedRollupMember
+                || mm[mIndex] instanceof
+                   RestrictedMemberReader.MultiCardinalityDefaultMember)
+            {
+                List<Level> hierarchyLevels = schemaReader
+                        .getHierarchyLevels(mm[mIndex].getHierarchy());
+                for (Level affectedLevel : hierarchyLevels) {
+                    List<RolapMember> slicerMembers =
+                        new ArrayList<RolapMember>();
+
+                    List<Member> availableMembers = schemaReader
+                            .getLevelMembers(affectedLevel, false);
+                    for (Member member : availableMembers) {
+                        if (!member.isAll()) {
+                            slicerMembers.add((RolapMember) member);
+                        }
+                    }
+
+                    if (slicerMembers.size() > 0) {
+                        int levelIndex = slicerMembers.get(0).getHierarchy()
+                                .getLevels().length;
+                        RolapLevel levelForWhere = (RolapLevel) slicerMembers
+                                .get(0).getHierarchy()
+                                .getLevels()[levelIndex - 1];
+                        final String where =
+                                generateMultiValueInExpr(
+                                    sqlQuery, baseCube,
+                                    aggStar, slicerMembers,
+                                    levelForWhere,
+                                    restrictMemberTypes, null);
+
+                        RelationOrJoin rel = ((RolapCubeHierarchy) slicerMembers
+                                .get(0).getHierarchy()).getRelation();
+                        whereClausesForRoleConstraints.put(rel, where);
+                    }
+                }
+            }
+        }
+        for (RelationOrJoin key : whereClausesForRoleConstraints.keySet()) {
+            sqlQuery.addWhere(whereClausesForRoleConstraints.get(key));
         }
     }
 

@@ -143,6 +143,7 @@ public class UdfResolver implements Resolver {
                     arg,
                     castType(arg.getType(), parameterCategories[i]),
                     ResultStyle.ANY_LIST);
+                calcs[i] = calc;
                 final Calc scalarCalc = compiler.compileScalar(arg, true);
                 final ListCalc listCalc;
                 final IterCalc iterCalc;

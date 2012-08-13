@@ -75,6 +75,36 @@ public class RolapNativeFilter extends RolapNativeSet {
             if (filterExpr != null) {
                 key.add(filterExpr.toString());
             }
+
+            if (this.getEvaluator() instanceof RolapEvaluator) {
+                key.add(
+                    ((RolapEvaluator)this.getEvaluator())
+                    .getSlicerMembers());
+            }
+            
+         // Add restrictions imposed by Role based access filtering
+            SchemaReader schemaReader = this.getEvaluator().getSchemaReader();
+            Member[] mm = this.getEvaluator().getMembers();
+            for (int mIndex = 0; mIndex < mm.length; mIndex++) {
+                if (mm[mIndex] instanceof RolapHierarchy.LimitedRollupMember
+                    || mm[mIndex] instanceof
+                       RestrictedMemberReader.MultiCardinalityDefaultMember)
+                {
+                    List<Level> hierarchyLevels = schemaReader
+                            .getHierarchyLevels(mm[mIndex].getHierarchy());
+                    for (Level affectedLevel : hierarchyLevels) {
+
+                        List<Member> availableMembers = schemaReader
+                                .getLevelMembers(affectedLevel, false);
+                        for (Member member : availableMembers) {
+                            if (!member.isAll()) {
+                                key.add(member);
+                            }
+                        }
+                    }
+                }
+            }
+
             return key;
         }
     }
