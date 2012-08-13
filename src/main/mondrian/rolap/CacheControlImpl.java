@@ -10,6 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.olap.Id.Quoting;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.SegmentCacheManager;
 import mondrian.rolap.sql.MemberChildrenConstraint;
