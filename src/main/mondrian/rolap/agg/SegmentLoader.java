@@ -255,7 +255,6 @@ public class SegmentLoader {
         SegmentHeader header,
         SegmentBody body)
     {
-        cacheMgr.loadSucceeded(star, header, body);
         // Write the segment into external cache.
         //
         // It would be a mistake to do this from the cacheMgr -- because the
@@ -266,6 +265,7 @@ public class SegmentLoader {
         // called cacheMgr.loadSucceeded. That call will allow the current
         // query to proceed.
         if (!MondrianProperties.instance().DisableCaching.get()) {
+            cacheMgr.loadSucceeded(star, header, body);
             cacheMgr.compositeCache.put(header, body);
         }
     }
