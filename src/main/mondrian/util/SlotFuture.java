@@ -12,6 +12,8 @@ package mondrian.util;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.log4j.Logger;
+
 /**
  * Implementation of {@link java.util.concurrent.Future} that completes
  * when a thread writes a value (or an exception) into a slot.
@@ -24,6 +26,7 @@ public class SlotFuture<V> implements Future<V> {
     private final CountDownLatch dataGate = new CountDownLatch(1);
     private final ReentrantReadWriteLock stateLock =
         new ReentrantReadWriteLock();
+    private final static Logger LOG = Logger.getLogger(SlotFuture.class);
 
     /**
      * Creates a SlotFuture.
@@ -106,10 +109,13 @@ public class SlotFuture<V> implements Future<V> {
         stateLock.writeLock().lock(); // need exclusive write access to state
         try {
             if (done) {
-                throw new IllegalArgumentException(
+                final String message =
                     "Future is already done (cancelled=" + cancelled
                     + ", value=" + this.value
-                    + ", throwable=" + throwable + ")");
+                    + ", throwable=" + throwable + ")";
+                LOG.error(message);
+                throw new IllegalArgumentException(
+                    message);
             }
             this.value = value;
             this.done = true;
