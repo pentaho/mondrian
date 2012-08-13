@@ -490,6 +490,9 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
     }
 
     MondrianOlap4jDimension toOlap4j(mondrian.olap.Dimension dimension) {
+        if (dimension == null) {
+            return null;
+        }
         return new MondrianOlap4jDimension(
             toOlap4j(dimension.getSchema()),
             dimension);

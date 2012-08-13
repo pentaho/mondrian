@@ -12,10 +12,8 @@ package mondrian.olap;
 
 import mondrian.rolap.RolapCube;
 import mondrian.rolap.RolapCubeDimension;
-import mondrian.util.Pair;
 
 import java.util.*;
-import java.util.Map.Entry;
 
 /**
  * Default implementation of the {@link Role} interface.
@@ -750,8 +748,13 @@ public class RoleImpl implements Role {
     private static class MemberAccess {
         private final Member member;
         private final Access access;
+        // We use a weak hash map so that it naturally clears
+        // when more memory is required by other parts.
+        // This cache is useful for optimization, but cannot be
+        // let to grow indefinitely. This would cause problems
+        // on high cardinality dimensions.
         private final Map<String, Boolean> parentsCache =
-            new HashMap<String, Boolean>();
+            new WeakHashMap<String, Boolean>();
         public MemberAccess(
             Member member,
             Access access)
@@ -780,8 +783,12 @@ public class RoleImpl implements Role {
                 }
             }
             // Not a parent. Cache it and return.
-            parentsCache.put(
-                parentMember.getUniqueName(), Boolean.FALSE);
+            if (MondrianProperties.instance()
+                .EnableRolapCubeMemberCache.get())
+            {
+                parentsCache.put(
+                    parentMember.getUniqueName(), Boolean.FALSE);
+            }
             return false;
         }
     }

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2000-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 //
 // jhyde, 2 November, 2000
@@ -69,17 +69,6 @@ public class Format {
      * {@link #get(String, java.util.Locale)}.
      */
     public static final int CacheLimit = 1000;
-
-    /**
-     * Gets the dummy implementation of {@link FieldPosition} which the JDK
-     * uses when you don't care about the status of a call to
-     * {@link Format#format}.
-     */
-    private static FieldPosition createDummyFieldPos() {
-        final DummyDecimalFormat format1 = new DummyDecimalFormat();
-        format1.format(0.0);
-        return format1.pos;
-    }
 
     /**
      * Maps (formatString, locale) pairs to {@link Format} objects.
@@ -789,8 +778,8 @@ public class Format {
                             getFormatToken(FORMAT_DECIMAL));
                     final int endIndex =
                         decimalPos == -1
-                        ? formatStringBuffer.length()
-                                : decimalPos;
+                            ? formatStringBuffer.length()
+                            : decimalPos;
                         final String wholeFormat =
                             formatStringBuffer.substring(0, endIndex);
 
@@ -805,7 +794,7 @@ public class Format {
                         // ie: #,###,###
                         st.nextToken();
 
-                        // Now we build a list of the token lenghts in
+                        // Now we build a list of the token lengths in
                         // reverse order. The last one in the reversed
                         // list will be re-applied if the number is
                         // longer than the format string.
@@ -2370,25 +2359,19 @@ public class Format {
 
         // Scan through the format string for format elements.
         List<BasicFormat> formatList = new ArrayList<BasicFormat>();
+        List<Integer> thousands = new ArrayList<Integer>();
+        int decimalShift = 0;
         loop:
         while (formatString.length() > 0) {
             BasicFormat format = null;
-            String newFormatString = null;
-            boolean ignoreToken = false;
-            for (int i = tokens.length - 1; i > 0; i--) {
-                Token token = tokens[i];
-                if (!formatString.startsWith(token.token)) {
-                    continue;
-                }
-                if (!token.compatibleWith(formatTypeOut[0])) {
-                    continue;
-                }
+            String newFormatString;
+            final Token token = findToken(formatString, formatTypeOut[0]);
+            if (token != null) {
                 String matched = token.token;
                 newFormatString = formatString.substring(matched.length());
                 if (token.isSpecial()) {
                     switch (token.code) {
                     case FORMAT_SEMI:
-                        formatString = newFormatString;
                         break loop;
 
                     case FORMAT_POUND:
@@ -2467,6 +2450,11 @@ public class Format {
 
                     case FORMAT_DECIMAL:
                     {
+                        if (numberState == LEFT_OF_POINT) {
+                            decimalShift =
+                                fixThousands(
+                                    thousands, formatString, decimalShift);
+                        }
                         numberState = RIGHT_OF_POINT;
                         useDecimal = true;
                         break;
@@ -2477,6 +2465,7 @@ public class Format {
                         if (numberState == LEFT_OF_POINT) {
                             // e.g. "#,##"
                             useThouSep = true;
+                            thousands.add(formatString.length());
                         } else {
                             // e.g. "ddd, mmm dd, yyy"
                             format = token.makeFormat(locale);
@@ -2518,6 +2507,11 @@ public class Format {
                     case FORMAT_E_MINUS_LOWER:
                     case FORMAT_E_PLUS_LOWER:
                     {
+                        if (numberState == LEFT_OF_POINT) {
+                            decimalShift =
+                                fixThousands(
+                                    thousands, formatString, decimalShift);
+                        }
                         numberState = RIGHT_OF_EXP;
                         expFormat = token.code;
                         if (zeroesLeftOfPoint == 0
@@ -2601,7 +2595,6 @@ public class Format {
                         // If the special-case code does not set format,
                         // we should not create a format element.  (The
                         // token probably caused some flag to be set.)
-                        ignoreToken = true;
                         ignored.append(matched);
                     } else {
                         prevIgnored = ignored.toString();
@@ -2610,10 +2603,7 @@ public class Format {
                 } else {
                     format = token.makeFormat(locale);
                 }
-                break;
-            }
-
-            if (format == null && !ignoreToken) {
+            } else {
                 // None of the standard format elements matched.  Make the
                 // current character into a literal.
                 format = new LiteralFormat(
@@ -2625,6 +2615,11 @@ public class Format {
                 if (numberState != NOT_IN_A_NUMBER) {
                     // Having seen a few number tokens, we're looking at a
                     // non-number token.  Create the number first.
+                    if (numberState == LEFT_OF_POINT) {
+                        decimalShift =
+                            fixThousands(
+                                thousands, formatString, decimalShift);
+                    }
                     NumericFormat numericFormat = new NumericFormat(
                         prevIgnored, locale, expFormat, digitsLeftOfPoint,
                         zeroesLeftOfPoint, digitsRightOfPoint,
@@ -2646,6 +2641,11 @@ public class Format {
 
         if (numberState != NOT_IN_A_NUMBER) {
             // We're still in a number.  Create a number format.
+            if (numberState == LEFT_OF_POINT) {
+                decimalShift =
+                    fixThousands(
+                        thousands, formatString, decimalShift);
+            }
             NumericFormat numericFormat = new NumericFormat(
                 prevIgnored, locale, expFormat, digitsLeftOfPoint,
                 zeroesLeftOfPoint, digitsRightOfPoint, zeroesRightOfPoint,
@@ -2656,11 +2656,14 @@ public class Format {
             haveSeenNumber = true;
         }
 
+        if (formatString.startsWith(";")) {
+            formatString = formatString.substring(1);
+        }
+
         // If they used some symbol like 'AM/PM' in the format string, tell all
         // date formats to use twelve hour clock.  Likewise, figure out the
         // multiplier implied by their use of "%" or ",".
         boolean twelveHourClock = false;
-        int decimalShift = 0;
         for (int i = 0; i < formatList.size(); i++) {
             switch (formatList.get(i).code) {
             case FORMAT_UPPER_AM_SOLIDUS_PM:
@@ -2762,6 +2765,36 @@ public class Format {
         }
         alternateFormatList.add(alternateFormat);
         return formatString;
+    }
+
+    private Token findToken(String formatString, FormatType formatType) {
+        for (int i = tokens.length - 1; i > 0; i--) {
+            final Token token = tokens[i];
+            if (formatString.startsWith(token.token)
+                && token.compatibleWith(formatType))
+            {
+                return token;
+            }
+        }
+        return null;
+    }
+
+    private int fixThousands(
+        List<Integer> thousands, String formatString, int shift)
+    {
+        int offset = formatString.length() + 1;
+        for (int i = thousands.size() - 1; i >= 0; i--) {
+            Integer integer = thousands.get(i);
+            thousands.set(i, integer - offset);
+            ++offset;
+        }
+        while (thousands.size() > 0
+            && thousands.get(thousands.size() - 1) == 0)
+        {
+            shift -= 3;
+            thousands.remove(thousands.size() - 1);
+        }
+        return shift;
     }
 
     public String format(Object o)

@@ -11,6 +11,8 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.olap.Axis;
+import mondrian.olap.Cell;
 import mondrian.olap.type.*;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.MemberFormatter;
@@ -19,7 +21,7 @@ import mondrian.spi.*;
 
 import org.apache.log4j.MDC;
 
-import org.olap4j.CellSet;
+import org.olap4j.*;
 import org.olap4j.metadata.Property;
 
 import java.sql.SQLException;
@@ -148,6 +150,33 @@ public class UdfTest extends FoodMartTestCase {
             + "Row #3: 109,344\n"
             + "Row #4: 75,282\n"
             + "Row #5: 193,481\n");
+    }
+
+    /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1200">MONDRIAN-1200,
+     * "User-defined function + profiling causes NPE in CalcWriter"</a>.
+     * The bug only occurs if manually enable "mondrian.profile" logger before
+     * running this test. (The bug requires olap4j, plus profiling, plus a
+     * query that calls a UDF with one or more arguments on an axis.)
+     *
+     * @throws SQLException on error
+     */
+    public void testFunWithProfiling() throws SQLException {
+        OlapConnection connection = null;
+        OlapStatement statement = null;
+        CellSet x = null;
+        try {
+            connection = getTestContext().getOlap4jConnection();
+            statement = connection.createStatement();
+            x = statement.executeOlapQuery(
+                "SELECT { CurrentDateMember([Time].[Time], "
+                + "\"[Ti\\me]\\.[yyyy]\\.[Qq]\\.[m]\", BEFORE)} "
+                + "ON COLUMNS FROM [Sales]");
+            Util.discard(TestContext.toString(x));
+        } finally {
+            Util.close(x, statement, connection);
+        }
     }
 
     public void testLastNonEmpty() {
