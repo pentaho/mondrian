@@ -279,7 +279,9 @@ public class SegmentCacheManager {
         this.indexRegistry = new SegmentCacheIndexRegistry();
 
         // Add a local cache, if needed.
-        if (!MondrianProperties.instance().DisableCaching.get()) {
+        if (!MondrianProperties.instance().DisableLocalSegmentCache.get()
+            && !MondrianProperties.instance().DisableCaching.get())
+        {
             final MemorySegmentCache cache = new MemorySegmentCache();
             segmentCacheWorkers.add(
                 new SegmentCacheWorker(cache, thread));
