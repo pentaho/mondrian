@@ -101,16 +101,18 @@ public class SegmentLoader {
         List<StarPredicate> compoundPredicateList,
         List<Future<Map<Segment, SegmentWithData>>> segmentFutures)
     {
-        for (GroupingSet groupingSet : groupingSets) {
-            for (Segment segment : groupingSet.getSegments()) {
-                final SegmentCacheIndex index =
-                    cacheMgr.getIndexRegistry().getIndex(segment.star);
-                index.add(
-                    segment.getHeader(),
-                    true,
-                    new SegmentBuilder.StarSegmentConverter(
-                        segment.measure,
-                        compoundPredicateList));
+        if (!MondrianProperties.instance().DisableCaching.get()) {
+            for (GroupingSet groupingSet : groupingSets) {
+                for (Segment segment : groupingSet.getSegments()) {
+                    final SegmentCacheIndex index =
+                        cacheMgr.getIndexRegistry().getIndex(segment.star);
+                    index.add(
+                        segment.getHeader(),
+                        true,
+                        new SegmentBuilder.StarSegmentConverter(
+                            segment.measure,
+                            compoundPredicateList));
+                }
             }
         }
         try {
@@ -265,8 +267,8 @@ public class SegmentLoader {
         // called cacheMgr.loadSucceeded. That call will allow the current
         // query to proceed.
         if (!MondrianProperties.instance().DisableCaching.get()) {
-            cacheMgr.loadSucceeded(star, header, body);
             cacheMgr.compositeCache.put(header, body);
+            cacheMgr.loadSucceeded(star, header, body);
         }
     }
 

@@ -316,36 +316,42 @@ public class FastBatchingCellReader implements CellReader {
                 final SegmentWithData segmentWithData =
                     response.convert(header, body);
 
-                // Make sure that the cache manager knows about this new
-                // segment. First thing we do is to add it to the index.  Then
-                // we insert the segment body into the SlotFuture.  This has to
-                // be done on the SegmentCacheManager's Actor thread to ensure
-                // thread safety.
-                final Locus locus = Locus.peek();
-                cacheMgr.execute(
-                    new SegmentCacheManager.Command<Void>() {
-                        public Void call() throws Exception {
-                            SegmentCacheIndex index =
-                                cacheMgr.getIndexRegistry()
-                                    .getIndex(segmentWithData.getStar());
-                            boolean added = index.add(
-                                segmentWithData.getHeader(), true,
-                                response.converterMap.get(
-                                    SegmentCacheIndexImpl
+                // Register this segment with the local star.
+                segmentWithData.getStar().register(segmentWithData);
+
+                /*
+                 * Make sure that the cache manager knows about this new
+                 * segment. First thing we do is to add it to the index.
+                 * Then we insert the segment body into the SlotFuture.
+                 * This has to be done on the SegmentCacheManager's
+                 * Actor thread to ensure thread safety.
+                 */
+                if (!MondrianProperties.instance().DisableCaching.get()) {
+                    final Locus locus = Locus.peek();
+                    cacheMgr.execute(
+                        new SegmentCacheManager.Command<Void>() {
+                            public Void call() throws Exception {
+                                SegmentCacheIndex index =
+                                    cacheMgr.getIndexRegistry()
+                                        .getIndex(segmentWithData.getStar());
+                                boolean added = index.add(
+                                    segmentWithData.getHeader(), true,
+                                    response.converterMap.get(
+                                        SegmentCacheIndexImpl
                                         .makeConverterKey(
                                             segmentWithData.getHeader())));
-                            if (added) {
-                                ((SlotFuture<SegmentBody>)index.getFuture(
-                                    segmentWithData.getHeader()))
+                                if (added) {
+                                    ((SlotFuture<SegmentBody>)index.getFuture(
+                                        segmentWithData.getHeader()))
                                         .put(body);
+                                }
+                                return null;
                             }
-                            return null;
-                        }
-                        public Locus getLocus() {
-                            return locus;
-                        }
-                    });
-                segmentWithData.getStar().register(segmentWithData);
+                            public Locus getLocus() {
+                                return locus;
+                            }
+                        });
+                }
             }
 
             // Wait for SQL statements to end -- but only if there are no
