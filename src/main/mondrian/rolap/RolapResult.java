@@ -939,6 +939,7 @@ public class RolapResult extends ResultBase {
             TupleList tupleList = axis.getTupleList();
             for (List<Member> members : tupleList) {
                 execution.checkCancelOrTimeout();
+                final int savepoint = revaluator.savepoint();
                 revaluator.setContext(members);
                 Object o;
                 try {
@@ -946,6 +947,8 @@ public class RolapResult extends ResultBase {
                 } catch (MondrianEvaluationException e) {
                     LOGGER.warn("Mondrian: exception in executeStripe.", e);
                     o = e;
+                } finally {
+                    revaluator.restore(savepoint);
                 }
 
                 CellInfo ci = null;
@@ -1053,9 +1056,14 @@ public class RolapResult extends ResultBase {
                 }
                 for (final List<Member> tuple : subTuples) {
                     point.setAxis(axisOrdinal, pi);
-                    revaluator.setContext(tuple);
-                    execution.checkCancelOrTimeout();
-                    executeStripe(axisOrdinal - 1, revaluator, pos);
+                    final int savepoint = revaluator.savepoint();
+                    try {
+                        revaluator.setContext(tuple);
+                        execution.checkCancelOrTimeout();
+                        executeStripe(axisOrdinal - 1, revaluator, pos);
+                    } finally {
+                        revaluator.restore(savepoint);
+                    }
                     pi++;
                 }
             } else {
@@ -1080,9 +1088,14 @@ public class RolapResult extends ResultBase {
                 int tupleIndex = 0;
                 for (final List<Member> tuple : tupleList) {
                     point.setAxis(axisOrdinal, tupleIndex);
-                    revaluator.setContext(tuple);
-                    execution.checkCancelOrTimeout();
-                    executeStripe(axisOrdinal - 1, revaluator, pos);
+                    final int savepoint = revaluator.savepoint();
+                    try {
+                        revaluator.setContext(tuple);
+                        execution.checkCancelOrTimeout();
+                        executeStripe(axisOrdinal - 1, revaluator, pos);
+                    } finally {
+                        revaluator.restore(savepoint);
+                    }
                     tupleIndex++;
                 }
             }
