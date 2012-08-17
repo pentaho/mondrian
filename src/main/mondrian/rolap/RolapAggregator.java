@@ -144,21 +144,27 @@ public abstract class RolapAggregator
                 if (firstNonNull instanceof Integer) {
                     int min = Integer.MAX_VALUE;
                     for (Object data : rawData) {
-                        min = Math.min(min, (Integer)data);
+                        if (data != null) {
+                            min = Math.min(min, (Integer)data);
+                        }
                     }
                     return min;
                 }
                 if (firstNonNull instanceof Double) {
                     double min = Double.MAX_VALUE;
                     for (Object data : rawData) {
-                        min = Math.min(min, (Double)data);
+                        if (data != null) {
+                            min = Math.min(min, (Double)data);
+                        }
                     }
                     return min;
                 }
                 if (firstNonNull instanceof Long) {
                     long min = Long.MAX_VALUE;
                     for (Object data : rawData) {
-                        min = Math.min(min, (Long)data);
+                        if (data != null) {
+                            min = Math.min(min, (Long)data);
+                        }
                     }
                     return min;
                 }
@@ -202,21 +208,27 @@ public abstract class RolapAggregator
                 if (firstNonNull instanceof Integer) {
                     int min = Integer.MIN_VALUE;
                     for (Object data : rawData) {
-                        min = Math.max(min, (Integer)data);
+                        if (data != null) {
+                            min = Math.max(min, (Integer)data);
+                        }
                     }
                     return min;
                 }
                 if (firstNonNull instanceof Double) {
                     double min = Double.MIN_VALUE;
                     for (Object data : rawData) {
-                        min = Math.max(min, (Double)data);
+                        if (data != null) {
+                            min = Math.max(min, (Double)data);
+                        }
                     }
                     return min;
                 }
                 if (firstNonNull instanceof Long) {
                     long min = Long.MIN_VALUE;
                     for (Object data : rawData) {
-                        min = Math.max(min, (Long)data);
+                        if (data != null) {
+                            min = Math.max(min, (Long)data);
+                        }
                     }
                     return min;
                 }
