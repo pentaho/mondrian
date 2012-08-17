@@ -24,6 +24,8 @@ import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.Future;
 
+import junit.framework.Assert;
+
 /**
  * Test for <code>FastBatchingCellReader</code>.
  *
@@ -2068,6 +2070,417 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
          */
         public boolean supportsGroupingSets() {
             return supportsGroupingSets;
+        }
+    }
+
+    public void testInMemoryAggSum() throws Exception {
+        // Double arrays
+        final Object[] dblSet1 =
+            new Double[]
+                {null, 0.0, 1.1, 2.4};
+        final Object[] dblSet2 =
+            new Double[]
+                {null, null, null};
+        final Object[] dblSet3 =
+            new Double[]
+                {};
+        final Object[] dblSet4 =
+            new Double[]
+                {2.7, 1.9};
+
+        // Arrays of longs
+        final Object[] longSet1 =
+            new Long[]
+                {null, 0l, 1l, 4l};
+        final Object[] longSet2 =
+            new Long[]
+                {null, null, null};
+        final Object[] longSet3 =
+            new Long[]
+                {};
+        final Object[] longSet4 =
+            new Long[]
+                {3l, 7l};
+
+        // Arrays of ints
+        final Object[] intSet1 =
+            new Integer[]
+                {null, 0, 1, 4};
+        final Object[] intSet2 =
+            new Integer[]
+                {null, null, null};
+        final Object[] intSet3 =
+            new Integer[]
+                {};
+        final Object[] intSet4 =
+            new Integer[]
+                {3, 7};
+
+        // Arrays of bacon
+        class Bacon {};
+        final Object[] baconSet1 =
+            new Bacon[]
+                {null, new Bacon()};
+        final Object[] baconSet2 =
+            new Bacon[]
+                {null, null, null};
+        final Object[] baconSet3 =
+            new Bacon[]
+                {};
+        final Object[] baconSet4 =
+            new Bacon[]
+                {new Bacon(), new Bacon()};
+
+        // Test with double
+        Assert.assertEquals(
+            3.5,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(dblSet1)));
+        Assert.assertEquals(
+            0,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(dblSet2)));
+        Assert.assertEquals(
+            0,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(dblSet3)));
+        Assert.assertEquals(
+            4.6,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(dblSet4)));
+
+        // test with long
+        Assert.assertEquals(
+            5l,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(longSet1)));
+        Assert.assertEquals(
+            0,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(longSet2)));
+        Assert.assertEquals(
+            0,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(longSet3)));
+        Assert.assertEquals(
+            10l,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(longSet4)));
+
+        // test with int
+        Assert.assertEquals(
+            5,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(intSet1)));
+        Assert.assertEquals(
+            0,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(intSet2)));
+        Assert.assertEquals(
+            0,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(intSet3)));
+        Assert.assertEquals(
+            10,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(intSet4)));
+
+        // test with bacon
+        try {
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(baconSet1));
+            fail();
+        } catch (IllegalArgumentException e) {
+            // ok.
+        }
+        Assert.assertEquals(
+            0,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(baconSet2)));
+        Assert.assertEquals(
+            0,
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(baconSet3)));
+        try {
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(baconSet4));
+            fail();
+        } catch (IllegalArgumentException e) {
+            // ok.
+        }
+    }
+
+    public void testInMemoryAggMin() throws Exception {
+        // Double arrays
+        final Object[] dblSet1 =
+            new Double[]
+                {null, 0.0, 1.1, 2.4};
+        final Object[] dblSet2 =
+            new Double[]
+                {null, null, null};
+        final Object[] dblSet3 =
+            new Double[]
+                {};
+        final Object[] dblSet4 =
+            new Double[]
+                {2.7, 1.9};
+
+        // Arrays of longs
+        final Object[] longSet1 =
+            new Long[]
+                {null, 0l, 1l, 4l};
+        final Object[] longSet2 =
+            new Long[]
+                {null, null, null};
+        final Object[] longSet3 =
+            new Long[]
+                {};
+        final Object[] longSet4 =
+            new Long[]
+                {3l, 7l};
+
+        // Arrays of ints
+        final Object[] intSet1 =
+            new Integer[]
+                {null, 0, 1, 4};
+        final Object[] intSet2 =
+            new Integer[]
+                {null, null, null};
+        final Object[] intSet3 =
+            new Integer[]
+                {};
+        final Object[] intSet4 =
+            new Integer[]
+                {3, 7};
+
+        // Arrays of bacon
+        class Bacon {};
+        final Object[] baconSet1 =
+            new Bacon[]
+                {null, new Bacon()};
+        final Object[] baconSet2 =
+            new Bacon[]
+                {null, null, null};
+        final Object[] baconSet3 =
+            new Bacon[]
+                {};
+        final Object[] baconSet4 =
+            new Bacon[]
+                {new Bacon(), new Bacon()};
+
+        // Test with double
+        Assert.assertEquals(
+            0.0,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(dblSet1)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(dblSet2)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(dblSet3)));
+        Assert.assertEquals(
+            1.9,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(dblSet4)));
+
+        // test with long
+        Assert.assertEquals(
+            0l,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(longSet1)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(longSet2)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(longSet3)));
+        Assert.assertEquals(
+            3l,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(longSet4)));
+
+        // test with int
+        Assert.assertEquals(
+            0,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(intSet1)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(intSet2)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(intSet3)));
+        Assert.assertEquals(
+            3,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(intSet4)));
+
+        // test with bacon
+        try {
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(baconSet1));
+            fail();
+        } catch (IllegalArgumentException e) {
+            // ok.
+        }
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(baconSet2)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(baconSet3)));
+        try {
+            RolapAggregator.Min.aggregate(
+                Arrays.asList(baconSet4));
+            fail();
+        } catch (IllegalArgumentException e) {
+            // ok.
+        }
+    }
+
+    public void testInMemoryAggMax() throws Exception {
+        // Double arrays
+        final Object[] dblSet1 =
+            new Double[]
+                {null, 0.0, 1.1, 2.4};
+        final Object[] dblSet2 =
+            new Double[]
+                {null, null, null};
+        final Object[] dblSet3 =
+            new Double[]
+                {};
+        final Object[] dblSet4 =
+            new Double[]
+                {2.7, 1.9};
+
+        // Arrays of longs
+        final Object[] longSet1 =
+            new Long[]
+                {null, 0l, 1l, 4l};
+        final Object[] longSet2 =
+            new Long[]
+                {null, null, null};
+        final Object[] longSet3 =
+            new Long[]
+                {};
+        final Object[] longSet4 =
+            new Long[]
+                {3l, 7l};
+
+        // Arrays of ints
+        final Object[] intSet1 =
+            new Integer[]
+                {null, 0, 1, 4};
+        final Object[] intSet2 =
+            new Integer[]
+                {null, null, null};
+        final Object[] intSet3 =
+            new Integer[]
+                {};
+        final Object[] intSet4 =
+            new Integer[]
+                {3, 7};
+
+        // Arrays of bacon
+        class Bacon {};
+        final Object[] baconSet1 =
+            new Bacon[]
+                {null, new Bacon()};
+        final Object[] baconSet2 =
+            new Bacon[]
+                {null, null, null};
+        final Object[] baconSet3 =
+            new Bacon[]
+                {};
+        final Object[] baconSet4 =
+            new Bacon[]
+                {new Bacon(), new Bacon()};
+
+        // Test with double
+        Assert.assertEquals(
+            2.4,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(dblSet1)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(dblSet2)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(dblSet3)));
+        Assert.assertEquals(
+            2.7,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(dblSet4)));
+
+        // test with long
+        Assert.assertEquals(
+            4l,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(longSet1)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(longSet2)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(longSet3)));
+        Assert.assertEquals(
+            7l,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(longSet4)));
+
+        // test with int
+        Assert.assertEquals(
+            4,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(intSet1)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(intSet2)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(intSet3)));
+        Assert.assertEquals(
+            7,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(intSet4)));
+
+        // test with bacon
+        try {
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(baconSet1));
+            fail();
+        } catch (IllegalArgumentException e) {
+            // ok.
+        }
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(baconSet2)));
+        Assert.assertEquals(
+            null,
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(baconSet3)));
+        try {
+            RolapAggregator.Max.aggregate(
+                Arrays.asList(baconSet4));
+            fail();
+        } catch (IllegalArgumentException e) {
+            // ok.
         }
     }
 }
