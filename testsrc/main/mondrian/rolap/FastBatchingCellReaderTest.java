@@ -2136,10 +2136,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             0,
             RolapAggregator.Sum.aggregate(
                 Arrays.asList(dblSet2)));
-        Assert.assertEquals(
-            0,
+        try {
             RolapAggregator.Sum.aggregate(
-                Arrays.asList(dblSet3)));
+                Arrays.asList(dblSet3));
+            fail();
+        } catch (AssertionError e) {
+            // ok.
+        }
         Assert.assertEquals(
             4.6,
             RolapAggregator.Sum.aggregate(
@@ -2154,10 +2157,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             0,
             RolapAggregator.Sum.aggregate(
                 Arrays.asList(longSet2)));
-        Assert.assertEquals(
-            0,
+        try {
             RolapAggregator.Sum.aggregate(
-                Arrays.asList(longSet3)));
+                Arrays.asList(longSet3));
+            fail();
+        } catch (AssertionError e) {
+            // ok.
+        }
         Assert.assertEquals(
             10l,
             RolapAggregator.Sum.aggregate(
@@ -2172,10 +2178,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             0,
             RolapAggregator.Sum.aggregate(
                 Arrays.asList(intSet2)));
-        Assert.assertEquals(
-            0,
+        try {
             RolapAggregator.Sum.aggregate(
-                Arrays.asList(intSet3)));
+                Arrays.asList(intSet3));
+            fail();
+        } catch (AssertionError e) {
+            // ok.
+        }
         Assert.assertEquals(
             10,
             RolapAggregator.Sum.aggregate(
@@ -2193,10 +2202,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             0,
             RolapAggregator.Sum.aggregate(
                 Arrays.asList(baconSet2)));
-        Assert.assertEquals(
-            0,
+        try {
             RolapAggregator.Sum.aggregate(
-                Arrays.asList(baconSet3)));
+                Arrays.asList(baconSet3));
+            fail();
+        } catch (AssertionError e) {
+            // ok.
+        }
         try {
             RolapAggregator.Sum.aggregate(
                 Arrays.asList(baconSet4));
@@ -2273,10 +2285,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             null,
             RolapAggregator.Min.aggregate(
                 Arrays.asList(dblSet2)));
-        Assert.assertEquals(
-            null,
+        try {
             RolapAggregator.Min.aggregate(
-                Arrays.asList(dblSet3)));
+                Arrays.asList(dblSet3));
+            fail();
+        } catch (AssertionError e) {
+            // ok.
+        }
         Assert.assertEquals(
             1.9,
             RolapAggregator.Min.aggregate(
@@ -2291,10 +2306,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             null,
             RolapAggregator.Min.aggregate(
                 Arrays.asList(longSet2)));
-        Assert.assertEquals(
-            null,
+        try {
             RolapAggregator.Min.aggregate(
-                Arrays.asList(longSet3)));
+                Arrays.asList(longSet3));
+            fail();
+        } catch (AssertionError e) {
+            // ok.
+        }
         Assert.assertEquals(
             3l,
             RolapAggregator.Min.aggregate(
@@ -2309,10 +2327,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             null,
             RolapAggregator.Min.aggregate(
                 Arrays.asList(intSet2)));
-        Assert.assertEquals(
-            null,
+        try {
             RolapAggregator.Min.aggregate(
-                Arrays.asList(intSet3)));
+                Arrays.asList(intSet3));
+            fail();
+        } catch (AssertionError e) {
+            // ok.
+        }
         Assert.assertEquals(
             3,
             RolapAggregator.Min.aggregate(
@@ -2330,10 +2351,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             null,
             RolapAggregator.Min.aggregate(
                 Arrays.asList(baconSet2)));
-        Assert.assertEquals(
-            null,
+        try {
             RolapAggregator.Min.aggregate(
-                Arrays.asList(baconSet3)));
+                Arrays.asList(baconSet3));
+            fail();
+        } catch (AssertionError e) {
+            // ok.
+        }
         try {
             RolapAggregator.Min.aggregate(
                 Arrays.asList(baconSet4));
@@ -2410,10 +2434,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             null,
             RolapAggregator.Max.aggregate(
                 Arrays.asList(dblSet2)));
-        Assert.assertEquals(
-            null,
+        try {
             RolapAggregator.Max.aggregate(
-                Arrays.asList(dblSet3)));
+                Arrays.asList(dblSet3));
+            fail();
+        } catch (AssertionError e) {
+            // ok.
+        }
         Assert.assertEquals(
             2.7,
             RolapAggregator.Max.aggregate(
@@ -2428,10 +2455,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             null,
             RolapAggregator.Max.aggregate(
                 Arrays.asList(longSet2)));
-        Assert.assertEquals(
-            null,
+        try {
             RolapAggregator.Max.aggregate(
-                Arrays.asList(longSet3)));
+                Arrays.asList(longSet3));
+            fail();
+        } catch (AssertionError e) {
+            // ok.
+        }
         Assert.assertEquals(
             7l,
             RolapAggregator.Max.aggregate(
@@ -2446,10 +2476,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             null,
             RolapAggregator.Max.aggregate(
                 Arrays.asList(intSet2)));
-        Assert.assertEquals(
-            null,
+        try {
             RolapAggregator.Max.aggregate(
-                Arrays.asList(intSet3)));
+                Arrays.asList(intSet3));
+            fail();
+        } catch (AssertionError e) {
+            // ok.
+        }
         Assert.assertEquals(
             7,
             RolapAggregator.Max.aggregate(
@@ -2467,10 +2500,13 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             null,
             RolapAggregator.Max.aggregate(
                 Arrays.asList(baconSet2)));
-        Assert.assertEquals(
-            null,
-            RolapAggregator.Max.aggregate(
-                Arrays.asList(baconSet3)));
+        try {
+            RolapAggregator.Sum.aggregate(
+                Arrays.asList(baconSet3));
+            fail();
+        } catch (AssertionError e) {
+            // ok.
+        }
         try {
             RolapAggregator.Max.aggregate(
                 Arrays.asList(baconSet4));
