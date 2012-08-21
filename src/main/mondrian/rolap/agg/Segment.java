@@ -280,6 +280,7 @@ public class Segment {
         } else {
             switch (type) {
             case OBJECT:
+            case LONG:
             case STRING:
                 return new DenseObjectSegmentDataset(axes, size);
             case INT:
