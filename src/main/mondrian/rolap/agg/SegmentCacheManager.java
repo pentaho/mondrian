@@ -1600,11 +1600,7 @@ public class SegmentCacheManager {
                 // We have a schema match.
                 RolapStar star =
                     schema.getStar(header.rolapStarFactTableName);
-                if (star != null) {
-                    // Found it.
-                    indexes.put(star, new SegmentCacheIndexImpl(thread));
-                }
-                return indexes.get(star);
+                return getIndex(star);
             }
             return null;
         }
