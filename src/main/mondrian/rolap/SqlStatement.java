@@ -303,7 +303,11 @@ public class SqlStatement {
         int scale,
         Dialect dialect)
     {
-        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.NETEZZA
+        // Dialect might be null. This can happen when Mondrian issues a first
+        // query and tries to figure out what dialect to use. Watch out
+        // for NPEs.
+        if (dialect != null
+            && dialect.getDatabaseProduct() == Dialect.DatabaseProduct.NETEZZA
             && scale == 0
             && precision == 38)
         {
