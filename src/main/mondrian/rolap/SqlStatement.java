@@ -352,7 +352,11 @@ public class SqlStatement {
         int scale,
         Dialect dialect)
     {
-        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.NETEZZA
+        // Dialect might be null. This can happen when Mondrian issues a first
+        // query and tries to figure out what dialect to use. Watch out
+        // for NPEs.
+        if (dialect != null
+            && dialect.getDatabaseProduct() == Dialect.DatabaseProduct.NETEZZA
             && scale == 0
             && precision == 38)
         {
@@ -590,11 +594,15 @@ public class SqlStatement {
         for (int i = 0; i < columnCount; i++) {
             final Type suggestedType =
                 this.types == null ? null : this.types.get(i);
+            // There might not be a schema constructed yet,
+            // so watch out here for NPEs.
+            RolapSchema schema = locus.execution.getMondrianStatement()
+                .getMondrianConnection()
+                .getSchema();
             types.add(
                 guessType(
                     suggestedType, metaData, i,
-                    locus.execution.getMondrianStatement()
-                        .getSchema().getDialect()));
+                    schema != null ? schema.getDialect() : null));
         }
         return types;
     }
