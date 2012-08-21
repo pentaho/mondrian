@@ -583,6 +583,7 @@ class Segment {
         } else {
             switch (type) {
             case OBJECT:
+            case LONG:
             case STRING:
                 return new DenseObjectSegmentDataset(this, size);
             case INT:

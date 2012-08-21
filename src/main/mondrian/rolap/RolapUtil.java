@@ -184,10 +184,11 @@ public class RolapUtil {
         DataSource dataSource,
         String sql,
         String component,
-        String message)
+        String message,
+        Dialect dialect)
     {
         return executeQuery(
-            dataSource, sql, null, 0, 0, component, message, -1, -1);
+            dataSource, sql, null, 0, 0, component, message, -1, -1, dialect);
     }
 
     /**
@@ -226,12 +227,13 @@ public class RolapUtil {
         String component,
         String message,
         int resultSetType,
-        int resultSetConcurrency)
+        int resultSetConcurrency,
+        Dialect dialect)
     {
         SqlStatement stmt =
             new SqlStatement(
                 dataSource, sql, types, maxRowCount, firstRowOrdinal, component,
-                message, resultSetType, resultSetConcurrency);
+                message, resultSetType, resultSetConcurrency, dialect);
         stmt.execute();
         return stmt;
     }

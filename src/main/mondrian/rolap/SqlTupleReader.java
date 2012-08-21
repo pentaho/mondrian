@@ -378,7 +378,8 @@ public class SqlTupleReader implements TupleReader {
                     dataSource, sql, types, maxRows, 0,
                     "SqlTupleReader.readTuples " + partialTargets,
                     message,
-                    -1, -1);
+                    -1, -1,
+                    ((RolapSchema)targets.get(0).getCurrMember().getDimension().getSchema()).getDialect());
                 resultSet = stmt.getResultSet();
             } else {
                 resultSet = null;
@@ -721,7 +722,7 @@ public class SqlTupleReader implements TupleReader {
 
             // Restore the original measure member
             constraint.getEvaluator().setContext(originalMeasure);
-            return Pair.of(selectString.toString(), types);
+            return new Pair(selectString.toString(), types);
         } else {
             return generateSelectForLevels(
                 dataSource, cube, WhichSelect.ONLY);

@@ -1302,7 +1302,8 @@ public class AggStar {
                 RolapUtil.executeQuery(
                     dataSource, query.toString(),
                     "AggStar.FactTable.makeNumberOfRows",
-                    "Counting rows in aggregate table");
+                    "Counting rows in aggregate table",
+                    query.getDialect());
             try {
                 ResultSet resultSet = stmt.getResultSet();
                 if (resultSet.next()) {

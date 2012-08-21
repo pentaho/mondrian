@@ -10,6 +10,8 @@
 package mondrian.rolap;
 
 import mondrian.olap.Util;
+
+import mondrian.spi.Dialect;
 import mondrian.util.DelegatingInvocationHandler;
 
 import javax.sql.DataSource;
@@ -18,6 +20,8 @@ import java.lang.reflect.Proxy;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.log4j.Logger;
 
 /**
  * SqlStatement contains a SQL statement and associated resources throughout
@@ -50,7 +54,6 @@ import java.util.List;
  * @since 2.3
  */
 public class SqlStatement {
-
     private final DataSource dataSource;
     private Connection jdbcConnection;
     private ResultSet resultSet;
@@ -72,6 +75,9 @@ public class SqlStatement {
     // used for SQL logging, allows for a SQL Statement UID
     private static long executeCount = -1;
     private boolean done;
+
+    private static final Logger LOG = Logger.getLogger(SqlStatement.class);
+    private final Dialect dialect;
 
     /**
      * Creates a SqlStatement.
@@ -97,7 +103,8 @@ public class SqlStatement {
         String component,
         String message,
         int resultSetType,
-        int resultSetConcurrency)
+        int resultSetConcurrency,
+        Dialect dialect)
     {
         this.dataSource = dataSource;
         this.sql = sql;
@@ -108,6 +115,7 @@ public class SqlStatement {
         this.message = message;
         this.resultSetType = resultSetType;
         this.resultSetConcurrency = resultSetConcurrency;
+        this.dialect = dialect;
     }
 
     /**
@@ -290,6 +298,38 @@ public class SqlStatement {
         return runtimeException;
     }
 
+    private static Type getDecimalType(
+        int precision,
+        int scale,
+        Dialect dialect)
+    {
+        if (dialect.getDatabaseProduct() == Dialect.DatabaseProduct.NETEZZA
+            && scale == 0
+            && precision == 38)
+        {
+            // Neteeza marks longs as scale 0 and precision 38.
+            // An int would overflow.
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "Using type LONG for Neteeza scale 0 and precision 38.");
+            }
+            return Type.LONG;
+        } else if ((scale == 0 || scale == -127)
+            && (precision <= 9 || precision == 38))
+        {
+            // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
+            // (up to 10^9 = 1B). NUMBER(38, 0) is conventionally used in
+            // Oracle for integers of unspecified precision, so let's be
+            // bold and assume that they can fit into an int.
+            //
+            // Oracle also seems to sometimes represent integers as
+            // (type=NUMERIC, precision=0, scale=-127) for reasons unknown.
+            return Type.INT;
+        } else {
+            return Type.DOUBLE;
+        }
+    }
+
     /**
      * Chooses the most appropriate type for accessing the values of a
      * column in a result set.
@@ -306,48 +346,137 @@ public class SqlStatement {
     public static Type guessType(
         Type suggestedType,
         ResultSetMetaData metaData,
-        int i)
+        int i,
+        Dialect dialect)
         throws SQLException
     {
+        final String columnName = metaData.getColumnName(i + 1);
+        final String typeName = metaData.getColumnTypeName(i + 1);
         if (suggestedType != null) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of explicit type "
+                    + suggestedType.name());
+            }
             return suggestedType;
         }
         final int columnType = metaData.getColumnType(i + 1);
         final int precision = metaData.getPrecision(i + 1);
         final int scale = metaData.getScale(i + 1);
-        final String columnName = metaData.getColumnName(i + 1);
         final String columnLabel = metaData.getColumnLabel(i + 1);
         switch (columnType) {
         case Types.SMALLINT:
         case Types.INTEGER:
         case Types.BOOLEAN:
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of internal type INT. JDBC type was "
+                    + columnType);
+            }
             return Type.INT;
         case Types.NUMERIC:
-            if (precision == 0 && scale == 0) {
-                // In Oracle, the NUMBER datatype with no precision or scale
-                // (not NUMBER(p) or NUMBER(p, s)) means floating point.
-                return Type.DOUBLE;
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " has precision "
+                    + precision
+                    + " and scale "
+                    + scale
+                    + " for JDBC type "
+                    + typeName);
             }
-            // else fall through
-        case Types.DECIMAL:
-            if ((scale == 0 || scale == -127)
-                && (precision <= 9 || precision == 38))
+            if (precision == 0
+                && (scale == 0 || scale == -127)
+                && (typeName.equalsIgnoreCase("NUMBER")
+                    || (typeName.equalsIgnoreCase("NUMERIC"))))
             {
                 // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
                 // (up to 10^9 = 1B). NUMBER(38, 0) is conventionally used in
                 // Oracle for integers of unspecified precision, so let's be
                 // bold and assume that they can fit into an int.
                 //
-                // Oracle also seems to sometimes represent integers as
-                // (type=NUMERIC, precision=0, scale=-127) for reasons unknown.
-                return Type.INT;
-            } else {
-                return Type.DOUBLE;
+                // There is a further problem. In GROUPING SETS queries, Oracle
+                // loosens the type of columns compared to mere GROUP BY
+                // queries. We need integer GROUP BY columns to remain integers,
+                // otherwise the segments won't be found; but if we convert
+                // measure (whose column names are like "m0", "m1") to integers,
+                // data loss will occur.
+                if (columnName.startsWith("m")) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(
+                            "SqlStatement.guessType - Column "
+                            + columnName
+                            + " is of internal type OBJECT. JDBC type was "
+                            + columnType);
+                    }
+                    return Type.OBJECT;
+                } else {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(
+                            "SqlStatement.guessType - Column "
+                            + columnName
+                            + " is of internal type INT. JDBC type was "
+                            + columnType);
+                    }
+                    return Type.INT;
+                }
             }
+            final Type decimalType = getDecimalType(precision, scale, dialect);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of internal type "
+                    + decimalType.name()
+                    + ". JDBC type was "
+                    + columnType);
+            }
+            return decimalType;
+        case Types.DECIMAL:
+            final Type dt = getDecimalType(precision, scale, dialect);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of internal type "
+                    + dt.name()
+                    + ". JDBC type was "
+                    + columnType);
+            }
+            return dt;
+
         case Types.DOUBLE:
         case Types.FLOAT:
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of internal type DOUBLE. JDBC type was "
+                    + columnType);
+            }
             return Type.DOUBLE;
+        case Types.BIGINT:
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of internal type LONG. JDBC type was "
+                    + columnType);
+            }
+            return Type.LONG;
         default:
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of internal type OBJECT. JDBC type was "
+                    + columnType);
+            }
             return Type.OBJECT;
         }
     }
@@ -410,7 +539,10 @@ public class SqlStatement {
         for (int i = 0; i < columnCount; i++) {
             final Type suggestedType =
                 this.types == null ? null : this.types.get(i);
-            types.add(guessType(suggestedType, metaData, i));
+            types.add(
+                guessType(
+                    suggestedType, metaData, i,
+                     dialect));
         }
         return types;
     }

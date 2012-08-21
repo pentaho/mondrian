@@ -393,7 +393,8 @@ public class SegmentLoader {
             "Segment.load",
             "Error while loading segment",
             -1,
-            -1);
+            -1,
+            star.getSchema().getDialect());
     }
 
     RowList processData(

@@ -121,7 +121,8 @@ public class RolapCell implements Cell {
                 connection.getDataSource(),
                 sql,
                 "RolapCell.getDrillThroughCount",
-                "Error while counting drill-through");
+                "Error while counting drill-through",
+                cellRequest.getMeasure().getStar().getSchema().getDialect());
         try {
             ResultSet rs = stmt.getResultSet();
             rs.next();
@@ -325,7 +326,8 @@ public class RolapCell implements Cell {
                 "RolapCell.drillThrough",
                 "Error in drill through",
                 resultSetType,
-                resultSetConcurrency);
+                resultSetConcurrency,
+                dialect);
     }
 
     private String addTabFields(String dtSql, String tabFields) {

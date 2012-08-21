@@ -1277,7 +1277,8 @@ public class RolapStar {
                     dataSource, sql,
                     "RolapStar.Column.getCardinality",
                     "while counting distinct values of column '"
-                    + expression.getGenericExpression());
+                    + expression.getGenericExpression(),
+                    sqlQuery.getDialect());
             try {
                 ResultSet resultSet = stmt.getResultSet();
                 Util.assertTrue(resultSet.next());
