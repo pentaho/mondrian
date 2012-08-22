@@ -542,6 +542,9 @@ public class RolapConnection extends ConnectionBase {
             closed = true;
             server.removeConnection(this);
         }
+        if (internalStatement != null) {
+            internalStatement.close();
+        }
     }
 
     public RolapSchema getSchema() {
@@ -693,7 +696,9 @@ public class RolapConnection extends ConnectionBase {
             throw e;
         } catch (Exception e) {
             try {
-                statement.end(execution);
+                if (!execution.isCancelOrTimeout()) {
+                    statement.end(execution);
+                }
             } catch (Exception e1) {
                 /*
                  * We can safely ignore that cleanup exception.

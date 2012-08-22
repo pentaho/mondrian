@@ -54,5 +54,15 @@ public class NetezzaDialect extends PostgreSqlDialect {
     public DatabaseProduct getDatabaseProduct() {
         return DatabaseProduct.NETEZZA;
     }
+
+    @Override
+    public boolean allowsRegularExpressionInWhereClause() {
+        return false;
+    }
+
+    @Override
+    public String generateRegularExpression(String source, String javaRegex) {
+        throw new UnsupportedOperationException();
+    }
 }
 // End NetezzaDialect.java
