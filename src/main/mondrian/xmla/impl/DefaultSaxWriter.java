@@ -189,7 +189,9 @@ public class DefaultSaxWriter implements SaxWriter {
         //
         // REVIEW: It would be better to enclose in CDATA, but some clients
         // might not be expecting this.
-        s = Util.replace(s, Util.nl, " ");
+        s = Util.replace(s, "\n\r", " ");
+        s = Util.replace(s, "\n", " ");
+        s = Util.replace(s, "\r", " ");
         characters(s);
         endElement();
     }

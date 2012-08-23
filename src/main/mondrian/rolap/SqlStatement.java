@@ -16,6 +16,8 @@ import mondrian.server.monitor.*;
 import mondrian.spi.Dialect;
 import mondrian.util.DelegatingInvocationHandler;
 
+import org.apache.log4j.Logger;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.sql.*;
@@ -23,8 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import javax.sql.DataSource;
-
-import org.apache.log4j.Logger;
 
 /**
  * SqlStatement contains a SQL statement and associated resources throughout

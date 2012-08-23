@@ -20,11 +20,11 @@ import mondrian.test.TestContext;
 import mondrian.util.Bug;
 import mondrian.util.DelegatingInvocationHandler;
 
+import junit.framework.Assert;
+
 import java.lang.reflect.Proxy;
 import java.util.*;
 import java.util.concurrent.Future;
-
-import junit.framework.Assert;
 
 /**
  * Test for <code>FastBatchingCellReader</code>.
@@ -2076,60 +2076,42 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testInMemoryAggSum() throws Exception {
         // Double arrays
         final Object[] dblSet1 =
-            new Double[]
-                {null, 0.0, 1.1, 2.4};
+            new Double[] {null, 0.0, 1.1, 2.4};
         final Object[] dblSet2 =
-            new Double[]
-                {null, null, null};
+            new Double[] {null, null, null};
         final Object[] dblSet3 =
-            new Double[]
-                {};
+            new Double[] {};
         final Object[] dblSet4 =
-            new Double[]
-                {2.7, 1.9};
+            new Double[] {2.7, 1.9};
 
         // Arrays of longs
         final Object[] longSet1 =
-            new Long[]
-                {null, 0l, 1l, 4l};
+            new Long[] {null, 0l, 1l, 4l};
         final Object[] longSet2 =
-            new Long[]
-                {null, null, null};
+            new Long[] {null, null, null};
         final Object[] longSet3 =
-            new Long[]
-                {};
+            new Long[] {};
         final Object[] longSet4 =
-            new Long[]
-                {3l, 7l};
+            new Long[] {3l, 7l};
 
         // Arrays of ints
         final Object[] intSet1 =
-            new Integer[]
-                {null, 0, 1, 4};
+            new Integer[] {null, 0, 1, 4};
         final Object[] intSet2 =
-            new Integer[]
-                {null, null, null};
+            new Integer[] {null, null, null};
         final Object[] intSet3 =
-            new Integer[]
-                {};
+            new Integer[] {};
         final Object[] intSet4 =
-            new Integer[]
-                {3, 7};
+            new Integer[] {3, 7};
 
-        // Arrays of bacon
-        class Bacon {};
         final Object[] baconSet1 =
-            new Bacon[]
-                {null, new Bacon()};
+            new Bacon[] {null, new Bacon()};
         final Object[] baconSet2 =
-            new Bacon[]
-                {null, null, null};
+            new Bacon[] {null, null, null};
         final Object[] baconSet3 =
-            new Bacon[]
-                {};
+            new Bacon[] {};
         final Object[] baconSet4 =
-            new Bacon[]
-                {new Bacon(), new Bacon()};
+            new Bacon[] {new Bacon(), new Bacon()};
 
         // Test with double
         Assert.assertEquals(
@@ -2225,60 +2207,42 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testInMemoryAggMin() throws Exception {
         // Double arrays
         final Object[] dblSet1 =
-            new Double[]
-                {null, 0.0, 1.1, 2.4};
+            new Double[] {null, 0.0, 1.1, 2.4};
         final Object[] dblSet2 =
-            new Double[]
-                {null, null, null};
+            new Double[] {null, null, null};
         final Object[] dblSet3 =
-            new Double[]
-                {};
+            new Double[] {};
         final Object[] dblSet4 =
-            new Double[]
-                {2.7, 1.9};
+            new Double[] {2.7, 1.9};
 
         // Arrays of longs
         final Object[] longSet1 =
-            new Long[]
-                {null, 0l, 1l, 4l};
+            new Long[] {null, 0l, 1l, 4l};
         final Object[] longSet2 =
-            new Long[]
-                {null, null, null};
+            new Long[] {null, null, null};
         final Object[] longSet3 =
-            new Long[]
-                {};
+            new Long[] {};
         final Object[] longSet4 =
-            new Long[]
-                {3l, 7l};
+            new Long[] {3l, 7l};
 
         // Arrays of ints
         final Object[] intSet1 =
-            new Integer[]
-                {null, 0, 1, 4};
+            new Integer[] {null, 0, 1, 4};
         final Object[] intSet2 =
-            new Integer[]
-                {null, null, null};
+            new Integer[] {null, null, null};
         final Object[] intSet3 =
-            new Integer[]
-                {};
+            new Integer[] {};
         final Object[] intSet4 =
-            new Integer[]
-                {3, 7};
+            new Integer[] {3, 7};
 
-        // Arrays of bacon
-        class Bacon {};
         final Object[] baconSet1 =
-            new Bacon[]
-                {null, new Bacon()};
+            new Bacon[] {null, new Bacon()};
         final Object[] baconSet2 =
-            new Bacon[]
-                {null, null, null};
+            new Bacon[] {null, null, null};
         final Object[] baconSet3 =
-            new Bacon[]
-                {};
+            new Bacon[] {};
         final Object[] baconSet4 =
-            new Bacon[]
-                {new Bacon(), new Bacon()};
+            new Bacon[] {new Bacon(), new Bacon()};
 
         // Test with double
         Assert.assertEquals(
@@ -2374,60 +2338,42 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
     public void testInMemoryAggMax() throws Exception {
         // Double arrays
         final Object[] dblSet1 =
-            new Double[]
-                {null, 0.0, 1.1, 2.4};
+            new Double[] {null, 0.0, 1.1, 2.4};
         final Object[] dblSet2 =
-            new Double[]
-                {null, null, null};
+            new Double[] {null, null, null};
         final Object[] dblSet3 =
-            new Double[]
-                {};
+            new Double[] {};
         final Object[] dblSet4 =
-            new Double[]
-                {2.7, 1.9};
+            new Double[] {2.7, 1.9};
 
         // Arrays of longs
         final Object[] longSet1 =
-            new Long[]
-                {null, 0l, 1l, 4l};
+            new Long[] {null, 0l, 1l, 4l};
         final Object[] longSet2 =
-            new Long[]
-                {null, null, null};
+            new Long[] {null, null, null};
         final Object[] longSet3 =
-            new Long[]
-                {};
+            new Long[] {};
         final Object[] longSet4 =
-            new Long[]
-                {3l, 7l};
+            new Long[] {3l, 7l};
 
         // Arrays of ints
         final Object[] intSet1 =
-            new Integer[]
-                {null, 0, 1, 4};
+            new Integer[] {null, 0, 1, 4};
         final Object[] intSet2 =
-            new Integer[]
-                {null, null, null};
+            new Integer[] {null, null, null};
         final Object[] intSet3 =
-            new Integer[]
-                {};
+            new Integer[] {};
         final Object[] intSet4 =
-            new Integer[]
-                {3, 7};
+            new Integer[] {3, 7};
 
-        // Arrays of bacon
-        class Bacon {};
         final Object[] baconSet1 =
-            new Bacon[]
-                {null, new Bacon()};
+            new Bacon[] {null, new Bacon()};
         final Object[] baconSet2 =
-            new Bacon[]
-                {null, null, null};
+            new Bacon[] {null, null, null};
         final Object[] baconSet3 =
-            new Bacon[]
-                {};
+            new Bacon[] {};
         final Object[] baconSet4 =
-            new Bacon[]
-                {new Bacon(), new Bacon()};
+            new Bacon[] {new Bacon(), new Bacon()};
 
         // Test with double
         Assert.assertEquals(
@@ -2519,6 +2465,10 @@ public class FastBatchingCellReaderTest extends BatchTestCase {
             // ok.
         }
     }
+
+    private static class Bacon {
+        // It's just bacon.
+    };
 }
 
 // End FastBatchingCellReaderTest.java

@@ -14,10 +14,10 @@ import mondrian.server.Execution;
 import mondrian.spi.Dialect;
 import mondrian.spi.StatisticsProvider;
 
+import org.apache.log4j.Logger;
+
 import java.sql.*;
 import javax.sql.DataSource;
-
-import org.apache.log4j.Logger;
 
 /**
  * Implementation of {@link mondrian.spi.StatisticsProvider} that uses JDBC
