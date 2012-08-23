@@ -12,6 +12,7 @@ package mondrian.rolap.cache;
 import mondrian.spi.*;
 
 import java.lang.ref.SoftReference;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -22,14 +23,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <p>Segments are held via soft references, so the garbage collector can remove
  * them if it sees fit.</p>
  *
- * <p>Not thread safe.</p>
+ * 
  *
  * @author Julian Hyde
  */
 public class MemorySegmentCache implements SegmentCache {
     private final Map<SegmentHeader, SoftReference<SegmentBody>> map =
-        new HashMap<SegmentHeader, SoftReference<SegmentBody>>();
-
+        new ConcurrentHashMap<SegmentHeader, SoftReference<SegmentBody>>(); // Use a thread-safe map because the SegmentCache interface requires thread safety. 
     private final List<SegmentCacheListener> listeners =
         new CopyOnWriteArrayList<SegmentCacheListener>();
 
@@ -65,6 +65,8 @@ public class MemorySegmentCache implements SegmentCache {
     public boolean put(final SegmentHeader header, SegmentBody body) {
         // REVIEW: What's the difference between returning false
         // and throwing an exception?
+        assert header != null;
+        assert body != null;
         map.put(header, new SoftReference<SegmentBody>(body));
         fireSegmentCacheEvent(
             new SegmentCache.SegmentCacheListener.SegmentCacheEvent() {
