@@ -9,10 +9,10 @@
 */
 package mondrian.util;
 
+import org.apache.log4j.Logger;
+
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.apache.log4j.Logger;
 
 /**
  * Implementation of {@link java.util.concurrent.Future} that completes

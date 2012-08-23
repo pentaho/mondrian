@@ -587,7 +587,15 @@ System.out.println("Got CONTINUE");
             XmlaSupport.processXmla(
                 xmlaReqDoc, connectString, catalogNameUrls, role, SERVER_CACHE);
         if (XmlUtil.supportsValidation()) {
-            if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
+            // Validating requires a <?xml header.
+            String response = new String(bytes);
+            if (!response.startsWith("<?xml version=\"1.0\"?>")) {
+                response =
+                    "<?xml version=\"1.0\"?>"
+                    + Util.nl
+                    + response;
+            }
+            if (XmlaSupport.validateXmlaUsingXpath(response.getBytes())) {
                 if (DEBUG) {
                     System.out.println(
                         "XmlaBaseTestCase.doTests: XML Data is Valid");
@@ -644,14 +652,6 @@ System.out.println("Got CONTINUE");
         byte[] bytes =
             XmlaSupport.processXmla(
                 xmlaReqDoc, connectString, catalogNameUrls, role, SERVER_CACHE);
-        if (XmlUtil.supportsValidation()) {
-            if (XmlaSupport.validateXmlaUsingXpath(bytes)) {
-                if (DEBUG) {
-                    System.out.println(
-                        "XmlaBaseTestCase.doTests: XML Data is Valid");
-                }
-            }
-        }
 
         // do SOAP-XMLA
         String callBackClassName = CallBack.class.getName();
@@ -665,14 +665,6 @@ System.out.println("Got CONTINUE");
         if (DEBUG) {
             System.out.println(
                 "XmlaBaseTestCase.doTests: soap response=" + new String(bytes));
-        }
-        if (XmlUtil.supportsValidation()) {
-            if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
-                if (DEBUG) {
-                    System.out.println(
-                        "XmlaBaseTestCase.doTests: XML Data is Valid");
-                }
-            }
         }
 
         String gotStr = new String(bytes);
