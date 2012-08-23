@@ -194,7 +194,7 @@ public class SqlConstraintUtils {
             }
         }
 
-        // force Role based Access filtering
+        // force Role based Access filtering
         Map<RelationOrJoin, String> whereClausesForRoleConstraints =
             new HashMap<RelationOrJoin, String>();
         SchemaReader schemaReader = evaluator.getSchemaReader();
