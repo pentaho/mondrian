@@ -129,10 +129,11 @@ System.out.println("requestText=" + requestText);
         byte[] bytes,
         Document expectedDoc,
         TestContext testContext,
-        boolean replace)
+        boolean replace,
+        boolean validate)
         throws Exception
     {
-        if (XmlUtil.supportsValidation()) {
+        if (validate && XmlUtil.supportsValidation()) {
             if (XmlaSupport.validateSoapXmlaUsingXpath(bytes)) {
                 if (DEBUG) {
                     System.out.println("XML Data is Valid");
@@ -184,7 +185,7 @@ System.out.println("requestText=" + requestText);
 
         String expectedStr = generateExpectedString(props);
         Document expectedDoc = XmlUtil.parseString(expectedStr);
-        validate(bytes, expectedDoc, TestContext.instance(), true);
+        validate(bytes, expectedDoc, TestContext.instance(), true, true);
     }
 
     protected void doTest(
@@ -204,7 +205,7 @@ System.out.println("requestText=" + requestText);
             byte[] bytes = res.toByteArray();
             String expectedStr = generateExpectedString(props);
             Document expectedDoc = XmlUtil.parseString(expectedStr);
-            validate(bytes, expectedDoc, TestContext.instance(), true);
+            validate(bytes, expectedDoc, TestContext.instance(), true, true);
 
         } else if (statusCode == HttpServletResponse.SC_CONTINUE) {
             // remove the Expect header from request and try again
@@ -222,7 +223,7 @@ System.out.println("Got CONTINUE");
                 byte[] bytes = res.toByteArray();
                 String expectedStr = generateExpectedString(props);
                 Document expectedDoc = XmlUtil.parseString(expectedStr);
-                validate(bytes, expectedDoc, TestContext.instance(), true);
+                validate(bytes, expectedDoc, TestContext.instance(), true, true);
 
             } else {
                 fail("Bad status code: "  + statusCode);
@@ -586,7 +587,11 @@ System.out.println("Got CONTINUE");
         byte[] bytes =
             XmlaSupport.processXmla(
                 xmlaReqDoc, connectString, catalogNameUrls, role, SERVER_CACHE);
-        if (XmlUtil.supportsValidation()) {
+        if (XmlUtil.supportsValidation()
+            // We can't validate against the schema when the content type
+            // is Data because it doesn't respect the XDS.
+            && !content.equals(XmlaConstants.Content.Data))
+        {
             // Validating requires a <?xml header.
             String response = new String(bytes);
             if (!response.startsWith("<?xml version=\"1.0\"?>")) {
@@ -618,7 +623,8 @@ System.out.println("Got CONTINUE");
                 "XmlaBaseTestCase.doTests: soap response=" + new String(bytes));
         }
 
-        validate(bytes, expectedDoc, testContext, replace);
+        validate(bytes, expectedDoc, testContext, replace,
+            content.equals(XmlaConstants.Content.Data) ? false : true);
         Util.discard(entry);
     }
 
