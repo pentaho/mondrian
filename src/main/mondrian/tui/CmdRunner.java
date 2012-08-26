@@ -11,6 +11,8 @@ package mondrian.tui;
 
 import mondrian.olap.Category;
 import mondrian.olap.*;
+import mondrian.olap.Connection;
+import mondrian.olap.DriverManager;
 import mondrian.olap.Hierarchy;
 import mondrian.olap.fun.FunInfo;
 import mondrian.olap.type.TypeUtil;
@@ -24,12 +26,13 @@ import org.eigenbase.util.property.Property;
 import org.olap4j.CellSet;
 import org.olap4j.OlapConnection;
 import org.olap4j.OlapStatement;
+import org.olap4j.OlapWrapper;
 import org.olap4j.layout.RectangularCellSetFormatter;
 
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
@@ -782,9 +785,12 @@ public class CmdRunner {
         if (this.connectString == null) {
             makeConnectString();
         }
-        return java.sql.DriverManager.getConnection(
-            "jdbc:mondrian:" + connectString)
-            .unwrap(OlapConnection.class);
+        final String olapConnectString = "jdbc:mondrian:" + connectString;
+        final java.sql.Connection jdbcConnection =
+            java.sql.DriverManager.getConnection(olapConnectString);
+        // Cast to OlapWrapper lets code work on JDK1.5, before java.sql.Wrapper
+        //noinspection RedundantCast
+        return ((OlapWrapper) jdbcConnection).unwrap(OlapConnection.class);
     }
 
     public String getConnectString() {
