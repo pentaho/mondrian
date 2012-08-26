@@ -561,7 +561,7 @@ public class CmdRunner {
         if (USE_OLAP4J) {
             return runQuery(
                 queryString,
-                new Util.Functor1<String, CellSet>() {
+                new Util.Function1<CellSet, String>() {
                     public String apply(CellSet param) {
                         StringWriter stringWriter = new StringWriter();
                         PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -613,7 +613,7 @@ public class CmdRunner {
      *
      * @param queryString MDX query text
      */
-    public <T> T runQuery(String queryString, Util.Functor1<T, CellSet> f) {
+    public <T> T runQuery(String queryString, Util.Function1<CellSet, T> f) {
         long start = System.currentTimeMillis();
         OlapConnection connection = null;
         OlapStatement statement = null;
