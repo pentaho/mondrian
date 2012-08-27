@@ -19,6 +19,7 @@ import org.eigenbase.xom.XOMUtil;
 import org.xml.sax.Attributes;
 
 import java.io.*;
+import java.util.regex.Pattern;
 
 /**
  * Default implementation of {@link SaxWriter}.
@@ -43,6 +44,7 @@ public class DefaultSaxWriter implements SaxWriter {
     private final ArrayStack<String> stack = new ArrayStack<String>();
     private int state = STATE_END_ELEMENT;
 
+    private final static Pattern nlPattern = Pattern.compile("\\r\\n|\\r|\\n");
 
     /**
      * Creates a DefaultSaxWriter writing to an {@link java.io.OutputStream}.
@@ -181,7 +183,6 @@ public class DefaultSaxWriter implements SaxWriter {
 
     public final void textElement(String name, Object data) {
         startElement(name);
-        String s = data.toString();
 
         // Replace line endings with spaces. IBM's DOM implementation keeps
         // line endings, whereas Sun's does not. For consistency, always strip
@@ -189,10 +190,9 @@ public class DefaultSaxWriter implements SaxWriter {
         //
         // REVIEW: It would be better to enclose in CDATA, but some clients
         // might not be expecting this.
-        s = Util.replace(s, "\n\r", " ");
-        s = Util.replace(s, "\n", " ");
-        s = Util.replace(s, "\r", " ");
-        characters(s);
+        characters(
+            nlPattern.matcher(data.toString())
+                .replaceAll(" "));
         endElement();
     }
 
