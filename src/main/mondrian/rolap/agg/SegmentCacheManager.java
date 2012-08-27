@@ -281,7 +281,9 @@ public class SegmentCacheManager {
         this.indexRegistry = new SegmentCacheIndexRegistry();
 
         // Add a local cache, if needed.
-        if (!MondrianProperties.instance().DisableCaching.get()) {
+        if (!MondrianProperties.instance().DisableLocalSegmentCache.get()
+            && !MondrianProperties.instance().DisableCaching.get())
+        {
             final MemorySegmentCache cache = new MemorySegmentCache();
             segmentCacheWorkers.add(
                 new SegmentCacheWorker(cache, thread));
@@ -452,6 +454,10 @@ public class SegmentCacheManager {
         SegmentHeader header,
         MondrianServer server)
     {
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            // Ignore cache requests.
+            return;
+        }
         ACTOR.event(
             handler,
             new ExternalSegmentCreatedEvent(
@@ -473,6 +479,10 @@ public class SegmentCacheManager {
         SegmentHeader header,
         MondrianServer server)
     {
+        if (MondrianProperties.instance().DisableCaching.get()) {
+            // Ignore cache requests.
+            return;
+        }
         ACTOR.event(
             handler,
             new ExternalSegmentDeletedEvent(
@@ -1607,7 +1617,7 @@ public class SegmentCacheManager {
      */
     public class SegmentCacheIndexRegistry {
         private final Map<RolapStar, SegmentCacheIndex> indexes =
-            new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.SOFT);
+            new WeakHashMap<RolapStar, SegmentCacheIndex>();
         /**
          * Returns the {@link SegmentCacheIndex} for a given
          * {@link RolapStar}.
@@ -1650,11 +1660,7 @@ public class SegmentCacheManager {
                 // We have a schema match.
                 RolapStar star =
                     schema.getStar(header.rolapStarFactTableName);
-                if (star != null) {
-                    // Found it.
-                    indexes.put(star, new SegmentCacheIndexImpl(thread));
-                }
-                return indexes.get(star);
+                return getIndex(star);
             }
             return null;
         }

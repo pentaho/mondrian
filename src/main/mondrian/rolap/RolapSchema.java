@@ -913,10 +913,7 @@ public class RolapSchema implements Schema {
             final DataSource dataSource,
             final Util.PropertyList connectInfo)
         {
-            String key =
-                (dataSource == null)
-                ? makeKey(catalogUrl, connectionKey, jdbcUser, dataSourceStr)
-                : makeKey(catalogUrl, dataSource);
+        	String key = makeKey(catalogUrl, connectionKey, jdbcUser, dataSourceStr, dataSource, connectInfo);
 
             RolapSchema schema = null;
 
@@ -1101,6 +1098,40 @@ public class RolapSchema implements Schema {
             }
             return schema;
         }
+        
+        private String makeKey(
+                final String catalogUrl,
+                final String connectionKey,
+                final String jdbcUser,
+                final String dataSourceStr,
+                final DataSource dataSource,
+                final Util.PropertyList connectInfo) {
+
+        	String keyProc = 
+        		MondrianProperties.instance().SchemaKeyProcessorClass.get();
+
+            try {
+                @SuppressWarnings("unchecked")
+                final Class<SchemaKeyProcessor> clazz =
+                    (Class<SchemaKeyProcessor>)
+                        Class.forName(keyProc);
+                final Constructor<SchemaKeyProcessor> ctor =
+                    clazz.getConstructor();
+                final SchemaKeyProcessor keyProcessor = ctor.newInstance();
+                return keyProcessor.generateKey(
+                        catalogUrl,
+                        connectionKey,
+                        jdbcUser,
+                        dataSourceStr,
+                        dataSource,
+                        connectInfo);
+
+            } catch (Exception e) {
+                throw Util.newError(
+                    e,
+                    "loading SchemaKeyProcessor " + keyProc);
+            }
+        }
 
         synchronized void remove(
             final String catalogUrl,
@@ -1112,7 +1143,9 @@ public class RolapSchema implements Schema {
                 catalogUrl,
                 connectionKey,
                 jdbcUser,
-                dataSourceStr);
+                dataSourceStr,
+                null,
+                null);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
                     "Pool.remove: schema \"" + catalogUrl
@@ -1125,7 +1158,7 @@ public class RolapSchema implements Schema {
             final String catalogUrl,
             final DataSource dataSource)
         {
-            final String key = makeKey(catalogUrl, dataSource);
+            final String key = makeKey(catalogUrl, null, null, null, dataSource, null);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
                     "Pool.remove: schema \"" + catalogUrl
@@ -1194,51 +1227,6 @@ public class RolapSchema implements Schema {
             return mapUrlToSchema.containsKey(rolapSchema.key);
         }
 
-
-        /**
-         * Creates a key with which to identify a schema in the cache.
-         */
-        private static String makeKey(
-            final String catalogUrl,
-            final String connectionKey,
-            final String jdbcUser,
-            final String dataSourceStr)
-        {
-            final StringBuilder buf = new StringBuilder(100);
-
-            appendIfNotNull(buf, catalogUrl);
-            appendIfNotNull(buf, connectionKey);
-            appendIfNotNull(buf, jdbcUser);
-            appendIfNotNull(buf, dataSourceStr);
-
-            return buf.toString();
-        }
-
-        /**
-         * Creates a key with which to identify a schema in the cache.
-         */
-        private static String makeKey(
-            final String catalogUrl,
-            final DataSource dataSource)
-        {
-            final StringBuilder buf = new StringBuilder(100);
-
-            appendIfNotNull(buf, catalogUrl);
-            buf.append('.');
-            buf.append("external#");
-            buf.append(System.identityHashCode(dataSource));
-
-            return buf.toString();
-        }
-
-        private static void appendIfNotNull(StringBuilder buf, String s) {
-            if (s != null) {
-                if (buf.length() > 0) {
-                    buf.append('.');
-                }
-                buf.append(s);
-            }
-        }
     }
 
     public static List<RolapSchema> getRolapSchemas() {

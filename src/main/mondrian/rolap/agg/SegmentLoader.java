@@ -101,16 +101,18 @@ public class SegmentLoader {
         List<StarPredicate> compoundPredicateList,
         List<Future<Map<Segment, SegmentWithData>>> segmentFutures)
     {
-        for (GroupingSet groupingSet : groupingSets) {
-            for (Segment segment : groupingSet.getSegments()) {
-                final SegmentCacheIndex index =
-                    cacheMgr.getIndexRegistry().getIndex(segment.star);
-                index.add(
-                    segment.getHeader(),
-                    true,
-                    new SegmentBuilder.StarSegmentConverter(
-                        segment.measure,
-                        compoundPredicateList));
+        if (!MondrianProperties.instance().DisableCaching.get()) {
+            for (GroupingSet groupingSet : groupingSets) {
+                for (Segment segment : groupingSet.getSegments()) {
+                    final SegmentCacheIndex index =
+                        cacheMgr.getIndexRegistry().getIndex(segment.star);
+                    index.add(
+                        segment.getHeader(),
+                        true,
+                        new SegmentBuilder.StarSegmentConverter(
+                            segment.measure,
+                            compoundPredicateList));
+                }
             }
         }
         try {
@@ -255,7 +257,6 @@ public class SegmentLoader {
         SegmentHeader header,
         SegmentBody body)
     {
-        cacheMgr.loadSucceeded(star, header, body);
         // Write the segment into external cache.
         //
         // It would be a mistake to do this from the cacheMgr -- because the
@@ -267,6 +268,7 @@ public class SegmentLoader {
         // query to proceed.
         if (!MondrianProperties.instance().DisableCaching.get()) {
             cacheMgr.compositeCache.put(header, body);
+            cacheMgr.loadSucceeded(star, header, body);
         }
     }
 

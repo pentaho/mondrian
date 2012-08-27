@@ -219,9 +219,11 @@ public class SqlConstraintUtils {
                     }
 
                     if (slicerMembers.size() > 0) {
-                        int levelIndex = slicerMembers.get(0).getHierarchy()
+                        int levelIndex =
+                            slicerMembers.get(0).getHierarchy()
                                 .getLevels().length;
-                        RolapLevel levelForWhere = (RolapLevel) slicerMembers
+                        RolapLevel levelForWhere =
+                            (RolapLevel) slicerMembers
                                 .get(0).getHierarchy()
                                 .getLevels()[levelIndex - 1];
                         final String where =
@@ -231,7 +233,8 @@ public class SqlConstraintUtils {
                                     levelForWhere,
                                     restrictMemberTypes, null);
 
-                        RelationOrJoin rel = ((RolapCubeHierarchy) slicerMembers
+                        RelationOrJoin rel =
+                            ((RolapCubeHierarchy) slicerMembers
                                 .get(0).getHierarchy()).getRelation();
                         whereClausesForRoleConstraints.put(rel, where);
                     }

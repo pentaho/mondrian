@@ -13,7 +13,10 @@ import mondrian.olap.Util;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.*;
+import mondrian.spi.Dialect;
 import mondrian.util.DelegatingInvocationHandler;
+
+import org.apache.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
@@ -53,6 +56,7 @@ import javax.sql.DataSource;
  * @since 2.3
  */
 public class SqlStatement {
+    private static final Logger LOG = Logger.getLogger(SqlStatement.class);
     private static final String TIMING_NAME = "SqlStatement-";
 
     // used for SQL logging, allows for a SQL Statement UID
@@ -351,9 +355,27 @@ public class SqlStatement {
         return runtimeException;
     }
 
-    private static Type getDecimalType(int precision, int scale)
+    private static Type getDecimalType(
+        int precision,
+        int scale,
+        Dialect dialect)
     {
-        if ((scale == 0 || scale == -127)
+        // Dialect might be null. This can happen when Mondrian issues a first
+        // query and tries to figure out what dialect to use. Watch out
+        // for NPEs.
+        if (dialect != null
+            && dialect.getDatabaseProduct() == Dialect.DatabaseProduct.NETEZZA
+            && scale == 0
+            && precision == 38)
+        {
+            // Neteeza marks longs as scale 0 and precision 38.
+            // An int would overflow.
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "Using type LONG for Neteeza scale 0 and precision 38.");
+            }
+            return Type.LONG;
+        } else if ((scale == 0 || scale == -127)
             && (precision <= 9 || precision == 38))
         {
             // An int (up to 2^31 = 2.1B) can hold any NUMBER(10, 0) value
@@ -385,10 +407,19 @@ public class SqlStatement {
     public static Type guessType(
         Type suggestedType,
         ResultSetMetaData metaData,
-        int i)
+        int i,
+        Dialect dialect)
         throws SQLException
     {
+        final String columnName = metaData.getColumnName(i + 1);
         if (suggestedType != null) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of explicit type "
+                    + suggestedType.name());
+            }
             return suggestedType;
         }
         final String typeName = metaData.getColumnTypeName(i + 1);
@@ -399,10 +430,28 @@ public class SqlStatement {
         case Types.SMALLINT:
         case Types.INTEGER:
         case Types.BOOLEAN:
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of internal type INT. JDBC type was "
+                    + columnType);
+            }
             return Type.INT;
         case Types.NUMERIC:
             precision = metaData.getPrecision(i + 1);
             scale = metaData.getScale(i + 1);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " has precision "
+                    + precision
+                    + " and scale "
+                    + scale
+                    + " for JDBC type "
+                    + typeName);
+            }
             if (precision == 0
                 && (scale == 0 || scale == -127)
                 && (typeName.equalsIgnoreCase("NUMBER")
@@ -419,22 +468,78 @@ public class SqlStatement {
                 // otherwise the segments won't be found; but if we convert
                 // measure (whose column names are like "m0", "m1") to integers,
                 // data loss will occur.
-                final String columnName = metaData.getColumnName(i + 1);
                 if (columnName.startsWith("m")) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(
+                            "SqlStatement.guessType - Column "
+                            + columnName
+                            + " is of internal type OBJECT. JDBC type was "
+                            + columnType);
+                    }
                     return Type.OBJECT;
                 } else {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(
+                            "SqlStatement.guessType - Column "
+                            + columnName
+                            + " is of internal type INT. JDBC type was "
+                            + columnType);
+                    }
                     return Type.INT;
                 }
             }
-            return getDecimalType(precision, scale);
+            final Type decimalType = getDecimalType(precision, scale, dialect);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of internal type "
+                    + decimalType.name()
+                    + ". JDBC type was "
+                    + columnType);
+            }
+            return decimalType;
         case Types.DECIMAL:
             precision = metaData.getPrecision(i + 1);
             scale = metaData.getScale(i + 1);
-            return getDecimalType(precision, scale);
+            final Type dt = getDecimalType(precision, scale, dialect);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of internal type "
+                    + dt.name()
+                    + ". JDBC type was "
+                    + columnType);
+            }
+            return dt;
         case Types.DOUBLE:
         case Types.FLOAT:
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of internal type DOUBLE. JDBC type was "
+                    + columnType);
+            }
             return Type.DOUBLE;
+        case Types.BIGINT:
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of internal type LONG. JDBC type was "
+                    + columnType);
+            }
+            return Type.LONG;
         default:
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(
+                    "SqlStatement.guessType - Column "
+                    + columnName
+                    + " is of internal type OBJECT. JDBC type was "
+                    + columnType);
+            }
             return Type.OBJECT;
         }
     }
@@ -497,7 +602,15 @@ public class SqlStatement {
         for (int i = 0; i < columnCount; i++) {
             final Type suggestedType =
                 this.types == null ? null : this.types.get(i);
-            types.add(guessType(suggestedType, metaData, i));
+            // There might not be a schema constructed yet,
+            // so watch out here for NPEs.
+            RolapSchema schema = locus.execution.getMondrianStatement()
+                .getMondrianConnection()
+                .getSchema();
+            types.add(
+                guessType(
+                    suggestedType, metaData, i,
+                    schema != null ? schema.getDialect() : null));
         }
         return types;
     }

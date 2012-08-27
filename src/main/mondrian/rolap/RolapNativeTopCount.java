@@ -116,7 +116,7 @@ public class RolapNativeTopCount extends RolapNativeSet {
                     ((RolapEvaluator)this.getEvaluator())
                     .getSlicerMembers());
             }
-            
+
             // Add restrictions imposed by Role based access filtering
             SchemaReader schemaReader = this.getEvaluator().getSchemaReader();
             Member[] mm = this.getEvaluator().getMembers();
@@ -128,7 +128,6 @@ public class RolapNativeTopCount extends RolapNativeSet {
                     List<Level> hierarchyLevels = schemaReader
                             .getHierarchyLevels(mm[mIndex].getHierarchy());
                     for (Level affectedLevel : hierarchyLevels) {
-
                         List<Member> availableMembers = schemaReader
                                 .getLevelMembers(affectedLevel, false);
                         for (Member member : availableMembers) {

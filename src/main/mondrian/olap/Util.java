@@ -16,13 +16,16 @@ import mondrian.olap.fun.Resolver;
 import mondrian.olap.type.Type;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.*;
+import mondrian.spi.DataSourceResolver;
 import mondrian.spi.UserDefinedFunction;
+import mondrian.spi.impl.JndiDataSourceResolver;
 import mondrian.util.*;
 
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
 
+import org.eigenbase.util.property.StringProperty;
 import org.eigenbase.xom.XOMUtil;
 
 import org.olap4j.mdx.*;
@@ -3856,6 +3859,40 @@ public class Util extends XOMUtil {
         role.grant(schema, Access.ALL);
         role.makeImmutable();
         return role;
+    }
+    
+    /**
+     * Returns the instance of the {@link mondrian.spi.DataSourceResolver}
+     * plugin.
+     *
+     * @return data source resolver
+     */
+    public static synchronized DataSourceResolver getDataSourceResolver() {
+            final StringProperty property =
+                MondrianProperties.instance().DataSourceResolverClass;
+            final String className =
+                property.get(
+                    JndiDataSourceResolver.class.getName());
+            try {
+                final Class<?> clazz;
+                clazz = Class.forName(className);
+                if (!DataSourceResolver.class.isAssignableFrom(clazz)) {
+                    throw Util.newInternal(
+                        "Plugin class specified by property "
+                        + property.getPath() + " must implement "
+                        + DataSourceResolver.class.getName());
+                }
+                return (DataSourceResolver) clazz.newInstance();
+            } catch (ClassNotFoundException e) {
+                throw Util.newInternal(
+                    e, "Error while loading plugin class '" + className + "'");
+            } catch (IllegalAccessException e) {
+                throw Util.newInternal(
+                    e, "Error while loading plugin class '" + className + "'");
+            } catch (InstantiationException e) {
+                throw Util.newInternal(
+                    e, "Error while loading plugin class '" + className + "'");
+            }
     }
 
     /**

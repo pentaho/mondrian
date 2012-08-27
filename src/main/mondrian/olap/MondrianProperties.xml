@@ -595,6 +595,18 @@ query to the next (the cache is cleared after each query).
         <Default>false</Default>
     </PropertyDefinition>
     <PropertyDefinition>
+        <Name>DisableLocalSegmentCache</Name>
+        <Path>mondrian.rolap.star.disableLocalSegmentCache</Path>
+        <Category>Caching</Category>
+        <Description>
+Boolean property that controls whether the data from segments
+is cached locally. To create custom caches, look for the
+SegmentCache SPI.
+        </Description>
+        <Type>boolean</Type>
+        <Default>false</Default>
+    </PropertyDefinition>
+    <PropertyDefinition>
         <Name>EnableTriggers</Name>
         <Path>mondrian.olap.triggers.enable</Path>
         <Description>
@@ -914,6 +926,18 @@ the default implementation uses JNDI to perform resolution.</p>
 <blockquote><code>mondrian.spi.dataSourceResolverClass=mondrian.spi.impl.JndiDataSourceResolver</code></blockquote>
         </Description>
         <Type>String</Type>
+    </PropertyDefinition>
+    <PropertyDefinition>
+        <Name>SchemaKeyProcessorClass</Name>
+        <Path>mondrian.spi.schemaKeyProcessorClass</Path>
+        <Category>Factories</Category>
+        <Description>
+<p>Property that defines the name of the plugin class that generates the schema key</p>
+<p>Example:</p>
+<blockquote><code>mondrian.spi.schemaKeyProcessorClass=mondrian.spi.impl.DefaultSchemaKeyProcessor</code></blockquote>
+        </Description>
+        <Type>String</Type>
+        <Default>mondrian.spi.impl.DefaultSchemaKeyProcessor</Default>
     </PropertyDefinition>
     <PropertyDefinition>
         <Name>QueryTimeout</Name>
