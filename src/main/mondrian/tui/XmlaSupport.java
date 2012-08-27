@@ -20,6 +20,7 @@ import mondrian.xmla.*;
 import mondrian.xmla.Enumeration;
 import mondrian.xmla.impl.*;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
@@ -1130,34 +1131,46 @@ public class XmlaSupport {
         }
 
         // Remove the UTF BOM for proper validation.
-        bytes = removeUTF8BOM(bytes);
+        bytes = removeUtfBom(bytes);
 
         Node[] nodes = extractNodesFromSoapXmla(bytes);
         return validateNodes(nodes);
     }
 
-    private static byte[] removeUTF8BOM(byte[] s) {
-        if (UTF8_BOM_MATCHER.match(s) == 0) {
-            return Arrays.copyOfRange(
-                s, 0, UTF8_BOM_MATCHER.key.length);
+    private static byte[] removeUtfBom(byte[] s) {
+        byte[] response = removeUtfBom(s, UTF8_BOM_MATCHER);
+        if (response != null) {
+            return response;
         }
-        if (UTF16_LE_BOM_MATCHER.match(s) == 0) {
-            return Arrays.copyOfRange(
-                s, 0, UTF16_LE_BOM_MATCHER.key.length);
+        response = removeUtfBom(s, UTF16_BE_BOM_MATCHER);
+        if (response != null) {
+            return response;
         }
-        if (UTF16_BE_BOM_MATCHER.match(s) == 0) {
-            return Arrays.copyOfRange(
-                s, 0, UTF16_BE_BOM_MATCHER.key.length);
+        response = removeUtfBom(s, UTF16_LE_BOM_MATCHER);
+        if (response != null) {
+            return response;
         }
-        if (UTF32_LE_BOM_MATCHER.match(s) == 0) {
-            return Arrays.copyOfRange(
-                s, 0, UTF32_LE_BOM_MATCHER.key.length);
+        response = removeUtfBom(s, UTF32_BE_BOM_MATCHER);
+        if (response != null) {
+            return response;
         }
-        if (UTF32_BE_BOM_MATCHER.match(s) == 0) {
-            return Arrays.copyOfRange(
-                s, 0, UTF32_BE_BOM_MATCHER.key.length);
+        response = removeUtfBom(s, UTF32_LE_BOM_MATCHER);
+        if (response != null) {
+            return response;
         }
         return s;
+    }
+
+    private static byte[] removeUtfBom(byte[] s, ByteMatcher matcher) {
+        if (s.length >= matcher.key.length
+            && matcher.match(
+                ArrayUtils.subarray(
+                    s, 0, matcher.key.length)) == 0)
+        {
+            return ArrayUtils.subarray(
+                s, matcher.key.length, s.length - matcher.key.length);
+        }
+        return null;
     }
 
     /**
@@ -1174,7 +1187,7 @@ public class XmlaSupport {
         }
 
         // Remove the UTF BOM for proper validation.
-        bytes = removeUTF8BOM(bytes);
+        bytes = removeUtfBom(bytes);
 
         Node[] nodes = extractNodesFromXmla(bytes);
         return validateNodes(nodes);
