@@ -4159,6 +4159,57 @@ public class Util extends XOMUtil {
             return o1.compareTo(o2);
         }
     }
+
+    /**
+     * This class implements the Knuth-Morris-Pratt algorithm
+     * to search within a byte array for a token byte array.
+     */
+    public static class ByteMatcher {
+        private final int[] matcher;
+        public final byte[] key;
+        public ByteMatcher(byte[] key) {
+            this.key = key;
+            this.matcher = compile(key);
+        }
+        /**
+         * Matches the pre-compiled byte array token against a
+         * byte array variable and returns the index of the key
+         * within the array.
+         * @param a An array of bytes to search for.
+         * @return -1 if not found, or the index (0 based) of the match.
+         */
+        public int match(byte[] a) {
+            int j = 0;
+            for (int i = 0; i < a.length; i++) {
+                while (j > 0 && key[j] != a[i]) {
+                    j = matcher[j - 1];
+                }
+                if (a[i] == key[j]) {
+                    j++;
+                }
+                if (key.length == j) {
+                    return
+                        i - key.length + 1;
+                }
+            }
+            return -1;
+        }
+        private int[] compile(byte[] key) {
+            int[] matcher = new int[key.length];
+            int j = 0;
+            for (int i = 1; i < key.length; i++) {
+                while (j > 0 && key[j] != key[i]) {
+                    j = matcher[j - 1];
+                }
+                if (key[i] == key[j]) {
+                    j++;
+                }
+                matcher[i] = j;
+            }
+            return matcher;
+        }
+    }
+
 }
 
 // End Util.java
