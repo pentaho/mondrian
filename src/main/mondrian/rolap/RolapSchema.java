@@ -805,6 +805,10 @@ public class RolapSchema extends OlapElementBase implements Schema {
             if (star == null) {
                 star = makeRolapStar(fact);
                 stars.put(fact, star);
+                //let cache manager load pending segments
+                // from external cache if needed
+                MondrianServer.forConnection(internalConnection)
+                    .getAggregationManager().cacheMgr.loadCacheForStar(star);
             }
             return star;
         }
