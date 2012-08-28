@@ -217,7 +217,7 @@ public class AggregationManager extends RolapAggregationManager {
                         + sql);
                 }
 
-                return Pair.of(sql, types);
+                return new Pair(sql, types);
             }
 
             // No match, fall through and use fact table.
