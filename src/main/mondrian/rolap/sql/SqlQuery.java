@@ -629,7 +629,7 @@ public class SqlQuery {
             : types.size() + " types, "
               + (select.size() + groupingFunction.size())
               + " select items in query " + this;
-        return Pair.of(toString(), types);
+        return new Pair(toString(), types);
     }
 
     static class ClauseList extends ArrayList<String> {
