@@ -374,12 +374,15 @@ public class SqlTupleReader implements TupleReader {
                 String sql = pair.left;
                 List<SqlStatement.Type> types = pair.right;
                 assert sql != null && !sql.equals("");
+                final RolapSchema schema =
+                    (RolapSchema)targets.get(0)
+                        .getLevel().getDimension().getSchema();
                 stmt = RolapUtil.executeQuery(
                     dataSource, sql, types, maxRows, 0,
                     "SqlTupleReader.readTuples " + partialTargets,
                     message,
                     -1, -1,
-                    ((RolapSchema)targets.get(0).getCurrMember().getDimension().getSchema()).getDialect());
+                    schema != null ? schema.getDialect() : null);
                 resultSet = stmt.getResultSet();
             } else {
                 resultSet = null;

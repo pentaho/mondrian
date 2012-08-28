@@ -72,11 +72,14 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
                     makeLevelMembersSql(dataSource);
                 String sql = pair.left;
                 List<SqlStatement.Type> types = pair.right;
+                final RolapSchema schema =
+                    (RolapSchema)targets.get(0)
+                        .getLevel().getDimension().getSchema();
                 stmt = RolapUtil.executeQuery(
                     dataSource, sql, types, maxRows, 0,
                     "HighCardSqlTupleReader.readTuples " + partialTargets,
                     message, -1, -1,
-                    ((RolapSchema)targets.get(0).getCurrMember().getDimension().getSchema()).getDialect());
+                    schema != null ? schema.getDialect() : null);
             }
 
             for (TargetBase target : targets) {

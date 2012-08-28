@@ -289,11 +289,13 @@ class SqlMemberSource
         final String sql = pair.left;
         List<SqlStatement.Type> types = pair.right;
         RolapLevel[] levels = (RolapLevel[]) hierarchy.getLevels();
+        final RolapSchema schema =
+            (RolapSchema)hierarchy.getDimension().getSchema();
         SqlStatement stmt =
             RolapUtil.executeQuery(
                 dataSource, sql, types, 0, 0, "SqlMemberSource.getMembers",
                 "while building member cache", -1, -1,
-                ((RolapSchema)hierarchy.getDimension().getSchema()).getDialect());
+                schema != null ? schema.getDialect() : null);
         try {
             final List<SqlStatement.Accessor> accessors = stmt.getAccessors();
             List<RolapMember> list = new ArrayList<RolapMember>();
@@ -939,12 +941,14 @@ RME is this right
         }
         final String sql = pair.left;
         final List<SqlStatement.Type> types = pair.right;
+        final RolapSchema schema =
+            (RolapSchema)parentLevel.getDimension().getSchema();
         SqlStatement stmt =
             RolapUtil.executeQuery(
                 dataSource, sql, types, 0, 0,
                 "SqlMemberSource.getMemberChildren",
                 "while building member cache", -1, -1,
-                ((RolapSchema)parentLevel.getDimension().getSchema()).getDialect());
+                schema != null ? schema.getDialect() : null);
         try {
             int limit = MondrianProperties.instance().ResultLimit.get();
             boolean checkCacheStatus = true;
