@@ -1162,13 +1162,14 @@ public class XmlaSupport {
     }
 
     private static byte[] removeUtfBom(byte[] s, ByteMatcher matcher) {
+        byte[] firstBytes = new byte[matcher.key.length];
+        System.arraycopy(s, 0, firstBytes, 0, matcher.key.length);
         if (s.length >= matcher.key.length
-            && matcher.match(
-                ArrayUtils.subarray(
-                    s, 0, matcher.key.length)) == 0)
+            && matcher.match(firstBytes) == 0)
         {
-            return ArrayUtils.subarray(
-                s, matcher.key.length, s.length - matcher.key.length);
+            byte[] result = new byte[s.length - matcher.key.length];
+            System.arraycopy(s, 0, result, 0, s.length - matcher.key.length);
+            return result;
         }
         return null;
     }
