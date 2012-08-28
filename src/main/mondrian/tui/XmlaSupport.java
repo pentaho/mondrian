@@ -20,7 +20,6 @@ import mondrian.xmla.*;
 import mondrian.xmla.Enumeration;
 import mondrian.xmla.impl.*;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import org.eigenbase.xom.*;
