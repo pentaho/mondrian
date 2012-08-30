@@ -6,7 +6,7 @@
   == You must accept the terms of that agreement to use this software.
   ==
   == Copyright (C) 2001-2005 Julian Hyde
-  == Copyright (C) 2005-2011 Pentaho
+  == Copyright (C) 2005-2012 Pentaho
   == All Rights Reserved.
   ==
   == jhyde, 24 September, 2002
@@ -1903,8 +1903,10 @@ are hidden:</p>
         <div style="padding-left:20px;">&lt;<a href="#XML_Measure">Measure</a> name="Store Cost" column="store_cost" aggregator="sum" formatString="#,###.00" visible="false"/&gt;</div>
         <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Margin" dimension="Measures" visible="false"&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_Formula">Formula</a>&gt;([Measures].[Store Sales] - [Measures].[Store Cost]) / [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
         <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Store Sqft" dimension="Measures" visible="false"&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_Formula">Formula</a>&gt;[Store].Properties("Sqft")&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
+        <div style="padding-left:20px;">&lt;/<a href="#XML_CalculatedMember">CalculatedMember</a>&gt;</div>
         <div style="padding-left:20px;">&lt;<a href="#XML_CalculatedMember">CalculatedMember</a> name="Margin per Sqft" dimension="Measures" visible="true"&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_Formula">Formula</a>&gt;[Measures].[Margin] / [Measures].[Store Cost]&lt;/<a href="#XML_Formula">Formula</a>&gt;</div>
             <div style="padding-left:40px;">&lt;<a href="#XML_CalculatedMemberProperty">CalculatedMemberProperty</a> name="FORMAT_STRING" value="$#,##0.00"/&gt;</div>

@@ -5884,6 +5884,30 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     /**
+     * Test case for bug
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1227">MONDRIAN-1227,
+     * "Properties function does not implicitly convert dimension to member; has
+     * documentation typos"</a>.
+     */
+    public void testPropertiesOnDimension() {
+        // [Store] is a dimension. When called with a property like FirstChild,
+        // it is implicitly converted to a member.
+        assertAxisReturns("[Store].FirstChild", "[Store].[Canada]");
+
+        // The same should happen with the <Member>.Properties(<String>)
+        // function; now the bug is fixed, it does. Dimension is implicitly
+        // converted to member.
+        assertExprReturns(
+            "[Store].Properties('MEMBER_UNIQUE_NAME')",
+            "[Store].[All Stores]");
+
+        // Hierarchy is implicitly converted to member.
+        assertExprReturns(
+            "[Store].[USA].Hierarchy.Properties('MEMBER_UNIQUE_NAME')",
+            "[Store].[All Stores]");
+    }
+
+    /**
      * Tests that non-existent property throws an error. *
      */
     public void testPropertiesNonExistent() {
