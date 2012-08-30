@@ -49,9 +49,7 @@ public class Target extends TargetBase {
 
     public void open() {
         levels = (RolapLevel[]) level.getHierarchy().getLevels();
-        // REVIEW: ArrayDeque is preferable to LinkedList (JDK1.6 and up) but it
-        //   doesn't implement List, so we can't easily interoperate the two.
-        setList(new LinkedList<RolapMember>());
+        setList(new ArrayList<RolapMember>());
         levelDepth = level.getDepth();
         parentChild = level.isParentChild();
     }
