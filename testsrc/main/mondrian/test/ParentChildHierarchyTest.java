@@ -1326,6 +1326,82 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "{[Employee].[Sheri Nowmer]}\n"
             + "Row #0: 28,435.38\n");
     }
+
+    public void testPCCacheKeyBug() throws Exception {
+        final String mdx =
+            "With\n"
+            + "Set [*NATIVE_CJ_SET] as 'NonEmptyCrossJoin([*BASE_MEMBERS_Employees],NonEmptyCrossJoin([*BASE_MEMBERS_Store],[*BASE_MEMBERS_Pay Type]))'\n"
+            + "Set [*METRIC_CJ_SET] as 'Filter(Filter([*NATIVE_CJ_SET],[Measures].[*TOP_Count_SEL~AGG] <= 10), Not IsEmpty ([Measures].[Count]))'\n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Employees].CurrentMember.OrderKey,ASC,[Store].CurrentMember.OrderKey,BASC,[Measures].[*FORMATTED_MEASURE_0],BDESC)'\n"
+            + "Set [*NATIVE_MEMBERS_Store] as 'Generate([*NATIVE_CJ_SET], {[Store].CurrentMember})'\n"
+            + "Set [*NATIVE_MEMBERS_Pay Type] as 'Generate([*NATIVE_CJ_SET], {[Pay Type].CurrentMember})'\n"
+            + "Set [*BASE_MEMBERS_Employees] as '[Employees].[Employee Id].Members'\n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "Set [*BASE_MEMBERS_Store] as '[Store].[Store Country].Members'\n"
+            + "Set [*CJ_COL_AXIS] as '[*METRIC_CJ_SET]'\n"
+            + "Set [*BASE_MEMBERS_Pay Type] as '[Pay Type].[Pay Type].Members'\n"
+            + "Set [*TOP_SET] as 'Order(Generate([*NATIVE_CJ_SET],{[Employees].CurrentMember}),([Measures].[Count],[Store].[*CTX_MEMBER_SEL~AGG],[Pay Type].[*CTX_MEMBER_SEL~AGG]),BDESC)'\n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*METRIC_CJ_SET], {([Employees].currentMember,[Store].currentMember,[Pay Type].currentMember)})'\n"
+            + "Member [Pay Type].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Pay Type].[All Pay Types]})', SOLVE_ORDER=-102\n"
+            + "Member [Store].[*CTX_MEMBER_SEL~AGG] as 'Aggregate({[Store].[All Stores]})', SOLVE_ORDER=-101\n"
+            + "Member [Measures].[*TOP_Count_SEL~AGG] as 'Rank([Employees].CurrentMember,[*TOP_SET])', SOLVE_ORDER=300\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Count]', FORMAT_STRING = '#,#', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns,\n"
+            + "[*SORTED_ROW_AXIS] on rows\n"
+            + "From [HR]\n";
+        assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
+            + "Axis #2:\n"
+            + "{[Employees].[Sheri Nowmer], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer], [Store].[USA], [Pay Type].[Hourly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply], [Store].[USA], [Pay Type].[Hourly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker], [Store].[USA], [Pay Type].[Hourly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie], [Store].[USA], [Pay Type].[Hourly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy], [Store].[USA], [Pay Type].[Hourly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo], [Store].[USA], [Pay Type].[Hourly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard], [Store].[USA], [Pay Type].[Hourly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges], [Store].[USA], [Pay Type].[Hourly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena], [Store].[USA], [Pay Type].[Hourly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter], [Store].[USA], [Pay Type].[Hourly]}\n"
+            + "Row #0: 3,996\n"
+            + "Row #1: 3,396\n"
+            + "Row #2: 3,840\n"
+            + "Row #3: 3,396\n"
+            + "Row #4: 504\n"
+            + "Row #5: 444\n"
+            + "Row #6: 456\n"
+            + "Row #7: 432\n"
+            + "Row #8: 444\n"
+            + "Row #9: 432\n"
+            + "Row #10: 1,500\n"
+            + "Row #11: 1,320\n"
+            + "Row #12: 384\n"
+            + "Row #13: 360\n"
+            + "Row #14: 1,824\n"
+            + "Row #15: 1,632\n"
+            + "Row #16: 456\n"
+            + "Row #17: 432\n"
+            + "Row #18: 444\n"
+            + "Row #19: 432\n");
+        assertNotNull(
+            executeQuery(mdx)
+                .getAxes()[1].getPositions().get(2).iterator().next()
+                    .getParentMember());
+    }
 }
 
 // End ParentChildHierarchyTest.java

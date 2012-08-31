@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2004-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -70,6 +70,10 @@ class PropertiesFunDef extends FunDefBase {
      * Resolves calls to the <code>PROPERTIES</code> MDX function.
      */
     private static class ResolverImpl extends ResolverBase {
+        private static final int[] PARAMETER_TYPES = {
+            Category.Member, Category.String
+        };
+
         private ResolverImpl() {
             super(
                 "Properties",
@@ -78,24 +82,37 @@ class PropertiesFunDef extends FunDefBase {
                 Syntax.Method);
         }
 
+        private boolean matches(
+            Exp[] args,
+            int[] parameterTypes,
+            Validator validator,
+            List<Conversion> conversions)
+        {
+            if (parameterTypes.length != args.length) {
+                return false;
+            }
+            for (int i = 0; i < args.length; i++) {
+                if (!validator.canConvert(
+                        i, args[i], parameterTypes[i], conversions))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         public FunDef resolve(
             Exp[] args,
             Validator validator,
             List<Conversion> conversions)
         {
-            final int[] argTypes = new int[]{Category.Member, Category.String};
-            final Exp propertyNameExp = args[1];
-            final Exp memberExp = args[0];
-            if ((args.length != 2)
-                || (memberExp.getCategory() != Category.Member)
-                || (propertyNameExp.getCategory() != Category.String))
-            {
+            if (!matches(args, PARAMETER_TYPES, validator, conversions)) {
                 return null;
             }
-            int returnType = deducePropertyCategory(memberExp, propertyNameExp);
+            int returnType = deducePropertyCategory(args[0], args[1]);
             return new PropertiesFunDef(
                 getName(), getSignature(), getDescription(), getSyntax(),
-                returnType, argTypes);
+                returnType, PARAMETER_TYPES);
         }
 
         /**

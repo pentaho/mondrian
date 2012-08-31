@@ -101,6 +101,8 @@ public class SqlTupleReader implements TupleReader {
         int levelDepth;
         boolean parentChild;
         List<RolapMember> members;
+        final HashMap<Object, RolapMember> keyToMember =
+            new HashMap<Object, RolapMember>();
         List<List<RolapMember>> siblings;
         // if set, the rows for this target come from the array rather
         // than native sql
@@ -152,22 +154,25 @@ public class SqlTupleReader implements TupleReader {
                     if (parentChild) {
                         Object parentValue =
                             accessors.get(column++).get();
-                        if (parentValue == null) {
+                        if (parentValue == null
+                            || parentValue.toString().equals(
+                                childLevel.getNullParentValue()))
+                        {
                             // member is at top of hierarchy; its parent is the
                             // 'all' member. Convert null to placeholder value
                             // for uniformity in hashmaps.
                             parentValue = RolapUtil.sqlNullValue;
-                        } else if (parentValue.toString().equals(
-                                childLevel.getNullParentValue()))
-                        {
-                            // member is at top of hierarchy; its parent is the
-                            // 'all' member
                         } else {
                             Object parentKey =
                                 cache.makeKey(
                                     member,
                                     parentValue);
                             parentMember = cache.getMember(parentKey);
+                            if (parentMember == null) {
+                                // Maybe it wasn't caching.
+                                // We have an intermediate volatile map.
+                                parentMember = keyToMember.get(parentValue);
+                            }
                             if (parentMember == null) {
                                 LOGGER.warn(
                                     MondrianResource.instance()
@@ -218,6 +223,10 @@ public class SqlTupleReader implements TupleReader {
                         ++column;
                     }
                     column += childLevel.getProperties().length;
+
+                    // Cache in our intermediate map the key/member pair
+                    // for later lookups of children.
+                    keyToMember.put(member.getKey(), member);
 
                     if (member != members.get(i)) {
                         // Flush list we've been building.
