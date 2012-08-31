@@ -857,6 +857,37 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Row #8: 79\n"
             + "Row #9: 79\n");
     }
+    
+    /**
+     * Test case for the support of native top count with aggregated measures
+     */ 
+    
+    public void testTopCountWithAggregatedMember() {
+        assertQueryReturns(
+                "with set a as '([Time].[1997].[Q1] : [Time].[1997].[Q2])' "
+                + "member Time.x as Aggregate(a,[Measures].[Store Sales]) "
+                + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
+                + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
+                + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
+                + " SELECT NON EMPTY products ON 1, "
+                + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
+                + " FROM [Sales] where Time.x",
+                "Axis #0:\n"
+                + "{[Time].[x]}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Store Sales]}\n"
+                + "{[Measures].[x1]}\n"
+                + "{[Measures].[x2]}\n"
+                + "Axis #2:\n"
+                + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
+                + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
+                + "Row #0: 497.42\n"
+                + "Row #0: 235.62\n"
+                + "Row #0: 261.80\n"
+                + "Row #1: 462.84\n"
+                + "Row #1: 226.20\n"
+                + "Row #1: 236.64\n");
+    }
 
 
 

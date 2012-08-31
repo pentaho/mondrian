@@ -94,10 +94,11 @@ public class SqlContextConstraint
             return true;
         }
 
-        // we can not handle calc members in slicer except calc measure
+        // we can not handle all calc members in slicer. Calc measure and some
+        // like aggregates are exceptions
         Member[] members = context.getMembers();
         for (int i = 1; i < members.length; i++) {
-            if (members[i].isCalculated()) {
+            if (members[i].isCalculated() && !SqlConstraintUtils.isSupportedCalculatedMember(members[i])) {
                 return false;
             }
         }

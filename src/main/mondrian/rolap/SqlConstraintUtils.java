@@ -21,6 +21,9 @@ import mondrian.spi.Dialect;
 import mondrian.util.FilteredIterableList;
 
 import java.util.*;
+import mondrian.calc.TupleIterable;
+import mondrian.mdx.NamedSetExpr;
+import mondrian.mdx.ResolvedFunCall;
 
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
@@ -53,6 +56,15 @@ public class SqlConstraintUtils {
     {
         // Add constraint using the current evaluator context
         Member[] members = evaluator.getNonAllMembers();
+        
+        // Expand the ones that can be expanded. For this particular code line,
+        // since this will be used to build a cell request, we need to stay with
+        // only one member per ordinal in cube. This follows the same line of though
+        // as the setContext in RolapEvaluator
+        
+        members = expandSupportedCalculatedMembers(members, evaluator);
+        members = getUniqueOrdinalMembers(members);
+        
         RolapCube baseCube = null;
         if (evaluator instanceof RolapEvaluator) {
             baseCube = ((RolapEvaluator)evaluator).getCube();
@@ -68,8 +80,9 @@ public class SqlConstraintUtils {
                     "can not restrict SQL to calculated Members");
             }
             if (hasMultiPositionSlicer(evaluator)) {
-                List<Member> slicerMembers =
-                        ((RolapEvaluator)evaluator).getSlicerMembers();
+                
+                Member[] slicerMembers = expandSupportedCalculatedMembers(
+                        ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator);
 
                 for (Member slicerMember : slicerMembers) {
                     RelationOrJoin rel =
@@ -255,11 +268,15 @@ public class SqlConstraintUtils {
      */
     public static boolean hasMultiPositionSlicer(Evaluator evaluator) {
         if (evaluator instanceof RolapEvaluator) {
+            
+            // Get 
+            Member[] members = expandSupportedCalculatedMembers( ((RolapEvaluator) evaluator).getSlicerMembers() , evaluator);
+            
             Map<Hierarchy, Member> mapOfSlicerMembers =
                 new HashMap<Hierarchy, Member>();
+            
             for (
-                Member slicerMember
-                : ((RolapEvaluator)evaluator).getSlicerMembers())
+                Member slicerMember: members )
             {
                 Hierarchy hierarchy = slicerMember.getHierarchy();
                 if (mapOfSlicerMembers.containsKey(hierarchy)) {
@@ -272,6 +289,141 @@ public class SqlConstraintUtils {
         return false;
     }
 
+    
+    private static Member[] expandSupportedCalculatedMembers(List<Member> listOfMembers, Evaluator evaluator) {
+        
+        return expandSupportedCalculatedMembers(listOfMembers.toArray(new Member[listOfMembers.size()]), evaluator);
+        
+    }
+
+    
+    protected static Member[] expandSupportedCalculatedMembers(Member[] members, Evaluator evaluator){
+    
+        ArrayList<Member> listOfMembers = new ArrayList<Member>();
+        
+        for (Member member : members) {
+
+                if (member.isCalculated() && isSupportedCalculatedMember(member)) {
+                    // Extract the list of members
+                    List<Member> evaluatedSet = getSetFromCalculatedMember(evaluator, member);
+                    listOfMembers.addAll(evaluatedSet);
+                }
+                else{
+                    // just add the member
+                    listOfMembers.add(member);                    
+                }
+        }
+        
+        members = listOfMembers.toArray(new Member[listOfMembers.size()]);
+        return members;
+    
+    }
+
+    /**
+     *
+     * Check to see if this is in a list of supported calculated members.
+     * Currently, only the Aggregate function is supported
+     *
+     * @param member
+     * @return
+     */
+    public static boolean isSupportedCalculatedMember(Member member) {
+
+        // Is it a supported function?
+        if (member.getExpression() instanceof ResolvedFunCall) {
+            ResolvedFunCall fun = (ResolvedFunCall) member.getExpression();
+            if (fun.getFunName().equalsIgnoreCase("Aggregate")) {
+                // We can only deal with Aggregates
+                return true;
+            }
+
+        }
+
+        return false;
+    }
+
+    public static List<Member> getSetFromCalculatedMember(Evaluator evaluator, Member member) {
+
+        // sanity check - is theis a supported one?
+        if (!isSupportedCalculatedMember(member)) {
+            return null;
+        }
+
+        if (!(member.getExpression() instanceof ResolvedFunCall)) {
+            // dunno what to do
+            return null;
+        }
+
+        ResolvedFunCall fun = (ResolvedFunCall) member.getExpression();
+        String funName = fun.getFunName();
+        if (funName.equalsIgnoreCase("Aggregate")) {
+            
+            // What's the best way to do this?
+            
+            Exp exp = fun.getArg(0);
+
+            // Either a set or a named set, that can sometimes be wrapped in a CacheFunDef
+            NamedSetExpr namedSet;
+
+            if (exp instanceof NamedSetExpr) {
+                namedSet = (NamedSetExpr) exp;
+            } else if (exp instanceof ResolvedFunCall && ((ResolvedFunCall) exp).getFunName().equalsIgnoreCase("Cache")) {
+                namedSet = (NamedSetExpr) ((ResolvedFunCall) exp).getArg(0);
+            } else {
+                return null;
+            }
+
+            // Resolve it - a named set only has arity 1, so shuold be safely
+            
+
+            TupleIterable tupleIterable = evaluator.getNamedSetEvaluator(namedSet.getNamedSet(), true).evaluateTupleIterable();
+            Iterable<Member> iterable = tupleIterable.slice(0);
+
+            ArrayList<Member> list = new ArrayList<Member>();
+            for (Iterator<Member> it = iterable.iterator(); it.hasNext();) {
+                Member m = it.next();
+                list.add(m);
+
+            }
+            return list;
+
+
+
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets a list of unique ordinal cube members to make sure our 
+     * cell request isn't unsatisfiable, following the same logic
+     * as RolapEvaluator
+     * @param members
+     * @return 
+     */
+    
+    protected static Member[] getUniqueOrdinalMembers(Member[] members){
+
+        
+        ArrayList<Integer> currentOrdinals = new ArrayList<Integer>();
+        ArrayList<Member> uniqueMembers = new ArrayList<Member>();
+
+        for (Member member : members) {
+            
+            final RolapMemberBase m = (RolapMemberBase) member;
+            int ordinal = m.getHierarchyOrdinal();
+            if (!currentOrdinals.contains(ordinal)){
+                uniqueMembers.add(member);
+                currentOrdinals.add(ordinal);
+            }
+        }
+        
+        return uniqueMembers.toArray(new Member[uniqueMembers.size()]);
+        
+                
+    }
+    
+    
     protected static Member[] removeMultiPositionSlicerMembers(
         Member[] members,
         Evaluator evaluator)
@@ -368,10 +520,26 @@ public class SqlConstraintUtils {
             });
     }
 
+    
     public static boolean containsCalculatedMember(Member[] members) {
+        return containsCalculatedMember(members,false);
+     
+    }
+    
+    public static boolean containsCalculatedMember(Member[] members, boolean allowExpandableMembers) {
         for (Member member : members) {
             if (member.isCalculated()) {
-                return true;
+                
+                if(allowExpandableMembers){
+                    if(!isSupportedCalculatedMember(member)){
+                        return true;
+                    }
+                }
+                else{
+                    return true;
+                }
+                
+                
             }
         }
         return false;
