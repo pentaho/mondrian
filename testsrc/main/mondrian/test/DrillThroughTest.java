@@ -974,6 +974,22 @@ public class DrillThroughTest extends FoodMartTestCase {
         }
     }
 
+    public void testDrillThroughCalculatedMemberMeasure() {
+        try {
+            final ResultSet resultSet = getTestContext().executeStatement(
+                "DRILLTHROUGH\n"
+                + "SELECT {[Customers].[USA].[CA].[Berkeley]} ON 0,\n"
+                + "{[Time].[1997]} ON 1\n"
+                + "FROM Sales\n"
+                + "RETURN  [Measures].[Profit]");
+            fail("expected error, got " + resultSet);
+        } catch (Exception e) {
+            TestContext.checkThrowable(
+                e,
+                "Can't perform drillthrough operations because '[Measures].[Profit]' is a calculated member.");
+        }
+    }
+
     public void testDrillThroughNotDrillableFails() {
         try {
             final ResultSet resultSet = getTestContext().executeStatement(

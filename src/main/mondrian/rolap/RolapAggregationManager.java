@@ -14,6 +14,7 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.olap.fun.VisualTotalsFunDef.VisualTotalMember;
+import mondrian.resource.MondrianResource;
 import mondrian.rolap.agg.*;
 
 import java.util.*;
@@ -358,9 +359,12 @@ public abstract class RolapAggregationManager {
                     (RolapStar.Measure)
                         ((RolapBaseCubeMeasure)member).getStarMeasure());
             return;
+        } else if (member instanceof RolapHierarchy.RolapCalculatedMeasure) {
+            throw MondrianResource.instance().DrillthroughCalculatedMember
+                .ex(member.getUniqueName());
         } else {
-            // FIXME make this better.
-            throw new MondrianException();
+            throw new MondrianException(
+                "Unknown member type in DRILLTHROUGH operation.");
         }
         RolapStar.Column column = level.getBaseStarKeyColumn(baseCube);
         if (column != null) {
