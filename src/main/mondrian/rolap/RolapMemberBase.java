@@ -512,20 +512,16 @@ public class RolapMemberBase
     public int compareTo(Object o) {
         RolapMemberBase other = (RolapMemberBase)o;
         if (this.key != null && other.key == null) {
-            return 1; // not null is greater than null
+            // not null is greater than null
+            return 1;
         }
         if (this.key == null && other.key != null) {
-            return -1; // null is less than not null
+            // null is less than not null
+            return -1;
         }
-        // compare by unique name, if both keys are null
         if (this.key == null && other.key == null) {
-            return this.getUniqueName().compareTo(other.getUniqueName());
-        }
-        // compare by unique name, if one ore both members are null
-        if (this.key == RolapUtil.sqlNullValue
-            || other.key == RolapUtil.sqlNullValue)
-        {
-            return this.getUniqueName().compareTo(other.getUniqueName());
+            // if both keys are null, they are equal.
+            return 0;
         }
         // as both keys are not null, compare by key
         //  String, Double, Integer should be possible

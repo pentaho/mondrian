@@ -1327,6 +1327,20 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "Row #0: 28,435.38\n");
     }
 
+    /**
+     * Fix for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1125">MONDRIAN-1225</a>
+     *
+     * <p>When nativizing a set which contained a PC
+     * hierarchy, the SqlTupleReader would ask the cache for the parent
+     * member of the member it was populating, but the members are only
+     * put in cache at the second phase of the tuple computation, once all
+     * the members have been populated from SQL. Now, the SqlTupleReader
+     * keeps an intermediate key->member map so it can construct PC
+     * hierarchies correctly. This map gets picked up by the GC as soon as
+     * the SQL result set reaches its end and the tuple reader is closed,
+     * so there are no added cost to this.
+     */
     public void testPCCacheKeyBug() throws Exception {
         final String mdx =
             "With\n"
@@ -1357,26 +1371,26 @@ public class ParentChildHierarchyTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[*FORMATTED_MEASURE_0]}\n"
             + "Axis #2:\n"
-            + "{[Employees].[Sheri Nowmer], [Store].[USA], [Pay Type].[Monthly]}\n"
             + "{[Employees].[Sheri Nowmer], [Store].[USA], [Pay Type].[Hourly]}\n"
-            + "{[Employees].[Sheri Nowmer].[Derrick Whelply], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer], [Store].[USA], [Pay Type].[Monthly]}\n"
             + "{[Employees].[Sheri Nowmer].[Derrick Whelply], [Store].[USA], [Pay Type].[Hourly]}\n"
-            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply], [Store].[USA], [Pay Type].[Monthly]}\n"
             + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker], [Store].[USA], [Pay Type].[Hourly]}\n"
-            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker], [Store].[USA], [Pay Type].[Monthly]}\n"
             + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie], [Store].[USA], [Pay Type].[Hourly]}\n"
-            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie], [Store].[USA], [Pay Type].[Monthly]}\n"
             + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy], [Store].[USA], [Pay Type].[Hourly]}\n"
-            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Beverly Baker].[Jacqueline Wyllie].[Ralph Mccoy], [Store].[USA], [Pay Type].[Monthly]}\n"
             + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo], [Store].[USA], [Pay Type].[Hourly]}\n"
-            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo], [Store].[USA], [Pay Type].[Monthly]}\n"
             + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard], [Store].[USA], [Pay Type].[Hourly]}\n"
-            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Pedro Castillo].[Jose Bernard], [Store].[USA], [Pay Type].[Monthly]}\n"
             + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges], [Store].[USA], [Pay Type].[Hourly]}\n"
-            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges], [Store].[USA], [Pay Type].[Monthly]}\n"
             + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena], [Store].[USA], [Pay Type].[Hourly]}\n"
-            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter], [Store].[USA], [Pay Type].[Monthly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena], [Store].[USA], [Pay Type].[Monthly]}\n"
             + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter], [Store].[USA], [Pay Type].[Hourly]}\n"
+            + "{[Employees].[Sheri Nowmer].[Derrick Whelply].[Laurie Borges].[Mary Solimena].[Matthew Hunter], [Store].[USA], [Pay Type].[Monthly]}\n"
             + "Row #0: 3,996\n"
             + "Row #1: 3,396\n"
             + "Row #2: 3,840\n"

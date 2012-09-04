@@ -583,6 +583,136 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "{[Time].[2005], [Measures].[*ZERO]}\n" + "Row #0: 0\n"
             + "Row #0: 0\n" + "Row #0: 0\n");
     }
+
+    /**
+     * Fix for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1197">MONDRIAN-1197</a>
+     *
+     * RolapMemberBase was comparing members with null keys by unique name,
+     * which only made sense for VisualTotalsMember but would create problems
+     * with other normal members. This fix makes it so that null keys are
+     * always equal, but VisualTotalsMember overrides the compareTo(Object)
+     * method so the delegate member is compared. This is in line with other
+     * parts of the code, like RolapCubeMember.
+     */
+    public void testMondrian1197() {
+        final TestContext testContext = getTestContext();
+        if (!testContext.databaseIsValid()) {
+            return;
+        }
+        final String mdx =
+            "With\n"
+            + "Set [*NATIVE_CJ_SET] as '[*BASE_MEMBERS_Markets]'\n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Markets].CurrentMember.OrderKey,DESC,Ancestor([Markets].CurrentMember,[Markets].[Country]).OrderKey,DESC)'\n"
+            + "Set [*BASE_MEMBERS_Markets] as '[Markets].[State Province].Members'\n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*ZERO]}'\n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Markets].currentMember)})'\n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n"
+            + "Member [Measures].[*ZERO] as '0', SOLVE_ORDER=0\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns,\n"
+            + "[*SORTED_ROW_AXIS] on rows\n"
+            + "From [SteelWheelsSales]\n";
+        testContext.assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[*ZERO]}\n"
+            + "Axis #2:\n"
+            + "{[Markets].[NA].[USA].[PA]}\n"
+            + "{[Markets].[NA].[USA].[NY]}\n"
+            + "{[Markets].[NA].[USA].[NV]}\n"
+            + "{[Markets].[NA].[USA].[NJ]}\n"
+            + "{[Markets].[NA].[USA].[NH]}\n"
+            + "{[Markets].[NA].[USA].[MA]}\n"
+            + "{[Markets].[NA].[USA].[CT]}\n"
+            + "{[Markets].[NA].[USA].[CA]}\n"
+            + "{[Markets].[NA].[Canada].[Quu00e9bec]}\n"
+            + "{[Markets].[NA].[Canada].[BC]}\n"
+            + "{[Markets].[Japan].[Singapore].[#null]}\n"
+            + "{[Markets].[Japan].[Philippines].[#null]}\n"
+            + "{[Markets].[Japan].[Japan].[Tokyo]}\n"
+            + "{[Markets].[Japan].[Japan].[Osaka]}\n"
+            + "{[Markets].[Japan].[Hong Kong].[#null]}\n"
+            + "{[Markets].[EMEA].[UK].[Isle of Wight]}\n"
+            + "{[Markets].[EMEA].[UK].[#null]}\n"
+            + "{[Markets].[EMEA].[Switzerland].[#null]}\n"
+            + "{[Markets].[EMEA].[Sweden].[#null]}\n"
+            + "{[Markets].[EMEA].[Spain].[#null]}\n"
+            + "{[Markets].[EMEA].[Norway].[#null]}\n"
+            + "{[Markets].[EMEA].[Italy].[#null]}\n"
+            + "{[Markets].[EMEA].[Ireland].[#null]}\n"
+            + "{[Markets].[EMEA].[Germany].[#null]}\n"
+            + "{[Markets].[EMEA].[France].[#null]}\n"
+            + "{[Markets].[EMEA].[Finland].[#null]}\n"
+            + "{[Markets].[EMEA].[Denmark].[#null]}\n"
+            + "{[Markets].[EMEA].[Belgium].[#null]}\n"
+            + "{[Markets].[EMEA].[Austria].[#null]}\n"
+            + "{[Markets].[APAC].[Singapore].[#null]}\n"
+            + "{[Markets].[APAC].[New Zealand].[]}\n"
+            + "{[Markets].[APAC].[New Zealand].[#null]}\n"
+            + "{[Markets].[APAC].[Australia].[Victoria]}\n"
+            + "{[Markets].[APAC].[Australia].[Queensland]}\n"
+            + "{[Markets].[APAC].[Australia].[NSW]}\n"
+            + "{[Markets].[#null].[Switzerland].[#null]}\n"
+            + "{[Markets].[#null].[Spain].[#null]}\n"
+            + "{[Markets].[#null].[South Africa].[#null]}\n"
+            + "{[Markets].[#null].[Singapore].[#null]}\n"
+            + "{[Markets].[#null].[Russia].[#null]}\n"
+            + "{[Markets].[#null].[Portugal].[#null]}\n"
+            + "{[Markets].[#null].[Poland].[#null]}\n"
+            + "{[Markets].[#null].[Netherlands].[#null]}\n"
+            + "{[Markets].[#null].[Israel].[#null]}\n"
+            + "{[Markets].[#null].[Ireland].[Co. Cork]}\n"
+            + "{[Markets].[#null].[Germany].[#null]}\n"
+            + "Row #0: 0\n"
+            + "Row #1: 0\n"
+            + "Row #2: 0\n"
+            + "Row #3: 0\n"
+            + "Row #4: 0\n"
+            + "Row #5: 0\n"
+            + "Row #6: 0\n"
+            + "Row #7: 0\n"
+            + "Row #8: 0\n"
+            + "Row #9: 0\n"
+            + "Row #10: 0\n"
+            + "Row #11: 0\n"
+            + "Row #12: 0\n"
+            + "Row #13: 0\n"
+            + "Row #14: 0\n"
+            + "Row #15: 0\n"
+            + "Row #16: 0\n"
+            + "Row #17: 0\n"
+            + "Row #18: 0\n"
+            + "Row #19: 0\n"
+            + "Row #20: 0\n"
+            + "Row #21: 0\n"
+            + "Row #22: 0\n"
+            + "Row #23: 0\n"
+            + "Row #24: 0\n"
+            + "Row #25: 0\n"
+            + "Row #26: 0\n"
+            + "Row #27: 0\n"
+            + "Row #28: 0\n"
+            + "Row #29: 0\n"
+            + "Row #30: 0\n"
+            + "Row #31: 0\n"
+            + "Row #32: 0\n"
+            + "Row #33: 0\n"
+            + "Row #34: 0\n"
+            + "Row #35: 0\n"
+            + "Row #36: 0\n"
+            + "Row #37: 0\n"
+            + "Row #38: 0\n"
+            + "Row #39: 0\n"
+            + "Row #40: 0\n"
+            + "Row #41: 0\n"
+            + "Row #42: 0\n"
+            + "Row #43: 0\n"
+            + "Row #44: 0\n"
+            + "Row #45: 0\n");
+    }
 }
 
 // End SteelWheelsSchemaTest.java

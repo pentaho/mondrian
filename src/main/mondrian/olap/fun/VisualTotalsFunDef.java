@@ -226,6 +226,18 @@ public class VisualTotalsFunDef extends FunDefBase {
         }
 
         @Override
+        public int compareTo(Object o) {
+            if (o instanceof VisualTotalMember) {
+                // VisualTotals members are a special case. We have
+                // to compare the delegate member.
+                return this.getMember().compareTo(
+                    ((VisualTotalMember) o).getMember());
+            } else {
+                return super.compareTo(o);
+            }
+        }
+
+        @Override
         public int hashCode() {
             return member.hashCode();
         }
@@ -241,6 +253,9 @@ public class VisualTotalsFunDef extends FunDefBase {
 
         public int getSolveOrder() {
             // high solve order, so it is expanded after other calculations
+            // REVIEW: 99...really?? I've seen many queries with higher SO.
+            // I don't think we should be abusing arbitrary constants
+            // like this.
             return 99;
         }
 
