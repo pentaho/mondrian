@@ -146,31 +146,6 @@ public final class SegmentCacheWorker {
     }
 
     /**
-     * Returns whether there is a cached segment body available
-     * for a given segment header.
-     *
-     * <p>If no cache is configured or there is an error while
-     * querying the cache, returns false nonetheless.
-     *
-     * @param header A header to search for in the segment cache.
-     * @return True or false, whether there is a segment body
-     * available in a segment cache.
-     */
-    public boolean contains(SegmentHeader header) {
-        checkThread();
-        try {
-            return cache.contains(header);
-        } catch (Throwable t) {
-            LOGGER.error(
-                MondrianResource.instance()
-                    .SegmentCacheFailedToLookupSegment.baseMessage,
-                t);
-            throw MondrianResource.instance()
-                .SegmentCacheFailedToLookupSegment.ex(t);
-        }
-    }
-
-    /**
      * Places a segment in the cache. Returns true or false
      * if the operation succeeds.
      *

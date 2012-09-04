@@ -82,15 +82,6 @@ public interface SegmentCache {
     SegmentBody get(SegmentHeader header);
 
     /**
-     * Checks if the cache contains a {@link SegmentBody} corresponding
-     * to the supplied {@link SegmentHeader}.
-     *
-     * @param header A header to lookup in the cache.
-     * @return Whether corresponding segment could be found in cache.
-     */
-    boolean contains(SegmentHeader header);
-
-    /**
      * Returns a list of all segments present in the cache.
      *
      * @return A List of segment headers describing the

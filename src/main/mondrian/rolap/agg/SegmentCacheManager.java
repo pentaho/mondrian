@@ -1372,18 +1372,6 @@ public class SegmentCacheManager {
             return null;
         }
 
-        public boolean contains(SegmentHeader header) {
-            if (MondrianProperties.instance().DisableCaching.get()) {
-                return false;
-            }
-            for (SegmentCacheWorker worker : workers) {
-                if (worker.contains(header)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         public List<SegmentHeader> getSegmentHeaders() {
             if (MondrianProperties.instance().DisableCaching.get()) {
                 return Collections.emptyList();
