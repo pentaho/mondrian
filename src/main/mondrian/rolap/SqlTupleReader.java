@@ -716,35 +716,62 @@ public class SqlTupleReader implements TupleReader {
             // generate sub-selects, each one joining with one of
             // the fact table referenced
             int k = -1;
-            // Save the original measure in the context
-            Member originalMeasure = constraint.getEvaluator().getMembers()[0];
             String prependString = "";
             final StringBuilder selectString = new StringBuilder();
             List<SqlStatement.Type> types = null;
-            for (RolapCube baseCube : fullyJoiningBaseCubes) {
-                // Use the measure from the corresponding base cube in the
-                // context to find the correct join path to the base fact
-                // table.
-                //
-                // Any measure is fine since the constraint logic only uses it
-                // to find the correct fact table to join to.
-                Member measureInCurrentbaseCube = baseCube.getMeasures().get(0);
-                constraint.getEvaluator().setContext(measureInCurrentbaseCube);
 
-                WhichSelect whichSelect =
-                    (++k == fullyJoiningBaseCubes.size() - 1)
-                        ? WhichSelect.LAST : WhichSelect.NOT_LAST;
-                selectString.append(prependString);
-                final Pair<String, List<SqlStatement.Type>> pair =
-                    generateSelectForLevels(
-                        dataSource, baseCube, whichSelect);
-                selectString.append(pair.left);
-                types = pair.right;
-                prependString = UNION;
+            final int savepoint =
+                getEvaluator(constraint).savepoint();
+
+            try {
+                for (RolapCube baseCube : fullyJoiningBaseCubes) {
+                    // Use the measure from the corresponding base cube in the
+                    // context to find the correct join path to the base fact
+                    // table.
+                    //
+                    // The first non-calculated measure is fine since the
+                    // constraint logic only uses it
+                    // to find the correct fact table to join to.
+                    Member measureInCurrentbaseCube = null;
+                    for (Member currMember : baseCube.getMeasures()) {
+                        if (!currMember.isCalculated()) {
+                            measureInCurrentbaseCube = currMember;
+                            break;
+                        }
+                    }
+
+                    if (measureInCurrentbaseCube == null) {
+                        // Couldn't find a non-calculated member in this cube.
+                        // Pick any measure and the code will fallback to
+                        // the fact table.
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug(
+                                "No non-calculated member found in cube "
+                                + baseCube.getName());
+                        }
+                        measureInCurrentbaseCube =
+                            baseCube.getMeasures().get(0);
+                    }
+
+                    getEvaluator(constraint)
+                        .setContext(measureInCurrentbaseCube);
+
+                    WhichSelect whichSelect =
+                            (++k == fullyJoiningBaseCubes.size() - 1)
+                            ? WhichSelect.LAST : WhichSelect.NOT_LAST;
+                    selectString.append(prependString);
+                    final Pair<String, List<SqlStatement.Type>> pair =
+                            generateSelectForLevels(
+                                    dataSource, baseCube, whichSelect);
+                    selectString.append(pair.left);
+                    types = pair.right;
+                    prependString = UNION;
+                }
+            } finally {
+                // Restore the original measure member
+                getEvaluator(constraint).restore(savepoint);
             }
 
-            // Restore the original measure member
-            constraint.getEvaluator().setContext(originalMeasure);
             return Pair.of(selectString.toString(), types);
         } else {
             return generateSelectForLevels(
