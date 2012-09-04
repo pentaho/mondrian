@@ -12,6 +12,7 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.fun.FunUtil;
 import mondrian.resource.MondrianResource;
+import mondrian.rolap.SqlStatement.Type;
 import mondrian.rolap.sql.*;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.rolap.agg.CellRequest;
@@ -20,6 +21,9 @@ import mondrian.spi.Dialect;
 import mondrian.util.Pair;
 
 import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -64,6 +68,8 @@ import java.util.*;
  * @version $Id$
  */
 public class SqlTupleReader implements TupleReader {
+    private static final Logger LOGGER =
+        Logger.getLogger(SqlTupleReader.class);
     protected final TupleConstraint constraint;
     List<TargetBase> targets = new ArrayList<TargetBase>();
     int maxRows = 0;
@@ -696,36 +702,62 @@ public class SqlTupleReader implements TupleReader {
             // generate sub-selects, each one joining with one of
             // the fact table referenced
             int k = -1;
-            // Save the original measure in the context
-            Member originalMeasure = constraint.getEvaluator().getMembers()[0];
             String prependString = "";
             final StringBuilder selectString = new StringBuilder();
             List<SqlStatement.Type> types = null;
-            for (RolapCube baseCube : fullyJoiningBaseCubes) {
-                // Use the measure from the corresponding base cube in the
-                // context to find the correct join path to the base fact
-                // table.
-                //
-                // Any measure is fine since the constraint logic only uses it
-                // to find the correct fact table to join to.
-                Member measureInCurrentbaseCube = baseCube.getMeasures().get(0);
-                constraint.getEvaluator().setContext(measureInCurrentbaseCube);
 
-                WhichSelect whichSelect =
-                    (++k == fullyJoiningBaseCubes.size() - 1)
+            final Member originalMeasure =
+                getEvaluator(constraint).getMembers()[0];
+            try {
+                for (RolapCube baseCube : fullyJoiningBaseCubes) {
+                    // Use the measure from the corresponding base cube in the
+                    // context to find the correct join path to the base fact
+                    // table.
+                    //
+                    // The first non-calculated measure is fine since the
+                    // constraint logic only uses it
+                    // to find the correct fact table to join to.
+                    Member measureInCurrentbaseCube = null;
+                    for (Member currMember : baseCube.getMeasures()) {
+                        if (!currMember.isCalculated()) {
+                            measureInCurrentbaseCube = currMember;
+                            break;
+                        }
+                    }
+
+                    if (measureInCurrentbaseCube == null) {
+                        // Couldn't find a non-calculated member in this cube.
+                        // Pick any measure and the code will fallback to
+                        // the fact table.
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug(
+                                    "No non-calculated member found in cube "
+                                            + baseCube.getName());
+                        }
+                        measureInCurrentbaseCube =
+                                baseCube.getMeasures().get(0);
+                    }
+
+                    getEvaluator(constraint)
+                        .setContext(measureInCurrentbaseCube);
+
+                    WhichSelect whichSelect =
+                        (++k == fullyJoiningBaseCubes.size() - 1)
                         ? WhichSelect.LAST : WhichSelect.NOT_LAST;
-                selectString.append(prependString);
-                final Pair<String, List<SqlStatement.Type>> pair =
-                    generateSelectForLevels(
-                        dataSource, baseCube, whichSelect);
-                selectString.append(pair.left);
-                types = pair.right;
-                prependString = UNION;
+                    selectString.append(prependString);
+                    final Pair<String, List<SqlStatement.Type>> pair =
+                        generateSelectForLevels(
+                            dataSource, baseCube, whichSelect);
+                    selectString.append(pair.left);
+                    types = pair.right;
+                    prependString = UNION;
+                }
+            } finally {
+                getEvaluator(constraint).setContext(originalMeasure);
             }
 
-            // Restore the original measure member
-            constraint.getEvaluator().setContext(originalMeasure);
-            return new Pair(selectString.toString(), types);
+            return new Pair<String, List<Type>>(
+                selectString.toString(), types);
         } else {
             return generateSelectForLevels(
                 dataSource, cube, WhichSelect.ONLY);
@@ -794,9 +826,7 @@ public class SqlTupleReader implements TupleReader {
         SqlQuery sqlQuery = SqlQuery.newQuery(dataSource, s);
         sqlQuery.setAllowHints(true);
 
-
-        Evaluator evaluator = getEvaluator(constraint);
-        AggStar aggStar = chooseAggStar(constraint, evaluator);
+        AggStar aggStar = chooseAggStar(constraint, getEvaluator(constraint));
 
         // add the selects for all levels to fetch
         for (TargetBase target : targets) {
