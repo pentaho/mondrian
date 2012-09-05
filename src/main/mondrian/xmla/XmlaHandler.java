@@ -147,10 +147,30 @@ public class XmlaHandler {
                .getProperties()
                    .get(PropertyDefinition.DataSourceInfo.name());
 
-        final String catalogName =
+        String catalogName =
             request
                 .getProperties()
                     .get(PropertyDefinition.Catalog.name());
+
+        if (catalogName == null
+            && request.getRestrictions().containsKey(
+                Property.StandardMemberProperty
+                    .CATALOG_NAME.name()))
+        {
+            Object restriction =
+                request.getRestrictions().get(
+                    Property.StandardMemberProperty
+                        .CATALOG_NAME.name());
+            if (restriction instanceof List) {
+                final List requiredValues = (List) restriction;
+                catalogName =
+                    String.valueOf(
+                        requiredValues.get(0));
+            } else {
+                throw Util.newInternal(
+                    "unexpected restriction type: " + restriction.getClass());
+            }
+        }
 
         return
             getConnection(

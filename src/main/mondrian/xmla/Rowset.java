@@ -499,7 +499,7 @@ abstract class Rowset implements XmlaConstants {
         return (restrictions.get(column.name) != null);
     }
 
-    protected Util.Functor1<Boolean, Catalog> catNameCond() {
+    protected Util.Functor1<Boolean, Catalog> catNameCond(boolean def) {
         Map<String, String> properties = request.getProperties();
         final String catalogName =
             properties.get(PropertyDefinition.Catalog.name());
@@ -510,7 +510,10 @@ abstract class Rowset implements XmlaConstants {
                 }
             };
         } else {
-            return Util.trueFunctor();
+            if (def) {
+                return Util.trueFunctor();
+            }
+            return Util.falseFunctor();
         }
     }
 

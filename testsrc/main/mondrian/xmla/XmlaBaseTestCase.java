@@ -223,7 +223,8 @@ System.out.println("Got CONTINUE");
                 byte[] bytes = res.toByteArray();
                 String expectedStr = generateExpectedString(props);
                 Document expectedDoc = XmlUtil.parseString(expectedStr);
-                validate(bytes, expectedDoc, TestContext.instance(), true, true);
+                validate(
+                    bytes, expectedDoc, TestContext.instance(), true, true);
 
             } else {
                 fail("Bad status code: "  + statusCode);
@@ -620,10 +621,12 @@ System.out.println("Got CONTINUE");
 
         if (DEBUG) {
             System.out.println(
-                "XmlaBaseTestCase.doTests: soap response=" + new String(bytes));
+                "XmlaBaseTestCase.doTests: soap response="
+                + new String(bytes));
         }
 
-        validate(bytes, expectedDoc, testContext, replace,
+        validate(
+            bytes, expectedDoc, testContext, replace,
             content.equals(XmlaConstants.Content.Data) ? false : true);
         Util.discard(entry);
     }
