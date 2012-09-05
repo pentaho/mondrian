@@ -14,6 +14,7 @@ import mondrian.rolap.sql.TupleConstraint;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.RandomAccess;
 
 /**
  * Base helper class for the SQL tuple readers
@@ -48,6 +49,7 @@ public abstract class TargetBase {
     }
 
     public void setList(final List<RolapMember> list) {
+        assert list instanceof RandomAccess;
         this.list = list;
     }
 
