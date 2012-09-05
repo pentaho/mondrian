@@ -2160,7 +2160,7 @@ public enum RowsetDefinition {
             throws XmlaException, SQLException
         {
             for (Catalog catalog
-                : catIter(connection, catalogNameCond, catNameCond()))
+                : catIter(connection, catNameCond(false), catalogNameCond))
             {
                 for (Schema schema : catalog.getSchemas()) {
                     Row row = new Row();
@@ -2339,7 +2339,7 @@ public enum RowsetDefinition {
             throws XmlaException, OlapException
         {
             for (Catalog catalog
-                : catIter(connection, tableCatalogCond, catNameCond()))
+                : catIter(connection, catNameCond(false), tableCatalogCond))
             {
                 // By definition, mondrian catalogs have only one
                 // schema. It is safe to use get(0)
@@ -2906,7 +2906,7 @@ TODO: see above
             throws XmlaException, OlapException
         {
             for (Catalog catalog
-                : catIter(connection, catalogNameCond, catNameCond()))
+                : catIter(connection, catNameCond(false), catalogNameCond))
             {
                 for (Schema schema : catalog.getSchemas()) {
                     Row row = new Row();
@@ -3038,7 +3038,7 @@ TODO: see above
             throws XmlaException, OlapException
         {
             for (Catalog catalog
-                : catIter(connection, catNameCond(), tableCatalogCond))
+                : catIter(connection, catNameCond(false), tableCatalogCond))
             {
                 // By definition, mondrian catalogs have only one
                 // schema. It is safe to use get(0)
@@ -3303,7 +3303,7 @@ TODO: see above
             List<Row> rows)
             throws XmlaException, OlapException
         {
-            for (Catalog catalog : catIter(connection, catNameCond())) {
+            for (Catalog catalog : catIter(connection, catNameCond(true))) {
                 // By definition, mondrian catalogs have only one
                 // schema. It is safe to use get(0)
                 final Schema schema = catalog.getSchemas().get(0);
@@ -3593,7 +3593,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Catalog catalog
-                : catIter(connection, catNameCond(), catalogNameCond))
+                : catIter(connection, catNameCond(false), catalogNameCond))
             {
                 for (Schema schema
                     : filter(catalog.getSchemas(), schemaNameCond))
@@ -3879,7 +3879,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Catalog catalog
-                : catIter(connection, catNameCond(), catalogNameCond))
+                : catIter(connection, catNameCond(false), catalogNameCond))
             {
                 populateCatalog(connection, catalog, rows);
             }
@@ -4168,7 +4168,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             final XmlaHandler.XmlaExtra extra = getExtra(connection);
-            for (Catalog catalog : catIter(connection, catNameCond())) {
+            for (Catalog catalog : catIter(connection, catNameCond(true))) {
                 // By definition, mondrian catalogs have only one
                 // schema. It is safe to use get(0)
                 final Schema schema = catalog.getSchemas().get(0);
@@ -4435,7 +4435,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Catalog catalog
-                : catIter(connection, catNameCond(), catalogCond))
+                : catIter(connection, catNameCond(false), catalogCond))
             {
                 populateCatalog(connection, catalog, rows);
             }
@@ -4782,7 +4782,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Catalog catalog
-                : catIter(connection, catNameCond(), catalogCond))
+                : catIter(connection, catNameCond(false), catalogCond))
             {
                 populateCatalog(connection, catalog, rows);
             }
@@ -5118,7 +5118,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Catalog catalog
-                : catIter(connection, catNameCond(), catalogCond))
+                : catIter(connection, catNameCond(false), catalogCond))
             {
                 populateCatalog(connection, catalog, rows);
             }
@@ -5453,7 +5453,7 @@ TODO: see above
             throws XmlaException, SQLException
         {
             for (Catalog catalog
-                : catIter(connection, catNameCond(), catalogCond))
+                : catIter(connection, catNameCond(false), catalogCond))
             {
                 populateCatalog(connection, catalog, rows);
             }
@@ -5889,7 +5889,7 @@ TODO: see above
             throws XmlaException, OlapException
         {
             for (Catalog catalog
-                : catIter(connection, catNameCond(), catalogCond))
+                : catIter(connection, catNameCond(false), catalogCond))
             {
                 processCatalog(connection, catalog, rows);
             }
@@ -6117,7 +6117,7 @@ TODO: see above
                     request,
                     Collections.<String, String>emptyMap());
             for (Catalog catalog
-                : catIter(connection, catNameCond(), catalogCond))
+                : catIter(connection, catNameCond(false), catalogCond))
             {
                 populateCatalog(catalog, rows);
             }

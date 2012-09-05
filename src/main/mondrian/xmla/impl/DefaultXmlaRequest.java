@@ -311,11 +311,29 @@ public class DefaultXmlaRequest
                 Util.newError(buf.toString()));
         }
 
-        // If the property is CATALOG
+        // If there is a Catalog property,
         // we have to consider it a constraint as well.
-        String name =
+        String key =
             org.olap4j.metadata.XmlaConstants
                 .Literal.CATALOG_NAME.name();
+
+        if (this.properties.containsKey(key)
+            && !restrictions.containsKey(key))
+        {
+            List<String> values;
+            values = new ArrayList<String>();
+            restrictions.put(this.properties.get(key), values);
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    "DefaultXmlaRequest.initRestrictions: "
+                    + " key=\""
+                    + key
+                    + "\", value=\""
+                    + this.properties.get(key)
+                    + "\"");
+            }
+        }
 
         this.restrictions = (Map) Collections.unmodifiableMap(restrictions);
     }
