@@ -316,7 +316,10 @@
     <custom-packaging allow="false" />
   </component>
   <component name="VcsDirectoryMappings">
+<<<<<<< HEAD
     <mapping directory="" vcs="Git" />
+=======
+>>>>>>> 4a9a209... In Intellij project, set source control to git, not perforce.
     <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../../mondrianpro" vcs="svn" />
     <mapping directory="$PROJECT_DIR$/../../olap4j" vcs="svn" />
