@@ -21,7 +21,6 @@ import mondrian.spi.*;
 import mondrian.util.ByteString;
 import mondrian.util.Pair;
 
-import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.log4j.Logger;
 
 import java.io.PrintWriter;
@@ -1501,11 +1500,9 @@ public class SegmentCacheManager {
                     if (star.getChangeListener() != null
                         && star.getChangeListener().isAggregationChanged(key))
                     {
-                        /*
-                         * We can't satisfy this request, and we must clear the
-                         * data from our cache. This must be in sync with the
-                         * actor thread to maintain consistency.
-                         */
+                        // We can't satisfy this request, and we must clear the
+                        // data from our cache. This must be in sync with the
+                        // actor thread to maintain consistency.
                         indexRegistry.getIndex(star).remove(header);
                         Util.safeGet(
                             cacheExecutor.submit(

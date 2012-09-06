@@ -761,8 +761,8 @@ public class SqlTupleReader implements TupleReader {
                             ? WhichSelect.LAST : WhichSelect.NOT_LAST;
                     selectString.append(prependString);
                     final Pair<String, List<SqlStatement.Type>> pair =
-                            generateSelectForLevels(
-                                    dataSource, baseCube, whichSelect);
+                        generateSelectForLevels(
+                            dataSource, baseCube, whichSelect);
                     selectString.append(pair.left);
                     types = pair.right;
                     prependString = UNION;
@@ -891,10 +891,9 @@ public class SqlTupleReader implements TupleReader {
         RolapLevel[] levels,
         int levelDepth)
     {
-        /* Figure out if we need to generate GROUP BY at all.  It may only be
-         * eliminated if we are at a depth that includes the unique key level,
-         * and all properties of included levels depend on the level value.
-         */
+        // Figure out if we need to generate GROUP BY at all.  It may only be
+        // eliminated if we are at a depth that includes the unique key level,
+        // and all properties of included levels depend on the level value.
         boolean needsGroupBy = false;  // figure out if we need GROUP BY at all
 
         if (hierarchy.getUniqueKeyLevelName() == null) {
