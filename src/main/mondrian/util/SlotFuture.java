@@ -4,15 +4,15 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho
+// Copyright (C) 2011-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
 
+import org.apache.log4j.Logger;
+
 import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.apache.log4j.Logger;
 
 /**
  * Implementation of {@link java.util.concurrent.Future} that completes
@@ -26,7 +26,7 @@ public class SlotFuture<V> implements Future<V> {
     private final CountDownLatch dataGate = new CountDownLatch(1);
     private final ReentrantReadWriteLock stateLock =
         new ReentrantReadWriteLock();
-    private final static Logger LOG = Logger.getLogger(SlotFuture.class);
+    private static final Logger LOG = Logger.getLogger(SlotFuture.class);
 
     /**
      * Creates a SlotFuture.

@@ -736,8 +736,7 @@ public class RoleImpl implements Role {
          * restricted by the access controls of this role instance.
          */
         public boolean hasInaccessibleDescendants(Member member) {
-            for (MemberAccess access : memberGrants.values())
-            {
+            for (MemberAccess access : memberGrants.values()) {
                 switch (access.access) {
                 case NONE:
                 case CUSTOM:

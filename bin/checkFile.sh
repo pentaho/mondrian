@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id$
+#
 # Checks that a file is valid.
 # Used by perforce submit trigger, via runTrigger.
 # The file is deemed to be valid if this command produces no output.
@@ -23,8 +23,7 @@ usage() {
     echo "checkFile  [ <options> ] <file>..."
     echo "    Checks a list of files."
     echo "checkFile  [ <options> ] --opened"
-    echo "    Checks all files that are opened for edit in the current"
-    echo "    perforce client."
+    echo "    Checks all files that are opened in git. Implies --strict."
     echo "checkFile  [ <options> ] --under <dir>"
     echo "    Recursively checks all files under a given directory."
     echo "checkFile --help"
@@ -225,6 +224,7 @@ opened=
 if [ "$1" == --opened ]; then
     opened=true
     deferred=
+    strict=2
     shift
 fi
 
@@ -271,10 +271,9 @@ if [ "$under" ]; then
         doCheck "$filePath" "$file" ""
     done
 elif [ "$opened" ]; then
-    p4 opened |
-    gawk -F'#' '$2 !~ / - delete/ {print $1}' |
-    while read line; do
-        file=$(p4 where "$line" | gawk '{print $3}' | tr \\\\ /)
+    git checkout |
+    gawk '$1 != "D" {print $2}' |
+    while read file; do
         doCheck "$file" "$file" "80"
     done
 else
