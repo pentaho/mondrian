@@ -10,6 +10,7 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.olap4j.MondrianOlap4jDriver;
 import mondrian.xmla.XmlaHandler;
 
 import org.olap4j.*;
@@ -140,7 +141,7 @@ public class Olap4jTest extends FoodMartTestCase {
         assertEquals("Ventes", annotation.getValue());
 
         final Map<String, Object> map =
-            XmlaHandler.getExtra(connection).getAnnotationMap(salesCube);
+            MondrianOlap4jDriver.EXTRA.getAnnotationMap(salesCube);
         assertEquals("Ventes", map.get("caption.fr_FR"));
     }
 
