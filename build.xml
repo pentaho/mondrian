@@ -166,6 +166,7 @@ mondrian.properties.template"/>
     <pathelement location="${lib.dir}/javacup.jar"/>
     <pathelement location="${lib.dir}/log4j.jar"/>
     <pathelement location="${lib.dir}/olap4j.jar"/>
+    <pathelement location="${lib.dir}/olap4j-xmlaserver.jar"/>
     <pathelement location="${lib.dir}/xalan.jar"/>
     <pathelement location="${lib.dir}/xercesImpl.jar"/>
     <pathelement location="${lib.dir}/validation-api.jar"/>

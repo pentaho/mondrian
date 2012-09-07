@@ -424,6 +424,15 @@
       <JAVADOC />
       <SOURCES />
     </library>
+    <library name="olap4j-xmlaserver">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/../lib/olap4j-xmlaserver.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="file://$PROJECT_DIR$/../../olap4j-xmlaserver/src/main/java" />
+      </SOURCES>
+    </library>
     <library name="pentaho">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/../workbench/plugins/pentaho-mondrianschemaworkbench-plugins.jar!/" />

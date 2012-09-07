@@ -13,8 +13,8 @@ import mondrian.olap.*;
 import mondrian.olap.Property;
 import mondrian.olap.fun.FunInfo;
 import mondrian.rolap.*;
-import mondrian.xmla.RowsetDefinition;
-import mondrian.xmla.XmlaHandler;
+import mondrian.xmla.*;
+import mondrian.xmla.RowsetDefinition.MdschemaFunctionsRowset.VarType;
 
 import org.olap4j.*;
 import org.olap4j.metadata.*;
@@ -35,7 +35,7 @@ import java.util.*;
  * @author jhyde
  * @since Nov 12, 2010
  */
-class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
+class MondrianOlap4jExtra extends XmlaHandler.XmlaExtraImpl {
     static final MondrianOlap4jExtra INSTANCE = new MondrianOlap4jExtra();
 
     public ResultSet executeDrillthrough(
@@ -82,7 +82,7 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
     public void getSchemaFunctionList(
         List<FunctionDefinition> funDefs,
         Schema schema,
-        Util.Predicate1<String> functionFilter)
+        org.olap4j.xmla.server.impl.Util.Predicate1<String> functionFilter)
     {
         final FunTable funTable =
             ((MondrianOlap4jSchema) schema).schema.getFunTable();
@@ -140,8 +140,7 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
                     }
 
                     RowsetDefinition.MdschemaFunctionsRowset.VarType varType =
-                        RowsetDefinition.MdschemaFunctionsRowset.VarType
-                            .forCategory(returnCategory);
+                        categoryToVarType(returnCategory);
                     funDefs.add(
                         new FunctionDefinition(
                             fi.getName(),
@@ -159,6 +158,41 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
                 }
             }
         }
+    }
+
+    private static VarType categoryToVarType(int category) {
+        switch (category) {
+        case Category.Unknown:
+            // expression == unknown ???
+            // case Category.Expression:
+            return VarType.Empty;
+        case Category.Array:
+            return VarType.Array;
+        case Category.Dimension:
+        case Category.Hierarchy:
+        case Category.Level:
+        case Category.Member:
+        case Category.Set:
+        case Category.Tuple:
+        case Category.Cube:
+        case Category.Value:
+            return VarType.Variant;
+        case Category.Logical:
+            return VarType.Boolean;
+        case Category.Numeric:
+            return VarType.Double;
+        case Category.String:
+        case Category.Symbol:
+        case Category.Constant:
+            return VarType.String;
+        case Category.DateTime:
+            return VarType.Date;
+        case Category.Integer:
+        case Category.Mask:
+            return VarType.Integer;
+        }
+        // NOTE: this should never happen
+        return VarType.Empty;
     }
 
     public int getHierarchyCardinality(Hierarchy hierarchy)
@@ -250,9 +284,8 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
 
     public List<String> getSchemaRoleNames(Schema schema) {
         MondrianOlap4jSchema olap4jSchema = (MondrianOlap4jSchema) schema;
-        // TODO: this returns ALL roles, no the current user's roles
-        return new ArrayList<String>(
-            ((RolapSchema) olap4jSchema.schema).roleNames());
+        // TODO: this returns ALL roles, not the current user's roles
+        return new ArrayList<String>(olap4jSchema.schema.roleNames());
     }
 
     public String getCubeType(Cube cube) {
@@ -305,6 +338,37 @@ class MondrianOlap4jExtra implements XmlaHandler.XmlaExtra {
             }
         }
         return Collections.emptyMap();
+    }
+
+    public String getHierarchyName(Hierarchy hierarchy) {
+        String hierarchyName = hierarchy.getName();
+        if (MondrianProperties.instance().SsasCompatibleNaming.get()
+            && !hierarchyName.equals(hierarchy.getDimension().getName()))
+        {
+            hierarchyName =
+                hierarchy.getDimension().getName() + "." + hierarchyName;
+        }
+        return hierarchyName;
+    }
+
+    public boolean isTotalCountEnabled() {
+        return MondrianProperties.instance().EnableTotalCount.booleanValue();
+    }
+
+    public String getPropertyValue(PropertyDefinition propertyDefinition) {
+        switch (propertyDefinition) {
+        case ProviderName:
+            return "Mondrian XML for Analysis Provider";
+        case ProviderVersion:
+            return MondrianServer.forId(null).getVersion().getVersionString();
+        default:
+            return super.getPropertyValue(propertyDefinition);
+        }
+    }
+
+    public List<String> getKeywords() {
+        MondrianServer mondrianServer = MondrianServer.forId(null);
+        return mondrianServer.getKeywords();
     }
 }
 

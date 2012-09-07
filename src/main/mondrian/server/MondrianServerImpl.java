@@ -11,7 +11,7 @@ package mondrian.server;
 
 import mondrian.olap.MondrianException;
 import mondrian.olap.MondrianServer;
-import mondrian.olap4j.CatalogFinder;
+import mondrian.olap4j.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RolapConnection;
 import mondrian.rolap.RolapResultShepherd;
@@ -438,6 +438,10 @@ class MondrianServerImpl
             Locus.pop(locus);
             locus.execution.end();
         }
+    }
+
+    public XmlaHandler.XmlaExtra getExtra() {
+        return MondrianOlap4jDriver.EXTRA;
     }
 
     /**

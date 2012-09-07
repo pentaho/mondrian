@@ -4,12 +4,13 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2007-2011 Pentaho
+// Copyright (C) 2007-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap4j;
 
 import mondrian.rolap.RolapConnectionProperties;
+import mondrian.xmla.XmlaHandler;
 
 import java.sql.*;
 import java.util.*;
@@ -61,6 +62,9 @@ import java.util.logging.Logger;
  * @since May 22, 2007
  */
 public class MondrianOlap4jDriver implements Driver {
+    public static final XmlaHandler.XmlaExtra EXTRA =
+        MondrianOlap4jExtra.INSTANCE;
+
     protected final Factory factory;
 
     static {

@@ -75,6 +75,7 @@
                 conf="test->default" changing="true">
             <artifact name="olap4j-xmla"/>
         </dependency>
+        <dependency org="org.olap4j" name="olap4j-xmlaserver" rev="0.1-SNAPSHOT"/>
 
         <!-- REVIEW: try xalan 2.6.0? -->
         <dependency org="xalan" name="xalan" rev="2.4.1"/>
