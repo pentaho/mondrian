@@ -31,8 +31,8 @@
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <SCHEMA_OWNER/>
                     </row>
                 </root>
@@ -99,8 +99,8 @@
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <SCHEMA_OWNER/>
                     </row>
                 </root>
@@ -168,7 +168,7 @@
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
                         <DESCRIPTION>No description available</DESCRIPTION>
                         <ROLES>California manager,No HR Cube</ROLES>
                     </row>
@@ -237,7 +237,7 @@
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
                         <DESCRIPTION>No description available</DESCRIPTION>
                         <ROLES>California manager,No HR Cube</ROLES>
                     </row>
@@ -321,8 +321,8 @@
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -331,11 +331,11 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>HR</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - HR Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - HR Cube</DESCRIPTION>
                     </row>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -344,11 +344,11 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Sales Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - Sales Cube</DESCRIPTION>
                     </row>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>Sales 2</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -357,11 +357,11 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales 2</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Sales 2 Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - Sales 2 Cube</DESCRIPTION>
                     </row>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -370,11 +370,11 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales Ragged</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Sales Ragged Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - Sales Ragged Cube</DESCRIPTION>
                     </row>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>Store</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -383,11 +383,11 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Store</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Store Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - Store Cube</DESCRIPTION>
                     </row>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -396,11 +396,11 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Warehouse</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Warehouse Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - Warehouse Cube</DESCRIPTION>
                     </row>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -409,7 +409,7 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Warehouse and Sales</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Warehouse and Sales Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - Warehouse and Sales Cube</DESCRIPTION>
                     </row>
                 </root>
             </cxmla:return>
@@ -434,7 +434,7 @@
     <Properties>
       <PropertyList>
         <DataSourceInfo>${data.source.info}</DataSourceInfo>
-        <Catalog>FoodMart2</Catalog>
+        <Catalog>${catalog.name}</Catalog>
         <Content>${content}</Content>
       </PropertyList>
     </Properties>
@@ -491,8 +491,8 @@
                         </xsd:complexType>
                     </xsd:schema>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>HR</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -501,11 +501,11 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>HR</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - HR Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - HR Cube</DESCRIPTION>
                     </row>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>Sales</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -514,11 +514,11 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Sales Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - Sales Cube</DESCRIPTION>
                     </row>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>Sales 2</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -527,11 +527,11 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales 2</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Sales 2 Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - Sales 2 Cube</DESCRIPTION>
                     </row>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>Sales Ragged</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -540,11 +540,11 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Sales Ragged</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Sales Ragged Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - Sales Ragged Cube</DESCRIPTION>
                     </row>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>Store</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -553,11 +553,11 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Store</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Store Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - Store Cube</DESCRIPTION>
                     </row>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse</CUBE_NAME>
                         <CUBE_TYPE>CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -566,11 +566,11 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Warehouse</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Warehouse Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - Warehouse Cube</DESCRIPTION>
                     </row>
                     <row>
-                        <CATALOG_NAME>FoodMart2</CATALOG_NAME>
-                        <SCHEMA_NAME>FoodMart</SCHEMA_NAME>
+                        <CATALOG_NAME>${catalog.name}</CATALOG_NAME>
+                        <SCHEMA_NAME>${catalog.name}schema</SCHEMA_NAME>
                         <CUBE_NAME>Warehouse and Sales</CUBE_NAME>
                         <CUBE_TYPE>VIRTUAL CUBE</CUBE_TYPE>
                         <LAST_SCHEMA_UPDATE>xxxx-xx-xxTxx:xx:xx</LAST_SCHEMA_UPDATE>
@@ -579,7 +579,7 @@
                         <IS_LINKABLE>false</IS_LINKABLE>
                         <IS_SQL_ENABLED>false</IS_SQL_ENABLED>
                         <CUBE_CAPTION>Warehouse and Sales</CUBE_CAPTION>
-                        <DESCRIPTION>FoodMart2 Schema - Warehouse and Sales Cube</DESCRIPTION>
+                        <DESCRIPTION>${catalog.name} Schema - Warehouse and Sales Cube</DESCRIPTION>
                     </row>
                 </root>
             </cxmla:return>

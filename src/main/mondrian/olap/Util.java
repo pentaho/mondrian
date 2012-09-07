@@ -4279,7 +4279,7 @@ public class Util extends XOMUtil {
     private static final Functor1 FALSE_FUNCTOR =
         new Functor1<Boolean, Object>() {
             public Boolean apply(Object param) {
-                return true;
+                return false;
             }
         };
 
