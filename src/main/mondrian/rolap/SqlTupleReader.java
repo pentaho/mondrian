@@ -1041,7 +1041,9 @@ public class SqlTupleReader implements TupleReader {
                 AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
                 String q = aggColumn.generateExprString(sqlQuery);
                 sqlQuery.addSelectGroupBy(q, starColumn.getInternalType());
-                sqlQuery.addOrderBy(q, true, false, true);
+                if (whichSelect == WhichSelect.ONLY) {
+                    sqlQuery.addOrderBy(q, true, false, true);
+                }
                 aggColumn.getTable().addToFrom(sqlQuery, false, true);
                 continue;
             }
