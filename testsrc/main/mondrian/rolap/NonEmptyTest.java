@@ -4079,107 +4079,111 @@ public class NonEmptyTest extends BatchTestCase {
     }
 
     public void testNativeCrossjoinWillConstrainUsingArgsFromAllAxes() {
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
         String mdx = "select "
             + "non empty Crossjoin({[Gender].[Gender].[F]},{[Measures].[Unit Sales]}) on 0,"
             + "non empty Crossjoin({[Time].[1997]},{[Promotions].[All Promotions].[Bag Stuffers],[Promotions].[All Promotions].[Best Savings]}) on 1"
             + " from [Warehouse and Sales]";
-        SqlPattern accessPattern = new SqlPattern(
-            Dialect.DatabaseProduct.ACCESS,
-            "select `time_by_day`.`the_year` as `c0`, "
-            + "`promotion`.`promotion_name` as `c1` "
-            + "from `time_by_day` as `time_by_day`, "
-            + "`sales_fact_1997` as `sales_fact_1997`, "
-            + "`promotion` as `promotion`, "
-            + "`customer` as `customer` "
-            + "where "
-            + "`sales_fact_1997`.`time_id` = `time_by_day`.`time_id` "
-            + "and `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` "
-            + "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-            + "and (`customer`.`gender` = 'F') "
-            + "and (`time_by_day`.`the_year` = 1997) "
-            + "and (`promotion`.`promotion_name` in ('Bag Stuffers', 'Best Savings')) "
-            + "group by `time_by_day`.`the_year`, `promotion`.`promotion_name`"
-            + " order by 1 ASC, 2 ASC",
-            623);
         SqlPattern oraclePattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
-            "select \"time_by_day\".\"the_year\" as \"c0\", "
-            + "\"promotion\".\"promotion_name\" as \"c1\" "
-            + "from \"time_by_day\" \"time_by_day\", "
-            + "\"sales_fact_1997\" \"sales_fact_1997\", "
-            + "\"promotion\" \"promotion\", "
-            + "\"customer\" \"customer\" "
-            + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-            + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-            + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-            + "and (\"customer\".\"gender\" = 'F') "
-            + "and (\"time_by_day\".\"the_year\" = 1997) "
-            + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
-            + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
-            + "order by 1 ASC, 2 ASC",
+            "select\n"
+            + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
+            + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
+            + "from\n"
+            + "    \"time_by_day\" \"time_by_day\",\n"
+            + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
+            + "    \"promotion\" \"promotion\",\n"
+            + "    \"customer\" \"customer\"\n"
+            + "where\n"
+            + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
+            + "and\n"
+            + "    \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
+            + "and\n"
+            + "    \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+            + "and\n"
+            + "    (\"customer\".\"gender\" = 'F')\n"
+            + "and\n"
+            + "    (\"time_by_day\".\"the_year\" = 1997)\n"
+            + "and\n"
+            + "    (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings'))\n"
+            + "group by\n"
+            + "    \"time_by_day\".\"the_year\",\n"
+            + "    \"promotion\".\"promotion_name\"\n"
+            + "order by\n"
+            + "    \"time_by_day\".\"the_year\" ASC NULLS LAST,\n"
+            + "    \"promotion\".\"promotion_name\" ASC NULLS LAST",
             611);
-        assertQuerySql(mdx, new SqlPattern[]{oraclePattern, accessPattern});
+        assertQuerySql(mdx, new SqlPattern[]{oraclePattern});
     }
 
     public void testLevelMembersWillConstrainUsingArgsFromAllAxes() {
-            String mdx = "select "
-                + "non empty Crossjoin({[Gender].[Gender].[F]},{[Measures].[Unit Sales]}) on 0,"
-                + "non empty [Promotions].[Promotions].members on 1"
-                + " from [Warehouse and Sales]";
-            SqlPattern accessPattern = new SqlPattern(
-                Dialect.DatabaseProduct.ACCESS,
-                "select `promotion`.`promotion_name` as `c0` "
-                + "from `promotion` as `promotion`, "
-                + "`sales_fact_1997` as `sales_fact_1997`, "
-                + "`customer` as `customer` "
-                + "where `sales_fact_1997`.`promotion_id` = `promotion`.`promotion_id` "
-                + "and `sales_fact_1997`.`customer_id` = `customer`.`customer_id` "
-                + "and (`customer`.`gender` = 'F') "
-                + "group by `promotion`.`promotion_name` "
-                + "order by 1 ASC",
-                357);
-            SqlPattern oraclePattern = new SqlPattern(
-                Dialect.DatabaseProduct.ORACLE,
-                "select \"promotion\".\"promotion_name\" as \"c0\" "
-                + "from \"promotion\" \"promotion\", "
-                + "\"sales_fact_1997\" \"sales_fact_1997\", "
-                + "\"customer\" \"customer\" "
-                + "where \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-                + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-                + "and (\"customer\".\"gender\" = 'F') "
-                + "group by \"promotion\".\"promotion_name\" "
-                + "order by 1 ASC",
-                347);
-            assertQuerySql(mdx, new SqlPattern[]{oraclePattern, accessPattern});
-        }
-
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
+        String mdx = "select "
+            + "non empty Crossjoin({[Gender].[Gender].[F]},{[Measures].[Unit Sales]}) on 0,"
+            + "non empty [Promotions].[Promotions].members on 1"
+            + " from [Warehouse and Sales]";
+        SqlPattern oraclePattern = new SqlPattern(
+            Dialect.DatabaseProduct.ORACLE,
+            "select\n"
+            + "    \"promotion\".\"promotion_name\" as \"c0\"\n"
+            + "from\n"
+            + "    \"promotion\" \"promotion\",\n"
+            + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
+            + "    \"customer\" \"customer\"\n"
+            + "where\n"
+            + "    \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
+            + "and\n"
+            + "    \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+            + "and\n"
+            + "    (\"customer\".\"gender\" = 'F')\n"
+            + "group by\n"
+            + "    \"promotion\".\"promotion_name\"\n"
+            + "order by\n"
+            + "    \"promotion\".\"promotion_name\" ASC NULLS LAST",
+            347);
+        assertQuerySql(mdx, new SqlPattern[]{oraclePattern});
+    }
 
     public void testNativeCrossjoinWillExpandFirstLastChild() {
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
         String mdx = "select "
             + "non empty Crossjoin({[Gender].firstChild,[Gender].lastChild},{[Measures].[Unit Sales]}) on 0,"
             + "non empty Crossjoin({[Time].[1997]},{[Promotions].[All Promotions].[Bag Stuffers],[Promotions].[All Promotions].[Best Savings]}) on 1"
             + " from [Warehouse and Sales]";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
-            "select \"time_by_day\".\"the_year\" as \"c0\", "
-            + "\"promotion\".\"promotion_name\" as \"c1\" "
-            + "from \"time_by_day\" \"time_by_day\", "
-            + "\"sales_fact_1997\" \"sales_fact_1997\", "
-            + "\"promotion\" \"promotion\", "
-            + "\"customer\" \"customer\" "
-            + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-            + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-            + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-            + "and (\"customer\".\"gender\" in ('F', 'M')) "
-            + "and (\"time_by_day\".\"the_year\" = 1997) "
-            + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
-            + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
-            + "order by 1 ASC, 2 ASC",
+            "select\n"
+            + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
+            + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
+            + "from\n"
+            + "    \"time_by_day\" \"time_by_day\",\n"
+            + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
+            + "    \"promotion\" \"promotion\",\n"
+            + "    \"customer\" \"customer\"\n"
+            + "where\n"
+            + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
+            + "and\n"
+            + "    \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
+            + "and\n"
+            + "    \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+            + "and\n"
+            + "    (\"customer\".\"gender\" in ('F', 'M'))\n"
+            + "and\n"
+            + "    (\"time_by_day\".\"the_year\" = 1997)\n"
+            + "and\n"
+            + "    (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings'))\n"
+            + "group by\n"
+            + "    \"time_by_day\".\"the_year\",\n"
+            + "    \"promotion\".\"promotion_name\"\n"
+            + "order by\n"
+            + "    \"time_by_day\".\"the_year\" ASC NULLS LAST,\n"
+            + "    \"promotion\".\"promotion_name\" ASC NULLS LAST",
             611);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }
 
     public void testNativeCrossjoinWillExpandLagInNamedSet() {
+        propSaver.set(propSaver.properties.GenerateFormattedSql, true);
         String mdx =
             "with set [blah] as '{[Gender].lastChild.lag(1),[Gender].[M]}' "
             + "select "
@@ -4188,20 +4192,32 @@ public class NonEmptyTest extends BatchTestCase {
             + " from [Warehouse and Sales]";
         final SqlPattern pattern = new SqlPattern(
             Dialect.DatabaseProduct.ORACLE,
-            "select \"time_by_day\".\"the_year\" as \"c0\", "
-            + "\"promotion\".\"promotion_name\" as \"c1\" "
-            + "from \"time_by_day\" \"time_by_day\", "
-            + "\"sales_fact_1997\" \"sales_fact_1997\", "
-            + "\"promotion\" \"promotion\", "
-            + "\"customer\" \"customer\" "
-            + "where \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\" "
-            + "and \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\" "
-            + "and \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\" "
-            + "and (\"customer\".\"gender\" in ('F', 'M')) "
-            + "and (\"time_by_day\".\"the_year\" = 1997) "
-            + "and (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings')) "
-            + "group by \"time_by_day\".\"the_year\", \"promotion\".\"promotion_name\" "
-            + "order by 1 ASC, 2 ASC",
+            "select\n"
+            + "    \"time_by_day\".\"the_year\" as \"c0\",\n"
+            + "    \"promotion\".\"promotion_name\" as \"c1\"\n"
+            + "from\n"
+            + "    \"time_by_day\" \"time_by_day\",\n"
+            + "    \"sales_fact_1997\" \"sales_fact_1997\",\n"
+            + "    \"promotion\" \"promotion\",\n"
+            + "    \"customer\" \"customer\"\n"
+            + "where\n"
+            + "    \"sales_fact_1997\".\"time_id\" = \"time_by_day\".\"time_id\"\n"
+            + "and\n"
+            + "    \"sales_fact_1997\".\"promotion_id\" = \"promotion\".\"promotion_id\"\n"
+            + "and\n"
+            + "    \"sales_fact_1997\".\"customer_id\" = \"customer\".\"customer_id\"\n"
+            + "and\n"
+            + "    (\"customer\".\"gender\" in ('F', 'M'))\n"
+            + "and\n"
+            + "    (\"time_by_day\".\"the_year\" = 1997)\n"
+            + "and\n"
+            + "    (\"promotion\".\"promotion_name\" in ('Bag Stuffers', 'Best Savings'))\n"
+            + "group by\n"
+            + "    \"time_by_day\".\"the_year\",\n"
+            + "    \"promotion\".\"promotion_name\"\n"
+            + "order by\n"
+            + "    \"time_by_day\".\"the_year\" ASC NULLS LAST,\n"
+            + "    \"promotion\".\"promotion_name\" ASC NULLS LAST",
             611);
         assertQuerySql(mdx, new SqlPattern[]{pattern});
     }

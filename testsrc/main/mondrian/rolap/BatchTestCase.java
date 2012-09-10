@@ -943,13 +943,23 @@ public class BatchTestCase extends FoodMartTestCase {
         private final String trigger;
 
         public TriggerHook(String trigger) {
-            this.trigger = trigger;
+            this.trigger =
+                trigger
+                    .replaceAll("\r\n", "")
+                    .replaceAll("\r", "")
+                    .replaceAll("\n", "");
         }
 
         private boolean matchTrigger(String sql) {
             if (trigger == null) {
                 return true;
             }
+            // Cleanup the endlines.
+            sql =
+                sql
+                    .replaceAll("\r\n", "")
+                    .replaceAll("\r", "")
+                    .replaceAll("\n", "");
             // different versions of mysql drivers use different quoting, so
             // ignore quotes
             String s = replaceQuotes(sql);

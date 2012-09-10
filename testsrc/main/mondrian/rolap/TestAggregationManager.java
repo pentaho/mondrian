@@ -330,10 +330,8 @@ public class TestAggregationManager extends BatchTestCase {
         SqlPattern[] patterns;
         String accessMysqlSql, derbySql;
 
-        /*
-         * Note: the following aggregate loading sqls contain no
-         * references to the parent level column "store_country".
-         */
+        // Note: the following aggregate loading sqls contain no
+        // references to the parent level column "store_country".
         if (MondrianProperties.instance().UseAggregates.get()
             && MondrianProperties.instance().ReadAggregates.get())
         {
@@ -1679,6 +1677,192 @@ public class TestAggregationManager extends BatchTestCase {
             props.UseAggregates.set(oldUseAggValue);
             props.ReadAggregates.set(oldReadAggValue);
         }
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1221">MONDRIAN-1221</a>
+     *
+     * When performing a non-empty crossjoin over a virtual cube with agg
+     * tables, there was no match with any agg tables.
+     */
+    public void testVirtualCubeAggBugMondrian1221() {
+        propSaver.set(
+            MondrianProperties.instance().UseAggregates,
+            true);
+        propSaver.set(
+            MondrianProperties.instance().ReadAggregates,
+            true);
+        propSaver.set(
+            propSaver.properties.GenerateFormattedSql,
+            true);
+        final String schema =
+            "<?xml version=\"1.0\"?>\n"
+            + "<Schema name=\"custom\">\n"
+            + "  <Dimension name=\"Store\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "      <Table name=\"store\"/>\n"
+            + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\">\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Time\" type=\"TimeDimension\">\n"
+            + "    <Hierarchy hasAll=\"false\" primaryKey=\"time_id\">\n"
+            + "      <Table name=\"time_by_day\"/>\n"
+            + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+            + "          levelType=\"TimeYears\"/>\n"
+            + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+            + "          levelType=\"TimeQuarters\"/>\n"
+            + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+            + "          levelType=\"TimeMonths\"/>\n"
+            + "    </Hierarchy>\n"
+//            + "    <Hierarchy hasAll=\"true\" name=\"Weekly\" primaryKey=\"time_id\">\n"
+//            + "      <Table name=\"time_by_day\"/>\n"
+//            + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+//            + "          levelType=\"TimeYears\"/>\n"
+//            + "      <Level name=\"Week\" column=\"week_of_year\" type=\"Numeric\" uniqueMembers=\"false\"\n"
+//            + "          levelType=\"TimeWeeks\"/>\n"
+//            + "      <Level name=\"Day\" column=\"day_of_month\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+//            + "          levelType=\"TimeDays\"/>\n"
+//            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Cube name=\"Sales1\" defaultMeasure=\"Unit Sales\">\n"
+            + "    <Table name=\"sales_fact_1997\">\n"
+            + "      <AggName name=\"agg_c_special_sales_fact_1997\">\n"
+            + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
+            + "        <AggIgnoreColumn column=\"foo\"/>\n"
+            + "        <AggIgnoreColumn column=\"bar\"/>\n"
+            + "        <AggIgnoreColumn column=\"PRODUCT_ID\" />\n"
+            + "        <AggIgnoreColumn column=\"CUSTOMER_ID\" />\n"
+            + "        <AggIgnoreColumn column=\"PROMOTION_ID\" />\n"
+            + "        <AggForeignKey factColumn=\"store_id\" aggColumn=\"STORE_ID\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"UNIT_SALES_SUM\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Store Cost]\" column=\"STORE_COST_SUM\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Store Sales]\" column=\"STORE_SALES_SUM\" />\n"
+            + "        <AggLevel name=\"[Time].[Year]\" column=\"TIME_YEAR\" />\n"
+            + "        <AggLevel name=\"[Time].[Quarter]\" column=\"TIME_QUARTER\" />\n"
+            + "        <AggLevel name=\"[Time].[Month]\" column=\"TIME_MONTH\" />\n"
+            + "      </AggName>\n"
+            + "    </Table>\n"
+            + "    <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
+            + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "    <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "    <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "    <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "  </Cube>\n"
+            + "  <Cube name=\"Sales2\" defaultMeasure=\"Unit Sales\">\n"
+            + "    <Table name=\"sales_fact_1997\">\n"
+            + "      <AggName name=\"agg_c_special_sales_fact_1997\">\n"
+            + "        <AggFactCount column=\"FACT_COUNT\"/>\n"
+            + "        <AggIgnoreColumn column=\"foo\"/>\n"
+            + "        <AggIgnoreColumn column=\"bar\"/>\n"
+            + "        <AggIgnoreColumn column=\"PRODUCT_ID\" />\n"
+            + "        <AggIgnoreColumn column=\"CUSTOMER_ID\" />\n"
+            + "        <AggIgnoreColumn column=\"PROMOTION_ID\" />\n"
+            + "        <AggForeignKey factColumn=\"store_id\" aggColumn=\"STORE_ID\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Unit Sales]\" column=\"UNIT_SALES_SUM\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Store Cost]\" column=\"STORE_COST_SUM\" />\n"
+            + "        <AggMeasure name=\"[Measures].[Store Sales]\" column=\"STORE_SALES_SUM\" />\n"
+            + "        <AggLevel name=\"[Time].[Year]\" column=\"TIME_YEAR\" />\n"
+            + "        <AggLevel name=\"[Time].[Quarter]\" column=\"TIME_QUARTER\" />\n"
+            + "        <AggLevel name=\"[Time].[Month]\" column=\"TIME_MONTH\" />\n"
+            + "      </AggName>\n"
+            + "    </Table>\n"
+            + "    <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
+            + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "    <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "    <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "    <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "  </Cube>\n"
+            + "  <VirtualCube name=\"SuperSales\" defaultMeasure=\"Unit Sales\">\n"
+            + "    <VirtualCubeDimension cubeName=\"Sales1\" name=\"Store\"/>\n"
+            + " <VirtualCubeDimension cubeName=\"Sales1\" name=\"Time\"/>\n"
+            + "    <VirtualCubeMeasure cubeName=\"Sales2\" name=\"[Measures].[Unit Sales]\"/>\n"
+            + " <VirtualCubeMeasure cubeName=\"Sales2\" name=\"[Measures].[Store Cost]\"/>\n"
+            + " <VirtualCubeMeasure cubeName=\"Sales2\" name=\"[Measures].[Store Sales]\"/>\n"
+            + "  </VirtualCube>\n"
+            + "</Schema>\n";
+
+        final String mdx =
+            "select {NonEmptyCrossJoin([Time].[Month].Members, [Store].[Store Country].Members)} on rows,"
+            + "{[Measures].[Unit Sales]} on columns "
+            + "from [SuperSales]";
+
+        final String sqlMysql =
+            "select \n"
+            + "    `agg_c_14_sales_fact_1997`.`the_year` as `c0`, \n"
+            + "    `agg_c_14_sales_fact_1997`.`quarter` as `c1`, \n"
+            + "    `agg_c_14_sales_fact_1997`.`month_of_year` as `c2`, \n"
+            + "    `store`.`store_country` as `c3`\n"
+            + "from \n"
+            + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`, \n"
+            + "    `store` as `store`\n"
+            + "where \n"
+            + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+            + "group by \n"
+            + "    `agg_c_14_sales_fact_1997`.`the_year`, \n"
+            + "    `agg_c_14_sales_fact_1997`.`quarter`, \n"
+            + "    `agg_c_14_sales_fact_1997`.`month_of_year`, \n"
+            + "    `store`.`store_country`\n"
+            + "order by \n"
+            + "    ISNULL(`agg_c_14_sales_fact_1997`.`the_year`), `agg_c_14_sales_fact_1997`.`the_year` ASC, \n"
+            + "    ISNULL(`agg_c_14_sales_fact_1997`.`quarter`), `agg_c_14_sales_fact_1997`.`quarter` ASC, \n"
+            + "    ISNULL(`agg_c_14_sales_fact_1997`.`month_of_year`), `agg_c_14_sales_fact_1997`.`month_of_year` ASC\n";
+
+        final TestContext context =
+                TestContext.create(schema);
+
+        assertQuerySqlOrNot(
+            context,
+            mdx,
+            new SqlPattern[] {
+                new SqlPattern(
+                    Dialect.DatabaseProduct.MYSQL,
+                    sqlMysql,
+                    sqlMysql.length())
+            },
+            false, false, true);
+
+        context.assertQueryReturns(
+            mdx,
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Time].[1997].[Q1].[1], [Store].[USA]}\n"
+            + "{[Time].[1997].[Q1].[2], [Store].[USA]}\n"
+            + "{[Time].[1997].[Q1].[3], [Store].[USA]}\n"
+            + "{[Time].[1997].[Q2].[4], [Store].[USA]}\n"
+            + "{[Time].[1997].[Q2].[5], [Store].[USA]}\n"
+            + "{[Time].[1997].[Q2].[6], [Store].[USA]}\n"
+            + "{[Time].[1997].[Q3].[7], [Store].[USA]}\n"
+            + "{[Time].[1997].[Q3].[8], [Store].[USA]}\n"
+            + "{[Time].[1997].[Q3].[9], [Store].[USA]}\n"
+            + "{[Time].[1997].[Q4].[10], [Store].[USA]}\n"
+            + "{[Time].[1997].[Q4].[11], [Store].[USA]}\n"
+            + "{[Time].[1997].[Q4].[12], [Store].[USA]}\n"
+            + "Row #0: 21,628\n"
+            + "Row #1: 20,957\n"
+            + "Row #2: 23,706\n"
+            + "Row #3: 20,179\n"
+            + "Row #4: 21,081\n"
+            + "Row #5: 21,350\n"
+            + "Row #6: 23,763\n"
+            + "Row #7: 21,697\n"
+            + "Row #8: 20,388\n"
+            + "Row #9: 19,958\n"
+            + "Row #10: 25,270\n"
+            + "Row #11: 26,796\n");
     }
 }
 

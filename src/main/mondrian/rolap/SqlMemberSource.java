@@ -584,7 +584,10 @@ RME is this right
 
         boolean levelCollapsed =
             (aggStar != null)
-            && isLevelCollapsed(aggStar, (RolapCubeLevel)level);
+            && isLevelCollapsed(
+                aggStar,
+                (RolapCubeLevel)level,
+                ((RolapCubeLevel)level).getCube());
 
         boolean multipleCols =
             SqlMemberSource.levelContainsMultipleColumns(level);
@@ -799,13 +802,14 @@ RME is this right
      */
     public static boolean isLevelCollapsed(
             AggStar aggStar,
-            RolapCubeLevel level)
+            RolapCubeLevel level,
+            RolapCube baseCube)
     {
         boolean levelCollapsed = false;
         if (level.isAll()) {
             return levelCollapsed;
         }
-        RolapStar.Column starColumn = level.getStarKeyColumn();
+        RolapStar.Column starColumn = level.getBaseStarKeyColumn(baseCube);
         int bitPos = starColumn.getBitPosition();
         AggStar.Table.Column aggColumn = aggStar.lookupColumn(bitPos);
         if (aggColumn.getTable() instanceof AggStar.FactTable) {
