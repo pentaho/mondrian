@@ -1121,7 +1121,6 @@ public class SqlTupleReader implements TupleReader {
 
             if (whichSelect == WhichSelect.ONLY) {
                 sqlQuery.addOrderBy(ordinalSql, true, false, true);
-                break;
             }
 
             RolapProperty[] properties = currLevel.getProperties();
