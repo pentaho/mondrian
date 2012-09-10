@@ -1036,7 +1036,9 @@ public class SqlTupleReader implements TupleReader {
                 String q = aggColumn.generateExprString(sqlQuery);
                 sqlQuery.addSelectGroupBy(q);
                 sqlQuery.addType(starColumn.getInternalType());
-                sqlQuery.addOrderBy(q, true, false, true);
+                if (whichSelect == WhichSelect.ONLY) {
+                    sqlQuery.addOrderBy(q, true, false, true);
+                }
                 aggColumn.getTable().addToFrom(sqlQuery, false, true);
                 continue;
             }
