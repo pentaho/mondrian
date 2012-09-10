@@ -23,7 +23,6 @@ import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 import mondrian.server.Locus;
 import mondrian.server.monitor.SqlStatementEvent;
-import mondrian.spi.Dialect;
 import mondrian.util.Pair;
 
 import org.apache.log4j.Logger;
@@ -88,7 +87,7 @@ public class SqlTupleReader implements TupleReader {
      * manage to load any more members.
      */
     private int missedMemberCount;
-    private static final String UNION = " union ";
+    private static final String UNION = "union";
 
     /**
      * Helper class for SqlTupleReader;
@@ -715,13 +714,14 @@ public class SqlTupleReader implements TupleReader {
             }
             // generate sub-selects, each one joining with one of
             // the fact table referenced
-            int k = -1;
             String prependString = "";
             final StringBuilder selectString = new StringBuilder();
             List<SqlStatement.Type> types = null;
 
             final int savepoint =
                 getEvaluator(constraint).savepoint();
+
+            SqlQuery unionQuery = SqlQuery.newQuery(dataSource, "");
 
             try {
                 for (RolapCube baseCube : fullyJoiningBaseCubes) {
@@ -753,27 +753,65 @@ public class SqlTupleReader implements TupleReader {
                             baseCube.getMeasures().get(0);
                     }
 
+                    // Force the constraint evaluator's measure
+                    // to the one in the base cube.
                     getEvaluator(constraint)
                         .setContext(measureInCurrentbaseCube);
 
-                    WhichSelect whichSelect =
-                            (++k == fullyJoiningBaseCubes.size() - 1)
-                            ? WhichSelect.LAST : WhichSelect.NOT_LAST;
                     selectString.append(prependString);
+
+                    // Generate the select statement for the current base cube.
+                    // Make sure to pass WhichSelect.NOT_LAST if there are more
+                    // than one base cube and it isn't the last one so that
+                    // the order by clause is not added to unionized queries
+                    // (that would be illegal SQL)
                     final Pair<String, List<SqlStatement.Type>> pair =
                         generateSelectForLevels(
-                            dataSource, baseCube, whichSelect);
+                            dataSource, baseCube,
+                            fullyJoiningBaseCubes.size() == 1
+                                ? WhichSelect.ONLY
+                                : WhichSelect.NOT_LAST);
                     selectString.append(pair.left);
                     types = pair.right;
-                    prependString = UNION;
+                    prependString =
+                        MondrianProperties.instance().GenerateFormattedSql.get()
+                            ? Util.nl + UNION + Util.nl
+                            : " " + UNION + " ";
                 }
             } finally {
                 // Restore the original measure member
                 getEvaluator(constraint).restore(savepoint);
             }
 
-            return Pair.of(selectString.toString(), types);
+            if (fullyJoiningBaseCubes.size() == 1) {
+                // Because there is only one virtual cube to
+                // join on, we can swap the union query by
+                // the original one.
+                return Pair.of(selectString.toString(), types);
+            } else {
+                // Add the subquery to the wrapper query.
+                unionQuery.addFromQuery(
+                    selectString.toString(), "unionQuery", true);
+
+                // Dont forget to select all columns.
+                unionQuery.addSelect("*", null, null);
+
+                // Sort the union of the cubes.
+                // The order by columns need to be numbers,
+                // not column name strings or expressions.
+                if (fullyJoiningBaseCubes.size() > 1) {
+                    for (int i = 0; i < types.size(); i++) {
+                        unionQuery.addOrderBy(
+                            i + 1 + "",
+                            true, false, true);
+                    }
+                }
+                return Pair.of(unionQuery.toSqlAndTypes().left, types);
+            }
+
         } else {
+            // This is the standard code path with regular single-fact table
+            // cubes.
             return generateSelectForLevels(
                 dataSource, cube, WhichSelect.ONLY);
         }
@@ -842,7 +880,7 @@ public class SqlTupleReader implements TupleReader {
 
 
         Evaluator evaluator = getEvaluator(constraint);
-        AggStar aggStar = chooseAggStar(constraint, evaluator);
+        AggStar aggStar = chooseAggStar(constraint, evaluator, baseCube);
 
         // add the selects for all levels to fetch
         for (TargetBase target : targets) {
@@ -1089,33 +1127,7 @@ public class SqlTupleReader implements TupleReader {
                 sqlQuery.addWhere(condition.toString(sqlQuery));
             }
 
-            // If this is a select on a virtual cube, the query will be
-            // a union, so the order by columns need to be numbers,
-            // not column name strings or expressions.
-            switch (whichSelect) {
-            case LAST:
-                boolean nullable = true;
-                final Dialect dialect = sqlQuery.getDialect();
-                if (dialect.requiresUnionOrderByExprToBeInSelectClause()
-                    || dialect.requiresUnionOrderByOrdinal())
-                {
-                    // If the expression is nullable and the dialect
-                    // sorts NULL values first, the dialect will try to
-                    // add an expression 'Iif(expr IS NULL, 1, 0)' into
-                    // the ORDER BY clause, and that is not allowed by this
-                    // dialect. So, pretend that the expression is not
-                    // nullable. NULL values, if present, will be sorted
-                    // wrong, but that's better than generating an invalid
-                    // query.
-                    nullable = false;
-                }
-                sqlQuery.addOrderBy(
-                    Integer.toString(
-                        sqlQuery.getCurrentSelectListSize()),
-                    true, false, nullable);
-
-                break;
-            case ONLY:
+            if (whichSelect == WhichSelect.ONLY) {
                 sqlQuery.addOrderBy(ordinalSql, true, false, true);
                 break;
             }
@@ -1181,8 +1193,14 @@ public class SqlTupleReader implements TupleReader {
      * @param constraint
      * @param evaluator the current evaluator to obtain the cube and members to
      *        be queried  @return AggStar for aggregate table
+     * @param baseCube The base cube from which to choose an aggregation star.
+     *        Can be null, in which case we use the evaluator's cube.
      */
-    AggStar chooseAggStar(TupleConstraint constraint, Evaluator evaluator) {
+    AggStar chooseAggStar(
+        TupleConstraint constraint,
+        Evaluator evaluator,
+        RolapCube baseCube)
+    {
         if (!MondrianProperties.instance().UseAggregates.get()) {
             return null;
         }
@@ -1191,13 +1209,16 @@ public class SqlTupleReader implements TupleReader {
             return null;
         }
 
+        if (baseCube == null) {
+            baseCube = (RolapCube) evaluator.getCube();
+        }
+
         // Current cannot support aggregate tables for virtual cubes
-        RolapCube cube = (RolapCube) evaluator.getCube();
-        if (cube.isVirtual()) {
+        if (baseCube.isVirtual()) {
             return null;
         }
 
-        RolapStar star = cube.getStar();
+        RolapStar star = baseCube.getStar();
         final int starColumnCount = star.getColumnCount();
         BitKey measureBitKey = BitKey.Factory.makeBitKey(starColumnCount);
         BitKey levelBitKey = BitKey.Factory.makeBitKey(starColumnCount);
@@ -1237,7 +1258,7 @@ public class SqlTupleReader implements TupleReader {
             RolapLevel level = target.level;
             if (!level.isAll()) {
                 RolapStar.Column column =
-                    ((RolapCubeLevel)level).getStarKeyColumn();
+                    ((RolapCubeLevel)level).getBaseStarKeyColumn(baseCube);
                 if (column != null) {
                     levelBitKey.set(column.getBitPosition());
                 }
@@ -1261,7 +1282,8 @@ public class SqlTupleReader implements TupleReader {
                     final RolapLevel level = arg.getLevel();
                     if (level != null && !level.isAll()) {
                         RolapStar.Column column =
-                            ((RolapCubeLevel)level).getStarKeyColumn();
+                            ((RolapCubeLevel)level)
+                                .getBaseStarKeyColumn(baseCube);
                         levelBitKey.set(column.getBitPosition());
                     }
                 }
@@ -1269,10 +1291,7 @@ public class SqlTupleReader implements TupleReader {
         }
 
         // find the aggstar using the masks
-        final AggregationManager aggMgr =
-            cube.getSchema().getInternalConnection().getServer()
-                .getAggregationManager();
-        return aggMgr.findAgg(
+        return AggregationManager.findAgg(
             star, levelBitKey, measureBitKey, new boolean[] {false});
     }
 
