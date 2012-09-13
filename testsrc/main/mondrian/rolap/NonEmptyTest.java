@@ -4824,28 +4824,108 @@ public class NonEmptyTest extends BatchTestCase {
     * another NamedSet"</a>.
     */
     public void testBugMondrian897DoubleNamedSetDefinitions() {
-       TestContext ctx = getTestContext();
-       ctx.assertQueryReturns(
-           "WITH SET [CustomerSet] as {[Customers].[Canada].[BC].[Burnaby].[Alexandra Wellington], [Customers].[USA].[WA].[Tacoma].[Eric Coleman]} "
-           + "SET [InterestingCustomers] as [CustomerSet] "
-           + "SET [TimeRange] as {[Time].[1998].[Q1], [Time].[1998].[Q2]} "
-           + "SELECT {[Measures].[Store Sales]} ON COLUMNS, "
-           + "CrossJoin([InterestingCustomers], [TimeRange]) ON ROWS "
-           + "FROM [Sales]",
-           "Axis #0:\n"
-           + "{}\n"
-           + "Axis #1:\n"
-           + "{[Measures].[Store Sales]}\n"
-           + "Axis #2:\n"
-           + "{[Customers].[Canada].[BC].[Burnaby].[Alexandra Wellington], [Time].[1998].[Q1]}\n"
-           + "{[Customers].[Canada].[BC].[Burnaby].[Alexandra Wellington], [Time].[1998].[Q2]}\n"
-           + "{[Customers].[USA].[WA].[Tacoma].[Eric Coleman], [Time].[1998].[Q1]}\n"
-           + "{[Customers].[USA].[WA].[Tacoma].[Eric Coleman], [Time].[1998].[Q2]}\n"
-           + "Row #0: \n"
-           + "Row #1: \n"
-           + "Row #2: \n"
-           + "Row #3: \n");
-   }
+        TestContext ctx = getTestContext();
+        ctx.assertQueryReturns(
+            "WITH SET [CustomerSet] as {[Customers].[Canada].[BC].[Burnaby].[Alexandra Wellington], [Customers].[USA].[WA].[Tacoma].[Eric Coleman]} "
+            + "SET [InterestingCustomers] as [CustomerSet] "
+            + "SET [TimeRange] as {[Time].[1998].[Q1], [Time].[1998].[Q2]} "
+            + "SELECT {[Measures].[Store Sales]} ON COLUMNS, "
+            + "CrossJoin([InterestingCustomers], [TimeRange]) ON ROWS "
+            + "FROM [Sales]",
+            "Axis #0:\n"
+            + "{}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Store Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Customers].[Canada].[BC].[Burnaby].[Alexandra Wellington], [Time].[1998].[Q1]}\n"
+            + "{[Customers].[Canada].[BC].[Burnaby].[Alexandra Wellington], [Time].[1998].[Q2]}\n"
+            + "{[Customers].[USA].[WA].[Tacoma].[Eric Coleman], [Time].[1998].[Q1]}\n"
+            + "{[Customers].[USA].[WA].[Tacoma].[Eric Coleman], [Time].[1998].[Q2]}\n"
+            + "Row #0: \n"
+            + "Row #1: \n"
+            + "Row #2: \n"
+            + "Row #3: \n");
+    }
+
+    /**
+     * Test case for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1133">MONDRIAN-1133</a>
+     *
+     * <p>RolapNativeFilter would force the join to the fact table.
+     * Some queries don't need to be joined to it and gain in performance.
+     */
+    public void testMondrian1133() {
+        propSaver.set(
+            propSaver.properties.GenerateFormattedSql,
+            true);
+        final String schema =
+            "<?xml version=\"1.0\"?>\n"
+            + "<Schema name=\"custom\">\n"
+            + "  <Dimension name=\"Store\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"store_id\">\n"
+            + "      <Table name=\"store\"/>\n"
+            + "      <Level name=\"Store Country\" column=\"store_country\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Store State\" column=\"store_state\" uniqueMembers=\"true\"/>\n"
+            + "      <Level name=\"Store City\" column=\"store_city\" uniqueMembers=\"false\"/>\n"
+            + "      <Level name=\"Store Name\" column=\"store_name\" uniqueMembers=\"true\">\n"
+            + "      </Level>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Dimension name=\"Time\" type=\"TimeDimension\">\n"
+            + "    <Hierarchy hasAll=\"true\" primaryKey=\"time_id\">\n"
+            + "      <Table name=\"time_by_day\"/>\n"
+            + "      <Level name=\"Year\" column=\"the_year\" type=\"Numeric\" uniqueMembers=\"true\"\n"
+            + "          levelType=\"TimeYears\"/>\n"
+            + "      <Level name=\"Quarter\" column=\"quarter\" uniqueMembers=\"false\"\n"
+            + "          levelType=\"TimeQuarters\"/>\n"
+            + "      <Level name=\"Month\" column=\"month_of_year\" uniqueMembers=\"false\" type=\"Numeric\"\n"
+            + "          levelType=\"TimeMonths\"/>\n"
+            + "    </Hierarchy>\n"
+            + "  </Dimension>\n"
+            + "  <Cube name=\"Sales1\" defaultMeasure=\"Unit Sales\">\n"
+            + "    <Table name=\"sales_fact_1997\">\n"
+            + "    </Table>\n"
+            + "    <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
+            + "    <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+            + "    <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"Standard\"/>\n"
+            + "    <Measure name=\"Store Cost\" column=\"store_cost\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "    <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
+            + "      formatString=\"#,###.00\"/>\n"
+            + "  </Cube>\n"
+            + "</Schema>\n";
+        String query =
+            "With\n"
+            + "Set [*BASE_MEMBERS_Product] as 'Filter([Store].[Store State].Members,[Store].CurrentMember.Caption Matches (\"(?i).*CA.*\"))'\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Product] on columns\n"
+            + "From [Sales1] \n";
+
+        String sql =
+            "select\n"
+            + "    `store`.`store_country` as `c0`,\n"
+            + "    `store`.`store_state` as `c1`\n"
+            + "from\n"
+            + "    `store` as `store`\n"
+            + "group by\n"
+            + "    `store`.`store_country`,\n"
+            + "    `store`.`store_state`\n"
+            + "having\n"
+            + "    c1 REGEXP '.*CA.*'\n"
+            + "order by\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+
+        SqlPattern[] patterns = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL, sql, sql)
+        };
+
+        final TestContext context =
+            TestContext.instance().withSchema(schema);
+        assertQuerySql(context, query, patterns);
+    }
 }
 
 // End NonEmptyTest.java
