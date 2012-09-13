@@ -12,9 +12,13 @@
 package mondrian.rolap;
 
 import mondrian.olap.*;
+import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import javax.sql.DataSource;
 
 /**
  * Computes a Filter(set, condition) in SQL.
@@ -56,10 +60,20 @@ public class RolapNativeFilter extends RolapNativeSet {
         /**
          * {@inheritDoc}
          *
-         * <p>A FilterConstraint always needs to join the fact table because we
-         * want to evaluate the filter expression against a fact.
+         * <p>A filter must join on the fact table if the
+         * evaluation context contains a member which isn't
+         * the 'all' member, in which case we have to link
+         * to the fact table.
          */
         public boolean isJoinRequired() {
+            final Member[] nonAllMembers =
+                this.getEvaluator().getNonAllMembers();
+            if ((nonAllMembers.length == 1
+                    && nonAllMembers[0].isMeasure())
+                && !super.isJoinRequired())
+            {
+                return false;
+            }
             return true;
         }
 
@@ -84,6 +98,35 @@ public class RolapNativeFilter extends RolapNativeSet {
             if (filterExpr != null) {
                 key.add(filterExpr.toString());
             }
+
+            if (this.getEvaluator() instanceof RolapEvaluator) {
+                key.add(
+                    ((RolapEvaluator)this.getEvaluator())
+                    .getSlicerMembers());
+            }
+
+         // Add restrictions imposed by Role based access filtering
+            SchemaReader schemaReader = this.getEvaluator().getSchemaReader();
+            Member[] mm = this.getEvaluator().getMembers();
+            for (int mIndex = 0; mIndex < mm.length; mIndex++) {
+                if (mm[mIndex] instanceof RolapHierarchy.LimitedRollupMember
+                    || mm[mIndex] instanceof
+                       RestrictedMemberReader.MultiCardinalityDefaultMember)
+                {
+                    List<Level> hierarchyLevels = schemaReader
+                            .getHierarchyLevels(mm[mIndex].getHierarchy());
+                    for (Level affectedLevel : hierarchyLevels) {
+                        List<Member> availableMembers = schemaReader
+                                .getLevelMembers(affectedLevel, false);
+                        for (Member member : availableMembers) {
+                            if (!member.isAll()) {
+                                key.add(member);
+                            }
+                        }
+                    }
+                }
+            }
+
             return key;
         }
     }
@@ -103,11 +146,11 @@ public class RolapNativeFilter extends RolapNativeSet {
         final List<RolapMeasureGroup> measureGroupList =
             new ArrayList<RolapMeasureGroup>();
         if (!SqlContextConstraint.checkValidContext(
-                evaluator,
-                true,
-                Collections.<RolapCubeLevel>emptyList(),
-                restrictMemberTypes(),
-                measureGroupList))
+            evaluator,
+            true,
+            Collections.<RolapCubeLevel>emptyList(),
+            restrictMemberTypes(),
+            measureGroupList))
         {
             return null;
         }
@@ -168,7 +211,6 @@ public class RolapNativeFilter extends RolapNativeSet {
         final int savepoint = evaluator.savepoint();
         try {
             overrideContext(evaluator, cjArgs, sql.getStoredMeasure());
-
             // Now construct the TupleConstraint that contains both the CJ
             // dimensions and the additional filter on them.
             CrossJoinArg[] combinedArgs = cjArgs;
