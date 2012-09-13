@@ -94,7 +94,7 @@ if [ ! -d "$JAVA_HOME" ]; then
     exit 1
 fi
 
-export PATH=$JAVA_HOME/bin:$PATH
+export PATH=$JAVA_HOME/bin:/home/tomcat/.jenkins/tools/ant182/bin/:$PATH
 
 echo Using JAVA_HOME: $JAVA_HOME
 echo Using Ant arguments: -Drequested.java.version="$jdkVersion" $@
