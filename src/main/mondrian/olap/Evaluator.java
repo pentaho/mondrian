@@ -334,6 +334,16 @@ public interface Evaluator {
     RuntimeException newEvalException(Object context, String s);
 
     /**
+     * Returns an evaluator for a set.
+     *
+     * @param exp Expression
+     * @param create Whether to create evaluator if not found
+     * @return Evaluator of named set
+     */
+    SetEvaluator getSetEvaluator(Exp exp, boolean create);
+
+    
+    /**
      * Returns an evaluator for a named set.
      *
      * @param namedSet Named set
@@ -491,6 +501,49 @@ public interface Evaluator {
      * Interface for evaluating a particular named set.
      */
     interface NamedSetEvaluator {
+        /**
+         * Returns an iterator over the tuples of the named set. Applicable if
+         * the named set is a set of tuples.
+         *
+         * <p>The iterator from this iterable maintains the current ordinal
+         * property required for the methods {@link #currentOrdinal()} and
+         * {@link #currentTuple()}.
+         *
+         * @return Iterable over the tuples of the set
+         */
+        TupleIterable evaluateTupleIterable();
+
+        /**
+         * Returns the ordinal of the current member or tuple in the named set.
+         *
+         * @return Ordinal of the current member or tuple in the named set
+         */
+        int currentOrdinal();
+
+        /**
+         * Returns the current member in the named set.
+         *
+         * <p>Applicable if the named set is a set of members.
+         *
+         * @return Current member
+         */
+        Member currentMember();
+
+        /**
+         * Returns the current tuple in the named set.
+         *
+         * <p>Applicable if the named set is a set of tuples.
+         *
+         * @return Current tuple.
+         */
+        Member[] currentTuple();
+    }
+    
+    
+    /**
+     * Interface for generically evaluating a set.
+     */
+    interface SetEvaluator {
         /**
          * Returns an iterator over the tuples of the named set. Applicable if
          * the named set is a set of tuples.

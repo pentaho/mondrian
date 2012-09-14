@@ -22,7 +22,6 @@ import mondrian.util.FilteredIterableList;
 
 import java.util.*;
 import mondrian.calc.TupleIterable;
-import mondrian.mdx.NamedSetExpr;
 import mondrian.mdx.ResolvedFunCall;
 
 /**
@@ -358,25 +357,11 @@ public class SqlConstraintUtils {
         String funName = fun.getFunName();
         if (funName.equalsIgnoreCase("Aggregate")) {
             
-            // What's the best way to do this?
+            // Calling the main set evaluator to extend this.
             
             Exp exp = fun.getArg(0);
-
-            // Either a set or a named set, that can sometimes be wrapped in a CacheFunDef
-            NamedSetExpr namedSet;
-
-            if (exp instanceof NamedSetExpr) {
-                namedSet = (NamedSetExpr) exp;
-            } else if (exp instanceof ResolvedFunCall && ((ResolvedFunCall) exp).getFunName().equalsIgnoreCase("Cache")) {
-                namedSet = (NamedSetExpr) ((ResolvedFunCall) exp).getArg(0);
-            } else {
-                return null;
-            }
-
-            // Resolve it - a named set only has arity 1, so shuold be safely
             
-
-            TupleIterable tupleIterable = evaluator.getNamedSetEvaluator(namedSet.getNamedSet(), true).evaluateTupleIterable();
+            TupleIterable tupleIterable = evaluator.getSetEvaluator(exp, true).evaluateTupleIterable();
             Iterable<Member> iterable = tupleIterable.slice(0);
 
             ArrayList<Member> list = new ArrayList<Member>();
@@ -386,8 +371,7 @@ public class SqlConstraintUtils {
 
             }
             return list;
-
-
+            
 
         }
 
