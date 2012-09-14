@@ -33,14 +33,23 @@ public class DataSourceResolverSchemaKeyProcessor implements SchemaKeyProcessor 
     	 
         String key =
             (keyDs == null)
-            ? makeKey(catalogUrl, connectionKey, jdbcUser, dataSourceStr)
-            : makeKey(catalogUrl, keyDs);
+            ? makeKey(transformCatalog(catalogUrl), connectionKey, jdbcUser, dataSourceStr)
+            : makeKey(transformCatalog(catalogUrl), keyDs);
 
 		
 		return key;
 	}
 
 	
+  private static String transformCatalog(String catalogUrl) {
+    int startOfFileName = catalogUrl.lastIndexOf("/");
+    if (startOfFileName > 0)
+      return catalogUrl.substring(startOfFileName).toLowerCase();
+    return catalogUrl.toLowerCase();        
+  }
+  
+  
+  
     /**
      * Creates a key with which to identify a schema in the cache.
      */
