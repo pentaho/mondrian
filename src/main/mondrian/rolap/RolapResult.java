@@ -932,7 +932,9 @@ public class RolapResult extends ResultBase {
         if (axisOrdinal < 0) {
             RolapAxis axis = (RolapAxis) slicerAxis;
             TupleList tupleList = axis.getTupleList();
-            for (List<Member> members : tupleList) {
+            final Iterator<List<Member>> tupleIterator = tupleList.iterator();
+            if (tupleIterator.hasNext()) {
+                final List<Member> members = tupleIterator.next();
                 execution.checkCancelOrTimeout();
                 final int savepoint = revaluator.savepoint();
                 revaluator.setContext(members);
@@ -1000,11 +1002,9 @@ public class RolapResult extends ResultBase {
                     Util.discard(e);
                 }
 
-                if (o == RolapUtil.valueNotReadyException) {
-                    continue;
+                if (o != RolapUtil.valueNotReadyException) {
+                    ci.value = o;
                 }
-
-                ci.value = o;
             }
         } else {
             RolapAxis axis = (RolapAxis) axes[axisOrdinal];
@@ -1118,15 +1118,17 @@ public class RolapResult extends ResultBase {
         return highCardinality;
     }
 
-    /*
+    /**
      * Distinct counts are aggregated separately from other measures.
      * We need to apply filters to each level in the query.
      *
-     * Replace VisualTotalMember expressions with new expressions
-     * where all leaf level members are included.
+     * <p>Replace VisualTotalMember expressions with new expressions
+     * where all leaf level members are included.</p>
      *
-     * Example:
+     * <p>Example.
      * For MDX query:
+     *
+     * <blockquote><pre>
      * WITH SET [XL_Row_Dim_0] AS
      *         VisualTotals(
      *           Distinct(
@@ -1139,24 +1141,32 @@ public class RolapResult extends ResultBase {
      *              {DrilldownLevel({[Store].[All Stores]})},
      *              [XL_Row_Dim_0])) ON COLUMNS
      *        from [HR]
-     *        where [Measures].[Number of Employees]
+     *        where [Measures].[Number of Employees]</pre></blockquote>
      *
-     * For member [Store].[All Stores]:
+     * <p>For member [Store].[All Stores],
      * we replace aggregate expression
-     *  - Aggregate({[Store].[All Stores].[USA]})
+     *
+     * <blockquote><pre>
+     * Aggregate({[Store].[All Stores].[USA]})
+     * </pre></blockquote>
+     *
      * with
-     *  - Aggregate({[Store].[All Stores].[USA].[CA].[Alameda].[HQ],
+     *
+     * <blockquote><pre>
+     * Aggregate({[Store].[All Stores].[USA].[CA].[Alameda].[HQ],
      *               [Store].[All Stores].[USA].[CA].[Beverly Hills].[Store 6],
      *               [Store].[All Stores].[USA].[CA].[Los Angeles].[Store 7],
      *               [Store].[All Stores].[USA].[CA].[San Diego].[Store 24],
      *               [Store].[All Stores].[USA].[CA].[San Francisco].[Store 14]
      *              })
-     * TODO:
+     * </pre></blockquote>
+     *
+     * <p>TODO:
      * Can be optimized. For that particular query
      * we don't need to go to the lowest level.
      * We can simply replace it with:
-     * - Aggregate({[Store].[All Stores].[USA].[CA]})
-     * Because all children of [Store].[All Stores].[USA].[CA] are included.
+     * <pre>Aggregate({[Store].[All Stores].[USA].[CA]})</pre>
+     * Because all children of [Store].[All Stores].[USA].[CA] are included.</p>
      */
     private List<Member> processDistinctMeasureExpr(
         List<Member> tuple,
@@ -1211,7 +1221,7 @@ public class RolapResult extends ResultBase {
         return modulos.getCellOrdinal(pos);
     }
 
-    /*
+    /**
      * Instantiates the calculator to convert cell coordinates to a cell ordinal
      * and vice versa.
      *
@@ -1373,13 +1383,6 @@ public class RolapResult extends ResultBase {
 
         private void mergeTuple(final TupleCursor cursor) {
             final int arity = cursor.getArity();
-            /*
-            final Member[] members1 = new Member[arity];
-            cursor.currentToArray(members1, 0);
-            if (FunUtil.tupleContainsNullMember(members1)) {
-                return;
-            }
-            */
             for (int i = 0; i < arity; i++) {
                 mergeMember(cursor.member(i));
             }
@@ -1611,40 +1614,6 @@ public class RolapResult extends ResultBase {
         }
     }
 
-    /*
-     * Generate a long ordinal based upon the values of the integers
-     * stored in the cell position array. With this mechanism, the
-     * Cell information can be stored using a long key (rather than
-     * the array integer of positions) thus saving memory. The trick
-     * is to use a 'large number' per axis in order to convert from
-     * position array to long key where the 'large number' is greater
-     * than the number of members in the axis.
-     * The largest 'long' is java.lang.Long.MAX_VALUE which is
-     * 9,223,372,036,854,776,000. The product of the maximum number
-     * of members per axis must be less than this maximum 'long'
-     * value (otherwise one gets hashing collisions).
-     * <p>
-     * For a single axis, the maximum number of members is equal to
-     * the max 'long' number, 9,223,372,036,854,776,000.
-     * <p>
-     * For two axes, the maximum number of members is the square root
-     * of the max 'long' number, 9,223,372,036,854,776,000, which is
-     * slightly bigger than 2,147,483,647 (which is the maximum integer).
-     * <p>
-     * For three axes, the maximum number of members per axis is the
-     * cube root of the max 'long' which is about 2,000,000
-     * <p>
-     * For four axes the forth root is about 50,000.
-     * <p>
-     * For five or more axes, the maximum number of members per axis
-     * based upon the root of the maximum 'long' number,
-     * start getting too small to guarantee that it will be
-     * smaller than the number of members on a given axis and so
-     * we must resort to the Map-base Cell container.
-     */
-
-
-
     /**
      * Synchronized Map from Locale to ValueFormatter. It is expected that
      * there will be only a small number of Locale's.
@@ -1853,10 +1822,41 @@ public class RolapResult extends ResultBase {
         /**
          * Implementations of CellKeyMaker convert the Cell
          * position integer array to a <code>long</code>.
+         *
+         * <p>Generates a long ordinal based upon the values of the integers
+         * stored in the cell position array. With this mechanism, the
+         * Cell information can be stored using a long key (rather than
+         * the array integer of positions) thus saving memory. The trick
+         * is to use a 'large number' per axis in order to convert from
+         * position array to long key where the 'large number' is greater
+         * than the number of members in the axis.
+         * The largest 'long' is java.lang.Long.MAX_VALUE which is
+         * 9,223,372,036,854,776,000. The product of the maximum number
+         * of members per axis must be less than this maximum 'long'
+         * value (otherwise one gets hashing collisions).</p>
+         *
+         * <p>For a single axis, the maximum number of members is equal to
+         * the max 'long' number, 9,223,372,036,854,776,000.
+         *
+         * <p>For two axes, the maximum number of members is the square root
+         * of the max 'long' number, 9,223,372,036,854,776,000, which is
+         * slightly bigger than 2,147,483,647 (which is the maximum integer).
+         *
+         * <p>For three axes, the maximum number of members per axis is the
+         * cube root of the max 'long' which is about 2,000,000.
+         *
+         * <p>For four axes the forth root is about 50,000.
+         *
+         * <p>For five or more axes, the maximum number of members per axis
+         * based upon the root of the maximum 'long' number,
+         * start getting too small to guarantee that it will be
+         * smaller than the number of members on a given axis and so
+         * we must resort to the Map-base Cell container.
          */
         interface CellKeyMaker {
             long generate(int[] pos);
         }
+
         /**
          * For axis of size 0.
          */
@@ -1865,6 +1865,7 @@ public class RolapResult extends ResultBase {
                 return 0;
             }
         }
+
         /**
          * For axis of size 1.
          */
@@ -1873,6 +1874,7 @@ public class RolapResult extends ResultBase {
                 return pos[0];
             }
         }
+
         /**
          * For axis of size 2.
          */
@@ -1883,6 +1885,7 @@ public class RolapResult extends ResultBase {
                 return l;
             }
         }
+
         /**
          * For axis of size 3.
          */
@@ -1894,6 +1897,7 @@ public class RolapResult extends ResultBase {
                 return l;
             }
         }
+
         /**
          * For axis of size 4.
          */
