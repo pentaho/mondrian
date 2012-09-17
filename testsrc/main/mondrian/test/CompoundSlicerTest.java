@@ -1024,10 +1024,39 @@ public class CompoundSlicerTest extends FoodMartTestCase {
     
      /**
      * Test case for the support of native top count with aggregated measures 
-     * using the most complex format I can think of, slightly different results
+     * using the most complex format I can think of, slightly different results.
+     * We'll execute 2 queries to make sure Time.x is not member of the cache key
      */ 
     
-    public void testTopCountWithAggregatedMember6() {
+    public void testTopCountWithAggregatedMemberCacheKey() {
+
+        
+        assertQueryReturns(
+                "with "
+                + "member Time.x as Aggregate({[Time].[1997].[Q1] , [Time].[1997].[Q2]},[Measures].[Store Sales]) "
+                + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
+                + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
+                + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
+                + " SELECT NON EMPTY products ON 1, "
+                + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
+                + "FROM [Sales] where Time.x",
+                "Axis #0:\n"
+                + "{[Time].[x]}\n"
+                + "Axis #1:\n"
+                + "{[Measures].[Store Sales]}\n"
+                + "{[Measures].[x1]}\n"
+                + "{[Measures].[x2]}\n"
+                + "Axis #2:\n"
+                + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
+                + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
+                + "Row #0: 497.42\n"
+                + "Row #0: 235.62\n"
+                + "Row #0: 261.80\n"
+                + "Row #1: 462.84\n"
+                + "Row #1: 226.20\n"
+                + "Row #1: 236.64\n");
+
+
         assertQueryReturns(
                 "with\n"
                 + "member Time.x as Aggregate(Union({[Time].[1997].[Q4]},[Time].[1997].[Q1] : [Time].[1997].[Q2]),[Measures].[Store Sales]) \n"
@@ -1055,39 +1084,36 @@ public class CompoundSlicerTest extends FoodMartTestCase {
                 + "Row #1: 261.80\n");
     }
 
-    
-        /**
-     * Test case for me to undestand what's happening...
+
+     /**
+     * Now that some native evaluation is supporting aggregated members, we 
+     * need to push that logic down to the AggStar selection
      */ 
     
-    public void testTopCountWithAggregatedMemberTest() {
+    public void testTopCountWithAggregatedMemberAggStar() {
+
+       
         assertQueryReturns(
-                "with set a as 'Union({[Time].[1997].[Q1]}, {[Time].[1997].[Q2]})' "
-                + "member Time.x as Aggregate(a,[Measures].[Store Sales]) "
-                + "member Measures.x1 as ([Time].[1997].[Q1],[Measures].[Store Sales]) "
-                + "member Measures.x2 as ([Time].[1997].[Q2],[Measures].[Store Sales]) "
-                + " set products as TopCount(Product.[Product Name].Members,2,Measures.[Store Sales])"
-                + " SELECT NON EMPTY products ON 1, "
-                + "NON EMPTY {[Measures].[Store Sales], Measures.x1, Measures.x2} ON 0 "
-                + " FROM [Sales] where Time.x",
+                "with member [Time.Weekly].x as Aggregate([Time.Weekly].[1997].Children) "
+                + "set products as "
+                + "'TopCount([Product].[Product Department].Members, 2, "
+                + "[Measures].[Store Sales])' "
+                + "select NON EMPTY {[Measures].[Store Sales]} ON COLUMNS, "
+                + "NON EMPTY [products] ON ROWS "
+                + " from [Sales] where [Time.Weekly].[x]",
                 "Axis #0:\n"
-                + "{[Time].[x]}\n"
+                + "{[Time].[Weekly].[x]}\n"
                 + "Axis #1:\n"
                 + "{[Measures].[Store Sales]}\n"
-                + "{[Measures].[x1]}\n"
-                + "{[Measures].[x2]}\n"
                 + "Axis #2:\n"
-                + "{[Product].[Food].[Eggs].[Eggs].[Eggs].[Urban].[Urban Small Eggs]}\n"
-                + "{[Product].[Food].[Snack Foods].[Snack Foods].[Dried Fruit].[Fort West].[Fort West Raspberry Fruit Roll]}\n"
-                + "Row #0: 497.42\n"
-                + "Row #0: 235.62\n"
-                + "Row #0: 261.80\n"
-                + "Row #1: 462.84\n"
-                + "Row #1: 226.20\n"
-                + "Row #1: 236.64\n");
+                + "{[Product].[Food].[Produce]}\n"
+                + "{[Product].[Food].[Snack Foods]}\n"
+                + "Row #0: 82,248.42\n"
+                + "Row #1: 67,609.82\n");
+
+
     }
 
-    
     
 
     /**

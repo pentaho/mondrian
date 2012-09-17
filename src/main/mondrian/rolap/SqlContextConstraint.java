@@ -207,11 +207,20 @@ public class SqlContextConstraint
         cacheKey = new ArrayList<Object>();
         cacheKey.add(getClass());
         cacheKey.add(strict);
-        cacheKey.addAll(
+        
+        List<Member> members = new ArrayList<Member>();
+        List<Member> expandedMembers = new ArrayList<Member>();
+        
+        members.addAll(
             Arrays.asList(
                 SqlConstraintUtils.removeMultiPositionSlicerMembers(
                     evaluator.getMembers(), evaluator)));
 
+        // Now we'll need to expand the aggregated members
+            
+        cacheKey.add(SqlConstraintUtils.expandSupportedCalculatedMembers(members, evaluator));
+        
+        
         // For virtual cubes, context constraint should be evaluated in the
         // query's context, because the query might reference different base
         // cubes.

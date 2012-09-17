@@ -289,14 +289,14 @@ public class SqlConstraintUtils {
     }
 
     
-    private static Member[] expandSupportedCalculatedMembers(List<Member> listOfMembers, Evaluator evaluator) {
+    public static Member[] expandSupportedCalculatedMembers(List<Member> listOfMembers, Evaluator evaluator) {
         
         return expandSupportedCalculatedMembers(listOfMembers.toArray(new Member[listOfMembers.size()]), evaluator);
         
     }
 
     
-    protected static Member[] expandSupportedCalculatedMembers(Member[] members, Evaluator evaluator){
+    public static Member[] expandSupportedCalculatedMembers(Member[] members, Evaluator evaluator){
     
         ArrayList<Member> listOfMembers = new ArrayList<Member>();
         
