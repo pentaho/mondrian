@@ -12,6 +12,7 @@
 package mondrian.rolap.agg;
 
 import mondrian.calc.TupleList;
+import mondrian.calc.impl.ArrayTupleList;
 import mondrian.calc.impl.UnaryTupleList;
 import mondrian.olap.*;
 import mondrian.olap.fun.AggregateFunDef;
@@ -1437,6 +1438,58 @@ public class AggregationOnDistinctCountMeasuresTest extends BatchTestCase {
                     + "Row #0: 2,865\n"
                     + "Row #0: 1,037\n"
                     + "Row #0: 1,828\n");
+    }
+
+    /**
+     * This is a test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1125">MONDRIAN-1225</a>
+     *
+     * <p>The optimization routine for tuple lists was implementing a single
+     * side of an IF conditional, which resulted in an NPE.
+     */
+    public void testTupleOptimizationBug1225() {
+        Member caMember =
+            member(
+                Id.Segment.toList(
+                    "Store", "All Stores", "USA", "CA"),
+                salesCubeSchemaReader);
+        Member orMember =
+            member(
+                Id.Segment.toList(
+                    "Store", "All Stores", "USA", "OR"),
+                salesCubeSchemaReader);
+        Member waMember =
+            member(
+                Id.Segment.toList(
+                    "Store", "All Stores", "USA", "WA"),
+                salesCubeSchemaReader);
+        Member femaleMember =
+            member(
+                Id.Segment.toList("Gender", "All Gender", "F"),
+                salesCubeSchemaReader);
+        Member [] tupleMembersArity1 =
+            new Member[] {
+                caMember,
+                allMember("Gender", salesCube)};
+        Member [] tupleMembersArity2 =
+            new Member[] {
+                orMember,
+                allMember("Gender", salesCube)};
+        Member [] tupleMembersArity3 =
+            new Member[] {
+                waMember,
+                femaleMember};
+
+        TupleList tl = new ArrayTupleList(2);
+        tl.add(Arrays.asList(tupleMembersArity1));
+        tl.add(Arrays.asList(tupleMembersArity2));
+        tl.add(Arrays.asList(tupleMembersArity3));
+
+        TupleList optimized =
+            optimizeChildren(tl);
+        assertEquals(
+            "[[[Store].[USA], [Gender].[All Gender]], [[Store].[USA], [Gender].[F]]]",
+            optimized.toString());
     }
 
     private boolean tuppleListContains(

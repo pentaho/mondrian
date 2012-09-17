@@ -361,6 +361,10 @@ public class AggregateFunDef extends AbstractAggregateFunDef {
                     if (sets[i].size() != originalSize) {
                         optimized = true;
                     }
+                } else {
+                    sets[i] =
+                        new LinkedHashSet<Member>(
+                            membersOccurencesInTuple[i].keySet());
                 }
             }
             if (optimized) {

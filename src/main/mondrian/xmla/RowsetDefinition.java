@@ -2160,7 +2160,7 @@ public enum RowsetDefinition {
             throws XmlaException, SQLException
         {
             for (Catalog catalog
-                : catIter(connection, catalogNameCond, catNameCond()))
+                : catIter(connection, catNameCond(), catalogNameCond))
             {
                 for (Schema schema : catalog.getSchemas()) {
                     Row row = new Row();
@@ -2339,7 +2339,7 @@ public enum RowsetDefinition {
             throws XmlaException, OlapException
         {
             for (Catalog catalog
-                : catIter(connection, tableCatalogCond, catNameCond()))
+                : catIter(connection, catNameCond(), tableCatalogCond))
             {
                 // By definition, mondrian catalogs have only one
                 // schema. It is safe to use get(0)

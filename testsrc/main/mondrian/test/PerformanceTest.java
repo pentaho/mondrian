@@ -10,11 +10,14 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.olap.type.*;
+import mondrian.spi.UserDefinedFunction;
 import mondrian.util.Bug;
 
 import org.apache.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Various unit tests concerned with performance.
@@ -556,6 +559,55 @@ public class PerformanceTest extends FoodMartTestCase {
     }
 
     /**
+     * Test for
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1242">MONDRIAN-1242,
+     * "Slicer size is exponentially inflating the cell requests"</a>. This
+     * case just checks correctness; a similar case in {@link PerformanceTest}
+     * checks performance.
+     */
+    public void testBugMondrian1242() {
+        final TestContext testContext = getTestContext().create(
+            null, null, null, null,
+            "<UserDefinedFunction name=\"StringMult\" className=\""
+                + CounterUdf.class.getName()
+                + "\"/>\n",
+            null);
+
+        // original test case for MONDRIAN-1242; ensures correct result
+        testContext.assertQueryReturns(
+            "select {[Measures].[Unit Sales]} on COLUMNS, \n"
+            + "[Store].[USA].[CA].Children on ROWS \n"
+            + "from [Sales] \n"
+            + "where ([Time.Weekly].[All Time.Weeklys].[1997].[2].[1] "
+            + ": [Time.Weekly].[All Time.Weeklys].[1997].[2].[21])",
+            "Axis #0:\n"
+            + "{[Time].[1997].[Q1].[1]}\n"
+            + "{[Time].[1997].[Q1].[2]}\n"
+            + "Axis #1:\n"
+            + "{[Measures].[Unit Sales]}\n"
+            + "Axis #2:\n"
+            + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Francisco]}\n"
+            + "Row #0: 4,490\n"
+            + "Row #1: 289\n");
+        CounterUdf.count.set(0);
+        Result result = testContext.executeQuery(
+            "with member [Measures].[Foo] as CounterUdf()\n"
+            + "select {[Measures].[Foo]} on COLUMNS,\n"
+            + "[Gender].Children on ROWS\n"
+            + "from [Sales]\n"
+            + "where ([Customers].[USA].[CA].[Altadena].[Alice Cantrell]"
+            + " : [Customers].[USA].[CA].[Altadena].[Alice Cantrell].Lead(7000))");
+        assertEquals(
+            "111,191",
+            result.getCell(new int[] {0, 0}).getFormattedValue());
+
+        // Count is 4 if bug is fixed,
+        // 28004 if bug is not fixed.
+        assertEquals(4, CounterUdf.count.get());
+    }
+
+    /**
      * Collects statistics for a test that is run multiple times.
      */
     static class Statistician {
@@ -614,6 +666,39 @@ public class PerformanceTest extends FoodMartTestCase {
                 + coreDurations.get(0) + " min; "
                 + coreDurations.get(coreDurations.size() - 1) + " max; "
                 + durationsString + " millis");
+        }
+    }
+
+    /** User-defined function that counts how many times it has been invoked. */
+    public static class CounterUdf implements UserDefinedFunction {
+        public static final AtomicInteger count = new AtomicInteger();
+        public String getName() {
+            return "CounterUdf";
+        }
+
+        public String getDescription() {
+            return "Counts the number of times it is called.";
+        }
+
+        public Syntax getSyntax() {
+            return Syntax.Function;
+        }
+
+        public Type getReturnType(Type[] parameterTypes) {
+            return new NumericType();
+        }
+
+        public Type[] getParameterTypes() {
+            return new Type[] {};
+        }
+
+        public Object execute(Evaluator evaluator, Argument[] arguments) {
+            count.incrementAndGet();
+            return evaluator.evaluateCurrent();
+        }
+
+        public String[] getReservedWords() {
+            return null;
         }
     }
 }

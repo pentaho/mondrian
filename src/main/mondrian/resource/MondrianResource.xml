@@ -282,8 +282,11 @@
 
 <exception id="350650" name="DrillthroughDisabled">
     <text>Can''t perform drillthrough operations because ''{0}'' is set to false.</text>
-</exception>bacon
+</exception>
 
+<exception id="350660" name="DrillthroughCalculatedMember">
+    <text>Can''t perform drillthrough operations because ''{0}'' is a calculated member.</text>
+</exception>
 <!-- ====================================================================== -->
 <!-- Connectivity errors -->
 

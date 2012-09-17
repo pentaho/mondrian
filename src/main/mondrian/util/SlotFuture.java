@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho
+// Copyright (C) 2011-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.util;
@@ -26,7 +26,7 @@ public class SlotFuture<V> implements Future<V> {
     private final CountDownLatch dataGate = new CountDownLatch(1);
     private final ReentrantReadWriteLock stateLock =
         new ReentrantReadWriteLock();
-    private final static Logger LOG = Logger.getLogger(SlotFuture.class);
+    private static final Logger LOG = Logger.getLogger(SlotFuture.class);
 
     /**
      * Creates a SlotFuture.
@@ -34,6 +34,12 @@ public class SlotFuture<V> implements Future<V> {
     public SlotFuture() {
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>The SlotFuture does not know which thread is computing the result
+     * and therefore the {@code mayInterruptIfRunning} parameter is ignored.</p>
+     */
     public boolean cancel(boolean mayInterruptIfRunning) {
         stateLock.writeLock().lock();
         try {

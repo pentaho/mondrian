@@ -4301,10 +4301,22 @@ public class Util extends XOMUtil {
         return (Functor1) TRUE_FUNCTOR;
     }
 
+    public static <PT> Functor1<Boolean, PT> falseFunctor() {
+        //noinspection unchecked
+        return (Functor1) FALSE_FUNCTOR;
+    }
+
     private static final Functor1 TRUE_FUNCTOR =
         new Functor1<Boolean, Object>() {
             public Boolean apply(Object param) {
                 return true;
+            }
+        };
+
+    private static final Functor1 FALSE_FUNCTOR =
+        new Functor1<Boolean, Object>() {
+            public Boolean apply(Object param) {
+                return false;
             }
         };
 

@@ -212,8 +212,9 @@ public class PostgreSqlDialect extends JdbcDialectImpl {
         javaRegex = javaRegex.replace("\\Q", "");
         javaRegex = javaRegex.replace("\\E", "");
         final StringBuilder sb = new StringBuilder();
+        sb.append("cast(");
         sb.append(source);
-        sb.append(" ~ ");
+        sb.append(" as text) ~ ");
         quoteStringLiteral(sb, javaRegex);
         return sb.toString();
     }

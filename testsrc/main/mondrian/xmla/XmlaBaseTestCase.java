@@ -223,7 +223,8 @@ System.out.println("Got CONTINUE");
                 byte[] bytes = res.toByteArray();
                 String expectedStr = generateExpectedString(props);
                 Document expectedDoc = XmlUtil.parseString(expectedStr);
-                validate(bytes, expectedDoc, TestContext.instance(), true, true);
+                validate(
+                    bytes, expectedDoc, TestContext.instance(), true, true);
 
             } else {
                 fail("Bad status code: "  + statusCode);
@@ -359,12 +360,17 @@ System.out.println("Got CONTINUE");
         String connectString = testContext.getConnectString();
         Map<String, String> catalogNameUrls =
             getCatalogNameUrls(testContext);
+        connectString = filterConnectString(connectString);
         return
             XmlaSupport.makeServlet(
                 connectString,
                 catalogNameUrls,
                 getServletCallbackClass().getName(),
                 SERVLET_CACHE);
+    }
+
+    protected String filterConnectString(String original) {
+        return original;
     }
 
     protected abstract Class<? extends XmlaRequestCallback>
@@ -381,11 +387,13 @@ System.out.println("Got CONTINUE");
         return props;
     }
 
-    protected Document fileToDocument(String filename)
+    protected Document fileToDocument(String filename, Properties props)
         throws IOException, SAXException
     {
         final String var = "${" + filename + "}";
         String s = getDiffRepos().expand(null, var);
+        s = Util.replaceProperties(
+            s, Util.toMap(props));
         if (s.equals(filename)) {
             s = "<?xml version='1.0'?><Empty/>";
             getDiffRepos().amend(var, s);
@@ -484,7 +492,7 @@ System.out.println("Got CONTINUE");
         }
 
         final Document responseDoc = (respFileName != null)
-            ? fileToDocument(respFileName)
+            ? fileToDocument(respFileName, props)
             : null;
         Document expectedDoc;
 
@@ -586,7 +594,8 @@ System.out.println("Got CONTINUE");
         // do XMLA
         byte[] bytes =
             XmlaSupport.processXmla(
-                xmlaReqDoc, connectString, catalogNameUrls, role, SERVER_CACHE);
+                xmlaReqDoc, filterConnectString(connectString),
+                catalogNameUrls, role, SERVER_CACHE);
         if (XmlUtil.supportsValidation()
             // We can't validate against the schema when the content type
             // is Data because it doesn't respect the XDS.
@@ -612,7 +621,7 @@ System.out.println("Got CONTINUE");
         String callBackClassName = CallBack.class.getName();
         bytes = XmlaSupport.processSoapXmla(
             soapReqDoc,
-            connectString,
+            filterConnectString(connectString),
             catalogNameUrls,
             callBackClassName,
             role,
@@ -620,10 +629,12 @@ System.out.println("Got CONTINUE");
 
         if (DEBUG) {
             System.out.println(
-                "XmlaBaseTestCase.doTests: soap response=" + new String(bytes));
+                "XmlaBaseTestCase.doTests: soap response="
+                + new String(bytes));
         }
 
-        validate(bytes, expectedDoc, testContext, replace,
+        validate(
+            bytes, expectedDoc, testContext, replace,
             content.equals(XmlaConstants.Content.Data) ? false : true);
         Util.discard(entry);
     }

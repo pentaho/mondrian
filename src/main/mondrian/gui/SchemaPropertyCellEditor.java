@@ -12,6 +12,9 @@
 package mondrian.gui;
 
 import mondrian.gui.MondrianGuiDef.Hierarchy;
+import mondrian.olap.Id;
+import mondrian.olap.MondrianProperties;
+import mondrian.olap.Util;
 
 import org.eigenbase.xom.NodeDef;
 
@@ -440,10 +443,24 @@ public class SchemaPropertyCellEditor
             listEditor.setSelectedItem((String) value);
             activeEditor = listEditor;
 
-        } else if ((targetClassz == MondrianGuiDef.DimensionGrant.class
+        } else if (targetClassz == MondrianGuiDef.DimensionGrant.class
                     && propertyName.equals("dimension"))
-                   || (targetClassz == MondrianGuiDef.HierarchyGrant.class
-                       && propertyName.equals("hierarchy")))
+        {
+            List<String> source = getDimensions();
+            ComboBoxModel cAllsource =
+                new DefaultComboBoxModel(new Vector<String>(source));
+
+            listEditor.setEditable(false);
+            listEditor.setToolTipText(null);
+            listEditor.removeActionListener(al);
+
+            listEditor.setModel(cAllsource);
+            listEditor.setSelectedItem((String) value);
+            listEditorValue = (String) value;
+            activeEditor = listEditor;
+
+        } else if (targetClassz == MondrianGuiDef.HierarchyGrant.class
+                       && propertyName.equals("hierarchy"))
         {
             List<String> source = getHierarchies();
             ComboBoxModel cAllsource =
@@ -1388,18 +1405,36 @@ public class SchemaPropertyCellEditor
                             for (int j = 0; j < s.cubes[i].dimensions.length;
                                 j++)
                             {
-                                NodeDef[] children =
-                                    s.cubes[i].dimensions[j].getChildren();
+                                MondrianGuiDef.Dimension sharedDim =
+                                    lookupDimension(
+                                        s, s.cubes[i].dimensions[j]);
+                                NodeDef[] children = sharedDim.getChildren();
                                 for (int k = 0; k < children.length; k++) {
-                                    if (children[k] instanceof Hierarchy
-                                        && (((Hierarchy) children[k]).name
-                                            != null))
-                                    {
-                                        hiers.add(
-                                            ((Hierarchy) children[k]).name);
+                                    if (children[k] instanceof Hierarchy) {
+                                        String hname = ((Hierarchy) children[k]).name;
+                                        if (hname != null) {
+                                            if (MondrianProperties.instance()
+                                                .SsasCompatibleNaming.get())
+                                            {
+                                                hiers.add(
+                                                    Util.quoteMdxIdentifier(
+                                                        s.cubes[i].dimensions[j].name)
+                                                        + "."
+                                                        + Util.quoteMdxIdentifier(hname));
+                                            } else {
+                                                hiers.add(
+                                                    Util.quoteMdxIdentifier(
+                                                        s.cubes[i].dimensions[j].name
+                                                        + "." + hname));
+                                            }
+                                        } else {
+                                            hiers.add(Util.quoteMdxIdentifier(
+                                                s.cubes[i].dimensions[j].name));
+                                        }
                                     }
                                 }
                             }
+
                             break;
                         }
                     }
@@ -1417,8 +1452,24 @@ public class SchemaPropertyCellEditor
         if (hierarchy == null || hierarchy.equals("")) {
             return hlevels;
         }
-        if (hierarchy.startsWith("[") && hierarchy.endsWith("]")) {
-            hierarchy = hierarchy.substring(1, hierarchy.length() - 1);
+        List<Id.Segment> segments = Util.parseIdentifier(hierarchy);
+        if (segments == null || segments.size() == 0) {
+            return hlevels;
+        }
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            String data = ((Id.NameSegment)segments.get(0)).getName();
+            // if segment contains a hierarchy
+            if (data.indexOf(".") >= 0) {
+                Id.Segment segment = segments.get(0);
+                // split the segment
+                segments.clear();
+                segments.add(new Id.NameSegment(
+                    data.substring(0, data.indexOf(".")),
+                    segment.getQuoting()));
+                segments.add(new Id.NameSegment(
+                    data.substring(data.indexOf(".") + 1),
+                    segment.getQuoting()));
+            }
         }
         Object po = getParentObject(); //cubegrant
         if (po == null) {
@@ -1446,17 +1497,33 @@ public class SchemaPropertyCellEditor
             for (int j = 0; j < cube.dimensions.length; j++) {
                 final MondrianGuiDef.CubeDimension dimension =
                     cube.dimensions[j];
-                if (!dimension.name.equals(hierarchy)) {
+                if (!segments.get(0).matches(dimension.name)) {
                     continue;
                 }
                 MondrianGuiDef.Dimension d = lookupDimension(s, dimension);
-                final MondrianGuiDef.Hierarchy hierarchy1 = d.hierarchies[0];
-                if (hierarchy1 != null) {
-                    for (int k = 0; k < hierarchy1.levels.length; k++) {
-                        hlevels.add(hierarchy1.levels[k].name);
+                NodeDef[] children = d.getChildren();
+                MondrianGuiDef.Hierarchy hierarchyObj = null;
+                for (int k = 0; k < children.length; k++) {
+                    if (children[k] instanceof Hierarchy) {
+                        if ((segments.size() == 1
+                                && ((Hierarchy) children[k]).name == null)
+                            || (segments.size() != 0
+                                && segments.get(1).matches(
+                                    ((Hierarchy) children[k]).name)))
+                        {
+                            hierarchyObj = (Hierarchy)children[k];
+                            break;
+                        }
                     }
                 }
-                break;
+                if (hierarchyObj != null) {
+                    for (int k = 0; k < hierarchyObj.levels.length; k++) {
+                        hlevels.add(
+                            hierarchy + "."
+                            + Util.quoteMdxIdentifier(
+                                hierarchyObj.levels[k].name));
+                    }
+                }
             }
             break;
         }

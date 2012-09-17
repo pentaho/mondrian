@@ -47,10 +47,20 @@ public class RolapNativeFilter extends RolapNativeSet {
         /**
          * {@inheritDoc}
          *
-         * <p>A FilterConstraint always needs to join the fact table because we
-         * want to evaluate the filter expression against a fact.
+         * <p>A filter must join on the fact table if the
+         * evaluation context contains a member which isn't
+         * the 'all' member, in which case we have to link
+         * to the fact table.
          */
         protected boolean isJoinRequired() {
+            final Member[] nonAllMembers =
+                this.getEvaluator().getNonAllMembers();
+            if ((nonAllMembers.length == 1
+                    && nonAllMembers[0].isMeasure())
+                && !super.isJoinRequired())
+            {
+                return false;
+            }
             return true;
         }
 

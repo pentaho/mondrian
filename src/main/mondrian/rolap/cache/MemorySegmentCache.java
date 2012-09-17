@@ -23,13 +23,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * <p>Segments are held via soft references, so the garbage collector can remove
  * them if it sees fit.</p>
  *
- * 
- *
  * @author Julian Hyde
  */
 public class MemorySegmentCache implements SegmentCache {
+    // Use a thread-safe map because the SegmentCache
+    // interface requires thread safety.
     private final Map<SegmentHeader, SoftReference<SegmentBody>> map =
-        new ConcurrentHashMap<SegmentHeader, SoftReference<SegmentBody>>(); // Use a thread-safe map because the SegmentCache interface requires thread safety. 
+        new ConcurrentHashMap<SegmentHeader, SoftReference<SegmentBody>>();
     private final List<SegmentCacheListener> listeners =
         new CopyOnWriteArrayList<SegmentCacheListener>();
 

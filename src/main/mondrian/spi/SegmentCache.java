@@ -69,9 +69,7 @@ public interface SegmentCache {
      * segment corresponding to the header could be found.
      *
      * <p>Cache implementations are at liberty to 'forget' segments. Therefore
-     * it is allowable for this method to return null at any time, even if
-     * {@link #contains(SegmentHeader)} for this segment previously returned
-     * true.</p>
+     * it is allowable for this method to return null at any time</p>
      *
      * @param header The header of the segment to find.
      * Consider this as a key.
@@ -80,15 +78,6 @@ public interface SegmentCache {
      * if no corresponding segment could be found in cache.
      */
     SegmentBody get(SegmentHeader header);
-
-    /**
-     * Checks if the cache contains a {@link SegmentBody} corresponding
-     * to the supplied {@link SegmentHeader}.
-     *
-     * @param header A header to lookup in the cache.
-     * @return Whether corresponding segment could be found in cache.
-     */
-    boolean contains(SegmentHeader header);
 
     /**
      * Returns a list of all segments present in the cache.
