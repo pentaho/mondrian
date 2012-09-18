@@ -913,39 +913,18 @@ public class RolapSchema implements Schema {
             final DataSource dataSource,
             final Util.PropertyList connectInfo)
         {
-            String key =
-                (dataSource == null)
-                ? makeKey(catalogUrl, connectionKey, jdbcUser, dataSourceStr)
-                : makeKey(catalogUrl, dataSource);
-
-            RolapSchema schema = null;
-
-            String dynProcName = connectInfo.get(
-                RolapConnectionProperties.DynamicSchemaProcessor.name());
-
-            String catalogStr = connectInfo.get(
-                RolapConnectionProperties.CatalogContent.name());
-            if (catalogUrl == null && catalogStr == null) {
-                throw MondrianResource.instance()
-                    .ConnectStringMandatoryProperties.ex(
-                        RolapConnectionProperties.Catalog.name(),
-                        RolapConnectionProperties.CatalogContent.name());
+          
+            String connectionUuid = connectInfo.get(RolapConnectionProperties.JdbcConnectionUuid.name());
+            
+            if(Util.isEmpty(connectionUuid))
+            {
+                connectionUuid = makeConnectionKey(dataSource, catalogUrl, connectionKey, jdbcUser, dataSourceStr);
+                //fall back to old behavior
+                //return getLegacy(catalogUrl, connectionKey, jdbcUser, dataSourceStr, dataSource, connectInfo);
             }
-
-            // If CatalogContent is specified in the connect string, ignore
-            // everything else. In particular, ignore the dynamic schema
-            // processor.
-            if (catalogStr != null) {
-                dynProcName = null;
-                // REVIEW: Are we including enough in the key to make it
-                // unique?
-                key = catalogStr;
-            }
-
-            final boolean useContentChecksum =
-                Boolean.parseBoolean(
-                    connectInfo.get(
-                        RolapConnectionProperties.UseContentChecksum.name()));
+            
+            String catalogStr = getSchemaContent(connectInfo, catalogUrl);            
+            String key = makeKey(getSchemaKey(connectInfo, catalogUrl, catalogStr), connectionUuid);
 
             // Use the schema pool unless "UseSchemaPool" is explicitly false.
             final boolean useSchemaPool =
@@ -953,90 +932,40 @@ public class RolapSchema implements Schema {
                     connectInfo.get(
                         RolapConnectionProperties.UseSchemaPool.name(),
                         "true"));
-
-            // If there is a dynamic processor registered, use it. This
-            // implies there is not MD5 based caching, but, as with the previous
-            // implementation, if the catalog string is in the connectInfo
-            // object as catalog content then it is used.
-            if (! Util.isEmpty(dynProcName)) {
-                assert catalogStr == null;
-
-                try {
-                    @SuppressWarnings("unchecked")
-                    final Class<DynamicSchemaProcessor> clazz =
-                        (Class<DynamicSchemaProcessor>)
-                            Class.forName(dynProcName);
-                    final Constructor<DynamicSchemaProcessor> ctor =
-                        clazz.getConstructor();
-                    final DynamicSchemaProcessor dynProc = ctor.newInstance();
-                    catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
-
-                    // Use the content of the catalog to find the schema.
-                    // Previously we'd use the key, but we didn't include
-                    // DynamicSchemaProcessor, and that would give false hits.
-                    key = catalogStr;
-                } catch (Exception e) {
-                    throw Util.newError(
-                        e,
-                        "loading DynamicSchemaProcessor " + dynProcName);
-                }
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Pool.get: create schema \"" + catalogUrl
-                        + "\" using dynamic processor");
-                }
-            }
-
             if (!useSchemaPool) {
-                schema = new RolapSchema(
-                    key,
-                    null,
-                    catalogUrl,
-                    catalogStr,
-                    connectInfo,
-                    dataSource);
-
-            } else if (useContentChecksum) {
-                // Different catalogUrls can actually yield the same
-                // catalogStr! So, we use the MD5 as the key as well as
-                // the key made above - its has two entries in the
-                // mapUrlToSchema Map. We must then also during the
-                // remove operation make sure we remove both.
-
-                ByteString md5Bytes = null;
-                try {
-                    if (catalogStr == null) {
-                        // Use VFS to get the content
-                        catalogStr = Util.readVirtualFileAsString(catalogUrl);
-                    }
-
-                    md5Bytes = new ByteString(Util.digestMd5(catalogStr));
-                } catch (Exception ex) {
-                    // Note, can not throw an Exception from this method
-                    // but just to show that all is not well in Mudville
-                    // we print stack trace (for now - better to change
-                    // method signature and throw).
-                    ex.printStackTrace();
-                }
-
-                if (md5Bytes != null) {
-                    SoftReference<RolapSchema> ref =
-                        mapMd5ToSchema.get(md5Bytes);
-                    if (ref != null) {
-                        schema = ref.get();
-                        if (schema == null) {
-                            // clear out the reference since schema is null
-                            mapUrlToSchema.remove(key);
-                            mapMd5ToSchema.remove(md5Bytes);
-                        }
+              return new RolapSchema(
+                  key,
+                  null,
+                  catalogUrl,
+                  catalogStr,//TODO: in previous version would be null if neither CatalogContent nor DynamicSchemaProcessor set  
+                  connectInfo,
+                  dataSource);
+          }
+            
+            RolapSchema schema = null;
+            
+            final boolean useContentChecksum =
+                Boolean.parseBoolean(
+                    connectInfo.get(
+                        RolapConnectionProperties.UseContentChecksum.name()));
+            
+            if(useContentChecksum)
+            {
+                ByteString md5Bytes = new ByteString(Util.digestMd5(catalogStr));
+//              if (md5Bytes != null) {
+                SoftReference<RolapSchema> ref =
+                    mapMd5ToSchema.get(md5Bytes);
+                
+                if (ref != null) {
+                    schema = ref.get();
+                    if (schema == null) {
+                        // clear out the reference since schema is null
+                        mapUrlToSchema.remove(key);
+                        mapMd5ToSchema.remove(md5Bytes);
                     }
                 }
-
-                if (schema == null
-                    || md5Bytes == null
-                    || !schema.useContentChecksum
-                    || !schema.md5Bytes.equals(md5Bytes))
+                
+                if (schema == null)
                 {
                     schema = new RolapSchema(
                         key,
@@ -1045,61 +974,118 @@ public class RolapSchema implements Schema {
                         catalogStr,
                         connectInfo,
                         dataSource);
-
-                    SoftReference<RolapSchema> ref =
-                        new SoftReference<RolapSchema>(schema);
-                    if (md5Bytes != null) {
-                        mapMd5ToSchema.put(md5Bytes, ref);
-                    }
-                    mapUrlToSchema.put(key, ref);
-
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(
-                            "Pool.get: create schema \"" + catalogUrl
-                            + "\" with MD5");
-                    }
-
-                } else if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Pool.get: schema \"" + catalogUrl
-                        + "\" exists already with MD5");
+                    putSchema(schema, md5Bytes);
                 }
+                return schema;
+//              }
+            }
+            
+            SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
+            if(ref != null){
+              schema = ref.get();
+              if(schema == null){
+                mapUrlToSchema.remove(key);
+              }
+            }
+//            schema = (ref != null )? ref.get() : null;
+            
+            if(schema == null)
+            {
+                schema = new RolapSchema(
+                    key,
+                    null,
+                    catalogUrl,
+                    catalogStr,
+                    connectInfo,
+                    dataSource);
+                putSchema(schema, null);
+            }
+            
+            return schema;
+        }
 
-            } else {
-                SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
-                if (ref != null) {
-                    schema = ref.get();
-                    if (schema == null) {
-                        // clear out the reference since schema is null
-                        mapUrlToSchema.remove(key);
-                    }
+        private void putSchema(RolapSchema schema, ByteString md5Bytes){
+            SoftReference<RolapSchema> ref =
+                new SoftReference<RolapSchema>(schema);
+            if (md5Bytes != null) {
+                mapMd5ToSchema.put(md5Bytes, ref);
+            }
+            mapUrlToSchema.put(schema.key, ref);
+        }
+        
+        private static String getSchemaContent(Util.PropertyList connectInfo, String catalogUrl)
+        {
+            // We will return the first of the following:
+            //  1. CatalogContent property if set
+            //  2. DynamicSchemaProcessor#processSchema if DynamicSchemaProcessor property set
+            //  3. Util.readVirtualFileAsString(catalogUrl) 
+          
+            String catalogStr = connectInfo.get(
+                RolapConnectionProperties.CatalogContent.name());
+            
+            if( Util.isEmpty(catalogStr) )
+            {
+                if( Util.isEmpty(catalogUrl) )
+                {
+                    throw MondrianResource.instance()
+                    .ConnectStringMandatoryProperties.ex(
+                        RolapConnectionProperties.Catalog.name(),
+                        RolapConnectionProperties.CatalogContent.name());
                 }
-
-                if (schema == null) {
-                    schema = new RolapSchema(
-                        key,
-                        null,
-                        catalogUrl,
-                        catalogStr,
-                        connectInfo,
-                        dataSource);
-
-                    mapUrlToSchema.put(
-                        key,
-                        new SoftReference<RolapSchema>(schema));
-
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug(
-                            "Pool.get: create schema \"" + catalogUrl + "\"");
+                //check for a DynamicSchemaProcessor
+                String dynProcName = connectInfo.get(
+                    RolapConnectionProperties.DynamicSchemaProcessor.name());
+                if (! Util.isEmpty(dynProcName)) {
+                    catalogStr = processDynamicSchema(dynProcName, catalogUrl, connectInfo);
+                }
+                if( Util.isEmpty(catalogStr) )
+                {// just read the schema
+                    try {
+                        catalogStr = Util.readVirtualFileAsString(catalogUrl);
+                    } catch (IOException e) {
+                      throw Util.newError(
+                          e,
+                          "loading schema from url " + catalogUrl);
                     }
-
-                } else if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                        "Pool.get: schema \"" + catalogUrl
-                        + "\" exists already ");
                 }
             }
-            return schema;
+            
+            return catalogStr;
+        }
+        
+        private static String getSchemaKey(Util.PropertyList connectInfo, String catalogUrl, String catalogContents)
+        {
+            if(!Util.isEmpty(connectInfo.get(RolapConnectionProperties.CatalogContent.name())) ||
+               !Util.isEmpty(connectInfo.get(RolapConnectionProperties.DynamicSchemaProcessor.name())))
+            {
+              return catalogContents;
+            }
+            else return catalogUrl;
+        }
+        
+        private static String processDynamicSchema(String dynProcName, String catalogUrl, Util.PropertyList connectInfo){
+          String catalogStr = null;  
+          try {
+                @SuppressWarnings("unchecked")
+                final Class<DynamicSchemaProcessor> clazz =
+                    (Class<DynamicSchemaProcessor>)
+                        Class.forName(dynProcName);
+                final Constructor<DynamicSchemaProcessor> ctor =
+                    clazz.getConstructor();
+                final DynamicSchemaProcessor dynProc = ctor.newInstance();
+                catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
+            } catch (Exception e) {
+                throw Util.newError(
+                    e,
+                    "loading DynamicSchemaProcessor " + dynProcName);
+            }
+    
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    "Pool.get: create schema \"" + catalogUrl
+                    + "\" using dynamic processor");
+            }
+            return catalogStr;
         }
 
         synchronized void remove(
@@ -1193,7 +1179,45 @@ public class RolapSchema implements Schema {
         synchronized boolean contains(RolapSchema rolapSchema) {
             return mapUrlToSchema.containsKey(rolapSchema.key);
         }
+        
+        private static String makeConnectionKey( 
+            final DataSource dataSource,
+            final String catalogUrl,
+            final String connectionKey,
+            final String jdbcUser,
+            final String dataSourceStr) 
+        {
+//            
+            String uuid = null;
+            
+            if(dataSource == null)
+            {
+                final StringBuilder buf = new StringBuilder(100);  
+                appendIfNotNull(buf, connectionKey);
+                appendIfNotNull(buf, jdbcUser);
+                appendIfNotNull(buf, dataSourceStr);
+                uuid = new ByteString(Util.digestMd5(buf.toString())).toString();
+            }
+            else 
+            {
+                uuid = "#external" + System.identityHashCode(dataSource);
+//                buf.append("external#");
+//                buf.append(System.identityHashCode(dataSource));
+            }
+            
+            return uuid;
+        }
 
+        //TODO:
+        private static String makeKey(String schemaKey, String connectionUuid)
+        {
+            StringBuilder buf = new StringBuilder(100);
+            
+            appendIfNotNull(buf, schemaKey);
+            appendIfNotNull(buf, connectionUuid);
+        
+            return buf.toString();
+        }
 
         /**
          * Creates a key with which to identify a schema in the cache.
