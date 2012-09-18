@@ -202,7 +202,7 @@ public class Bug {
 
     /**
      * Whether
-     * <a href="http://jira.pentaho.com/browse/MONDRIAN-675">bug MONDRIAN-687,
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-687">bug MONDRIAN-687,
      * "Format treats negative numbers differently than SSAS"</a>
      * is fixed.
      */
