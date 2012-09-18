@@ -113,13 +113,6 @@ public class Format {
         new HashMap<String, FormatLocale>();
 
     /**
-     * Maps macro token names with their related object. Used
-     * to fast-resolve a macro token without iterating.
-     */
-    private static final Map<String, MacroToken> macroTokenMap =
-        new HashMap<String, MacroToken>();
-
-    /**
      * Cache of parsed format strings and their thousand separator
      * tokens length. Used so we don't have to tokenize a format string
      * over and over again.
@@ -738,15 +731,7 @@ public class Format {
 
             // Check if we're dealing with a format macro token rather than
             // an actual format string.
-            if (macroTokenMap.containsKey(formatString)) {
-                MacroToken macroToken = macroTokenMap.get(formatString);
-                if (macroToken.name.equals("Currency")) {
-                    formatString = locale.currencyFormat
-                        + ";("  + locale.currencyFormat + ")";
-                } else {
-                    formatString = macroToken.translation;
-                }
-            }
+            formatString = MacroToken.expand(locale, formatString);
 
             if (thousandSeparatorTokenMap.containsKey(formatString)) {
                 cachedThousandSeparatorPositions =
@@ -1911,78 +1896,108 @@ public class Format {
             + "displayed."),
     };
 
-    static class MacroToken {
-        String name;
-        String translation;
-        String description;
-
-        MacroToken(String name, String translation, String description)
-        {
-            this.name = name;
-            this.translation = translation;
-            this.description = description;
-            macroTokenMap.put(name, this);
-        }
-    }
-
     // Named formats.  todo: Supply the translation strings.
-    private static final MacroToken[] macroTokens = {
-        new MacroToken(
+    private enum MacroToken {
+        CURRENCY(
             "Currency",
             null,
             "Shows currency values according to the locale's CurrencyFormat.  "
             + "Negative numbers are inside parentheses."),
-        new MacroToken(
+        FIXED(
             "Fixed", "0", "Shows at least one digit."),
-        new MacroToken(
+        STANDARD(
             "Standard", "#,##0", "Uses a thousands separator."),
-        new MacroToken(
+        PERCENT(
             "Percent",
             "0.00%",
             "Multiplies the value by 100 with a percent sign at the end."),
-        new MacroToken(
+        SCIENTIFIC(
             "Scientific", "0.00e+00", "Uses standard scientific notation."),
-        new MacroToken(
+        LONG_DATE(
             "Long Date",
             "dddd, mmmm dd, yyyy",
             "Uses the Long Date format specified in the Regional Settings "
             + "dialog box of the Microsoft Windows Control Panel."),
-        new MacroToken(
+        MEDIUM_DATE(
             "Medium Date",
             "dd-mmm-yy",
             "Uses the dd-mmm-yy format (for example, 03-Apr-93)"),
-        new MacroToken(
+        SHORT_DATE(
             "Short Date",
             "m/d/yy",
             "Uses the Short Date format specified in the Regional Settings "
             + "dialog box of the Windows Control Panel."),
-        new MacroToken(
+        LONG_TIME(
             "Long Time",
             "h:mm:ss AM/PM",
             "Shows the hour, minute, second, and \"AM\" or \"PM\" using the "
             + "h:mm:ss format."),
-        new MacroToken(
+        MEDIUM_TIME(
             "Medium Time",
             "h:mm AM/PM",
             "Shows the hour, minute, and \"AM\" or \"PM\" using the \"hh:mm "
             + "AM/PM\" format."),
-        new MacroToken(
+        SHORT_TIME(
             "Short Time",
             "hh:mm",
             "Shows the hour and minute using the hh:mm format."),
-        new MacroToken(
+        YES_NO(
             "Yes/No",
             "\\Y\\e\\s;\\Y\\e\\s;\\N\\o;\\N\\o",
             "Any nonzero numeric value (usually - 1) is Yes. Zero is No."),
-        new MacroToken(
+        TRUE_FALSE(
             "True/False",
             "\\T\\r\\u\\e;\\T\\r\\u\\e;\\F\\a\\l\\s\\e;\\F\\a\\l\\s\\e",
             "Any nonzero numeric value (usually - 1) is True. Zero is False."),
-        new MacroToken(
+        ON_OFF(
             "On/Off",
             "\\O\\n;\\O\\n;\\O\\f\\f;\\O\\f\\f",
-            "Any nonzero numeric value (usually - 1) is On. Zero is Off."),
-    };
+            "Any nonzero numeric value (usually - 1) is On. Zero is Off.");
+
+        /**
+         * Maps macro token names with their related object. Used
+         * to fast-resolve a macro token without iterating.
+         */
+        private static final Map<String, MacroToken> MAP =
+            new HashMap<String, MacroToken>();
+
+        static {
+            for (MacroToken macroToken : values()) {
+                MAP.put(macroToken.token, macroToken);
+            }
+        }
+
+        MacroToken(String token, String translation, String description) {
+            this.token = token;
+            this.translation = translation;
+            this.description = description;
+            assert name().equals(
+                token
+                    .replace(',', '_')
+                    .replace(' ', '_')
+                    .replace('/', '_')
+                    .toUpperCase());
+            assert (translation == null) == name().equals("CURRENCY");
+        }
+
+        final String token;
+        final String translation;
+        final String description;
+
+        static String expand(FormatLocale locale, String formatString) {
+            final MacroToken macroToken = MAP.get(formatString);
+            if (macroToken == null) {
+                return formatString;
+            }
+            if (macroToken == MacroToken.CURRENCY) {
+                // e.g. "$#,##0.00;($#,##0.00)"
+                return locale.currencyFormat
+                    + ";("  + locale.currencyFormat + ")";
+            } else {
+                return macroToken.translation;
+            }
+        }
+    }
 
     /**
      * Constructs a <code>Format</code> in a specific locale.
@@ -2139,7 +2154,7 @@ public class Format {
         final DateFormatSymbols dateSymbols = new DateFormatSymbols(locale);
 
         Calendar calendar = Calendar.getInstance(locale);
-        calendar.set(1969, 11, 31, 0, 0, 0);
+        calendar.set(1969, Calendar.DECEMBER, 31, 0, 0, 0);
         final Date date = calendar.getTime();
 
         final java.text.DateFormat dateFormat =
@@ -2332,23 +2347,7 @@ public class Format {
         // todo: Parse the string for ;s
 
         // Look for the format string in the table of named formats.
-        if (macroTokenMap.containsKey(formatString)) {
-            MacroToken macroToken = macroTokenMap.get(formatString);
-            if (macroToken.translation == null) {
-                // this macro requires special-case code
-                if (macroToken.name.equals("Currency")) {
-                    // e.g. "$#,##0.00;($#,##0.00)"
-                    formatString = locale.currencyFormat
-                                   + ";("  + locale.currencyFormat + ")";
-                } else {
-                    throw new Error(
-                        "Format: internal: token " + macroToken.name
-                        + " should have translation");
-                }
-            } else {
-                formatString = macroToken.translation;
-            }
-        }
+        formatString = MacroToken.expand(locale, formatString);
 
         // Add a semi-colon to the end of the string so the end of the string
         // looks like the end of an alternate.
@@ -3112,13 +3111,6 @@ public class Format {
             result[i++] = digits2[j];
         }
         return i;
-    }
-
-    /**
-     * Locates a {@link Format.FormatLocale} for a given locale.
-     */
-    public interface LocaleFormatFactory {
-        FormatLocale get(Locale locale);
     }
 
     private enum FormatType {
