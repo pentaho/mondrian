@@ -703,6 +703,23 @@ public class RolapSchemaReader
             this);
     }
 
+    public Map<? extends Member, Access> getMemberChildrenWithDetails(
+        Member member,
+        Evaluator evaluator)
+    {
+        MemberChildrenConstraint constraint =
+            sqlConstraintFactory.getMemberChildrenConstraint(evaluator);
+        final Hierarchy hierarchy = member.getHierarchy();
+        final MemberReader memberReader = getMemberReader(hierarchy);
+        final ArrayList<RolapMember> memberChildren =
+            new ArrayList<RolapMember>();
+
+        return memberReader.getMemberChildren(
+            (RolapMember) member,
+            memberChildren,
+            constraint);
+    }
+
     /**
      * Implementation of {@link Parameter} which is sourced from system
      * propertes (see {@link System#getProperties()} or mondrian properties

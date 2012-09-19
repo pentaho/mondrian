@@ -18,9 +18,6 @@ import junit.framework.TestCase;
 
 import java.sql.Driver;
 import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * Tests for methods in {@link mondrian.olap.Util} and, sometimes, classes in
@@ -1425,6 +1422,43 @@ public class UtilTestCase extends TestCase {
         assertEquals(1, bm.match(bytesPresent));
         assertEquals(2, bm.match(bytesPresentLast));
         assertEquals(0, bm.match(bytesPresentFirst));
+    }
+
+    /**
+     * This is a simple test to make sure that
+     * {@link Util#toNullValuesMap(List)} never iterates on
+     * its source list upon creation.
+     */
+    public void testNullValuesMap() throws Exception {
+        class BaconationException extends RuntimeException {};
+        Map<String, Object> nullValuesMap =
+            Util.toNullValuesMap(
+                new ArrayList<String>(
+                    Arrays.asList(
+                        "CHUNKY",
+                        "BACON!!"))
+                {
+                    private static final long serialVersionUID = 1L;
+                    public String get(int index) {
+                        throw new BaconationException();
+                    }
+                    public Iterator<String> iterator() {
+                        throw new BaconationException();
+                    }
+                });
+        try {
+            // This should fail. Sanity check.
+            nullValuesMap.entrySet().iterator().next();
+            fail();
+        } catch (BaconationException e) {
+            // no op.
+        }
+        // None of the above operations should trigger an iteration.
+        assertFalse(nullValuesMap.entrySet().isEmpty());
+        assertTrue(nullValuesMap.containsKey("CHUNKY"));
+        assertTrue(nullValuesMap.containsValue(null));
+        assertFalse(nullValuesMap.containsKey(null));
+        assertFalse(nullValuesMap.keySet().contains("Something"));
     }
 }
 

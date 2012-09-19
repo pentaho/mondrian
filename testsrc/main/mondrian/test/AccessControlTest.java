@@ -11,12 +11,16 @@
 package mondrian.test;
 
 import mondrian.olap.*;
+import mondrian.util.LockBox.Entry;
 
 import junit.framework.Assert;
 
 import org.olap4j.mdx.IdentifierNode;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -155,7 +159,7 @@ public class AccessControlTest extends FoodMartTestCase {
         final Connection connection = getRestrictedConnection();
         // because CA has access
         assertMemberAccess(connection, Access.CUSTOM, "[Store].[USA]");
-        assertMemberAccess(connection, Access.ALL, "[Store].[Mexico]");
+        assertMemberAccess(connection, Access.CUSTOM, "[Store].[Mexico]");
         assertMemberAccess(connection, Access.NONE, "[Store].[Mexico].[DF]");
         assertMemberAccess(
             connection, Access.NONE, "[Store].[Mexico].[DF].[Mexico City]");
@@ -871,8 +875,8 @@ public class AccessControlTest extends FoodMartTestCase {
         return connection;
     }
 
-    /* todo: test that access to restricted measure fails (will not work --
-    have not fixed Cube.getMeasures) */
+    // todo: test that access to restricted measure fails
+    // (will not work -- have not fixed Cube.getMeasures)
     private class RestrictedTestContext extends TestContext {
         public synchronized Connection getConnection() {
             return getRestrictedConnection(false);
@@ -1099,7 +1103,7 @@ public class AccessControlTest extends FoodMartTestCase {
      * Tests where two hierarchies are simultaneously access-controlled.
      */
     public void testRollupPolicySimultaneous() {
-        // note that v2 is different for full vs partial, v3 is the same
+//         note that v2 is different for full vs partial, v3 is the same
         rollupPolicySimultaneous(
             Role.RollupPolicy.FULL, "266,773", "74,748", "25,635");
         rollupPolicySimultaneous(
@@ -1244,9 +1248,9 @@ public class AccessControlTest extends FoodMartTestCase {
 
         // Member access:
         // both can see [USA]
-        assertMemberAccess(connection, Access.ALL, "[Customers].[USA]");
+        assertMemberAccess(connection, Access.CUSTOM, "[Customers].[USA]");
         // Role1 can see [CA], Role2 cannot
-        assertMemberAccess(connection, Access.ALL, "[Customers].[USA].[CA]");
+        assertMemberAccess(connection, Access.CUSTOM, "[Customers].[USA].[CA]");
         // Role1 cannoy see [USA].[OR].[Portland], Role2 can
         assertMemberAccess(
             connection, Access.ALL, "[Customers].[USA].[OR].[Portland]");
@@ -1531,8 +1535,8 @@ public class AccessControlTest extends FoodMartTestCase {
             + "{[Store].[USA].[CA].[San Diego]}\n"
             + "{[Store].[USA].[CA].[San Francisco]}\n"
             + "{[Store].[USA].[OR]}\n"
-            + "Row #0: 74,748\n"
-            + "Row #1: 74,748\n"
+            + "Row #0: 100,827\n"
+            + "Row #1: 100,827\n"
             + "Row #2: 74,748\n"
             + "Row #3: \n"
             + "Row #4: 21,333\n"
@@ -2290,6 +2294,7 @@ public class AccessControlTest extends FoodMartTestCase {
             + "      <HierarchyGrant hierarchy=\"[Customers]\" access=\"custom\">\n"
             + "        <MemberGrant member=\"[Customers].[USA].[XX]\" access=\"none\"/>\n"
             + "        <MemberGrant member=\"[Customers].[USA].[XX].[Yyy Yyyyyyy]\" access=\"all\"/>\n"
+            + "        <MemberGrant member=\"[Customers].[USA]\" access=\"none\"/>\n"
             + "        <MemberGrant member=\"[Customers].[USA].[CA]\" access=\"none\"/>\n"
             + "        <MemberGrant member=\"[Customers].[USA].[CA].[Los Angeles]\" access=\"all\"/>\n"
             + "        <MemberGrant member=\"[Customers].[USA].[CA].[Zzz Zzzz]\" access=\"none\"/>\n"

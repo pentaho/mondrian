@@ -655,6 +655,9 @@ public class RolapSchema implements Schema {
     }
 
     private Role createRole(MondrianDef.Role xmlRole) {
+        final boolean ignoreInvalidMembers =
+            MondrianProperties.instance().IgnoreInvalidMembers
+                .get();
         if (xmlRole.union != null) {
             if (xmlRole.schemaGrants != null
                 && xmlRole.schemaGrants.length > 0)
@@ -759,9 +762,6 @@ public class RolapSchema implements Schema {
                                 "You may only specify <MemberGrant> if "
                                 + "<Hierarchy> has access='custom'");
                         }
-                        final boolean ignoreInvalidMembers =
-                            MondrianProperties.instance().IgnoreInvalidMembers
-                                .get();
                         Member member = schemaReader.withLocus()
                             .getMemberByUniqueName(
                                 Util.parseIdentifier(memberGrant.member),

@@ -11,9 +11,12 @@
 package mondrian.olap;
 
 import mondrian.calc.Calc;
+import mondrian.rolap.RolapHierarchy;
 import mondrian.rolap.RolapSchema;
 
 import java.util.List;
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 /**
@@ -520,6 +523,17 @@ public interface SchemaReader {
      * @return List of namespaces
      */
     List<NameResolver.Namespace> getNamespaces();
+
+    /**
+     * Similar to {@link #getMemberChildren(Member, Evaluator)}
+     * but returns a map of the grand-children and their access details
+     * and costs more to invoke because of the access controls.
+     *
+     * Called by {@link RolapHierarchy} when determining the lowest access
+     * level of a Role within a hierarchy.
+     */
+    Map<? extends Member, Access>
+        getMemberChildrenWithDetails(Member member, Evaluator evaluator);
 }
 
 // End SchemaReader.java

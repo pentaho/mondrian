@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -1179,15 +1179,13 @@ public class FunUtil extends Util {
         }
         Arrays.sort(asArray);
 
-        /*
-         * The median is defined as the value that has exactly the same
-         * number of entries before it in the sorted list as after.
-         * So, if the number of entries in the list is odd, the
-         * median is the entry at (length-1)/2 (using zero-based indexes).
-         * If the number of entries is even, the median is defined as the
-         * arithmetic mean of the two numbers in the middle of the list, or
-         * (entries[length/2 - 1] + entries[length/2]) / 2.
-         */
+        // The median is defined as the value that has exactly the same
+        // number of entries before it in the sorted list as after.
+        // So, if the number of entries in the list is odd, the
+        // median is the entry at (length-1)/2 (using zero-based indexes).
+        // If the number of entries is even, the median is defined as the
+        // arithmetic mean of the two numbers in the middle of the list, or
+        // (entries[length/2 - 1] + entries[length/2]) / 2.
         int length = asArray.length;
 
         if (p == 0.5) {
@@ -1759,14 +1757,10 @@ public class FunUtil extends Util {
         }
 
         if (distance == 0) {
-            /*
-            * Shortcut if there's nowhere to go.
-            */
+            // Shortcut if there's nowhere to go.
             return member;
         } else if (distance < 0) {
-            /*
-            * Can't go backwards.
-            */
+            // Can't go backwards.
             return member.getHierarchy().getNullMember();
         }
 
@@ -1841,15 +1835,13 @@ public class FunUtil extends Util {
         // Strip away the LimitedRollupMember wrapper, if it exists. The
         // wrapper does not implement equals and comparisons correctly. This
         // is safe this method has no side-effects: it just returns an int.
-        if (m1 instanceof RolapHierarchy.LimitedRollupMember) {
-            m1 = ((RolapHierarchy.LimitedRollupMember) m1).member;
-        }
-        if (m2 instanceof RolapHierarchy.LimitedRollupMember) {
-            m2 = ((RolapHierarchy.LimitedRollupMember) m2).member;
-        }
+        m1 = unwrapLimitedRollupMember(m1);
+        m2 = unwrapLimitedRollupMember(m2);
+
         if (equals(m1, m2)) {
             return 0;
         }
+
         while (true) {
             int depth1 = m1.getDepth();
             int depth2 = m2.getDepth();
@@ -1866,8 +1858,8 @@ public class FunUtil extends Util {
             } else {
                 Member prev1 = m1;
                 Member prev2 = m2;
-                m1 = m1.getParentMember();
-                m2 = m2.getParentMember();
+                m1 = unwrapLimitedRollupMember(m1.getParentMember());
+                m2 = unwrapLimitedRollupMember(m2.getParentMember());
                 if (equals(m1, m2)) {
                     final int c = compareSiblingMembers(prev1, prev2);
                     // compareHierarchically needs to impose a total order;
@@ -1881,6 +1873,12 @@ public class FunUtil extends Util {
         }
     }
 
+    private static Member unwrapLimitedRollupMember(Member m) {
+        if (m instanceof RolapHierarchy.LimitedRollupMember) {
+            return ((RolapHierarchy.LimitedRollupMember) m).member;
+        }
+        return m;
+    }
     /**
      * Compares two members which are known to have the same parent.
      *
@@ -2134,6 +2132,20 @@ public class FunUtil extends Util {
             return sr.getMemberChildren(member, evaluator);
         } else {
             return sr.getMemberChildren(member);
+        }
+    }
+
+    public static Map<Member, Access>
+        getNonEmptyMemberChildrenWithDetails(
+            Evaluator evaluator, Member member)
+    {
+        SchemaReader sr = evaluator.getSchemaReader();
+        if (evaluator.isNonEmpty()) {
+            return (Map<Member, Access>)
+                sr.getMemberChildrenWithDetails(member, evaluator);
+        } else {
+            return (Map<Member, Access>)
+                sr.getMemberChildrenWithDetails(member, null);
         }
     }
 
