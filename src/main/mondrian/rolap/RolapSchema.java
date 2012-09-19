@@ -913,18 +913,23 @@ public class RolapSchema implements Schema {
             final DataSource dataSource,
             final Util.PropertyList connectInfo)
         {
-          
-            String connectionUuid = connectInfo.get(RolapConnectionProperties.JdbcConnectionUuid.name());
-            
-            if(Util.isEmpty(connectionUuid))
-            {
-                connectionUuid = makeConnectionKey(dataSource, catalogUrl, connectionKey, jdbcUser, dataSourceStr);
-                //fall back to old behavior
-                //return getLegacy(catalogUrl, connectionKey, jdbcUser, dataSourceStr, dataSource, connectInfo);
+            String connectionUuid = connectInfo.get(
+                RolapConnectionProperties.JdbcConnectionUuid.name());
+
+            if (Util.isEmpty(connectionUuid)) {
+                connectionUuid =
+                    makeConnectionKey(
+                        dataSource,
+                        catalogUrl,
+                        connectionKey,
+                        jdbcUser,
+                        dataSourceStr);
             }
-            
-            String catalogStr = getSchemaContent(connectInfo, catalogUrl);            
-            String key = makeKey(getSchemaKey(connectInfo, catalogUrl, catalogStr), connectionUuid);
+
+            String catalogStr = getSchemaContent(connectInfo, catalogUrl);
+            String key = makeKey(
+                getSchemaKey(connectInfo, catalogUrl, catalogStr),
+                connectionUuid);
 
             // Use the schema pool unless "UseSchemaPool" is explicitly false.
             final boolean useSchemaPool =
@@ -933,29 +938,28 @@ public class RolapSchema implements Schema {
                         RolapConnectionProperties.UseSchemaPool.name(),
                         "true"));
             if (!useSchemaPool) {
-              return new RolapSchema(
-                  key,
-                  null,
-                  catalogUrl,
-                  catalogStr,//TODO: in previous version would be null if neither CatalogContent nor DynamicSchemaProcessor set  
-                  connectInfo,
-                  dataSource);
-          }
-            
+                return new RolapSchema(
+                    key,
+                    null,
+                    catalogUrl,
+                    catalogStr,
+                    connectInfo,
+                    dataSource);
+            }
+
             RolapSchema schema = null;
-            
+
             final boolean useContentChecksum =
                 Boolean.parseBoolean(
                     connectInfo.get(
                         RolapConnectionProperties.UseContentChecksum.name()));
-            
-            if(useContentChecksum)
-            {
-                ByteString md5Bytes = new ByteString(Util.digestMd5(catalogStr));
-//              if (md5Bytes != null) {
+
+            if (useContentChecksum) {
+                ByteString md5Bytes =
+                    new ByteString(Util.digestMd5(catalogStr));
                 SoftReference<RolapSchema> ref =
                     mapMd5ToSchema.get(md5Bytes);
-                
+
                 if (ref != null) {
                     schema = ref.get();
                     if (schema == null) {
@@ -964,9 +968,8 @@ public class RolapSchema implements Schema {
                         mapMd5ToSchema.remove(md5Bytes);
                     }
                 }
-                
-                if (schema == null)
-                {
+
+                if (schema == null) {
                     schema = new RolapSchema(
                         key,
                         md5Bytes,
@@ -977,20 +980,17 @@ public class RolapSchema implements Schema {
                     putSchema(schema, md5Bytes);
                 }
                 return schema;
-//              }
             }
-            
+
             SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
-            if(ref != null){
-              schema = ref.get();
-              if(schema == null){
-                mapUrlToSchema.remove(key);
-              }
+            if (ref != null) {
+                schema = ref.get();
+                if (schema == null) {
+                    mapUrlToSchema.remove(key);
+                }
             }
-//            schema = (ref != null )? ref.get() : null;
-            
-            if(schema == null)
-            {
+
+            if (schema == null) {
                 schema = new RolapSchema(
                     key,
                     null,
@@ -1000,11 +1000,14 @@ public class RolapSchema implements Schema {
                     dataSource);
                 putSchema(schema, null);
             }
-            
+
             return schema;
         }
 
-        private void putSchema(RolapSchema schema, ByteString md5Bytes){
+        private void putSchema(
+            final RolapSchema schema,
+            final ByteString md5Bytes)
+        {
             SoftReference<RolapSchema> ref =
                 new SoftReference<RolapSchema>(schema);
             if (md5Bytes != null) {
@@ -1012,21 +1015,21 @@ public class RolapSchema implements Schema {
             }
             mapUrlToSchema.put(schema.key, ref);
         }
-        
-        private static String getSchemaContent(Util.PropertyList connectInfo, String catalogUrl)
+
+        private static String getSchemaContent(
+            final Util.PropertyList connectInfo,
+            final String catalogUrl)
         {
             // We will return the first of the following:
             //  1. CatalogContent property if set
-            //  2. DynamicSchemaProcessor#processSchema if DynamicSchemaProcessor property set
-            //  3. Util.readVirtualFileAsString(catalogUrl) 
-          
+            //  2. DynamicSchemaProcessor#processSchema if set
+            //  3. Util.readVirtualFileAsString(catalogUrl)
+
             String catalogStr = connectInfo.get(
                 RolapConnectionProperties.CatalogContent.name());
-            
-            if( Util.isEmpty(catalogStr) )
-            {
-                if( Util.isEmpty(catalogUrl) )
-                {
+
+            if (Util.isEmpty(catalogStr)) {
+                if (Util.isEmpty(catalogUrl)) {
                     throw MondrianResource.instance()
                     .ConnectStringMandatoryProperties.ex(
                         RolapConnectionProperties.Catalog.name(),
@@ -1035,51 +1038,67 @@ public class RolapSchema implements Schema {
                 //check for a DynamicSchemaProcessor
                 String dynProcName = connectInfo.get(
                     RolapConnectionProperties.DynamicSchemaProcessor.name());
-                if (! Util.isEmpty(dynProcName)) {
-                    catalogStr = processDynamicSchema(dynProcName, catalogUrl, connectInfo);
+                if (!Util.isEmpty(dynProcName)) {
+                    catalogStr =
+                        processDynamicSchema(
+                            dynProcName, catalogUrl, connectInfo);
                 }
-                if( Util.isEmpty(catalogStr) )
-                {// just read the schema
+
+                if (Util.isEmpty(catalogStr)) {
+                    //read schema from file
                     try {
                         catalogStr = Util.readVirtualFileAsString(catalogUrl);
                     } catch (IOException e) {
-                      throw Util.newError(
-                          e,
-                          "loading schema from url " + catalogUrl);
+                        throw Util.newError(
+                            e,
+                            "loading schema from url " + catalogUrl);
                     }
                 }
             }
-            
+
             return catalogStr;
         }
-        
-        private static String getSchemaKey(Util.PropertyList connectInfo, String catalogUrl, String catalogContents)
+
+        private static String getSchemaKey(
+            final Util.PropertyList connectInfo,
+            final String catalogUrl,
+            final String catalogContents)
         {
-            if(!Util.isEmpty(connectInfo.get(RolapConnectionProperties.CatalogContent.name())) ||
-               !Util.isEmpty(connectInfo.get(RolapConnectionProperties.DynamicSchemaProcessor.name())))
+            final String catalogContentProp =
+                RolapConnectionProperties.CatalogContent.name();
+            final String dynamicSchemaProp =
+                RolapConnectionProperties.DynamicSchemaProcessor.name();
+
+            if (!Util.isEmpty(connectInfo.get(catalogContentProp))
+                || !Util.isEmpty(connectInfo.get(dynamicSchemaProp)))
             {
-              return catalogContents;
+                return catalogContents;
+            } else {
+                return catalogUrl;
             }
-            else return catalogUrl;
         }
-        
-        private static String processDynamicSchema(String dynProcName, String catalogUrl, Util.PropertyList connectInfo){
-          String catalogStr = null;  
-          try {
-                @SuppressWarnings("unchecked")
-                final Class<DynamicSchemaProcessor> clazz =
-                    (Class<DynamicSchemaProcessor>)
-                        Class.forName(dynProcName);
-                final Constructor<DynamicSchemaProcessor> ctor =
-                    clazz.getConstructor();
-                final DynamicSchemaProcessor dynProc = ctor.newInstance();
-                catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
+
+        private static String processDynamicSchema(
+            final String dynProcName,
+            final String catalogUrl,
+            final Util.PropertyList connectInfo)
+        {
+            String catalogStr = null;
+            try {
+                  @SuppressWarnings("unchecked")
+                  final Class<DynamicSchemaProcessor> clazz =
+                      (Class<DynamicSchemaProcessor>)
+                          Class.forName(dynProcName);
+                  final Constructor<DynamicSchemaProcessor> ctor =
+                      clazz.getConstructor();
+                  final DynamicSchemaProcessor dynProc = ctor.newInstance();
+                  catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
             } catch (Exception e) {
                 throw Util.newError(
                     e,
                     "loading DynamicSchemaProcessor " + dynProcName);
             }
-    
+
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
                     "Pool.get: create schema \"" + catalogUrl
@@ -1179,43 +1198,37 @@ public class RolapSchema implements Schema {
         synchronized boolean contains(RolapSchema rolapSchema) {
             return mapUrlToSchema.containsKey(rolapSchema.key);
         }
-        
-        private static String makeConnectionKey( 
+
+        private static String makeConnectionKey(
             final DataSource dataSource,
             final String catalogUrl,
             final String connectionKey,
             final String jdbcUser,
-            final String dataSourceStr) 
+            final String dataSourceStr)
         {
-//            
             String uuid = null;
-            
-            if(dataSource == null)
-            {
-                final StringBuilder buf = new StringBuilder(100);  
+
+            if (dataSource == null) {
+                final StringBuilder buf = new StringBuilder(100);
                 appendIfNotNull(buf, connectionKey);
                 appendIfNotNull(buf, jdbcUser);
                 appendIfNotNull(buf, dataSourceStr);
-                uuid = new ByteString(Util.digestMd5(buf.toString())).toString();
-            }
-            else 
-            {
+                uuid = new ByteString(
+                    Util.digestMd5(buf.toString())).toString();
+            } else {
                 uuid = "#external" + System.identityHashCode(dataSource);
-//                buf.append("external#");
-//                buf.append(System.identityHashCode(dataSource));
             }
-            
+
             return uuid;
         }
 
-        //TODO:
         private static String makeKey(String schemaKey, String connectionUuid)
         {
             StringBuilder buf = new StringBuilder(100);
-            
+
             appendIfNotNull(buf, schemaKey);
             appendIfNotNull(buf, connectionUuid);
-        
+
             return buf.toString();
         }
 
