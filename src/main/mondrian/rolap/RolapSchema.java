@@ -407,6 +407,9 @@ public class RolapSchema implements Schema {
                 md5Bytes = new ByteString(Util.digestMd5(catalogStr));
             }
 
+            //throw error if we have an incompatible schema
+            checkSchemaVersion(def);
+
             xmlSchema = new MondrianDef.Schema(def);
 
             if (getLogger().isDebugEnabled()) {
@@ -429,6 +432,69 @@ public class RolapSchema implements Schema {
 
         aggTableManager.initialize();
         setSchemaLoadDate();
+    }
+
+    private void checkSchemaVersion(final DOMWrapper schemaDom) {
+        final String thisVersion = getSupportedSchemaVersion();
+        String schemaVersion = schemaDom.getAttribute("metamodelVersion");
+
+        if (schemaVersion == null) {
+            if (hasMondrian4Elements(schemaDom)) {
+                schemaVersion = "4.x";
+            } else {
+                schemaVersion = "3.x";
+            }
+        }
+
+        if (compareMajorVersion(thisVersion, schemaVersion) < 0) {
+            String errorMsg =
+                "Schema version '" + schemaVersion
+                + "' is later than schema version '"
+                + thisVersion + "' supported by this version of Mondrian";
+            throw Util.newError(errorMsg);
+        }
+    }
+
+    private boolean hasMondrian4Elements(final DOMWrapper schemaDom) {
+        //check for Mondrian 4 schema elements:
+        for (DOMWrapper child : schemaDom.getChildren()) {
+            if ("PhysicalSchema".equals(child.getTagName())) {
+                //Schema/PhysicalSchema
+                return true;
+            } else if ("Cube".equals(child.getTagName())) {
+                for (DOMWrapper grandchild : child.getChildren()) {
+                    if ("MeasureGroups".equals(grandchild.getTagName())) {
+                        //Schema/Cube/MeasureGroups
+                        return true;
+                    }
+                }
+            }
+        }
+        //otherwise assume version 3.x
+        return false;
+    }
+
+    private int compareMajorVersion(String thisVersion, String schemaVersion) {
+        String[] versionParts = thisVersion.split("\\.");
+        final String thisMajor =
+            versionParts.length > 0 ? versionParts[0] : "3";
+        versionParts = schemaVersion.split("\\.");
+        final String schemaMajor =
+            versionParts.length > 0 ? versionParts[0] : "";
+
+        return thisMajor.compareTo(schemaMajor);
+    }
+
+    private String getSupportedSchemaVersion() {
+        //TODO: return a generic 3.x?
+        //      limit version to minor?
+        MondrianServer.MondrianVersion version =
+            internalConnection.getServer().getVersion();
+        if (version.getVersionString().equals("TRUNK-SNAPSHOT")) {
+            return "3.x";
+        }
+        return version.getMajorVersion() + "." + version.getMinorVersion();
+        //version.getVersionString();
     }
 
     private void setSchemaLoadDate() {
