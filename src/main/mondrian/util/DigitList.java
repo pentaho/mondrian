@@ -54,8 +54,10 @@ final class DigitList {
      * is, in a Java double.  This must not be increased, or garbage digits
      * will be generated, and should not be decreased, or accuracy will be lost.
      */
-    public static final int MAX_LONG_DIGITS = 19; // == Long.toString(Long.MAX_VALUE).length()
-    public static final int DBL_DIG = 17;
+    public static final int MAX_LONG_DIGITS = 19;
+    static {
+        assert MAX_LONG_DIGITS == Long.toString(Long.MAX_VALUE).length();
+    }
 
     /**
      * These data members are intentionally public and can be set directly.
@@ -75,8 +77,8 @@ final class DigitList {
      * unlimited magnitude.  The count value contains the number of significant
      * digits present in digits[].
      *
-     * Zero is represented by any DigitList with count == 0 or with each digits[i]
-     * for all i <= count == '0'.
+     * Zero is represented by any DigitList with count == 0 or with each
+     * digits[i] for all i <= count == '0'.
      */
     public int decimalAt = 0;
     public int count = 0;
@@ -91,268 +93,12 @@ final class DigitList {
     }
 
     /**
-     * Return true if the represented number is zero.
-     */
-    boolean isZero()
-    {
-        for (int i=0; i<count; ++i) if (digits[i] != '0') return false;
-        return true;
-    }
-
-// Unused as of ICU 2.6 - alan
-//    /**
-//     * Clears out the digits.
-//     * Use before appending them.
-//     * Typically, you set a series of digits with append, then at the point
-//     * you hit the decimal point, you set myDigitList.decimalAt = myDigitList.count;
-//     * then go on appending digits.
-//     */
-//    public void clear () {
-//        decimalAt = 0;
-//        count = 0;
-//    }
-
-    /**
      * Appends digits to the list.
      */
-    public void append (int digit) {
-        ensureCapacity(count+1, count);
+    public void append(int digit) {
+        ensureCapacity(count + 1, count);
         digits[count++] = (byte) digit;
     }
-    /**
-     * Utility routine to get the value of the digit list
-     * If (count == 0) this throws a NumberFormatException, which
-     * mimics Long.parseLong().
-     */
-    public final double getDouble() {
-        if (count == 0) return 0.0;
-        StringBuilder temp = new StringBuilder(count);
-        temp.append('.');
-        for (int i = 0; i < count; ++i) temp.append((char)(digits[i]));
-        temp.append('E');
-        temp.append(Integer.toString(decimalAt));
-        return Double.valueOf(temp.toString()).doubleValue();
-        // long value = Long.parseLong(temp.toString());
-        // return (value * Math.pow(10, decimalAt - count));
-    }
-
-    /**
-     * Utility routine to get the value of the digit list.
-     * If (count == 0) this returns 0, unlike Long.parseLong().
-     */
-    public final long getLong() {
-        // for now, simple implementation; later, do proper IEEE native stuff
-
-        if (count == 0) return 0;
-
-        // We have to check for this, because this is the one NEGATIVE value
-        // we represent.  If we tried to just pass the digits off to parseLong,
-        // we'd get a parse failure.
-        if (isLongMIN_VALUE()) return Long.MIN_VALUE;
-
-        StringBuilder temp = new StringBuilder(count);
-        for (int i = 0; i < decimalAt; ++i)
-        {
-            temp.append((i < count) ? (char)(digits[i]) : '0');
-        }
-        return Long.parseLong(temp.toString());
-    }
-
-    /**
-     * Return a <code>BigInteger</code> representing the value stored in this
-     * <code>DigitList</code>.  This method assumes that this object contains
-     * an integral value; if not, it will return an incorrect value.
-     * [bnf]
-     * @param isPositive determines the sign of the returned result
-     * @return the value of this object as a <code>BigInteger</code>
-     */
-    public BigInteger getBigInteger(boolean isPositive) {
-        if (isZero()) return BigInteger.valueOf(0);
-        //Eclipse stated the following is "dead code"
-        /*if (false) {
-            StringBuilder stringRep = new StringBuilder(count);
-            if (!isPositive) {
-                stringRep.append('-');
-            }
-            for (int i=0; i<count; ++i) {
-                stringRep.append((char) digits[i]);
-            }
-            int d = decimalAt;
-            while (d-- > count) {
-                stringRep.append('0');
-            }
-            return new BigInteger(stringRep.toString());
-        } else*/ {
-            int len = decimalAt > count ? decimalAt : count;
-            if (!isPositive) {
-                len += 1;
-            }
-            char[] text = new char[len];
-            int n = 0;
-            if (!isPositive) {
-                text[0] = '-';
-                for (int i = 0; i < count; ++i) {
-                    text[i+1] = (char)digits[i];
-                }
-                n = count+1;
-            } else {
-                for (int i = 0; i < count; ++i) {
-                    text[i] = (char)digits[i];
-                }
-                n = count;
-            }
-            for (int i = n; i < text.length; ++i) {
-                text[i] = '0';
-            } 
-            return new BigInteger(new String(text));
-        }
-    }
-
-    private String getStringRep(boolean isPositive) {
-        if (isZero()) return "0";
-        StringBuilder stringRep = new StringBuilder(count+1);
-        if (!isPositive) {
-            stringRep.append('-');
-        }
-        int d = decimalAt;
-        if (d < 0) {
-            stringRep.append('.');
-            while (d < 0) {
-                stringRep.append('0');
-                ++d;
-            }
-            d = -1;
-        }
-        for (int i=0; i<count; ++i) {
-            if (d == i) {
-                stringRep.append('.');
-            }
-            stringRep.append((char) digits[i]);
-        }
-        while (d-- > count) {
-            stringRep.append('0');
-        }
-        return stringRep.toString();
-    }
-
-    /**
-     * Return a <code>BigDecimal</code> representing the value stored in this
-     * <code>DigitList</code>.
-     * [bnf]
-     * @param isPositive determines the sign of the returned result
-     * @return the value of this object as a <code>BigDecimal</code>
-     */
-    ///CLOVER:OFF
-    // The method is in a protected class and is not called by anything
-    public java.math.BigDecimal getBigDecimal(boolean isPositive) {
-        if (isZero()) {
-            return java.math.BigDecimal.valueOf(0);
-        }
-        // if exponential notion is negative,
-        // we prefer to use BigDecimal constructor with scale,
-        // because it works better when extremely small value
-        // is used.  See #5698.
-        long scale = (long)count - (long)decimalAt;
-        if (scale > 0) {
-            int numDigits = count;
-            if (scale > (long)Integer.MAX_VALUE) {
-                // try to reduce the scale
-                long numShift = scale - (long)Integer.MAX_VALUE;
-                if (numShift < count) {
-                    numDigits -= numShift;
-                } else {
-                    // fallback to 0
-                    return new java.math.BigDecimal(0);
-                }
-            }
-            StringBuilder significantDigits = new StringBuilder(numDigits + 1);
-            if (!isPositive) {
-                significantDigits.append('-');
-            }
-            for (int i = 0; i < numDigits; i++) {
-                significantDigits.append((char)digits[i]);
-            }
-            BigInteger unscaledVal = new BigInteger(significantDigits.toString());
-            return new java.math.BigDecimal(unscaledVal, (int)scale);
-        } else {
-            // We should be able to use a negative scale value for a positive exponential
-            // value on JDK1.5.  But it is not supported by older JDK.  So, for now,
-            // we always use BigDecimal constructor which takes String.
-            return new java.math.BigDecimal(getStringRep(isPositive));
-        }
-    }
-    ///CLOVER:ON
-
-    /**
-     * Return whether or not this objects represented value is an integer.
-     * [bnf]
-     * @return true if the represented value of this object is an integer
-     */
-    boolean isIntegral() {
-        // Trim trailing zeros.  This does not change the represented value.
-        while (count > 0 && digits[count - 1] == (byte)'0') --count;
-        return count == 0 || decimalAt >= count;
-    }
-
-// Unused as of ICU 2.6 - alan
-//    /**
-//     * Return true if the number represented by this object can fit into
-//     * a long.
-//     */
-//    boolean fitsIntoLong(boolean isPositive)
-//    {
-//        // Figure out if the result will fit in a long.  We have to
-//        // first look for nonzero digits after the decimal point;
-//        // then check the size.  If the digit count is 18 or less, then
-//        // the value can definitely be represented as a long.  If it is 19
-//        // then it may be too large.
-//
-//        // Trim trailing zeros.  This does not change the represented value.
-//        while (count > 0 && digits[count - 1] == (byte)'0') --count;
-//
-//        if (count == 0) {
-//            // Positive zero fits into a long, but negative zero can only
-//            // be represented as a double. - bug 4162852
-//            return isPositive;
-//        }
-//
-//        if (decimalAt < count || decimalAt > MAX_LONG_DIGITS) return false;
-//
-//        if (decimalAt < MAX_LONG_DIGITS) return true;
-//
-//        // At this point we have decimalAt == count, and count == MAX_LONG_DIGITS.
-//        // The number will overflow if it is larger than 9223372036854775807
-//        // or smaller than -9223372036854775808.
-//        for (int i=0; i<count; ++i)
-//        {
-//            byte dig = digits[i], max = LONG_MIN_REP[i];
-//            if (dig > max) return false;
-//            if (dig < max) return true;
-//        }
-//
-//        // At this point the first count digits match.  If decimalAt is less
-//        // than count, then the remaining digits are zero, and we return true.
-//        if (count < decimalAt) return true;
-//
-//        // Now we have a representation of Long.MIN_VALUE, without the leading
-//        // negative sign.  If this represents a positive value, then it does
-//        // not fit; otherwise it fits.
-//        return !isPositive;
-//    }
-
-// Unused as of ICU 2.6 - alan
-//    /**
-//     * Set the digit list to a representation of the given double value.
-//     * This method supports fixed-point notation.
-//     * @param source Value to be converted; must not be Inf, -Inf, Nan,
-//     * or a value <= 0.
-//     * @param maximumFractionDigits The most fractional digits which should
-//     * be converted.
-//     */
-//    public final void set(double source, int maximumFractionDigits)
-//    {
-//        set(source, maximumFractionDigits, true);
-//    }
 
     /**
      * Set the digit list to a representation of the given double value.
@@ -366,7 +112,9 @@ final class DigitList {
      */
     final void set(double source, int maximumDigits, boolean fixedPoint)
     {
-        if (source == 0) source = 0;
+        if (source == 0) {
+            source = 0;
+        }
         // Generate a representation of the form DDDDD, DDDDD.DDDDD, or
         // DDDDDE+/-DDDDD.
         String rep = Double.toString(source);
@@ -375,9 +123,9 @@ final class DigitList {
 
         if (fixedPoint) {
             // The negative of the exponent represents the number of leading
-            // zeros between the decimal and the first non-zero digit, for
-            // a value < 0.1 (e.g., for 0.00123, -decimalAt == 2).  If this
-            // is more than the maximum fraction digits, then we have an underflow
+            // zeros between the decimal and the first non-zero digit, for a
+            // value < 0.1 (e.g., for 0.00123, -decimalAt == 2).  If this is
+            // more than the maximum fraction digits, then we have an underflow
             // for the printed representation.
             if (-decimalAt > maximumDigits) {
                 count = 0;
@@ -396,12 +144,17 @@ final class DigitList {
         }
 
         // Eliminate trailing zeros.
-        while (count > 1 && digits[count - 1] == '0')
+        while (count > 1 && digits[count - 1] == '0') {
             --count;
-
+        }
         // Eliminate digits beyond maximum digits to be displayed.
         // Round up if appropriate.
-        round(fixedPoint ? (maximumDigits + decimalAt) : maximumDigits == 0 ? -1 : maximumDigits);
+        round(
+            fixedPoint
+            ? (maximumDigits + decimalAt)
+            : maximumDigits == 0
+            ? -1
+            : maximumDigits);
     }
 
     /**
@@ -418,7 +171,7 @@ final class DigitList {
         int leadingZerosAfterDecimal = 0;
         boolean nonZeroDigitSeen = false;
         // Skip over leading '-'
-        int i=0;
+        int i = 0;
         if (rep.charAt(i) == '-') {
             ++i;
         }
@@ -443,7 +196,7 @@ final class DigitList {
                 }
 
                 if (nonZeroDigitSeen) {
-                    ensureCapacity(count+1, count);
+                    ensureCapacity(count + 1, count);
                     digits[count++] = (byte)c;
                 }
             }
@@ -469,19 +222,17 @@ final class DigitList {
     private boolean shouldRoundUp(int maximumDigits) {
         // variable not used boolean increment = false;
         // Implement IEEE half-even rounding
-        /*Bug 4243108
-          format(0.0) gives "0.1" if preceded by parse("99.99") [Richard/GCL]
-        */
         if (maximumDigits < count) {
             if (digits[maximumDigits] > '5') {
                 return true;
-            } else if (digits[maximumDigits] == '5' ) {
-                for (int i=maximumDigits+1; i<count; ++i) {
+            } else if (digits[maximumDigits] == '5') {
+                for (int i = maximumDigits + 1; i < count; ++i) {
                     if (digits[i] != '0') {
                         return true;
                     }
                 }
-                return maximumDigits > 0 && (digits[maximumDigits-1] % 2 != 0);
+                return maximumDigits > 0
+                    && (digits[maximumDigits - 1] % 2 != 0);
             }
         }
         return false;
@@ -502,11 +253,9 @@ final class DigitList {
                 // Rounding up involves incrementing digits from LSD to MSD.
                 // In most cases this is simple, but in a worst case situation
                 // (9999..99) we have to adjust the decimalAt value.
-                for (;;)
-                {
+                for (;;) {
                     --maximumDigits;
-                    if (maximumDigits < 0)
-                    {
+                    if (maximumDigits < 0) {
                         // We have all 9's, so we increment to a single digit
                         // of one and adjust the exponent.
                         digits[0] = (byte) '1';
@@ -516,8 +265,11 @@ final class DigitList {
                     }
 
                     ++digits[maximumDigits];
-                    if (digits[maximumDigits] <= '9') break;
-                    // digits[maximumDigits] = '0'; // Unnecessary since we'll truncate this
+                    if (digits[maximumDigits] <= '9') {
+                        break;
+                    }
+                    // Unnecessary since we'll truncate this:
+                    // digits[maximumDigits] = '0';
                 }
                 ++maximumDigits; // Increment for use as count
             }
@@ -526,7 +278,7 @@ final class DigitList {
         // Bug 4217661 DecimalFormat formats 1.001 to "1.00" instead of "1"
         // Eliminate trailing zeros. [Richard/GCL]
         // [dlf] moved outside if block, see ticket #6408
-        while (count > 1 && digits[count-1] == '0') {
+        while (count > 1 && digits[count - 1] == '0') {
           --count;
         }
     }
@@ -571,15 +323,21 @@ final class DigitList {
                 digits[--left] = (byte) (((long) '0') + (source % 10));
                 source /= 10;
             }
-            decimalAt = MAX_LONG_DIGITS-left;
+            decimalAt = MAX_LONG_DIGITS - left;
             // Don't copy trailing zeros
             // we are guaranteed that there is at least one non-zero digit,
             // so we don't have to check lower bounds
-            for (right = MAX_LONG_DIGITS - 1; digits[right] == (byte) '0'; --right) {}
+            for (right = MAX_LONG_DIGITS - 1;
+                 digits[right] == (byte) '0';
+                 --right)
+            {
+            }
             count = right - left + 1;
             System.arraycopy(digits, left, digits, 0, count);
-        }        
-        if (maximumDigits > 0) round(maximumDigits);
+        }
+        if (maximumDigits > 0) {
+            round(maximumDigits);
+        }
     }
 
     /**
@@ -596,8 +354,9 @@ final class DigitList {
         count = decimalAt = stringDigits.length();
 
         // Don't copy trailing zeros
-        while (count > 1 && stringDigits.charAt(count - 1) == '0') --count;
-
+        while (count > 1 && stringDigits.charAt(count - 1) == '0') {
+            --count;
+        }
         int offset = 0;
         if (stringDigits.charAt(0) == '-') {
             ++offset;
@@ -610,115 +369,9 @@ final class DigitList {
             digits[i] = (byte) stringDigits.charAt(i + offset);
         }
 
-        if (maximumDigits > 0) round(maximumDigits);
-    }
-
-    /**
-     * Internal method that sets this digit list to represent the
-     * given value.  The value is given as a String of the format
-     * returned by BigDecimal.
-     * @param stringDigits value to be represented with the following
-     * syntax, expressed as a regular expression: -?\d*.?\d*
-     * Must not be an empty string.
-     * @param maximumDigits The most digits which should be converted.
-     * If maximumDigits is lower than the number of significant digits
-     * in source, the representation will be rounded.  Ignored if <= 0.
-     * @param fixedPoint If true, then maximumDigits is the maximum
-     * fractional digits to be converted.  If false, total digits.
-     */
-    private void setBigDecimalDigits(String stringDigits,
-                                     int maximumDigits, boolean fixedPoint) {
-//|        // Find the first non-zero digit, the decimal, and the last non-zero digit.
-//|        int first=-1, last=stringDigits.length()-1, decimal=-1;
-//|        for (int i=0; (first<0 || decimal<0) && i<=last; ++i) {
-//|            char c = stringDigits.charAt(i);
-//|            if (c == '.') {
-//|                decimal = i;
-//|            } else if (first < 0 && (c >= '1' && c <= '9')) {
-//|                first = i;
-//|            }
-//|        }
-//|
-//|        if (first < 0) {
-//|            clear();
-//|            return;
-//|        }
-//|
-//|        // At this point we know there is at least one non-zero digit, so the
-//|        // following loop is safe.
-//|        for (;;) {
-//|            char c = stringDigits.charAt(last);
-//|            if (c != '0' && c != '.') {
-//|                break;
-//|            }
-//|            --last;
-//|        }
-//|
-//|        if (decimal < 0) {
-//|            decimal = stringDigits.length();
-//|        }
-//|
-//|        count = last - first;
-//|        if (decimal < first || decimal > last) {
-//|            ++count;
-//|        }
-//|        decimalAt = decimal - first;
-//|        if (decimalAt < 0) {
-//|            ++decimalAt;
-//|        }
-//|
-//|        ensureCapacity(count, 0);
-//|        for (int i = 0; i < count; ++i) {
-//|            digits[i] = (byte) stringDigits.charAt(first++);
-//|            if (first == decimal) {
-//|                ++first;
-//|            }
-//|        }
-
-        // The maxDigits here could also be Integer.MAX_VALUE
-        set(stringDigits, stringDigits.length());
-
-        // Eliminate digits beyond maximum digits to be displayed.
-        // Round up if appropriate.
-    // {dlf} Some callers depend on passing '0' to round to mean 'don't round', but
-    // rather than pass that information explicitly, we rely on some magic with maximumDigits
-    // and decimalAt.  Unfortunately, this is no good, because there are cases where maximumDigits
-    // is zero and we do want to round, e.g. BigDecimal values -1 < x < 1.  So since round
-    // changed to perform rounding when the argument is 0, we now force the argument
-    // to -1 in the situations where it matters.
-        round(fixedPoint ? (maximumDigits + decimalAt) : maximumDigits == 0 ? -1 : maximumDigits);
-    }
-
-    /**
-     * Set the digit list to a representation of the given BigDecimal value.
-     * [bnf]
-     * @param source Value to be converted
-     * @param maximumDigits The most digits which should be converted.
-     * If maximumDigits is lower than the number of significant digits
-     * in source, the representation will be rounded.  Ignored if <= 0.
-     * @param fixedPoint If true, then maximumDigits is the maximum
-     * fractional digits to be converted.  If false, total digits.
-     */
-    public final void set(java.math.BigDecimal source,
-                          int maximumDigits, boolean fixedPoint) {
-        setBigDecimalDigits(source.toString(), maximumDigits, fixedPoint);
-    }
-
-    /**
-     * Returns true if this DigitList represents Long.MIN_VALUE;
-     * false, otherwise.  This is required so that getLong() works.
-     */
-    private boolean isLongMIN_VALUE()
-    {
-        if (decimalAt != count || count != MAX_LONG_DIGITS)
-            return false;
-
-            for (int i = 0; i < count; ++i)
-        {
-            if (digits[i] != LONG_MIN_REP[i]) return false;
+        if (maximumDigits > 0) {
+            round(maximumDigits);
         }
-
-        return true;
     }
 
     private static byte[] LONG_MIN_REP;
@@ -728,87 +381,10 @@ final class DigitList {
         // Store the representation of LONG_MIN without the leading '-'
         String s = Long.toString(Long.MIN_VALUE);
         LONG_MIN_REP = new byte[MAX_LONG_DIGITS];
-        for (int i=0; i < MAX_LONG_DIGITS; ++i)
-        {
+        for (int i = 0; i < MAX_LONG_DIGITS; ++i) {
             LONG_MIN_REP[i] = (byte)s.charAt(i + 1);
         }
     }
-
-// Unused -- Alan 2003-05
-//    /**
-//     * Return the floor of the log base 10 of a given double.
-//     * This method compensates for inaccuracies which arise naturally when
-//     * computing logs, and always give the correct value.  The parameter
-//     * must be positive and finite.
-//     */
-//    private static final int log10(double d)
-//    {
-//        // The reason this routine is needed is that simply taking the
-//        // log and dividing by log10 yields a result which may be off
-//        // by 1 due to rounding errors.  For example, the naive log10
-//        // of 1.0e300 taken this way is 299, rather than 300.
-//        double log10 = Math.log(d) / LOG10;
-//        int ilog10 = (int)Math.floor(log10);
-//        // Positive logs could be too small, e.g. 0.99 instead of 1.0
-//        if (log10 > 0 && d >= Math.pow(10, ilog10 + 1))
-//        {
-//            ++ilog10;
-//        }
-//        // Negative logs could be too big, e.g. -0.99 instead of -1.0
-//        else if (log10 < 0 && d < Math.pow(10, ilog10))
-//        {
-//            --ilog10;
-//        }
-//        return ilog10;
-//    }
-//
-//    private static final double LOG10 = Math.log(10.0);
-
-    // (The following boilerplate methods are currently not called,
-    // and cannot be called by tests since this class is
-    // package-private.  The methods may be useful in the future, so
-    // we do not delete them.  2003-06-11 ICU 2.6 Alan)
-    ///CLOVER:OFF
-    /**
-     * equality test between two digit lists.
-     */
-    public boolean equals(Object obj) {
-        if (this == obj)                      // quick check
-            return true;
-        if (!(obj instanceof DigitList))         // (1) same object?
-            return false;
-        DigitList other = (DigitList) obj;
-        if (count != other.count ||
-        decimalAt != other.decimalAt)
-            return false;
-        for (int i = 0; i < count; i++)
-            if (digits[i] != other.digits[i])
-                return false;
-        return true;
-    }
-
-    /**
-     * Generates the hash code for the digit list.
-     */
-    public int hashCode() {
-        int hashcode = decimalAt;
-
-        for (int i = 0; i < count; i++)
-            hashcode = hashcode * 37 + digits[i];
-
-        return hashcode;
-    }
-
-    public String toString()
-    {
-        if (isZero()) return "0";
-        StringBuilder buf = new StringBuilder("0.");
-        for (int i=0; i<count; ++i) buf.append((char)digits[i]);
-        buf.append("x10^");
-        buf.append(decimalAt);
-        return buf.toString();
-    }
-    ///CLOVER:ON
 }
 
 // End DigitList.java
