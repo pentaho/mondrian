@@ -4,54 +4,46 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2012 Pentaho and others
+// Copyright (C) 2012-2012 Pentaho and others
 // All Rights Reserved.
-//
-// pedrovale, 20 September, 2012
 */
 package mondrian.rolap;
-
-import mondrian.test.FoodMartTestCase;
 
 import mondrian.olap.Connection;
 import mondrian.olap.MondrianDef;
 import mondrian.olap.MondrianDef.SQL;
+import mondrian.test.FoodMartTestCase;
 
 import junit.framework.Assert;
 
 import javax.sql.DataSource;
 
-
-
-
-
-
 /**
+ * Unit test for {@link RolapStar}.
  *
  * @author pedrovale
  */
 public class RolapStarTest extends FoodMartTestCase {
 
-public class RolapStarForTests extends RolapStar {
-      public RolapStarForTests(
-          final RolapSchema schema,
-          final DataSource dataSource,
-          final MondrianDef.Relation fact)
-      {
-        super(schema, dataSource, fact);
-      }
+    static class RolapStarForTests extends RolapStar {
+        public RolapStarForTests(
+            final RolapSchema schema,
+            final DataSource dataSource,
+            final MondrianDef.Relation fact)
+        {
+            super(schema, dataSource, fact);
+        }
 
-      public MondrianDef.RelationOrJoin cloneRelationForTests(
-          MondrianDef.Relation rel,
-          String possibleName)
-      {
-        return cloneRelation(rel, possibleName);
-      }
+        public MondrianDef.RelationOrJoin cloneRelationForTests(
+            MondrianDef.Relation rel,
+            String possibleName)
+        {
+            return cloneRelation(rel, possibleName);
+        }
     }
 
     RolapStar getStar(Connection con, String starName) {
-      RolapCube cube = (RolapCube) con.getSchema().lookupCube(starName, true);
+        RolapCube cube = (RolapCube) con.getSchema().lookupCube(starName, true);
         return cube.getStar();
     }
 
@@ -66,8 +58,8 @@ public class RolapStarForTests extends RolapStar {
     }
 
     /**
-     * Given a MondrianDef.Table, cloneRelation should respect the existing
-     * filters
+     * Tests that given a {@link MondrianDef.Table}, cloneRelation respects the
+     * existing filters.
      */
     public void testCloneRelationWithFilteredTable() {
       RolapStarForTests rs = getStar("sales");
