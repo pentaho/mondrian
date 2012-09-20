@@ -677,6 +677,7 @@ public class FunUtil extends Util {
                 sb.append("\n");
                 sb.append(tuple.toString());
             }
+            LOGGER.debug(sb.toString());
         }
 
         return result;
@@ -785,6 +786,7 @@ public class FunUtil extends Util {
                 sb.append("\n");
                 sb.append(tuple.toString());
             }
+            LOGGER.debug(sb.toString());
         }
 
         return tupleList;
