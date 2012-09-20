@@ -34,6 +34,8 @@ import java.util.*;
  * @since 1.0
  */
 public class FunUtil extends Util {
+    private static final Logger LOGGER =
+        Logger.getLogger(FunUtil.class);
     private static final String SORT_TIMING_NAME = "Sort";
     private static final String SORT_EVAL_TIMING_NAME = "EvalForSort";
 
@@ -656,20 +658,27 @@ public class FunUtil extends Util {
 
         Comparator<List<Member>> comparator;
         if (brk) {
-            BreakTupleComparator c =
+            comparator =
                 new BreakTupleComparator(evaluator, exp, arity);
-            c.preloadValues(result);
-            comparator = c.wrap();
             if (desc) {
                 comparator = Collections.reverseOrder(comparator);
             }
         } else {
             comparator =
-                new HierarchicalTupleComparator(evaluator, exp, arity, desc)
-                .wrap();
+                new HierarchicalTupleComparator(evaluator, exp, arity, desc);
         }
 
         Arrays.sort(tuples, comparator);
+
+        if (LOGGER.isDebugEnabled()) {
+            StringBuilder sb =
+                new StringBuilder("FunUtil.sortTuples returned:");
+            for (List<Member> tuple : tupleList) {
+                sb.append("\n");
+                sb.append(tuple.toString());
+            }
+        }
+
         return result;
     }
 
@@ -752,22 +761,32 @@ public class FunUtil extends Util {
                 TupleExpMemoComparator comp =
                     new BreakTupleComparator(evaluator, key.key, arity);
                 comp.preloadValues(tupleList);
-                chain.addComparator(comp.wrap(), key.direction.descending);
+                chain.addComparator(comp, key.direction.descending);
             } else if (orderByKey) {
                 TupleExpMemoComparator comp =
                     new HierarchicalTupleKeyComparator(
                         evaluator, key.key, arity);
                 comp.preloadValues(tupleList);
-                chain.addComparator(comp.wrap(), key.direction.descending);
+                chain.addComparator(comp, key.direction.descending);
             } else {
                 TupleExpComparator comp =
                     new HierarchicalTupleComparator(
                         evaluator, key.key, arity, key.direction.descending);
-                chain.addComparator(comp.wrap(), false);
+                chain.addComparator(comp, false);
             }
         }
 
         Collections.sort(tupleList, chain);
+
+        if (LOGGER.isDebugEnabled()) {
+            StringBuilder sb =
+                new StringBuilder("FunUtil.sortTuples returned:");
+            for (List<Member> tuple : tupleList) {
+                sb.append("\n");
+                sb.append(tuple.toString());
+            }
+        }
+
         return tupleList;
     }
 
@@ -797,7 +816,7 @@ public class FunUtil extends Util {
         boolean desc)
     {
         Comparator<List<Member>> comp =
-            new BreakTupleComparator(evaluator, exp, list.getArity()).wrap();
+            new BreakTupleComparator(evaluator, exp, list.getArity());
         if (desc) {
             comp = Collections.reverseOrder(comp);
         }
@@ -848,8 +867,19 @@ public class FunUtil extends Util {
             return fixedList;
         }
         Comparator<List<Member>> comparator =
-            new HierarchizeTupleComparator(fixedList.getArity(), post).wrap();
+            new HierarchizeTupleComparator(fixedList.getArity(), post);
+
         Collections.sort(fixedList, comparator);
+
+        if (LOGGER.isDebugEnabled()) {
+            StringBuilder sb =
+                new StringBuilder("FunUtil.hierarchizeTupleList returned:");
+            for (List<Member> tuple : fixedList) {
+                sb.append("\n");
+                sb.append(tuple.toString());
+            }
+        }
+
         return fixedList;
     }
 
@@ -2847,29 +2877,9 @@ public class FunUtil extends Util {
     private static abstract class TupleComparator
         implements Comparator<List<Member>>
     {
-        private static final Logger LOGGER =
-            Logger.getLogger(TupleComparator.class);
         final int arity;
-
         TupleComparator(int arity) {
             this.arity = arity;
-        }
-
-        Comparator<List<Member>> wrap() {
-            final TupleComparator base = this;
-            if (LOGGER.isDebugEnabled()) {
-                return new Comparator<List<Member>>() {
-                    public int compare(List<Member> a1, List<Member> a2) {
-                        int c = base.compare(a1, a2);
-                        LOGGER.debug(
-                            "compare {" + a1 + "}, {"
-                            + a2 + "} yields " + c);
-                        return c;
-                    }
-                };
-            } else {
-                return this;
-            }
         }
     }
 

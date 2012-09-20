@@ -4,8 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2012-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.xmla;
@@ -49,18 +48,24 @@ public class XmlaMetaDataConstraintsTest extends XmlaBaseTestCase {
                 outputFile2 = File.createTempFile("cat2", ".xml");
                 outputFile1.deleteOnExit();
                 outputFile2.deleteOnExit();
-                BufferedWriter bw1 = new BufferedWriter(new FileWriter(outputFile1));
-                BufferedWriter bw2 = new BufferedWriter(new FileWriter(outputFile2));
+                BufferedWriter bw1 =
+                    new BufferedWriter(new FileWriter(outputFile1));
+                BufferedWriter bw2 =
+                    new BufferedWriter(new FileWriter(outputFile2));
 
                 // Input
-                DataInputStream in = new DataInputStream(Util.readVirtualFile(catalog));
-                BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                DataInputStream in =
+                    new DataInputStream(Util.readVirtualFile(catalog));
+                BufferedReader br =
+                    new BufferedReader(new InputStreamReader(in));
 
                 String strLine;
                 while ((strLine = br.readLine()) != null)   {
-                    bw1.write(strLine.replaceAll("FoodMart", "FoodMart1schema"));
+                    bw1.write(
+                        strLine.replaceAll("FoodMart", "FoodMart1schema"));
                     bw1.newLine();
-                    bw2.write(strLine.replaceAll("FoodMart", "FoodMart2schema"));
+                    bw2.write(
+                        strLine.replaceAll("FoodMart", "FoodMart2schema"));
                     bw2.newLine();
                 }
 
