@@ -11,6 +11,8 @@
 */
 package mondrian.rolap;
 
+import mondrian.mdx.MdxVisitorImpl;
+import mondrian.mdx.MemberExpr;
 import mondrian.olap.*;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.sql.*;
@@ -18,6 +20,7 @@ import mondrian.rolap.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.sql.DataSource;
 
 /**
@@ -60,21 +63,32 @@ public class RolapNativeFilter extends RolapNativeSet {
         /**
          * {@inheritDoc}
          *
-         * <p>A filter must join on the fact table if the
-         * evaluation context contains a member which isn't
-         * the 'all' member, in which case we have to link
-         * to the fact table.
+         * <p>Overriding isJoinRequired() for native filters because
+         * we have to force a join to the fact table if the filter
+         * expression references a measure.
          */
         public boolean isJoinRequired() {
-            final Member[] nonAllMembers =
-                this.getEvaluator().getNonAllMembers();
-            if ((nonAllMembers.length == 1
-                    && nonAllMembers[0].isMeasure())
-                && !super.isJoinRequired())
-            {
-                return false;
+            // Use a visitor and check all member expressions.
+            // If any of them is a measure, we will have to
+            // force the join to the fact table. If it is something
+            // else then we don't really care. It will show up in
+            // the evaluator as a non-all member and trigger the
+            // join when we call RolapNativeSet.isJoinRequired().
+            final AtomicBoolean mustJoin = new AtomicBoolean(false);
+            filterExpr.accept(
+                new MdxVisitorImpl() {
+                    public Object visit(MemberExpr memberExpr) {
+                        if (memberExpr.getMember().isMeasure()) {
+                            mustJoin.set(true);
+                            return null;
+                        }
+                        return super.visit(memberExpr);
+                    }
+                });
+            if (mustJoin.get() || super.isJoinRequired()) {
+                return true;
             }
-            return true;
+            return false;
         }
 
         public void addConstraint(

@@ -586,6 +586,22 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
             + "Row #0: 0\n" + "Row #0: 0\n");
     }
 
+    public void testMondrian1133() {
+        getTestContext().executeQuery(
+            "With\n"
+            + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Markets], Not IsEmpty ([Measures].[Sales]))'\n"
+            + "Set [*SORTED_ROW_AXIS] as 'Order([*CJ_ROW_AXIS],[Markets].CurrentMember.OrderKey,BASC,Ancestor([Markets].CurrentMember,[Markets].[Territory]).OrderKey,BASC)'\n"
+            + "Set [*BASE_MEMBERS_Markets] as '[Markets].[Country].Members'\n"
+            + "Set [*BASE_MEMBERS_Measures] as '{[Measures].[*FORMATTED_MEASURE_0]}'\n"
+            + "Set [*CJ_ROW_AXIS] as 'Generate([*NATIVE_CJ_SET], {([Markets].currentMember)})'\n"
+            + "Set [*CJ_COL_AXIS] as '[*NATIVE_CJ_SET]'\n"
+            + "Member [Measures].[*FORMATTED_MEASURE_0] as '[Measures].[Sales]', FORMAT_STRING = '#,###', SOLVE_ORDER=400\n"
+            + "Select\n"
+            + "[*BASE_MEMBERS_Measures] on columns,\n"
+            + "[*SORTED_ROW_AXIS] on rows\n"
+            + "From [SteelWheelsSales]\n");
+    }
+
     /**
      * This is a test for
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-1285">MONDRIAN-1285</a>
