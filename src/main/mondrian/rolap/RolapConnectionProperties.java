@@ -165,7 +165,14 @@ public enum RolapConnectionProperties {
      * running in the current JVM. If there are multiple mondrian servers, it
      * ensures that the connection belongs to the correct one.
      */
-    Instance;
+    Instance,
+
+    /**
+     * The "JdbcConnectionUuid" is the unique identifier for the connection.
+     * If defined, Mondrian will assume that two connections bearing the same JdbcConnectionUuid
+     * point to perfectly identical databases without looking at any other properties. 
+     */
+    JdbcConnectionUuid;
 
     /**
      * Any property beginning with this value will be added to the
