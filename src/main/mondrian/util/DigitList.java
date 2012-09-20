@@ -1,11 +1,19 @@
-package mondrian.util;
-
 /*
- *******************************************************************************
- * Copyright (C) 1996-2011, International Business Machines Corporation and    *
- * others. All Rights Reserved.                                                *
- *******************************************************************************
- */
+// This software is subject to the terms of the Eclipse Public License v1.0
+// Agreement, available at the following URL:
+// http://www.eclipse.org/legal/epl-v10.html.
+// You must accept the terms of that agreement to use this software.
+//
+// Copyright (C) 2012-2012 Pentaho and others
+// All Rights Reserved.
+//
+// -----------------------------------------------------------------------------
+// Copied from the ICU project's DigitList class.
+//
+// Copyright (C) 1996-2011, International Business Machines Corporation and
+// others. All Rights Reserved.
+*/
+package mondrian.util;
 
 import java.math.BigInteger;
 
@@ -35,13 +43,11 @@ import java.math.BigInteger;
  *
  * @see java.util.Locale
  * @see java.text.Format
- * @see NumberFormat
- * @see DecimalFormat
  * @see java.text.ChoiceFormat
  * @see java.text.MessageFormat
  * @version      1.18 08/12/98
  * @author       Mark Davis, Alan Liu
- * */
+ */
 final class DigitList {
     /**
      * The maximum number of significant digits in an IEEE 754 double, that
@@ -276,48 +282,6 @@ final class DigitList {
         }
     }
     ///CLOVER:ON
-
-    /**
-     * Return an <code>ICU BigDecimal</code> representing the value stored in this
-     * <code>DigitList</code>.
-     * [bnf]
-     * @param isPositive determines the sign of the returned result
-     * @return the value of this object as a <code>BigDecimal</code>
-     */
-    public com.ibm.icu.math.BigDecimal getBigDecimalICU(boolean isPositive) {
-        if (isZero()) {
-            return com.ibm.icu.math.BigDecimal.valueOf(0);
-        }
-        // if exponential notion is negative,
-        // we prefer to use BigDecimal constructor with scale,
-        // because it works better when extremely small value
-        // is used.  See #5698.
-        long scale = (long)count - (long)decimalAt;
-        if (scale > 0) {
-            int numDigits = count;
-            if (scale > (long)Integer.MAX_VALUE) {
-                // try to reduce the scale
-                long numShift = scale - (long)Integer.MAX_VALUE;
-                if (numShift < count) {
-                    numDigits -= numShift;
-                } else {
-                    // fallback to 0
-                    return new com.ibm.icu.math.BigDecimal(0);
-                }
-            }
-            StringBuilder significantDigits = new StringBuilder(numDigits + 1);
-            if (!isPositive) {
-                significantDigits.append('-');
-            }
-            for (int i = 0; i < numDigits; i++) {
-                significantDigits.append((char)digits[i]);
-            }
-            BigInteger unscaledVal = new BigInteger(significantDigits.toString());
-            return new com.ibm.icu.math.BigDecimal(unscaledVal, (int)scale);
-        } else {
-            return new com.ibm.icu.math.BigDecimal(getStringRep(isPositive));
-        }
-    }
 
     /**
      * Return whether or not this objects represented value is an integer.
@@ -740,21 +704,6 @@ final class DigitList {
         setBigDecimalDigits(source.toString(), maximumDigits, fixedPoint);
     }
 
-    /*
-     * Set the digit list to a representation of the given BigDecimal value.
-     * [bnf]
-     * @param source Value to be converted
-     * @param maximumDigits The most digits which should be converted.
-     * If maximumDigits is lower than the number of significant digits
-     * in source, the representation will be rounded.  Ignored if <= 0.
-     * @param fixedPoint If true, then maximumDigits is the maximum
-     * fractional digits to be converted.  If false, total digits.
-     */
-    public final void set(com.ibm.icu.math.BigDecimal source,
-                          int maximumDigits, boolean fixedPoint) {
-        setBigDecimalDigits(source.toString(), maximumDigits, fixedPoint);
-    }
-
     /**
      * Returns true if this DigitList represents Long.MIN_VALUE;
      * false, otherwise.  This is required so that getLong() works.
@@ -862,3 +811,4 @@ final class DigitList {
     ///CLOVER:ON
 }
 
+// End DigitList.java
