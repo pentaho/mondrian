@@ -1509,6 +1509,20 @@ Revision is $Id$
                 this.alias = alias;
                 this.hintMap = buildHintMap(tablehints);
             }
+
+            public Table(Table tbl, String possibleName) {
+                this(tbl.schema, tbl.name, possibleName, tbl.tableHints);
+                
+                // Remake the filter with the new alias
+                if (tbl.filter != null) {
+                    this.filter = new SQL();
+                    this.filter.dialect = tbl.filter.dialect;
+                    if (tbl.filter.cdata != null)
+                        this.filter.cdata =
+                            tbl.filter.cdata.replace(tbl.alias, possibleName);
+                }
+            }
+            
             private java.util.Map<String,String> buildHintMap(Hint[] th) {
                 java.util.Map<String,String> h =
                     new java.util.HashMap<String,String>();
