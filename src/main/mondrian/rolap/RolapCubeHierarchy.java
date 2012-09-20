@@ -792,12 +792,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             RolapCubeLevel level)
         {
             synchronized (cacheHelper) {
-                if (member.getKey() == null) {
+                if (member.getKey() == RolapUtil.sqlNullValue) {
                     if (member.isAll()) {
                         return getAllMember();
                     }
-
-                    throw new NullPointerException();
                 }
 
                 RolapCubeMember cubeMember;
@@ -1066,12 +1064,10 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             RolapMember member,
             RolapCubeLevel level)
         {
-            if (member.getKey() == null) {
+            if (member.getKey() == RolapUtil.sqlNullValue) {
                 if (member.isAll()) {
                     return getAllMember();
                 }
-
-                throw new NullPointerException();
             }
 
             return new RolapCubeMember(parent, member, level);
