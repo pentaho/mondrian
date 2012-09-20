@@ -30,37 +30,9 @@ import javax.sql.DataSource;
 
 public class RolapSchemaPoolTest extends FoodMartTestCase {
 
-    private static final ThreadLocal<InitialContext> THREAD_INITIAL_CONTEXT =
-        new ThreadLocal<InitialContext>();
-
     public RolapSchemaPoolTest(String name) {
         super(name);
     }
-
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        if (!NamingManager.hasInitialContextFactoryBuilder()) {
-            NamingManager.setInitialContextFactoryBuilder(
-                new InitialContextFactoryBuilder() {
-                    public InitialContextFactory createInitialContextFactory(
-                        Hashtable<?, ?> environment)
-                        throws NamingException
-                    {
-                        return new InitialContextFactory() {
-                            public Context getInitialContext(
-                                Hashtable<?, ?> environment)
-                                throws NamingException
-                            {
-                                return THREAD_INITIAL_CONTEXT.get();
-                            }
-                        };
-                    }
-                }
-           );
-        }
-    }
-
 
     public void testBasicSchemaFetch() {
         RolapSchema.Pool schemaPool = RolapSchema.Pool.instance();
