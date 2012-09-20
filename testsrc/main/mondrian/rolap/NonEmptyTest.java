@@ -4894,15 +4894,25 @@ public class NonEmptyTest extends BatchTestCase {
             + "    <Measure name=\"Store Sales\" column=\"store_sales\" aggregator=\"sum\"\n"
             + "      formatString=\"#,###.00\"/>\n"
             + "  </Cube>\n"
+            + "<Role name=\"Role1\">\n"
+            + "  <SchemaGrant access=\"none\">\n"
+            + "    <CubeGrant cube=\"Sales1\" access=\"all\">\n"
+            + "      <HierarchyGrant hierarchy=\"[Time]\" access=\"custom\" rollupPolicy=\"partial\">\n"
+            + "        <MemberGrant member=\"[Time].[Year].[1997]\" access=\"all\"/>\n"
+            + "      </HierarchyGrant>\n"
+            + "    </CubeGrant>\n"
+            + "  </SchemaGrant>\n"
+            + "</Role> \n"
             + "</Schema>\n";
-        String query =
+
+        final String query =
             "With\n"
             + "Set [*BASE_MEMBERS_Product] as 'Filter([Store].[Store State].Members,[Store].CurrentMember.Caption Matches (\"(?i).*CA.*\"))'\n"
             + "Select\n"
             + "[*BASE_MEMBERS_Product] on columns\n"
             + "From [Sales1] \n";
 
-        String sql =
+        final String sql =
             "select\n"
             + "    `store`.`store_country` as `c0`,\n"
             + "    `store`.`store_state` as `c1`\n"
@@ -4916,15 +4926,42 @@ public class NonEmptyTest extends BatchTestCase {
             + "order by\n"
             + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
             + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
+        final String sqlWithRoles =
+            "select\n"
+            + "    `store`.`store_country` as `c0`,\n"
+            + "    `store`.`store_state` as `c1`\n"
+            + "from\n"
+            + "    `store` as `store`,\n"
+            + "    `time_by_day` as `time_by_day`,\n"
+            + "    `sales_fact_1997` as `sales_fact_1997`\n"
+            + "where\n"
+            + "    `sales_fact_1997`.`time_id` = `time_by_day`.`time_id`\n"
+            + "and\n"
+            + "    (`time_by_day`.`month_of_year`) in ((1), (2), (3), (4), (5), (6), (7), (8), (9), (10), (11), (12))\n"
+            + "group by\n"
+            + "    `store`.`store_country`,\n"
+            + "    `store`.`store_state`\n"
+            + "having\n"
+            + "    c1 REGEXP '.*CA.*'\n"
+            + "order by\n"
+            + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC,\n"
+            + "    ISNULL(`store`.`store_state`) ASC, `store`.`store_state` ASC";
 
-        SqlPattern[] patterns = {
+        final SqlPattern[] patterns = {
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL, sql, sql)
+        };
+        final SqlPattern[] patternsWithRoles = {
+            new SqlPattern(
+                Dialect.DatabaseProduct.MYSQL, sqlWithRoles, sqlWithRoles)
         };
 
         final TestContext context =
             TestContext.instance().withSchema(schema);
+
+        // Actual tests.
         assertQuerySql(context, query, patterns);
+        assertQuerySql(context.withRole("Role1"), query, patternsWithRoles);
     }
 }
 
