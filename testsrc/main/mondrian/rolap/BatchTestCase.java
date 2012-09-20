@@ -588,23 +588,27 @@ public class BatchTestCase extends FoodMartTestCase {
         // Clear the cache for the Sales cube, so the query runs as if
         // for the first time. (TODO: Cleaner way to do this.)
         final Cube salesCube =
-            testContext.getConnection().getSchema().lookupCube("Sales", true);
-        RolapCubeHierarchy hierarchy =
-            (RolapCubeHierarchy) salesCube.lookupHierarchy(
-                new Id.NameSegment("Stores", Id.Quoting.UNQUOTED),
-                false);
-        if (hierarchy == null) {
-            // In legacy schema, hierarchy is called "Store".
-            hierarchy =
+            testContext.getConnection().getSchema().lookupCube("Sales", false);
+        if (salesCube != null) {
+            // the sales cube may not be present in some tests which use
+            // withSchema().
+            RolapCubeHierarchy hierarchy =
                 (RolapCubeHierarchy) salesCube.lookupHierarchy(
-                    new Id.NameSegment("Store", Id.Quoting.UNQUOTED),
+                    new Id.NameSegment("Stores", Id.Quoting.UNQUOTED),
                     false);
-        }
-        if (hierarchy.getMemberReader() instanceof SmartMemberReader) {
+            if (hierarchy == null) {
+                // In legacy schema, hierarchy is called "Store".
+                hierarchy =
+                    (RolapCubeHierarchy) salesCube.lookupHierarchy(
+                        new Id.NameSegment("Store", Id.Quoting.UNQUOTED),
+                        false);
+            }
+
+            if (hierarchy.getMemberReader() instanceof SmartMemberReader) {
+                clear((SmartMemberReader) hierarchy.getMemberReader());
+            }
             clear((SmartMemberReader) hierarchy.getMemberReader());
         }
-        clear((SmartMemberReader) hierarchy.getMemberReader());
-
         // Flush the cache, to ensure that the query gets executed.
         for (RolapStar star : cube.getStars()) {
             star.clearCachedAggregations(true);
