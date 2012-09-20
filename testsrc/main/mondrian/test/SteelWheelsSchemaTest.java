@@ -585,6 +585,9 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
     }
 
     public void testMondrian1133() {
+        if (!getTestContext().databaseIsValid()) {
+            return;
+        }
         getTestContext().executeQuery(
             "With\n"
             + "Set [*NATIVE_CJ_SET] as 'Filter([*BASE_MEMBERS_Markets], Not IsEmpty ([Measures].[Sales]))'\n"
