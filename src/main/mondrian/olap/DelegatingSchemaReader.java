@@ -5,8 +5,8 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho
 // Copyright (C) 2004-2005 TONBELLER AG
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -16,6 +16,8 @@ import mondrian.rolap.RolapSchema;
 import mondrian.rolap.RolapUtil;
 
 import java.util.List;
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 /**
@@ -283,6 +285,13 @@ public abstract class DelegatingSchemaReader implements SchemaReader {
         return RolapUtil.locusSchemaReader(
             schemaReader.getSchema().getInternalConnection(),
             this);
+    }
+
+    public Map<? extends Member, Access> getMemberChildrenWithDetails(
+        Member member,
+        Evaluator evaluator)
+    {
+        return schemaReader.getMemberChildrenWithDetails(member, evaluator);
     }
 }
 

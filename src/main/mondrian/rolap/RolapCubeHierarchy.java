@@ -667,7 +667,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             }
         }
 
-        public void getMemberChildren(
+        public Map<? extends Member, Access> getMemberChildren(
             List<RolapMember> parentMembers,
             List<RolapMember> children,
             MemberChildrenConstraint constraint)
@@ -693,6 +693,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
                     readMemberChildren(missed, children, constraint);
                 }
             }
+            return Util.toNullValuesMap(children);
         }
 
 
@@ -978,7 +979,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             }
         }
 
-        public void getMemberChildren(
+        public Map<? extends Member, Access> getMemberChildren(
             List<RolapMember> parentMembers,
             List<RolapMember> children,
             MemberChildrenConstraint constraint)
@@ -993,6 +994,7 @@ public class RolapCubeHierarchy extends RolapHierarchy {
             if (missed.size() > 0) {
                 readMemberChildren(missed, children, constraint);
             }
+            return Util.toNullValuesMap(children);
         }
 
 

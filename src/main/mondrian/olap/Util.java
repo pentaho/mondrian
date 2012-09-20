@@ -19,6 +19,7 @@ import mondrian.rolap.*;
 import mondrian.spi.UserDefinedFunction;
 import mondrian.util.*;
 
+import org.apache.commons.collections.keyvalue.AbstractMapEntry;
 import org.apache.commons.vfs.*;
 import org.apache.commons.vfs.provider.http.HttpFileObject;
 import org.apache.log4j.Logger;
@@ -4372,6 +4373,118 @@ public class Util extends XOMUtil {
         }
     }
 
+    /**
+     * Transforms a list into a map for which all the keys return
+     * a null value associated to it.
+     *
+     * <p>The list passed as an argument will be used to back
+     * the map returned and as many methods are overridden as
+     * possible to make sure that we don't iterate over the backing
+     * list when creating it and when performing operations like
+     * .size(), entrySet() and contains().
+     *
+     * <p>The returned map is to be considered immutable. It will
+     * throw an {@link UnsupportedOperationException} if attempts to
+     * modify it are made.
+     */
+    public static <K, V> Map<K, V> toNullValuesMap(List<K> list) {
+        return new NullValuesMap<K, V>(list);
+    }
+
+    private static class NullValuesMap<K, V> extends AbstractMap<K, V> {
+        private final List<K> list;
+        private NullValuesMap(List<K> list) {
+            super();
+            this.list = Collections.unmodifiableList(list);
+        }
+        public Set<Entry<K, V>> entrySet() {
+            return new AbstractSet<Entry<K, V>>() {
+                public Iterator<Entry<K, V>>
+                    iterator()
+                {
+                    return new Iterator<Entry<K, V>>() {
+                        private int pt = -1;
+                        public void remove() {
+                            throw new UnsupportedOperationException();
+                        }
+                        @SuppressWarnings("unchecked")
+                        public Entry<K, V> next() {
+                            return new AbstractMapEntry(
+                                list.get(++pt), null) {};
+                        }
+                        public boolean hasNext() {
+                            return pt < list.size();
+                        }
+                    };
+                }
+                public int size() {
+                    return list.size();
+                }
+                public boolean contains(Object o) {
+                    if (o instanceof Entry) {
+                        if (list.contains(((Entry) o).getKey())) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            };
+        }
+        public Set<K> keySet() {
+            return new AbstractSet<K>() {
+                public Iterator<K> iterator() {
+                    return new Iterator<K>() {
+                        private int pt = -1;
+                        public void remove() {
+                            throw new UnsupportedOperationException();
+                        }
+                        public K next() {
+                            return list.get(++pt);
+                        }
+                        public boolean hasNext() {
+                            return pt < list.size();
+                        }
+                    };
+                }
+                public int size() {
+                    return list.size();
+                }
+                public boolean contains(Object o) {
+                    return list.contains(o);
+                }
+            };
+        }
+        public Collection<V> values() {
+            return new AbstractList<V>() {
+                public V get(int index) {
+                    return null;
+                }
+                public int size() {
+                    return list.size();
+                }
+                public boolean contains(Object o) {
+                    if (o == null && size() > 0) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            };
+        }
+        public V get(Object key) {
+            return null;
+        }
+        public boolean containsKey(Object key) {
+            return list.contains(key);
+        }
+        public boolean containsValue(Object o) {
+            if (o == null && size() > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
 }
 
 // End Util.java

@@ -26,6 +26,7 @@ import org.eigenbase.util.property.StringProperty;
 
 import java.sql.*;
 import java.util.*;
+
 import javax.sql.DataSource;
 
 /**
@@ -394,12 +395,11 @@ RME is this right
 
                     Property[] properties = level.getProperties();
                     for (Property property : properties) {
-                        /* REVIEW emcdermid 9-Jul-2009:
-                         * Should we also look up the value in the
-                         * pool here, rather than setting it directly?
-                         * Presumably the value is already in the pool
-                         * as a result of makeMember().
-                         */
+                        // REVIEW emcdermid 9-Jul-2009:
+                        // Should we also look up the value in the
+                        // pool here, rather than setting it directly?
+                        // Presumably the value is already in the pool
+                        // as a result of makeMember().
                         member.setProperty(
                             property.getName(),
                             accessors.get(column).get());
@@ -800,7 +800,7 @@ RME is this right
         getMemberChildren(parentMembers, children, constraint);
     }
 
-    public void getMemberChildren(
+    public Map<? extends Member, Access> getMemberChildren(
         List<RolapMember> parentMembers,
         List<RolapMember> children,
         MemberChildrenConstraint mcc)
@@ -815,13 +815,14 @@ RME is this right
             List<RolapMember> list =
                 getMembersInLevel(childLevel, lmc);
             children.addAll(list);
-            return;
+            return Util.toNullValuesMap(children);
         }
 
         // fetch them one by one
         for (RolapMember parentMember : parentMembers) {
             getMemberChildren(parentMember, children, mcc);
         }
+        return Util.toNullValuesMap(children);
     }
 
     public void getMemberChildren(
@@ -833,7 +834,7 @@ RME is this right
         getMemberChildren(parentMember, children, constraint);
     }
 
-    public void getMemberChildren(
+    public Map<? extends Member, Access> getMemberChildren(
         RolapMember parentMember,
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
@@ -844,9 +845,10 @@ RME is this right
             && parentMember.isCalculated()
             && !parentMember.getLevel().isParentChild())
         {
-            return;
+            return Util.toNullValuesMap((List)Collections.emptyList());
         }
         getMemberChildren2(parentMember, children, constraint);
+        return Util.toNullValuesMap(children);
     }
 
     /**

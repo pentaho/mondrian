@@ -12,12 +12,15 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Access;
 import mondrian.olap.Hierarchy;
+import mondrian.olap.Member;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * A <code>MemberReader</code> implements common operations to retrieve members
@@ -85,8 +88,13 @@ interface MemberReader extends MemberSource {
      * @param member Members whose children to find
      * @param children List to populate with members
      * @param constraint Constraint
+     * @return After populating the list passed as an argument,
+     * this method returns a map of the members it just populated
+     * along with the Access information applicable. If no access
+     * control applies to the member, the map will contain
+     * <code>null</code> values.
      */
-    void getMemberChildren(
+    Map<? extends Member, Access> getMemberChildren(
         RolapMember member,
         List<RolapMember> children,
         MemberChildrenConstraint constraint);
@@ -98,8 +106,13 @@ interface MemberReader extends MemberSource {
      * @param parentMembers List of members whose children to find
      * @param children List to populate with members
      * @param constraint Constraint
+     * @return After populating the list passed as an argument,
+     * this method returns a map of the members it just populated
+     * along with the Access information applicable. If no access
+     * control applies to the member, the map will contain
+     * <code>null</code> values.
      */
-    void getMemberChildren(
+    Map<? extends Member, Access> getMemberChildren(
         List<RolapMember> parentMembers,
         List<RolapMember> children,
         MemberChildrenConstraint constraint);
