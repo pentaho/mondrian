@@ -250,17 +250,15 @@ public class RolapStar {
         }
     }
 
-    private MondrianDef.RelationOrJoin cloneRelation(
+    protected MondrianDef.RelationOrJoin cloneRelation(
         MondrianDef.Relation rel,
         String possibleName)
     {
         if (rel instanceof MondrianDef.Table) {
             MondrianDef.Table tbl = (MondrianDef.Table)rel;
             return new MondrianDef.Table(
-                tbl.schema,
-                tbl.name,
-                possibleName,
-                tbl.tableHints);
+                tbl,
+                possibleName);
         } else if (rel instanceof MondrianDef.View) {
             MondrianDef.View view = (MondrianDef.View)rel;
             MondrianDef.View newView = new MondrianDef.View(view);
