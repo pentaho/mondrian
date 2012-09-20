@@ -1051,6 +1051,9 @@ public class SteelWheelsSchemaTest extends SteelWheelsTestCase {
      * keys.
      */
     public void testRangeSortWithNullKeys() {
+        if (!getTestContext().databaseIsValid()) {
+            return;
+        }
         final String mdx =
             "With\n"
             + "Member [Measures].[*ZERO] as '0', SOLVE_ORDER=0\n"
