@@ -673,10 +673,11 @@ public class FunUtil extends Util {
         if (LOGGER.isDebugEnabled()) {
             StringBuilder sb =
                 new StringBuilder("FunUtil.sortTuples returned:");
-            for (List<Member> tuple : tupleList) {
+            for (List<Member> tuple : result) {
                 sb.append("\n");
                 sb.append(tuple.toString());
             }
+            LOGGER.debug(sb.toString());
         }
 
         return result;
@@ -785,6 +786,7 @@ public class FunUtil extends Util {
                 sb.append("\n");
                 sb.append(tuple.toString());
             }
+            LOGGER.debug(sb.toString());
         }
 
         return tupleList;

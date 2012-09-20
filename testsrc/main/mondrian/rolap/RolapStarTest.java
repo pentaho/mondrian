@@ -58,8 +58,8 @@ public class RolapStarTest extends FoodMartTestCase {
     }
 
     /**
-     * Tests that given a {@link MondrianDef.Table}, cloneRelation respects the
-     * existing filters.
+     * Tests that given a {@link mondrian.olap.MondrianDef.Table}, cloneRelation
+     * respects the existing filters.
      */
     public void testCloneRelationWithFilteredTable() {
       RolapStarForTests rs = getStar("sales");
