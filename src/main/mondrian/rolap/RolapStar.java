@@ -250,7 +250,7 @@ public class RolapStar {
         }
     }
 
-    private MondrianDef.RelationOrJoin cloneRelation(
+    protected MondrianDef.RelationOrJoin cloneRelation(
         MondrianDef.Relation rel,
         String possibleName)
     {
