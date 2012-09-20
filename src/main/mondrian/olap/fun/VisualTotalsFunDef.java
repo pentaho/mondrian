@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -209,7 +209,7 @@ public class VisualTotalsFunDef extends FunDefBase {
             super(
                 (RolapMember) member.getParentMember(),
                 (RolapLevel) member.getLevel(),
-                null, name, MemberType.FORMULA);
+                RolapUtil.sqlNullValue, name, MemberType.FORMULA);
             this.member = member;
             this.exp = exp;
         }
