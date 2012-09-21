@@ -217,8 +217,11 @@ public class SqlContextConstraint
                     evaluator.getMembers(), evaluator)));
 
         // Now we'll need to expand the aggregated members
-            
-        cacheKey.add(SqlConstraintUtils.expandSupportedCalculatedMembers(members, evaluator));
+          
+        expandedMembers.addAll(
+            Arrays.asList(
+                SqlConstraintUtils.expandSupportedCalculatedMembers(members, evaluator)));
+        cacheKey.add(expandedMembers);
         
         
         // For virtual cubes, context constraint should be evaluated in the
