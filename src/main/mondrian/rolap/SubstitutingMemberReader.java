@@ -9,7 +9,9 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Access;
 import mondrian.olap.Id;
+import mondrian.olap.Member;
 import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.TupleConstraint;
 
@@ -154,25 +156,23 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
             memberReader.lookupMember(uniqueNameParts, failIfNotFound));
     }
 
-    @Override
-    public void getMemberChildren(
+    public Map<? extends Member, Access> getMemberChildren(
         RolapMember member,
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
-        memberReader.getMemberChildren(
+        return memberReader.getMemberChildren(
             desubstitute(member),
             new SubstitutingMemberList(children),
             constraint);
     }
 
-    @Override
-    public void getMemberChildren(
+    public Map<? extends Member, Access> getMemberChildren(
         List<RolapMember> parentMembers,
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
-        memberReader.getMemberChildren(
+        return memberReader.getMemberChildren(
             desubstitute(parentMembers),
             new SubstitutingMemberList(children),
             constraint);
@@ -206,7 +206,7 @@ public abstract class SubstitutingMemberReader extends DelegatingMemberReader {
      * List which writes through to an underlying list, substituting members
      * as they are written and desubstituting as they are read.
      */
-    private class SubstitutingMemberList extends AbstractList<RolapMember> {
+    class SubstitutingMemberList extends AbstractList<RolapMember> {
         private final List<RolapMember> list;
 
         SubstitutingMemberList(List<RolapMember> list) {

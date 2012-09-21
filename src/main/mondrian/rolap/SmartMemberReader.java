@@ -11,7 +11,9 @@
 */
 package mondrian.rolap;
 
+import mondrian.olap.Access;
 import mondrian.olap.Id;
+import mondrian.olap.Member;
 import mondrian.olap.Util;
 import mondrian.rolap.TupleReader.MemberBuilder;
 import mondrian.rolap.sql.MemberChildrenConstraint;
@@ -52,15 +54,21 @@ public class SmartMemberReader implements MemberReader {
     protected List<RolapMember> rootMembers;
 
     SmartMemberReader(MemberReader source) {
+        this(source, true);
+    }
+
+    SmartMemberReader(MemberReader source, boolean cacheWriteback) {
         this.source = source;
         this.cacheHelper = new MemberCacheHelper(source.getHierarchy());
-        if (!source.setCache(cacheHelper)) {
+        if (cacheWriteback && !source.setCache(cacheHelper)) {
             throw Util.newInternal(
-                "MemberSource (" + source + ", " + source.getClass()
+                "MemberSource ("
+                + source
+                + ", "
+                + source.getClass()
                 + ") does not support cache-writeback");
         }
     }
-
     // implement MemberReader
     public RolapHierarchy getHierarchy() {
         return source.getHierarchy();
@@ -154,18 +162,18 @@ public class SmartMemberReader implements MemberReader {
         List<RolapMember> children)
     {
         MemberChildrenConstraint constraint =
-                sqlConstraintFactory.getMemberChildrenConstraint(null);
+            sqlConstraintFactory.getMemberChildrenConstraint(null);
         getMemberChildren(parentMember, children, constraint);
     }
 
-    public void getMemberChildren(
+    public Map<? extends Member, Access> getMemberChildren(
         RolapMember parentMember,
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
     {
         List<RolapMember> parentMembers =
             Collections.singletonList(parentMember);
-        getMemberChildren(parentMembers, children, constraint);
+        return getMemberChildren(parentMembers, children, constraint);
     }
 
     public void getMemberChildren(
@@ -173,11 +181,11 @@ public class SmartMemberReader implements MemberReader {
         List<RolapMember> children)
     {
         MemberChildrenConstraint constraint =
-                sqlConstraintFactory.getMemberChildrenConstraint(null);
+            sqlConstraintFactory.getMemberChildrenConstraint(null);
         getMemberChildren(parentMembers, children, constraint);
     }
 
-    public void getMemberChildren(
+    public Map<? extends Member, Access> getMemberChildren(
         List<RolapMember> parentMembers,
         List<RolapMember> children,
         MemberChildrenConstraint constraint)
@@ -202,6 +210,7 @@ public class SmartMemberReader implements MemberReader {
                 readMemberChildren(missed, children, constraint);
             }
         }
+        return Util.toNullValuesMap(children);
     }
 
     public RolapMember lookupMember(

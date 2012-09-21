@@ -21,6 +21,7 @@ import mondrian.olap.fun.*;
 import mondrian.olap.type.*;
 import mondrian.resource.MondrianResource;
 import mondrian.rolap.RestrictedMemberReader.MultiCardinalityDefaultMember;
+import mondrian.rolap.sql.MemberChildrenConstraint;
 import mondrian.rolap.sql.SqlQuery;
 import mondrian.spi.CellFormatter;
 import mondrian.spi.impl.Scripts;
@@ -234,7 +235,8 @@ public class RolapHierarchy extends HierarchyBase {
                 Collections.<String, Annotation>emptyMap());
         allLevel.init(xmlCubeDimension);
         this.allMember = new RolapMemberBase(
-            null, allLevel, null, allMemberName, Member.MemberType.ALL);
+            null, allLevel, RolapUtil.sqlNullValue,
+            allMemberName, Member.MemberType.ALL);
         // assign "all member" caption
         if (xmlHierarchy.allMemberCaption != null
             && xmlHierarchy.allMemberCaption.length() > 0)
@@ -845,7 +847,7 @@ public class RolapHierarchy extends HierarchyBase {
                 "Illegal access to members of hierarchy " + this);
         case ALL:
             return (isRagged())
-                ? new RestrictedMemberReader(getMemberReader(), role)
+                ? new SmartRestrictedMemberReader(getMemberReader(), role)
                 : getMemberReader();
 
         case CUSTOM:
@@ -856,7 +858,8 @@ public class RolapHierarchy extends HierarchyBase {
             final NumericType returnType = new NumericType();
             switch (rollupPolicy) {
             case FULL:
-                return new RestrictedMemberReader(getMemberReader(), role);
+                return new SmartRestrictedMemberReader(
+                    getMemberReader(), role);
             case PARTIAL:
                 Type memberType1 =
                     new mondrian.olap.type.MemberType(
@@ -942,41 +945,47 @@ public class RolapHierarchy extends HierarchyBase {
     private List<Member> getLowestMembersForAccess(
         Evaluator evaluator,
         HierarchyAccess hAccess,
-        List<Member> currentList)
+        Map<Member, Access> membersWithAccess)
     {
-        if (currentList == null) {
-            currentList =
-                FunUtil.getNonEmptyMemberChildren(
+        if (membersWithAccess == null) {
+            membersWithAccess =
+                FunUtil.getNonEmptyMemberChildrenWithDetails(
                     evaluator,
                     ((RolapEvaluator) evaluator)
                         .getExpanding());
         }
         boolean goesLower = false;
-        for (Member member : currentList) {
-            if (hAccess.getAccess(member) != Access.ALL) {
+        for (Member member : membersWithAccess.keySet()) {
+            Access access = membersWithAccess.get(member);
+            if (access == null) {
+                access = hAccess.getAccess(member);
+            }
+            if (access != Access.ALL) {
                 goesLower = true;
                 break;
             }
         }
         if (goesLower) {
             // We still have to go one more level down.
-            List<Member> newList = new ArrayList<Member>();
-            for (Member member : currentList) {
+            Map<Member, Access> newMap =
+                new HashMap<Member, Access>();
+            for (Member member : membersWithAccess.keySet()) {
                 int savepoint = evaluator.savepoint();
                 try {
                     evaluator.setContext(member);
-                    newList.addAll(
-                        FunUtil.getNonEmptyMemberChildren(
+                    newMap.putAll(
+                        FunUtil.getNonEmptyMemberChildrenWithDetails(
                             evaluator,
                             member));
                 } finally {
                     evaluator.restore(savepoint);
                 }
-                // Now pass it recursively to this method.
-                return getLowestMembersForAccess(evaluator, hAccess, newList);
             }
+            // Now pass it recursively to this method.
+            return getLowestMembersForAccess(
+                evaluator, hAccess, newMap);
         }
-        return currentList;
+        return new ArrayList<Member>(membersWithAccess.keySet());
     }
 
     /**
@@ -1228,7 +1237,7 @@ public class RolapHierarchy extends HierarchyBase {
             super(
                 null,
                 level,
-                null,
+                RolapUtil.sqlNullValue,
                 RolapUtil.mdxNullLiteral(),
                 MemberType.NULL);
             assert level != null;
@@ -1373,41 +1382,66 @@ public class RolapHierarchy extends HierarchyBase {
             Exp exp)
         {
             super(
-                new RestrictedMemberReader(
+                new SmartRestrictedMemberReader(
                     memberReader, role));
             this.hierarchyAccess = hierarchyAccess;
             this.exp = exp;
         }
 
-        @Override
-        public RolapMember substitute(final RolapMember member) {
-            // If the member is an instance of MultiCardDefMember,
-            // we don't have to check
-            // hierarchyAccess.hasInaccessibleDescendants because this type
-            // of member sits at the very top of the hierarchy and the rules
-            // are different. We create a LimitedRollupMember on the
-            // parent of the multi-cardinality default members.
+        public Map<? extends Member, Access> getMemberChildren(
+            RolapMember member,
+            List<RolapMember> memberChildren,
+            MemberChildrenConstraint constraint)
+        {
+            return memberReader.getMemberChildren(
+                member,
+                new SubstitutingMemberList(memberChildren),
+                constraint);
+        }
+
+        public Map<? extends Member, Access> getMemberChildren(
+            List<RolapMember> parentMembers,
+            List<RolapMember> children,
+            MemberChildrenConstraint constraint)
+        {
+            return memberReader.getMemberChildren(
+                parentMembers,
+                new SubstitutingMemberList(children),
+                constraint);
+        }
+
+        public RolapMember substitute(RolapMember member, Access access) {
             if (member != null
                 && member instanceof MultiCardinalityDefaultMember)
             {
                 return new LimitedRollupMember(
                     (RolapCubeMember)
-                        ((MultiCardinalityDefaultMember)member)
+                        ((MultiCardinalityDefaultMember) member)
                             .member.getParentMember(), exp);
             }
             if (member != null
-                && (hierarchyAccess.getAccess(member) == Access.CUSTOM
-                || hierarchyAccess.hasInaccessibleDescendants(member)))
+                && (access == Access.CUSTOM || hierarchyAccess
+                    .hasInaccessibleDescendants(member)))
             {
                 // Member is visible, but at least one of its
                 // descendants is not.
-                return new LimitedRollupMember((RolapCubeMember)member, exp);
+                if (member instanceof LimitedRollupMember) {
+                    member = ((LimitedRollupMember) member).member;
+                }
+                return new LimitedRollupMember((RolapCubeMember) member, exp);
             } else {
                 // No need to substitute. Member and all of its
                 // descendants are accessible. Total for member
                 // is same as for FULL policy.
                 return member;
             }
+        }
+
+        public RolapMember substitute(final RolapMember member) {
+            if (member == null) {
+                return null;
+            }
+            return substitute(member, hierarchyAccess.getAccess(member));
         }
 
         @Override

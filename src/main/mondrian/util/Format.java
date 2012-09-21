@@ -2966,9 +2966,12 @@ public class Format {
         boolean useDecimal,
         ArrayStack<Integer> thousandSeparatorPositions)
     {
-        i = fd.handleNegative(result, i);
+        if (fd.isNegative) {
+            result[i++] = '-';
+        }
         if (fd.isExceptional) {
-            return fd.handleExceptional(result, i);
+            System.arraycopy(fd.digits, 0, result, i, fd.nDigits);
+            return i + fd.nDigits;
         }
         // Build a new array of digits, padded with 0s at either end.  For
         // example, here is the array we would build for 1234.56.

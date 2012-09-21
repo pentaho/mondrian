@@ -575,21 +575,35 @@ public class PerformanceTest extends FoodMartTestCase {
 
         // original test case for MONDRIAN-1242; ensures correct result
         testContext.assertQueryReturns(
-            "select {[Measures].[Unit Sales]} on COLUMNS, \n"
-            + "[Store].[USA].[CA].Children on ROWS \n"
-            + "from [Sales] \n"
-            + "where ([Time.Weekly].[All Time.Weeklys].[1997].[2].[1] "
-            + ": [Time.Weekly].[All Time.Weeklys].[1997].[2].[21])",
+            "select {[Measures].[Unit Sales]} on COLUMNS,\n"
+            + "[Store].[USA].[CA].Children on ROWS\n"
+            + "from [Sales]\n"
+            + "where ([Time.Weekly].[All Time.Weeklys].[1997].[4].[16]\n"
+            + " : [Time.Weekly].[All Time.Weeklys].[1997].[5].[25])",
             "Axis #0:\n"
-            + "{[Time].[1997].[Q1].[1]}\n"
-            + "{[Time].[1997].[Q1].[2]}\n"
+            + "{[Time].[Weekly].[1997].[4].[16]}\n"
+            + "{[Time].[Weekly].[1997].[4].[17]}\n"
+            + "{[Time].[Weekly].[1997].[4].[18]}\n"
+            + "{[Time].[Weekly].[1997].[5].[19]}\n"
+            + "{[Time].[Weekly].[1997].[5].[20]}\n"
+            + "{[Time].[Weekly].[1997].[5].[21]}\n"
+            + "{[Time].[Weekly].[1997].[5].[22]}\n"
+            + "{[Time].[Weekly].[1997].[5].[23]}\n"
+            + "{[Time].[Weekly].[1997].[5].[24]}\n"
+            + "{[Time].[Weekly].[1997].[5].[25]}\n"
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
+            + "{[Store].[USA].[CA].[Alameda]}\n"
+            + "{[Store].[USA].[CA].[Beverly Hills]}\n"
             + "{[Store].[USA].[CA].[Los Angeles]}\n"
+            + "{[Store].[USA].[CA].[San Diego]}\n"
             + "{[Store].[USA].[CA].[San Francisco]}\n"
-            + "Row #0: 4,490\n"
-            + "Row #1: 289\n");
+            + "Row #0: \n"
+            + "Row #1: 250\n"
+            + "Row #2: 724\n"
+            + "Row #3: 451\n"
+            + "Row #4: 18\n");
         CounterUdf.count.set(0);
         Result result = testContext.executeQuery(
             "with member [Measures].[Foo] as CounterUdf()\n"

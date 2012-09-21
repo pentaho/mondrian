@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2006 Pentaho
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.olap;
@@ -17,14 +17,25 @@ package mondrian.olap;
  * @since Feb 21, 2003
  */
 public enum Access {
-    /** No access to an object. */
+    /** No access to an object and its children. */
     NONE,
-    /** Custom access to an object (described by other parameters). */
+    /**
+     * A grant that covers none of the children
+     * unless explicitly granted.
+     */
     CUSTOM,
+    /**
+     * Grant that covers all children except those denied.
+     * (internal use only)
+     */
+    RESTRICTED,
     /** Access to all shared dimensions (applies to schema grant). */
     ALL_DIMENSIONS,
-    /** All access to an object. */
+    /** All access to an object and its children. */
     ALL;
+    public String toString() {
+        return this.name();
+    };
 }
 
 // End Access.java
