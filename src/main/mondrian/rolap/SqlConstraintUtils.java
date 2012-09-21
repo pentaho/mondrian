@@ -73,7 +73,7 @@ public class SqlConstraintUtils {
                 new HashMap<RelationOrJoin, Set<RolapMember>>();
         Map<RelationOrJoin, Boolean> done =
                 new HashMap<RelationOrJoin, Boolean>();
-        if (restrictMemberTypes) {
+        if (restrictMemberTypes && !containsCalculatedMember(members) ) {
             if (containsCalculatedMember(members)) {
                 throw Util.newInternal(
                     "can not restrict SQL to calculated Members");
@@ -84,6 +84,11 @@ public class SqlConstraintUtils {
                         ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator);
 
                 for (Member slicerMember : slicerMembers) {
+                    
+                    if(slicerMember.isMeasure())
+                    {
+                        continue;
+                    }
                     RelationOrJoin rel =
                             ((RolapCubeHierarchy)slicerMember.getHierarchy())
                             .getRelation();
@@ -101,7 +106,7 @@ public class SqlConstraintUtils {
         final CellRequest request =
             RolapAggregationManager.makeRequest(members);
         if (request == null) {
-            if (restrictMemberTypes) {
+            if (restrictMemberTypes && false) { // pedroalves - commenting this out for now
                 throw Util.newInternal("CellRequest is null - why?");
             }
             // One or more of the members was null or calculated, so the

@@ -55,11 +55,11 @@ public class SqlConstraintFactory {
         Evaluator context)
     {
         if (!enabled(context)
-            || !SqlContextConstraint.isValidContext(context, false))
+            || !SqlContextConstraint.isValidContext(context, true))
         {
             return DefaultMemberChildrenConstraint.instance();
         }
-        return new SqlContextConstraint((RolapEvaluator) context, false);
+        return new SqlContextConstraint((RolapEvaluator) context, true);
     }
 
     public TupleConstraint getLevelMembersConstraint(Evaluator context) {
