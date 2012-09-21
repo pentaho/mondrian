@@ -435,9 +435,7 @@ public class RolapSchema implements Schema {
     }
 
     private void checkSchemaVersion(final DOMWrapper schemaDom) {
-        final String thisVersion = getSupportedSchemaVersion();
         String schemaVersion = schemaDom.getAttribute("metamodelVersion");
-
         if (schemaVersion == null) {
             if (hasMondrian4Elements(schemaDom)) {
                 schemaVersion = "4.x";
@@ -446,11 +444,15 @@ public class RolapSchema implements Schema {
             }
         }
 
-        if (compareMajorVersion(thisVersion, schemaVersion) < 0) {
+        String[] versionParts = schemaVersion.split("\\.");
+        final String schemaMajor =
+            versionParts.length > 0 ? versionParts[0] : "";
+
+        if ("3".compareTo(schemaMajor) < 0) {
             String errorMsg =
                 "Schema version '" + schemaVersion
-                + "' is later than schema version '"
-                + thisVersion + "' supported by this version of Mondrian";
+                + "' is later than schema version "
+                + "'3.x' supported by this version of Mondrian";
             throw Util.newError(errorMsg);
         }
     }
@@ -472,29 +474,6 @@ public class RolapSchema implements Schema {
         }
         //otherwise assume version 3.x
         return false;
-    }
-
-    private int compareMajorVersion(String thisVersion, String schemaVersion) {
-        String[] versionParts = thisVersion.split("\\.");
-        final String thisMajor =
-            versionParts.length > 0 ? versionParts[0] : "3";
-        versionParts = schemaVersion.split("\\.");
-        final String schemaMajor =
-            versionParts.length > 0 ? versionParts[0] : "";
-
-        return thisMajor.compareTo(schemaMajor);
-    }
-
-    private String getSupportedSchemaVersion() {
-        //TODO: return a generic 3.x?
-        //      limit version to minor?
-        MondrianServer.MondrianVersion version =
-            internalConnection.getServer().getVersion();
-        if (version.getVersionString().equals("TRUNK-SNAPSHOT")) {
-            return "3.x";
-        }
-        return version.getMajorVersion() + "." + version.getMinorVersion();
-        //version.getVersionString();
     }
 
     private void setSchemaLoadDate() {
