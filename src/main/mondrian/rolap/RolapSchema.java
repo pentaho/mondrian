@@ -104,8 +104,6 @@ public class RolapSchema implements Schema {
 
     private ByteString md5Bytes;
 
-    private final boolean useContentChecksum;
-
     /**
      * A schema's aggregation information
      */
@@ -115,7 +113,7 @@ public class RolapSchema implements Schema {
      * This is basically a unique identifier for this RolapSchema instance
      * used it its equals and hashCode methods.
      */
-    final String key;
+    final SchemaKey key;
 
     /**
      * Maps {@link String names of roles} to {@link Role roles with those names}.
@@ -170,7 +168,7 @@ public class RolapSchema implements Schema {
      * @param useContentChecksum Whether to use content checksum
      */
     private RolapSchema(
-        final String key,
+        final SchemaKey key,
         final Util.PropertyList connectInfo,
         final DataSource dataSource,
         final ByteString md5Bytes,
@@ -179,8 +177,9 @@ public class RolapSchema implements Schema {
         this.id = Util.generateUuidString();
         this.key = key;
         this.md5Bytes = md5Bytes;
-        this.useContentChecksum = useContentChecksum;
-        assert !(useContentChecksum && md5Bytes == null);
+        if (useContentChecksum && md5Bytes == null) {
+            throw new AssertionError();
+        }
 
         // the order of the next two lines is important
         this.defaultRole = Util.createRootRole(this);
@@ -206,7 +205,7 @@ public class RolapSchema implements Schema {
      * @param connectInfo Connection properties
      */
     RolapSchema(
-        String key,
+        SchemaKey key,
         ByteString md5Bytes,
         String catalogUrl,
         String catalogStr,
@@ -576,7 +575,7 @@ public class RolapSchema implements Schema {
             } else {
                 // At this stage, the only roles in mapNameToRole are
                 // RoleImpl roles so it is safe to case.
-                defaultRole = (RoleImpl) role;
+                defaultRole = role;
             }
         }
     }
@@ -1218,7 +1217,8 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
     }
 
     /**
-     * Creates a {@link DataSourceChangeListener} with which to detect changes to datasources.
+     * Creates a {@link DataSourceChangeListener} with which to detect changes
+     * to datasources.
      */
     private DataSourceChangeListener createDataSourceChangeListener(
         Util.PropertyList connectInfo)
@@ -1231,21 +1231,10 @@ System.out.println("RolapSchema.createMemberReader: CONTAINS NAME");
         String dataSourceChangeListenerStr = connectInfo.get(
             RolapConnectionProperties.DataSourceChangeListener.name());
 
-        if (! Util.isEmpty(dataSourceChangeListenerStr)) {
+        if (!Util.isEmpty(dataSourceChangeListenerStr)) {
             try {
                 Class<?> clazz = Class.forName(dataSourceChangeListenerStr);
                 Constructor<?> constructor = clazz.getConstructor();
-                changeListener =
-                    (DataSourceChangeListener) constructor.newInstance();
-
-/*
-                final Class<DataSourceChangeListener> clazz =
-                    (Class<DataSourceChangeListener>)
-                        Class.forName(dataSourceChangeListenerStr);
-                final Constructor<DataSourceChangeListener> ctor =
-                    clazz.getConstructor();
-                changeListener = ctor.newInstance();
-*/
                 changeListener =
                     (DataSourceChangeListener) constructor.newInstance();
             } catch (Exception e) {

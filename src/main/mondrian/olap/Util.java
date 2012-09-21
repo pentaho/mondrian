@@ -77,6 +77,12 @@ public class Util extends XOMUtil {
     private static final Random metaRandom =
             createRandom(MondrianProperties.instance().TestSeed.get());
 
+    /** Unique id for this JVM instance. Part of a key that ensures that if
+     * two JVMs in the same cluster have a data-source with the same
+     * identity-hash-code, they will be treated as different data-sources,
+     * and therefore caches will not be incorrectly shared. */
+    public static final UUID JVM_INSTANCE_UUID = UUID.randomUUID();
+
     /**
      * Whether we are running a version of Java before 1.5.
      *

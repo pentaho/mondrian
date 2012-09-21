@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2003-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho
+// Copyright (C) 2005-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -30,7 +30,7 @@ public enum RolapConnectionProperties {
 
     /**
      * The "Jdbc" property is the URL of the JDBC database where the data is
-     * stored. You must specify either {@link #DataSource} or {@link #Jdbc}.
+     * stored. You must specify either {@link #DataSource} or {@code #Jdbc}.
      */
     Jdbc,
 
@@ -90,7 +90,7 @@ public enum RolapConnectionProperties {
     /**
      * The "DataSource" property is the name of a data source class. It must
      * implement the {@link javax.sql.DataSource} interface.
-     * You must specify either {@link #DataSource} or {@link #Jdbc}.
+     * You must specify either {@code DataSource} or {@link #Jdbc}.
      */
     DataSource,
 
@@ -168,9 +168,10 @@ public enum RolapConnectionProperties {
     Instance,
 
     /**
-     * The "JdbcConnectionUuid" is the unique identifier for the connection.
-     * If defined, Mondrian will assume that two connections bearing the same JdbcConnectionUuid
-     * point to perfectly identical databases without looking at any other properties. 
+     * The "JdbcConnectionUuid" property is the unique identifier for the
+     * underlying JDBC connection. If defined, Mondrian will assume that two
+     * connections bearing the same JdbcConnectionUuid point to identical
+     * databases without looking at any other properties.
      */
     JdbcConnectionUuid;
 

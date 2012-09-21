@@ -26,22 +26,27 @@ import javax.sql.DataSource;
  * A collection of schemas, identified by their connection properties
  * (catalog name, JDBC URL, and so forth).
  *
- * <p>To lookup a schema, call <code>Pool.instance().{@link #get}</code>.
+ * <p>To lookup a schema, call
+ * <code>RolapSchemaPool.{@link #instance}().{@link #get}</code>.</p>
  */
 class RolapSchemaPool {
-    private static RolapSchemaPool pool = new RolapSchemaPool();
+    private static final RolapSchemaPool INSTANCE = new RolapSchemaPool();
 
-    private final Map<String, SoftReference<RolapSchema>> mapUrlToSchema =
-        new HashMap<String, SoftReference<RolapSchema>>();
+    private final Map<SchemaKey, SoftReference<RolapSchema>> mapKeyToSchema =
+        new HashMap<SchemaKey, SoftReference<RolapSchema>>();
 
+    // REVIEW: This map is now considered unsafe. If two schemas have identical
+    // metadata but a different underlying database connection, we should not
+    // share a cache. Since SchemaContentKey is now a hash of the schema
+    // definition, this field can probably be removed.
     private final Map<ByteString, SoftReference<RolapSchema>> mapMd5ToSchema =
         new HashMap<ByteString, SoftReference<RolapSchema>>();
 
-    RolapSchemaPool() {
+    private RolapSchemaPool() {
     }
 
     static RolapSchemaPool instance() {
-        return pool;
+        return INSTANCE;
     }
 
     synchronized RolapSchema get(
@@ -82,23 +87,24 @@ class RolapSchemaPool {
         final DataSource dataSource,
         final Util.PropertyList connectInfo)
     {
-        String connectionUuid = connectInfo.get(
+        final String connectionUuidStr = connectInfo.get(
             RolapConnectionProperties.JdbcConnectionUuid.name());
+        final ConnectionKey connectionKey1 =
+            ConnectionKey.create(
+                connectionUuidStr,
+                dataSource,
+                catalogUrl,
+                connectionKey,
+                jdbcUser,
+                dataSourceStr);
 
-        if (Util.isEmpty(connectionUuid)) {
-            connectionUuid =
-                makeConnectionKey(
-                    dataSource,
-                    catalogUrl,
-                    connectionKey,
-                    jdbcUser,
-                    dataSourceStr);
-        }
-
-        String catalogStr = getSchemaContent(connectInfo, catalogUrl);
-        String key = makeKey(
-            getSchemaKey(connectInfo, catalogUrl, catalogStr),
-            connectionUuid);
+        final String catalogStr = getSchemaContent(connectInfo, catalogUrl);
+        final SchemaContentKey schemaContentKey =
+            SchemaContentKey.create(connectInfo, catalogUrl, catalogStr);
+        final SchemaKey key =
+            new SchemaKey(
+                schemaContentKey,
+                connectionKey1);
 
         // Use the schema pool unless "UseSchemaPool" is explicitly false.
         final boolean useSchemaPool =
@@ -133,7 +139,7 @@ class RolapSchemaPool {
                 schema = ref.get();
                 if (schema == null) {
                     // clear out the reference since schema is null
-                    mapUrlToSchema.remove(key);
+                    mapKeyToSchema.remove(key);
                     mapMd5ToSchema.remove(md5Bytes);
                 }
             }
@@ -151,11 +157,11 @@ class RolapSchemaPool {
             return schema;
         }
 
-        SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
+        SoftReference<RolapSchema> ref = mapKeyToSchema.get(key);
         if (ref != null) {
             schema = ref.get();
             if (schema == null) {
-                mapUrlToSchema.remove(key);
+                mapKeyToSchema.remove(key);
             }
         }
 
@@ -182,7 +188,7 @@ class RolapSchemaPool {
         if (md5Bytes != null) {
             mapMd5ToSchema.put(md5Bytes, ref);
         }
-        mapUrlToSchema.put(schema.key, ref);
+        mapKeyToSchema.put(schema.key, ref);
     }
 
     private static String getSchemaContent(
@@ -200,9 +206,9 @@ class RolapSchemaPool {
         if (Util.isEmpty(catalogStr)) {
             if (Util.isEmpty(catalogUrl)) {
                 throw MondrianResource.instance()
-                .ConnectStringMandatoryProperties.ex(
-                    RolapConnectionProperties.Catalog.name(),
-                    RolapConnectionProperties.CatalogContent.name());
+                    .ConnectStringMandatoryProperties.ex(
+                        RolapConnectionProperties.Catalog.name(),
+                        RolapConnectionProperties.CatalogContent.name());
             }
             //check for a DynamicSchemaProcessor
             String dynProcName = connectInfo.get(
@@ -228,52 +234,30 @@ class RolapSchemaPool {
         return catalogStr;
     }
 
-    private static String getSchemaKey(
-        final Util.PropertyList connectInfo,
-        final String catalogUrl,
-        final String catalogContents)
-    {
-        final String catalogContentProp =
-            RolapConnectionProperties.CatalogContent.name();
-        final String dynamicSchemaProp =
-            RolapConnectionProperties.DynamicSchemaProcessor.name();
-
-        if (!Util.isEmpty(connectInfo.get(catalogContentProp))
-            || !Util.isEmpty(connectInfo.get(dynamicSchemaProp)))
-        {
-            return catalogContents;
-        } else {
-            return catalogUrl;
-        }
-    }
-
     private static String processDynamicSchema(
         final String dynProcName,
         final String catalogUrl,
         final Util.PropertyList connectInfo)
     {
-        String catalogStr;
-        try {
-              @SuppressWarnings("unchecked")
-              final Class<DynamicSchemaProcessor> clazz =
-                  (Class<DynamicSchemaProcessor>)
-                      Class.forName(dynProcName);
-              final Constructor<DynamicSchemaProcessor> ctor =
-                  clazz.getConstructor();
-              final DynamicSchemaProcessor dynProc = ctor.newInstance();
-              catalogStr = dynProc.processSchema(catalogUrl, connectInfo);
-        } catch (Exception e) {
-            throw Util.newError(
-                e,
-                "loading DynamicSchemaProcessor " + dynProcName);
-        }
-
         if (RolapSchema.LOGGER.isDebugEnabled()) {
             RolapSchema.LOGGER.debug(
                 "Pool.get: create schema \"" + catalogUrl
                 + "\" using dynamic processor");
         }
-        return catalogStr;
+        try {
+            @SuppressWarnings("unchecked")
+            final Class<DynamicSchemaProcessor> clazz =
+                (Class<DynamicSchemaProcessor>)
+                    Class.forName(dynProcName);
+            final Constructor<DynamicSchemaProcessor> ctor =
+                clazz.getConstructor();
+            final DynamicSchemaProcessor dynProc = ctor.newInstance();
+            return dynProc.processSchema(catalogUrl, connectInfo);
+        } catch (Exception e) {
+            throw Util.newError(
+                e,
+                "loading DynamicSchemaProcessor " + dynProcName);
+        }
     }
 
     synchronized void remove(
@@ -282,11 +266,21 @@ class RolapSchemaPool {
         final String jdbcUser,
         final String dataSourceStr)
     {
-        final String key = makeKey(
-            catalogUrl,
-            connectionKey,
-            jdbcUser,
-            dataSourceStr);
+        final SchemaContentKey schemaContentKey =
+            SchemaContentKey.create(
+                new Util.PropertyList(),
+                catalogUrl,
+                null);
+        final ConnectionKey connectionUuid =
+            ConnectionKey.create(
+                null,
+                null,
+                catalogUrl,
+                connectionKey,
+                jdbcUser,
+                dataSourceStr);
+        final SchemaKey key =
+            new SchemaKey(schemaContentKey, connectionUuid);
         if (RolapSchema.LOGGER.isDebugEnabled()) {
             RolapSchema.LOGGER.debug(
                 "Pool.remove: schema \"" + catalogUrl
@@ -299,7 +293,21 @@ class RolapSchemaPool {
         final String catalogUrl,
         final DataSource dataSource)
     {
-        final String key = makeKey(catalogUrl, dataSource);
+        final SchemaContentKey schemaContentKey =
+            SchemaContentKey.create(
+                new Util.PropertyList(),
+                catalogUrl,
+                null);
+        final ConnectionKey connectionKey =
+            ConnectionKey.create(
+                null,
+                dataSource,
+                catalogUrl,
+                null,
+                null,
+                null);
+        final SchemaKey key =
+            new SchemaKey(schemaContentKey, connectionKey);
         if (RolapSchema.LOGGER.isDebugEnabled()) {
             RolapSchema.LOGGER.debug(
                 "Pool.remove: schema \"" + catalogUrl
@@ -319,8 +327,8 @@ class RolapSchemaPool {
         }
     }
 
-    private void remove(String key) {
-        SoftReference<RolapSchema> ref = mapUrlToSchema.get(key);
+    private void remove(SchemaKey key) {
+        SoftReference<RolapSchema> ref = mapKeyToSchema.get(key);
         if (ref != null) {
             RolapSchema schema = ref.get();
             if (schema != null) {
@@ -328,7 +336,7 @@ class RolapSchemaPool {
                 schema.finalCleanUp();
             }
         }
-        mapUrlToSchema.remove(key);
+        mapKeyToSchema.remove(key);
     }
 
     synchronized void clear() {
@@ -336,7 +344,7 @@ class RolapSchemaPool {
             RolapSchema.LOGGER.debug("Pool.clear: clearing all RolapSchemas");
         }
 
-        for (SoftReference<RolapSchema> ref : mapUrlToSchema.values()) {
+        for (SoftReference<RolapSchema> ref : mapKeyToSchema.values()) {
             if (ref != null) {
                 RolapSchema schema = ref.get();
                 if (schema != null) {
@@ -344,7 +352,7 @@ class RolapSchemaPool {
                 }
             }
         }
-        mapUrlToSchema.clear();
+        mapKeyToSchema.clear();
         mapMd5ToSchema.clear();
         JdbcSchema.clearAllDBs();
     }
@@ -357,7 +365,7 @@ class RolapSchemaPool {
     synchronized List<RolapSchema> getRolapSchemas() {
         List<RolapSchema> list = new ArrayList<RolapSchema>();
         for (RolapSchema schema
-            : Util.GcIterator.over(mapUrlToSchema.values()))
+            : Util.GcIterator.over(mapKeyToSchema.values()))
         {
             list.add(schema);
         }
@@ -365,80 +373,7 @@ class RolapSchemaPool {
     }
 
     synchronized boolean contains(RolapSchema rolapSchema) {
-        return mapUrlToSchema.containsKey(rolapSchema.key);
-    }
-
-    private static String makeConnectionKey(
-        final DataSource dataSource,
-        final String catalogUrl,
-        final String connectionKey,
-        final String jdbcUser,
-        final String dataSourceStr)
-    {
-        if (dataSource == null) {
-            final StringBuilder buf = new StringBuilder(100);
-            appendIfNotNull(buf, connectionKey);
-            appendIfNotNull(buf, jdbcUser);
-            appendIfNotNull(buf, dataSourceStr);
-            return new ByteString(Util.digestMd5(buf.toString())).toString();
-        } else {
-            return "#external" + System.identityHashCode(dataSource);
-        }
-    }
-
-    private static String makeKey(String schemaKey, String connectionUuid)
-    {
-        StringBuilder buf = new StringBuilder(100);
-
-        appendIfNotNull(buf, schemaKey);
-        appendIfNotNull(buf, connectionUuid);
-
-        return buf.toString();
-    }
-
-    /**
-     * Creates a key with which to identify a schema in the cache.
-     */
-    private static String makeKey(
-        final String catalogUrl,
-        final String connectionKey,
-        final String jdbcUser,
-        final String dataSourceStr)
-    {
-        final StringBuilder buf = new StringBuilder(100);
-
-        appendIfNotNull(buf, catalogUrl);
-        appendIfNotNull(buf, connectionKey);
-        appendIfNotNull(buf, jdbcUser);
-        appendIfNotNull(buf, dataSourceStr);
-
-        return buf.toString();
-    }
-
-    /**
-     * Creates a key with which to identify a schema in the cache.
-     */
-    private static String makeKey(
-        final String catalogUrl,
-        final DataSource dataSource)
-    {
-        final StringBuilder buf = new StringBuilder(100);
-
-        appendIfNotNull(buf, catalogUrl);
-        buf.append('.');
-        buf.append("external#");
-        buf.append(System.identityHashCode(dataSource));
-
-        return buf.toString();
-    }
-
-    private static void appendIfNotNull(StringBuilder buf, String s) {
-        if (s != null) {
-            if (buf.length() > 0) {
-                buf.append('.');
-            }
-            buf.append(s);
-        }
+        return mapKeyToSchema.containsKey(rolapSchema.key);
     }
 }
 
