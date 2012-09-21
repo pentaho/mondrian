@@ -4,7 +4,9 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
- */
+// Copyright (C) 2012-2012 Pentaho
+// All Rights Reserved.
+*/
 package mondrian.rolap;
 
 import mondrian.olap.Util;
@@ -17,17 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Hashtable;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.naming.spi.InitialContextFactory;
-import javax.naming.spi.InitialContextFactoryBuilder;
-import javax.naming.spi.NamingManager;
 import javax.sql.DataSource;
 
-
+/**
+ * Test for {@link RolapSchema.Pool}.
+ */
 public class RolapSchemaPoolTest extends FoodMartTestCase {
 
     public RolapSchemaPoolTest(String name) {
@@ -190,7 +186,6 @@ public class RolapSchemaPoolTest extends FoodMartTestCase {
     public static class NotReallyDynamicSchemaProcessor
         implements DynamicSchemaProcessor
     {
-        @Override
         public String processSchema(String schemaUrl, PropertyList connectInfo)
             throws Exception
         {
