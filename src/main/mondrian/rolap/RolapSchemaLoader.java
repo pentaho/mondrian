@@ -226,6 +226,10 @@ public class RolapSchemaLoader {
                     LOGGER.debug(
                         "schema after conversion:\n" + xmlSchema.toXML());
                 }
+            } else if (def.getAttribute("metamodelVersion") == null) {
+                throw Util.newError(
+                    "Model in 4.x or later format must have"
+                    + "'metamodelVersion' attribute.");
             } else {
                 xmlSchema = new MondrianDef.Schema(def);
             }
@@ -308,6 +312,12 @@ public class RolapSchemaLoader {
             for (DOMWrapper wrapper : def.getChildren()) {
                 if ("PhysicalSchema".equals(wrapper.getTagName())) {
                     return false;
+                } else if ("Cube".equals(wrapper.getTagName())) {
+                    for (DOMWrapper inner : wrapper.getChildren()) {
+                        if ("MeasureGroups".equals(inner.getTagName())) {
+                            return false;
+                        }
+                    }
                 }
             }
             return true;
