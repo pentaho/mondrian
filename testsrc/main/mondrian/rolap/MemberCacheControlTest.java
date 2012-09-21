@@ -12,7 +12,6 @@ package mondrian.rolap;
 import mondrian.olap.*;
 import mondrian.olap.CacheControl.MemberEditCommand;
 import mondrian.olap.Hierarchy;
-import mondrian.rolap.RolapSchema.Pool;
 import mondrian.rolap.agg.AggregationManager;
 import mondrian.server.Execution;
 import mondrian.server.Locus;
@@ -59,7 +58,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
         propSaver.set(
             MondrianProperties.instance().EnableRolapCubeMemberCache,
             false);
-        Pool.instance().clear();
+        RolapSchemaPool.instance().clear();
 
         final RolapConnection conn = (RolapConnection) getConnection();
         final Statement statement = conn.getInternalStatement();
@@ -70,7 +69,7 @@ public class MemberCacheControlTest extends FoodMartTestCase {
 
     protected void tearDown() throws Exception {
         super.tearDown();
-        Pool.instance().clear();
+        RolapSchemaPool.instance().clear();
         Locus.pop(locus);
         locus = null;
     }

@@ -256,7 +256,7 @@ public class CacheControlImpl implements CacheControl {
     }
 
     public void flushSchemaCache() {
-        RolapSchema.Pool.instance().clear();
+        RolapSchemaPool.instance().clear();
         // In some cases, the request might originate from a reference
         // to the schema which isn't in the pool anymore. We must also call
         // the cleanup procedure on the current connection.
@@ -274,7 +274,7 @@ public class CacheControlImpl implements CacheControl {
         String jdbcUser,
         String dataSourceStr)
     {
-        RolapSchema.Pool.instance().remove(
+        RolapSchemaPool.instance().remove(
             catalogUrl,
             connectionKey,
             jdbcUser,
@@ -286,7 +286,7 @@ public class CacheControlImpl implements CacheControl {
         String catalogUrl,
         DataSource dataSource)
     {
-        RolapSchema.Pool.instance().remove(
+        RolapSchemaPool.instance().remove(
             catalogUrl,
             dataSource);
     }
@@ -298,7 +298,7 @@ public class CacheControlImpl implements CacheControl {
      */
     public void flushSchema(Schema schema) {
         if (RolapSchema.class.isInstance(schema)) {
-            RolapSchema.Pool.instance().remove((RolapSchema)schema);
+            RolapSchemaPool.instance().remove((RolapSchema)schema);
         } else {
             throw new UnsupportedOperationException(
                 schema.getClass().getName() + " cannot be flushed");
