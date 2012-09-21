@@ -87,8 +87,6 @@ public class RolapSchema extends OlapElementBase implements Schema {
 
     ByteString md5Bytes;
 
-    final boolean useContentChecksum;
-
     /**
      * A schema's aggregation information
      */
@@ -98,7 +96,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
      * This is basically a unique identifier for this RolapSchema instance
      * used it its equals and hashCode methods.
      */
-    final String key;
+    final SchemaKey key;
 
     /**
      * Maps {@link String names of roles} to {@link Role roles with those names}.
@@ -163,7 +161,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
      * @param annotationMap Annotation map
      */
     RolapSchema(
-        final String key,
+        final SchemaKey key,
         final Util.PropertyList connectInfo,
         final DataSource dataSource,
         final ByteString md5Bytes,
@@ -179,8 +177,9 @@ public class RolapSchema extends OlapElementBase implements Schema {
         this.description = description;
         this.key = key;
         this.md5Bytes = md5Bytes;
-        this.useContentChecksum = useContentChecksum;
-        assert !(useContentChecksum && md5Bytes == null);
+        if (useContentChecksum && md5Bytes == null) {
+            throw new AssertionError();
+        }
 
         // the order of the next two lines is important
         this.defaultRole = Util.createRootRole(this);
@@ -708,7 +707,8 @@ public class RolapSchema extends OlapElementBase implements Schema {
     }
 
     /**
-     * Creates a {@link DataSourceChangeListener} with which to detect changes to datasources.
+     * Creates a {@link DataSourceChangeListener} with which to detect changes
+     * to datasources.
      */
     private DataSourceChangeListener createDataSourceChangeListener(
         Util.PropertyList connectInfo)
@@ -721,7 +721,7 @@ public class RolapSchema extends OlapElementBase implements Schema {
         String dataSourceChangeListenerStr = connectInfo.get(
             RolapConnectionProperties.DataSourceChangeListener.name());
 
-        if (! Util.isEmpty(dataSourceChangeListenerStr)) {
+        if (!Util.isEmpty(dataSourceChangeListenerStr)) {
             try {
                 Class<?> clazz = Class.forName(dataSourceChangeListenerStr);
                 Constructor<?> constructor = clazz.getConstructor();

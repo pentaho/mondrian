@@ -150,7 +150,7 @@ public class RolapSchemaLoader {
      * @return Populated schema
      */
     private RolapSchema loadStage0(
-        final String key,
+        final SchemaKey key,
         ByteString md5Bytes,
         final String catalogUrl,
         String catalogStr,
@@ -245,7 +245,7 @@ public class RolapSchemaLoader {
     }
 
     private RolapSchema loadStage1(
-        String key,
+        SchemaKey key,
         ByteString md5Bytes,
         boolean useContentChecksum,
         Util.PropertyList connectInfo,
@@ -3462,7 +3462,7 @@ public class RolapSchemaLoader {
      * @param connectInfo Connection properties
      */
     static RolapSchema createSchema(
-        final String key,
+        final SchemaKey key,
         final ByteString md5Bytes,
         final String catalogUrl,
         final String catalogStr,

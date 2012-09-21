@@ -88,7 +88,7 @@ public class RolapSchemaUpgrader {
     static MondrianDef.Schema upgrade(
         RolapSchemaLoader loader,
         DOMWrapper def,
-        String key,
+        SchemaKey key,
         ByteString md5Bytes,
         Util.PropertyList connectInfo,
         DataSource dataSource,
