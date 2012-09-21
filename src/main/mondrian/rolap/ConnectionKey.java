@@ -39,7 +39,7 @@ class ConnectionKey extends StringKey {
     {
         String s;
         if (connectionUuidStr != null
-            && !connectionUuidStr.isEmpty())
+            && connectionUuidStr.length() != 0)
         {
             s = connectionUuidStr;
         } else {
