@@ -37,25 +37,21 @@ public class RolapStarSet {
     final RolapCube cube;
     private final RolapStar star;
     private final RolapMeasureGroup measureGroup;
-    private final RolapStar aggStar;
-
-    RolapStarSet(RolapStar aggStar) {
-        this.cube = null;
-        this.star = null;
-        this.measureGroup = null;
-        this.aggStar = aggStar;
-    }
+    private final RolapMeasureGroup aggMeasureGroup;
 
     public RolapStarSet(
         RolapStar star,
         RolapMeasureGroup measureGroup,
-        RolapStar aggStar)
+        RolapMeasureGroup aggMeasureGroup)
     {
         // star may be null - see NonEmptyTest.testMondrianBug138
         this.star = star;
-        this.cube = null;
+        this.cube = null; // cube seems to be ALWAYS null
         this.measureGroup = measureGroup;
-        this.aggStar = aggStar;
+        this.aggMeasureGroup = aggMeasureGroup;
+        if (aggMeasureGroup != null) {
+            Util.discard(0);
+        }
     }
 
     /**
@@ -124,7 +120,11 @@ public class RolapStarSet {
     }
 
     public AggStar getAggStar() {
-        return (AggStar) aggStar; // FIXME
+        return (AggStar) (Object) aggMeasureGroup; // FIXME; will throw if not null; eliminate method
+    }
+
+    public RolapMeasureGroup getAggMeasureGroup() {
+        return aggMeasureGroup;
     }
 }
 

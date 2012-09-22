@@ -98,7 +98,13 @@ public class RolapGalaxy {
             sortedStarInfos,
             new Comparator<StarInfo>() {
                 public int compare(StarInfo o1, StarInfo o2) {
-                    return Util.compare(o1.cost, o2.cost);
+                    int compare = Util.compare(o1.cost, o2.cost);
+                    if (compare != 0) {
+                        return compare;
+                    }
+                    return o1.star.getFactTable().getRelation().getAlias()
+                        .compareTo(
+                            o2.star.getFactTable().getRelation().getAlias());
                 }
             });
 
@@ -156,14 +162,6 @@ public class RolapGalaxy {
         }
     }
 
-    static <K, V> Map<K, V> mapOf(Iterable<? extends Map.Entry<K, V>> entries) {
-        final Map<K, V> map = new HashMap<K, V>();
-        for (Map.Entry<K, V> entry : entries) {
-            map.put(entry.getKey(), entry.getValue());
-        }
-        return map;
-    }
-
     /**
      * Finds a fact or aggregate table in the given cube that has the desired
      * levels and measures. Returns null if no fact or aggregate table is
@@ -182,7 +180,7 @@ public class RolapGalaxy {
      *   an exact match
      * @return An aggregate, or null if none is suitable.
      */
-    public RolapStar findAgg(
+    public RolapMeasureGroup findAgg(
         RolapStar star,
         final BitKey levelBitKey,
         final BitKey measureBitKey,
@@ -264,7 +262,7 @@ public class RolapGalaxy {
             }
         }
 
-        return betterStarInfo.star;
+        return betterStarInfo.measureGroups.get(0);
     }
 
     private int globalOrdinal(RolapStar.Column column, boolean add) {

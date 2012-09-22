@@ -10,7 +10,6 @@
 package mondrian.util;
 
 import mondrian.olap.MondrianProperties;
-import mondrian.olap.Util;
 import mondrian.spi.Dialect;
 
 import org.apache.log4j.Logger;
@@ -230,6 +229,17 @@ public class Bug {
     public static final boolean BugMondrian1129Fixed = false;
 
     /**
+     * Whether
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-1173">bug MONDRIAN-1173,
+     * "Revisit member ordinals in mondrian version 4"</a>
+     * is fixed.
+     *
+     * <p>In a few cases, members come out sorted wrong. Not assigning ordinal
+     * correctly?</p>
+     */
+    public static final boolean BugMondrian1173Fixed = false;
+
+    /**
      * Whether RolapCubeMember and RolapMember have been fully segregated; any
      * piece of code should be working with one or the other, not both.
      */
@@ -318,11 +328,6 @@ public class Bug {
      * UnsupportedOperationException in getBaseStarKeyColumn
      */
     public static final boolean BaseStarKeyColumnFixed = Enable;
-
-    /**
-     * Members come out sorted wrong. Not assigning ordinal correctly?
-     */
-    public static final boolean OrdinalFixed = Enable;
 
     /**
      * Whether the bug is fixed that causes upgrade of virtual cubes to fail

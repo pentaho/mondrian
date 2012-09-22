@@ -946,7 +946,7 @@ Revision is $Id$
             <Doc>
                 The name of the column used to sort members. See also the
                 OrderBy sub-element. If neither orderByColumn nor OrderBy are
-                specified, defaults to the key.
+                specified, defaults to the name.
 
                 <p>If an attribute is used within a multi-level hierarchy,
                 the members of one level are always sorted within the parent

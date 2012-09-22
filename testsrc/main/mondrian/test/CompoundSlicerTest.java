@@ -281,6 +281,20 @@ public class CompoundSlicerTest extends FoodMartTestCase {
             + "Row #3: 2.20\n");
     }
 
+    public void testCompoundSlicerCrossjoinRange() {
+        assertQueryReturns(
+            "select\n"
+            + "from [Sales]\n"
+            + "where [Customer].[Gender].[M]\n"
+            + " * [Product].[Drink]\n"
+            + " * {[Time].[1997].[Q1] : [Time].[1997].[Q3]}",
+            "Axis #0:\n"
+            + "{[Customer].[Gender].[M], [Product].[Products].[Drink], [Time].[Time].[1997].[Q1]}\n"
+            + "{[Customer].[Gender].[M], [Product].[Products].[Drink], [Time].[Time].[1997].[Q2]}\n"
+            + "{[Customer].[Gender].[M], [Product].[Products].[Drink], [Time].[Time].[1997].[Q3]}\n"
+            + "9,032");
+    }
+
     /**
      * Tests that if the slicer contains zero members, all cells are null.
      */

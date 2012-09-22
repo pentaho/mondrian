@@ -81,11 +81,10 @@ public class Target extends TargetBase {
                     new Comparable[layout.keyOrdinals.length];
                 for (int j = 0, n = layout.keyOrdinals.length; j < n; j++) {
                     int keyOrdinal = layout.keyOrdinals[j];
-                    Object value = accessors.get(keyOrdinal).get();
+                    Comparable value = accessors.get(keyOrdinal).get();
                     keyValues[j] = SqlMemberSource.toComparable(value);
                 }
-                List<Comparable> keyList = Arrays.asList(keyValues);
-                final Object captionValue;
+                final Comparable captionValue;
                 if (layout.captionOrdinal >= 0) {
                     captionValue = accessors.get(layout.captionOrdinal).get();
                 } else {
@@ -93,7 +92,7 @@ public class Target extends TargetBase {
                 }
                 final String nameValue;
                 if (layout.nameOrdinal >= 0) {
-                    final Object nameObject =
+                    final Comparable nameObject =
                         accessors.get(layout.nameOrdinal).get();
                     nameValue =
                         nameObject == null
@@ -103,7 +102,7 @@ public class Target extends TargetBase {
                     nameValue = null;
                 }
                 RolapMember parentMember = member;
-                Object key = keyValues.length == 1 ? keyValues[0] : keyList;
+                final Object key = RolapMember.Key.quick(keyValues);
                 member = cache.getMember(childLevel, key, checkCacheStatus);
                 checkCacheStatus = false; /* Only check the first time */
                 if (member == null) {

@@ -5669,6 +5669,12 @@ public class BasicQueryTest extends FoodMartTestCase {
             + "Row #2: 30,114\n");
     }
 
+    /**
+     * Test case for {@link MondrianProperties#CompareSiblingsByOrderKey},
+     * which partially fixes
+     * <a href="http://jira.pentaho.com/browse/MONDRIAN-259">MONDRIAN-259,
+     * "MEMBER_ORDINAL property incompatible with native filtering"</a>.
+     */
     public void testMemberOrdinalCaching() {
         propSaver.set(props.CompareSiblingsByOrderKey, true);
         // Use a fresh connection to make sure bad member ordinals haven't
@@ -5686,7 +5692,7 @@ public class BasicQueryTest extends FoodMartTestCase {
         // definition below from zero to
         // [Customers].[Name].currentmember.Properties('MEMBER_ORDINAL'), you
         // can see that the absolute ordinals returned are incorrect due to bug
-        // 1660383 (http://tinyurl.com/3xb56f).  For now, this test just
+        // http://jira.pentaho.com/browse/MONDRIAN-259.  For now, this test just
         // verifies that the member sorting is correct when using relative
         // order key rather than absolute ordinal value.  If absolute ordinals
         // get fixed, replace zero with the MEMBER_ORDINAL property.

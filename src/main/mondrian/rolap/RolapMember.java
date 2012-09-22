@@ -183,6 +183,15 @@ public interface RolapMember extends Member, RolapCalculation {
             }
             return false;
         }
+
+        /** Returns a representation of a key that is quicker to create than
+         * that returned by {@link #create(Comparable[])} but may not implement
+         * {@link Comparable}. */
+        public static Object quick(Comparable[] keyValues) {
+            return keyValues.length == 1
+                ? keyValues[0]
+                : Arrays.asList(keyValues);
+        }
     }
 }
 

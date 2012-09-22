@@ -80,47 +80,60 @@ public class SqlConstraintUtils {
         RolapStar.Column[] columns = request.getConstrainedColumns();
         Object[] values = request.getSingleValues();
         int arity = columns.length;
+
+        if (starSet.getAggMeasureGroup() != null) {
+            RolapGalaxy galaxy = ((RolapCube) evaluator.getCube()).galaxy;
+            @SuppressWarnings("unchecked")
+            final AggregationManager.StarConverter starConverter =
+                new BatchLoader.StarConverterImpl(
+                    galaxy,
+                    starSet.getStar(),
+                    starSet.getAggMeasureGroup().getStar(),
+                    Collections.EMPTY_MAP);
+            columns = starConverter.convertColumnArray(columns);
+        }
+
         // following code is similar to
         // AbstractQuerySpec#nonDistinctGenerateSQL()
         for (int i = 0; i < arity; i++) {
             RolapStar.Column column = columns[i];
 
             String expr;
-            if (starSet.getAggStar() != null) {
+            /*
+            if (starSet.getAggMeasureGroup() != null) {
                 int bitPos = column.getBitPosition();
                 AggStar.Table.Column aggColumn =
-                    starSet.getAggStar().lookupColumn(bitPos);
+                    starSet.getAggMeasureGroup().lookupColumn(bitPos);
                 AggStar.Table table = aggColumn.getTable();
                 table.addToFrom(sqlQuery, false, true);
 
                 expr = aggColumn.generateExprString(sqlQuery);
             } else {
+            */
                 RolapStar.Table table = column.getTable();
                 table.addToFrom(sqlQuery, false, true);
 
                 expr = column.getExpression().toSql();
+            /*
             }
+            */
 
             final String value = String.valueOf(values[i]);
+            final StringBuilder buf = new StringBuilder();
             if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
                 || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
             {
-                sqlQuery.addWhere(
-                    expr,
-                    " is ",
-                    RolapUtil.sqlNullLiteral);
+                buf.append(expr).append(" is null");
             } else {
                 if (column.getDatatype().isNumeric()) {
                     // make sure it can be parsed
                     Double.valueOf(value);
                 }
-                final StringBuilder buf = new StringBuilder();
+                buf.append(expr)
+                    .append(" = ");
                 sqlQuery.getDialect().quote(buf, value, column.getDatatype());
-                sqlQuery.addWhere(
-                    expr,
-                    " = ",
-                    buf.toString());
             }
+            sqlQuery.addWhere(buf.toString());
         }
     }
 
@@ -270,8 +283,9 @@ public class SqlConstraintUtils {
         Evaluator e,
         RolapCubeLevel level)
     {
-        AggStar aggStar = starSet.getAggStar();
+        Util.deprecated(false, false); // REMOVE method
         /*
+        AggStar aggStar = starSet.getAggStar();
         TODO: fix this code later. In the attribute-oriented world, we would
         go about joining to fact table differently.
 
@@ -862,7 +876,7 @@ public class SqlConstraintUtils {
         String constraint;
 
         if (RolapUtil.mdxNullLiteral().equalsIgnoreCase(columnValue)) {
-            constraint = columnString + " is " + RolapUtil.sqlNullLiteral;
+            constraint = columnString + " is null";
         } else {
             if (datatype.isNumeric()) {
                 // A numeric data type deserves a numeric value.
@@ -920,7 +934,7 @@ public class SqlConstraintUtils {
     {
         String columnString = exp.toSql();
         if (columnValue == RolapUtil.sqlNullValue) {
-            return columnString + " is " + RolapUtil.sqlNullLiteral;
+            return columnString + " is null";
         } else {
             final StringBuilder buf = new StringBuilder();
             buf.append(columnString);
@@ -1124,7 +1138,7 @@ public class SqlConstraintUtils {
         buf.append("(");
 
         // generate the left-hand side of the IN expression
-        boolean isFirstLevelInMultiple = true;
+        int levelInMultiple = 0;
         for (RolapMember m = member; m != null; m = m.getParentMember()) {
             if (m.isAll()) {
                 continue;
@@ -1154,14 +1168,12 @@ public class SqlConstraintUtils {
                 columnString = level.getAttribute().getNameExp().toSql();
             }
 
-            if (!isFirstLevelInMultiple) {
+            if (levelInMultiple++ > 0) {
                 buf.append(" or ");
-            } else {
-                isFirstLevelInMultiple = false;
             }
 
-            buf.append(columnString);
-            buf.append(" is null");
+            buf.append(columnString)
+                .append(" is null");
 
             // Only needs to compare up to the first(lowest) unique level.
             if (m.getLevel() == fromLevel) {

@@ -30,6 +30,7 @@ public class NamedSetTest extends FoodMartTestCase {
         super();
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public NamedSetTest(String name) {
         super(name);
     }
@@ -172,6 +173,9 @@ public class NamedSetTest extends FoodMartTestCase {
      * Set defined using filter expression.
      */
     public void testIntrinsic() {
+//        testNamedSet();
+//        testNamedSetOnMember();
+        testNamedSetAsList();
         assertQueryReturns(
             "WITH SET [ChardonnayChablis] AS\n"
             + "   'Filter([Product].Members, (InStr(1, [Product].CurrentMember.Name, \"chardonnay\") <> 0) OR (InStr(1, [Product].CurrentMember.Name, \"chablis\") <> 0))'\n"
@@ -184,6 +188,7 @@ public class NamedSetTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "Axis #2:\n"
             + "{[Measures].[Unit Sales]}\n");
+
         assertQueryReturns(
             "WITH SET [BeerMilk] AS\n"
             + "   'Filter([Product].Members, (InStr(1, [Product].CurrentMember.Name, \"Beer\") <> 0) OR (InStr(1, LCase([Product].CurrentMember.Name), \"milk\") <> 0))'\n"

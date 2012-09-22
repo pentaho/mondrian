@@ -984,19 +984,18 @@ public class TestAggregationManager extends BatchTestCase {
             new SqlPattern(
                 Dialect.DatabaseProduct.MYSQL,
                 "select\n"
-                + "   `store`.`store_country` as `c0`\n"
+                + "    `store`.`store_country` as `c0`\n"
                 + "from\n"
                 + "    `agg_c_14_sales_fact_1997` as `agg_c_14_sales_fact_1997`,\n"
                 + "    `store` as `store`\n"
                 + "where\n"
                 + "    `agg_c_14_sales_fact_1997`.`the_year` = 1998\n"
                 + "and\n"
-                + "   `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
+                + "    `agg_c_14_sales_fact_1997`.`store_id` = `store`.`store_id`\n"
                 + "group by\n"
                 + "    `store`.`store_country`\n"
                 + "order by\n"
-                + "    ISNULL(`store`.`store_country`) ASC,\n"
-                + "    `store`.`store_country` ASC",
+                + "    ISNULL(`store`.`store_country`) ASC, `store`.`store_country` ASC",
                 26)};
 
         assertQuerySql(

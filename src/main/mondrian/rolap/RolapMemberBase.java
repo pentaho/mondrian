@@ -492,6 +492,7 @@ public class RolapMemberBase
     }
 
     void setOrderKey(Comparable orderKey) {
+        assert arity(orderKey) == ((RolapLevel) level).getOrderByKeyArity();
         this.orderKey = orderKey;
     }
 
@@ -509,7 +510,10 @@ public class RolapMemberBase
     }
 
     public List<Object> getKeyAsList() {
-        Object key = getKey();
+        return asList(getKey());
+    }
+
+    private static List<Object> asList(Object key) {
         if (key instanceof List) {
             return (List<Object>) key;
         } else {
@@ -518,13 +522,24 @@ public class RolapMemberBase
     }
 
     public Object[] getKeyAsArray() {
-        Object key = getKey();
+        return asArray(getKey());
+    }
+
+    private static Object[] asArray(Object key) {
         if (key == null) {
             return EMPTY_OBJECT_ARRAY;
         } else if (key instanceof List) {
             return ((List) key).toArray();
         } else {
             return new Object[] {key};
+        }
+    }
+
+    private static int arity(Object key) {
+        if (key instanceof List) {
+            return ((List<Object>) key).size();
+        } else {
+            return 1;
         }
     }
 

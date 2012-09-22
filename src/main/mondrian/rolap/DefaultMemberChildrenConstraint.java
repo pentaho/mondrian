@@ -29,8 +29,8 @@ public class DefaultMemberChildrenConstraint
     protected DefaultMemberChildrenConstraint() {
     }
 
-    public RolapStarSet createStarSet(RolapStar aggStar) {
-        return new RolapStarSet(aggStar);
+    public RolapStarSet createStarSet(RolapMeasureGroup aggMeasureGroup) {
+        return new RolapStarSet(null, null, aggMeasureGroup);
     }
 
     public void addMemberConstraint(

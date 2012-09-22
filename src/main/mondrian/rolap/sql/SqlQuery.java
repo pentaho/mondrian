@@ -15,11 +15,9 @@ package mondrian.rolap.sql;
 import mondrian.olap.*;
 import mondrian.rolap.*;
 import mondrian.spi.Dialect;
-import mondrian.spi.DialectManager;
 import mondrian.util.Pair;
 
 import java.util.*;
-import javax.sql.DataSource;
 
 /**
  * <code>SqlQuery</code> allows us to build a <code>select</code>
@@ -155,15 +153,6 @@ public class SqlQuery {
             MondrianProperties.instance().GenerateFormattedSql.get());
     }
 
-    /**
-     * Creates an empty <code>SqlQuery</code> with the same environment as this
-     * one. (As per the Gang of Four 'prototype' pattern.)
-     */
-    public SqlQuery cloneEmpty()
-    {
-        return new SqlQuery(dialect);
-    }
-
     public void setDistinct(final boolean distinct) {
         this.distinct = distinct;
     }
@@ -279,7 +268,7 @@ public class SqlQuery {
 
         if (filter != null) {
             // append filter condition to where clause
-            addWhere("(", filter, ")");
+            addWhere("(" + filter + ")");
         }
         return true;
     }
@@ -436,41 +425,11 @@ public class SqlQuery {
         return columnAliases.get(expression);
     }
 
-    public void addWhere(
-        final String exprLeft,
-        final String exprMid,
-        final String exprRight)
-    {
-        int len = exprLeft.length() + exprMid.length() + exprRight.length();
-        StringBuilder buf = new StringBuilder(len);
-
-        buf.append(exprLeft);
-        buf.append(exprMid);
-        buf.append(exprRight);
-
-        addWhere(buf.toString());
-    }
-
-    /*
-    public void addWhere(RolapStar.Condition joinCondition) {
-        String left = joinCondition.getLeft().getTableAlias();
-        String right = joinCondition.getRight().getTableAlias();
-        if (fromAliases.contains(left) && fromAliases.contains(right)) {
-            addWhere(
-                joinCondition.getLeft(this),
-                " = ",
-                joinCondition.getRight(this));
-        }
-    }
-    */
-
-    public void addWhere(final String expression)
-    {
+    public void addWhere(final String expression) {
         where.add(expression);
     }
 
-    public void addGroupBy(final String expression)
-    {
+    public void addGroupBy(final String expression) {
         groupBy.add(expression);
     }
 
@@ -482,8 +441,7 @@ public class SqlQuery {
         }
     }
 
-    public void addHaving(final String expression)
-    {
+    public void addHaving(final String expression) {
         having.add(expression);
     }
 

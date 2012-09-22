@@ -318,7 +318,7 @@ public class SqlContextConstraint
         return false;
     }
 
-    public RolapStarSet createStarSet(RolapStar aggStar) {
+    public RolapStarSet createStarSet(RolapMeasureGroup aggMeasureGroup) {
         final Member measure = this.evaluator.getMembers()[0];
         final RolapStar star;
         final RolapMeasureGroup measureGroup;
@@ -330,7 +330,7 @@ public class SqlContextConstraint
             star = null;
             measureGroup = null;
         }
-        return new RolapStarSet(star, measureGroup, aggStar);
+        return new RolapStarSet(star, measureGroup, aggMeasureGroup);
     }
 
     public void addLevelConstraint(

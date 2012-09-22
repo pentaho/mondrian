@@ -2506,6 +2506,7 @@ public class RolapSchemaLoader {
                         xmlAttribute.description,
                         hierarchy.hasAll() ? 1 : 0,
                         attribute,
+                        attribute.getOrderByList(),
                         RolapLevel.HideMemberCondition.Never,
                         Collections.<String, Annotation>emptyMap()));
                 hierarchy.init2(
@@ -2760,6 +2761,7 @@ public class RolapSchemaLoader {
         if (captionExpr == null) {
             captionExpr = nameExpr;
         }
+
         List<RolapSchema.PhysColumn> orderByList =
             createColumnList(
                 xmlAttribute,
@@ -2769,6 +2771,9 @@ public class RolapSchemaLoader {
                     : relation,
                 xmlAttribute.orderByColumn,
                 xmlAttribute.getOrderBy());
+        if (orderByList.isEmpty()) {
+            orderByList = keyList;
+        }
 
         final int approxRowCount =
                 loadApproxRowCount(xmlAttribute.approxRowCount);
@@ -3074,6 +3079,18 @@ public class RolapSchemaLoader {
             return null;
         }
 
+        // Order-by columns only need to sort within parent. Therefore if this
+        // is not the first level of the hierarchy maybe we can trim the list.
+        List<RolapSchema.PhysColumn> orderByList =
+            new ArrayList<RolapSchema.PhysColumn>(attribute.getOrderByList());
+        if (!hierarchy.levelList.isEmpty()) {
+            orderByList.removeAll(
+                Util.last(hierarchy.levelList).getOrderByList());
+        }
+        if (orderByList.equals(attribute.getOrderByList())) {
+            orderByList = attribute.getOrderByList(); // save some memory
+        }
+
         final RolapLevel level =
             new RolapLevel(
                 hierarchy,
@@ -3083,6 +3100,7 @@ public class RolapSchemaLoader {
                 xmlLevel.description,
                 depth,
                 attribute,
+                orderByList,
                 RolapLevel.HideMemberCondition.valueOf(xmlLevel.hideMemberIf),
                 createAnnotationMap(xmlLevel.getAnnotations()));
         validator.putXml(level, xmlLevel);

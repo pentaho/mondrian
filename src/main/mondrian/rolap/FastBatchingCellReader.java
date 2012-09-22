@@ -1664,15 +1664,16 @@ class BatchLoader {
                 return null;
             }
             final RolapStar star = getStar();
-            final RolapStar newStar =
+            final RolapMeasureGroup aggMeasureGroup =
                 galaxy.findAgg(
                     star,
                     getConstrainedColumnsBitKey(),
                     getMeasureBitKey(),
                     new boolean[]{false});
-            if (newStar == null) {
+            if (aggMeasureGroup == null) {
                 return null;
             }
+            final RolapStar newStar = aggMeasureGroup.getStar();
             assert newStar != star : "expected improvement";
             final List<RolapStar.Column> newColumnList =
                 new ArrayList<RolapStar.Column>();
@@ -1723,177 +1724,177 @@ class BatchLoader {
             }
             return bitKey;
         }
+    }
 
-        /**
-         * Converts from one star to another. Generally fromStar is an
-         * aggregation table, and toStar is the fact.
-         */
-        private class StarConverterImpl
-            implements AggregationManager.StarConverter
+    /**
+     * Converts from one star to another. Generally fromStar is an
+     * aggregation table, and toStar is the fact.
+     */
+    static class StarConverterImpl
+        implements AggregationManager.StarConverter
+    {
+        private final RolapGalaxy galaxy;
+        private final RolapStar fromStar;
+        private final RolapStar toStar;
+        private final Map<RolapSchema.PhysColumn, RolapSchema.PhysColumn>
+            map;
+
+        public StarConverterImpl(
+            RolapGalaxy galaxy,
+            RolapStar fromStar,
+            RolapStar toStar,
+            Map<RolapSchema.PhysColumn, RolapSchema.PhysColumn> map)
         {
-            private final RolapGalaxy galaxy;
-            private final RolapStar fromStar;
-            private final RolapStar toStar;
-            private final Map<RolapSchema.PhysColumn, RolapSchema.PhysColumn>
-                map;
+            this.galaxy = galaxy;
+            this.fromStar = fromStar;
+            this.toStar = toStar;
+            this.map = map;
+        }
 
-            public StarConverterImpl(
-                RolapGalaxy galaxy,
-                RolapStar fromStar,
-                RolapStar toStar,
-                Map<RolapSchema.PhysColumn, RolapSchema.PhysColumn> map)
-            {
-                this.galaxy = galaxy;
-                this.fromStar = fromStar;
-                this.toStar = toStar;
-                this.map = map;
+        public RolapStar convertStar(RolapStar star) {
+            assert star == fromStar;
+            return toStar;
+        }
+
+        public BitKey convertBitKey(BitKey bitKey) {
+            final BitKey toBitKey =
+                BitKey.Factory.makeBitKey(toStar.getColumnCount());
+            for (int i : bitKey) {
+                toBitKey.set(galaxy.getEquivalentBit(i, fromStar, toStar));
             }
+            return toBitKey;
+        }
 
-            public RolapStar convertStar(RolapStar star) {
-                assert star == fromStar;
-                return toStar;
+        public RolapStar.Column[] convertColumnArray(
+            RolapStar.Column[] columns)
+        {
+            final RolapStar.Column[] toColumns = columns.clone();
+            for (int i = 0; i < columns.length; i++) {
+                toColumns[i] =
+                    convertColumn(columns[i]);
             }
+            return toColumns;
+        }
 
-            public BitKey convertBitKey(BitKey bitKey) {
-                final BitKey toBitKey =
-                    BitKey.Factory.makeBitKey(toStar.getColumnCount());
-                for (int i : bitKey) {
-                    toBitKey.set(galaxy.getEquivalentBit(i, fromStar, toStar));
+        public RolapStar.Column convertColumn(RolapStar.Column column) {
+            return galaxy.getEquivalentColumn(column, toStar);
+        }
+
+        public RolapStar.Measure convertMeasure(RolapStar.Measure measure) {
+            return (RolapStar.Measure) convertColumn(measure);
+        }
+
+        public StarColumnPredicate[] convertPredicateArray(
+            StarColumnPredicate[] predicates)
+        {
+            final StarColumnPredicate[] toPredicates = predicates.clone();
+            for (int i = 0; i < toPredicates.length; i++) {
+                toPredicates[i] = convertPredicate(predicates[i]);
+            }
+            return toPredicates;
+        }
+
+        public List<StarPredicate> convertPredicateList(
+            final List<StarPredicate> predicateList)
+        {
+            return new AbstractList<StarPredicate>() {
+                public StarPredicate get(int index) {
+                    return convertPredicate(predicateList.get(index));
                 }
-                return toBitKey;
-            }
-
-            public RolapStar.Column[] convertColumnArray(
-                RolapStar.Column[] columns)
-            {
-                final RolapStar.Column[] toColumns = columns.clone();
-                for (int i = 0; i < columns.length; i++) {
-                    toColumns[i] =
-                        convertColumn(columns[i]);
+                public int size() {
+                    return predicateList.size();
                 }
-                return toColumns;
-            }
+            };
+        }
 
-            public RolapStar.Column convertColumn(RolapStar.Column column) {
-                return galaxy.getEquivalentColumn(column, toStar);
+        public Set<StarColumnPredicate>[] convertPredicateSets(
+            Set<StarColumnPredicate>[] valueSets)
+        {
+            final Set<StarColumnPredicate>[] sets =
+                new Set[valueSets.length];
+            for (int i = 0; i < sets.length; i++) {
+                sets[i] =
+                    convertPredicateSet(valueSets[i]);
             }
+            return sets;
+        }
 
-            public RolapStar.Measure convertMeasure(RolapStar.Measure measure) {
-                return (RolapStar.Measure) convertColumn(measure);
+        private Set<StarColumnPredicate> convertPredicateSet(
+            Set<StarColumnPredicate> set)
+        {
+            final Set<StarColumnPredicate> convertedSet =
+                new HashSet<StarColumnPredicate>();
+            for (StarColumnPredicate predicate : set) {
+                convertedSet.add(
+                    convertPredicate(predicate));
             }
+            return convertedSet;
+        }
 
-            public StarColumnPredicate[] convertPredicateArray(
-                StarColumnPredicate[] predicates)
-            {
-                final StarColumnPredicate[] toPredicates = predicates.clone();
-                for (int i = 0; i < toPredicates.length; i++) {
-                    toPredicates[i] = convertPredicate(predicates[i]);
+        public List<StarColumnPredicate> convertStarColumnPredicateList(
+            final List<StarColumnPredicate> predicateList)
+        {
+            return new AbstractList<StarColumnPredicate>() {
+                public StarColumnPredicate get(int index) {
+                    return convertPredicate(predicateList.get(index));
                 }
-                return toPredicates;
-            }
-
-            public List<StarPredicate> convertPredicateList(
-                final List<StarPredicate> predicateList)
-            {
-                return new AbstractList<StarPredicate>() {
-                    public StarPredicate get(int index) {
-                        return convertPredicate(predicateList.get(index));
-                    }
-                    public int size() {
-                        return predicateList.size();
-                    }
-                };
-            }
-
-            public Set<StarColumnPredicate>[] convertPredicateSets(
-                Set<StarColumnPredicate>[] valueSets)
-            {
-                final Set<StarColumnPredicate>[] sets =
-                    new Set[valueSets.length];
-                for (int i = 0; i < sets.length; i++) {
-                    sets[i] =
-                        convertPredicateSet(valueSets[i]);
+                public int size() {
+                    return predicateList.size();
                 }
-                return sets;
-            }
+            };
+        }
 
-            private Set<StarColumnPredicate> convertPredicateSet(
-                Set<StarColumnPredicate> set)
-            {
-                final Set<StarColumnPredicate> convertedSet =
-                    new HashSet<StarColumnPredicate>();
-                for (StarColumnPredicate predicate : set) {
-                    convertedSet.add(
-                        convertPredicate(predicate));
-                }
-                return convertedSet;
+        private StarColumnPredicate convertPredicate(
+            StarColumnPredicate predicate)
+        {
+            if (predicate instanceof ListColumnPredicate) {
+                return convertPredicate((ListColumnPredicate) predicate);
             }
+            if (predicate instanceof ValueColumnPredicate) {
+                return convert((ValueColumnPredicate) predicate);
+            }
+            if (predicate instanceof LiteralColumnPredicate) {
+                return predicate;
+            }
+            throw new UnsupportedOperationException(
+                "unexpected predicate: " + predicate
+                + "; class: " + predicate.getClass());
+        }
 
-            public List<StarColumnPredicate> convertStarColumnPredicateList(
-                final List<StarColumnPredicate> predicateList)
-            {
-                return new AbstractList<StarColumnPredicate>() {
-                    public StarColumnPredicate get(int index) {
-                        return convertPredicate(predicateList.get(index));
-                    }
-                    public int size() {
-                        return predicateList.size();
-                    }
-                };
-            }
+        private ValueColumnPredicate convert(ValueColumnPredicate predicate)
+        {
+            return new ValueColumnPredicate(
+                convert(predicate.getColumn()),
+                predicate.getValue());
+        }
 
-            private StarColumnPredicate convertPredicate(
-                StarColumnPredicate predicate)
-            {
-                if (predicate instanceof ListColumnPredicate) {
-                    return convertPredicate((ListColumnPredicate) predicate);
-                }
-                if (predicate instanceof ValueColumnPredicate) {
-                    return convert((ValueColumnPredicate) predicate);
-                }
-                if (predicate instanceof LiteralColumnPredicate) {
-                    return predicate;
-                }
-                throw new UnsupportedOperationException(
-                    "unexpected predicate: " + predicate
-                    + "; class: " + predicate.getClass());
-            }
+        private StarColumnPredicate convertPredicate(
+            ListColumnPredicate predicate)
+        {
+            return new ListColumnPredicate(
+                convert(predicate.getColumn()),
+                convertStarColumnPredicateList(
+                    predicate.getPredicates()));
+        }
 
-            private ValueColumnPredicate convert(ValueColumnPredicate predicate)
-            {
-                return new ValueColumnPredicate(
-                    convert(predicate.getColumn()),
-                    predicate.getValue());
-            }
+        private PredicateColumn convert(PredicateColumn predicateColumn) {
+            return new PredicateColumn(
+                RolapSchema.BadRouter.INSTANCE,
+                convertPhysColumn(predicateColumn.physColumn));
+        }
 
-            private StarColumnPredicate convertPredicate(
-                ListColumnPredicate predicate)
-            {
-                return new ListColumnPredicate(
-                    convert(predicate.getColumn()),
-                    convertStarColumnPredicateList(
-                        predicate.getPredicates()));
-            }
+        private RolapSchema.PhysColumn convertPhysColumn(
+            RolapSchema.PhysColumn physColumn)
+        {
+            final RolapSchema.PhysColumn convertedColumn =
+                map.get(physColumn);
+            return convertedColumn == null ? physColumn : convertedColumn;
+        }
 
-            private PredicateColumn convert(PredicateColumn predicateColumn) {
-                return new PredicateColumn(
-                    RolapSchema.BadRouter.INSTANCE,
-                    convertPhysColumn(predicateColumn.physColumn));
-            }
-
-            private RolapSchema.PhysColumn convertPhysColumn(
-                RolapSchema.PhysColumn physColumn)
-            {
-                final RolapSchema.PhysColumn convertedColumn =
-                    map.get(physColumn);
-                return convertedColumn == null ? physColumn : convertedColumn;
-            }
-
-            private StarPredicate convertPredicate(StarPredicate predicate) {
-                throw new UnsupportedOperationException(
-                    "unexpected predicate: " + predicate
-                    + "; class: " + predicate.getClass());
-            }
+        private StarPredicate convertPredicate(StarPredicate predicate) {
+            throw new UnsupportedOperationException(
+                "unexpected predicate: " + predicate
+                + "; class: " + predicate.getClass());
         }
     }
 

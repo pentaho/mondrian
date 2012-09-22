@@ -268,18 +268,18 @@ public class JdbcDialectImpl implements Dialect {
         return supports;
     }
 
-     /**
-      * <p>Detects whether the database is configured to permit queries
-      * that include columns in the SELECT that are not also in the GROUP BY.
-      * MySQL is an example of one that does, though this is configurable.</p>
-      *
-      * <p>The expectation is that this will not change while Mondrian is
-      * running, though some databases (MySQL) allow changing it on the fly.</p>
-      *
-      * @param conn The database connection
-      * @return Whether the feature is enabled.
-      * @throws SQLException on error
-      */
+    /**
+     * <p>Detects whether the database is configured to permit queries
+     * that include columns in the SELECT that are not also in the GROUP BY.
+     * MySQL is an example of one that does, though this is configurable.</p>
+     *
+     * <p>The expectation is that this will not change while Mondrian is
+     * running, though some databases (MySQL) allow changing it on the fly.</p>
+     *
+     * @param conn The database connection
+     * @return Whether the feature is enabled.
+     * @throws SQLException on error
+     */
     protected boolean deduceSupportsSelectNotInGroupBy(Connection conn)
         throws SQLException
     {
@@ -1241,6 +1241,12 @@ public class JdbcDialectImpl implements Dialect {
             return new NonQuotingDialect(dialect, alwaysQuoteIdentifiers);
         }
 
+        @Override
+        public String toString() {
+            return dialect + "[quoting=false]";
+        }
+
+        @Override
         public Dialect withQuoting(boolean alwaysQuoteIdentifiers) {
             return of(this, alwaysQuoteIdentifiers);
         }

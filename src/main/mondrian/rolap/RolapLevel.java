@@ -40,6 +40,8 @@ public class RolapLevel extends LevelBase {
     private final HideMemberCondition hideMemberCondition;
     private final Map<String, Annotation> annotationMap;
 
+    private final List<RolapSchema.PhysColumn> orderByList;
+
     static final RolapProperty KEY_PROPERTY =
         new RolapProperty(
             Property.KEY.name, null, null, Property.Datatype.TYPE_STRING, null,
@@ -76,15 +78,18 @@ public class RolapLevel extends LevelBase {
         String description,
         int depth,
         RolapAttribute attribute,
+        List<RolapSchema.PhysColumn> orderByList,
         HideMemberCondition hideMemberCondition,
         Map<String, Annotation> annotationMap)
     {
         super(hierarchy, name, visible, caption, description, depth);
         this.annotationMap = annotationMap;
         this.attribute = attribute;
+        this.orderByList = orderByList;
         this.hideMemberCondition = hideMemberCondition;
 
         assert annotationMap != null;
+        assert orderByList != null;
         assert hideMemberCondition != null;
     }
 
@@ -132,6 +137,10 @@ public class RolapLevel extends LevelBase {
 
     public final boolean isUnique() {
         return true; // REVIEW:
+    }
+
+    int getOrderByKeyArity() {
+        return orderByList.size();
     }
 
     /**
@@ -210,6 +219,14 @@ public class RolapLevel extends LevelBase {
             return approxRowCount;
         }
         return attribute.getApproxRowCount();
+    }
+
+    /**
+     * The column(s) that this level is ordered on. Usually the list is
+     * similar to the underlying attribute's list.
+     */
+    public List<RolapSchema.PhysColumn> getOrderByList() {
+        return orderByList;
     }
 
     /**

@@ -65,7 +65,7 @@ public interface MemberChildrenConstraint extends SqlConstraint {
         RolapStarSet starSet,
         RolapLevel level);
 
-    RolapStarSet createStarSet(RolapStar aggStar);
+    RolapStarSet createStarSet(RolapMeasureGroup aggMeasureGroup);
 }
 
 // End MemberChildrenConstraint.java

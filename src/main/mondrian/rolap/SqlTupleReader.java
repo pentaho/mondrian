@@ -157,13 +157,14 @@ public class SqlTupleReader implements TupleReader {
                         stmt.getAccessors();
                     pc:
                     if (parentChild) {
-                        Object[] parentKeys =
-                            new Object[layout.parentOrdinals.length];
+                        Comparable[] parentKeys =
+                            new Comparable[layout.parentOrdinals.length];
                         for (int j = 0; j < layout.parentOrdinals.length;
                              j++)
                         {
                             int parentOrdinal = layout.parentOrdinals[j];
-                            Object value = accessors.get(parentOrdinal).get();
+                            Comparable value =
+                                accessors.get(parentOrdinal).get();
                             if (value == null) {
                                 // member is at top of hierarchy; its parent is
                                 // the 'all' member. Convert null to placeholder
@@ -196,10 +197,10 @@ public class SqlTupleReader implements TupleReader {
                         new Comparable[layout.keyOrdinals.length];
                     for (int j = 0; j < layout.keyOrdinals.length; j++) {
                         int keyOrdinal = layout.keyOrdinals[j];
-                        Object value = accessors.get(keyOrdinal).get();
+                        Comparable value = accessors.get(keyOrdinal).get();
                         keyValues[j] = SqlMemberSource.toComparable(value);
                     }
-                    final Object captionValue;
+                    final Comparable captionValue;
                     if (layout.captionOrdinal >= 0) {
                         captionValue =
                             accessors.get(layout.captionOrdinal).get();
@@ -208,7 +209,7 @@ public class SqlTupleReader implements TupleReader {
                     }
                     final String nameValue;
                     if (layout.nameOrdinal >= 0) {
-                        final Object nameObject =
+                        final Comparable nameObject =
                             accessors.get(layout.nameOrdinal).get();
                         nameValue =
                             nameObject == null
@@ -217,10 +218,7 @@ public class SqlTupleReader implements TupleReader {
                     } else {
                         nameValue = null;
                     }
-                    final Object key =
-                        keyValues.length == 1
-                            ? keyValues[0]
-                            : Arrays.asList(keyValues);
+                    final Object key = RolapMember.Key.quick(keyValues);
                     member = cache.getMember(childLevel, key, checkCacheStatus);
                     checkCacheStatus = false; // only check the first time
                     if (member == null) {
@@ -837,10 +835,12 @@ Util.deprecated("obsolete basecube parameter", false);
         if (measureGroup != null) {
             final AggStar aggStar =
                 chooseAggStar(constraint, measureGroup, evaluator);
+            final RolapMeasureGroup aggMeasureGroup = null; // TODO:
             starSet =
-                new RolapStarSet(measureGroup.getStar(), measureGroup, aggStar);
+                new RolapStarSet(
+                    measureGroup.getStar(), measureGroup, aggMeasureGroup);
         } else {
-            starSet = new RolapStarSet(null);
+            starSet = new RolapStarSet(null, null, null);
         }
 
         // Find targets whose members are not enumerated.
@@ -1073,7 +1073,7 @@ Util.deprecated("obsolete basecube parameter", false);
             SqlMemberSource.Sgo sgo =
                 SqlMemberSource.Sgo.SELECT_ORDER.maybeGroup(needsGroupBy);
 
-            for (RolapSchema.PhysColumn column : attribute.getOrderByList()) {
+            for (RolapSchema.PhysColumn column : currLevel.getOrderByList()) {
                 levelLayoutBuilder.orderByOrdinalList.add(
                     queryBuilder.addColumn(column, sgo));
             }
@@ -1161,8 +1161,7 @@ Util.deprecated("obsolete basecube parameter", false);
             }
 
             if (selectOrdinal == 0 && selectCount == 1) {
-                for (RolapSchema.PhysColumn column
-                    : attribute.getOrderByList())
+                for (RolapSchema.PhysColumn column : currLevel.getOrderByList())
                 {
                     sqlQuery.addOrderBy(column.toSql(), true, false, true);
                 }
@@ -1429,8 +1428,9 @@ Util.deprecated("obsolete basecube parameter", false);
     }
 
     /**
+     * Builder for {@link LevelColumnLayout}.
      *
-     * @see Util#deprecated(Object) add javadoc and make top level
+     * @see Util#deprecated(Object) make top level
      */
     static class LevelLayoutBuilder {
         public List<Integer> keyOrdinalList = new ArrayList<Integer>();
@@ -1447,11 +1447,30 @@ Util.deprecated("obsolete basecube parameter", false);
         }
 
         public LevelColumnLayout toLayout() {
+            boolean assignOrderKeys =
+                MondrianProperties.instance().CompareSiblingsByOrderKey.get()
+                || Util.deprecated(true, false); // TODO: remove property
+
+            OrderKeySource orderBySource = OrderKeySource.NONE;
+            if (assignOrderKeys) {
+                if (orderByOrdinalList.equals(keyOrdinalList)) {
+                    orderBySource = OrderKeySource.KEY;
+                } else if (orderByOrdinalList.equals(
+                        Collections.singletonList(nameOrdinal)))
+                {
+                    orderBySource = OrderKeySource.NAME;
+                } else {
+                    orderBySource = OrderKeySource.MAPPED;
+                }
+            }
             return new LevelColumnLayout(
                 toArray(keyOrdinalList),
                 nameOrdinal,
                 captionOrdinal,
-                toArray(orderByOrdinalList),
+                orderBySource,
+                orderBySource == OrderKeySource.MAPPED
+                    ? toArray(orderByOrdinalList)
+                    : null,
                 toArray(propertyOrdinalList),
                 toArray(parentOrdinalList));
         }
@@ -1487,6 +1506,7 @@ Util.deprecated("obsolete basecube parameter", false);
         // column ordinals where the value of the level's caption is found,
         // or -1 if no caption
         public final int captionOrdinal;
+        public final OrderKeySource orderBySource;
         // column ordinals where the ordinal expression is found
         public final int[] orderByOrdinals;
         // column ordinals where the values of the level's properties are found
@@ -1499,6 +1519,7 @@ Util.deprecated("obsolete basecube parameter", false);
             int[] keyOrdinals,
             int nameOrdinal,
             int captionOrdinal,
+            OrderKeySource orderBySource,
             int[] orderByOrdinals,
             int[] propertyOrdinals,
             int[] parentOrdinals)
@@ -1506,10 +1527,18 @@ Util.deprecated("obsolete basecube parameter", false);
             this.keyOrdinals = keyOrdinals;
             this.nameOrdinal = nameOrdinal;
             this.captionOrdinal = captionOrdinal;
+            this.orderBySource = orderBySource;
             this.orderByOrdinals = orderByOrdinals;
             this.propertyOrdinals = propertyOrdinals;
             this.parentOrdinals = parentOrdinals;
         }
+    }
+
+    enum OrderKeySource {
+        NONE,
+        KEY,
+        NAME,
+        MAPPED
     }
 }
 

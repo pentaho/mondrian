@@ -121,11 +121,9 @@ public abstract class RolapAttributeImpl
         this.nullValue = nullValue;
         this.levelType = levelType;
         this.approxRowCount = approxRowCount;
-        if (orderByList != null) {
-            this.orderByList = orderByList;
-        } else {
-            this.orderByList = this.keyList;
-        }
+        this.orderByList = orderByList;
+
+        assert orderByList != null;
     }
 
     @Override

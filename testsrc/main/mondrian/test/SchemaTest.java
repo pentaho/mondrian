@@ -2470,7 +2470,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
      * Test case for feature
      * <a href="http://jira.pentaho.com/browse/MONDRIAN-960">MONDRIAN-960,
      * "Ability to define non-measure calculated members in a cube under a
-     * specifc parent"</a>.
+     * specific parent"</a>.
      */
     public void testCalcMemberInCube() {
         final TestContext testContext =
@@ -6930,6 +6930,18 @@ Test that get error if a dimension has more than one hierarchy with same name.
     // TODO: test that it is an error if you define a CalculatedMember
     // in the Measures hierarchy and attempt to give the member a parent.
     // (Measures are flat.)
+
+    // TODO: Test that if an attribute has a composite OrderKey,
+    // and is used in a multi-level hierarchy,
+    // and the order key starts with the key or orderKey of its parent level,
+    // then a reduced order key is used.
+
+    // TODO: Allow OrderKey to be a child element of Level. It can have fewer
+    // elements than the attribute's key; it probably does not need to be
+    // composite. Warn if OrderKey
+    // contains any of parent level's key. (e.g. if
+    // orderKey of Customer contains city). OrderKey only needs to distinguish
+    // between And test.
 }
 
 // End SchemaTest.java

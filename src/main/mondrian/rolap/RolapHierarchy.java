@@ -146,6 +146,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 0,
                 ALL_ATTRIBUTE.inDimension(getDimension()),
+                Collections.<RolapSchema.PhysColumn>emptyList(),
                 RolapLevel.HideMemberCondition.Never,
                 Collections.<String, Annotation>emptyMap());
         if (hasAll) {
@@ -163,6 +164,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 0,
                 NULL_ATTRIBUTE.inDimension(getDimension()),
+                Collections.<RolapSchema.PhysColumn>emptyList(),
                 RolapLevel.HideMemberCondition.Never,
                 Collections.<String, Annotation>emptyMap());
 
@@ -176,6 +178,7 @@ public class RolapHierarchy extends HierarchyBase {
                     null,
                     levelList.size(),
                     MEASURES_ATTRIBUTE.inDimension(getDimension()),
+                    Collections.<RolapSchema.PhysColumn>emptyList(),
                     RolapLevel.HideMemberCondition.Never,
                     Collections.<String, Annotation>emptyMap()));
         }
@@ -721,6 +724,7 @@ public class RolapHierarchy extends HierarchyBase {
                 description,
                 peerHier.levelList.size(),
                 src.attribute.getParentAttribute(),
+                Collections.<RolapSchema.PhysColumn>emptyList(),
                 src.getHideMemberCondition(),
                 Collections.<String, Annotation>emptyMap());
         peerHier.levelList.add(level);
@@ -739,6 +743,7 @@ public class RolapHierarchy extends HierarchyBase {
                 null,
                 peerHier.levelList.size(),
                 src.attribute, // TODO: new attr, also change its row count
+                Collections.<RolapSchema.PhysColumn>emptyList(),
                 src.getHideMemberCondition(),
                 Collections.<String, Annotation>emptyMap());
         peerHier.levelList.add(sublevel);

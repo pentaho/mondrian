@@ -470,7 +470,7 @@ public class RolapStar {
     }
 
     /**
-     * Used by TestAggregationManager only.
+     * Used by TestAggregationManager only. (Not safe in general.)
      */
     public Column lookupColumn(String tableAlias, String columnName) {
         final Table table = factTable.findDescendant(tableAlias);
@@ -478,7 +478,7 @@ public class RolapStar {
     }
 
     /**
-     * Used by test code only.
+     * Used by test code only. (Not safe in general.)
      */
     public BitKey getBitKey(String[] tableAlias, String[] columnName) {
         BitKey bitKey = BitKey.Factory.makeBitKey(getColumnCount());

@@ -7239,7 +7239,11 @@ public class FunctionTest extends FoodMartTestCase {
             null)
             .withCube(cubeName);
 
-        // The [Time_Alphabetical] is ordered alphabetically by month
+        if (!Bug.BugMondrian1173Fixed) {
+            testContext.assertSimpleQuery();
+            return;
+        }
+            // The [Time_Alphabetical] is ordered alphabetically by month
         if (!Bug.CubeRaggedFeature) {
             testContext.assertAxisReturns(
                 "Head([Time_Alphabetical].[Time_Alphabetical].members, 7)",
@@ -7979,7 +7983,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderMemberMemberValueExpNew() {
-        if (!Bug.OrdinalFixed) {
+        if (!Bug.BugMondrian1173Fixed) {
             return;
         }
         propSaver.set(
@@ -8118,7 +8122,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderMemberMultiKeysMemberValueExp2() {
-        if (!Bug.OrdinalFixed) {
+        if (!Bug.BugMondrian1173Fixed) {
             return;
         }
         propSaver.set(
@@ -8171,7 +8175,7 @@ public class FunctionTest extends FoodMartTestCase {
     }
 
     public void testOrderTupleSingleKeysNew() {
-        if (!Bug.OrdinalFixed) {
+        if (!Bug.BugMondrian1173Fixed) {
             return;
         }
         propSaver.set(
@@ -8398,7 +8402,7 @@ public class FunctionTest extends FoodMartTestCase {
             + "Row #0: 75\n");
     }
 
-    public void testOrderDiffrentDim() {
+    public void testOrderDifferentDim() {
         assertQueryReturns(
             "select \n"
             + "  Order("
@@ -8718,7 +8722,6 @@ public class FunctionTest extends FoodMartTestCase {
      * After optimizing, who knows?
      */
     public void testTopCountHuge() {
-        // TODO convert printfs to trace
         final String query =
             "SELECT [Measures].[Store Sales] ON 0,\n"
             + "TopCount([Time].[Month].members * "

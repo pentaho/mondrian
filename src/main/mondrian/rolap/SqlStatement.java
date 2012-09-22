@@ -460,9 +460,9 @@ public class SqlStatement {
             final Accessor accessor = createAccessor(column, type, false);
             return new Accessor() {
                 int lastRowCount = -1;
-                Object lastValue;
+                Comparable lastValue;
 
-                public Object get() throws SQLException {
+                public Comparable get() throws SQLException {
                     if (SqlStatement.this.rowCount > lastRowCount) {
                         lastValue = accessor.get();
                         lastRowCount = SqlStatement.this.rowCount;
@@ -475,19 +475,19 @@ public class SqlStatement {
         switch (type) {
         case OBJECT:
             return new Accessor() {
-                public Object get() throws SQLException {
-                    return resultSet.getObject(columnPlusOne);
+                public Comparable get() throws SQLException {
+                    return (Comparable) resultSet.getObject(columnPlusOne);
                 }
             };
         case STRING:
             return new Accessor() {
-                public Object get() throws SQLException {
+                public Comparable get() throws SQLException {
                     return resultSet.getString(columnPlusOne);
                 }
             };
         case INT:
             return new Accessor() {
-                public Object get() throws SQLException {
+                public Comparable get() throws SQLException {
                     final int val = resultSet.getInt(columnPlusOne);
                     if (val == 0 && resultSet.wasNull()) {
                         return null;
@@ -497,7 +497,7 @@ public class SqlStatement {
             };
         case LONG:
             return new Accessor() {
-                public Object get() throws SQLException {
+                public Comparable get() throws SQLException {
                     final long val = resultSet.getLong(columnPlusOne);
                     if (val == 0 && resultSet.wasNull()) {
                         return null;
@@ -507,7 +507,7 @@ public class SqlStatement {
             };
         case DOUBLE:
             return new Accessor() {
-                public Object get() throws SQLException {
+                public Comparable get() throws SQLException {
                     final double val = resultSet.getDouble(columnPlusOne);
                     if (val == 0 && resultSet.wasNull()) {
                         return null;
@@ -605,7 +605,7 @@ public class SqlStatement {
     }
 
     public interface Accessor {
-        Object get() throws SQLException;
+        Comparable get() throws SQLException;
     }
 
     /**
