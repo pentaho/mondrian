@@ -16,8 +16,10 @@ import mondrian.rolap.aggmatcher.JdbcSchema;
 import mondrian.spi.DynamicSchemaProcessor;
 import mondrian.util.ByteString;
 
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
-import java.lang.ref.SoftReference;
+import java.lang.ref.*;
 import java.lang.reflect.Constructor;
 import java.util.*;
 import javax.sql.DataSource;
@@ -30,6 +32,8 @@ import javax.sql.DataSource;
  * <code>RolapSchemaPool.{@link #instance}().{@link #get}</code>.</p>
  */
 class RolapSchemaPool {
+    static final Logger LOGGER = Logger.getLogger(RolapSchemaPool.class);
+
     private static final RolapSchemaPool INSTANCE = new RolapSchemaPool();
 
     private final Map<SchemaKey, SoftReference<RolapSchema>> mapKeyToSchema =
@@ -89,6 +93,29 @@ class RolapSchemaPool {
     {
         final String connectionUuidStr = connectInfo.get(
             RolapConnectionProperties.JdbcConnectionUuid.name());
+        final boolean useSchemaPool =
+            Boolean.parseBoolean(
+                connectInfo.get(
+                    RolapConnectionProperties.UseSchemaPool.name(),
+                    "true"));
+        final boolean useContentChecksum =
+            Boolean.parseBoolean(
+                connectInfo.get(
+                    RolapConnectionProperties.UseContentChecksum.name()));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "get: catalog=" + catalogUrl
+                + ", connectionKey=" + connectionKey
+                + ", jdbcUser=" + jdbcUser
+                + ", dataSourceStr=" + dataSourceStr
+                + ", dataSource=" + dataSource
+                + ", dialect=" + dialectClassName
+                + ", jdbcConnectionUuid=" + connectionUuidStr
+                + ", useSchemaPool=" + useSchemaPool
+                + ", useContentChecksum=" + useContentChecksum
+                + ", map-size=" + mapKeyToSchema.size()
+                + ", md5-map-size=" + mapMd5ToSchema.size());
+        }
         final ConnectionKey connectionKey1 =
             ConnectionKey.create(
                 connectionUuidStr,
@@ -107,33 +134,35 @@ class RolapSchemaPool {
                 connectionKey1);
 
         // Use the schema pool unless "UseSchemaPool" is explicitly false.
-        final boolean useSchemaPool =
-            Boolean.parseBoolean(
-                connectInfo.get(
-                    RolapConnectionProperties.UseSchemaPool.name(),
-                    "true"));
+        RolapSchema schema = null;
         if (!useSchemaPool) {
-            return new RolapSchema(
-                key,
-                null,
-                catalogUrl,
-                catalogStr,
-                connectInfo,
-                dataSource);
+            schema =
+                RolapSchemaLoader.createSchema(
+                    key,
+                    null,
+                    catalogUrl,
+                    catalogStr,
+                    connectInfo,
+                    dataSource);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    "create (no pool): schema-name=" + schema.name
+                    + ", schema-id="
+                    + Integer.toHexString(System.identityHashCode(schema)));
+            }
+            return schema;
         }
 
-        RolapSchema schema = null;
-
-        final boolean useContentChecksum =
-            Boolean.parseBoolean(
-                connectInfo.get(
-                    RolapConnectionProperties.UseContentChecksum.name()));
-
         if (useContentChecksum) {
-            ByteString md5Bytes =
+            final ByteString md5Bytes =
                 new ByteString(Util.digestMd5(catalogStr));
-            SoftReference<RolapSchema> ref =
+            final SoftReference<RolapSchema> ref =
                 mapMd5ToSchema.get(md5Bytes);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                    "get(key=" + key
+                    + ") returned " + toString(ref));
+            }
 
             if (ref != null) {
                 schema = ref.get();
@@ -152,12 +181,22 @@ class RolapSchemaPool {
                     catalogStr,
                     connectInfo,
                     dataSource);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(
+                        "create: schema-name=" + schema.name
+                        + ", schema-id=" + System.identityHashCode(schema));
+                }
                 putSchema(schema, md5Bytes);
             }
             return schema;
         }
 
         SoftReference<RolapSchema> ref = mapKeyToSchema.get(key);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "get(key=" + key
+                + ") returned " + toString(ref));
+        }
         if (ref != null) {
             schema = ref.get();
             if (schema == null) {
@@ -173,6 +212,9 @@ class RolapSchemaPool {
                 catalogStr,
                 connectInfo,
                 dataSource);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("create: " + schema);
+            }
             putSchema(schema, null);
         }
 
@@ -189,6 +231,15 @@ class RolapSchemaPool {
             mapMd5ToSchema.put(md5Bytes, ref);
         }
         mapKeyToSchema.put(schema.key, ref);
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "put: schema=" + schema
+                + ", key=" + schema.key
+                + ", checksum=" + md5Bytes
+                + ", map-size=" + mapKeyToSchema.size()
+                + ", md5-map-size=" + mapMd5ToSchema.size());
+        }
     }
 
     private static String getSchemaContent(
@@ -374,6 +425,21 @@ class RolapSchemaPool {
 
     synchronized boolean contains(RolapSchema rolapSchema) {
         return mapKeyToSchema.containsKey(rolapSchema.key);
+    }
+
+    private static <T> String toString(Reference<T> ref) {
+        if (ref == null) {
+            return "null";
+        } else {
+            T t = ref.get();
+            if (t == null) {
+                return "ref(null)";
+            } else {
+                return "ref(" + t
+                    + ", id=" + Integer.toHexString(System.identityHashCode(t))
+                    + ")";
+            }
+        }
     }
 }
 

@@ -10,7 +10,7 @@
 package mondrian.rolap;
 
 import mondrian.olap.Util;
-import mondrian.util.StringKey;
+import mondrian.util.*;
 
 /**
  * Globally unique identifier for the metadata content of a schema.
@@ -39,13 +39,16 @@ class SchemaContentKey extends StringKey {
         final String dynamicSchemaProp =
             RolapConnectionProperties.DynamicSchemaProcessor.name();
 
+        StringBuilder buf = new StringBuilder();
         if (!Util.isEmpty(connectInfo.get(catalogContentProp))
             || !Util.isEmpty(connectInfo.get(dynamicSchemaProp)))
         {
-            return new SchemaContentKey(catalogContents);
+            ConnectionKey.attributeValue(buf, "catalogStr", catalogContents);
         } else {
-            return new SchemaContentKey(catalogUrl);
+            ConnectionKey.attributeValue(buf, "catalog", catalogUrl);
         }
+        return new SchemaContentKey(
+            new ByteString(Util.digestMd5(buf.toString())).toString());
     }
 }
 
