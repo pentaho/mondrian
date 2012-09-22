@@ -109,7 +109,6 @@ class RolapSchemaPool {
                 + ", jdbcUser=" + jdbcUser
                 + ", dataSourceStr=" + dataSourceStr
                 + ", dataSource=" + dataSource
-                + ", dialect=" + dialectClassName
                 + ", jdbcConnectionUuid=" + connectionUuidStr
                 + ", useSchemaPool=" + useSchemaPool
                 + ", useContentChecksum=" + useContentChecksum
@@ -137,7 +136,7 @@ class RolapSchemaPool {
         RolapSchema schema = null;
         if (!useSchemaPool) {
             schema =
-                RolapSchemaLoader.createSchema(
+                new RolapSchema(
                     key,
                     null,
                     catalogUrl,
@@ -146,7 +145,7 @@ class RolapSchemaPool {
                     dataSource);
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(
-                    "create (no pool): schema-name=" + schema.name
+                    "create (no pool): schema-name=" + schema.getName()
                     + ", schema-id="
                     + Integer.toHexString(System.identityHashCode(schema)));
             }
@@ -183,7 +182,7 @@ class RolapSchemaPool {
                     dataSource);
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(
-                        "create: schema-name=" + schema.name
+                        "create: schema-name=" + schema.getName()
                         + ", schema-id=" + System.identityHashCode(schema));
                 }
                 putSchema(schema, md5Bytes);
