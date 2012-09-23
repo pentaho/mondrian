@@ -745,7 +745,7 @@ in {mondrian.foodmart.jdbcURL}."
         classpathref="project.test.classpath"
         classname="mondrian.test.Main"
         fork="yes"
-        maxmemory="768m">
+        maxmemory="2g">
       <arg value="${test.args}"/>
       <jvmarg line="${junit.jvmargs}"/>
       <sysproperty key="log4j.configuration"
