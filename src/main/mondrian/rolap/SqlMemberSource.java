@@ -90,16 +90,11 @@ class SqlMemberSource
         if (level.isAll()) {
             return null;
         }
-        List<RolapSchema.PhysColumn> columnList =
-            new ArrayList<RolapSchema.PhysColumn>();
-        for (RolapSchema.PhysColumn column : level.attribute.getKeyList()) {
-            columnList.add(column);
-        }
         final List<RolapMember> list =
             getMembersInLevel(
                 level,
                 new MemberKeyConstraint(
-                    columnList,
+                    level.attribute.getKeyList(),
                     keyValues));
         switch (list.size()) {
         case 0:
@@ -615,7 +610,7 @@ class SqlMemberSource
         constraint.addMemberConstraint(sqlQuery, starSet, member);
 
         RolapLevel level = member.getLevel().getChildLevel();
-        /*
+/*
         boolean levelCollapsed =
             (aggStar != null)
             && isLevelCollapsed(

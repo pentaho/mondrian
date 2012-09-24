@@ -150,7 +150,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "      <Level name=\"Currency\" column=\"media_type\" uniqueMembers=\"true\"/>\n"
             + "    </Hierarchy>\n"
             + "  </Dimension>"
-            /*
+/*
             + "  <Dimension name=\"Customer2\" foreignKey=\"promotion_id\">\n"
             + "    <Hierarchy hasAll=\"true\" primaryKey=\"promotion_id\">\n"
             + "      <Table name=\"promotion\"/>\n"
@@ -158,7 +158,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "uniqueMembers=\"true\"/>\n"
             + "    </Hierarchy>\n"
             + "  </Dimension>"
-            */
+*/
             + "  <Dimension name=\"Customer\" foreignKey=\"customer_id\">\n"
             + "    <Hierarchy hasAll=\"true\" allMemberName=\"All Customers\" primaryKey=\"customer_id\">\n"
             + "      <Table name=\"customer\"/>\n"
@@ -167,14 +167,14 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "      <Level name=\"City\" column=\"city\" uniqueMembers=\"false\"/>\n"
             + "      <Level name=\"Name\" column=\"customer_id\" type=\"Numeric\" uniqueMembers=\"true\"/>\n"
             + "    </Hierarchy>\n"
-            /*
+/*
             + "    <Hierarchy name=\"Gender\" hasAll=\"true\" "
             + "primaryKey=\"customer_id\">\n"
             + "      <Table name=\"customer\"/>\n"
             + "      <Level name=\"Gender\" column=\"gender\" "
             + "uniqueMembers=\"true\"/>\n"
             + "    </Hierarchy>\n"
-            */
+*/
             + "  </Dimension>\n"
             + "  <Dimension name='Store Size in SQFT' foreignKey='store_id'>\n"
             + "    <Hierarchy hasAll='true' primaryKey='store_id'>\n"
@@ -1109,14 +1109,14 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "Row #0: 6\n");
     }
 
-    public void testMemberIdentifiedByDimensionAndKey() {
-        // Member identified by dimension, key;
+    public void testMemberIdentifiedByHierarchyAndKey() {
+        // Member identified by hierarchy (unique across all dimensions), key;
         // works on SSAS;
         // gives {[Washington Berry Juice], 231}.
         // Presumably, if level is not specified, it defaults to lowest level?
         runQ(
             "select [Measures].[Unit Sales] on 0,\n"
-            + "[Product].[Products].&[1] on 1\n"
+            + "[Products].&[1] on 1\n"
             + "from [Warehouse and Sales]");
     }
 
@@ -1288,7 +1288,7 @@ public class Ssas2005CompatibilityTest extends FoodMartTestCase {
             + "Axis #1:\n"
             + "{[Measures].[Unit Sales]}\n"
             + "Axis #2:\n"
-            + "{[Store Size in SQFT].[#null]}\n"
+            + "{[Store Size in SQFT].[Store Size in SQFT].[#null]}\n"
             + "Row #0: 39,329\n");
     }
 

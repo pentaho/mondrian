@@ -12,7 +12,6 @@ package mondrian.olap;
 
 import mondrian.resource.MondrianResource;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,7 +43,6 @@ public abstract class HierarchyBase
     protected final String name;
     protected final String uniqueName;
     protected String description;
-    protected final List<Level> levelList = new ArrayList<Level>();
     protected final boolean hasAll;
     protected String allMemberName;
 
@@ -143,6 +141,7 @@ public abstract class HierarchyBase
 
     @Deprecated
     public Level[] getLevels() {
+        final List<? extends Level> levelList = getLevelList();
         return levelList.toArray(new Level[levelList.size()]);
     }
 
@@ -177,6 +176,7 @@ public abstract class HierarchyBase
             // Key segment searches bottom level by default. For example,
             // [Products].&[1] is shorthand for [Products].[Product Name].&[1].
             final Id.KeySegment keySegment = (Id.KeySegment) s;
+            final List<? extends Level> levelList = getLevelList();
             oe = Util.last(levelList)
                 .lookupChild(schemaReader, keySegment, matchType);
         }

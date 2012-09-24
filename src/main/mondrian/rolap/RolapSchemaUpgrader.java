@@ -2994,8 +2994,6 @@ public class RolapSchemaUpgrader {
     /**
      * Converts an XML level to new format.
      *
-     *
-     *
      * @param xmlLegacyHierarchy XML hierarchy in original format
      * @param ordinal Level ordinal
      * @param xmlLegacyLevel XML level in original format
@@ -3025,7 +3023,11 @@ public class RolapSchemaUpgrader {
         xmlAttribute.caption = xmlLegacyLevel.caption;
         xmlAttribute.captionColumn = xmlLegacyLevel.captionColumn; // ??
         xmlAttribute.keyColumn = xmlLegacyLevel.column;
-        xmlAttribute.name = xmlLegacyLevel.name;
+        xmlAttribute.name =
+            Util.uniquify(
+                xmlLegacyLevel.name,
+                Integer.MAX_VALUE,
+                new ArrayList<String>(names(attributeList)));
 
         convertMemberFormatter(
             xmlLegacyLevel.formatter,
@@ -3227,6 +3229,21 @@ public class RolapSchemaUpgrader {
 
         physSchemaConverter.legacyMap.put(xmlLevel, xmlLegacyLevel);
         return xmlLevel;
+    }
+
+    /** Returns the list of names in a list of named elements. */
+    private <T extends MondrianDef.NamedElement> List<String> names(
+        final NamedList<T> elementList)
+    {
+        return new AbstractList<String>() {
+            public String get(int index) {
+                return elementList.get(index).getNameAttribute();
+            }
+
+            public int size() {
+                return elementList.size();
+            }
+        };
     }
 
     private void convertMemberFormatter(

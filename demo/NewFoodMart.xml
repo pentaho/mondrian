@@ -330,7 +330,8 @@
                     <Column name='brand_name'/>
                 </Name>
             </Attribute>
-            <Attribute name='Product Name' table='product' keyColumn='product_name'/>
+            <Attribute name='Product Name' table='product'
+                keyColumn='product_id' nameColumn='product_name'/>
             <Attribute name='Product Id' table='product' keyColumn='product_id'/>
         </Attributes>
 

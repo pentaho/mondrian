@@ -2677,7 +2677,7 @@ public class TestContext {
      * @param <K> Key type
      * @param <V> Value type
      */
-    private static class WeakMap<K, V> implements Map<K, V> {
+    public static class WeakMap<K, V> implements Map<K, V> {
         private final Map<K, WeakReference<V>> map =
             new HashMap<K, WeakReference<V>>();
 

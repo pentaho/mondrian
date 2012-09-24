@@ -2326,7 +2326,9 @@ public class RolapSchemaLoader {
         {
             RolapAttribute attribute =
                 createAttribute(xmlAttribute, dimensionRelation, dimension);
-            dimension.attributeMap.put(attribute.getName(), attribute);
+            RolapAttribute put =
+                dimension.attributeMap.put(attribute.getName(), attribute);
+            assert put == null : "validation rule should have caught dup attr";
             attributeList.add(attribute);
         }
 
