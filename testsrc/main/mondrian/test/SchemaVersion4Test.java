@@ -11,7 +11,6 @@ import mondrian.olap.Connection;
 import mondrian.olap.DriverManager;
 import mondrian.olap.MondrianException;
 import mondrian.olap.Util;
-import mondrian.rolap.RolapConnectionProperties;
 
 import junit.framework.Assert;
 
@@ -22,22 +21,28 @@ public class SchemaVersion4Test extends FoodMartTestCase {
     }
 
     public void testSchema3withVersion() {
+        TestContext testContext =
+            TestContext.instance().withSchema(SCHEMA_3_VHEADER + SCHEMA_3_BODY);
         Util.PropertyList connectInfo =
-            getConnectString(SCHEMA_3_VHEADER + SCHEMA_3_BODY);
+            testContext.getConnectionProperties();
         Connection conn = DriverManager.getConnection(connectInfo, null);
         assertNotNull(conn);
     }
 
     public void testSchema3noVersion() {
+        TestContext testContext =
+            TestContext.instance().withSchema(SCHEMA_3_HEADER + SCHEMA_3_BODY);
         Util.PropertyList connectInfo =
-            getConnectString(SCHEMA_3_HEADER + SCHEMA_3_BODY);
+            testContext.getConnectionProperties();
         Connection conn = DriverManager.getConnection(connectInfo, null);
         assertNotNull(conn);
     }
 
     public void testSchema4withVersion() {
+        TestContext testContext =
+          TestContext.instance().withSchema(SCHEMA_4_HEADER + SCHEMA_4_BODY);
         Util.PropertyList connectInfo =
-            getConnectString(SCHEMA_4_HEADER + SCHEMA_4_BODY);
+            testContext.getConnectionProperties();
         try {
             DriverManager.getConnection(connectInfo, null);
             Assert.fail("No exception thrown for version 4 schema.");
@@ -47,23 +52,16 @@ public class SchemaVersion4Test extends FoodMartTestCase {
     }
 
     public void testSchema4noVersion() {
+        TestContext testContext =
+          TestContext.instance().withSchema(SCHEMA_4_NVHEADER + SCHEMA_4_BODY);
         Util.PropertyList connectInfo =
-            getConnectString(SCHEMA_4_NVHEADER + SCHEMA_4_BODY);
+            testContext.getConnectionProperties();
         try {
           DriverManager.getConnection(connectInfo, null);
           Assert.fail("No exception thrown for version 4 schema.");
         } catch (MondrianException e) {
             assertTrue(e.getMessage().contains("Schema version"));
         }
-    }
-
-    private static Util.PropertyList getConnectString(String catalogContents) {
-        Util.PropertyList connectInfo =
-            Util.parseConnectString(TestContext.getDefaultConnectString());
-        connectInfo.remove(RolapConnectionProperties.Catalog.name());
-        connectInfo.put(
-            RolapConnectionProperties.CatalogContent.name(), catalogContents);
-        return connectInfo;
     }
 
     private static String SCHEMA_3_HEADER = "<?xml version=\"1.0\"?>\n"
