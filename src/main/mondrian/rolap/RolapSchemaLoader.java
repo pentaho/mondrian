@@ -212,6 +212,8 @@ public class RolapSchemaLoader {
 
             final MondrianDef.Schema xmlSchema;
             final boolean legacy = isLegacy(def);
+            final String metamodelVersion =
+                def.getAttribute("metamodelVersion");
             if (legacy) {
                 LOGGER.warn("Model is in legacy format");
                 xmlSchema = RolapSchemaUpgrader.upgrade(
@@ -227,6 +229,7 @@ public class RolapSchemaLoader {
                         "schema after conversion:\n" + xmlSchema.toXML());
                 }
             } else {
+                checkSchemaVersion(def);
                 xmlSchema = new MondrianDef.Schema(def);
             }
 
@@ -305,12 +308,7 @@ public class RolapSchemaLoader {
         final String metamodelVersion =
             def.getAttribute("metamodelVersion");
         if (metamodelVersion == null) {
-            for (DOMWrapper wrapper : def.getChildren()) {
-                if ("PhysicalSchema".equals(wrapper.getTagName())) {
-                    return false;
-                }
-            }
-            return true;
+            return !hasMondrian4Elements(def);
         }
         final String[] versionParts = metamodelVersion.split("\\.");
         final String majorVersion =
@@ -465,6 +463,56 @@ public class RolapSchemaLoader {
 
         schema.aggTableManager.initialize();
         schema.setSchemaLoadDate();
+    }
+
+    private void checkSchemaVersion(final DOMWrapper schemaDom) {
+        String schemaVersion = schemaDom.getAttribute("metamodelVersion");
+        if (schemaVersion == null) {
+            if (hasMondrian4Elements(schemaDom)) {
+                throw Util.newError(
+                    "Model in 4.x or later format must have"
+                    + "'metamodelVersion' attribute.");
+            } else {
+                schemaVersion = "3.x";
+            }
+        }
+
+        String[] versionParts = schemaVersion.split("\\.");
+        final String schemaMajor =
+            versionParts.length > 0 ? versionParts[0] : "";
+
+        MondrianServer.MondrianVersion mondrianVersion =
+            MondrianServer.forId(null).getVersion();
+        final String serverMajor =
+            mondrianVersion.getMajorVersion() + ""; // probably "4"
+
+        if (serverMajor.compareTo(schemaMajor) < 0) {
+            String errorMsg =
+                "Schema version '" + schemaVersion
+                + "' is later than schema version '"
+                + serverMajor
+                + ".x' supported by this version of Mondrian";
+            throw Util.newError(errorMsg);
+        }
+    }
+
+    private boolean hasMondrian4Elements(final DOMWrapper schemaDom) {
+        // check for Mondrian 4 schema elements:
+        for (DOMWrapper child : schemaDom.getChildren()) {
+            if ("PhysicalSchema".equals(child.getTagName())) {
+                // Schema/PhysicalSchema
+                return true;
+            } else if ("Cube".equals(child.getTagName())) {
+                for (DOMWrapper grandchild : child.getChildren()) {
+                    if ("MeasureGroups".equals(grandchild.getTagName())) {
+                        // Schema/Cube/MeasureGroups
+                        return true;
+                    }
+                }
+            }
+        }
+        // otherwise assume version 3.x
+        return false;
     }
 
     private static Scripts.ScriptDefinition toScriptDef(

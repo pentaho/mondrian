@@ -908,6 +908,8 @@ in {mondrian.foodmart.jdbcURL}."
   <target name="version">
     <echo file="VERSION.txt">Title: ${name}
 Version: ${project.revision}
+VersionMajor: ${project.revision.major}
+VersionMinor: ${project.revision.minor}
 Vendor: ${vendor}
 </echo>
    <echo file="${java.dir}/mondrian/olap4j/MondrianOlap4jDriverVersion.java">/*

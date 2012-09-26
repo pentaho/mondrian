@@ -39,6 +39,8 @@ import java.util.*;
 /**
  * Unit tests for various schema features.
  *
+ * @see SchemaVersionTest
+ *
  * @author jhyde
  * @since August 7, 2006
  */
@@ -5485,8 +5487,8 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     public void testPhysicalSchema() {
         final TestContext testContext =
-            getTestContext().withSchema(
-                "<Schema name='foo'>\n"
+            TestContext.instance().withSchema(
+                "<Schema name='foo' metamodelVersion='4.0'>\n"
                 + "<PhysicalSchema>\n"
                 + "  <Table name='sales_fact_1997' />\n"
                 + "  <Table name='customer'>\n"
