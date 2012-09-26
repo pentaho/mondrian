@@ -55,7 +55,7 @@ import java.util.regex.Pattern;
  */
 public class Main extends TestSuite {
     private static final Logger logger = Logger.getLogger(Main.class);
-    /*
+    /**
      * Scratch area to store information on the emerging test suite.
      */
     private static Map<TestSuite, String> testSuiteInfo =
@@ -102,9 +102,7 @@ public class Main extends TestSuite {
         final MondrianProperties properties = MondrianProperties.instance();
         Test test = suite();
         if (args.length == 1 && args[0].equals("-l")) {
-            /*
-             * Only lists the tests to run if invoking ant test-nobuild next.
-             */
+            // Only lists the tests to run if invoking ant test-nobuild next.
             return;
         }
 
@@ -284,6 +282,7 @@ public class Main extends TestSuite {
             addTest(suite, I18nTest.class);
             addTest(suite, FormatTest.class);
             addTest(suite, ParallelTest.class);
+            addTest(suite, SchemaVersionTest.class);
             addTest(suite, SchemaTest.class);
             addTest(suite, PerformanceTest.class);
             // GroupingSetQueryTest must be run before any test derived from

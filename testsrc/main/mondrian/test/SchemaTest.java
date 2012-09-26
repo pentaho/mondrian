@@ -30,6 +30,8 @@ import java.util.Map;
 /**
  * Unit tests for various schema features.
  *
+ * @see SchemaVersionTest
+ *
  * @author jhyde
  * @since August 7, 2006
  */
