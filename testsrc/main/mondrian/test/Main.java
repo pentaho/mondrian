@@ -284,6 +284,7 @@ public class Main extends TestSuite {
             addTest(suite, I18nTest.class);
             addTest(suite, FormatTest.class);
             addTest(suite, ParallelTest.class);
+            addTest(suite, SchemaVersion4Test.class);
             addTest(suite, SchemaTest.class);
             addTest(suite, PerformanceTest.class);
             // GroupingSetQueryTest must be run before any test derived from
