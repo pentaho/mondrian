@@ -2042,15 +2042,14 @@ public class RolapSchemaLoader {
         }
 
         final List<RolapSchema.PhysColumn> keyList = keyAttribute.getKeyList();
-
         if (foreignKeyList.size() != keyList.size()) {
             handler.error(
                 "Number of foreign key columns "
                 + foreignKeyList.size()
                 + " does not match number of key columns "
                 + keyList.size(),
-                xmlForeignKeyLink.foreignKey,
-                null);
+                xmlForeignKeyLink,
+                "foreignKey");
         }
 
         final RolapSchema.PhysPathBuilder pathBuilderOrig =

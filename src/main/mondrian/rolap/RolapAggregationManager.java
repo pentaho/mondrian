@@ -235,9 +235,7 @@ public abstract class RolapAggregationManager {
                 }
             }
 
-            /*
-             * Iterate over members.
-             */
+            // Iterate over members.
             for (int i = 0; i < members.length; i++) {
                 final RolapCubeMember member = (RolapCubeMember) members[i];
                 if (member.getHierarchy().getRolapHierarchy().closureFor
@@ -712,8 +710,8 @@ public abstract class RolapAggregationManager {
         final RolapCubeLevel level = member.getLevel();
         final List<RolapSchema.PhysColumn> keyList =
             level.attribute.getKeyList();
-        final List<Object> valueList = member.getKeyAsList();
-        for (Pair<RolapSchema.PhysColumn, Object> pair
+        final List<Comparable> valueList = member.getKeyAsList();
+        for (Pair<RolapSchema.PhysColumn, Comparable> pair
             : Pair.iterate(keyList, valueList))
         {
             final ValueColumnPredicate predicate =

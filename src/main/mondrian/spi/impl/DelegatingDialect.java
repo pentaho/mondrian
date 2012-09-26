@@ -11,6 +11,8 @@ package mondrian.spi.impl;
 
 import mondrian.spi.*;
 
+import java.sql.*;
+import java.sql.Date;
 import java.util.*;
 
 /**
@@ -60,27 +62,27 @@ public class DelegatingDialect implements Dialect {
         return dialect.getQuoteIdentifierString();
     }
 
-    public void quoteStringLiteral(StringBuilder buf, String s) {
-        dialect.quoteStringLiteral(buf, s);
+    public void quoteStringLiteral(StringBuilder buf, String value) {
+        dialect.quoteStringLiteral(buf, value);
     }
 
-    public void quoteNumericLiteral(StringBuilder buf, String value) {
+    public void quoteNumericLiteral(StringBuilder buf, Number value) {
         dialect.quoteNumericLiteral(buf, value);
     }
 
-    public void quoteBooleanLiteral(StringBuilder buf, String value) {
+    public void quoteBooleanLiteral(StringBuilder buf, boolean value) {
         dialect.quoteBooleanLiteral(buf, value);
     }
 
-    public void quoteDateLiteral(StringBuilder buf, String value) {
+    public void quoteDateLiteral(StringBuilder buf, Date value) {
         dialect.quoteDateLiteral(buf, value);
     }
 
-    public void quoteTimeLiteral(StringBuilder buf, String value) {
+    public void quoteTimeLiteral(StringBuilder buf, Time value) {
         dialect.quoteTimeLiteral(buf, value);
     }
 
-    public void quoteTimestampLiteral(StringBuilder buf, String value) {
+    public void quoteTimestampLiteral(StringBuilder buf, Timestamp value) {
         dialect.quoteTimestampLiteral(buf, value);
     }
 

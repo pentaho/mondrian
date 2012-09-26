@@ -135,7 +135,7 @@ public class SegmentBuilder {
             } else {
                 final List<StarColumnPredicate> valuePredicateList =
                     new ArrayList<StarColumnPredicate>();
-                for (Object value : values) {
+                for (Comparable value : values) {
                     valuePredicateList.add(
                         new ValueColumnPredicate(
                             new PredicateColumn(
@@ -418,8 +418,7 @@ public class SegmentBuilder {
                     final int offset =
                         CellKey.Generator.getOffset(
                             entry.getKey().getOrdinals(), axisMultipliers);
-                    data[offset] =
-                        (Object)rollupAggregator.aggregate(entry.getValue());
+                    data[offset] = rollupAggregator.aggregate(entry.getValue());
                 }
                 body =
                     new DenseObjectSegmentBody(

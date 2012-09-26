@@ -331,50 +331,36 @@ public class JdbcDialectImpl implements Dialect {
 
     public void quoteStringLiteral(
         StringBuilder buf,
-        String s)
+        String value)
     {
-        Util.singleQuoteString(s, buf);
+        Util.singleQuoteString(value, buf);
     }
 
     public void quoteNumericLiteral(
         StringBuilder buf,
-        String value)
+        Number value)
     {
-        buf.append(value);
+        String valueString = value.toString();
+        if (needsExponent(value, valueString)) {
+            valueString += "E0";
+        }
+        buf.append(valueString);
     }
 
-    public void quoteBooleanLiteral(StringBuilder buf, String value) {
+    public void quoteBooleanLiteral(StringBuilder buf, boolean value) {
         // NOTE jvs 1-Jan-2007:  See quoteDateLiteral for explanation.
         // In addition, note that we leave out UNKNOWN (even though
         // it is a valid SQL:2003 literal) because it's really
         // NULL in disguise, and NULL is always treated specially.
-        if (!value.equalsIgnoreCase("TRUE")
-            && !(value.equalsIgnoreCase("FALSE")))
-        {
-            throw new NumberFormatException(
-                "Illegal BOOLEAN literal:  " + value);
-        }
         buf.append(value);
     }
 
-    public void quoteDateLiteral(StringBuilder buf, String value) {
-        // NOTE jvs 1-Jan-2007: Check that the supplied literal is in valid
-        // SQL:2003 date format.  A hack in
-        // RolapSchemaReader.lookupMemberChildByName looks for
-        // NumberFormatException to suppress it, so that is why
-        // we convert the exception here.
-        final Date date;
-        try {
-            date = Date.valueOf(value);
-        } catch (IllegalArgumentException ex) {
-            throw new NumberFormatException(
-                "Illegal DATE literal:  " + value);
-        }
-        quoteDateLiteral(buf, value, date);
+    public void quoteDateLiteral(StringBuilder buf, Date value) {
+        quoteDateLiteral(buf, value.toString(), value);
     }
 
     /**
-     * Helper method for {@link #quoteDateLiteral(StringBuilder, String)}.
+     * Helper method for {@link mondrian.spi.Dialect#quoteDateLiteral(StringBuilder, java.sql.Date)}.
      *
      * @param buf Buffer to append to
      * @param value Value as string
@@ -390,31 +376,17 @@ public class JdbcDialectImpl implements Dialect {
         Util.singleQuoteString(value, buf);
     }
 
-    public void quoteTimeLiteral(StringBuilder buf, String value) {
-        // NOTE jvs 1-Jan-2007:  See quoteDateLiteral for explanation.
-        try {
-            Time.valueOf(value);
-        } catch (IllegalArgumentException ex) {
-            throw new NumberFormatException(
-                "Illegal TIME literal:  " + value);
-        }
+    public void quoteTimeLiteral(StringBuilder buf, Time value) {
         buf.append("TIME ");
-        Util.singleQuoteString(value, buf);
+        Util.singleQuoteString(value.toString(), buf);
     }
 
     public void quoteTimestampLiteral(
         StringBuilder buf,
-        String value)
+        Timestamp value)
     {
-        // NOTE jvs 1-Jan-2007:  See quoteTimestampLiteral for explanation.
-        try {
-            Timestamp.valueOf(value);
-        } catch (IllegalArgumentException ex) {
-            throw new NumberFormatException(
-                "Illegal TIMESTAMP literal:  " + value);
-        }
         buf.append("TIMESTAMP ");
-        Util.singleQuoteString(value, buf);
+        Util.singleQuoteString(value.toString(), buf);
     }
 
     public boolean requiresAliasForFromQuery() {
@@ -669,11 +641,7 @@ public class JdbcDialectImpl implements Dialect {
         if (value == null) {
             buf.append("null");
         } else {
-            String valueString = value.toString();
-            if (needsExponent(value, valueString)) {
-                valueString += "E0";
-            }
-            datatype.quoteValue(buf, this, valueString);
+            datatype.quoteValue(buf, this, value);
         }
     }
 

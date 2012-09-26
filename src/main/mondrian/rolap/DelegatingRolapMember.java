@@ -33,11 +33,11 @@ public class DelegatingRolapMember extends RolapMemberBase {
         return member.getLevel();
     }
 
-    public Object getKey() {
+    public Comparable getKey() {
         return member.getKey();
     }
 
-    public List<Object> getKeyAsList() {
+    public List<Comparable> getKeyAsList() {
         return member.getKeyAsList();
     }
 

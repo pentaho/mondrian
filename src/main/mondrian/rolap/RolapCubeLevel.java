@@ -116,7 +116,7 @@ public class RolapCubeLevel extends RolapLevel {
     {
         assert measureGroup != null;
         throw new UnsupportedOperationException();
-        /*
+/*
         // the base cube for the specificed virtual level
         Util.deprecated("remove this method?", false);
         // TODO: was a parameter, should not be needed, if we use the physColumn
@@ -136,7 +136,7 @@ public class RolapCubeLevel extends RolapLevel {
             final boolean fail = false;
             return star.getColumn(expr, fail);
         }
-        */
+*/
     }
 
     /**
@@ -262,7 +262,7 @@ public class RolapCubeLevel extends RolapLevel {
             CellRequest request)
         {
             assert member.getLevel() == cubeLevel;
-            final List<Object> key = member.getKeyAsList();
+            final List<Comparable> key = member.getKeyAsList();
             if (key.isEmpty()) {
                 if (member == member.getHierarchy().getNullMember()) {
                     // cannot form a request if one of the members is null

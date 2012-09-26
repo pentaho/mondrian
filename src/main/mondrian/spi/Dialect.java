@@ -9,6 +9,8 @@
 */
 package mondrian.spi;
 
+import java.math.BigDecimal;
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
 
@@ -206,11 +208,11 @@ public interface Dialect {
      * "<code>'Can''t'</code>" to <code>buf</code>.
      *
      * @param buf Buffer to append to
-     * @param s Literal
+     * @param value Literal
      */
     void quoteStringLiteral(
         StringBuilder buf,
-        String s);
+        String value);
 
     /**
      * Appends to a buffer a numeric literal.
@@ -222,7 +224,7 @@ public interface Dialect {
      */
     void quoteNumericLiteral(
         StringBuilder buf,
-        String value);
+        Number value);
 
     /**
      * Appends to a buffer a boolean literal.
@@ -234,7 +236,7 @@ public interface Dialect {
      */
     void quoteBooleanLiteral(
         StringBuilder buf,
-        String value);
+        boolean value);
 
     /**
      * Appends to a buffer a date literal.
@@ -248,7 +250,7 @@ public interface Dialect {
      */
     void quoteDateLiteral(
         StringBuilder buf,
-        String value);
+        Date value);
 
     /**
      * Appends to a buffer a time literal.
@@ -262,7 +264,7 @@ public interface Dialect {
      */
     void quoteTimeLiteral(
         StringBuilder buf,
-        String value);
+        Time value);
 
     /**
      * Appends to a buffer a timestamp literal.
@@ -276,7 +278,7 @@ public interface Dialect {
      */
     void quoteTimestampLiteral(
         StringBuilder buf,
-        String value);
+        Timestamp value);
 
     /**
      * Returns whether this Dialect requires subqueries in the FROM clause
@@ -404,14 +406,24 @@ public interface Dialect {
     /**
      * Appends to a buffer a value quoted for its type.
      *
+     * <p>Throws {@link NumberFormatException} if the value is not appropriate
+     * for the type. For example the value '1 or true or 2' is not valid for a
+     * numeric column and may represent an attempt at SQL injection. The caller
+     * must decide how to handle this exception. If the value is already known
+     * to be valid, then the exception is an internal error. Otherwise it might
+     * be a or simply a predicate that returns 0 rows.
+     *
      * @param buf Buffer to append to
      * @param value Value
      * @param datatype Datatype of value
+     *
+     * @throws NumberFormatException if the value is not appropriate for the
+     * type
      */
     void quote(
         StringBuilder buf,
         Object value,
-        Datatype datatype);
+        Datatype datatype) throws NumberFormatException;
 
     /**
      * Returns whether this dialect supports common SQL Data Definition
@@ -954,17 +966,17 @@ public interface Dialect {
     enum Datatype {
         String {
             public void quoteValue(
-                StringBuilder buf, Dialect dialect, String value)
+                StringBuilder buf, Dialect dialect, Object value)
             {
-                dialect.quoteStringLiteral(buf, value);
+                dialect.quoteStringLiteral(buf, toString_(value));
             }
         },
 
         Numeric {
             public void quoteValue(
-                StringBuilder buf, Dialect dialect, String value)
+                StringBuilder buf, Dialect dialect, Object value)
             {
-                dialect.quoteNumericLiteral(buf, value);
+                dialect.quoteNumericLiteral(buf, toNumber(value));
             }
 
             public boolean isNumeric() {
@@ -974,9 +986,9 @@ public interface Dialect {
 
         Integer {
             public void quoteValue(
-                StringBuilder buf, Dialect dialect, String value)
+                StringBuilder buf, Dialect dialect, Object value)
             {
-                dialect.quoteNumericLiteral(buf, value);
+                dialect.quoteNumericLiteral(buf, toInteger(value));
             }
 
             public boolean isNumeric() {
@@ -986,35 +998,140 @@ public interface Dialect {
 
         Boolean {
             public void quoteValue(
-                StringBuilder buf, Dialect dialect, String value)
+                StringBuilder buf, Dialect dialect, Object value)
             {
-                dialect.quoteBooleanLiteral(buf, value);
+                dialect.quoteBooleanLiteral(buf, toBoolean(value));
             }
         },
 
         Date {
             public void quoteValue(
-                StringBuilder buf, Dialect dialect, String value)
+                StringBuilder buf, Dialect dialect, Object value)
             {
-                dialect.quoteDateLiteral(buf, value);
+                dialect.quoteDateLiteral(buf, toDate(value));
             }
         },
 
         Time {
             public void quoteValue(
-                StringBuilder buf, Dialect dialect, String value)
+                StringBuilder buf, Dialect dialect, Object value)
             {
-                dialect.quoteTimeLiteral(buf, value);
+                dialect.quoteTimeLiteral(buf, toTime(value));
             }
         },
 
         Timestamp {
             public void quoteValue(
-                StringBuilder buf, Dialect dialect, String value)
+                StringBuilder buf, Dialect dialect, Object value)
             {
-                dialect.quoteTimestampLiteral(buf, value);
+                dialect.quoteTimestampLiteral(buf, toTimestamp(value));
             }
         };
+
+        private static String toString_(Object value) {
+            return value.toString();
+        }
+
+
+        private static Number toNumber(Object value) {
+            return toInteger(value);
+        }
+
+        private static Number toInteger(Object value) {
+            if (value == null) {
+                throw new NullPointerException();
+            }
+            Number number;
+            if (value instanceof Number) {
+                number = (Number) value;
+            } else {
+                // Test whether value is a valid numeric by converting to
+                // BigDecimal. BigDecimal is stricter than Integer.parseString
+                // or Double.parseString; it does not allow any extraneous
+                // space.
+                number = new BigDecimal(value.toString());
+            }
+            return number;
+        }
+
+        private static boolean toBoolean(Object value) {
+            if (value == null) {
+                throw new NullPointerException();
+            }
+            if (value instanceof Boolean) {
+                return (Boolean) value;
+            } else {
+                final String valueString = value.toString();
+                if (valueString.equalsIgnoreCase("TRUE")) {
+                    return true;
+                } else if (valueString.equalsIgnoreCase("FALSE")) {
+                    return false;
+                } else {
+                    throw new NumberFormatException(
+                        "Illegal BOOLEAN literal:  " + value);
+                }
+            }
+        }
+
+        private static Date toDate(Object value) {
+            if (value == null) {
+                throw new NullPointerException();
+            }
+            if (value instanceof Date) {
+                return (Date) value;
+            }
+            final String valueString = value.toString();
+            try {
+                // The format of the 'value' parameter is not certain.
+                // Some JDBC drivers will return a timestamp even though
+                // we ask for a date (access is one of them). We must
+                // try to convert both formats.
+                return java.sql.Date.valueOf(valueString);
+            } catch (IllegalArgumentException ex) {
+                try {
+                    final Timestamp timestamp =
+                        java.sql.Timestamp.valueOf(valueString);
+                    return new Date(timestamp.getTime());
+                } catch (IllegalArgumentException ex2) {
+                    throw new NumberFormatException(
+                        "Illegal DATE literal:  " + value);
+                }
+            }
+        }
+
+        private static Time toTime(Object value) {
+            if (value == null) {
+                throw new NullPointerException();
+            }
+            if (value instanceof Time) {
+                return (Time) value;
+            }
+            // See toDate for explanation.
+            try {
+                final String valueString = value.toString();
+                return java.sql.Time.valueOf(valueString);
+            } catch (IllegalArgumentException ex) {
+                throw new NumberFormatException(
+                    "Illegal TIME literal:  " + value);
+            }
+        }
+
+        private static Timestamp toTimestamp(Object value) {
+            if (value == null) {
+                throw new NullPointerException();
+            }
+            if (value instanceof Timestamp) {
+                return (Timestamp) value;
+            }
+            // See toDate for explanation.
+            try {
+                final String valueString = value.toString();
+                return java.sql.Timestamp.valueOf(valueString);
+            } catch (IllegalArgumentException ex) {
+                throw new NumberFormatException(
+                    "Illegal TIME literal:  " + value);
+            }
+        }
 
         /**
          * Appends to a buffer a value of this type, in the appropriate format
@@ -1023,11 +1140,15 @@ public interface Dialect {
          * @param buf Buffer
          * @param dialect Dialect
          * @param value Value
+         *
+         * @throws NumberFormatException if value is not valid for its type
+         * @throws NullPointerException if value is null
          */
         public abstract void quoteValue(
             StringBuilder buf,
             Dialect dialect,
-            String value);
+            Object value)
+            throws NumberFormatException, NullPointerException;
 
         /**
          * Returns whether this is a numeric datatype.

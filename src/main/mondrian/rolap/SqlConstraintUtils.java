@@ -95,11 +95,12 @@ public class SqlConstraintUtils {
 
         // following code is similar to
         // AbstractQuerySpec#nonDistinctGenerateSQL()
+        final StringBuilder buf = new StringBuilder();
         for (int i = 0; i < arity; i++) {
             RolapStar.Column column = columns[i];
 
             String expr;
-            /*
+/*
             if (starSet.getAggMeasureGroup() != null) {
                 int bitPos = column.getBitPosition();
                 AggStar.Table.Column aggColumn =
@@ -109,29 +110,31 @@ public class SqlConstraintUtils {
 
                 expr = aggColumn.generateExprString(sqlQuery);
             } else {
-            */
+*/
                 RolapStar.Table table = column.getTable();
                 table.addToFrom(sqlQuery, false, true);
 
                 expr = column.getExpression().toSql();
-            /*
+/*
             }
-            */
+*/
 
             final String value = String.valueOf(values[i]);
-            final StringBuilder buf = new StringBuilder();
+            buf.setLength(0);
             if ((RolapUtil.mdxNullLiteral().equalsIgnoreCase(value))
                 || (value.equalsIgnoreCase(RolapUtil.sqlNullValue.toString())))
             {
                 buf.append(expr).append(" is null");
             } else {
-                if (column.getDatatype().isNumeric()) {
-                    // make sure it can be parsed
-                    Double.valueOf(value);
+                final Dialect dialect = sqlQuery.getDialect();
+                try {
+                    buf.append(expr)
+                        .append(" = ");
+                    dialect.quote(buf, value, column.getDatatype());
+                } catch (NumberFormatException e) {
+                    buf.setLength(0);
+                    dialect.quoteBooleanLiteral(buf, false);
                 }
-                buf.append(expr)
-                    .append(" = ");
-                sqlQuery.getDialect().quote(buf, value, column.getDatatype());
             }
             sqlQuery.addWhere(buf.toString());
         }
@@ -284,7 +287,7 @@ public class SqlConstraintUtils {
         RolapCubeLevel level)
     {
         Util.deprecated(false, false); // REMOVE method
-        /*
+/*
         AggStar aggStar = starSet.getAggStar();
         TODO: fix this code later. In the attribute-oriented world, we would
         go about joining to fact table differently.
@@ -304,7 +307,7 @@ public class SqlConstraintUtils {
 //                table.addToFrom(sqlQuery, false, true);
             }
         }
-         */
+*/
     }
 
     /**
@@ -626,7 +629,7 @@ public class SqlConstraintUtils {
             if (p instanceof RolapCubeMember) {
                 RolapCubeMember cubeMember = (RolapCubeMember) p;
                 final RolapAttribute attribute = p.getLevel().getAttribute();
-                final List<Object> keyList = cubeMember.getKeyAsList();
+                final List<Comparable> keyList = cubeMember.getKeyAsList();
                 int j = 0;
                 for (RolapSchema.PhysColumn physColumn : attribute.getKeyList())
                 {
@@ -800,7 +803,7 @@ public class SqlConstraintUtils {
      * @return string value corresponding to the member
      */
     private static String getColumnValue(
-        Object key,
+        Comparable key,
         Dialect dialect,
         Dialect.Datatype datatype)
     {
@@ -919,28 +922,33 @@ public class SqlConstraintUtils {
     }
 
     /**
-     * Generates a sql expression constraining a level by some value
+     * Generates a SQL expression constraining a level by some value,
+     * and appends it to the WHERE clause. If the value is invalid for its
+     * data type, appends 'WHERE FALSE'.
      *
      * @param exp Key expression
      * @param query the query that the sql expression will be added to
      * @param columnValue value constraining the level
-     *
-     * @return generated string corresponding to the expression
      */
-    public static String constrainLevel2(
+    public static void constrainLevel2(
         SqlQuery query,
         RolapSchema.PhysColumn exp,
         Comparable columnValue)
     {
         String columnString = exp.toSql();
         if (columnValue == RolapUtil.sqlNullValue) {
-            return columnString + " is null";
+            query.addWhere(columnString + " is null");
         } else {
             final StringBuilder buf = new StringBuilder();
-            buf.append(columnString);
-            buf.append(" = ");
-            query.getDialect().quote(buf, columnValue, exp.getDatatype());
-            return buf.toString();
+            try {
+                buf.append(columnString);
+                buf.append(" = ");
+                query.getDialect().quote(buf, columnValue, exp.getDatatype());
+            } catch (NumberFormatException e) {
+                buf.setLength(0);
+                query.getDialect().quoteBooleanLiteral(buf, false);
+            }
+            query.addWhere(buf.toString());
         }
     }
 
@@ -1062,10 +1070,10 @@ public class SqlConstraintUtils {
             memberBuf.setLength(0);
             memberBuf.append("(");
 
-            for (Pair<RolapSchema.PhysColumn, Object> pair
+            for (Pair<RolapSchema.PhysColumn, Comparable> pair
                 : Pair.iterate(level.attribute.getKeyList(), m.getKeyAsList()))
             {
-                final Object o = pair.right;
+                final Comparable o = pair.right;
                 final Dialect.Datatype datatype = pair.left.getDatatype();
                 String value =
                     getColumnValue(

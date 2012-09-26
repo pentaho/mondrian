@@ -28,10 +28,6 @@ public class DrillThroughTest extends FoodMartTestCase {
         super();
     }
 
-    public DrillThroughTest(String name) {
-        super(name);
-    }
-
     @Override
     public TestContext getTestContext() {
         return super.getTestContext().legacy();
@@ -206,7 +202,8 @@ public class DrillThroughTest extends FoodMartTestCase {
 
     public void testDrillThrough3() {
         Result result = getTestContext().modern().executeQuery(
-            "select {[Measures].[Unit Sales]," + " [Measures].[Store Cost],"
+            "select {[Measures].[Unit Sales],"
+            + " [Measures].[Store Cost],"
             + " [Measures].[Store Sales]} ON COLUMNS, \n"
             + "Hierarchize(Union(Union(Crossjoin("
             + "{[Promotion].[Media Type].[All Media]},"
@@ -277,17 +274,15 @@ public class DrillThroughTest extends FoodMartTestCase {
      * bug".
      */
     public void testDrillThroughDupKeys() {
-        /*
-         * Note here that the type on the Store Id level is Integer or
-         * Numeric. The default, of course, would be String.
-         *
-         * For DB2 and Derby, we need the Integer type, otherwise the
-         * generated SQL will be something like:
-         *
-         *      `store_ragged`.`store_id` = '19'
-         *
-         *  and DB2 and Derby don't like converting from CHAR to INTEGER
-         */
+        // Note here that the type on the Store Id level is Integer or
+        // Numeric. The default, of course, would be String.
+        //
+        // For DB2 and Derby, we need the Integer type, otherwise the
+        // generated SQL will be something like:
+        //
+        //      `store_ragged`.`store_id` = '19'
+        //
+        //  and DB2 and Derby don't like converting from CHAR to INTEGER
         TestContext testContext = getTestContext().createSubstitutingCube(
             "Sales",
             "  <Dimension name=\"Store2\" foreignKey=\"store_id\">\n"

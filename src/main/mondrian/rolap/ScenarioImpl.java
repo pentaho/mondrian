@@ -118,7 +118,7 @@ public final class ScenarioImpl implements Scenario {
         Object[] keyValues = new Object[starColumnCount];
         for (int i = 1; i < members.size(); i++) {
             final RolapCubeMember member = (RolapCubeMember) members.get(i);
-            final List<Object> keyList = member.getKeyAsList();
+            final List<Comparable> keyList = member.getKeyAsList();
             int j = 0;
             for (RolapSchema.PhysColumn physColumn
                 : member.getLevel().getAttribute().getKeyList())

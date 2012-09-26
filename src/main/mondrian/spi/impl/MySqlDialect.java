@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2008-2011 Pentaho
+// Copyright (C) 2008-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.spi.impl;
@@ -207,10 +207,10 @@ public class MySqlDialect extends JdbcDialectImpl {
     }
 
     @Override
-    public void quoteStringLiteral(StringBuilder buf, String s) {
+    public void quoteStringLiteral(StringBuilder buf, String value) {
         // Go beyond Util.singleQuoteString; also quote backslash.
         buf.append('\'');
-        String s0 = Util.replace(s, "'", "''");
+        String s0 = Util.replace(value, "'", "''");
         String s1 = Util.replace(s0, "\\", "\\\\");
         buf.append(s1);
         buf.append('\'');

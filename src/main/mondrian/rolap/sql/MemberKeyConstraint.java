@@ -49,11 +49,10 @@ public class MemberKeyConstraint
         for (int i = 0; i < columnList.size(); i++) {
             RolapSchema.PhysColumn expression = columnList.get(i);
             final Comparable value = valueList.get(i);
-            sqlQuery.addWhere(
                 SqlConstraintUtils.constrainLevel2(
                     sqlQuery,
                     expression,
-                    value));
+                    value);
         }
     }
 

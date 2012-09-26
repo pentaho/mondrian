@@ -114,7 +114,15 @@ public enum RolapConnectionProperties {
      * The "PoolNeeded" property tells Mondrian whether to add a layer of
      * connection pooling.
      *
-     * <p>If no value is specified, we assume that:<ul>
+     * <p>If the value is "true", Mondrian uses its own connection pool
+     * for all JDBC connections.</p>
+     *
+     * <p>If the value is "false", Mondrian does not use a connection pool
+     * for any JDBC connections.</p>
+     *
+     * <p>If no value is specified, Mondrian uses a connection pool for
+     * connections created via the JDBC driver manager (that is, using the
+     * {@link #Jdbc} property. In other words, it assumes that:<ul>
      * <li>connections created via the {@link #Jdbc} property are not pooled,
      *     and therefore need to be pooled,
      * <li>connections created via the {@link #DataSource} are already pooled.

@@ -1396,28 +1396,21 @@ class SqlMemberSource
         if (level.isParentChild() && closure != null) {
             level =
                 Util.first(
-                    (RolapLevel) closure.closedPeerLevel,
+                    closure.closedPeerLevel,
                     level);
         }
 
         Util.assertTrue(!level.isAll(), "all level cannot be parent-child");
 
-        for (Tuple3<RolapSchema.PhysColumn, RolapSchema.PhysColumn, Object> pair
-            : Tuple3.iterate(
+        for (Pair<RolapSchema.PhysColumn, Comparable> pair
+            : Pair.iterate(
                 level.getAttribute().getParentAttribute().getKeyList(),
-                level.getAttribute().getKeyList(),
                 member.getKeyAsList()))
         {
-            RolapSchema.PhysColumn parentKey = pair.v0;
-            final RolapSchema.PhysColumn key = pair.v1;
-            final Object keyVal = pair.v2;
+            RolapSchema.PhysColumn parentKey = pair.left;
+            final Comparable keyVal = pair.right;
             queryBuilder.addToFrom(parentKey);
-            String parentId = parentKey.toSql();
-            StringBuilder buf = new StringBuilder();
-            buf.append(parentId)
-                .append(" = ");
-            sqlQuery.getDialect().quote(buf, keyVal, key.getDatatype());
-            sqlQuery.addWhere(buf.toString());
+            SqlConstraintUtils.constrainLevel2(sqlQuery, parentKey, keyVal);
         }
 
         // Add the distance column in the predicate, if it is available.

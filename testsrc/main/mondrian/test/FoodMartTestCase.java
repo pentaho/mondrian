@@ -318,37 +318,37 @@ public class FoodMartTestCase extends TestCase {
         Member [] members;
         if (includeAllMember) {
             members = new Member[] {
-                allMember("Gender", salesCube),
+                allMember("Customer", "Gender", salesCube),
                 maleMember,
-                femaleMember};
+                femaleMember
+            };
         } else {
             members = new Member[] {maleMember, femaleMember};
         }
         return new UnaryTupleList(Arrays.asList(members));
     }
 
-    protected Member allMember(String dimensionName, Cube salesCube) {
-        Dimension genderDimension = getDimension(dimensionName, salesCube);
-        return genderDimension.getHierarchy().getAllMember();
-    }
-
-    private Dimension getDimension(String dimensionName, Cube salesCube) {
-        return getDimensionWithName(
-            dimensionName, salesCube.getDimensionList());
-    }
-
-    protected Dimension getDimensionWithName(
-        String name,
-        List<? extends Dimension> dimensions)
+    protected Member allMember(
+        String dimensionName, String hierarchyName, Cube cube)
     {
-        Dimension resultDimension = null;
-        for (Dimension dimension : dimensions) {
-            if (dimension.getName().equals(name)) {
-                resultDimension = dimension;
-                break;
+        return getHierarchy(cube, dimensionName, hierarchyName).getAllMember();
+    }
+
+    protected Hierarchy getHierarchy(
+        Cube cube,
+        String dimensionName,
+        String hierarchyName)
+    {
+        for (Dimension dimension : cube.getDimensionList()) {
+            if (dimension.getName().equals(dimensionName)) {
+                for (Hierarchy hierarchy : dimension.getHierarchyList()) {
+                    if (hierarchy.getName().equals(hierarchyName)) {
+                        return hierarchy;
+                    }
+                }
             }
         }
-        return resultDimension;
+        return null;
     }
 
     protected List<Member> warehouseMembersCanadaMexicoUsa(SchemaReader reader)
@@ -395,8 +395,11 @@ public class FoodMartTestCase extends TestCase {
                 salesCubeSchemaReader);
         Member [] members;
         if (includeAllMember) {
-            members = new Member[]{
-                allMember("Store", salesCube), usaMember, canadaMember};
+            members = new Member[] {
+                allMember("Store", "Stores", salesCube),
+                usaMember,
+                canadaMember
+            };
         } else {
             members = new Member[] {usaMember, canadaMember};
         }

@@ -262,6 +262,7 @@ public class RolapLevel extends LevelBase {
                     keyValues.add(keyValue);
                 }
             }
+            Collections.reverse(keyValues);
             final List<RolapSchema.PhysColumn> keyExps = attribute.getKeyList();
             if (keyExps.size() != keyValues.size()) {
                 throw Util.newError(

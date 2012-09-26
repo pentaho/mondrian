@@ -30,7 +30,7 @@ public interface RolapMember extends Member, RolapCalculation {
      *
      * @return Key value
      */
-    Object getKey();
+    Comparable getKey();
 
     /**
      * Returns this member's key as a list. Never returns null.
@@ -45,7 +45,7 @@ public interface RolapMember extends Member, RolapCalculation {
      *
      * <p>The caller must not modify the list.
      */
-    List<Object> getKeyAsList();
+    List<Comparable> getKeyAsList();
 
     /**
      * Returns this member's key as an array.

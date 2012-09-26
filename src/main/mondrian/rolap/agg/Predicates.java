@@ -256,7 +256,7 @@ public abstract class Predicates
      */
     public static StarColumnPredicate equal(
         PredicateColumn column,
-        Object value)
+        Comparable value)
     {
         return new ValueColumnPredicate(column, value);
     }

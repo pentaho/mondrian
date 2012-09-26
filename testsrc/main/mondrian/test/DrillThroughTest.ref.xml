@@ -163,7 +163,7 @@ group by
             <![CDATA[select
     `time_by_day`.`the_year` as `Month`,
     `time_by_day`.`month_of_year` as `Month_0`,
-    `product`.`product_name` as `Product Name`,
+    `product`.`product_id` as `Product Name`,
     `product_class`.`product_family` as `Product Department`,
     `product_class`.`product_department` as `Product Department_0`,
     `product_class`.`product_category` as `Product Category`,
@@ -192,7 +192,7 @@ and
 group by
     `time_by_day`.`the_year`,
     `time_by_day`.`month_of_year`,
-    `product`.`product_name`,
+    `product`.`product_id`,
     `product_class`.`product_family`,
     `product_class`.`product_department`,
     `product_class`.`product_category`,

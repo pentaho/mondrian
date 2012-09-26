@@ -1531,13 +1531,17 @@ public class TestContext {
         String expected,
         String errorLoc)
     {
+        assertSchemaError(pattern(expected, errorLoc));
+    }
+
+    public void assertSchemaError(Predicate predicate) {
         final List<Exception> exceptionList = new ArrayList<Exception>();
         try {
             assertSimpleQuery();
         } catch (Exception e) {
             exceptionList.add(e);
         }
-        assertContains(exceptionList, expected, errorLoc);
+        assertContains(exceptionList, predicate);
     }
 
     /**
@@ -2424,9 +2428,48 @@ public class TestContext {
         String expected,
         String errorLoc)
     {
+        assertContains(
+            exceptionList,
+            new PatternPredicate(expected, errorLoc));
+    }
+
+    /**
+     * Creates a predicate that matches a regex pattern.
+     *
+     * @param expected Expected message
+     * @param errorLoc Location of error
+     * @return predicate
+     */
+    public Predicate pattern(String expected, String errorLoc) {
+        return new PatternPredicate(expected, errorLoc);
+    }
+
+    /** Returns a predicate that matches an exception where expected
+     * occurs as a substring (not a regexp). */
+    public static Predicate fragment(String expected, String errorLoc) {
+        // TODO:
+        return new PatternPredicate(expected, errorLoc);
+    }
+
+
+    /**
+     * Asserts that a list of exceptions (probably from
+     * {@link mondrian.olap.Schema#getWarnings()}) contains the expected
+     * exception.
+     *
+     * <p>If the expected string contains the token "${pos}", it is replaced
+     * with the range indicated by carets when the schema was created: see
+     * {@link #setErrorLocation(String, int, int)}.
+     *
+     * @param exceptionList List of exceptions
+     * @param predicate Checks exception is as expected
+     */
+    public void assertContains(
+        List<Exception> exceptionList,
+        Predicate predicate)
+    {
         final StringBuilder buf = new StringBuilder();
         final StringWriter sw = new StringWriter();
-        final int posPos = expected.indexOf("${pos}");
         for (Exception exception : exceptionList) {
             RolapSchema.XmlLocation xmlLocation = null;
             if (exception instanceof RolapSchema.MondrianSchemaException) {
@@ -2434,66 +2477,8 @@ public class TestContext {
                     (RolapSchema.MondrianSchemaException) exception;
                 xmlLocation = mse.getXmlLocation();
             }
-            String expected2 = expected;
-            if (posPos >= 0 && xmlLocation != null) {
-                String pos = xmlLocation.toString();
-                expected2 =
-                    expected.substring(0, posPos)
-                    + pos
-                    + expected.substring(posPos + "${pos}".length());
-            }
-            final String message = exception.getMessage();
-            if (message != null && message.matches(expected2)) {
-                if (xmlLocation == null) {
-                    Assert.fail(
-                        "Actual message matched expected message, '"
-                        + message
-                        + "'; but we expected an error location and actual "
-                        + "exception had no location");
-                    return;
-                }
-                if (errorLoc == null && errorStart != -1) {
-                    throw new AssertionFailedError(
-                        "Test must specify expected error location. Either use "
-                        + "carets (^) in the schema string, or specify the "
-                        + "errorLoc parameter");
-                }
-                if (errorLoc != null) {
-                    int errorStart = -1;
-                    final String schema = getCatalogContent();
-                    while ((errorStart =
-                        schema.indexOf(errorLoc, errorStart + 1)) >= 0)
-                    {
-                        int errorEnd = errorStart + errorLoc.length();
-                        sw.append(schema.substring(errorStart, errorEnd))
-                            .append(", start=")
-                            .append(String.valueOf(errorStart))
-                            .append(", end=")
-                            .append(String.valueOf(errorEnd))
-                            .append(", range=")
-                            .append(xmlLocation.getRange())
-                            .append(nl);
-                        if (xmlLocation.getRange().equals(
-                                errorStart + "-" + errorEnd))
-                        {
-                            return;
-                        }
-                    }
-                }
-                if (errorStart != -1) {
-                    if (xmlLocation.getRange().equals(
-                            errorStart + "-" + errorEnd))
-                    {
-                        return;
-                    }
-                }
-                throw new AssertionFailedError(
-                    "Actual message matched expected, but actual error "
-                    + "location (" + xmlLocation + ") did not match expected."
-                    + (sw.getBuffer().length() > 0
-                        ? " Other info: "
-                        : "")
-                    + sw);
+            if (predicate.foo(exception, xmlLocation, sw, this)) {
+                return;
             }
             if (buf.length() > 0) {
                 buf.append(Util.nl);
@@ -2502,7 +2487,7 @@ public class TestContext {
         }
         throw new AssertionFailedError(
             "Exception list did not contain expected exception. Exception is:\n"
-            + expected
+            + predicate.describe()
             + "\nException list is:\n"
             + buf
             + "\nOther info:\n" + sw);
@@ -2827,6 +2812,98 @@ public class TestContext {
      */
     enum Flag {
         AUTO_MISSING_LINK
+    }
+
+    interface Predicate {
+        boolean foo(
+            Exception exception,
+            RolapSchema.XmlLocation xmlLocation,
+            StringWriter sw, TestContext testContext);
+        String describe();
+    }
+
+    static class PatternPredicate implements Predicate {
+        final String errorLoc;
+        final String expected;
+
+        public PatternPredicate(String expected, String errorLoc) {
+            this.errorLoc = errorLoc;
+            this.expected = expected;
+        }
+
+        public String describe() {
+            return expected;
+        }
+
+        public boolean foo(
+            Exception exception,
+            RolapSchema.XmlLocation xmlLocation,
+            StringWriter sw, TestContext testContext)
+        {
+            String expected2 = expected;
+            final int posPos = expected.indexOf("${pos}");
+            if (posPos >= 0 && xmlLocation != null) {
+                String pos = xmlLocation.toString();
+                expected2 =
+                    expected.substring(0, posPos)
+                    + pos
+                    + expected.substring(posPos + "${pos}".length());
+            }
+            final String message = exception.getMessage();
+            if (message == null || !message.matches(expected2)) {
+                return false;
+            }
+            if (xmlLocation == null) {
+                Assert.fail(
+                    "Actual message matched expected message, '"
+                    + message
+                    + "'; but we expected an error location and actual "
+                    + "exception had no location");
+                return true;
+            }
+            if (errorLoc == null && testContext.errorStart != -1) {
+                throw new AssertionFailedError(
+                    "Test must specify expected error location. Either use "
+                    + "carets (^) in the schema string, or specify the "
+                    + "errorLoc parameter");
+            }
+            if (errorLoc != null) {
+                int errorStart = -1;
+                final String schema = testContext.getCatalogContent();
+                while ((errorStart =
+                    schema.indexOf(errorLoc, errorStart + 1)) >= 0)
+                {
+                    int errorEnd = errorStart + errorLoc.length();
+                    sw.append(schema.substring(errorStart, errorEnd))
+                        .append(", start=")
+                        .append(String.valueOf(errorStart))
+                        .append(", end=")
+                        .append(String.valueOf(errorEnd))
+                        .append(", range=")
+                        .append(xmlLocation.getRange())
+                        .append(nl);
+                    if (xmlLocation.getRange().equals(
+                            errorStart + "-" + errorEnd))
+                    {
+                        return true;
+                    }
+                }
+            }
+            if (testContext.errorStart != -1) {
+                if (xmlLocation.getRange().equals(
+                        testContext.errorStart + "-" + testContext.errorEnd))
+                {
+                    return true;
+                }
+            }
+            throw new AssertionFailedError(
+                "Actual message matched expected, but actual error "
+                + "location (" + xmlLocation + ") did not match expected."
+                + (sw.getBuffer().length() > 0
+                   ? " Other info: "
+                   : "")
+                + sw);
+        }
     }
 }
 

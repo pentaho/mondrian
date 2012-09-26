@@ -500,7 +500,7 @@ public class RolapMemberBase
         this.ordinal = -1;
     }
 
-    public Object getKey() {
+    public Comparable getKey() {
         return this.key;
     }
 
@@ -509,13 +509,13 @@ public class RolapMemberBase
         return this.key;
     }
 
-    public List<Object> getKeyAsList() {
+    public List<Comparable> getKeyAsList() {
         return asList(getKey());
     }
 
-    private static List<Object> asList(Object key) {
+    private static List<Comparable> asList(Comparable key) {
         if (key instanceof List) {
-            return (List<Object>) key;
+            return (List<Comparable>) key;
         } else {
             return Collections.singletonList(key);
         }
@@ -746,22 +746,20 @@ public class RolapMemberBase
     {
         seedMember = RolapUtil.strip((RolapMember) seedMember);
 
-        /*
-         * The following are times for executing different set ordinals
-         * algorithms for both the FoodMart Sales cube/Store dimension
-         * and a Large Data set with a dimension with about 250,000 members.
-         *
-         * Times:
-         *    Original setOrdinals Top-down
-         *       Foodmart: 63ms
-         *       Large Data set: 651865ms
-         *    Calling getAllMembers before calling original setOrdinals Top-down
-         *       Foodmart: 32ms
-         *       Large Data set: 73880ms
-         *    Bottom-up/Top-down
-         *       Foodmart: 17ms
-         *       Large Data set: 4241ms
-         */
+        // The following are times for executing different set ordinals
+        // algorithms for both the FoodMart Sales cube/Store dimension
+        // and a Large Data set with a dimension with about 250,000 members.
+        //
+        // Times:
+        //    Original setOrdinals Top-down
+        //       Foodmart: 63ms
+        //       Large Data set: 651865ms
+        //    Calling getAllMembers before calling original setOrdinals Top-down
+        //       Foodmart: 32ms
+        //       Large Data set: 73880ms
+        //    Bottom-up/Top-down
+        //       Foodmart: 17ms
+        //       Large Data set: 4241ms
         long start = System.currentTimeMillis();
 
         try {

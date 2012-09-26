@@ -11,7 +11,6 @@ package mondrian.rolap;
 
 import mondrian.olap.MondrianProperties;
 import mondrian.test.FoodMartTestCase;
-import mondrian.util.Bug;
 
 /**
  * Test case for '&amp;[..]' capability in MDX identifiers.
@@ -24,10 +23,6 @@ import mondrian.util.Bug;
  * @author pierluiggi@users.sourceforge.net
  */
 public class IndexedValuesTest extends FoodMartTestCase {
-    public IndexedValuesTest(final String name) {
-        super(name);
-    }
-
     public IndexedValuesTest() {
         super();
     }
@@ -94,6 +89,24 @@ public class IndexedValuesTest extends FoodMartTestCase {
             + "Axis #2:\n"
             + "{[Product].[Products].[Drink].[Beverages].[Pure Juice Beverages].[Juice].[Washington].[Washington Cranberry Juice]}\n"
             + "Row #0: 130\n");
+    }
+
+    public void testAttemptInjectionWithNonNumericKeyValue() {
+        // Member keys only work with SsasCompatibleNaming=true
+        if (!MondrianProperties.instance().SsasCompatibleNaming.get()) {
+            return;
+        }
+
+        // If SQL injection attempt is not caught, will return internal error
+        // "More than one member in level [Product].[Products].[Product Name]
+        // with key [1 or true or 2]". Mondrian must see that the value is
+        // invalid and generate 'WHERE FALSE'.
+        assertQueryThrows(
+            "SELECT [Measures]on 0,\n"
+            + "{[Product].[Products].&[1 or true or 2]} on 1\n"
+            + "FROM [Sales]",
+            "MDX object '[Product].[Products].&[1 or true or 2]' not found in "
+            + "cube 'Sales'");
     }
 }
 
