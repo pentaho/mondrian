@@ -874,7 +874,7 @@
 
 <exception id="8500100" name="QueryLimitReached">
     <text>
-        The number of concurrent MDX statements which can be processed simultaneously by this Mondrian server instance has been reached. Set ''mondrian.rolap.maxQueryThreads'' to change the current limit.
+        The number of concurrent MDX statements that can be processed simultaneously by this Mondrian server instance ({0,number}) has been reached. To change the limit, set the ''{1}'' property.
     </text>
 </exception>
 

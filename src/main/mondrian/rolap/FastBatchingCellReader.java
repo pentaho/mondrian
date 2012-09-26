@@ -12,7 +12,6 @@ package mondrian.rolap;
 
 import mondrian.olap.*;
 import mondrian.rolap.agg.*;
-import mondrian.rolap.agg.SegmentBuilder.StarSegmentConverter;
 import mondrian.rolap.aggmatcher.AggGen;
 import mondrian.rolap.aggmatcher.AggStar;
 import mondrian.rolap.cache.SegmentCacheIndex;
@@ -269,12 +268,10 @@ public class FastBatchingCellReader implements CellReader {
                 segmentWithData.getStar().register(segmentWithData);
             }
 
-            /*
-             * Perform each suggested rollup.
-             *
-             * TODO this could be improved.
-             * See http://jira.pentaho.com/browse/MONDRIAN-1195
-             */
+            // Perform each suggested rollup.
+            //
+            // TODO this could be improved.
+            // See http://jira.pentaho.com/browse/MONDRIAN-1195
 
             // Rollups that succeeded. Will tell cache mgr to put the headers
             // into the index and the header/bodies in cache.
@@ -320,13 +317,11 @@ public class FastBatchingCellReader implements CellReader {
                 // Register this segment with the local star.
                 segmentWithData.getStar().register(segmentWithData);
 
-                /*
-                 * Make sure that the cache manager knows about this new
-                 * segment. First thing we do is to add it to the index.
-                 * Then we insert the segment body into the SlotFuture.
-                 * This has to be done on the SegmentCacheManager's
-                 * Actor thread to ensure thread safety.
-                 */
+                // Make sure that the cache manager knows about this new
+                // segment. First thing we do is to add it to the index.
+                // Then we insert the segment body into the SlotFuture.
+                // This has to be done on the SegmentCacheManager's
+                // Actor thread to ensure thread safety.
                 if (!MondrianProperties.instance().DisableCaching.get()) {
                     final Locus locus = Locus.peek();
                     cacheMgr.execute(
@@ -336,11 +331,12 @@ public class FastBatchingCellReader implements CellReader {
                                     cacheMgr.getIndexRegistry()
                                     .getIndex(segmentWithData.getStar());
                                 boolean added = index.add(
-                                    segmentWithData.getHeader(), true,
+                                    segmentWithData.getHeader(),
+                                    true,
                                     response.converterMap.get(
                                         SegmentCacheIndexImpl
-                                        .makeConverterKey(
-                                            segmentWithData.getHeader())));
+                                            .makeConverterKey(
+                                                segmentWithData.getHeader())));
                                 if (added) {
                                     ((SlotFuture<SegmentBody>)index.getFuture(
                                         segmentWithData.getHeader()))

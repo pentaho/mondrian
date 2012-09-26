@@ -28,10 +28,18 @@ public class SlotFuture<V> implements Future<V> {
         new ReentrantReadWriteLock();
     private static final Logger LOG = Logger.getLogger(SlotFuture.class);
 
+    private final String thisString;
+
     /**
      * Creates a SlotFuture.
      */
     public SlotFuture() {
+        thisString = super.toString();
+    }
+
+    @Override
+    public String toString() {
+        return thisString;
     }
 
     /**
