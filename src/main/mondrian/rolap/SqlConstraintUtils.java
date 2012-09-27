@@ -69,44 +69,51 @@ public class SqlConstraintUtils {
             baseCube = ((RolapEvaluator)evaluator).getCube();
         }
 
-        Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =
-                new HashMap<RelationOrJoin, Set<RolapMember>>();
-        Map<RelationOrJoin, Boolean> done =
-                new HashMap<RelationOrJoin, Boolean>();
-        if (restrictMemberTypes && !containsCalculatedMember(members) ) {
-            if (containsCalculatedMember(members)) {
+        if (restrictMemberTypes ) {
+            if (containsCalculatedMember(members, true)) {
                 throw Util.newInternal(
                     "can not restrict SQL to calculated Members");
             }
-            if (hasMultiPositionSlicer(evaluator)) {
-                
-                Member[] slicerMembers = expandSupportedCalculatedMembers(
-                        ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator);
-
-                for (Member slicerMember : slicerMembers) {
-                    
-                    if(slicerMember.isMeasure())
-                    {
-                        continue;
-                    }
-                    RelationOrJoin rel =
-                            ((RolapCubeHierarchy)slicerMember.getHierarchy())
-                            .getRelation();
-                    if (!mapOfSlicerMembers.containsKey(rel)) {
-                        mapOfSlicerMembers.put(rel, new HashSet<RolapMember>());
-                    }
-                    mapOfSlicerMembers.get(rel).add((RolapMember)slicerMember);
-                }
-            }
-
         } else {
             members = removeCalculatedAndDefaultMembers(members);
             members = removeMultiPositionSlicerMembers(members, evaluator);
         }
+
+        
+        Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =
+                new HashMap<RelationOrJoin, Set<RolapMember>>();
+        Map<RelationOrJoin, Boolean> done =
+                new HashMap<RelationOrJoin, Boolean>();
+        
+        if (hasMultiPositionSlicer(evaluator)) {
+
+            Member[] slicerMembers = expandSupportedCalculatedMembers(
+                    ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator);
+
+            for (Member slicerMember : slicerMembers) {
+
+                if(slicerMember.isMeasure())
+                {
+                    continue;
+                }
+                RelationOrJoin rel =
+                        ((RolapCubeHierarchy)slicerMember.getHierarchy())
+                        .getRelation();
+                if (!mapOfSlicerMembers.containsKey(rel)) {
+                    mapOfSlicerMembers.put(rel, new HashSet<RolapMember>());
+                }
+                mapOfSlicerMembers.get(rel).add((RolapMember)slicerMember);
+            }
+        }
+
+        // Now, remove calc members
+        members = removeCalculatedAndDefaultMembers(members);
+        
+        
         final CellRequest request =
             RolapAggregationManager.makeRequest(members);
         if (request == null) {
-            if (restrictMemberTypes && false) { // pedroalves - commenting this out for now
+            if (restrictMemberTypes) { 
                 throw Util.newInternal("CellRequest is null - why?");
             }
             // One or more of the members was null or calculated, so the
