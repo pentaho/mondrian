@@ -14,7 +14,7 @@ import mondrian.server.Execution;
 import mondrian.server.Locus;
 import mondrian.server.monitor.*;
 import mondrian.spi.Dialect;
-import mondrian.util.DelegatingInvocationHandler;
+import mondrian.util.*;
 
 import org.apache.log4j.Logger;
 
@@ -124,8 +124,10 @@ public class SqlStatement {
     public void execute() {
         assert state == State.FRESH : "cannot re-execute";
         state = State.ACTIVE;
+        Counters.SQL_STATEMENT_EXECUTE_COUNT.incrementAndGet();
+        Counters.SQL_STATEMENT_EXECUTING_IDS.add(id);
         String status = "failed";
-        Statement statement = null;
+        Statement statement;
         try {
             this.jdbcConnection = dataSource.getConnection();
             querySemaphore.enter();
@@ -224,13 +226,11 @@ public class SqlStatement {
             }
         } catch (Throwable e) {
             status = ", failed (" + e + ")";
-            Util.close(resultSet, statement, jdbcConnection);
-
-            if (haveSemaphore) {
-                haveSemaphore = false;
-                querySemaphore.leave();
-            }
             if (e instanceof Error) {
+                try {
+                    close();
+                } catch (Throwable ignore) {
+                }
                 throw (Error) e;
             } else {
                 throw handle(e);
@@ -253,9 +253,16 @@ public class SqlStatement {
      * {@link RuntimeException} describing the high-level operation which
      * this statement was performing. No further error-handling is required
      * to produce a descriptive stack trace, unless you want to absorb the
-     * error.
+     * error.</p>
+     *
+     * <p>This method is idempotent.</p>
      */
     public void close() {
+        if (state == State.CLOSED) {
+            return;
+        }
+        state = State.CLOSED;
+
         if (haveSemaphore) {
             haveSemaphore = false;
             querySemaphore.leave();
@@ -265,38 +272,9 @@ public class SqlStatement {
         // its result sets, and closing a connection automatically closes its
         // statements. But let's be conservative and close everything
         // explicitly.
-        Statement statement = null;
-        SQLException ex = null;
-        if (resultSet != null) {
-            try {
-                statement = resultSet.getStatement();
-                resultSet.close();
-            } catch (SQLException e) {
-                ex = e;
-            } finally {
-                resultSet = null;
-            }
-        }
-        if (statement != null) {
-            try {
-                statement.close();
-            } catch (SQLException e) {
-                if (ex != null) {
-                    ex = e;
-                }
-            }
-        }
-        if (jdbcConnection != null) {
-            try {
-                jdbcConnection.close();
-            } catch (SQLException e) {
-                if (ex != null) {
-                    ex = e;
-                }
-            } finally {
-                jdbcConnection = null;
-            }
-        }
+        SQLException ex = Util.close(resultSet, null, jdbcConnection);
+        resultSet = null;
+        jdbcConnection = null;
 
         if (ex != null) {
             throw Util.newError(
@@ -314,10 +292,21 @@ public class SqlStatement {
 
         RolapUtil.SQL_LOGGER.debug(id + ": " + status);
 
+        Counters.SQL_STATEMENT_CLOSE_COUNT.incrementAndGet();
+        boolean remove = Counters.SQL_STATEMENT_EXECUTING_IDS.remove(id);
+        status += ", ex=" + Counters.SQL_STATEMENT_EXECUTE_COUNT.get()
+            + ", close=" + Counters.SQL_STATEMENT_CLOSE_COUNT.get()
+            + ", open=" + Counters.SQL_STATEMENT_EXECUTING_IDS;
+
         if (RolapUtil.LOGGER.isDebugEnabled()) {
             RolapUtil.LOGGER.debug(
                 locus.component + ": done executing sql [" + sql + "]"
                 + status);
+        }
+
+        if (!remove) {
+            throw new AssertionError(
+                "SqlStatement closed that was never executed: " + id);
         }
 
         locus.getServer().getMonitor().sendEvent(
@@ -733,7 +722,8 @@ public class SqlStatement {
     private enum State {
         FRESH,
         ACTIVE,
-        DONE
+        DONE,
+        CLOSED
     }
 
     public static class StatementLocus extends Locus {

@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2010-2011 Pentaho
+// Copyright (C) 2010-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.test;
@@ -34,6 +34,10 @@ public class Olap4jTckTest extends TestCase {
                 final TestCase testCase = (TestCase) test;
                 final String testCaseName = testCase.getName();
                 return !testCaseName.equals("testStatementTimeout")
+                    // olap4j-tck does not close ResultSet, and that's a
+                    // resource leak
+                    && !testCaseName.startsWith(
+                        "testCubesDrillthroughReturnClause")
                     && !testCaseName.equals("testStatementCancel")
                     && !testCaseName.equals("testDatabaseMetaDataGetCatalogs")
                     && !testCaseName.equals("testCellSetBug");

@@ -38,6 +38,7 @@ import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.sql.Connection;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
@@ -2245,36 +2246,48 @@ public class Util extends XOMUtil {
      * Closes a JDBC result set, statement, and connection, ignoring any errors.
      * If any of them are null, that's fine.
      *
+     * <p>If any of them throws a {@link SQLException}, returns the first
+     * such exception, but always executes all closes.</p>
+     *
      * @param resultSet Result set
      * @param statement Statement
      * @param connection Connection
      */
-    public static void close(
+    public static SQLException close(
         ResultSet resultSet,
         Statement statement,
-        java.sql.Connection connection)
+        Connection connection)
     {
+        SQLException firstException = null;
         if (resultSet != null) {
             try {
+                if (statement == null) {
+                    statement = resultSet.getStatement();
+                }
                 resultSet.close();
             } catch (SQLException e) {
-                // ignore
+                firstException = e;
             }
         }
         if (statement != null) {
             try {
                 statement.close();
             } catch (SQLException e) {
-                // ignore
+                if (firstException == null) {
+                    firstException = e;
+                }
             }
         }
         if (connection != null) {
             try {
                 connection.close();
             } catch (SQLException e) {
-                // ignore
+                if (firstException == null) {
+                    firstException = e;
+                }
             }
         }
+        return firstException;
     }
 
     public static class ErrorCellValue {

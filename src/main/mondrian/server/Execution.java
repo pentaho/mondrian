@@ -49,9 +49,9 @@ public class Execution {
     private State state = State.FRESH;
 
     /**
-     * Lock monitor for SQL statements. All operations on the
-     * {@link Execution#sqlState} and {@link Execution#statements}
-     * need to be synchrinized on this.
+     * Lock monitor for SQL statements. All operations on
+     * {@link Execution#statements}
+     * need to be synchronized on this.
      */
     private final Object sqlStateLock = new Object();
 
