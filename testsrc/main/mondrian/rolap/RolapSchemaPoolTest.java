@@ -22,7 +22,7 @@ import java.net.URL;
 import javax.sql.DataSource;
 
 /**
- * Test for {@link RolapSchema.Pool}.
+ * Test for {@link RolapSchemaPool}.
  */
 public class RolapSchemaPoolTest extends FoodMartTestCase {
 
@@ -52,7 +52,7 @@ public class RolapSchemaPoolTest extends FoodMartTestCase {
                 "joeTheUser",
                 "aDataSource",
                 connectInfo);
-        //same arguments, same object
+        // same arguments, same object
         assertTrue(schema == schemaA);
     }
 
@@ -90,7 +90,7 @@ public class RolapSchemaPoolTest extends FoodMartTestCase {
                 "mrDoeTheOtherUser",
                 "someDataSource",
                 connectInfoA);
-        //must fetch the same object
+        // must fetch the same object
         assertTrue(schema == sameSchema);
 
         connectInfo.put(
@@ -103,7 +103,7 @@ public class RolapSchemaPoolTest extends FoodMartTestCase {
                 "joeTheUser",
                 "aDataSource",
                 connectInfo);
-        //must create a new object
+        // must create a new object
         assertTrue(schema != aNewSchema);
     }
 

@@ -235,9 +235,7 @@ public abstract class RolapAggregationManager {
                 }
             }
 
-            /*
-             * Iterate over members.
-             */
+            // Iterate over members.
             for (int i = 0; i < members.length; i++) {
                 final RolapCubeMember member = (RolapCubeMember) members[i];
                 if (member.getHierarchy().getRolapHierarchy().closureFor
@@ -335,7 +333,7 @@ public abstract class RolapAggregationManager {
      *   and [State] = 'CA'
      *   </pre></blockquote>
      *
-     * @param member Member to constraint
+     * @param level Level to constrain
      * @param measureGroup Measure group
      * @param request Cell request
      */

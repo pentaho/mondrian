@@ -2776,7 +2776,7 @@ public class TestContext {
      * Iterator over a collection of entries that removes entries whose value
      * is null.
      *
-     * @see Util.GcIterator
+     * @see mondrian.olap.Util.GcIterator
      *
      * @param <K> Key type
      * @param <V> Value type

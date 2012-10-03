@@ -57,7 +57,6 @@ doCheck() {
     */mondrian/util/Base64.java| \
     */mondrian/olap/MondrianDef.java| \
     */mondrian/olap/Mondrian3Def.java| \
-    */mondrian/gui/MondrianGuiDef.java| \
     */mondrian/xmla/DataSourcesConfig.java| \
     */mondrian/rolap/aggmatcher/DefaultDef.java| \
     */mondrian/resource/MondrianResource*.java| \
