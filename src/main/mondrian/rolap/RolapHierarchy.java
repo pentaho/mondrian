@@ -664,7 +664,10 @@ public class RolapHierarchy extends HierarchyBase {
                     relationSubset(relation, expression.getTableAlias());
             }
         }
-        query.addFrom(subRelation, null, failIfExists);
+        query.addFrom(
+            subRelation,
+            expression == null ? null : expression.getTableAlias(),
+            failIfExists);
     }
 
     /**
