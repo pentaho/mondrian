@@ -24,6 +24,7 @@ import mondrian.calc.TupleIterable;
 import mondrian.mdx.ResolvedFunCall;
 import java.util.Map.Entry;
 
+
 /**
  * Utility class used by implementations of {@link mondrian.rolap.sql.SqlConstraint},
  * used to generate constraints into {@link mondrian.rolap.sql.SqlQuery}.
@@ -80,31 +81,33 @@ public class SqlConstraintUtils {
         }
 
         
-        Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =
-                new HashMap<RelationOrJoin, Set<RolapMember>>();
-        Map<RelationOrJoin, Boolean> done =
-                new HashMap<RelationOrJoin, Boolean>();
-        
-        if (hasMultiPositionSlicer(evaluator)) {
-
-            Member[] slicerMembers = expandSupportedCalculatedMembers(
-                    ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator);
-
-            for (Member slicerMember : slicerMembers) {
-
-                if(slicerMember.isMeasure())
-                {
-                    continue;
-                }
-                RelationOrJoin rel =
-                        ((RolapCubeHierarchy)slicerMember.getHierarchy())
-                        .getRelation();
-                if (!mapOfSlicerMembers.containsKey(rel)) {
-                    mapOfSlicerMembers.put(rel, new HashSet<RolapMember>());
-                }
-                mapOfSlicerMembers.get(rel).add((RolapMember)slicerMember);
-            }
-        }
+//        Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =
+//                new HashMap<RelationOrJoin, Set<RolapMember>>();
+//
+//        Member[] expandedSlicers = 
+//            expandSupportedCalculatedMembers(
+//                ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator.push());
+//
+//        if (hasMultiPositionSlicer(expandedSlicers)) {
+//
+////            Member[] slicerMembers = expandSupportedCalculatedMembers(
+////                    ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator);
+//
+//            for (Member slicerMember : expandedSlicers) {
+//
+//                if(slicerMember.isMeasure())
+//                {
+//                    continue;
+//                }
+//                RelationOrJoin rel =
+//                        ((RolapCubeHierarchy)slicerMember.getHierarchy())
+//                        .getRelation();
+//                if (!mapOfSlicerMembers.containsKey(rel)) {
+//                    mapOfSlicerMembers.put(rel, new HashSet<RolapMember>());
+//                }
+//                mapOfSlicerMembers.get(rel).add((RolapMember)slicerMember);
+//            }
+//        }
 
         // Now, remove calc members
         members = removeCalculatedAndDefaultMembers(members);
@@ -123,6 +126,11 @@ public class SqlConstraintUtils {
         RolapStar.Column[] columns = request.getConstrainedColumns();
         Object[] values = request.getSingleValues();
         int arity = columns.length;
+
+        Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers = null;
+
+        Map<RelationOrJoin, Boolean> done =
+            new HashMap<RelationOrJoin, Boolean>();
         // following code is similar to
         // AbstractQuerySpec#nonDistinctGenerateSQL()
         for (int i = 0; i < arity; i++) {
@@ -155,15 +163,20 @@ public class SqlConstraintUtils {
                     Double.valueOf(value);
                 }
 
+                if (mapOfSlicerMembers == null) {
+                    mapOfSlicerMembers = getSlicerMemberMap(evaluator);
+                }
+
                 RelationOrJoin keyForSlicerMap =
                         column.getTable().getRelation();
                 if (mapOfSlicerMembers.containsKey(keyForSlicerMap)) {
                     if (!done.containsKey(keyForSlicerMap)) {
-                        Set<RolapMember> slicerMembersArray =
+                        Set<RolapMember> slicerMembersSet =
                                 mapOfSlicerMembers.get(keyForSlicerMap);
                         List<RolapMember> slicerMembers =
-                                new ArrayList<RolapMember>(slicerMembersArray);
+                                new ArrayList<RolapMember>(slicerMembersSet);
 
+                        //search and destroy [all]
                         RolapMember allMember = null;
                         for (RolapMember slicerMember : slicerMembers) {
                             if (slicerMember.isAll()) {
@@ -171,11 +184,11 @@ public class SqlConstraintUtils {
                                 break;
                             }
                         }
-
                         if (allMember != null) {
                             slicerMembers.remove(allMember);
                         }
 
+                        //
                         if (slicerMembers.size() > 0) {
                             int levelIndex = slicerMembers.get(0)
                                     .getHierarchy()
@@ -274,6 +287,37 @@ public class SqlConstraintUtils {
         }
     }
 
+    public static Map<RelationOrJoin, Set<RolapMember>> getSlicerMemberMap(Evaluator evaluator) {
+        Map<RelationOrJoin, Set<RolapMember>> mapOfSlicerMembers =
+            new HashMap<RelationOrJoin, Set<RolapMember>>();
+
+        Member[] expandedSlicers = 
+            expandSupportedCalculatedMembers(
+                ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator.push());
+      
+        if (hasMultiPositionSlicer(expandedSlicers)) {
+      
+      //      Member[] slicerMembers = expandSupportedCalculatedMembers(
+      //              ((RolapEvaluator)evaluator).getSlicerMembers(), evaluator);
+      
+            for (Member slicerMember : expandedSlicers) {
+      
+                if(slicerMember.isMeasure())
+                {
+                    continue;
+                }
+                RelationOrJoin rel =
+                        ((RolapCubeHierarchy)slicerMember.getHierarchy())
+                        .getRelation();
+                if (!mapOfSlicerMembers.containsKey(rel)) {
+                    mapOfSlicerMembers.put(rel, new HashSet<RolapMember>());
+                }
+                mapOfSlicerMembers.get(rel).add((RolapMember)slicerMember);
+            }
+        }
+        return mapOfSlicerMembers;
+    }
+
     /**
      * Looks at the given <code>evaluator</code> to determine if it has more
      * than one slicer member from any particular hierarchy.
@@ -286,20 +330,36 @@ public class SqlConstraintUtils {
             
             // Get 
             Member[] members = expandSupportedCalculatedMembers( ((RolapEvaluator) evaluator).getSlicerMembers() , evaluator);
-            
-            Map<Hierarchy, Member> mapOfSlicerMembers =
-                new HashMap<Hierarchy, Member>();
-            
-            for (
-                Member slicerMember: members )
-            {
-                Hierarchy hierarchy = slicerMember.getHierarchy();
-                if (mapOfSlicerMembers.containsKey(hierarchy)) {
-                    // We have found a second member in this hierarchy
-                    return true;
-                }
-                mapOfSlicerMembers.put(hierarchy, slicerMember);
+            return hasMultiPositionSlicer(members);
+//            Map<Hierarchy, Member> mapOfSlicerMembers =
+//                new HashMap<Hierarchy, Member>();
+//            
+//            for (
+//                Member slicerMember: members )
+//            {
+//                Hierarchy hierarchy = slicerMember.getHierarchy();
+//                if (mapOfSlicerMembers.containsKey(hierarchy)) {
+//                    // We have found a second member in this hierarchy
+//                    return true;
+//                }
+//                mapOfSlicerMembers.put(hierarchy, slicerMember);
+//            }
+        }
+        return false;
+    }
+
+    public static boolean hasMultiPositionSlicer(Member[] slicerMembers) {
+        Map<Hierarchy, Member> mapOfSlicerMembers =
+            new HashMap<Hierarchy, Member>();
+        for (
+            Member slicerMember: slicerMembers )
+        {
+            Hierarchy hierarchy = slicerMember.getHierarchy();
+            if (mapOfSlicerMembers.containsKey(hierarchy)) {
+                // We have found a second member in this hierarchy
+                return true;
             }
+            mapOfSlicerMembers.put(hierarchy, slicerMember);
         }
         return false;
     }
