@@ -395,7 +395,7 @@ public class RolapHierarchy extends HierarchyBase {
      *    joins
      */
     void addToFromInverse(SqlQuery query, RolapSchema.PhysExpr expression) {
-        /*
+/*
         if (relation == null) {
             throw Util.newError(
                 "cannot add hierarchy " + getUniqueName()
@@ -410,8 +410,11 @@ public class RolapHierarchy extends HierarchyBase {
                     relationSubsetInverse(relation, expression.getTableAlias());
             }
         }
-        query.addFrom(subRelation, null, failIfExists);
-                 */
+        query.addFrom(
+            subRelation,
+            expression == null ? null : expression.getTableAlias(),
+            failIfExists);
+*/
     }
 
     /**

@@ -55,6 +55,21 @@ public class SharedDimensionTest extends FoodMartTestCase {
         + "  <Measure name=\"Employee Store Cost\" aggregator=\"sum\" formatString=\"$#,##0\" column=\"warehouse_cost\" />\n"
         + "</Cube>";
 
+    // Some product_id's match store_id, used to test 1243
+    // without having to alter fact table
+    public static final String cubeAltSales =
+        "<Cube name=\"Alternate Sales\">\n"
+        + "  <Table name=\"sales_fact_1997\" alias=\"inventory\" />\n"
+        + "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"store_id\" />\n"
+        + "  <DimensionUsage name=\"Store\" source=\"Store\" foreignKey=\"store_id\"/>\n"
+        + "  <DimensionUsage name=\"Buyer\" source=\"Store\" visible=\"true\" foreignKey=\"product_id\" highCardinality=\"false\"/>\n"
+        + "  <DimensionUsage name=\"Store Size in SQFT\" source=\"Store Size in SQFT\"\n"
+        + "      foreignKey=\"store_id\"/>\n"
+        + "  <DimensionUsage name=\"Store Type\" source=\"Store Type\" foreignKey=\"store_id\"/>\n"
+        + "  <DimensionUsage name=\"Time\" source=\"Time\" foreignKey=\"time_id\"/>\n"
+        + "  <Measure name=\"Unit Sales\" column=\"unit_sales\" aggregator=\"sum\" formatString=\"Standard\"/>\n"
+        + "</Cube>";
+
     public static final String virtualCube =
         "<VirtualCube name=\"Employee Store Analysis\">\n"
         + "  <VirtualCubeDimension name=\"Employee\"/>\n"
@@ -301,6 +316,11 @@ public class SharedDimensionTest extends FoodMartTestCase {
         + "Row #0: 62,445\n"
         + "Row #0: 16,414\n";
 
+    public static final String queryIssue1243 =
+        "select [Measures].[Unit Sales] on columns,\n"
+        + "non empty [Buyer].[USA].[OR].[Portland].children on rows\n"
+        + "from [Alternate Sales]";
+
     public SharedDimensionTest() {
     }
 
@@ -375,10 +395,27 @@ public class SharedDimensionTest extends FoodMartTestCase {
         getTestContext().assertQueryReturns(queryStoreCube, resultStoreCube);
     }
 
+    public void testJira1243WrongAlias() {
+        //test for jira bug MONDRIAN-1243
+        // would throw error while building member cache due to wrong alias
+        TestContext testContext = getTestContextForSharedDimCubeAltSales();
+        testContext.executeQuery(queryIssue1243);
+    }
+
     private TestContext getTestContextForSharedDimCubeACubeB() {
         return TestContext.instance().legacy().create(
             sharedDimension,
             cubeA + "\n" + cubeB,
+            null,
+            null,
+            null,
+            null);
+    }
+
+    private TestContext getTestContextForSharedDimCubeAltSales() {
+        return TestContext.instance().create(
+            null,
+            cubeAltSales,
             null,
             null,
             null,
