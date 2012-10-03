@@ -62,23 +62,23 @@ final class DigitList {
     /**
      * These data members are intentionally public and can be set directly.
      *
-     * The value represented is given by placing the decimal point before
-     * digits[decimalAt].  If decimalAt is < 0, then leading zeros between
+     * <p>The value represented is given by placing the decimal point before
+     * digits[decimalAt].  If decimalAt is &lt; 0, then leading zeros between
      * the decimal point and the first nonzero digit are implied.  If decimalAt
-     * is > count, then trailing zeros between the digits[count-1] and the
-     * decimal point are implied.
+     * is &gt; count, then trailing zeros between the digits[count-1] and the
+     * decimal point are implied.</p>
      *
-     * Equivalently, the represented value is given by f * 10^decimalAt.  Here
-     * f is a value 0.1 <= f < 1 arrived at by placing the digits in Digits to
-     * the right of the decimal.
+     * <p>Equivalently, the represented value is given by f * 10^decimalAt.
+     * Here f is a value 0.1 &le; f &lt; 1 arrived at by placing the digits in
+     * Digits to the right of the decimal.</p>
      *
-     * DigitList is normalized, so if it is non-zero, figits[0] is non-zero.  We
-     * don't allow denormalized numbers because our exponent is effectively of
-     * unlimited magnitude.  The count value contains the number of significant
-     * digits present in digits[].
+     * <p>DigitList is normalized, so if it is non-zero, figits[0] is non-zero.
+     * We don't allow denormalized numbers because our exponent is effectively
+     * of unlimited magnitude.  The count value contains the number of
+     * significant digits present in digits[].</p>
      *
-     * Zero is represented by any DigitList with count == 0 or with each
-     * digits[i] for all i <= count == '0'.
+     * <p>Zero is represented by any DigitList with count == 0 or with each
+     * digits[i] for all i &le; count == '0'.</p>
      */
     public int decimalAt = 0;
     public int count = 0;
@@ -104,7 +104,7 @@ final class DigitList {
      * Set the digit list to a representation of the given double value.
      * This method supports both fixed-point and exponential notation.
      * @param source Value to be converted; must not be Inf, -Inf, Nan,
-     * or a value <= 0.
+     * or a value &le; 0.
      * @param maximumDigits The most fractional or total digits which should
      * be converted.
      * @param fixedPoint If true, then maximumDigits is the maximum
@@ -211,7 +211,7 @@ final class DigitList {
      * Return true if truncating the representation to the given number
      * of digits will result in an increment to the last digit.  This
      * method implements half-even rounding, the default rounding mode.
-     * [bnf]
+     *
      * @param maximumDigits the number of digits to keep, from 0 to
      * <code>count-1</code>.  If 0, then all digits are rounded away, and
      * this method returns true if a one should be generated (e.g., formatting
@@ -342,7 +342,7 @@ final class DigitList {
 
     /**
      * Set the digit list to a representation of the given BigInteger value.
-     * [bnf]
+     *
      * @param source Value to be converted
      * @param maximumDigits The most digits which should be converted.
      * If maximumDigits is lower than the number of significant digits
@@ -387,3 +387,4 @@ final class DigitList {
     }
 }
 
+// End DigitList.java
