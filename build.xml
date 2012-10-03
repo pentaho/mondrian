@@ -44,7 +44,6 @@
   <property name="javatest.dir" value="${testsrc.dir}/main"/>
   <property name="etc.dir" value="${src.dir}/etc"/>
   <property name="lib.dir" value="lib"/>
-  <property name="wb.plugins.dir" value="workbench/plugins"/>
   <property name="doc.dir" value="doc"/>
   <property name="resource.location" location="resource"/>
   <property name="javadoc.dir" value="${doc.dir}/api"/>
@@ -64,11 +63,6 @@
   <property name="dist.doc.file" value="${dist.dir}/doc.tar.gz"/>
   <property name="jar.file" value="${lib.dir}/${name}.jar"/>
   <property name="jar-jdk14.file" value="${lib.dir}/${name}-jdk14.jar" />
-  <property name="workbench.jar.file" value="${lib.dir}/workbench.jar"/>
-  <property name="workbench.dist.name" value="workbench-${project.revision}"/>
-  <property name="workbench.zip-dist.file" value="${workbench.dist.name}.zip"/>
-  <property name="workbench.tar-dist.file" value="${workbench.dist.name}.tar.gz"/>
-  <property name="workbench.main.class" value="mondrian.gui.Workbench"/>
   <property name="resource.jar.file" value="${lib.dir}/eigenbase-resgen.jar"/>
   <property name="xom.jar.file" value="${lib.dir}/eigenbase-xom.jar"/>
   <property name="war.file" value="${lib.dir}/${name}.war"/>
@@ -131,13 +125,11 @@ ${java.dir}/mondrian/parser/Token.java,
 ${java.dir}/mondrian/parser/TokenMgrError.java,
 ${java.dir}/mondrian/olap/MondrianDef.java,
 ${java.dir}/mondrian/olap/MondrianProperties.java,
-${java.dir}/mondrian/gui/MondrianGuiDef.java,
 ${java.dir}/mondrian/resource/MondrianResource*.java,
 ${java.dir}/mondrian/xmla/DataSourcesConfig*.java,
 ${etc.dir}/mondrian/web/jsp/**/*.java"/>
   <property name="generated.lib.files" value="
 ${lib.dir}/mondrian.jar,
-${lib.dir}/workbench.jar,
 ${jar-jdk14.file},
 ${lib.dir}/olap4j-jdk14.jar,
 ${lib.dir}/mondrian.war,
@@ -173,13 +165,6 @@ mondrian.properties.template"/>
     <pathelement path="${env.CLASSPATH}"/>
     <pathelement location="${ant.home}/lib/ant.jar"/>
     <pathelement location="${ant.home}/lib/optional.jar"/>
-    <pathelement location="${wb.plugins.dir}/kettle-dbdialog.jar"/>
-    <pathelement location="${wb.plugins.dir}/kettle-core.jar"/>
-    <pathelement location="${wb.plugins.dir}/kettle-db.jar"/>
-    <pathelement location="${wb.plugins.dir}/kettle-engine.jar"/>
-    <pathelement location="${wb.plugins.dir}/pentaho-xul-core.jar"/>
-    <pathelement location="${wb.plugins.dir}/pentaho-xul-swing.jar"/>
-    <pathelement location="${wb.plugins.dir}/commons-io.jar"/>
   </path>
 
   <path id="project.build.classpath">
@@ -369,7 +354,6 @@ mondrian.properties.template"/>
       <fileset dir="${testclasses-jdk14.dir}" />
       <fileset dir="${testsrc.dir}" includes="**/*.log.xml"/>
       <fileset dir="${testsrc.dir}" includes="**/*JUnit.java"/>
-      <fileset dir="${wb.plugins.dir}" includes="*.jar"/>
     </delete>
   </target>
 
@@ -398,13 +382,6 @@ mondrian.properties.template"/>
           <os family="unix"/>
       </condition>
       <echo message="symlink=${symlink}"/>
-
-      <!-- Workbench dependencies to workbench/plugins -->
-      <ivy:resolve file="workbench/ivy.xml"/>
-      <ivy:retrieve symlink="${symlink}" type="jar"
-          pattern="${wb.plugins.dir}/[module].[ext]"/>
-      <ivy:retrieve symlink="${symlink}" type="source,javadoc"
-          pattern="${wb.plugins.dir}/[module]-[type].[ext]"/>
 
       <!-- Mondrian dependencies. -->
       <ivy:resolve file="ivy.xml"/>
@@ -568,9 +545,6 @@ If you wish to build for this JDK, modify ${unix.script}.
       <exclude name="mondrian/rolap/PhysSchemaConverter.java"/>
       <exclude name="mondrian/rolap/HierarchyUsage.java"/>
       <exclude name="mondrian/rolap/RolapCubeUsages.java"/>
-      <!-- The Workbench needs to be built against Java 6
-           because of its dependency on Kettle. -->
-      <exclude name="mondrian/gui/**/*.java" if="jdk16.not.present"/>
     </javac>
     <copy file="src/main/mondrian/rolap/aggmatcher/DefaultRules.xml"
         todir="${classes.dir}"/>
@@ -625,14 +599,6 @@ META-INF/**"/>
         dtdname="mondrian.dtd"/>
     <copy file="${java.dir}/mondrian/olap/mondrian.dtd"
         todir="${lib.dir}"/>
-
-    <!-- Workbench needs a different model. See Mondrian_SW.xml for details. -->
-    <xomgen
-        model="${java.dir}/mondrian/olap/Mondrian_SW.xml"
-        destdir="${java.dir}"
-        classname="mondrian.gui.MondrianGuiDef"
-        dtdname="mondrian_SW.dtd"
-        />
 
     <xomgen
         model="${java.dir}/mondrian/rolap/aggmatcher/DefaultRulesSchema.xml"
@@ -979,15 +945,6 @@ bin/cmdrunner.cmd,
 bin/run.sh,
 misc/**/*.mf,
 misc/Meta.xsl,
-workbench/drivers/readme.txt,
-workbench/plugins/readme.txt,
-workbench/cpappend.bat,
-workbench/ivy.xml,
-workbench/log4j.xml,
-workbench/mondrian.properties,
-workbench/readme.txt,
-workbench/workbench.bat,
-workbench/workbench.sh,
 build.xml,
 build.bat,
 build.sh,
@@ -1228,8 +1185,7 @@ must be run under JDK 1.5." />
 **/*.class,
 **/*.properties,
 **/*.xml,
-META-INF/**"
-          excludes="mondrian/gui/**/*.*"/>
+META-INF/**"/>
       <zipfileset
           dir="${testclasses.dir}"
           includes="
@@ -1237,10 +1193,6 @@ mondrian/test/loader/**/*.class,
 mondrian/olap4j/MondrianInprocProxy*.class,
 mondrian/test/AbstractMondrianOlap4jTester.class,
 mondrian/test/MondrianOlap4jTester.class"/>
-      <zipfileset
-          dir="${javatest.dir}"
-          includes="
-mondrian/test/loader/insert.sql"/>
       <zipfileset
           dir="."
           includes="
@@ -1604,132 +1556,6 @@ xalan.jar"/>
       <fileset dir="${mondrian.webapp.deploy}" includes="${war.file}"/>
     </delete>
     <copy file="${war.file}" todir="${mondrian.webapp.deploy}"/>
-  </target>
-
-  <target name="workbench" depends="jar">
-    <jar jarfile="${workbench.jar.file}" update="true">
-      <fileset
-          dir="${classes.dir}"
-          includes="mondrian/gui/**/*.class"/>
-      <fileset
-          dir="${java.dir}"
-          includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.png,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
-      <manifest>
-          <attribute name="Main-Class" value="${workbench.main.class}"/>
-      </manifest>
-    </jar>
-    <copy todir="${classes.dir}">
-      <fileset
-          dir="${java.dir}"
-          includes="mondrian/gui/**/*.gif,mondrian/gui/**/*.png,mondrian/gui/**/*.properties,mondrian/gui/**/*.html"/>
-    </copy>
-  </target>
-
-  <path id="workbench.run.classpath">
-    <pathelement path="${workbench.jar.file}"/>
-    <path refid="project.test.classpath"/>
-    <pathelement path="lib/jlfgr.jar"/>
-  </path>
-
-  <target name="workbench-run" >
-
-    <available classname="${mondrian.jdbcDrivers}"
-           classpathref="workbench.run.classpath" property="driver.present.for.workbench"/>
-
-    <available classname="${workbench.main.class}"
-           classpathref="workbench.run.classpath" property="workbench.main.present"/>
-
-    <!-- check if mondrian.jar and workbench jar file exists -->
-    <available file="${jar.file}" property="mondrian.jar.exists"/>
-    <available file="${workbench.jar.file}" property="workbench.jar.exists"/>
-
-    <java  classpathref="workbench.run.classpath"  classname="${workbench.main.class}"  fork="yes">
-        <sysproperty key="log4j.configuration" value="${log4j.configuration}"/>
-    </java>
-  </target>
-
-  <target name="workbench-dist"
-      depends="version,workbench">
-    <mkdir dir="${dist.dir}" />
-    <delete file="${dist.dir}/${workbench.zip-dist.file}"/>
-    <zip zipfile="${dist.dir}/${workbench.zip-dist.file}">
-      <zipfileset
-          dir="."
-          prefix="${workbench.dist.name}"
-          includes="
-			${doc.dir}/**/*.pdf,
-			lib/mondrian.jar,
-			lib/workbench.jar,
-			lib/log4j.jar,
-			lib/x*.jar,
-			lib/eigenbase*.jar,
-			lib/commons*.jar,
-			lib/javacup.jar,
-			lib/jlfgr.jar,
-			lib/olap4j.jar,
-			lib/pentaho-application-launcher.jar,
-			lib/*.dtd,
-			lib/*.xsd,
-			demo/FoodMart.xml,
-			LICENSE.html"
-          excludes="
-			**/*~,
-			**/_vti*/*,
-			**/*.psp,
-			${doc.dir}/api/src-html/**/*"/>
-      <zipfileset
-          dir="workbench"
-          prefix="${workbench.dist.name}"
-          includes="**/*"/>
-      <zipfileset
-          dir="src/main"
-          prefix="${workbench.dist.name}/src"
-          includes="mondrian/gui/**/*"/>
-    </zip>
-    <delete file="${dist.dir}/${workbench.tar-dist.file}"/>
-    <tar destfile="${dist.dir}/${workbench.tar-dist.file}" longfile="gnu" compression="gzip">
-        <tarfileset dir="." prefix="${workbench.dist.name}" mode="755" includes="*.sh"/>
-	    <tarfileset dir="."  prefix="${workbench.dist.name}" includes="
-				${doc.dir}/**/*.pdf,
-				lib/mondrian.jar,
-				lib/workbench.jar,
-				lib/log4j.jar,
-				lib/x*.jar,
-				lib/eigenbase*.jar,
-				lib/commons*.jar,
-				lib/javacup.jar,
-				lib/jlfgr.jar,
-				lib/olap4j.jar,
-				lib/pentaho-application-launcher.jar,
-				lib/*.dtd,
-				lib/*.xsd,
-				demo/FoodMart.xml,
-				LICENSE.html"
-          		excludes="
-				**/*~,
-				**/_vti*/*,
-				**/*.psp,
-	    		**/*.sh,
-	    		**/JavaApplicationStub,
-				${doc.dir}/api/src-html/**/*"/>
-      	<tarfileset mode="755"
-          dir="workbench"
-          prefix="${workbench.dist.name}">
-            <include name="**/*.sh" />
-            <include name="**/JavaApplicationStub" />
-   		</tarfileset>      		
-      	<tarfileset
-          dir="workbench"
-          prefix="${workbench.dist.name}">
-      		<include name="**/*" />
-            <exclude name="**/*.sh" />
-            <exclude name="**/JavaApplicationStub" />
-   		</tarfileset>
-      	<tarfileset
-          dir="src/main"
-          prefix="${workbench.dist.name}/src"
-          includes="mondrian/gui/**/*"/>
-    </tar>
   </target>
 
   <!--

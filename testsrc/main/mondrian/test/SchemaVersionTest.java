@@ -243,7 +243,6 @@ public class SchemaVersionTest extends FoodMartTestCase {
         + "    </Cube>\n"
         + "\n"
         + "</Schema>";
-
 }
 
-// End SchemaMetamodelVersionTest.java
+// End SchemaVersionTest.java

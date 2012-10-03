@@ -333,7 +333,7 @@ public abstract class RolapAggregationManager {
      *   and [State] = 'CA'
      *   </pre></blockquote>
      *
-     * @param member Member to constraint
+     * @param level Level to constrain
      * @param measureGroup Measure group
      * @param request Cell request
      */

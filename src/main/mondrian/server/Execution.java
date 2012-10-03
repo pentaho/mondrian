@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2011-2011 Pentaho
+// Copyright (C) 2011-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.server;
@@ -33,14 +33,14 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author jhyde
  */
 public class Execution {
-    /*
+    /**
      * Used for MDX logging, allows for a MDX Statement UID.
      */
     private static AtomicLong SEQ = new AtomicLong();
 
     final StatementImpl statement;
 
-    /*
+    /**
      * Holds a collection of the SqlStatements which were used by this
      * execution instance. All operations on the map must be synchronized
      * on it.
@@ -50,19 +50,19 @@ public class Execution {
 
     private State state = State.FRESH;
 
-    /*
+    /**
      * State of the SQL statements.
      */
     private SqlState sqlState = SqlState.CLEAN;
 
-    /*
-     * Lock monitor for SQL statements. All operations on the
-     * {@link Execution#sqlState} and {@link Execution#statements}
-     * need to be synchrinized on this.
+    /**
+     * Lock monitor for SQL statements. All operations on
+     * {@link Execution#statements}
+     * need to be synchronized on this.
      */
     private final Object sqlStateLock = new Object();
 
-    /*
+    /**
      * If not <code>null</code>, this query was notified that it
      * might cause an OutOfMemoryError.
      */

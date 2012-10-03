@@ -190,7 +190,7 @@ public class SqlContextConstraint
      *
      * @param exp expression
      * @param baseCubes set of base cubes
-     * @param measureGroupSet
+     * @param measureGroupSet Measure group set
      */
     private static void findMeasures(
         Exp exp,
@@ -226,8 +226,10 @@ public class SqlContextConstraint
      * @param strict defines the behaviour if the evaluator context
      * contains calculated members. If true, an exception is thrown,
      * otherwise calculated members are silently ignored. The
-     * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, RolapStarSet, RolapMember)} and
-     * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, RolapStarSet, java.util.List} will
+     * methods {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, RolapStarSet, RolapMember)}
+     * and
+     * {@link mondrian.rolap.sql.MemberChildrenConstraint#addMemberConstraint(mondrian.rolap.sql.SqlQuery, RolapStarSet, java.util.List)}
+     * will
      * {@link Util#deprecated ... what text was removed here?}
      */
     SqlContextConstraint(
