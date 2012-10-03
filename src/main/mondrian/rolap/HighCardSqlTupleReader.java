@@ -171,7 +171,7 @@ public class HighCardSqlTupleReader extends SqlTupleReader {
     }
 
     /**
-     * Reads next tuple notifing all internal targets.
+     * Reads next tuple, notifying all internal targets.
      *
      * @return whether there are any more rows
      */

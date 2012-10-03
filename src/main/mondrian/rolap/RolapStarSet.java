@@ -120,7 +120,8 @@ public class RolapStarSet {
     }
 
     public AggStar getAggStar() {
-        return (AggStar) (Object) aggMeasureGroup; // FIXME; will throw if not null; eliminate method
+        // FIXME; will throw if not null; eliminate method
+        return (AggStar) (Object) aggMeasureGroup;
     }
 
     public RolapMeasureGroup getAggMeasureGroup() {
