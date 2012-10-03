@@ -344,6 +344,9 @@ public class Main extends TestSuite {
             } else {
                 logger.warn("skipping BatchedFillTests");
             }
+
+            // Must be the last test.
+            addTest(suite, TerminatorTest.class);
         }
 
         if (testName != null && !testName.equals("")) {
@@ -439,6 +442,24 @@ public class Main extends TestSuite {
             testInfo += newTestInfo;
         }
         testSuiteInfo.put(suite, testInfo);
+    }
+
+    /**
+     * Test that executes last. It can be used to check invariants.
+     */
+    public static class TerminatorTest extends TestCase {
+        public void testSqlStatementExecuteMatchesClose() {
+            // Number of successful calls to SqlStatement.execute
+            // should match number of calls to SqlStatement.close
+            // (excluding calls to close where close has already been called).
+            // If there is a mismatch, try debugging by adding SqlStatement.id
+            // values to a Set<Long>.
+            assertEquals(
+                "SqlStatement instances still open: "
+                + Counters.SQL_STATEMENT_EXECUTING_IDS,
+                Counters.SQL_STATEMENT_EXECUTE_COUNT.get(),
+                Counters.SQL_STATEMENT_CLOSE_COUNT.get());
+        }
     }
 }
 

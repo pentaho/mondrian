@@ -5,17 +5,19 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2002-2005 Julian Hyde
-// Copyright (C) 2005-2010 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // Copyright (C) 2006-2007 CINCOM SYSTEMS, INC.
 // All Rights Reserved.
 */
 package mondrian.gui;
 
 import mondrian.gui.MondrianGuiDef.Hierarchy;
+import mondrian.olap.*;
 
 import org.eigenbase.xom.NodeDef;
 
 import java.awt.*;
+import java.awt.Dimension;
 import java.awt.event.*;
 import java.io.*;
 import java.util.*;
@@ -1384,19 +1386,38 @@ public class SchemaPropertyCellEditor
                 MondrianGuiDef.Schema s = getSchema();
                 if (s != null) {
                     for (int i = 0; i < s.cubes.length; i++) {
-                        if (s.cubes[i].name.equals(parent.cube)) {
-                            for (int j = 0; j < s.cubes[i].dimensions.length;
+                        MondrianGuiDef.Cube cube = s.cubes[i];
+                        if (cube.name.equals(parent.cube)) {
+                            for (int j = 0; j < cube.dimensions.length;
                                 j++)
                             {
-                                NodeDef[] children =
-                                    s.cubes[i].dimensions[j].getChildren();
-                                for (int k = 0; k < children.length; k++) {
-                                    if (children[k] instanceof Hierarchy
-                                        && (((Hierarchy) children[k]).name
-                                            != null))
-                                    {
-                                        hiers.add(
-                                            ((Hierarchy) children[k]).name);
+                                MondrianGuiDef.CubeDimension dimension =
+                                    cube.dimensions[j];
+                                for (NodeDef child : dimension.getChildren()) {
+                                    if (child instanceof Hierarchy) {
+                                        String hname = ((Hierarchy) child).name;
+                                        if (hname != null) {
+                                            if (MondrianProperties.instance()
+                                                .SsasCompatibleNaming.get())
+                                            {
+                                                hiers.add(
+                                                    Util.quoteMdxIdentifier(
+                                                        dimension.name)
+                                                        + "."
+                                                        + Util
+                                                            .quoteMdxIdentifier(
+                                                                hname));
+                                            } else {
+                                                hiers.add(
+                                                    Util.quoteMdxIdentifier(
+                                                        dimension.name
+                                                        + "." + hname));
+                                            }
+                                        } else {
+                                            hiers.add(
+                                                Util.quoteMdxIdentifier(
+                                                    dimension.name));
+                                        }
                                     }
                                 }
                             }
