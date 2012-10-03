@@ -69,9 +69,7 @@ public interface SegmentCache {
      * segment corresponding to the header could be found.
      *
      * <p>Cache implementations are at liberty to 'forget' segments. Therefore
-     * it is allowable for this method to return null at any time, even if
-     * {@link #contains(SegmentHeader)} for this segment previously returned
-     * true.</p>
+     * it is allowable for this method to return null at any time</p>
      *
      * @param header The header of the segment to find.
      * Consider this as a key.

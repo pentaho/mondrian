@@ -234,7 +234,8 @@ public class RolapHierarchy extends HierarchyBase {
                 Collections.<String, Annotation>emptyMap());
         allLevel.init(xmlCubeDimension);
         this.allMember = new RolapMemberBase(
-            null, allLevel, null, allMemberName, Member.MemberType.ALL);
+            null, allLevel, RolapUtil.sqlNullValue,
+            allMemberName, Member.MemberType.ALL);
         // assign "all member" caption
         if (xmlHierarchy.allMemberCaption != null
             && xmlHierarchy.allMemberCaption.length() > 0)
@@ -1226,7 +1227,7 @@ public class RolapHierarchy extends HierarchyBase {
             super(
                 null,
                 level,
-                null,
+                RolapUtil.sqlNullValue,
                 RolapUtil.mdxNullLiteral(),
                 MemberType.NULL);
             assert level != null;

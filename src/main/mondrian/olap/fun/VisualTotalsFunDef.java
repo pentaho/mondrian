@@ -4,7 +4,7 @@
 // http://www.eclipse.org/legal/epl-v10.html.
 // You must accept the terms of that agreement to use this software.
 //
-// Copyright (C) 2006-2011 Pentaho
+// Copyright (C) 2006-2012 Pentaho
 // All Rights Reserved.
 */
 package mondrian.olap.fun;
@@ -209,7 +209,7 @@ public class VisualTotalsFunDef extends FunDefBase {
             super(
                 (RolapMember) member.getParentMember(),
                 (RolapLevel) member.getLevel(),
-                null, name, MemberType.FORMULA);
+                RolapUtil.sqlNullValue, name, MemberType.FORMULA);
             this.member = member;
             this.exp = exp;
         }
@@ -223,6 +223,18 @@ public class VisualTotalsFunDef extends FunDefBase {
                 && this.exp.equals(((VisualTotalMember) o).exp)
                 || o instanceof Member
                 && this.member.equals(o);
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            if (o instanceof VisualTotalMember) {
+                // VisualTotals members are a special case. We have
+                // to compare the delegate member.
+                return this.getMember().compareTo(
+                    ((VisualTotalMember) o).getMember());
+            } else {
+                return super.compareTo(o);
+            }
         }
 
         @Override
@@ -241,6 +253,9 @@ public class VisualTotalsFunDef extends FunDefBase {
 
         public int getSolveOrder() {
             // high solve order, so it is expanded after other calculations
+            // REVIEW: 99...really?? I've seen many queries with higher SO.
+            // I don't think we should be abusing arbitrary constants
+            // like this.
             return 99;
         }
 

@@ -5,7 +5,7 @@
 // You must accept the terms of that agreement to use this software.
 //
 // Copyright (C) 2001-2005 Julian Hyde
-// Copyright (C) 2005-2011 Pentaho and others
+// Copyright (C) 2005-2012 Pentaho and others
 // All Rights Reserved.
 */
 package mondrian.rolap;
@@ -93,13 +93,11 @@ public class RolapCubeLevel extends RolapLevel {
                     getCube().hierarchyList,
                     getDimension().isHighCardinality());
 
-            /*
-            RME HACK
-              WG: Note that the reason for registering this usage is so that
-              when registerDimension is called, the hierarchy is registered
-              successfully to the star.  This type of hack will go away once
-              HierarchyUsage is phased out
-            */
+            //RME HACK
+            //  WG: Note that the reason for registering this usage is so that
+            //  when registerDimension is called, the hierarchy is registered
+            //  successfully to the star.  This type of hack will go away once
+            //  HierarchyUsage is phased out
             if (! getCube().isVirtual()) {
                 getCube().createUsage(
                     (RolapCubeHierarchy) cubeDimension.getHierarchies()[0],
@@ -418,6 +416,8 @@ public class RolapCubeLevel extends RolapLevel {
                 assert member.getLevel() == cubeLevel;
                 assert !member.isCalculated();
                 assert memberColumnPredicate.getMember().getKey() != null;
+                assert memberColumnPredicate.getMember().getKey()
+                    != RolapUtil.sqlNullValue;
                 assert !member.isNull();
 
                 // use the member as constraint, this will give us some

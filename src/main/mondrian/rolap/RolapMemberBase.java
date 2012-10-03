@@ -102,6 +102,7 @@ public class RolapMemberBase
         MemberType memberType)
     {
         super(parentMember, level, memberType);
+        assert key != null;
         assert !(parentMember instanceof RolapCubeMember)
             || this instanceof RolapCalculatedMember
             || this instanceof VisualTotalsFunDef.VisualTotalMember;
@@ -128,7 +129,7 @@ public class RolapMemberBase
 
     protected RolapMemberBase() {
         super();
-        this.key = null;
+        this.key = RolapUtil.sqlNullValue;
     }
 
     RolapMemberBase(RolapMember parentMember, RolapLevel level, Object value) {
@@ -511,22 +512,26 @@ public class RolapMemberBase
      */
     public int compareTo(Object o) {
         RolapMemberBase other = (RolapMemberBase)o;
-        if (this.key != null && other.key == null) {
-            return 1; // not null is greater than null
-        }
-        if (this.key == null && other.key != null) {
-            return -1; // null is less than not null
-        }
-        // compare by unique name, if both keys are null
-        if (this.key == null && other.key == null) {
-            return this.getUniqueName().compareTo(other.getUniqueName());
-        }
-        // compare by unique name, if one ore both members are null
+        assert this.key != null && other.key != null;
+
         if (this.key == RolapUtil.sqlNullValue
-            || other.key == RolapUtil.sqlNullValue)
+            && other.key == RolapUtil.sqlNullValue)
         {
-            return this.getUniqueName().compareTo(other.getUniqueName());
+            // if both keys are null, they are equal.
+            // compare by unique name.
+            return this.getName().compareTo(other.getName());
         }
+
+        if (other.key == RolapUtil.sqlNullValue) {
+            // not null is greater than null
+            return 1;
+        }
+
+        if (this.key == RolapUtil.sqlNullValue) {
+            // null is less than not null
+            return -1;
+        }
+
         // as both keys are not null, compare by key
         //  String, Double, Integer should be possible
         //  any key object should be "Comparable"
@@ -698,22 +703,21 @@ public class RolapMemberBase
     {
         seedMember = RolapUtil.strip((RolapMember) seedMember);
 
-        /*
-         * The following are times for executing different set ordinals
-         * algorithms for both the FoodMart Sales cube/Store dimension
-         * and a Large Data set with a dimension with about 250,000 members.
-         *
-         * Times:
-         *    Original setOrdinals Top-down
-         *       Foodmart: 63ms
-         *       Large Data set: 651865ms
-         *    Calling getAllMembers before calling original setOrdinals Top-down
-         *       Foodmart: 32ms
-         *       Large Data set: 73880ms
-         *    Bottom-up/Top-down
-         *       Foodmart: 17ms
-         *       Large Data set: 4241ms
-         */
+         // The following are times for executing different set ordinals
+         // algorithms for both the FoodMart Sales cube/Store dimension
+         // and a Large Data set with a dimension with about 250,000 members.
+         //
+         // Times:
+         //    Original setOrdinals Top-down
+         //       Foodmart: 63ms
+         //       Large Data set: 651865ms
+         //    Calling getAllMembers before calling original setOrdinals
+         //    Top-down
+         //       Foodmart: 32ms
+         //       Large Data set: 73880ms
+         //    Bottom-up/Top-down
+         //       Foodmart: 17ms
+         //       Large Data set: 4241ms
         long start = System.currentTimeMillis();
 
         try {
