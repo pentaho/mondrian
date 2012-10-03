@@ -771,7 +771,13 @@ public class RolapResult extends ResultBase {
 
         for (int i = 0; i < pos.length; i++) {
             if (positionsHighCardinality.get(i)) {
-                executeBody(evaluator, statement.getQuery(), pos);
+                final Locus locus = new Locus(execution, null, "Loading cells");
+                Locus.push(locus);
+                try {
+                    executeBody(evaluator, statement.getQuery(), pos);
+                } finally {
+                    Locus.pop(locus);
+                }
                 break;
             }
         }
