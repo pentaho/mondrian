@@ -49,9 +49,12 @@ Limitations
 
 Some functionality is not complete in this beta version.
  - Ragged hierarchies are not supported.
- - No all native SQL optimizations supported in Mondrian-3.x still work.
+ - No all native SQL optimizations supported in Mondrian-3.x
+   still work.
  - There are approximately 250 test failures out of 2700 tests.
  - Pentaho Analyzer does not yet work against Mondrian-4.
+ - It's not as easy as it should be to download and load sample
+   data sets such as FoodMart.
 
 API and MDX language changes from 3.x to 4.0
 --------------------------------------------
@@ -120,3 +123,6 @@ previous release.
 Bugs and feature requests fixed for 4.0
 ---------------------------------------
 TODO
+
+# End
+

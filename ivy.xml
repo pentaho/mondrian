@@ -96,14 +96,8 @@
         <dependency org="retroweaver" name="retroweaver-rt" rev="2.0.7"
                 conf="default-jdk1.4->default"/>
 
-        <!-- Distribution Jar and Wars -->
-        <dependency org="org.apache.derby" name="derby" rev="10.2.2.0" conf="dist->default"/>
+        <!-- Distribution Jars -->
         <dependency org="hsqldb" name="hsqldb" rev="1.8.0" conf="dist->default"/>
-
-        <!-- Note that this is a build of jpivot's CVS trunk on 12-22-2008. -->
-        <dependency org="com.tonbeller" name="jpivot" rev="1.8.0-100420" conf="dist->default">
-            <artifact name="jpivot" type="war"/>
-        </dependency>
 
         <!-- Test Jars -->
         <dependency org="junit" name="junit" rev="3.8.1" conf="test->default"/>
