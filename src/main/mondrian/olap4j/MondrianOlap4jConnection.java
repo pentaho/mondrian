@@ -647,21 +647,17 @@ abstract class MondrianOlap4jConnection implements OlapConnection {
         return mondrianConnection.getLocale();
     }
 
-    public void setRoleName(String roleName) throws OlapException {
+    public void setRoleName(String roleNameList) throws OlapException {
         final Role role;
         final RolapConnection connection1 = getMondrianConnection();
-        if (roleName == null) {
-            role = Util.createRootRole(connection1.getSchema());
-            assert role != null;
-        } else {
-            role = connection1.getSchema().lookupRole(roleName);
-            if (role == null) {
-                throw helper.createException("Unknown role '" + roleName + "'");
-            }
+        role = Util.getRole(connection1.getSchema(), roleNameList);
+        if (role == null) {
+        	role = Util.createRootRole(connection1.getSchema());
+        	assert role != null;
         }
         // Remember the name of the role, because mondrian roles don't know
         // their own name.
-        this.roleName = roleName;
+        this.roleName = roleNameList;
         connection1.setRole(role);
     }
 
