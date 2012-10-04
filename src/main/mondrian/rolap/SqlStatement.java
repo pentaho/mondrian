@@ -361,9 +361,9 @@ public class SqlStatement {
             // An int would overflow.
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
-                    "Using type LONG for Neteeza scale 0 and precision 38.");
+                    "Using type DOUBLE for Neteeza scale 0 and precision 38.");
             }
-            return Type.LONG;
+            return Type.DOUBLE;
         } else if ((scale == 0 || scale == -127)
             && (precision <= 9 || precision == 38))
         {
@@ -504,6 +504,7 @@ public class SqlStatement {
             return dt;
         case Types.DOUBLE:
         case Types.FLOAT:
+        case Types.BIGINT:
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
                     "SqlStatement.guessType - Column "
@@ -512,15 +513,6 @@ public class SqlStatement {
                     + columnType);
             }
             return Type.DOUBLE;
-        case Types.BIGINT:
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(
-                    "SqlStatement.guessType - Column "
-                    + columnName
-                    + " is of internal type LONG. JDBC type was "
-                    + columnType);
-            }
-            return Type.LONG;
         default:
             if (LOG.isDebugEnabled()) {
                 LOG.debug(
