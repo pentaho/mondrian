@@ -1015,7 +1015,7 @@ buildOnJdk.sh" />
   </target>
 
   <target name="binzip"
-      depends="version,checkIsJdk15,srczip,javadoc,xml_schema,retroweave">
+      depends="version,checkIsJdk15,jar,srczip,javadoc,xml_schema,retroweave">
     <mkdir dir="${dist.dir}" />
     <delete file="${dist.bin.file}"/>
     <zip zipfile="${dist.bin.file}">
