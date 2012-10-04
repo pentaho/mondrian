@@ -11,6 +11,7 @@ package mondrian.xmla;
 
 import mondrian.olap.*;
 import mondrian.olap.Util.PropertyList;
+import mondrian.olap4j.MondrianOlap4jDriver;
 import mondrian.rolap.RolapConnectionProperties;
 import mondrian.test.DiffRepository;
 import mondrian.test.TestContext;
@@ -29,6 +30,11 @@ import java.util.*;
  * occurs as expected.
  */
 public class XmlaMetaDataConstraintsTest extends XmlaBaseTestCase {
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        Class.forName(MondrianOlap4jDriver.class.getName());
+    }
 
     protected Map<String, String> getCatalogNameUrls(TestContext testContext) {
         if (catalogNameUrls == null) {
