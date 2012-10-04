@@ -124,15 +124,17 @@ public class RolapCubeLevel extends RolapLevel {
         RolapProperty[] properties,
         MondrianDef.RelationOrJoin rel)
     {
-        if (properties == null) return null;
+        if (properties == null) {
+            return null;
+        }
 
-        RolapProperty[] convertedProperties = new RolapProperty[properties.length];
-        for (int i = 0; i < properties.length; i++)
-        {
+        RolapProperty[] convertedProperties =
+            new RolapProperty[properties.length];
+        for (int i = 0; i < properties.length; i++) {
             RolapProperty old = properties[i];
-            convertedProperties[i] = 
+            convertedProperties[i] =
                 new RolapProperty(
-                    old.getName(), 
+                    old.getName(),
                     old.getType(),
                     convertExpression(old.getExp(), rel),
                     old.getFormatter(),
