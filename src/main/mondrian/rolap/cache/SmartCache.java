@@ -16,16 +16,17 @@ import java.util.Map.Entry;
 /**
  * Defines a cache API. Implementations exist for hard and soft references.
  *
- * <p>This interface implements the {@link Iterable}. The {@link #iterator()}
- * method returns an iterator over all entries in the cache. The iterator
- * is mutable.
+ * <p>To iterate over the contents of a cache, you must pass a
+ * {@link #execute(SmartCacheTask)} instance. The code using the iterator
+ * can be assured that it will be thread safe.
  *
+ * <p>Implementations are responsible of enforcing thread safety.
  * @author av
  * @since Nov 21, 2005
  */
 public interface SmartCache <K, V> {
     /**
-     * Places a key/value pair into the queue.
+     * Places a key/value pair into the cache.
      *
      * @param key Key
      * @param value Value
@@ -33,6 +34,11 @@ public interface SmartCache <K, V> {
      */
     V put(K key, V value);
 
+    /**
+     * Looks up and returns a cache value according to a given key.
+     * If the cache does not correspond an entry corresponding to the key,
+     * <code>null</code> is returned.
+     */
     V get(K key);
 
     /**
@@ -56,13 +62,14 @@ public interface SmartCache <K, V> {
 
     /**
      * Executes a task over the contents of the cache and guarantees
-     * synchronization.
+     * exclusive write access while processing.
      * @param task The task to execute.
      */
     void execute(SmartCacheTask<K, V> task);
 
     /**
      * Defines a task to be run over the entries of the cache.
+     * Used in conjunction with {@link #execute(Iterator)}.
      */
     public interface SmartCacheTask<K, V> {
         void execute(
