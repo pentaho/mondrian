@@ -220,8 +220,11 @@ abstract class Rowset implements XmlaConstants {
             }
             populateImpl(response, connection, rows);
         } catch (SQLException e) {
-            // TODO:
-            e.printStackTrace();
+            throw new XmlaException(
+                UNKNOWN_ERROR_CODE,
+                UNKNOWN_ERROR_FAULT_FS,
+                "SqlException:",
+                e);
         } finally {
             if (connection != null && ourConnection) {
                 try {

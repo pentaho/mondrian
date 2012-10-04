@@ -10,7 +10,8 @@
 */
 package mondrian.rolap.cache;
 
-import java.util.Map;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 /**
  * Defines a cache API. Implementations exist for hard and soft references.
@@ -22,7 +23,7 @@ import java.util.Map;
  * @author av
  * @since Nov 21, 2005
  */
-public interface SmartCache <K, V> extends Iterable<Map.Entry<K, V>> {
+public interface SmartCache <K, V> {
     /**
      * Places a key/value pair into the queue.
      *
@@ -43,9 +44,30 @@ public interface SmartCache <K, V> extends Iterable<Map.Entry<K, V>> {
      */
     V remove(K key);
 
+    /**
+     * Clears the contents of this cache.
+     */
     void clear();
 
+    /**
+     * Returns the number of elements in cache.
+     */
     int size();
+
+    /**
+     * Executes a task over the contents of the cache and guarantees
+     * synchronization.
+     * @param task The task to execute.
+     */
+    void execute(SmartCacheTask<K, V> task);
+
+    /**
+     * Defines a task to be run over the entries of the cache.
+     */
+    public interface SmartCacheTask<K, V> {
+        void execute(
+            Iterator<Entry<K, V>> iterator);
+    }
 }
 
 // End SmartCache.java
