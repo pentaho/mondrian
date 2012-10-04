@@ -29,14 +29,14 @@ import java.util.concurrent.Future;
  */
 public class SegmentCacheIndexImpl implements SegmentCacheIndex {
 
-    private final Map<List, List<SegmentHeader>> bitkeyMap =
+    private static final Map<List, List<SegmentHeader>> bitkeyMap =
         new HashMap<List, List<SegmentHeader>>();
 
     /**
      * The fact map allows us to spot quickly which
      * segments have facts relating to a given header.
      */
-    private final Map<List, FactInfo> factMap =
+    private static final Map<List, FactInfo> factMap =
         new HashMap<List, FactInfo>();
 
     /**
@@ -48,10 +48,10 @@ public class SegmentCacheIndexImpl implements SegmentCacheIndex {
     // TODO Get rid of the fuzzy map once we have a way to parse
     // compound predicates into rich objects that can be serialized
     // as part of the SegmentHeader.
-    private final Map<List, FuzzyFactInfo> fuzzyFactMap =
+    private static final Map<List, FuzzyFactInfo> fuzzyFactMap =
         new HashMap<List, FuzzyFactInfo>();
 
-    private final Map<SegmentHeader, HeaderInfo> headerMap =
+    private static final Map<SegmentHeader, HeaderInfo> headerMap =
         new HashMap<SegmentHeader, HeaderInfo>();
 
     private final Thread thread;
