@@ -79,6 +79,7 @@ public class XmlaMetaDataConstraintsTest extends XmlaBaseTestCase {
                 bw1.close();
                 bw2.close();
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new RuntimeException(e);
             }
 
@@ -146,7 +147,12 @@ public class XmlaMetaDataConstraintsTest extends XmlaBaseTestCase {
         props.setProperty(DATA_SOURCE_INFO_PROP, DATA_SOURCE_INFO);
         props.setProperty(CATALOG_NAME_PROP, catalog);
 
-        doTest(requestType, props, TestContext.instance());
+        try {
+            doTest(requestType, props, TestContext.instance());
+        } catch (Throwable t) {
+            t.printStackTrace();
+            throw new Exception(t);
+        }
     }
 
     protected DiffRepository getDiffRepos() {
