@@ -1,27 +1,23 @@
-Mondrian 3.2.1.13885 production release notes
-=============================================
+Mondrian 4.0.0 beta release notes
+=================================
 
 Introduction
 ------------
 
-Mondrian 3.2.1.13885 is a patch release version of the leading
-open-source OLAP engine. To find out more about mondrian, go
-to http://mondrian.pentaho.com.
+Mondrian 4.0.0 is a beta release of a new major version of the
+leading open-source OLAP engine. To find out more about mondrian,
+go to http://mondrian.pentaho.com.
 
 Contents
 --------
 
-As usual, there are two distributions for this release:
- * mondrian-<version>.zip contains the FoodMart dataset in
-   SQL and Access format
- * mondrian-<version>-derby.zip contains the FoodMart
-   dataset as an Apache Derby database
+The distribution is contained in the file mondrian-<version>.zip.
+Each distribution contains the full Mondrian source code, as
+mondrian-<version>-src.zip, documentation including generated API
+documentation.
 
-Each distribution contains the full mondrian source code, as
-mondrian-<version>-src.zip, documentation including
-generated API documentation, and a web archive mondrian.war.
-This web archive contains all classes and libraries (jars)
-necessary to run mondrian.
+The main interface to Mondrian is its olap4j driver,
+mondrian.olap4j.MondrianOlap4jDriver.
 
 This release runs on Java version 1.5 and higher. For
 backwards compatibility on Java 1.4, substitute
@@ -32,138 +28,95 @@ For further installation instructions, see
 http://mondrian.pentaho.com/documentation/installation.php
 or the included file doc/installation.html.
 
-* Note that the below is not a complete list of changes
-  in 3.2, we still need to compile a list before the branch 
-  took place that includes changes that were not placed into
-  3.1 but were available in trunk
-
 Main functionality in this release
 ----------------------------------
- - Improved native performance
- - olap4j drill through support
- - Improved XMLA support
- - Greenplum Dialect
- - Improved parameter support
 
-API changes from 3.1 to 3.2
----------------------------
- - Changed RolapMember to an interface
- - The getUniqueName() on Member no longer includes the all
-   member.
- - Upgraded to olap4j-0.9.7.309
+ - Measure groups
+ - Attributes
+ - Time dimension generator
+ - Composite keys
+ - Physical schema
+ - API to define aggregate tables (not yet complete)
+ - Schema format does not require XML elements to be in a
+   particular order.
+ - Schema validation gives multiple errors and warnings, and
+   errors and warnings have a precise XML location.
+ - If connection property 'Ignore' is specified, warnings do not
+   prevent a connection from being established.
 
-See CHANGES.txt for a list of all source code changes
-since the previous release.
+Limitations
+-----------
 
-Bugs and feature requests fixed for 3.2.1.13885
-----------------------------------------------------------
-MONDRIAN-821 - Adds a unique ID property to the Schema API. This id 
-               is expected to be different across different Mondrian
-               instances. It allows clients to refresh their schema
-               caches when that ID changes. This usually happened 
-               when a dynamic schema processor is used and the schema 
-               changes when a user login changes.
-MONDRIAN-695 - NonEmpty, Crossjoin and multiple dimensions in a slicer 
-               all together were returning wrong results with native 
-               sets.
-PPP-2542 - Changing dir to the current dir for win7 issue, 
-           BISERVER-4632, added check to see if the jre folder 
-           provided exists
+Some functionality is not complete in this beta version.
+ - Ragged hierarchies are not supported.
+ - No all native SQL optimizations supported in Mondrian-3.x still work.
+ - There are approximately 250 test failures out of 2700 tests.
+ - Pentaho Analyzer does not yet work against Mondrian-4.
 
-Bugs and feature requests fixed for 3.2.1.13841
-----------------------------------------------------------
-MONDRIAN-799 - Currency format string shows a junk character for the
-               currency symbol
-MONDRIAN-779 - Include/exclude filter not working
-MONDRIAN-777 - The identical view acting as a relation for a dimension
-               table and fact table is determined not equal, causing 
-               issues with degenerate dimensions in views
-MONDRIAN-776 - mondrian.xsd updated to new specifications
-MONDRIAN-769 - row counts coming back as zero
-MONDRIAN-766 - Bug in escaping strings containing backslash for MySQL
-MONDRIAN-761 - mondrian.olap.fun.VisualTotalsFunDef$VisualTotalMember
-               cannot be cast to mondrian.rolap.RolapCubeMember
-MONDRIAN-756 - Error in RolapResult.replaceNonAllMembers leads to NPE
-MONDRIAN-755 - Getting drillthrough count results in exception
-MONDRIAN-735 - Indian format strings
-MONDRIAN-724 - Cannot reference Member that has the same name as the
-               Level.
-MONDRIAN-711 - Wrong behaviour with approxRowCount attribute added in
-               a Level element
-MONDRIAN-568 - If two cubes have dimension with same name, mondrian
-               treats grant to one as grant to other
-MONDRIAN-463 - New error messages if hierarchy has no levels; if
-               hierarchy has
-BISERVER-4618 - PSW Duplicate catalog entry in datasources.xml
-PSW-87 - As a BI Pracitioner, I would like Schema Workbench to use the
-         same connection creation dialog as the rest of the Pentaho
-         products
-PSW-84 - Column in schema workbench wont allow as measure if data type 
-         in RDBMS is BIGINT
+API and MDX language changes from 3.x to 4.0
+--------------------------------------------
 
-Bugs and feature requests fixed for 3.2.0.13661
-----------------------------------------------------------
-MONDRIAN-751 - Drill SQL does not include slicer members in WHERE 
-               clause
+ - Mondrian-4 is compatible with olap4j version 1.0.1.
+ - In MDX, hierarchy elements must be specified using
+   [dimension].[hierarchy], and level elements must be specified
+   using [dimension].[hierarchy].[level]. (In Mondrian-3.x, this
+   behavior was enabled only if the property
+   mondrian.olap.SsasCompatibleNaming was set to true.)
+ - The following deprecated APIs have been removed:
+  -- TODO
+ - TODO
 
-Bugs and feature requests fixed for 3.2.0.13658
-----------------------------------------------------------
-MONDRIAN-745 - NullPointerException when passing in null param value
-MONDRIAN-746 - Level of calculated member is different when hierarchy
-               is access-controlled
-MONDRIAN-750 - View model with Analyzer where model contains multiple
-               hierarchies beneath a single dimension throws exception
+Other changes from 3.x to 4.0
+-----------------------------
 
-Bugs and feature requests fixed for 3.2.0.13643
-----------------------------------------------------------
-MONDRIAN-560 - StrToMember function doesn't use IgnoreInvalidMembers
-               option
-MONDRIAN-737 - Sybase SQL Dialect is not correctly applied for
-               Sybase Adaptive Server Enterprise 15.5
-MONDRIAN-722 - If ignoreInvalidMembers=true, should ignore
-               grants with invalid members
-MONDRIAN-734 - Exception thrown when creating a 'New Analysis View'
-               with JPivot
-MONDRIAN-728 - Rolap Connection Locale is handled incorrectly in
-               LocalizingDynamicSchemaProcessor.java
-MONDRIAN-738 - Statements not being closed
-MONDRIAN-708 - After change 13351 all Excel pivots fail to update.
-               CellInfo element in XMLA response is wrong
-MONDRIAN-742 - Role security not applied correctly for the 'Top
-               Level' restriction
-MONDRIAN-727 - [Fact count] measure added in change 13506
-               shouldn't be returned in XMLA rowset, not visible 
-               measures shouldn't be
-               returned either
+The XML schema format is not compatible between
+versions. Mondrian-3.x software would not be able to read a
+Mondrian-4 schema, and Mondrian-4 software can read a Mondrian-3
+schema only because it recognizes that the schema is a legacy
+format and internally converts to Mondrian-4 format.
 
-Bugs and feature requests fixed for 3.2.0.13583
-----------------------------------------------------------
-MONDRIAN-686 - Regression: JPivot output invalid - New Variance
-               Percent column
-MONDRIAN-691 - RolapSchemaReader is not enforcing access control
-               on two APIs
-MONDRIAN-694 - Incorrect handling of child/parent relationship
-               with hierarchy grants
-MONDRIAN-726 - Change 13509 is not Excel 2007 compatible
-MONDRIAN-725 - setParameter function should be able to accept
-               Java string for set value
-MONDRIAN-652 - Add support for generic annotations to Mondrian schema
-MONDRIAN-718 - Direct References to Members on a Dimension that has
-               calculated members defined will not be found
-MONDRIAN-710 - Count with ExcludeEmpty throws an exception when
-               the cube does not have a factCountMeasure 
-MONDRIAN-715 - Constrained Measures can generate incorrect results
-               when evaluated natively
-MONDRIAN-706 - SQL using hierarchy attribute 'Column Name' 
-               instead of 'Column' in the filter
-MONDRIAN-705 - Aggregate with grouping sets turned on causes
-               exception
-MONDRIAN-704 - MDSCHEMA_PROPERTIES should not return internal
-               properties
-MONDRIAN-681 - Add serializable to PropertyList class for caching
-MONDRIAN-678 - VisualTotals gives UnsupportedOperationException
-               calling getOrdinal
-MONDRIAN-679 - VisualTotals gives ClassCastException when called
-               via XMLA
+We recommend using the metamodelVersion attribute of the Schema
+element, to make it clear which version the schema is intended
+for. This attribute is mandatory from 4.0 onwards.
 
+The schema converter can handle most schemas, but has the
+following limitations. It cannot recognize uses of columns in
+expressions and convert them to Column elements.
 
+The VirtualCube element is obsolete. The equivalent in Mondrian-4
+is a Cube that contains multiple MeasureGroups.
+
+The AggName element is obsolete. In Mondrian-4 you define
+aggregate tables using the MeasureGroup element (which is also
+used to define fact tables).
+
+The AggPattern element is obsolete. There is no direct way in
+Mondrian-4 to define a set of aggregate tables by
+pattern-matching the names of tables and columns in the
+schema. You can use the new aggregate table API to scan the
+schema and define aggregate tables.
+
+In 3.x releases, the mondrian-<version>.zip file contained the
+FoodMart data set in MySQL and Microsoft Access formats, and
+there was an additional mondrian-<version>-derby.zip containing
+the FoodMart data set in Apache Derby format. This release's
+distribution does not contain the data set. It can be downloaded
+from
+http://repo.pentaho.org/artifactory/repo/pentaho/mondrian-data-foodmart.
+
+JPivot is no longer included with the release. Neither is there a
+mondrian.war file in the distribution.
+
+Schema workbench is obsolete and has been removed. Pentaho hopes
+to build a replacement, but no firm plans exist at this time.
+
+XMLA server has been removed from the Mondrian code base. It is
+now a separate project. See
+https://github.com/julianhyde/olap4j-xmlaserver.
+
+See CHANGES.txt for a list of all source code changes since the
+previous release.
+
+Bugs and feature requests fixed for 4.0
+---------------------------------------
+TODO
