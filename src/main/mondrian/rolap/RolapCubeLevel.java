@@ -73,6 +73,7 @@ public class RolapCubeLevel extends RolapLevel {
         captionExp = convertExpression(level.getCaptionExp(), hierarchyRel);
         ordinalExp = convertExpression(level.getOrdinalExp(), hierarchyRel);
         parentExp = convertExpression(level.getParentExp(), hierarchyRel);
+        properties = convertProperties(level.getProperties(), hierarchyRel);
     }
 
     void init(MondrianDef.CubeDimension xmlDimension) {
@@ -117,6 +118,30 @@ public class RolapCubeLevel extends RolapLevel {
         } else {
             this.levelReader = new RegularLevelReader(this);
         }
+    }
+
+    private RolapProperty[] convertProperties(
+        RolapProperty[] properties,
+        MondrianDef.RelationOrJoin rel)
+    {
+        if (properties == null) return null;
+
+        RolapProperty[] convertedProperties = new RolapProperty[properties.length];
+        for (int i = 0; i < properties.length; i++)
+        {
+            RolapProperty old = properties[i];
+            convertedProperties[i] = 
+                new RolapProperty(
+                    old.getName(), 
+                    old.getType(),
+                    convertExpression(old.getExp(), rel),
+                    old.getFormatter(),
+                    old.getCaption(),
+                    old.dependsOnLevelValue(),
+                    old.isInternal(),
+                    old.getDescription());
+        }
+        return convertedProperties;
     }
 
     /**
