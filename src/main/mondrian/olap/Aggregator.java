@@ -73,7 +73,7 @@ public interface Aggregator {
      * @return A rolled up value of the raw data.
      * if the object type is not supported.
      */
-    Object aggregate(List<Object> rawData);
+    Object aggregate(List<Object> rawData, Datatype datatype);
 }
 
 // End Aggregator.java

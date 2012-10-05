@@ -298,7 +298,8 @@ public class FastBatchingCellReader implements CellReader {
                         map,
                         keepColumns,
                         rollup.constrainedColumnsBitKey,
-                        rollup.measure.getAggregator().getRollup());
+                        rollup.measure.getAggregator().getRollup(),
+                        rollup.measure.getDatatype());
 
                 final SegmentHeader header = rollupHeaderBody.left;
                 final SegmentBody body = rollupHeaderBody.right;
