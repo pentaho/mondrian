@@ -7007,6 +7007,10 @@ Test that get error if a dimension has more than one hierarchy with same name.
     // contains any of parent level's key. (e.g. if
     // orderKey of Customer contains city). OrderKey only needs to distinguish
     // between And test.
+
+    // TODO: Test NamedSet with a Formula element
+
+    // TODO: Make sure that MeasureGroup, Attribute can have annotations.
 }
 
 // End SchemaTest.java

@@ -1777,7 +1777,7 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
         </Code>
     </Element>
 
-    <Element type="Formula" class="CalculatedMemberElement">
+    <Element type="Formula" class="CalculatedMemberElement,NamedSetElement">
         <CData/>
     </Element>
 
