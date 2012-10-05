@@ -62,7 +62,7 @@ public class RolapLevel extends LevelBase {
 
     private RolapLevel closedPeerLevel;
 
-    private final RolapProperty[] properties;
+    protected RolapProperty[] properties;
     private final RolapProperty[] inheritedProperties;
 
     /**

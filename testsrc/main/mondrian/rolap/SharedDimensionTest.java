@@ -321,6 +321,15 @@ public class SharedDimensionTest extends FoodMartTestCase {
         + "non empty [Buyer].[USA].[OR].[Portland].children on rows\n"
         + "from [Alternate Sales]";
 
+    private static final String resultIssue1243 =
+        "Axis #0:\n"
+        + "{}\n"
+        + "Axis #1:\n"
+        + "{[Measures].[Unit Sales]}\n"
+        + "Axis #2:\n"
+        + "{[Buyer].[USA].[OR].[Portland].[Store 11]}\n"
+        + "Row #0: 238\n";
+
     public SharedDimensionTest() {
     }
 
@@ -404,7 +413,9 @@ public class SharedDimensionTest extends FoodMartTestCase {
      * cache"</a>.
      */
     public void testBugMondrian1243WrongAlias() {
-        getTestContextForSharedDimCubeAltSales().executeQuery(queryIssue1243);
+        getTestContextForSharedDimCubeAltSales().assertQueryReturns(
+            queryIssue1243,
+            resultIssue1243);
     }
 
     private TestContext getTestContextForSharedDimCubeACubeB() {
