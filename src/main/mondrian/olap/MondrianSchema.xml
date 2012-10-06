@@ -5,13 +5,13 @@
   == This software is subject to the terms of the Eclipse Public License v1.0
   == Agreement, available at the following URL:
   == http://www.eclipse.org/legal/epl-v10.html.
+  == You must accept the terms of that agreement to use this software.
   ==
   == Copyright (C) 2001-2005 Julian Hyde
   == Copyright (C) 2005-2012 Pentaho and others
   == All Rights Reserved.
-  == You must accept the terms of that agreement to use this software.
   ==
-  == This file defines an MMM schema for an Olap schema.
+  == Defines an XML model for a Mondrian schema.
 
 Measure group versus RolapStar.
 
@@ -110,9 +110,12 @@ In other words, (physColumn, physPath) uniquely identifies a RolapStar.Column.
  defaultKeepDef="true"
  version="1.0">
     <Doc>
-This is the XML model for Mondrian schemas.
-<p/>
-Revision is $Id$
+<p>XML model for Mondrian schemas. It is generated from
+<code>MondrianSchema.xml</code>.</p>
+
+<p>See also {@link Mondrian3Def} (generated from
+<code>Mondrian3Schema.xml</code>), which is the XML model for Mondrian
+version 3.x schemas.</p>
     </Doc>
 
     <Class class="CubeElement">
@@ -3374,4 +3377,4 @@ PARENT&#160;&#160;&#160;&#160;CHILD&#160;&#160;&#160;&#160;DISTANCE<br/>
 
 </Model>
 
-<!-- End Mondrian.xml -->
+<!-- End MondrianSchema.xml -->

@@ -98,7 +98,7 @@ public interface Cube extends OlapElement, Annotated {
      * Creates a calculated member in this cube.
      *
      * <p>The XML string must be a <code>&lt;CalculatedMember/&gt;</code>
-     * element, as defined in <code>Mondrian.xml</code>.
+     * element, as defined in <code>MondrianSchema.xml</code>.
      *
      * @param xml XML string
      */

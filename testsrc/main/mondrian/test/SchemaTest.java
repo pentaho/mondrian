@@ -6935,7 +6935,7 @@ Test that get error if a dimension has more than one hierarchy with same name.
 
     // TODO: Test that "MeasureGroup nolink=false" works.
 
-    // TODO: Document ReferenceLink in Mondrian4.xml
+    // TODO: Document ReferenceLink in MondrianSchema.xml
 
     // TODO: Implement ReferenceLink
 

@@ -7,14 +7,14 @@
   == You must accept the terms of that agreement to use this software.
   ==
   == Copyright (C) 2001-2005 Julian Hyde
-  == Copyright (C) 2005-2011 Pentaho and others
+  == Copyright (C) 2005-2012 Pentaho and others
   == All Rights Reserved.
   ==
-  == This file defines an MMM schema for an Olap schema.
+  == Defines an XML model for a legacy (version 3.x) Mondrian schema.
   -->
 <Model
- name="mondrian"
- dtdName="mondrian.dtd"
+ name="mondrian3"
+ dtdName="mondrian3.dtd"
  className="Mondrian3Def"
  packageName="mondrian.olap"
  importName="mondrian.rolap.sql.SqlQuery"
@@ -22,9 +22,12 @@
  defaultKeepDef="true"
  version="1.0">
     <Doc>
-This is the XML model for Mondrian schemas.
-<p/>
-Revision is $Id$
+<p>XML model for legacy (version 3.x) Mondrian schemas. It is
+generated from <code>Mondrian3Schema.xml</code>.</p>
+
+<p>This model is only used during schema upgrade. See also {@link
+MondrianDef} (generated from <code>MondrianSchema.xml</code>), which
+is the XML model for current Mondrian schemas.</p>
     </Doc>
 
     <!-- Schema ========================================================== -->
@@ -2394,4 +2397,4 @@ Revision is $Id$
     </Element>
 </Model>
 
-<!-- End Mondrian.xml -->
+<!-- End Mondrian3Schema.xml -->
